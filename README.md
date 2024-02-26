@@ -271,22 +271,22 @@ Using PHP DocBlocks instructions is not required, but sometimes you may want to 
 
 PHP ecosystem does not (yet) have a strong equivalent of [Pydantic](https://pydantic.dev/), which is at the core of Instructor for Python.
 
-Instructor for PHP leverages
- - base capabilities of PHP type system and reflection,
+To provide an essential functionality we needed here Instructor for PHP leverages:
+ - base capabilities of PHP type system,
+ - [PHP reflection](https://www.php.net/manual/en/book.reflection.php),
  - PHP DocBlock type hinting conventions,
- - Symfony serialization and validation capabilities
-to provide an essential functionality we needed here.
+ - Symfony serialization and validation capabilities.
+
 
 ## Dependencies
 
- - [Symfony Validation](https://symfony.com/doc/current/validation.html)
- - [Symfony Serializer](https://symfony.com/doc/current/components/serializer.html)
- - [Symfony PropertyInfo](https://symfony.com/doc/current/components/property_info.html)
+ - [Symfony Validation](https://symfony.com/doc/current/validation.html) - for validation
+ - [Symfony Serializer](https://symfony.com/doc/current/components/serializer.html) - for deserialization
+ - [Symfony PropertyInfo](https://symfony.com/doc/current/components/property_info.html) - needed by Symfony Serializer
+
 
 ## TODOs
 
-- [ ] Validation
-- [ ] Retrying / error handling
 - [ ] Tests
 - [ ] Better comments in codebase
 - [ ] Public vs protected / private fields - document behavior
