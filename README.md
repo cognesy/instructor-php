@@ -7,6 +7,7 @@ Structured data extraction in PHP, powered by LLMs. Designed for simplicity, tra
 > - Library API is likely to change.
 > - Docs may not reflect actual state of the code.
 
+
 ## What is Instructor?
 
 Instructor is a library that allows you to extract structured, validated data from unstructured text or OpenAI style chat sequence arrays. It is powered by Large Language Models (LLMs).
@@ -84,7 +85,7 @@ Response model class is a plain PHP class with typehints specifying the types of
     // Step 3: Use Instructor to run LLM inference
     $person = (new Instructor)->chat(
         messages: [['role' => 'user', 'content' => $text]],
-        responseModel: Person::class
+        responseModel: Person::class,
     ); // default OpenAI client is used
 
     // Step 4: Work with structured response data
@@ -132,6 +133,7 @@ You can also use PHP DocBlock style comments to specify the type of extracted da
 ```
 
 See PHPDoc documentation for more details on DocBlock: https://docs.phpdoc.org/3.0/guide/getting-started/what-is-a-docblock.html#what-is-a-docblock
+
 
 ### Typed Collections / Arrays
 
@@ -221,13 +223,29 @@ Instructor can retrieve complex data structures from text. Your response model c
     // }
 ```
 
+### Specifying OpenAI / LLM model and other options
+
+You can specify model and other options that will be passed to OpenAI / LLM endpoint.
+
+For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
+
+```php
+    $person = (new Instructor)->chat(
+        messages: [['role' => 'user', 'content' => $text]],
+        responseModel: Person::class,
+        model: 'gpt-3.5-turbo',
+        options: ['temperature' => 0.0],
+        client: OpenAI::client($yourApiKey),
+    ); // client is passed explicitly, can specify eg. different base URL
+```
+
 ### Using DocBlocks as Additional Instructions for LLM
 
 You can use PHP DocBlocks (/** */) to provide additional instructions for LLM at class or field level, for example to clarify what you expect or how LLM should process your data.
 
-Instructor extracts class and property comments from PHP DocBlocks and includes them in specification of response model sent to LLM.  
+Instructor extracts PHP DocBlocks comments from class and property defined and includes them in specification of response model sent to LLM.  
 
-Using PHP DocBlocks is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
+Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
 
 ```php
     /**
@@ -246,15 +264,24 @@ Using PHP DocBlocks is not required, but sometimes you may want to clarify your 
 ### Validation
 
 ```php
-// example
+// TODO: example
 ```
 
 ## Additional Notes
 
 PHP ecosystem does not (yet) have a strong equivalent of [Pydantic](https://pydantic.dev/), which is at the core of Instructor for Python.
 
-Instructor for PHP leverages base capabilities of PHP type system, PHP DocBlock type hinting conventions and [Symfony Validation](https://symfony.com/doc/current/validation.html) to provide similar functionality.
+Instructor for PHP leverages
+ - base capabilities of PHP type system and reflection,
+ - PHP DocBlock type hinting conventions,
+ - Symfony serialization and validation capabilities
+to provide an essential functionality we needed here.
 
+## Dependencies
+
+ - [Symfony Validation](https://symfony.com/doc/current/validation.html)
+ - [Symfony Serializer](https://symfony.com/doc/current/components/serializer.html)
+ - [Symfony PropertyInfo](https://symfony.com/doc/current/components/property_info.html)
 
 ## TODOs
 
@@ -262,7 +289,7 @@ Instructor for PHP leverages base capabilities of PHP type system, PHP DocBlock 
 - [ ] Retrying / error handling
 - [ ] Tests
 - [ ] Better comments in codebase
-- [ ] Public vs protect/private fields - document behavior
+- [ ] Public vs protected / private fields - document behavior
 - [ ] Support for iterables / collections (via ArrayAccess, Iterator)
 - [ ] Async
 - [ ] Open source LLM support
