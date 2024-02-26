@@ -107,7 +107,9 @@ Response model class is a plain PHP class with typehints specifying the types of
 
 ### Type Hints
 
-Use PHP type hints to specify the type of extracted data. Use nullable types to indicate that a field are optional.
+Use PHP type hints to specify the type of extracted data.
+
+> Use nullable types to indicate that given field is optional.
 
 ```php
     class Person {
