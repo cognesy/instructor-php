@@ -86,7 +86,7 @@ Response model class is a plain PHP class with typehints specifying the types of
     $person = (new Instructor)->chat(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-    ); // default OpenAI client is used
+    ); // default OpenAI client is used, needs .env file with OPENAI_API_KEY
 
     // Step 4: Work with structured response data
     assert($person instanceof Person); // true
@@ -102,8 +102,63 @@ Response model class is a plain PHP class with typehints specifying the types of
     //     age: 28
     // }    
 ```
-> **NOTE:** Currently, Instructor only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class. 
+> **NOTE:** Currently, Instructor only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class.
 
+
+### Validation
+
+Instructor validates results of LLM response against validation rules specified in your data model.
+
+> For further details on available validation rules, check [Symfony Validation constraints](https://symfony.com/doc/current/validation.html#constraints).
+
+```php
+    use Symfony\Component\Validator\Constraints as Assert;
+    
+    class Person {
+        #[Assert\Length(min: 3)]
+        public string $name;
+        #[Assert\PositiveOrZero]
+        public int $age;
+    }
+
+    $text = "His name is JX, aka Jason, is -28 years old.";
+    $person = (new Instructor(llm: $mockLLM))->extract(
+        messages: [['role' => 'user', 'content' => $text]],
+        responseModel: Person::class,
+    );
+    
+    // if the resulting object does not validate, Instructor throws an exception
+```
+
+
+### Max Retries
+
+In case maxRetries parameter is provided and LLM response does not meet validation criteria, Instructor will make subsequent inference attempts until results meet the requirements or maxRetries is reached.
+
+Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
+
+```php
+    use Symfony\Component\Validator\Constraints as Assert;
+    
+    class Person {
+        #[Assert\Length(min: 3)]
+        public string $name;
+        #[Assert\PositiveOrZero]
+        public int $age;
+    }
+
+    $text = "His name is JX, aka Jason, is -28 years old.";
+    $person = (new Instructor)->chat(
+        messages: [['role' => 'user', 'content' => $text]],
+        responseModel: Person::class,
+        maxRetries: 3,
+    );
+    
+    // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
+```
+
+
+## Specifying Data Model
 
 ### Type Hints
 
@@ -225,7 +280,7 @@ Instructor can retrieve complex data structures from text. Your response model c
     // }
 ```
 
-### Specifying OpenAI / LLM model and other options
+## Changing LLM model and options
 
 You can specify model and other options that will be passed to OpenAI / LLM endpoint.
 
@@ -241,11 +296,11 @@ For more details on options available - see [OpenAI PHP client](https://github.c
     ); // client is passed explicitly, can specify eg. different base URL
 ```
 
-### Using DocBlocks as Additional Instructions for LLM
+## Using DocBlocks as Additional Instructions for LLM
 
 You can use PHP DocBlocks (/** */) to provide additional instructions for LLM at class or field level, for example to clarify what you expect or how LLM should process your data.
 
-Instructor extracts PHP DocBlocks comments from class and property defined and includes them in specification of response model sent to LLM.  
+Instructor extracts PHP DocBlocks comments from class and property defined and includes them in specification of response model sent to LLM.
 
 Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
 
@@ -263,39 +318,35 @@ Using PHP DocBlocks instructions is not required, but sometimes you may want to 
 ```
 
 
-### Validation
-
-```php
-// TODO: example
-```
-
 ## Additional Notes
 
 PHP ecosystem does not (yet) have a strong equivalent of [Pydantic](https://pydantic.dev/), which is at the core of Instructor for Python.
 
 To provide an essential functionality we needed here Instructor for PHP leverages:
- - base capabilities of PHP type system,
- - [PHP reflection](https://www.php.net/manual/en/book.reflection.php),
- - PHP DocBlock type hinting conventions,
- - Symfony serialization and validation capabilities.
+- base capabilities of [PHP type system](https://www.php.net/manual/en/language.types.type-system.php),
+- [PHP reflection](https://www.php.net/manual/en/book.reflection.php),
+- [PHP DocBlock](https://docs.phpdoc.org/2.9/references/phpdoc/index.html) type hinting conventions,
+- [Symfony](https://symfony.com/doc/current/index.html) serialization and validation capabilities
+
+Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models capable of function calling may be added in the future.
 
 
 ## Dependencies
 
- - [Symfony Validation](https://symfony.com/doc/current/validation.html) - for validation
- - [Symfony Serializer](https://symfony.com/doc/current/components/serializer.html) - for deserialization
- - [Symfony PropertyInfo](https://symfony.com/doc/current/components/property_info.html) - needed by Symfony Serializer
+Instructor for PHP is compatible with PHP 8.1 or later and, due to minimal dependencies, should work with any framework of your choice.
+
+- [OpenAI PHP client](https://github.com/openai-php/client) - for communication with OpenAI API
+- [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
+- [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
 
 
 ## TODOs
 
-- [ ] Tests
-- [ ] Better comments in codebase
-- [ ] Public vs protected / private fields - document behavior
 - [ ] Support for iterables / collections (via ArrayAccess, Iterator)
 - [ ] Async
+- [ ] Document creation of custom serializers, validators and LLMs
 - [ ] Open source LLM support
-- [ ] Logging
+- [ ] Public vs protected / private fields - document behavior
 
 
 ## Contributing
