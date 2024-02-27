@@ -78,7 +78,7 @@ Response model class is a plain PHP class with typehints specifying the types of
     $text = "His name is Jason and he is 28 years old.";
 
     // Step 3: Use Instructor to run LLM inference
-    $person = (new Instructor)->chat(
+    $person = (new Instructor)->extract(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     ); // default OpenAI client is used, needs .env file with OPENAI_API_KEY
@@ -142,7 +142,7 @@ Instructor uses validation errors to inform LLM on the problems identified in th
     }
 
     $text = "His name is JX, aka Jason, is -28 years old.";
-    $person = (new Instructor)->chat(
+    $person = (new Instructor)->extract(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
         maxRetries: 3,
@@ -235,7 +235,7 @@ Instructor can retrieve complex data structures from text. Your response model c
     
     $text = "Alex is 25 years old software engineer, who knows PHP, Python and can play the guitar.";
 
-    $person = (new Instructor)->chat(
+    $person = (new Instructor)->extract(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
         client: OpenAI::client($yourApiKey),
@@ -281,7 +281,7 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
 
 ```php
-    $person = (new Instructor)->chat(
+    $person = (new Instructor)->extract(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
         model: 'gpt-3.5-turbo',
