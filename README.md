@@ -115,7 +115,7 @@ Instructor validates results of LLM response against validation rules specified 
         public int $age;
     }
 
-    $text = "His name is Jason, is -28 years old.";
+    $text = "His name is Jason, he is -28 years old.";
     $person = (new Instructor(llm: $mockLLM))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -141,7 +141,7 @@ Instructor uses validation errors to inform LLM on the problems identified in th
         public int $age;
     }
 
-    $text = "His name is JX, aka Jason, is -28 years old.";
+    $text = "His name is JX, aka Jason, he is -28 years old.";
     $person = (new Instructor)->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
