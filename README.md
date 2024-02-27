@@ -110,13 +110,12 @@ Instructor validates results of LLM response against validation rules specified 
     use Symfony\Component\Validator\Constraints as Assert;
     
     class Person {
-        #[Assert\Length(min: 3)]
         public string $name;
         #[Assert\PositiveOrZero]
         public int $age;
     }
 
-    $text = "His name is JX, aka Jason, is -28 years old.";
+    $text = "His name is Jason, is -28 years old.";
     $person = (new Instructor(llm: $mockLLM))->extract(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
