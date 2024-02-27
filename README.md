@@ -2,11 +2,6 @@
 
 Structured data extraction in PHP, powered by LLMs. Designed for simplicity, transparency, and control.
 
-> **NOTE: This is work in progress.**
-> - The code is still in development and not fully working.
-> - Library API is likely to change.
-> - Docs may not reflect actual state of the code.
-
 
 ## What is Instructor?
 
