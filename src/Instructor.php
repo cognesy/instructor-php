@@ -25,7 +25,7 @@ class Instructor {
         $this->validator = $validator ?? new Validator();
     }
 
-    public function extract(
+    public function respond(
         array $messages,
         string|object $responseModel,
         string $model = 'gpt-4-0125-preview',

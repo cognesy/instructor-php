@@ -34,9 +34,10 @@ it('self-corrects values extracted by LLM based on validation results', function
     );
 
     $text = "His name is JX, aka Jason, is -28 years old.";
-    $person = (new Instructor(llm: $mockLLM))->extract(
+    $person = (new Instructor(llm: $mockLLM))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
+        maxRetries: 2,
     );
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');

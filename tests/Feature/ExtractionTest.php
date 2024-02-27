@@ -22,7 +22,7 @@ it('supports simple properties', function () {
     );
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new Instructor(llm: $mockLLM))->extract(
+    $person = (new Instructor(llm: $mockLLM))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     );
@@ -40,7 +40,7 @@ it('supports enum properties', function () {
     );
 
     $text = "His name is Jason, he is 28 years old. He is self-employed.";
-    $person = (new Instructor(llm: $mockLLM))->extract(
+    $person = (new Instructor(llm: $mockLLM))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithJob::class,
     );
@@ -59,7 +59,7 @@ it('supports object type property', function () {
     );
 
     $text = "His name is Jason, he is 28 years old. He lives in San Francisco.";
-    $person = (new Instructor(llm: $mockLLM))->extract(
+    $person = (new Instructor(llm: $mockLLM))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddress::class,
     );
@@ -78,7 +78,7 @@ it('supports arrays of objects property', function () {
     );
 
     $text = "His name is Jason, he is 28 years old. He lives in San Francisco. He also has an apartment in New York.";
-    $person = (new Instructor(llm: $mockLLM))->extract(
+    $person = (new Instructor(llm: $mockLLM))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddresses::class,
     );
@@ -99,7 +99,7 @@ it('can extract complex, multi-nested structure', function ($text) {
 
     $instructor = new Instructor(llm: $mockLLM);
     /** @var Events $events */
-    $events = $instructor->extract(
+    $events = $instructor->respond(
         [['role' => 'user', 'content' => $text]],
         Events::class,
     );

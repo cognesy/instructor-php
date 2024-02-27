@@ -17,7 +17,7 @@ trait ExtractableMixin {
         } else {
             $input = $messages;
         }
-        return $_instructor->extract(
+        return $_instructor->respond(
             $input,
             static::class,
             $model,
