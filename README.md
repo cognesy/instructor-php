@@ -51,7 +51,7 @@ Instructor will repeat requests in case of validation error (or API failure) up 
 Installing Instructor is simple. Run following command in your terminal and you're on your way to a smoother data handling experience!
 
 ```bash
-composer install cognesy/instructor
+composer install cognesy/instructor-php
 ```
 
 
