@@ -31,6 +31,7 @@
         }
     },
     "require": {
+        "php": "^8.2",
         "symfony/validator": "^7.0",
         "symfony/serializer": "^7.0",
         "symfony/property-info": "^7.0",
