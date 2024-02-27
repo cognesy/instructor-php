@@ -1,0 +1,43 @@
+{
+    "name": "cognesy/instructor-php",
+    "description": "Structured data extraction in PHP, powered by LLMs",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Cognesy\\Instructor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dariusz Debowczyk",
+            "email": "ddebowczyk@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "pestphp/pest": "^2.34",
+        "symfony/var-dumper": "^7.0",
+        "mockery/mockery": "^1.6"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "require": {
+        "symfony/validator": "^7.0",
+        "symfony/serializer": "^7.0",
+        "symfony/property-info": "^7.0",
+        "openai-php/client": "^0.8.4",
+        "symfony/http-client": "^7.0",
+        "nyholm/psr7": "^1.8",
+        "jasny/phpdoc-parser": "^1.0",
+        "symfony/property-access": "^7.0"
+    }
+}
