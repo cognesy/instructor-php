@@ -27,6 +27,13 @@ jobs:
             mkdocs-material-
       - run: pip install mkdocs-material
       - run: pip install mkdocs-minify-plugin
+      - run: pip install mkdocs-autorefs
+      - run: pip install mkdocs-jupyter
+      - run: pip install mkdocs-material
+      - run: pip install mkdocs-material-extensions
+      - run: pip install mkdocs-rss-plugin
+      - run: pip install mkdocstrings
+      - run: pip install mkdocstrings-python
       - run: mkdocs gh-deploy --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
