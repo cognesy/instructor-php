@@ -9,7 +9,7 @@ jobs:
     name: Deploy docs
     runs-on: ubuntu-latest
     container:
-      image: docker pull squidfunk/mkdocs-material
+      image: squidfunk/mkdocs-material
     steps:
       - name: Checkout main
         uses: actions/checkout@v2
