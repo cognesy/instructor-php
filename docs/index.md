@@ -14,9 +14,9 @@ Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instru
 
 Check out implementations in other languages below:
 
-- [Python](https://www.github.com/jxnl/instructor) (original)
-- [Javascript](https://github.com/instructor-ai/instructor-js) (port)
-- [Elixir](https://github.com/thmsmlr/instructor_ex/) (port)
+ - [Python](https://www.github.com/jxnl/instructor) (original)
+ - [Javascript](https://github.com/instructor-ai/instructor-js) (port)
+ - [Elixir](https://github.com/thmsmlr/instructor_ex/) (port)
 
 If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
 
@@ -51,10 +51,11 @@ Instructor will repeat requests in case of validation error (or API failure) up 
 PHP ecosystem does not (yet) have a strong equivalent of [Pydantic](https://pydantic.dev/), which is at the core of Instructor for Python.
 
 To provide an essential functionality we needed here Instructor for PHP leverages:
-- base capabilities of [PHP type system](https://www.php.net/manual/en/language.types.type-system.php),
-- [PHP reflection](https://www.php.net/manual/en/book.reflection.php),
-- [PHP DocBlock](https://docs.phpdoc.org/2.9/references/phpdoc/index.html) type hinting conventions,
-- [Symfony](https://symfony.com/doc/current/index.html) serialization and validation capabilities
+
+ - base capabilities of [PHP type system](https://www.php.net/manual/en/language.types.type-system.php),
+ - [PHP reflection](https://www.php.net/manual/en/book.reflection.php),
+ - [PHP DocBlock](https://docs.phpdoc.org/2.9/references/phpdoc/index.html) type hinting conventions,
+ - [Symfony](https://symfony.com/doc/current/index.html) serialization and validation capabilities
 
 Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models capable of function calling may be added in the future.
 
@@ -63,9 +64,9 @@ Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.co
 
 Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal dependencies, should work with any framework of your choice.
 
-- [OpenAI PHP client](https://github.com/openai-php/client) - for communication with OpenAI API
-- [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
-- [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
+ - [OpenAI PHP client](https://github.com/openai-php/client) - for communication with OpenAI API
+ - [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
+ - [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
 
 
 ## License
