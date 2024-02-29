@@ -2,6 +2,7 @@
 .idea/
 .venv/
 .vscode/
+experimental/
 .env
 vendor
 php_errors.log
