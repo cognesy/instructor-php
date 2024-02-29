@@ -8,25 +8,14 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+    container:
+      image: docker pull squidfunk/mkdocs-material
     steps:
       - name: Checkout main
         uses: actions/checkout@v2
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y linux-headers-$(uname -r) build-essential
-
-      - name: Install Python headers
-        run: sudo apk add gcc python3-dev musl-dev linux-headers
-
-      - name: Install psutil manually
-        run: pip install psutil
-
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # CUSTOM_DOMAIN: optionaldomain.com
           CONFIG_FILE: mkdocs.yml
-          # EXTRA_PACKAGES: build-base
-          # GITHUB_DOMAIN: github.myenterprise.com
           REQUIREMENTS: requirements-doc.txt
