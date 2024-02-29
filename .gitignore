@@ -1,6 +1,7 @@
-.env
+.cache/
 .idea/
-.vscode/
 .venv/
+.vscode/
+.env
 vendor
 php_errors.log
