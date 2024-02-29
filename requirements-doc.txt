@@ -80,7 +80,7 @@ pillow==10.2.0
 platformdirs==4.2.0
 pluggy==1.4.0
 prompt-toolkit==3.0.43
-psutil==5.9.8
+# psutil==5.9.8
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pycparser==2.21
