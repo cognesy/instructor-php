@@ -15,6 +15,9 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y linux-headers-$(uname -r) build-essential
 
+      - name: Install Python headers
+        run: sudo apk add gcc python3-dev musl-dev linux-headers
+
       - name: Install psutil manually
         run: pip install psutil
 
