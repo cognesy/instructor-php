@@ -1,12 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\Validators\Symfony;
 
-use Cognesy\Instructor\Contracts\CanValidate;
+use Cognesy\Instructor\Contracts\CanValidateObject;
 use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Validator\Validation;
 
-class Validator implements CanValidate
+class Validator implements CanValidateObject
 {
     public $errors;
 
@@ -22,7 +22,10 @@ class Validator implements CanValidate
         $errors = [];
         $errors[] = "Invalid values found:";
         foreach ($this->errors as $error) {
-            $errors[] = "   * parameter: " . $error->getPropertyPath() . ' = ' . $error->getInvalidValue() . " (" . $error->getMessage() . ")";
+            $path = $error->getPropertyPath();
+            $value = $error->getInvalidValue();
+            $message = $error->getMessage();
+            $errors[] = "   * parameter: {$path} = {$value} ({$message})";
         }
         return implode("\n", $errors);
     }

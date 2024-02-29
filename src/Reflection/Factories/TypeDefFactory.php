@@ -73,7 +73,11 @@ class TypeDefFactory
         }
         $className = $class->getName();
         if ($class->isEnum()) {
-            $values = (new ReflectionEnum($className))->getConstants();
+            $constants = (new ReflectionEnum($className))->getConstants();
+            $values = [];
+            foreach ($constants as $value) {
+                $values[] = $value->value;
+            }
             return new EnumTypeDef($className, $values);
         }
         return new ObjectTypeDef($class->getName());

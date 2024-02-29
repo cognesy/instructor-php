@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\LLMs\OpenAI;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use OpenAI;

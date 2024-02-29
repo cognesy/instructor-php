@@ -2,7 +2,7 @@
 namespace Tests;
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLM;
+use Cognesy\Instructor\LLMs\OpenAI\LLM;
 use Mockery;
 use Tests\Examples\Address;
 use Tests\Examples\Event;

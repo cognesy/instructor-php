@@ -3,3 +3,4 @@
 .vscode/
 .venv/
 vendor
+php_errors.log

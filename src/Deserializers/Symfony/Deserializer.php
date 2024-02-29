@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\Deserializers\Symfony;
 
 use Cognesy\Instructor\Contracts\CanDeserialize;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-interface CanValidate
+interface CanValidateObject
 {
     public function validate(object $object) : bool;
     public function errors() : string;

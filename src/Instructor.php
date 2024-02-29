@@ -3,22 +3,25 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanDeserialize;
-use Cognesy\Instructor\Contracts\CanValidate;
+use Cognesy\Instructor\Contracts\CanValidateObject;
+use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
+use Cognesy\Instructor\LLMs\OpenAI\LLM;
 use Cognesy\Instructor\Schema\FunctionCallSchema;
+use Cognesy\Instructor\Validators\Symfony\Validator;
 use Exception;
 
 class Instructor {
     private Deserializer $deserializer;
     private Validator $validator;
     private LLM $llm;
-    private string $functionName = 'extract_data';
-    private string $functionDescription = 'Extract data from provided content';
-    private $retryPrompt = "Recall function correctly, fix following errors:";
+    public string $functionName = 'extract_data';
+    public string $functionDescription = 'Extract data from provided content';
+    public $retryPrompt = "Recall function correctly, fix following errors:";
 
     public function __construct(
         CanCallFunction $llm = null,
         CanDeserialize $deserializer = null,
-        CanValidate $validator = null
+        CanValidateObject $validator = null
     ) {
         $this->llm = $llm ?? new LLM();
         $this->deserializer = $deserializer ?? new Deserializer();
@@ -48,7 +51,7 @@ class Instructor {
             $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . '\n' . $this->validator->errors()];
             $retries++;
         }
-        throw new Exception("Failed to extract data due to validation constraints: ", $this->validator->errors());
+        throw new Exception("Failed to extract data due to validation constraints: " . $this->validator->errors());
     }
 
     public function json() : string {
