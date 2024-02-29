@@ -23,4 +23,4 @@ jobs:
           CONFIG_FILE: mkdocs.yml
           # EXTRA_PACKAGES: build-base
           # GITHUB_DOMAIN: github.myenterprise.com
-          # REQUIREMENTS: requirements-doc.txt
+          REQUIREMENTS: requirements-doc.txt
