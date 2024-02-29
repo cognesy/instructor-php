@@ -5,7 +5,7 @@ Structured data extraction in PHP, powered by LLMs. Designed for simplicity, tra
 
 ## What is Instructor?
 
-Instructor is a library that allows you to extract structured, validated data from unstructured text or OpenAI style chat sequence arrays. It is powered by Large Language Models (LLMs).
+Instructor is a library that allows you to extract structured, validated data from unstructured text or OpenAI style chat sequence arrays. It is powered by Large Language Models.
 
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
 
@@ -66,7 +66,6 @@ Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal depen
 - [OpenAI PHP client](https://github.com/openai-php/client) - for communication with OpenAI API
 - [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
 - [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
-
 
 
 ## License
