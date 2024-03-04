@@ -13,7 +13,7 @@ use Cognesy\Instructor\Instructor;
 
 /**
  * Identify what kind of job the user is doing.
- * Typical roles we're working with are CEO, CTO, CFO, CMO, Sales, Marketing, Customer Support, Developer, Designer, etc.
+ * Typical roles we're working with are CEO, CTO, CFO, CMO.
  * Sometimes user does not state their role directly - you will need to make a guess, based on their description.
  */
 class Role

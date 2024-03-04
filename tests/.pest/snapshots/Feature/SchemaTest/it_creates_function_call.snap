@@ -5,11 +5,14 @@
         "description": "Extract object from provided content",
         "parameters": {
             "type": "object",
+            "title": "Tests\\Examples\\Complex\\ProjectEvents",
             "properties": {
                 "events": {
                     "type": "array",
                     "items": {
                         "type": "object",
+                        "title": "item",
+                        "description": "Array item",
                         "properties": {
                             "title": {
                                 "type": "string",
@@ -28,7 +31,7 @@
                                     "progress",
                                     "other"
                                 ],
-                                "description": "Type of the event"
+                                "description": "Type of the event\nRepresents type of project event"
                             },
                             "status": {
                                 "type": "string",
@@ -37,12 +40,14 @@
                                     "closed",
                                     "unknown"
                                 ],
-                                "description": "Status of the event"
+                                "description": "Status of the event\nRepresents status of project event"
                             },
                             "stakeholders": {
                                 "type": "array",
                                 "items": {
                                     "type": "object",
+                                    "title": "item",
+                                    "description": "Array item",
                                     "properties": {
                                         "name": {
                                             "type": "string",
