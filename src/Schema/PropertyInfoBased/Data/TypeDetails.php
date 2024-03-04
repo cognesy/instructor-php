@@ -34,4 +34,16 @@ class TypeDetails
             default => throw new \Exception('Unknown type: '.$this->type),
         };
     }
+
+    static public function fromJsonType(string $jsonType) : string {
+        return match ($jsonType) {
+            'object' => 'object',
+            'array' => 'array',
+            'integer' => 'int',
+            'number' => 'float',
+            'string' => 'string',
+            'boolean' => 'bool',
+            default => throw new \Exception('Unknown type: '.$jsonType),
+        };
+    }
 }

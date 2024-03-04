@@ -1,11 +1,16 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\ScalarAdapter;
+namespace Cognesy\Instructor\Extras\Scalars;
 
 use Cognesy\Instructor\Contracts\CanDeserializeJson;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
+use ReflectionEnum;
 
+/**
+ * Scalar value adapter.
+ * Improved DX via simplified retrieval of scalar value from LLM response.
+ */
 class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformResponse
 {
     public mixed $value;
@@ -16,6 +21,7 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
     public array $options = [];
     public bool $required = true;
     public mixed $defaultValue = null;
+    public ?string $enumType = null;
 
     public function __construct(
         string $name = 'value',
@@ -23,14 +29,19 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
         ValueType $type = ValueType::STRING,
         bool $required = true,
         mixed $defaultValue = null,
-        array $options = []
+        string $enumType = null
     ) {
         $this->name = $name;
         $this->description = $description;
-        $this->type = $type;
         $this->required = $required;
         $this->defaultValue = $defaultValue;
-        $this->options = $options;
+        $this->enumType = $enumType;
+        $this->options = $this->getEnumValues($enumType);
+        if (empty($this->options)) {
+            $this->type = $type;
+        } else {
+            $this->type = $this->getEnumValueType();
+        }
     }
 
     /**
@@ -43,16 +54,17 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
             'type' => 'object',
             'properties' => [
                 $this->name => [
+                    '$comment' => $this->enumType,
                     'description' => $this->description,
                     'type' => $this->type->toJsonType(),
                 ],
             ],
         ];
-        if ($this->required) {
-            $array['required'] = [$this->name];
-        }
         if (!empty($this->options)) {
             $array['properties'][$this->name]['enum'] = $this->options;
+        }
+        if ($this->required) {
+            $array['required'] = [$this->name];
         }
         return $array;
     }
@@ -82,16 +94,21 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
         return $this;
     }
 
+    /**
+     * Transform response model into scalar value
+     */
     public function transform() : mixed {
         return $this->value;
     }
 
+    /**
+     * Create a new Scalar adapter for integer
+     */
     static public function integer(
         string $name = 'value',
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-        array $options = []
     ) : self {
         return new self(
             name: $name,
@@ -99,16 +116,17 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
             type: ValueType::INTEGER,
             required: $required,
             defaultValue: $defaultValue,
-            options: $options,
         );
     }
 
+    /**
+     * Create a new Scalar adapter for float
+     */
     static public function float(
         string $name = 'value',
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-        array $options = []
     ) : self {
         return new self(
             name: $name,
@@ -116,16 +134,17 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
             type: ValueType::FLOAT,
             required: $required,
             defaultValue: $defaultValue,
-            options: $options,
         );
     }
 
+    /**
+     * Create a new Scalar adapter for string
+     */
     static public function string(
         string $name = 'value',
         string $description = 'Response value',
         bool $required = true,
         mixed $defaultValue = null,
-        array $options = []
     ) : self {
         return new self(
             name: $name,
@@ -133,10 +152,12 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
             type: ValueType::STRING,
             required: $required,
             defaultValue: $defaultValue,
-            options: $options,
         );
     }
 
+    /**
+     * Create a new Scalar adapter for boolean
+     */
     static public function boolean(
         string $name = 'value',
         string $description = 'Response value',
@@ -152,20 +173,56 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
         );
     }
 
-    static public function select(
-        array $options,
-        string $name = 'option',
-        string $description = 'Select option',
-        bool $required = true,
-        mixed $defaultValue = null,
+    /**
+     * Create a new enum-like Scalar adapter (single choice from list of string options)
+     */
+    static public function enum(
+        string $enumType,
+        string $name = 'enum',
+        string $description = 'Select correct option',
+        bool   $required = true,
+        mixed  $defaultValue = null,
     ) : self {
+        if (!class_exists($enumType) || !is_subclass_of($enumType, \BackedEnum::class)) {
+            throw new \Exception("Enum class does not exist or is not BackedEnum: {$enumType}");
+        }
         return new self(
             name: $name,
             description: $description,
-            type: ValueType::STRING,
             required: $required,
             defaultValue: $defaultValue,
-            options: $options,
+            enumType: $enumType,
         );
+    }
+
+    private function getEnumValueType() : ValueType {
+        if (empty($this->options)) {
+            throw new \Exception("Enum options are not set");
+        }
+        $first = $this->options[0];
+        if (is_string($first)) {
+            return ValueType::STRING;
+        }
+        if (is_int($first)) {
+            return ValueType::INTEGER;
+        }
+        throw new \Exception("Enum type is not supported: " . gettype($first));
+    }
+
+    private function getEnumValues(?string $enumType) : mixed
+    {
+        if (empty($enumType)) {
+            return [];
+        }
+        if (!enum_exists($enumType)) {
+            throw new \Exception("Enum class does not exist: {$enumType}");
+        }
+        $enumReflection = new ReflectionEnum($enumType);
+        $cases = $enumReflection->getCases();
+        $values = [];
+        foreach ($cases as $case) {
+            $values[] = $case->getValue()->value;
+        }
+        return $values;
     }
 }

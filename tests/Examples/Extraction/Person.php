@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Examples;
+namespace Tests\Examples\Extraction;
 
 use Symfony\Component\Validator\Constraints as Assert;
 

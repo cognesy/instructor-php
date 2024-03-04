@@ -1,9 +1,11 @@
 <?php
 namespace Cognesy\Instructor\Schema\PropertyInfoBased\Factories;
 
+use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Reference;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Utils\ReferenceQueue;
+use Cognesy\Instructor\Schema\PropertyInfoBased\Utils\SchemaBuilder;
 
 class FunctionCallFactory {
     private ReferenceQueue $references;
@@ -56,7 +58,7 @@ class FunctionCallFactory {
         string $customName = 'extract_object',
         string $customDescription = 'Extract parameters from chat content'
     ) : array {
-        $this->schema = null;
+        $this->schema = (new SchemaBuilder)->fromArray($jsonSchema);
         $this->jsonSchema = $jsonSchema;
         return $this->render(
             $this->jsonSchema,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Examples;
+namespace Tests\Examples\Complex;
 
 /** Represents a project stakeholder */
 class Stakeholder {

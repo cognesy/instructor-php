@@ -2,8 +2,8 @@
 namespace Tests;
 
 use Cognesy\Instructor\Validators\Symfony\Validator;
-use Tests\Examples\Person;
-use Tests\Examples\PersonWithValidationMixin;
+use Tests\Examples\Extraction\Person;
+use Tests\Examples\Extraction\PersonWithValidationMixin;
 
 it('validates using attribute rules', function () {
     $person = new Person();

@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Examples;
+namespace Tests\Examples\Extraction;
 
 class PersonWithAddress {
     public string $name;

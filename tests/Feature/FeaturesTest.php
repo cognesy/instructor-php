@@ -4,7 +4,7 @@ namespace Tests;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\LLMs\OpenAI\LLM;
 use Mockery;
-use Tests\Examples\Person;
+use Tests\Examples\Extraction\Person;
 
 it('accepts string as input', function () {
     $mockLLM = Mockery::mock(LLM::class);
@@ -20,7 +20,7 @@ it('accepts string as input', function () {
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
-})->only();
+});
 
 
 it('self-corrects values extracted by LLM based on validation results', function () {
@@ -40,3 +40,4 @@ it('self-corrects values extracted by LLM based on validation results', function
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
 });
+

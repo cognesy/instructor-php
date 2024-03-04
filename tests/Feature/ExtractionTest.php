@@ -4,15 +4,15 @@ namespace Tests;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\LLMs\OpenAI\LLM;
 use Mockery;
-use Tests\Examples\Address;
-use Tests\Examples\Event;
-use Tests\Examples\Events;
-use Tests\Examples\JobType;
-use Tests\Examples\Person;
-use Tests\Examples\PersonWithAddress;
-use Tests\Examples\PersonWithAddresses;
-use Tests\Examples\PersonWithJob;
-use Tests\Examples\Stakeholder;
+use Tests\Examples\Complex\ProjectEvent;
+use Tests\Examples\Complex\ProjectEvents;
+use Tests\Examples\Complex\Stakeholder;
+use Tests\Examples\Extraction\Address;
+use Tests\Examples\Extraction\JobType;
+use Tests\Examples\Extraction\Person;
+use Tests\Examples\Extraction\PersonWithAddress;
+use Tests\Examples\Extraction\PersonWithAddresses;
+use Tests\Examples\Extraction\PersonWithJob;
 
 
 it('supports simple properties', function () {
@@ -98,15 +98,15 @@ it('can extract complex, multi-nested structure', function ($text) {
     );
 
     $instructor = new Instructor(llm: $mockLLM);
-    /** @var Events $events */
+    /** @var \Tests\Examples\Complex\ProjectEvents $events */
     $events = $instructor->respond(
         [['role' => 'user', 'content' => $text]],
-        Events::class,
+        ProjectEvents::class,
         maxRetries: 2,
     );
     dump($events);
-    expect($events)->toBeInstanceOf(Events::class);
+    expect($events)->toBeInstanceOf(ProjectEvents::class);
     expect($events->events)->toBeArray();
-    expect($events->events[0])->toBeInstanceOf(Event::class);
+    expect($events->events[0])->toBeInstanceOf(ProjectEvent::class);
     expect($events->events[0]->stakeholders[0])->toBeInstanceOf(Stakeholder::class);
 })->with('project_report');

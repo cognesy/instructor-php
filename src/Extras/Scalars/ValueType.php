@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Extras\ScalarAdapter;
+namespace Cognesy\Instructor\Extras\Scalars;
 
 enum ValueType : string
 {
@@ -7,6 +7,7 @@ enum ValueType : string
     case INTEGER = 'int';
     case FLOAT = 'float';
     case BOOLEAN = 'bool';
+    case ENUM = 'enum';
 
     public function toJsonType() : string
     {
@@ -15,6 +16,7 @@ enum ValueType : string
             ValueType::INTEGER => 'integer',
             ValueType::FLOAT => 'number',
             ValueType::BOOLEAN => 'boolean',
+            ValueType::ENUM => 'string',
         };
     }
 }

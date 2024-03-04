@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Examples;
+namespace Tests\Examples\Complex;
 
 /** Represents type of project event */
-enum EventType: string {
+enum ProjectEventType: string {
     case Risk = 'risk';
     case Issue = 'issue';
     case Action = 'action';

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Examples;
+namespace Tests\Examples\Complex;
 
 enum StakeholderRole: string {
     case Customer = 'customer';

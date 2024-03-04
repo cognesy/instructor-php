@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Examples;
+namespace Tests\Examples\Extraction;
 
 use Cognesy\Instructor\Traits\ValidationMixin;
 

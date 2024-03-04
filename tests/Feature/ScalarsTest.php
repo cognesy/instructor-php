@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Extras\ScalarAdapter\Scalar;
+use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\LLMs\OpenAI\LLM;
 use Mockery;
@@ -78,6 +78,7 @@ it('extracts bool type', function () {
     expect($age)->toBe(true);
 });
 
+
 it('extracts selection/enum type', function () {
     $mockLLM = Mockery::mock(LLM::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
@@ -90,7 +91,7 @@ it('extracts selection/enum type', function () {
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],
         ],
-        responseModel: Scalar::select(['US citizen', 'Canada citizen', 'other'], name: 'citizenshipGroup'),
+        responseModel: Scalar::enum(\Tests\Examples\Scalars\CitizenshipGroup::class, name: 'citizenshipGroup'),
     );
     expect($age)->toBeString();
     expect($age)->toBe('other');

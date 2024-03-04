@@ -181,7 +181,7 @@ Sometimes we just want to get quick results without defining a class for the res
 
 ```php
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Extras\ScalarAdapter\Scalar;
+use Cognesy\Instructor\Extras\Scalars\Scalar;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
@@ -194,26 +194,29 @@ var_dump($value);
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
 
-Additionally, you can use Scalar adapter to extract one of the provided options.
+### Extracting Enum Values
+
+Additionally, you can use Scalar adapter to extract one of the provided options by using `Scalar::enum()`.
 
 ```php
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Extras\ScalarAdapter\Scalar;
+use Cognesy\Instructor\Extras\Scalars\Scalar;
+
+enum ActivityType {
+    case Work = 'work';
+    case Entertainment = 'entertainment';
+    case Sport = 'sport';
+    case Other = 'other';
+}
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he currently plays Doom Eternal.",
-    responseModel: Scalar::select(
-        name: 'activityType',
-        options: ['work', 'entertainment', 'sport', 'other']
-    ),
+    responseModel: Scalar::enum(ActivityType::class, 'activityType'),
 );
 
 var_dump($value);
-// string(4) "entertainment"
+// enum(ActivityType:Entertainment)
 ```
-
-NOTE: Currently Scalar::select() always returns strings and its ```options``` parameter only accepts string values.
-
 
 
 ## Specifying Data Model

@@ -5,7 +5,7 @@ use Cognesy\Instructor\Schema\PropertyInfoBased\Data\TypeDetails;
 
 class ArraySchema extends Schema
 {
-    private Schema $nestedItemSchema;
+    public Schema $nestedItemSchema;
 
     public function __construct(
         TypeDetails $type,
