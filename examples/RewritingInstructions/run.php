@@ -7,7 +7,6 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Attributes\Description;
 use Cognesy\Instructor\Instructor;
 
 // PROMPTING HINT: Make Instructor rewrite the instructions and rules to improve LLM inference results.
@@ -19,11 +18,11 @@ use Cognesy\Instructor\Instructor;
  */
 class Role
 {
-    #[Description("Condensed points of the instructions and rules to correctly determine the user's title - just the essence.")]
+    /** Condensed points of the instructions and rules to correctly determine the user's title - just the essence. */
     public string $instructions;
-    #[Description("Role description")]
+    /** Role description */
     public string $description;
-    #[Description("Most likely job title")]
+    /** Most likely job title */
     public string $title;
 }
 

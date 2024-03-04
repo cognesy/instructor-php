@@ -2,11 +2,10 @@
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Attributes\Description;
 use Cognesy\Instructor\Instructor;
 
 class Employee {
-    #[Description('Think step by step to determine the correct year of employment.')]
+    /** Think step by step to determine the correct year of employment. */
     public string $chainOfThought;
     public int $yearOfEmployment;
 }

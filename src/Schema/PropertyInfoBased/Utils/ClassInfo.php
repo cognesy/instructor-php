@@ -39,7 +39,7 @@ class ClassInfo {
     }
 
     public function getProperties(string $class) : array {
-        return $this->extractor()->getProperties($class);
+        return $this->extractor()->getProperties($class) ?? [];
     }
 
     public function getDescription(string $class, string $property): string {

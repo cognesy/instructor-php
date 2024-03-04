@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Schema\ReflectionBased\Reflection;
 use Cognesy\Instructor\Schema\ReflectionBased\Data\FCObject;
 use Cognesy\Instructor\Schema\ReflectionBased\Reflection\Factories\PropertyDataFactory;
 use Cognesy\Instructor\Schema\ReflectionBased\Reflection\PropertyData\PropertyData;
+use Cognesy\Instructor\Schema\ReflectionBased\Reflection\Utils\DescriptionUtils;
 use ReflectionClass;
 
 class ClassData {
@@ -18,7 +19,7 @@ class ClassData {
 
     private function getClassData(ReflectionClass $class) : void {
         $this->name = $class->getName();
-        $this->description = \Cognesy\Instructor\Schema\ReflectionBased\Reflection\Utils\DescriptionUtils::getClassDescription($class);
+        $this->description = DescriptionUtils::getClassDescription($class);
         $this->properties = $this->getProperties($class);
     }
 

@@ -13,7 +13,7 @@
                         "properties": {
                             "title": {
                                 "type": "string",
-                                "description": "Title of the event"
+                                "description": "Title of the event - this should be a short, descriptive title of the event"
                             },
                             "description": {
                                 "type": "string",

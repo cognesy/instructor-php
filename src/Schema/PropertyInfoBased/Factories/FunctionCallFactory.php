@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Schema\PropertyInfoBased\Factories;
 
-use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Reference;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Utils\ReferenceQueue;

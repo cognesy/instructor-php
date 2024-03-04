@@ -1,33 +1,5 @@
 # NOTES
 
-## Support scalar types as response_model
-
-Solution 1:
-Have universal scalar value adapter with HasSchemaProvider interface
-HasSchemaProvider = schema() : Schema, which, if present, will be used to generate schema
-Instead of the default schema generation mechanism
-This will allow for custom schema generation
-
-## Custom schema generation - not based on class reflection & PHPDoc
-
-Model classes could implement HasSchemaProvider interface, which would allow for custom schema generation - rendering logic would skip reflection and use the provided schema instead.
-
-SchemaProvider could be a trait, which would allow for easy implementation.
-
-Example SchemaProvider:
-class SchemaProvider {
-    public function schema(): Schema {
-        return new Schema([
-            'type' => 'object',
-            'properties' => [
-                'id' => ['type' => 'integer', 'description' => 'Description'],
-                'name' => ['type' => 'string', 'description' => 'Description'],
-            ],
-            'required' => ['id', 'name'],
-        ]);
-    }
-}
-
 ## Validation
 
 What about validation in such case? we can already have ```validate()``` method in the schema,
@@ -64,3 +36,33 @@ modes, etc.).
 It may not be worth it purely for performance reasons, but it may be useful for debugging or schema optimization (DSPy like).
 
 Schema could be saved in version controlled, versioned JSON files and loaded from there. In development mode it would be read from JSON file, unless class file is newer than schema file.
+
+# DONE
+
+## Support scalar types as response_model
+
+Solution 1:
+Have universal scalar value adapter with HasSchemaProvider interface
+HasSchemaProvider = schema() : Schema, which, if present, will be used to generate schema
+Instead of the default schema generation mechanism
+This will allow for custom schema generation
+
+## Custom schema generation - not based on class reflection & PHPDoc
+
+Model classes could implement HasSchemaProvider interface, which would allow for custom schema generation - rendering logic would skip reflection and use the provided schema instead.
+
+SchemaProvider could be a trait, which would allow for easy implementation.
+
+Example SchemaProvider:
+class SchemaProvider {
+    public function schema(): Schema {
+        return new Schema([
+            'type' => 'object',
+            'properties' => [
+                'id' => ['type' => 'integer', 'description' => 'Description'],
+                'name' => ['type' => 'string', 'description' => 'Description'],
+            ],
+            'required' => ['id', 'name'],
+        ]);
+    }
+}

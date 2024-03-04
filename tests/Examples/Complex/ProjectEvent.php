@@ -2,12 +2,9 @@
 
 namespace Tests\Examples\Complex;
 
-use Cognesy\Instructor\Attributes\Description;
-
 /** Represents a project event */
 class ProjectEvent {
-    /** Title of the event */
-    #[Description('This should be a short, descriptive title of the event')]
+    /** Title of the event - this should be a short, descriptive title of the event */
     public string $title = '';
     /** Concise, informative description of the event */
     public string $description = '';

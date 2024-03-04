@@ -79,7 +79,7 @@ it('extracts bool type', function () {
 });
 
 
-it('extracts selection/enum type', function () {
+it('extracts enum type', function () {
     $mockLLM = Mockery::mock(LLM::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"citizenshipGroup":"other"}',

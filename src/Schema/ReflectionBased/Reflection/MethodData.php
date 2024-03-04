@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Schema\ReflectionBased\Reflection;
 use Cognesy\Instructor\Schema\ReflectionBased\Data\FCFunction;
 use Cognesy\Instructor\Schema\ReflectionBased\Reflection\Factories\ParameterDataFactory;
 use Cognesy\Instructor\Schema\ReflectionBased\Reflection\ParameterData\ParameterData;
+use Cognesy\Instructor\Schema\ReflectionBased\Reflection\Utils\DescriptionUtils;
 use ReflectionMethod;
 
 class MethodData {
@@ -19,7 +20,7 @@ class MethodData {
 
     public function getFunctionData(ReflectionMethod $method) : void {
         $this->name = $method->getName();
-        $this->description = \Cognesy\Instructor\Schema\ReflectionBased\Reflection\Utils\DescriptionUtils::getMethodDescription($method);
+        $this->description = DescriptionUtils::getMethodDescription($method);
         $this->parameters = $this->getParameters($method);
     }
 

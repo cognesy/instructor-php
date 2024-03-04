@@ -7,9 +7,7 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-
 
 class Role
 {

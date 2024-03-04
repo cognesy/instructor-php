@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Contracts\CanDeserialize;
@@ -7,6 +6,7 @@ use Cognesy\Instructor\Contracts\CanDeserializeJson;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanSelfValidate;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
+use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Factories\FunctionCallFactory;
 use Cognesy\Instructor\Validators\Symfony\Validator;
@@ -14,30 +14,92 @@ use Exception;
 
 class ResponseModel
 {
-    protected mixed $value;
-
-    protected mixed $instance; // calculated
-    protected ?string $class; // calculated
-
+    public mixed $instance; // calculated
+    public ?string $class; // calculated
     public ?array $functionCall; // calculated
+
     public string $functionName = 'extract_data';
     public string $functionDescription = 'Extract data from provided content';
     private Deserializer $deserializer;
     private Validator $validator;
 
-    public function __construct(mixed $value, CanDeserialize $deserializer = null, Validator $validator = null)
+    public function __construct(mixed $responseModel, CanDeserialize $deserializer = null, Validator $validator = null)
     {
-        $this->value = $value;
         $this->deserializer = $deserializer ?? new Deserializer();
         $this->validator = $validator ?? new Validator();
-        $this->functionCall = $this->makeFunctionCall($value);
+        $this->functionCall = $this->makeFunctionCall($responseModel);
     }
 
     /**
-     * Get validation errors
+     * Generate function call data (depending on the response model type)
      */
-    public function errors() : string {
-        return $this->validator->errors();
+    protected function makeFunctionCall(string|object|array $requestedModel) : array {
+        return match (true) {
+            is_array($requestedModel) => $this->handleArrayResponseModel($requestedModel),
+            $requestedModel instanceof ObjectSchema => $this->handleSchemaResponseModel($requestedModel),
+            is_subclass_of($requestedModel, CanProvideSchema::class) => $this->handleSchemaProviderResponseModel($requestedModel),
+            is_string($requestedModel) => $this->handleStringResponseModel($requestedModel),
+            default => $this->handleInstanceResponseModel($requestedModel),
+        };
+    }
+
+    private function handleStringResponseModel(string $requestedModel) : array {
+        $this->class = $requestedModel;
+        $this->instance = new $this->class;
+        return (new FunctionCallFactory)->fromClass(
+            $requestedModel,
+            $this->functionName,
+            $this->functionDescription
+        );
+    }
+
+    private function handleArrayResponseModel(array $requestedModel) : array {
+        $this->class = $requestedModel['$comment'] ?? null;
+        if (empty($this->class)) {
+            throw new Exception('Provided JSON schema must contain $comment field with fully qualified class name');
+        }
+        $this->instance = new $this->class;
+        return (new FunctionCallFactory)->fromArray(
+            $requestedModel,
+            $this->functionName,
+            $this->functionDescription
+        );
+    }
+
+    private function handleSchemaProviderResponseModel(mixed $requestedModel) : array {
+        if (is_object($requestedModel)) {
+            $this->class = get_class($requestedModel);
+            $this->instance = $requestedModel;
+        } else {
+            $this->class = $requestedModel;
+            $this->instance = new $this->class;
+        }
+        return (new FunctionCallFactory)->fromArray(
+            $this->instance->toJsonSchema(),
+            $this->functionName,
+            $this->functionDescription
+        );
+    }
+
+    private function handleSchemaResponseModel(ObjectSchema $requestedModel) : array {
+        $schema = $requestedModel;
+        $this->class = $schema->type->class;
+        $this->instance = new $this->class;
+        return (new FunctionCallFactory)->fromSchema(
+           $schema,
+           $this->functionName,
+           $this->functionDescription
+        );
+    }
+
+    private function handleInstanceResponseModel(object $requestedModel) : array {
+        $this->class = get_class($requestedModel);
+        $this->instance = $requestedModel;
+        return (new FunctionCallFactory)->fromClass(
+           get_class($requestedModel),
+           $this->functionName,
+           $this->functionDescription
+        );
     }
 
     /**
@@ -74,58 +136,9 @@ class ResponseModel
     }
 
     /**
-     * Generate function call data (depending on the response model type)
+     * Get validation errors
      */
-    protected function makeFunctionCall(string|object|array $requestedModel) {
-        if (is_string($requestedModel)) {
-            $this->class = $requestedModel;
-            $this->instance = null;
-            return (new FunctionCallFactory)->fromClass(
-                $requestedModel,
-                $this->functionName,
-                $this->functionDescription
-            );
-        }
-
-        if (is_array($requestedModel)) {
-            $this->class = $requestedModel['$comment'] ?? null;
-            if (empty($this->class)) {
-                throw new Exception('Provided JSON schema must contain $comment field with fully qualified class name');
-            }
-            $this->instance = null;
-            return (new FunctionCallFactory)->fromArray(
-                $requestedModel,
-                $this->functionName,
-                $this->functionDescription
-            );
-        }
-
-        if (is_subclass_of($requestedModel, CanProvideSchema::class)) {
-            $this->class = get_class($requestedModel);
-            $this->instance = $requestedModel;
-            return (new FunctionCallFactory)->fromArray(
-                $requestedModel->toJsonSchema(),
-                $this->functionName,
-                $this->functionDescription
-            );
-        }
-
-        if ($requestedModel instanceof Schema) {
-            $this->class = $requestedModel->type->class;
-            $this->instance = $requestedModel;
-            return (new FunctionCallFactory)->fromSchema(
-                $requestedModel,
-                $this->functionName,
-                $this->functionDescription
-            );
-        }
-
-        $this->class = get_class($requestedModel);
-        $this->instance = null;
-        return (new FunctionCallFactory)->fromClass(
-            get_class($requestedModel),
-            $this->functionName,
-            $this->functionDescription
-        );
+    public function errors() : string {
+        return $this->validator->errors();
     }
 }

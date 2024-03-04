@@ -19,7 +19,7 @@ if (!function_exists('addEvent')) {
 }
 
 
-it('creates function call - object', function () {
+it('creates function call', function () {
     $array = (new FunctionCallFactory)->fromClass(ProjectEvents::class, 'addEvent', 'Extract object from provided content');
     expect($array)->toBeArray();
     expect($array['type'])->toEqual('function');

@@ -7,7 +7,6 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Attributes\Description;
 use Cognesy\Instructor\Instructor;
 
 // PROMPTING HINT: Make Instructor restate the instructions and rules to improve inference accuracy.
@@ -19,11 +18,11 @@ use Cognesy\Instructor\Instructor;
  */
 class Role
 {
-    #[Description("Restate the instructions and rules to correctly determine the title.")]
+    /** Restate the instructions and rules to correctly determine the title. */
     public string $instructions;
-    #[Description("Role description")]
+    /** Role description */
     public string $description;
-    #[Description("Most likely job title")]
+    /* Most likely job title */
     public string $title;
 }
 
