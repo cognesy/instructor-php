@@ -102,8 +102,9 @@ it('can extract complex, multi-nested structure', function ($text) {
     $events = $instructor->respond(
         [['role' => 'user', 'content' => $text]],
         Events::class,
+        maxRetries: 2,
     );
-    // dump($events);
+    dump($events);
     expect($events)->toBeInstanceOf(Events::class);
     expect($events->events)->toBeArray();
     expect($events->events[0])->toBeInstanceOf(Event::class);

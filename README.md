@@ -65,37 +65,37 @@ This is a simple example demonstrating how Instructor retrieves structured infor
 Response model class is a plain PHP class with typehints specifying the types of fields of the object.
 
 ```php
-    use Cognesy/Instructor;
-    use OpenAI;
+use Cognesy/Instructor;
+use OpenAI;
 
-    // Step 1: Define target data structure(s)
-    class Person {
-        public string $name;
-        public int $age;
-    }
+// Step 1: Define target data structure(s)
+class Person {
+    public string $name;
+    public int $age;
+}
 
-    // Step 2: Provide content to process
-    $text = "His name is Jason and he is 28 years old.";
+// Step 2: Provide content to process
+$text = "His name is Jason and he is 28 years old.";
 
-    // Step 3: Use Instructor to run LLM inference
-    $person = (new Instructor)->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: Person::class,
-    ); // default OpenAI client is used, needs .env file with OPENAI_API_KEY
+// Step 3: Use Instructor to run LLM inference
+$person = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+); // default OpenAI client is used, needs .env file with OPENAI_API_KEY
 
-    // Step 4: Work with structured response data
-    assert($person instanceof Person); // true
-    assert($person->name === 'Jason'); // true
-    assert($person->age === 28); // true
+// Step 4: Work with structured response data
+assert($person instanceof Person); // true
+assert($person->name === 'Jason'); // true
+assert($person->age === 28); // true
 
-    echo $person->name; // Jason
-    echo $person->age; // 28
-    
-    var_dump($person);
-    // Person {
-    //     name: "Jason",
-    //     age: 28
-    // }    
+echo $person->name; // Jason
+echo $person->age; // 28
+
+var_dump($person);
+// Person {
+//     name: "Jason",
+//     age: 28
+// }    
 ```
 > **NOTE:** Currently, Instructor only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class.
 
@@ -107,21 +107,21 @@ Instructor validates results of LLM response against validation rules specified 
 > For further details on available validation rules, check [Symfony Validation constraints](https://symfony.com/doc/current/validation.html#constraints).
 
 ```php
-    use Symfony\Component\Validator\Constraints as Assert;
-    
-    class Person {
-        public string $name;
-        #[Assert\PositiveOrZero]
-        public int $age;
-    }
+use Symfony\Component\Validator\Constraints as Assert;
 
-    $text = "His name is Jason, he is -28 years old.";
-    $person = (new Instructor(llm: $mockLLM))->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: Person::class,
-    );
-    
-    // if the resulting object does not validate, Instructor throws an exception
+class Person {
+    public string $name;
+    #[Assert\PositiveOrZero]
+    public int $age;
+}
+
+$text = "His name is Jason, he is -28 years old.";
+$person = (new Instructor(llm: $mockLLM))->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+);
+
+// if the resulting object does not validate, Instructor throws an exception
 ```
 
 
@@ -132,24 +132,79 @@ In case maxRetries parameter is provided and LLM response does not meet validati
 Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
 
 ```php
-    use Symfony\Component\Validator\Constraints as Assert;
-    
-    class Person {
-        #[Assert\Length(min: 3)]
-        public string $name;
-        #[Assert\PositiveOrZero]
-        public int $age;
-    }
+use Symfony\Component\Validator\Constraints as Assert;
 
-    $text = "His name is JX, aka Jason, he is -28 years old.";
-    $person = (new Instructor)->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: Person::class,
-        maxRetries: 3,
-    );
-    
-    // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
+class Person {
+    #[Assert\Length(min: 3)]
+    public string $name;
+    #[Assert\PositiveOrZero]
+    public int $age;
+}
+
+$text = "His name is JX, aka Jason, he is -28 years old.";
+$person = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+    maxRetries: 3,
+);
+
+// if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```
+
+
+## Shortcuts 
+
+### String as Input
+
+You can provide a string instead of an array of messages. This is useful when you want to extract data from a single block of text and want to keep your code simple.
+
+```php
+use Cognesy/Instructor;
+
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+);
+```
+
+
+### Extracting Scalar Values
+
+Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
+
+```php
+use Cognesy/Instructor;
+
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::integer('age'),
+);
+
+var_dump($value);
+// int(28)
+```
+
+In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
+
+Additionally, you can use Scalar adapter to extract one of the provided options.
+
+```php
+use Cognesy/Instructor;
+
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he currently plays Doom Eternal.",
+    responseModel: Scalar::select(
+        name: 'activityType',
+        options: ['work', 'entertainment', 'sport', 'other']
+    ),
+);
+
+var_dump($value);
+// string(4) "entertainment"
+```
+
+NOTE: Currently Scalar::select() always returns strings and its ```options``` parameter only accepts string values.
+
 
 
 ## Specifying Data Model
@@ -173,17 +228,17 @@ Use PHP type hints to specify the type of extracted data.
 You can also use PHP DocBlock style comments to specify the type of extracted data. This is useful when you want to specify property types for LLM, but can't or don't want to enforce type at the code level.
 
 ```php
-    class Person {
-        /** @var string */
-        public $name;
-        /** @var int */
-        public $age;
-        /** @var Address $address person's address */
-        public $address;
-    }
+class Person {
+    /** @var string */
+    public $name;
+    /** @var int */
+    public $age;
+    /** @var Address $address person's address */
+    public $address;
+}
 ```
 
-See PHPDoc documentation for more details on DocBlock: https://docs.phpdoc.org/3.0/guide/getting-started/what-is-a-docblock.html#what-is-a-docblock
+See PHPDoc documentation for more details on [DocBlock website](https://docs.phpdoc.org/3.0/guide/getting-started/what-is-a-docblock.html#what-is-a-docblock).
 
 
 ### Typed Collections / Arrays
@@ -193,16 +248,16 @@ PHP currently [does not support generics](https://wiki.php.net/rfc/generics) or 
 Use PHP DocBlock style comments to specify the type of array elements.
 
 ```php
-    class Person {
-        // ...
-    }
+class Person {
+    // ...
+}
 
-    class Event {
-        // ...
-        /** @var Person[] list of extracted event participants */
-        public array $participants;
-        // ...
-    }
+class Event {
+    // ...
+    /** @var Person[] list of extracted event participants */
+    public array $participants;
+    // ...
+}
 ```
 
 
@@ -211,67 +266,67 @@ Use PHP DocBlock style comments to specify the type of array elements.
 Instructor can retrieve complex data structures from text. Your response model can contain nested objects, arrays, and enums.
 
 ```php
-    use Cognesy/Instructor;
-    use OpenAI;
-    
-    // define a data structures to extract data into
-    class Person {
-        public string $name;
-        public int $age;
-        public string $profession;
-        /** @var Skill[] */
-        public array $skills;
-    }
+use Cognesy/Instructor;
+use OpenAI;
 
-    class Skill {
-        public string $name;
-        public SkillType $type;
-    }
+// define a data structures to extract data into
+class Person {
+    public string $name;
+    public int $age;
+    public string $profession;
+    /** @var Skill[] */
+    public array $skills;
+}
 
-    enum SkillType {
-        case Technical = 'technical';
-        case Other = 'other';
-    }
-    
-    $text = "Alex is 25 years old software engineer, who knows PHP, Python and can play the guitar.";
+class Skill {
+    public string $name;
+    public SkillType $type;
+}
 
-    $person = (new Instructor)->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: Person::class,
-        client: OpenAI::client($yourApiKey),
-    ); // client is passed explicitly, can specify eg. different base URL
-    
-    // data is extracted into an object of given class
-    assert($person instanceof Person); // true
-    
-    // you can access object's extracted property values
-    echo $person->name; // Alex
-    echo $person->age; // 25
-    echo $person->profession; // software engineer
-    echo $person->skills[0]->name; // PHP
-    echo $person->skills[0]->type; // SkillType::Technical
-    // ...
-    
-    var_dump($person);
-    // Person {
-    //     name: "Alex",
-    //     age: 25,
-    //     profession: "software engineer",
-    //     skills: [
-    //         Skill {
-    //              name: "PHP",
-    //              type: SkillType::Technical,
-    //         },
-    //         Skill {
-    //              name: "Python",
-    //              type: SkillType::Technical,
-    //         },
-    //         Skill {
-    //              name: "guitar",
-    //              type: SkillType::Other
-    //         },
-    //     ]
-    // }
+enum SkillType {
+    case Technical = 'technical';
+    case Other = 'other';
+}
+
+$text = "Alex is 25 years old software engineer, who knows PHP, Python and can play the guitar.";
+
+$person = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+    client: OpenAI::client($yourApiKey),
+); // client is passed explicitly, can specify eg. different base URL
+
+// data is extracted into an object of given class
+assert($person instanceof Person); // true
+
+// you can access object's extracted property values
+echo $person->name; // Alex
+echo $person->age; // 25
+echo $person->profession; // software engineer
+echo $person->skills[0]->name; // PHP
+echo $person->skills[0]->type; // SkillType::Technical
+// ...
+
+var_dump($person);
+// Person {
+//     name: "Alex",
+//     age: 25,
+//     profession: "software engineer",
+//     skills: [
+//         Skill {
+//              name: "PHP",
+//              type: SkillType::Technical,
+//         },
+//         Skill {
+//              name: "Python",
+//              type: SkillType::Technical,
+//         },
+//         Skill {
+//              name: "guitar",
+//              type: SkillType::Other
+//         },
+//     ]
+// }
 ```
 
 ## Changing LLM model and options
@@ -281,14 +336,18 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
 
 ```php
-    $person = (new Instructor)->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: Person::class,
-        model: 'gpt-3.5-turbo',
-        options: ['temperature' => 0.0],
-        client: OpenAI::client($yourApiKey),
-    ); // client is passed explicitly, can specify eg. different base URL
+$person = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+    model: 'gpt-3.5-turbo',
+    options: ['temperature' => 0.0],
+    client: OpenAI::client($yourApiKey),
+);
+// client is passed explicitly
+// you can specify e.g. different base URL
 ```
+> Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate ```model``` and ```base URI``` via ```options``` parameter.
+
 
 ## Using DocBlocks as Additional Instructions for LLM
 
@@ -299,16 +358,16 @@ Instructor extracts PHP DocBlocks comments from class and property defined and i
 Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
 
 ```php
-    /**
-     * Represents a skill of a person and context in which it was mentioned. 
-     */
-    class Skill {
-        public string $name;
-        /** @var SkillType $type type of the skill, derived from the description and context */
-        public SkillType $type;
-        /** Directly quoted, full sentence mentioning person's skill */
-        public string $context;
-    }
+/**
+ * Represents a skill of a person and context in which it was mentioned. 
+ */
+class Skill {
+    public string $name;
+    /** @var SkillType $type type of the skill, derived from the description and context */
+    public SkillType $type;
+    /** Directly quoted, full sentence mentioning person's skill */
+    public string $context;
+}
 ```
 
 ## Custom Validators
@@ -316,33 +375,33 @@ Using PHP DocBlocks instructions is not required, but sometimes you may want to 
 Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
 
 ```php
-    use Cognesy\Instructor\Instructor;
-    use Symfony\Component\Validator\Constraints as Assert;
-    use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Cognesy\Instructor\Instructor;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+class UserDetails
+{
+    public string $name;
+    public int $age;
     
-    class UserDetails
-    {
-        public string $name;
-        public int $age;
-        
-            #[Assert\Callback]
-            public function validateName(ExecutionContextInterface $context, mixed $payload) {
-                if ($this->name !== strtoupper($this->name)) {
-                    $context->buildViolation("Name must be in uppercase.")
-                        ->atPath('name')
-                        ->setInvalidValue($this->name)
-                        ->addViolation();
-                }
+        #[Assert\Callback]
+        public function validateName(ExecutionContextInterface $context, mixed $payload) {
+            if ($this->name !== strtoupper($this->name)) {
+                $context->buildViolation("Name must be in uppercase.")
+                    ->atPath('name')
+                    ->setInvalidValue($this->name)
+                    ->addViolation();
             }
         }
-        
-        $user = (new Instructor)->respond(
-        messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
-        responseModel: UserDetails::class,
-        maxRetries: 2
-    );
+    }
     
-    assert($user->name === "JASON");
+    $user = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
+    responseModel: UserDetails::class,
+    maxRetries: 2
+);
+
+assert($user->name === "JASON");
 ```
 
 See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.

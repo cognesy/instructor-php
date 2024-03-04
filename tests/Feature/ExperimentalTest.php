@@ -1,4 +1,5 @@
 <?php
+namespace Tests;
 
 use Cognesy\Experimental\BooleanLLMFunction;
 use Cognesy\Experimental\IntegerLLMFunction;
