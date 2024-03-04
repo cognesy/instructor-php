@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema;
 
+use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Reference;
+
 class ObjectRefSchema extends Schema
 {
     private string $defsLabel = 'definitions';

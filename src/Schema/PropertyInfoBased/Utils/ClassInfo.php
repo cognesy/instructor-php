@@ -42,7 +42,13 @@ class ClassInfo {
         return $this->extractor()->getProperties($class) ?? [];
     }
 
-    public function getDescription(string $class, string $property): string {
+    public function getClassDescription(string $class) : string {
+        // get class description from PHPDoc
+        $reflection = new ReflectionClass($class);
+        return DocstringUtils::descriptionsOnly($reflection->getDocComment());
+    }
+
+    public function getPropertyDescription(string $class, string $property): string {
         $extractor = $this->extractor();
         return trim(implode(' ', [
             $extractor->getShortDescription($class, $property),

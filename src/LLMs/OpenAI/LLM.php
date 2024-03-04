@@ -11,6 +11,7 @@ class LLM implements CanCallFunction
 {
     private Client $client;
     private CreateResponse $response;
+    private array $request;
 
     public function __construct(
         string $apiKey = '',
@@ -34,7 +35,7 @@ class LLM implements CanCallFunction
         string $model = 'gpt-4-0125-preview',
         array $options = []
     ) : string {
-        $this->response = $this->client->chat()->create(array_merge([
+        $this->request = array_merge([
             'model' => $model,
             'messages' => $messages,
             'tools' => [$functionSchema],
@@ -42,12 +43,17 @@ class LLM implements CanCallFunction
                 'type' => 'function',
                 'function' => ['name' => $functionName]
             ]
-        ], $options));
+        ], $options);
+        $this->response = $this->client->chat()->create($this->request);
         return $this->data();
     }
 
     public function response() : array {
         return $this->response->toArray();
+    }
+
+    public function request() : array {
+        return $this->request;
     }
 
     public function data() : string {

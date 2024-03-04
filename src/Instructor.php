@@ -11,7 +11,8 @@ use Exception;
  * Use respond() method to generate structured responses from LLM calls.
  */
 class Instructor {
-    private LLM $llm;
+    protected LLM $llm;
+    protected $messages;
     public $retryPrompt = "Recall function correctly, fix following errors:";
 
     public function __construct(
@@ -88,5 +89,12 @@ class Instructor {
      */
     public function response() : array {
         return $this->llm->response();
+    }
+
+    /**
+     * Most recent request sent to LLM
+     */
+    public function request() : array {
+        return $this->llm->request();
     }
 }

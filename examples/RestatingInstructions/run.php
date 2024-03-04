@@ -18,7 +18,7 @@ use Cognesy\Instructor\Instructor;
  */
 class Role
 {
-    /** Restate the instructions and rules to correctly determine the title. */
+    /** Restate instructions and rules, so you can correctly determine the title. */
     public string $instructions;
     /** Role description */
     public string $description;
@@ -26,6 +26,7 @@ class Role
     public string $title;
 }
 
+/** Details of analyzed user. The key information we're looking for is appropriate role data. */
 class UserDetail
 {
     public string $name;
@@ -33,9 +34,9 @@ class UserDetail
     public Role $role;
 }
 
-$user = (new Instructor)->respond(
-    messages: [["role" => "user",  "content" => "I'm Jason, I'm 28 yo. I am responsible for driving growth of our company."]],
+$instructor = new Instructor;
+$user = ($instructor)->respond(
+    messages: [["role" => "user",  "content" => "I'm Jason, I'm 28 yo. I am the head of Apex Software, responsible for driving growth of our company."]],
     responseModel: UserDetail::class,
 );
-
 dump($user);

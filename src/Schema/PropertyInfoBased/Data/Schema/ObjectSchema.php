@@ -31,9 +31,10 @@ class ObjectSchema extends Schema
         }
         return array_filter([
             'type' => 'object',
+            'title' => $this->name,
+            'description' => $this->description,
             'properties' => $propertyDefs,
             'required' => $this->required,
-            'description' => $this->description,
         ]);
     }
 }

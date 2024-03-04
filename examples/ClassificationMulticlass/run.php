@@ -18,20 +18,19 @@ enum Label : string {
 }
 
 /** Represents analysed ticket data */
-class Ticket {
+class TicketLabels {
     /** @var Label[] */
-    public array $ticketLabels = [];
+    public array $labels = [];
 }
 
 // Perform single-label classification on the input text.
-function multi_classify(string $data) : Ticket {
+function multi_classify(string $data) : TicketLabels {
     return (new Instructor())->respond(
         messages: [[
             "role" => "user",
-            "content" => "Classify following support ticket: {$data}",
+            "content" => "Label following support ticket: {$data}",
         ]],
-        responseModel: Ticket::class,
-        model: "gpt-3.5-turbo-0613",
+        responseModel: TicketLabels::class,
     );
 }
 
@@ -39,6 +38,6 @@ function multi_classify(string $data) : Ticket {
 $ticket = "My account is locked and I can't access my billing info.";
 $prediction = multi_classify($ticket);
 
-assert(in_array(Label::TECH_ISSUE, $prediction->classLabels));
-assert(in_array(Label::BILLING, $prediction->classLabels));
+assert(in_array(Label::TECH_ISSUE, $prediction->labels));
+assert(in_array(Label::BILLING, $prediction->labels));
 dump($prediction);
