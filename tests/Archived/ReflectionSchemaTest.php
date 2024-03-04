@@ -31,7 +31,7 @@ it('creates function call - function', function () {
     expect($array['function']['parameters']['properties']['stakeholders']['type'])->toEqual('array');
     // ...
     expect($array)->toMatchSnapshot();
-});
+})->skip('Deprecated schema engine');
 
 it('creates function call - method', function () {
     $array = (new FunctionCallFactory)->fromMethod((new ProjectEvents)->createEvent(...));
@@ -46,7 +46,7 @@ it('creates function call - method', function () {
     expect($array['function']['parameters']['properties']['stakeholders']['type'])->toEqual('array');
     // ...
     expect($array)->toMatchSnapshot();
-});
+})->skip('Deprecated schema engine');
 
 it('creates function call - object', function () {
     $array = (new FunctionCallFactory)->fromClass(ProjectEvents::class, 'createEvent', 'Extract object from provided content');
@@ -60,4 +60,4 @@ it('creates function call - object', function () {
     expect($array['function']['parameters']['properties']['events']['items']['type'])->toEqual('object');
     // ...
     expect($array)->toMatchSnapshot();
-});
+})->skip('Deprecated schema engine');

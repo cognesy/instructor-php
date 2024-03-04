@@ -78,7 +78,7 @@ it('can handle schema provider - via class name', function() {
     expect($responseModel->functionCall['function']['parameters']['required'][1])->toBe('email');
 });
 
-it('can handle raw ObjectSchema instance', function() {
+it('can handle ObjectSchema instance', function() {
     $schema = (new SchemaFactory)->schema(User::class);
     $responseModel = new ResponseModel($schema);
     expect($responseModel->class)->toBe(User::class);

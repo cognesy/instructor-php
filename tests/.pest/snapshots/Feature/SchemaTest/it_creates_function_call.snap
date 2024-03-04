@@ -1,0 +1,93 @@
+{
+    "type": "function",
+    "function": {
+        "name": "addEvent",
+        "description": "Extract object from provided content",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "Title of the event - this should be a short, descriptive title of the event"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Concise, informative description of the event"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "risk",
+                                    "issue",
+                                    "action",
+                                    "progress",
+                                    "other"
+                                ],
+                                "description": "Type of the event"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "open",
+                                    "closed",
+                                    "unknown"
+                                ],
+                                "description": "Status of the event"
+                            },
+                            "stakeholders": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of the stakeholder"
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "enum": [
+                                                "customer",
+                                                "vendor",
+                                                "system integrator",
+                                                "other"
+                                            ],
+                                            "description": "Role of the stakeholder, if specified"
+                                        },
+                                        "details": {
+                                            "type": "string",
+                                            "description": "Any details on the stakeholder, if specified - any mentions of company, organization, structure, group, team, function"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "role"
+                                    ]
+                                }
+                            },
+                            "date": {
+                                "type": "string",
+                                "description": "Date of the event if reported in the text"
+                            }
+                        },
+                        "required": [
+                            "title",
+                            "description",
+                            "type",
+                            "status",
+                            "stakeholders"
+                        ]
+                    },
+                    "description": "List of events extracted from the text"
+                }
+            },
+            "required": [
+                "events"
+            ]
+        }
+    }
+}

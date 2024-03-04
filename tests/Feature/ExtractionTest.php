@@ -104,7 +104,7 @@ it('can extract complex, multi-nested structure', function ($text) {
         ProjectEvents::class,
         maxRetries: 2,
     );
-    dump($events);
+
     expect($events)->toBeInstanceOf(ProjectEvents::class);
     expect($events->events)->toBeArray();
     expect($events->events[0])->toBeInstanceOf(ProjectEvent::class);
