@@ -1,7 +1,7 @@
 # NOTES
 
 
-## Deserialization
+## Better control over deserialization
 
 We need custom deserializer or easier way of customizing existing one.
 Specific need is #[Description] attribute, which should be used to generate description.
@@ -11,6 +11,20 @@ Another reason is that we need to handle custom types, such as Money, Date, etc.
 Need to document how to write and plug in custom field / object deserializer into Instructor.
 
 Custom deserialization strategy is also needed for partial updates, maybe for streaming too.
+
+
+
+## Parallel function calling
+
+GPT-4-turbo can handle parallel function calling, which allows to return multiple models in a single API call. We do not yet support it, but Python Instructor does.
+
+The benefit is that you can reduce the number of function calls and get extra "intelligence", for example asking LLM to return a series of "operations" it considers relevant to the input.
+
+Need to test it further to understand how it is different from constructing a more complex model that is composed out of other models (or sequences of other models).
+
+One obvious benefit could be that they are returned separately, can be processed separately and, potentially, acted upon in parallel.
+
+It is doable with composite models via custom deserialization, but would be nice not to be forced to do it manually.
 
 
 
@@ -103,6 +117,18 @@ issues.issue[1].related_quotes.quote[3].date
 2) Custom LLM classes.
 LLM class is the one that needs to handle all model / API specific stuff (e.g. function calling - vide: Claude's FC XML "API", streaming, modes, etc.).
 
+### JSON_MODE vs function calling
+
+Add JSON_MODE to the LLM class, so it can handle both modes.
+
+### MISTRAL_MODE
+
+Review Jason's Python code to understand how to handle function calling for Mistral.
+
+### YAML
+
+For models not supporting function calling YAML might be an easier way to get structured outputs.
+
 
 
 ## Observability
@@ -183,6 +209,14 @@ Document and write tests around the behavior of public vs private/protected fiel
 
 
 
+## Async / parallel processing
+
+Identify capabilities of the engine that could be parallelized, so we can speed up processing of the results, esp. for large data sets.
+
+
+
+
+
 # DONE
 
 ## Support scalar types as response_model
@@ -192,6 +226,17 @@ Have universal scalar value adapter with HasSchemaProvider interface
 HasSchemaProvider = schema() : Schema, which, if present, will be used to generate schema
 Instead of the default schema generation mechanism
 This will allow for custom schema generation
+
+### Solution 
+
+Ultimately the implemented solution has much nicer DX:
+
+```php
+$isAdult = (new Instructor)->respond(
+    messages: "Jason is 35 years old",
+    responseModel: Scalar::bool('isAdult')
+);
+```
 
 ## Custom schema generation - not based on class reflection & PHPDoc
 
@@ -213,8 +258,23 @@ class SchemaProvider {
     }
 }
 
+### Solution
+
+If model implements CanProvideSchema interface it can fully customize schema generation.
+
+It usually requires to also implement custom deserialization logic via CanDeserializeJson interface, so you can control how LLM response JSON is turned into data (and fed into model fields).
+
+You may also need to implement CanTransformResponse to control what you ultimately send back to the caller (e.g. you can return completely different data than the input model).
+
+This is used for the implementation of Scalar class, which is a universal adapter for scalar values.
+
+
+
 ## Validation
 
 What about validation in such case? we can already have ```validate()``` method in the schema,
 Is it enough?
 
+### Solution
+
+Validation can be also customized by implementing CanSelfValidate interface. It allows you to fully control how the data is validated. At the moment it skips built in Symfony Validator logic, so you have to deal with Symfony validation constraints manually.
