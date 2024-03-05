@@ -70,8 +70,6 @@ To prevent data misalignment, use Enums for standardized fields. Always include 
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
-
 enum Role : string {
     case Principal = 'principal'
     case Teacher = 'teacher'
@@ -83,7 +81,7 @@ class UserDetail
 {
     public int $age;
     public string $name;
-    #[Description("Correctly assign one of the predefined roles to the user.")]
+    /**  Correctly assign one of the predefined roles to the user. */
     public Role $role;
 }
 ```
@@ -98,12 +96,10 @@ For complex attributes, it helps to reiterate the instructions in the field's de
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
-
-#[Description("Extract the role based on the following rules: <your rules go here>")]
+/** Extract the role based on the following rules: <your rules go here> */
 class Role
 {
-    #[Description("Restate the instructions and rules to correctly determine the title.")]
+    /** Restate the instructions and rules to correctly determine the title. */
     public string $instructions;
     public string $title;
 }
@@ -133,8 +129,7 @@ class UserDetail
 {
     public int $age
     public string $name;
-    /** @var Property[] */
-    #[Description("Extract any other properties that might be relevant.")]
+    /** @var Property[] Extract any other properties that might be relevant */
     public array $properties;
 }
 ```
@@ -147,11 +142,9 @@ When dealing with lists of attributes, especially arbitrary properties, it's cru
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
-
 class Property
 {
-    #[Description("Monotonically increasing ID")]
+    /**  Monotonically increasing ID */
     public string $index; 
     public int $age;
     public string $value;
@@ -161,8 +154,7 @@ class UserDetail
 {
     public int $age
     public string $name;
-    /** @var Property[] */
-    #[Description("Numbered list of arbitrary extracted properties, should be less than 6")]
+    /** @var Property[] Numbered list of arbitrary extracted properties, should be less than 6 */
     public array $properties;
 }
 ```
@@ -175,8 +167,6 @@ For multiple users, aim to use consistent key names when extracting properties.
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
-
 class UserDetail {
     public int $id;
     public string $key;
@@ -185,8 +175,7 @@ class UserDetail {
 
 class UserDetails
 {
-    #[Description("Extract information for multiple users. Use consistent key names for properties across users.")]
-    /** @var UserDetail[] */
+    /** @var UserDetail[] Extract information for multiple users. Use consistent key names for properties across users. */
     public array $users;
 }
 ```
@@ -199,23 +188,19 @@ In cases where relationships exist between entities, it's vital to define them e
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
-
 class UserDetail
 {
-    #[Description("Unique identifier for each user.")]
+    /** Unique identifier for each user. */
     public int $id; 
     public int $age;
     public string $name;
-    #[Description("Correct and complete list of friend IDs, representing relationships between users.")]
-    /** @var int[] */
+    /** @var int[] Correct and complete list of friend IDs, representing relationships between users. */
     public array $friends;
 }
 
 class UserRelationships
 {
-    #[Description("Collection of users, correctly capturing the relationships among them.")]
-    /** @var UserDetail[] */
+    /** @var UserDetail[] Collection of users, correctly capturing the relationships among them. */
     public array $users;
 }
 ```
@@ -233,11 +218,9 @@ This approach to "chain of thought" improves data quality but can have modular c
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
-
 class Role
 {
-    #[Description("Think step by step to determine the correct title.")]
+    /** Think step by step to determine the correct title. */
     public string $chainOfThought = '';
     public string $title = '';
 }
@@ -253,33 +236,39 @@ class UserDetail
 
 ## Reusing Components with Different Contexts
 
+!!! example
+
+    Run example via CLI: ```php ./examples/TimeRange/run.php```
+
 You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both ```$workTime``` and ```$leisureTime```.
 
 
 ```php
 <?php
 
-use Cognesy\Instructor\Attributes\Description;
 
 class TimeRange {
-    #[Description("The start time in hours.")]
+    /** The start time in hours. */
     public int $startTime;
-    #[Description("The end time in hours.")]
+    /** The end time in hours. */
     public int $endTime;
 }
 
 class UserDetail
 {
-    #[Description("Unique identifier for each user.")]
-    public int $id;
-    public int $age;
     public int $name;
-    #[Description("Time range during which the user is working.")]
+    /** Time range during which the user is working. */
     public TimeRange $workTime;
-    #[Description("Time range reserved for leisure activities.")]
+    /** Time range reserved for leisure activities. */
     public TimeRange $leisureTime;
 }
 ```
+
+## Adding Context to Components
+
+!!! example
+
+    Run example via CLI: ```php ./examples/TimeRangeWithCoT/run.php```
 
 Sometimes, a component like TimeRange may require some context or additional logic to be used effectively. Employing a "chain of thought" field within the component can help in understanding or optimizing the time range allocations.
 
@@ -289,11 +278,11 @@ Sometimes, a component like TimeRange may require some context or additional log
 
 class TimeRange
 {
-    #[Description("Step by step reasoning to get the correct time range")]
+    /** Step by step reasoning to get the correct time range */
     public string $chainOfThought;
-    #[Description("The start time in hours.")]
+    /** The start time in hours. */
     public int $startTime;
-    #[Description("The end time in hours.")]
+    /** The end time in hours. */
     public int $endTime;
 }
 ```

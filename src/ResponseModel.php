@@ -7,7 +7,6 @@ use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanSelfValidate;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\PropertyInfoBased\Factories\FunctionCallFactory;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 use Exception;
