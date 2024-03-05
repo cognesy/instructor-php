@@ -11,6 +11,7 @@ The overarching theme of using Instructor for function calling is to make the mo
 - **Contextual Logic**: Optionally add a "chain of thought" field in reusable components for extra context.
 
 
+
 ## Utilize Nullable Attribute
 
 !!! example
@@ -32,6 +33,11 @@ class UserDetail
 
 
 ## Handling Errors Within Function Calls
+
+!!! example
+
+    Run example via CLI: ```php ./examples/HandlingErrors/run.php```
+
 
 You can create a wrapper class to hold either the result of an operation or an error message. This allows you to remain within a function call even if an error occurs, facilitating better error handling without breaking the code flow.
 
@@ -63,6 +69,7 @@ With the `MaybeUser` class, you can either receive a `UserDetail` object in resu
 > Original Instructor implementation in Python provides utility class Maybe making this pattern even easier. Such mechanism is not yet available in PHP version of Instructor.
 
 
+
 ## Tips for Enumerations
 
 To prevent data misalignment, use Enums for standardized fields. Always include an "Other" option as a fallback so the model can signal uncertainty.
@@ -86,10 +93,16 @@ class UserDetail
 }
 ```
 
-If you'd like to improve LLM inference performance, try reiterating the requirements in the field descriptions or in the docstrings.
+If you'd like to improve LLM inference performance, try reiterating the requirements in the field descriptions (in the docstrings).
+
 
 
 ## Reiterate Long Instructions
+
+!!! example
+
+    Run example via CLI: ```php ./examples/RestatingInstruction/run.php```
+
 
 For complex attributes, it helps to reiterate the instructions in the field's description.
 
@@ -112,7 +125,13 @@ class UserDetail
 }
 ```
 
+
 ## Handle Arbitrary Properties
+
+!!! example
+
+    Run example via CLI: ```php ./examples/ArbitraryProperties/run.php```
+
 
 When you need to extract undefined attributes, use a list of key-value pairs.
 
@@ -127,7 +146,7 @@ class Property
 
 class UserDetail
 {
-    public int $age
+    public int $age;
     public string $name;
     /** @var Property[] Extract any other properties that might be relevant */
     public array $properties;
@@ -136,6 +155,11 @@ class UserDetail
 
 
 ## Limiting the Length of Lists
+
+!!! example
+
+    Run example via CLI: ```php ./examples/LimitingLengthOfLists/run.php```
+
 
 When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
 
@@ -146,7 +170,7 @@ class Property
 {
     /**  Monotonically increasing ID */
     public string $index; 
-    public int $age;
+    public string $key;
     public string $value;
 }
 
@@ -154,20 +178,28 @@ class UserDetail
 {
     public int $age
     public string $name;
-    /** @var Property[] Numbered list of arbitrary extracted properties, should be less than 6 */
+    /** @var Property[] Numbered list of arbitrary extracted properties, should be less than 3 */
     public array $properties;
 }
 ```
 
+To be 100% certain the list does not exceed the limit add extra validation, e.g. using ValidationMixin (see: Validation).
 
-## Advanced Arbitrary Properties
 
-For multiple users, aim to use consistent key names when extracting properties.
+
+## Consistent Arbitrary Properties
+
+!!! example
+
+    Run example via CLI: ```php ./examples/ArbitraryPropertiesConsistency/run.php```
+
+
+For multiple records containing arbitrary properties, instruct LLM to use consistent key names when extracting properties.
 
 ```php
 <?php
 
-class UserDetail {
+class Property {
     public int $id;
     public string $key;
     public string $name;
@@ -183,7 +215,13 @@ class UserDetails
 
 ## Defining Relationships Between Entities
 
-In cases where relationships exist between entities, it's vital to define them explicitly in the model. The following example demonstrates how to define relationships between users by incorporating an id and a friends field:
+!!! example
+
+    Run example via CLI: ```php ./examples/EntityRelationships/run.php```
+
+In cases where relationships exist between entities, it's vital to define them explicitly in the model.
+
+Following example demonstrates how to define relationships between users by incorporating an ```$id``` and ```$coworkers``` field:
 
 ```php
 <?php
@@ -191,11 +229,12 @@ In cases where relationships exist between entities, it's vital to define them e
 class UserDetail
 {
     /** Unique identifier for each user. */
-    public int $id; 
+    public int $id;
     public int $age;
     public string $name;
-    /** @var int[] Correct and complete list of friend IDs, representing relationships between users. */
-    public array $friends;
+    public string $role;
+    /** @var int[] Correct and complete list of coworker IDs, representing collaboration between users. */
+    public array $coworkers;
 }
 
 class UserRelationships
@@ -204,6 +243,8 @@ class UserRelationships
     public array $users;
 }
 ```
+
+
 
 ## Modular Chain of Thought
 
@@ -232,6 +273,7 @@ class UserDetail
     public Role $role;
 }
 ```
+
 
 
 ## Reusing Components with Different Contexts
@@ -263,6 +305,8 @@ class UserDetail
     public TimeRange $leisureTime;
 }
 ```
+
+
 
 ## Adding Context to Components
 
