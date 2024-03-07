@@ -23,10 +23,6 @@ class Configuration
         return self::$instance;
     }
 
-    static public function for(string $name) : Configuration {
-        return self::instance()->get($name);
-    }
-
     static public function auto(array $overrides = []) : Configuration {
         if (is_null(self::$instance)) {
             self::$instance = autowire(new Configuration())->override($overrides);
@@ -38,10 +34,8 @@ class Configuration
         return autowire(new Configuration())->override($overrides);
     }
 
-    public function reference(string $componentName) : callable {
-        return function () use ($componentName) {
-            return $this->resolveReference($componentName);
-        };
+    static public function for(string $name) : Configuration {
+        return self::instance()->get($name);
     }
 
     public function declare(
@@ -65,6 +59,12 @@ class Configuration
         }
         $this->config[$componentName] = $componentConfig;
         return $this;
+    }
+
+    public function reference(string $componentName) : callable {
+        return function () use ($componentName) {
+            return $this->resolveReference($componentName);
+        };
     }
 
     public function get(string $componentName) : mixed {

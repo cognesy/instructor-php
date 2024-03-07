@@ -51,6 +51,7 @@ function autowire(Configuration $config) : Configuration
         context: [
             'llm' => $config->reference(CanCallFunction::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
+            'eventDispatcher' => $config->reference(EventDispatcher::class),
         ]
     );
     $config->declare(

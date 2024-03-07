@@ -7,6 +7,7 @@ use Cognesy\Instructor\Events\Event;
 class EventDispatcher
 {
     private array $listeners = [];
+    private array $wiretaps = [];
 
     public function connect(string $eventClass, callable $listener): self
     {
@@ -21,6 +22,20 @@ class EventDispatcher
             foreach ($this->listeners[$eventClass] as $listener) {
                 $listener($event);
             }
+        }
+        $this->wiretapDispatch($event);
+    }
+
+    public function wiretap(callable $listener): self
+    {
+        $this->wiretaps[] = $listener;
+        return $this;
+    }
+
+    private function wiretapDispatch(Event $event): void
+    {
+        foreach ($this->wiretaps as $wiretap) {
+            $wiretap($event);
         }
     }
 }

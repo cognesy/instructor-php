@@ -1,13 +1,19 @@
 <?php
-namespace Cognesy\Instructor\Events\LLM;
+
+namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class StreamedResponseReceived extends Event
+class ResponseGenerated extends Event
 {
+
+    /**
+     * @param mixed $response
+     */
     public function __construct(
-        public array $response = [],
-    ) {
+        public mixed $response
+    )
+    {
         parent::__construct();
     }
 

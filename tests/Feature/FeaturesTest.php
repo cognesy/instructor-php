@@ -1,18 +1,14 @@
 <?php
 namespace Tests;
 
+use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
-use Mockery;
 use Tests\Examples\Extraction\Person;
 
 it('accepts string as input', function () {
-    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
-    $mockLLM->shouldReceive('callFunction')->andReturnUsing(
-        fn() => '{"name":"Jason","age":28}',
-    );
+    $mockLLM = MockLLM::get(['{"name":"Jason","age":28}']);
 
-    $person = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
+    $person = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
         messages: "His name is Jason, he is 28 years old.",
         responseModel: Person::class,
     );
@@ -24,14 +20,13 @@ it('accepts string as input', function () {
 
 
 it('self-corrects values extracted by LLM based on validation results', function () {
-    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
-    $mockLLM->shouldReceive('callFunction')->andReturnUsing(
-        fn() => '{"name": "JX", "age": -28}',
-        fn() => '{"name": "Jason", "age": 28}',
-    );
+    $mockLLM = MockLLM::get([
+        '{"name": "JX", "age": -28}',
+        '{"name": "Jason", "age": 28}'
+    ]);
 
     $text = "His name is JX, aka Jason, is -28 years old.";
-    $person = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
+    $person = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
         maxRetries: 2,

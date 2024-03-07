@@ -21,7 +21,7 @@ if (!function_exists('addEvent')) {
 
 
 it('creates function call', function () {
-    $array = Configuration::instance()
+    $array = Configuration::fresh()
         ->get(FunctionCallFactory::class)
         ->fromClass(ProjectEvents::class, 'addEvent', 'Extract object from provided content');
     expect($array)->toBeArray();

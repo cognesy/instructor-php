@@ -44,6 +44,8 @@
         "symfony/http-client": "^7.0",
         "nyholm/psr7": "^1.8",
         "jasny/phpdoc-parser": "^1.0",
-        "symfony/property-access": "^7.0"
+        "symfony/property-access": "^7.0",
+        "nesbot/carbon": "^3.0",
+        "ramsey/uuid": "^4.7"
     }
 }

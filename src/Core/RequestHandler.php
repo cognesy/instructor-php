@@ -4,6 +4,13 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Events\RequestHandler\RequestSentToLLM;
+use Cognesy\Instructor\Events\RequestHandler\ResponseGenerated;
+use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
+use Cognesy\Instructor\Events\RequestHandler\ResponseReceivedFromLLM;
+use Cognesy\Instructor\Events\RequestHandler\ResponseTransformationFinished;
+use Cognesy\Instructor\Events\RequestHandler\ResponseTransformationStarted;
+use Cognesy\Instructor\Events\RequestHandler\ResponseValidationFailed;
 use Exception;
 
 class RequestHandler
@@ -11,14 +18,17 @@ class RequestHandler
     public $retryPrompt = "Recall function correctly, fix following errors:";
     private CanCallFunction $llm;
     private ResponseModelFactory $responseModelFactory;
+    private EventDispatcher $eventDispatcher;
 
     public function __construct(
         CanCallFunction $llm,
         ResponseModelFactory $responseModelFactory,
+        EventDispatcher $eventDispatcher
     )
     {
         $this->llm = $llm;
         $this->responseModelFactory = $responseModelFactory;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -28,6 +38,7 @@ class RequestHandler
         $requestedModel = $this->responseModelFactory->from(
             $request->responseModel
         );
+        $this->eventDispatcher->dispatch(new ResponseModelBuilt($requestedModel));
         return $this->tryRespond($request, $requestedModel);
     }
 
@@ -41,20 +52,33 @@ class RequestHandler
         $retries = 0;
         $messages = $request->messages();
         while ($retries <= $request->maxRetries) {
-            $json = $this->llm->callFunction(
+            $this->eventDispatcher->dispatch(new RequestSentToLLM(
+                $messages,
+                $responseModel,
+                $request
+            ));
+            $response = $this->llm->callFunction(
                 $messages,
                 $responseModel->functionName,
                 $responseModel->functionCall,
                 $request->model,
                 $request->options
             );
+            $this->eventDispatcher->dispatch(new ResponseReceivedFromLLM($response));
+            $json = $response->toolCalls[0]->functionArguments;
             [$object, $errors] = $responseModel->toResponse($json);
             if (empty($errors)) {
                 if ($object instanceof CanTransformResponse) {
-                    return $object->transform();
+                    $this->eventDispatcher->dispatch(new ResponseTransformationStarted($object));
+                    $result = $object->transform();
+                    $this->eventDispatcher->dispatch(new ResponseTransformationFinished($result));
+                } else {
+                    $result = $object;
                 }
-                return $object;
+                $this->eventDispatcher->dispatch(new ResponseGenerated($result));
+                return $result;
             }
+            $this->eventDispatcher->dispatch(new ResponseValidationFailed($errors));
             $messages[] = ['role' => 'assistant', 'content' => $json];
             $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . '\n' . $errors];
             $retries++;

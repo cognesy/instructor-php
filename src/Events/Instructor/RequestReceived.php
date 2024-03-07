@@ -1,12 +1,14 @@
 <?php
-namespace Cognesy\Instructor\Events\LLM;
 
+namespace Cognesy\Instructor\Events\Instructor;
+
+use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Events\Event;
 
-class RequestSent extends Event
+class RequestReceived extends Event
 {
     public function __construct(
-        public array $request = [],
+        public Request $request,
     ) {
         parent::__construct();
     }

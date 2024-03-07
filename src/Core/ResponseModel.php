@@ -37,7 +37,7 @@ class ResponseModel
     /**
      * Deserialize JSON and validate response object
      */
-    public function toResponse(string $json) {
+    public function toResponse(string $json) : array {
         $object = $this->deserialize($json);
         if ($this->validate($object)) {
             return [$object, null];

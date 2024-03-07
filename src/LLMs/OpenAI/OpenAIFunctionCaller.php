@@ -7,19 +7,18 @@ use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\RequestSent;
+use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
+use Cognesy\Instructor\LLMs\FunctionCall;
+use Cognesy\Instructor\LLMs\LLMResponse;
 use OpenAI;
 use OpenAI\Client;
+use OpenAI\Responses\StreamResponse;
 
 class OpenAIFunctionCaller implements CanCallFunction
 {
     private EventDispatcher $eventDispatcher;
     private Client $client;
-
-    private array $selectedFunctions = [];
-    private string $finishReason;
-
-    private array $eventCallbacks = [];
 
     public function __construct(
         EventDispatcher $eventDispatcher,
@@ -47,7 +46,7 @@ class OpenAIFunctionCaller implements CanCallFunction
         array $functionSchema,
         string $model = 'gpt-4-0125-preview',
         array $options = [],
-    ) : string {
+    ) : LLMResponse {
         $request = array_merge([
             'model' => $model,
             'messages' => $messages,
@@ -67,40 +66,65 @@ class OpenAIFunctionCaller implements CanCallFunction
     /**
      * Handle chat call
      */
-    private function handleChatCall(array $request) : string {
+    private function handleChatCall(array $request) : LLMResponse {
         $this->eventDispatcher->dispatch(new RequestSent($request));
         $response = $this->client->chat()->create($request);
-        // which function has been called - if parallel tools on
-        $this->selectedFunctions[] = $response->choices[0]->message->toolCalls[0]->function->name ?? '';
-        $responseJson = $response->choices[0]->message->toolCalls[0]->function->arguments ?? '';
         $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
+
+        // which function has been called - if parallel tools on
+        $toolCalls = [];
+        foreach ($response->choices[0]->message->toolCalls as $data) {
+            $toolCalls[] = new FunctionCall(
+                $data->id ?? '',
+                $data->function->name ?? '',
+                $data->function->arguments ?? ''
+            );
+        }
+
         // handle finishReason other than 'stop'
-        $this->finishReason = $response->choices[0]->finishReason ?? null;
-        return $responseJson;
+        $finishReason = $response->choices[0]->finishReason ?? null;
+
+        return new LLMResponse($toolCalls, $finishReason, $response->toArray());
     }
 
     /**
      * Handle streamed chat call
      */
-    private function handleStreamedChatCall(array $request) : string {
+    private function handleStreamedChatCall(array $request) : LLMResponse {
+        // TODO: This function is not finished
+
         $this->eventDispatcher->dispatch(new RequestSent($request));
         $responseJson = '';
+        $lastResponse = null;
+        $toolCalls = [];
+
         $stream = $this->client->chat()->createStreamed($request);
         foreach($stream as $response){
             $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
-            // which function has been called - if parallel tools on
-            if (isset($response->choices[0]->delta->toolCalls[0]->function->name)) {
-                $this->selectedFunctions[] = $response->choices[0]->delta->toolCalls[0]->function->name ?? '';
-            }
-            $jsonChunk = $response->choices[0]->delta->toolCalls[0]->function->arguments ?? '';
-            if ($jsonChunk) {
-                $this->eventDispatcher->dispatch(new ChunkReceived($jsonChunk));
-                $responseJson .= $jsonChunk;
-                $this->eventDispatcher->dispatch(new PartialJsonReceived($responseJson));
-            }
+            $responseJson .= $this->processPartialResponse($response);
+            $this->eventDispatcher->dispatch(new PartialJsonReceived($responseJson));
+            $lastResponse = $response;
         }
+        $this->eventDispatcher->dispatch(new StreamedResponseFinished($lastResponse->toArray()));
+
         // handle finishReason other than 'stop'
-        $this->finishReason = $response->choices[0]->finishReason ?? null;
-        return $responseJson;
+        $finishReason = $response->choices[0]->finishReason ?? null;
+
+        return new LLMResponse($toolCalls, $finishReason, $response->toArray());
+    }
+
+    private function processPartialResponse(StreamResponse $response) : string {
+        // TODO: This function is not finished
+
+        // which function has been called - if parallel tools on
+        if (isset($response->choices[0]->delta->toolCalls[0]->function->name)) {
+            $this->selectedFunctions[] = $response->choices[0]->delta->toolCalls[0]->function->name ?? '';
+        }
+
+        $jsonChunk = $response->choices[0]->delta->toolCalls[0]->function->arguments ?? '';
+        if ($jsonChunk) {
+            $this->eventDispatcher->dispatch(new ChunkReceived($jsonChunk));
+        }
+        return $jsonChunk;
     }
 }

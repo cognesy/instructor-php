@@ -1,18 +1,19 @@
 <?php
-namespace Cognesy\Instructor\Events\LLM;
+
+namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
 
-class PartialJsonReceived extends Event
+class ResponseSent extends Event
 {
     public function __construct(
-        public string $partialJson = '',
+        public mixed $response,
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return $this->format($this->partialJson);
+        return $this->format(json_encode($this->response));
     }
 }
