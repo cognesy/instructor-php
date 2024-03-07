@@ -13,6 +13,6 @@ class RequestSent extends Event
 
     public function __toString(): string
     {
-        return $this->format(json_encode($this->request));
+        return json_encode($this->request);
     }
 }

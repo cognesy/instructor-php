@@ -1,19 +1,21 @@
 <?php
 
-namespace Cognesy\Instructor\Events\RequestHandler;
+namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
+use Throwable;
 
-class ResponseReceivedFromLLM extends Event
+class ErrorRaised extends Event
 {
     public function __construct(
-        public mixed $response
-    ) {
+        public Throwable $e
+    )
+    {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return $this->e->getMessage();
     }
 }

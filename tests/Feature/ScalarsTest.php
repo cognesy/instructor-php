@@ -2,20 +2,14 @@
 namespace Tests;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Core\EventDispatcher;
-use Cognesy\Instructor\Events\LLM\RequestSent;
-use Cognesy\Instructor\Events\LLM\ResponseReceived;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
-use Cognesy\Instructor\Utils\Configuration;
-use Mockery;
 
 it('extracts int type', function () {
     $mockLLM = MockLLM::get(['{"age":28}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $value = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s age?'],
@@ -30,7 +24,7 @@ it('extracts string type', function () {
     $mockLLM = MockLLM::get(['{"firstName":"Jason"}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $value = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is his name?'],
@@ -45,7 +39,7 @@ it('extracts float type', function () {
     $mockLLM = MockLLM::get(['{"recordTime":11.6}']);
 
     $text = "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.";
-    $value = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s best 100m run time?'],
@@ -60,7 +54,7 @@ it('extracts bool type', function () {
     $mockLLM = MockLLM::get(['{"isAdult":true}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $age = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
+    $age = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'Is he adult?'],
@@ -76,7 +70,7 @@ it('extracts enum type', function () {
     $mockLLM = MockLLM::get(['{"citizenshipGroup":"other"}']);
 
     $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-    $age = (new Instructor)->withOverride([CanCallFunction::class => $mockLLM])->respond(
+    $age = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],

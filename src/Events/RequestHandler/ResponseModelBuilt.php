@@ -16,6 +16,6 @@ class ResponseModelBuilt extends Event
 
     public function __toString(): string
     {
-        return $this->format(json_encode($this->requestedModel));
+        return json_encode($this->requestedModel);
     }
 }

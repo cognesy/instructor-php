@@ -14,6 +14,6 @@ class ResponseSent extends Event
 
     public function __toString(): string
     {
-        return $this->format(json_encode($this->response));
+        return json_encode($this->response);
     }
 }

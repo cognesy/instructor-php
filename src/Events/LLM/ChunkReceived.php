@@ -13,6 +13,6 @@ class ChunkReceived extends Event
 
     public function __toString(): string
     {
-        return $this->format($this->chunk);
+        return $this->chunk;
     }
 }

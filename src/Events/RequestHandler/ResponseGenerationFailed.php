@@ -1,13 +1,13 @@
 <?php
-
 namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseGenerated extends Event
+class ResponseGenerationFailed extends Event
 {
     public function __construct(
-        public mixed $response
+        public int $retries,
+        public string $errors
     )
     {
         parent::__construct();
@@ -15,6 +15,10 @@ class ResponseGenerated extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return json_encode([
+            'retries' => $this->retries,
+            'errors' => $this->errors
+        ]);
     }
 }
+

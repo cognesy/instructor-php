@@ -15,6 +15,6 @@ class StreamedResponseFinished extends Event
 
     public function __toString(): string
     {
-        return $this->format(json_encode($this->lastResponse));
+        return json_encode($this->lastResponse);
     }
 }

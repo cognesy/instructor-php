@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseTransformationFinished extends Event
+class ResponseTransformed extends Event
 {
     public function __construct(
         public mixed $result
@@ -14,6 +14,6 @@ class ResponseTransformationFinished extends Event
 
     public function __toString(): string
     {
-        return $this->format(json_encode($this->result));
+        return json_encode($this->result);
     }
 }

@@ -6,10 +6,11 @@ use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Events\RequestHandler\RequestSentToLLM;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerated;
+use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
 use Cognesy\Instructor\Events\RequestHandler\ResponseReceivedFromLLM;
-use Cognesy\Instructor\Events\RequestHandler\ResponseTransformationFinished;
-use Cognesy\Instructor\Events\RequestHandler\ResponseTransformationStarted;
+use Cognesy\Instructor\Events\RequestHandler\ResponseTransformed;
+use Cognesy\Instructor\Events\RequestHandler\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\RequestHandler\ResponseValidationFailed;
 use Exception;
 
@@ -68,21 +69,22 @@ class RequestHandler
             $json = $response->toolCalls[0]->functionArguments;
             [$object, $errors] = $responseModel->toResponse($json);
             if (empty($errors)) {
+                $this->eventDispatcher->dispatch(new ResponseConvertedToObject($object));
                 if ($object instanceof CanTransformResponse) {
-                    $this->eventDispatcher->dispatch(new ResponseTransformationStarted($object));
                     $result = $object->transform();
-                    $this->eventDispatcher->dispatch(new ResponseTransformationFinished($result));
+                    $this->eventDispatcher->dispatch(new ResponseTransformed($result));
                 } else {
                     $result = $object;
                 }
                 $this->eventDispatcher->dispatch(new ResponseGenerated($result));
                 return $result;
             }
-            $this->eventDispatcher->dispatch(new ResponseValidationFailed($errors));
+            $this->eventDispatcher->dispatch(new ResponseValidationFailed($retries, $errors));
             $messages[] = ['role' => 'assistant', 'content' => $json];
             $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . '\n' . $errors];
             $retries++;
         }
+        $this->eventDispatcher->dispatch(new ResponseGenerationFailed($retries, $errors));
         throw new Exception("Failed to extract data due to validation constraints: " . $errors);
     }
 }

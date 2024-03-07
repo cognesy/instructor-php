@@ -24,12 +24,12 @@ class RequestSentToLLM extends Event
 
     public function __toString(): string
     {
-        return $this->format(json_encode([
+        return json_encode([
             'messages' => $this->messages,
             'tool' => $this->responseModel->functionName,
             'tools' => $this->responseModel->functionCall,
             'model' => $this->request->model,
             'options' => $this->request->options
-        ]));
+        ]);
     }
 }
