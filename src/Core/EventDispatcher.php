@@ -9,7 +9,7 @@ class EventDispatcher
     private array $listeners = [];
     private array $wiretaps = [];
 
-    public function connect(string $eventClass, callable $listener): self
+    public function addListener(string $eventClass, callable $listener): self
     {
         $this->listeners[$eventClass][] = $listener;
         return $this;

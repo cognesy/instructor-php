@@ -6,6 +6,7 @@ use JsonException;
 /**
  * Original author: Greg Hunt
  * Original source: https://github.com/greghunt/partial-json/
+ * License: MIT
  */
 class JsonParser
 {

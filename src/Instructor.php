@@ -75,6 +75,7 @@ class Instructor {
     }
 
     public function onEvent(string $class, callable $listener) : self {
+        /** @var EventDispatcher $eventDispatcher */
         $eventDispatcher = $this->config->get(EventDispatcher::class);
         $eventDispatcher->addListener($class, $listener);
         return $this;

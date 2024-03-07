@@ -2,6 +2,7 @@
 namespace Tests;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
+use Cognesy\Instructor\Events\LLM\ResponseReceived;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Extraction\Person;
 
@@ -36,3 +37,20 @@ it('self-corrects values extracted by LLM based on validation results', function
     expect($person->age)->toBe(28);
 });
 
+it('supports streaming', function () {
+    //$mockLLM = MockLLM::get(['{"name":"Jason","age":28}']);
+
+    $person = (new Instructor)
+        ->wiretap(fn($e)=>dump($e->toConsole()))
+        ->onEvent(ResponseReceived::class, fn($e)=>dump($e->response))
+        ->onError(fn($e)=>dump($e->error))
+        ->respond(
+            messages: "His name is Jason, he is 28 years old.",
+            responseModel: Person::class,
+        )
+    ;
+    // dump($person);
+    expect($person)->toBeInstanceOf(Person::class);
+    expect($person->name)->toBe('Jason');
+    expect($person->age)->toBe(28);
+})->skip();

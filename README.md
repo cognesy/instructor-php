@@ -97,7 +97,7 @@ var_dump($person);
 //     age: 28
 // }    
 ```
-> **NOTE:** Currently, Instructor only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class.
+> **NOTE:** Instructor only supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values.
 
 
 ### Validation
