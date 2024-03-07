@@ -1,8 +1,8 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Schema\PropertyInfoBased\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\PropertyInfoBased\Utils\SchemaBuilder;
+use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 
 it('creates Schema object from JSON Schema array', function ($jsonSchema) {
     $schema = (new SchemaBuilder)->fromArray($jsonSchema);

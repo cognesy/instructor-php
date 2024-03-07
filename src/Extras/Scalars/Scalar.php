@@ -54,7 +54,7 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
             'type' => 'object',
             'properties' => [
                 $this->name => [
-                    '$comment' => $this->enumType,
+                    '$comment' => $this->enumType ?? '',
                     'description' => $this->description,
                     'type' => $this->type->toJsonType(),
                 ],

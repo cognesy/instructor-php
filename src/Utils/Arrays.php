@@ -2,8 +2,7 @@
 
 namespace Cognesy\Instructor\Utils;
 
-class Arrays
-{
+class Arrays {
     static public function flatten(array $arrays, string $separator): string {
         $flat = '';
         foreach ($arrays as $item) {

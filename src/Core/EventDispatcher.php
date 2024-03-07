@@ -1,0 +1,26 @@
+<?php
+
+namespace Cognesy\Instructor\Core;
+
+use Cognesy\Instructor\Events\Event;
+
+class EventDispatcher
+{
+    private array $listeners = [];
+
+    public function connect(string $eventClass, callable $listener): self
+    {
+        $this->listeners[$eventClass][] = $listener;
+        return $this;
+    }
+
+    public function dispatch(Event $event): void
+    {
+        $eventClass = get_class($event);
+        if (isset($this->listeners[$eventClass])) {
+            foreach ($this->listeners[$eventClass] as $listener) {
+                $listener($event);
+            }
+        }
+    }
+}

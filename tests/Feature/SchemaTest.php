@@ -1,7 +1,8 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Schema\PropertyInfoBased\Factories\FunctionCallFactory;
+use Cognesy\Instructor\Schema\Factories\FunctionCallFactory;
+use Cognesy\Instructor\Utils\Configuration;
 use Tests\Examples\Complex\ProjectEvent;
 use Tests\Examples\Complex\ProjectEvents;
 
@@ -20,7 +21,9 @@ if (!function_exists('addEvent')) {
 
 
 it('creates function call', function () {
-    $array = (new FunctionCallFactory)->fromClass(ProjectEvents::class, 'addEvent', 'Extract object from provided content');
+    $array = Configuration::instance()
+        ->get(FunctionCallFactory::class)
+        ->fromClass(ProjectEvents::class, 'addEvent', 'Extract object from provided content');
     expect($array)->toBeArray();
     expect($array['type'])->toEqual('function');
     expect($array['function']['name'])->toEqual('addEvent');

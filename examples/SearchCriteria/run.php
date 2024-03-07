@@ -36,7 +36,7 @@ class SearchQuery
 }
 
 function segment(string $data) : Search {
-    return (new Instructor())->respond(
+    return (new Instructor)->respond(
         messages: [[
             "role" => "user",
             "content" => "Consider the data below: '\n$data' and segment it into multiple search queries",

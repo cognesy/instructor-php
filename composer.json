@@ -6,7 +6,10 @@
     "autoload": {
         "psr-4": {
             "Cognesy\\Instructor\\": "src/"
-        }
+        },
+        "files": [
+            "config/autowire.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

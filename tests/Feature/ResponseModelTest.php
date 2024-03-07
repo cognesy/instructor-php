@@ -1,13 +1,15 @@
 <?php
 
-use Cognesy\Instructor\ResponseModel;
-use Cognesy\Instructor\Schema\PropertyInfoBased\Factories\SchemaFactory;
+use Cognesy\Instructor\Core\ResponseModelFactory;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Utils\Configuration;
 use Tests\Examples\ResponseModel\User;
 use Tests\Examples\ResponseModel\UserWithProvider;
 
-
 it('can handle string class name', function() {
-    $responseModel = new ResponseModel(User::class);
+    $responseModel = Configuration::fresh()
+        ->get(ResponseModelFactory::class)
+        ->from(User::class);
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -25,7 +27,9 @@ it('can handle string class name', function() {
 });
 
 it('can handle array schema', function($user) {
-    $responseModel = new ResponseModel($user);
+    $responseModel = Configuration::fresh()
+        ->get(ResponseModelFactory::class)
+        ->from($user);
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -43,7 +47,9 @@ it('can handle array schema', function($user) {
 })->with('user_response_model');
 
 it('can handle schema provider - via instance', function() {
-    $responseModel = new ResponseModel(new UserWithProvider());
+    $responseModel = Configuration::fresh()
+        ->get(ResponseModelFactory::class)
+        ->from(new UserWithProvider());
     expect($responseModel->class)->toBe(UserWithProvider::class);
     expect($responseModel->instance)->toBeInstanceOf(UserWithProvider::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -61,7 +67,9 @@ it('can handle schema provider - via instance', function() {
 });
 
 it('can handle schema provider - via class name', function() {
-    $responseModel = new ResponseModel(UserWithProvider::class);
+    $responseModel = Configuration::fresh()
+        ->get(ResponseModelFactory::class)
+        ->from(UserWithProvider::class);
     expect($responseModel->class)->toBe(UserWithProvider::class);
     expect($responseModel->instance)->toBeInstanceOf(UserWithProvider::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -79,8 +87,12 @@ it('can handle schema provider - via class name', function() {
 });
 
 it('can handle ObjectSchema instance', function() {
-    $schema = (new SchemaFactory)->schema(User::class);
-    $responseModel = new ResponseModel($schema);
+    $schema = Configuration::fresh()
+        ->get(SchemaFactory::class)
+        ->schema(User::class);
+    $responseModel = Configuration::fresh()
+        ->get(ResponseModelFactory::class)
+        ->from($schema);
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -98,7 +110,9 @@ it('can handle ObjectSchema instance', function() {
 });
 
 it('can handle raw object', function() {
-    $responseModel = new ResponseModel(new User());
+    $responseModel = Configuration::fresh()
+        ->get(ResponseModelFactory::class)
+        ->from(new User());
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();

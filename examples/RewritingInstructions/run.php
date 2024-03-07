@@ -38,5 +38,4 @@ $user = $instructor->respond(
     messages: [["role" => "user",  "content" => "I'm Jason, I'm 28 yo. I am responsible for driving growth of our company."]],
     responseModel: UserDetail::class,
 );
-dump($instructor->request());
 dump($user);

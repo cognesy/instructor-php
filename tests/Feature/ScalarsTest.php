@@ -1,19 +1,24 @@
 <?php
 namespace Tests;
 
+use Cognesy\Instructor\Contracts\CanCallFunction;
+use Cognesy\Instructor\Core\EventDispatcher;
+use Cognesy\Instructor\Events\LLM\RequestSent;
+use Cognesy\Instructor\Events\LLM\ResponseReceived;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenAI\LLM;
+use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
+use Cognesy\Instructor\Utils\Configuration;
 use Mockery;
 
 it('extracts int type', function () {
-    $mockLLM = Mockery::mock(LLM::class);
+    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"age":28}',
     );
 
     $text = "His name is Jason, he is 28 years old.";
-    $value = (new Instructor(llm: $mockLLM))->respond(
+    $value = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s age?'],
@@ -22,16 +27,16 @@ it('extracts int type', function () {
     );
     expect($value)->toBeInt();
     expect($value)->toBe(28);
-});
+})->only();
 
 it('extracts string type', function () {
-    $mockLLM = Mockery::mock(LLM::class);
+    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"firstName":"Jason"}',
     );
 
     $text = "His name is Jason, he is 28 years old.";
-    $value = (new Instructor(llm: $mockLLM))->respond(
+    $value = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is his name?'],
@@ -40,16 +45,16 @@ it('extracts string type', function () {
     );
     expect($value)->toBeString();
     expect($value)->toBe("Jason");
-});
+})->only();
 
 it('extracts float type', function () {
-    $mockLLM = Mockery::mock(LLM::class);
+    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"recordTime":11.6}',
     );
 
     $text = "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.";
-    $value = (new Instructor(llm: $mockLLM))->respond(
+    $value = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s best 100m run time?'],
@@ -61,13 +66,13 @@ it('extracts float type', function () {
 });
 
 it('extracts bool type', function () {
-    $mockLLM = Mockery::mock(LLM::class);
+    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"isAdult":true}',
     );
 
     $text = "His name is Jason, he is 28 years old.";
-    $age = (new Instructor(llm: $mockLLM))->respond(
+    $age = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'Is he adult?'],
@@ -80,13 +85,13 @@ it('extracts bool type', function () {
 
 
 it('extracts enum type', function () {
-    $mockLLM = Mockery::mock(LLM::class);
+    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"citizenshipGroup":"other"}',
     );
 
     $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-    $age = (new Instructor(llm: $mockLLM))->respond(
+    $age = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],

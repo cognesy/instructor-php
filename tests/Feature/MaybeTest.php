@@ -1,18 +1,19 @@
 <?php
 
+use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenAI\LLM;
+use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
 use Tests\Examples\Extraction\Person;
 
 
 it('supports simple properties', function () {
-    $mockLLM = Mockery::mock(LLM::class);
+    $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
     $mockLLM->shouldReceive('callFunction')->andReturnUsing(
         fn() => '{"name":"Jason","age":28}',
     );
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new Instructor(llm: $mockLLM))->respond(
+    $person = (new Instructor([CanCallFunction::class => $mockLLM]))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     );

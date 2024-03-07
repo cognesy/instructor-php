@@ -1,7 +1,20 @@
 # NOTES
 
 
+## Observability
+
+> Priority: must have
+
+Requirements and solution - to be analyzed
+
+ - How to track regular vs streamed responses? Streamed responses are unreadable / meaningless individually. Higher abstraction layer is needed to handle them - eg. "folder" with individual chunks of data. Completion ID allows to track incoming chunks under a single context.
+ - Completion, if streamed, needs extra info on whether it has been completed or disrupted for any reason.
+
+
+
 ## Better control over deserialization
+
+> Priority: must have
 
 We need custom deserializer or easier way of customizing existing one.
 Specific need is #[Description] attribute, which should be used to generate description.
@@ -13,30 +26,79 @@ Need to document how to write and plug in custom field / object deserializer int
 Custom deserialization strategy is also needed for partial updates, maybe for streaming too.
 
 
+## Validation
 
-## Parallel function calling
+### Returning errors - array vs typed object
 
-GPT-4-turbo can handle parallel function calling, which allows to return multiple models in a single API call. We do not yet support it, but Python Instructor does.
+Array is simple and straightforward, but it's not type safe and does not provide a way to add custom methods to the error object.
 
-The benefit is that you can reduce the number of function calls and get extra "intelligence", for example asking LLM to return a series of "operations" it considers relevant to the input.
+Typed object is less flexible, but actually might be better for DX.
 
-Need to test it further to understand how it is different from constructing a more complex model that is composed out of other models (or sequences of other models).
+If the switch to typed object error is decided, current CanSelfValidate need changes as it currently returns an array.
 
-One obvious benefit could be that they are returned separately, can be processed separately and, potentially, acted upon in parallel.
+### Validation for custom deserializers
 
-It is doable with composite models via custom deserialization, but would be nice not to be forced to do it manually.
+> **Observation:** Symfony Validator does not care whether it validates full / big, complex model or individual objects. It's a good thing, as it allows for partial validation - not property by property, but at least object by object (and separately for nested objects).
+
+Idea: we could have multiple validators connected to the model and executed in a sequence.
+
+
+## Other LLMs
+
+> Priority: must have
+
+1) Via custom BASE_URI - via existing OpenAI client
+2) Custom LLM classes.
+   LLM class is the one that needs to handle all model / API specific stuff (e.g. function calling - vide: Claude's FC XML "API", streaming, modes, etc.).
+
+We MUST support models which offer OpenAI compatible API and function calling (step 1 above).
+Most likely we do already, but it should be tested and documented, so anybody can do it easily.
+
+Things missing currently:
+ - Tests
+ - Documentation
+ - Examples
+
+Next steps:
+ - Implement custom LLM class - for Claude?
+
+
+
+## Other modes of extraction
+
+> Priority: should have
+
+It is related to compatibility with other LLMs, as some of them may not directly support function calling or support it in a different way (see: Claude).
+
+### JSON_MODE vs function calling
+
+Add JSON_MODE to the LLM class, so it can handle both modes.
+
+### MISTRAL_MODE
+
+Review Jason's Python code to understand how to handle function calling for Mistral.
+
+### YAML
+
+For models not supporting function calling YAML might be an easier way to get structured outputs.
+
 
 
 
 ## Streaming arrays / iterables
 
+> Priority: should have
+
 Callback approach - provide callback to Instructor, which will be called for each
 token received (?). It does not make sense for structured outputs, only if the result
 is iterable / array.
 
+Streamed responses require special handling in Instructor core - checking for "finishReason", and handling other than "stop".
 
 
 ## Partial updates
+
+> Priority: should have
 
 If callback is on, we should be able to provide partial updates to the object + send
 notifications about the changes.
@@ -46,8 +108,7 @@ To achieve this I need a way to generate a skeleton JSON, send it back to the cl
 Question: How to make partial updates and streaming / iterables compatible?
 
 
-
-### Denormalization of model structure
+### IDEA: Denormalization of model structure
 
 It may make sense to denormalize the model - instead of nested structure, split it into a series of individual objects with references. Then generate them in a sequence individually (while providing object context). To be tested if this would result in better or worse inference quality, which is ultimately the most important thing.
 
@@ -110,30 +171,19 @@ issues.issue[1].related_quotes.quote[3].date
 ```
 
 
+## Parallel function calling
 
-## Other LLMs
+> Priority: nice to have
 
-1) Via custom BASE_URI - via existing OpenAI client
-2) Custom LLM classes.
-LLM class is the one that needs to handle all model / API specific stuff (e.g. function calling - vide: Claude's FC XML "API", streaming, modes, etc.).
+GPT-4-turbo can handle parallel function calling, which allows to return multiple models in a single API call. We do not yet support it, but Python Instructor does.
 
-### JSON_MODE vs function calling
+The benefit is that you can reduce the number of function calls and get extra "intelligence", for example asking LLM to return a series of "operations" it considers relevant to the input.
 
-Add JSON_MODE to the LLM class, so it can handle both modes.
+Need to test it further to understand how it is different from constructing a more complex model that is composed out of other models (or sequences of other models).
 
-### MISTRAL_MODE
+One obvious benefit could be that they are returned separately, can be processed separately and, potentially, acted upon in parallel.
 
-Review Jason's Python code to understand how to handle function calling for Mistral.
-
-### YAML
-
-For models not supporting function calling YAML might be an easier way to get structured outputs.
-
-
-
-## Observability
-
-Requirements and solution - to be analyzed
+It is doable with composite models via custom deserialization, but would be nice not to be forced to do it manually.
 
 
 
@@ -214,6 +264,49 @@ Document and write tests around the behavior of public vs private/protected fiel
 Identify capabilities of the engine that could be parallelized, so we can speed up processing of the results, esp. for large data sets.
 
 
+## CLI
+
+> Priority: nice to have
+
+### Simple example
+
+```cli
+iphp --messages "Jason is 35 years old" --respond-with UserDetails --response-format yaml
+```
+It will search for UserFormat.php (PHP class) or UserFormat.json (JSONSchema) in current dir.
+We should be able to provide a path to class code / schema definitions directory.
+Default response format is JSON, we can render it to YAML (or other supported formats).
+
+### Scalar example
+
+```cli
+iphp --messages "Jason is 35 years old" --respond-with Scalar::bool('isAdult')
+```
+
+
+## Instant REST API and docs
+
+> Priority: nice to have
+
+Can we serve the models via REST API and generate Swagger documentation automatically?
+FrankenPHP could be used as default, fast server.
+
+
+## Interoperability with Python/JS versions
+
+> Priority: nice to have
+
+Can we make it easy to automatically convert models between Python, JS and PHP versions of Instructor?
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -221,7 +314,8 @@ Identify capabilities of the engine that could be parallelized, so we can speed 
 
 ## Support scalar types as response_model
 
-Solution 1:
+### Problem and ideas
+
 Have universal scalar value adapter with HasSchemaProvider interface
 HasSchemaProvider = schema() : Schema, which, if present, will be used to generate schema
 Instead of the default schema generation mechanism
@@ -239,6 +333,8 @@ $isAdult = (new Instructor)->respond(
 ```
 
 ## Custom schema generation - not based on class reflection & PHPDoc
+
+### Problem and ideas
 
 Model classes could implement HasSchemaProvider interface, which would allow for custom schema generation - rendering logic would skip reflection and use the provided schema instead.
 
@@ -271,6 +367,8 @@ This is used for the implementation of Scalar class, which is a universal adapte
 
 
 ## Validation
+
+### Problem and ideas
 
 What about validation in such case? we can already have ```validate()``` method in the schema,
 Is it enough?

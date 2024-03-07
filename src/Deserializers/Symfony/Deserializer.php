@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Deserializers\Symfony;
 
-use Cognesy\Instructor\Contracts\CanDeserialize;
+use Cognesy\Instructor\Contracts\CanDeserializeResponse;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class Deserializer implements CanDeserialize
+class Deserializer implements CanDeserializeResponse
 {
     public function deserialize(string $data, string $model): object
     {
