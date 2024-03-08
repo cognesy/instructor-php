@@ -78,7 +78,7 @@ it('supports arrays of objects property', function () {
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddresses::class,
     );
-    dump($person);
+    //dump($person);
     expect($person)->toBeInstanceOf(PersonWithAddresses::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
@@ -95,8 +95,8 @@ it('can extract complex, multi-nested structure', function ($text) {
     $instructor = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM]); //$mockLLM
     /** @var \Tests\Examples\Complex\ProjectEvents $events */
     $events = $instructor
-//        ->wiretap(fn($e)=>dump($e->toConsole()))
-//        ->onEvent(ResponseModelBuilt::class, fn($e)=>dump($e))
+        //->wiretap(fn($e)=>dump($e->toConsole()))
+        //->onEvent(ResponseModelBuilt::class, fn($e)=>dump($e))
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: ProjectEvents::class,
