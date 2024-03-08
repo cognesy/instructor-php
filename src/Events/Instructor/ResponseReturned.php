@@ -1,16 +1,14 @@
 <?php
 
-namespace Cognesy\Instructor\Events\LLM;
+namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\LLMs\LLMResponse;
 
-class StreamedResponseFinished extends Event
+class ResponseReturned extends Event
 {
     public function __construct(
-        public LLMResponse $response
-    )
-    {
+        public mixed $response,
+    ) {
         parent::__construct();
     }
 

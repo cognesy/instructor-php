@@ -5,8 +5,10 @@ use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
+use Cognesy\Instructor\Events\Instructor\InstructorReady;
+use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Events\Instructor\ResponseSent;
+use Cognesy\Instructor\Events\Instructor\ResponseReturned;
 use Cognesy\Instructor\Utils\Configuration;
 use Throwable;
 
@@ -17,10 +19,15 @@ use Throwable;
  */
 class Instructor {
     public Configuration $config;
+    private EventDispatcher $eventDispatcher;
     private $onError;
+    private $queuedEvents = [];
 
     public function __construct(array $config = []) {
+        $this->queuedEvents[] = new InstructorStarted($config);
         $this->config = Configuration::fresh($config);
+        $this->queuedEvents[] = new InstructorReady($this->config);
+        $this->eventDispatcher = $this->config->get(EventDispatcher::class);
     }
 
     public function withConfig(array $config) : self {
@@ -39,50 +46,44 @@ class Instructor {
         array $options = [],
     ) : mixed {
         try {
-            // create request event immediately, so we get accurate timestamp
             $request = new Request($messages, $responseModel, $model, $maxRetries, $options);
-            // initialize config - if not already done
-            if (!isset($this->config)) {
-                $this->config = Configuration::fresh();
-            }
-            // get event dispatcher and wiretap it
-            /** @var EventDispatcher $eventDispatcher */
-            $eventDispatcher = $this->config->get(EventDispatcher::class);
-            // ...only now we dispatch the request received event
-            $eventDispatcher->dispatch(new RequestReceived($request));
-            // now we can handle the request
+            $this->dispatchQueuedEvents();
+            $this->eventDispatcher->dispatch(new RequestReceived($request));
             $requestHandler = $this->config->get(RequestHandler::class);
             $response = $requestHandler->respond($request);
-            $eventDispatcher->dispatch(new ResponseSent($response));
-            // ...and return the response
+            $this->eventDispatcher->dispatch(new ResponseReturned($response));
             return $response;
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
-            $eventDispatcher->dispatch(new ErrorRaised($error));
+            $this->eventDispatcher->dispatch(new ErrorRaised($error));
             if (isset($this->onError)) {
                 // final attempt to recover from the error (e.g. give fallback response)
                 return ($this->onError)($request, $error);
-            } else {
-                throw $error;
             }
+            throw $error;
         }
     }
 
     public function wiretap(callable $listener) : self {
-        $eventDispatcher = $this->config->get(EventDispatcher::class);
-        $eventDispatcher->wiretap($listener);
+        $this->eventDispatcher->wiretap($listener);
         return $this;
     }
 
     public function onEvent(string $class, callable $listener) : self {
-        /** @var EventDispatcher $eventDispatcher */
-        $eventDispatcher = $this->config->get(EventDispatcher::class);
-        $eventDispatcher->addListener($class, $listener);
+        $this->eventDispatcher->addListener($class, $listener);
         return $this;
     }
 
     public function onError(callable $listener) : self {
         $this->onError = $listener;
         return $this;
+    }
+
+    private function dispatchQueuedEvents()
+    {
+        foreach ($this->queuedEvents as $event) {
+            $this->eventDispatcher->dispatch($event);
+        }
+        $this->queuedEvents = [];
     }
 }

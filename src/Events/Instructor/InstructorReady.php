@@ -3,17 +3,19 @@
 namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Configuration;
 
-class ResponseSent extends Event
+class InstructorReady extends Event
 {
     public function __construct(
-        public mixed $response,
-    ) {
+        public Configuration $config
+    )
+    {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return json_encode($this->config);
     }
 }

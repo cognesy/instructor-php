@@ -47,10 +47,11 @@ it('supports streaming', function () {
         ->respond(
             messages: "His name is Jason, he is 28 years old.",
             responseModel: Person::class,
+            options: ['stream' => true],
         )
     ;
     // dump($person);
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
-})->skip();
+})->skip("Streaming is not implemented yet");
