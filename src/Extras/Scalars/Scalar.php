@@ -4,14 +4,17 @@ namespace Cognesy\Instructor\Extras\Scalars;
 
 use Cognesy\Instructor\Contracts\CanDeserializeJson;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Contracts\CanSelfValidate;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Exceptions\DeserializationException;
+use Exception;
 use ReflectionEnum;
 
 /**
  * Scalar value adapter.
  * Improved DX via simplified retrieval of scalar value from LLM response.
  */
-class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformResponse
+class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformResponse, CanSelfValidate
 {
     public mixed $value;
 
@@ -72,33 +75,47 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
     /**
      * Deserialize JSON into scalar value
      */
-    public function fromJson(string $json) : self {
-        $array = json_decode($json, true);
-        $value = $array[$this->name] ?? $this->defaultValue;
-        if (($value === null) && $this->required) {
-            throw new \Exception("Value is required");
+    public function fromJson(string $json) : static {
+        if (empty($json)) {
+            $this->value = $this->defaultValue;
+            return $this;
         }
         try {
-            $this->value = match ($this->type) {
-                ValueType::STRING => (string) $value,
-                ValueType::INTEGER => (int) $value,
-                ValueType::FLOAT => (float) $value,
-                ValueType::BOOLEAN => (bool) $value,
-            };
-        } catch (\Throwable $e) {
-            throw new \Exception("Failed to deserialize value: " . $e->getMessage());
+            // decode JSON into array
+            $array = json_decode($json, true);
+        } catch (Exception $e) {
+            throw new DeserializationException($e->getMessage(), $this->name, $json);
+        }
+        // check if value exists in JSON
+        $this->value = $array[$this->name] ?? $this->defaultValue;
+        return $this;
+    }
+
+    /**
+     * Validate scalar value
+     */
+    public function validate() : array {
+        $errors = [];
+        if ($this->required && $this->value === null) {
+            $errors[] = "Value '{$this->name}' is required";
         }
         if (!empty($this->options) && !in_array($this->value, $this->options)) {
-            throw new \Exception("Value is not in the list of allowed options");
+            $errors[] = "Value '{$this->name}' must be one of: " . implode(", ", $this->options);
         }
-        return $this;
+        return $errors;
     }
 
     /**
      * Transform response model into scalar value
      */
     public function transform() : mixed {
-        return $this->value;
+        // try to match it to supported type
+        return match ($this->type) {
+            ValueType::STRING => (string) $this->value,
+            ValueType::INTEGER => (int) $this->value,
+            ValueType::FLOAT => (float) $this->value,
+            ValueType::BOOLEAN => (bool) $this->value,
+        };
     }
 
     /**

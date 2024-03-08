@@ -7,7 +7,7 @@ class NewValidationRecoveryAttempt extends Event
 {
     public function __construct(
         public int    $retry,
-        public string $errors,
+        public array $errors,
     )
     {
         parent::__construct();

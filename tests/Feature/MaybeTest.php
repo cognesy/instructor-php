@@ -20,4 +20,4 @@ it('supports simple properties', function () {
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
-})->skip("Not implemented yet");
+})->skip("Maybe adapter not implemented yet");

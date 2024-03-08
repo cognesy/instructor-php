@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Deserializers\Symfony;
 
 use Cognesy\Instructor\Contracts\CanDeserializeResponse;
+use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Validators\Symfony\BackedEnumNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -36,6 +37,10 @@ class Deserializer implements CanDeserializeResponse
             encoders: [new JsonEncoder()]
         );
 
-        return $serializer->deserialize($data, $dataModelClass, 'json');
+        try {
+            return $serializer->deserialize($data, $dataModelClass, 'json');
+        } catch (\Exception $e) {
+            throw new DeserializationException($e->getMessage(), $dataModelClass, $data);
+        }
     }
 }

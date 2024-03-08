@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Core\RequestHandler;
@@ -9,7 +10,6 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseReturned;
-use Cognesy\Instructor\Utils\Configuration;
 use Throwable;
 
 /**

@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\config;
 
+use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Contracts\CanValidateResponse;
@@ -17,7 +18,6 @@ use Cognesy\Instructor\Schema\PropertyMap;
 use Cognesy\Instructor\Schema\SchemaMap;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
-use Cognesy\Instructor\Utils\Configuration;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 
 function autowire(Configuration $config) : Configuration

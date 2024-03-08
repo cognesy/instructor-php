@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Utils;
+namespace Cognesy\Instructor\Configuration;
 
 use Exception;
 use function Cognesy\config\autowire;

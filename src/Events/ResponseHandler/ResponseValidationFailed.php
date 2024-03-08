@@ -7,13 +7,13 @@ use Cognesy\Instructor\Events\Event;
 class ResponseValidationFailed extends Event
 {
     public function __construct(
-        public string $errors
+        public array $errors
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return $this->errors;
+        return json_encode($this->errors);
     }
 }

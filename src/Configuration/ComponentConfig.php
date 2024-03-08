@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Utils;
+namespace Cognesy\Instructor\Configuration;
 
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Exception;

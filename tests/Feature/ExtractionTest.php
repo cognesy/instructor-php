@@ -100,7 +100,7 @@ it('can extract complex, multi-nested structure', function ($text) {
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: ProjectEvents::class,
-        maxRetries: 2,
+        maxRetries: 0,
     );
 
     expect($events)->toBeInstanceOf(ProjectEvents::class);

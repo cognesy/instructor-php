@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Instructor\Events\RequestHandler;
+namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class FunctionCallResponseTransformed extends Event
+class ResponseTransformed extends Event
 {
     public function __construct(
         public mixed $result

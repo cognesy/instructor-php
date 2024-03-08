@@ -1,17 +1,6 @@
 # NOTES
 
 
-## Observability
-
-> Priority: must have
-
-Requirements and solution - to be analyzed
-
- - How to track regular vs streamed responses? Streamed responses are unreadable / meaningless individually. Higher abstraction layer is needed to handle them - eg. "folder" with individual chunks of data. Completion ID allows to track incoming chunks under a single context.
- - Completion, if streamed, needs extra info on whether it has been completed or disrupted for any reason.
-
-
-
 ## Better control over deserialization
 
 > Priority: must have
@@ -27,6 +16,8 @@ Custom deserialization strategy is also needed for partial updates, maybe for st
 
 
 ## Validation
+
+> Priority: must have
 
 ### Returning errors - array vs typed object
 
@@ -271,7 +262,7 @@ Identify capabilities of the engine that could be parallelized, so we can speed 
 ### Simple example
 
 ```cli
-iphp --messages "Jason is 35 years old" --respond-with UserDetails --response-format yaml
+instruct --messages "Jason is 35 years old" --respond-with UserDetails --response-format yaml
 ```
 It will search for UserFormat.php (PHP class) or UserFormat.json (JSONSchema) in current dir.
 We should be able to provide a path to class code / schema definitions directory.
@@ -280,7 +271,7 @@ Default response format is JSON, we can render it to YAML (or other supported fo
 ### Scalar example
 
 ```cli
-iphp --messages "Jason is 35 years old" --respond-with Scalar::bool('isAdult')
+instruct --messages "Jason is 35 years old" --respond-with Scalar::bool('isAdult')
 ```
 
 
@@ -376,3 +367,29 @@ Is it enough?
 ### Solution
 
 Validation can be also customized by implementing CanSelfValidate interface. It allows you to fully control how the data is validated. At the moment it skips built in Symfony Validator logic, so you have to deal with Symfony validation constraints manually.
+
+
+
+## Observability
+
+### Problem and ideas
+
+> Priority: must have
+
+Requirements and solution - to be analyzed
+
+- How to track regular vs streamed responses? Streamed responses are unreadable / meaningless individually. Higher abstraction layer is needed to handle them - eg. "folder" with individual chunks of data. Completion ID allows to track incoming chunks under a single context.
+- Completion, if streamed, needs extra info on whether it has been completed or disrupted for any reason.
+
+### Solution
+
+You can:
+- wiretap() to get stream of all internal events
+- connect to specific events via onEvent()
+
+This allows you plug in your preferred logging / monitoring system.
+
+- Performance - timestamps are available on events, which allows you to record performance of either full flow or individual steps.
+- Errors - can be done via onError()
+- Validation errors - can be done via onEvent()
+- Generated data models - can be done via onEvent()

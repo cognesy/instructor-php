@@ -2,22 +2,20 @@
 
 namespace Cognesy\Instructor\Events\RequestHandler;
 
+use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Events\Event;
 
-class ValidationRecoveryLimitReached extends Event
+class ResponseGenerationFailed extends Event
 {
     public function __construct(
-        public int $retries,
-        public array $errors,
+        public Request $request,
+        public string $error,
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode([
-            'retries' => $this->retries,
-            'errors' => $this->errors
-        ]);
+        return $this->error;
     }
 }

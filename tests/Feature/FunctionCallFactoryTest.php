@@ -1,8 +1,8 @@
 <?php
 namespace Tests;
 
+use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Schema\Factories\FunctionCallFactory;
-use Cognesy\Instructor\Utils\Configuration;
 use Tests\Examples\Complex\ProjectEvent;
 use Tests\Examples\Complex\ProjectEvents;
 

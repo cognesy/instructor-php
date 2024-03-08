@@ -3,16 +3,15 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResultReady;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseTransformed;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
 use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Exceptions\DeserializationException;
+use Cognesy\Instructor\Exceptions\ValidationException;
 use Exception;
 
 class RequestHandler
@@ -71,26 +70,30 @@ class RequestHandler
             );
             $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($response));
             $json = $response->toolCalls[0]->functionArguments;
-            [$object, $errors] = $this->responseHandler->toResponse($responseModel, $json);
-            if (empty($errors)) {
-                $this->eventDispatcher->dispatch(new FunctionCallResponseConvertedToObject($object));
-                if ($object instanceof CanTransformResponse) {
-                    $result = $object->transform();
-                    $this->eventDispatcher->dispatch(new FunctionCallResponseTransformed($result));
-                } else {
-                    $result = $object;
+            try {
+                $result = $this->responseHandler->toResponse($responseModel, $json);
+                if ($result->isSuccess()) {
+                    $object = $result->value();
+                    $this->eventDispatcher->dispatch(new FunctionCallResponseConvertedToObject($object));
+                    return $object;
                 }
-                $this->eventDispatcher->dispatch(new FunctionCallResultReady($result));
-                return $result;
+                $errors = $result->errorValue();
+            } catch (ValidationException $e) {
+                $errors = [$e->getMessage()];
+            } catch (DeserializationException $e) {
+                $errors = [$e->getMessage()];
+            } catch (Exception $e) {
+                $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, $e->getMessage()));
+                throw $e;
             }
             $messages[] = ['role' => 'assistant', 'content' => $json];
-            $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . '\n' . $errors];
+            $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . ': ' . implode(", ", $errors)];
             $retries++;
             if ($retries <= $request->maxRetries) {
                 $this->eventDispatcher->dispatch(new NewValidationRecoveryAttempt($retries, $errors));
             }
         }
         $this->eventDispatcher->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
-        throw new Exception("Failed to extract data due to validation constraints: " . $errors);
+        throw new Exception("Failed to extract data due to validation errors: " . implode(", ", $errors));
     }
 }

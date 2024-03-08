@@ -9,7 +9,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
 
-class Role
+class UserRole
 {
     public string $title = '';
 }
@@ -18,7 +18,7 @@ class UserDetail
 {
     public int $age;
     public string $name;
-    public ?Role $role = null;
+    public ?UserRole $role = null;
 }
 
 $user = (new Instructor)->respond(
