@@ -1,19 +1,19 @@
 <?php
 
-namespace Cognesy\Instructor\Events\RequestHandler;
+namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseConvertedToObject extends Event
+class ResponseValidationFailed extends Event
 {
     public function __construct(
-        public mixed $object
+        public string $errors
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->object);
+        return $this->errors;
     }
 }

@@ -88,12 +88,13 @@ class FunctionCallFactory {
             'function' => [
                 'name' => $name,
                 'description' => $description,
-                'parameters' => $jsonSchema,
             ]
         ];
         if ($this->references->hasQueued()) {
-            $definitions = $this->definitions();
-            $functionCall['function']['parameters']['definitions'] = $definitions;
+            $functionCall['function']['parameters']['$defs'] = $this->definitions();
+        }
+        foreach ($jsonSchema as $key => $value) {
+            $functionCall['function']['parameters'][$key] = $value;
         }
         return $functionCall;
     }
@@ -108,9 +109,9 @@ class FunctionCallFactory {
             if ($reference == null) {
                 break;
             }
-            $definitions[$reference->id] = $this->schemaFactory->schema($reference->class)->toArray($this->onObjectRef(...));
+            $definitions[$reference->classShort] = $this->schemaFactory->schema($reference->class)->toArray($this->onObjectRef(...));
         }
-        return $definitions;
+        return array_reverse($definitions);
     }
 
     /**

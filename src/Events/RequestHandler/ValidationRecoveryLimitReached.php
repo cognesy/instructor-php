@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseValidationFailed extends Event
+class ValidationRecoveryLimitReached extends Event
 {
     public function __construct(
         public int $retries,

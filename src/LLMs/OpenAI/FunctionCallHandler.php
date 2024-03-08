@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\LLMs\OpenAI;
 
 use Cognesy\Instructor\Core\EventDispatcher;
-use Cognesy\Instructor\Events\LLM\RequestSent;
-use Cognesy\Instructor\Events\LLM\ResponseReceived;
+use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
+use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
 use OpenAI\Client;
@@ -21,9 +21,9 @@ class FunctionCallHandler
      * Handle chat call
      */
     public function handle() : LLMResponse {
-        $this->eventDispatcher->dispatch(new RequestSent($this->request));
+        $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
         $response = $this->client->chat()->create($this->request);
-        $this->eventDispatcher->dispatch(new ResponseReceived($response->toArray()));
+        $this->eventDispatcher->dispatch(new ResponseReceivedFromLLM($response->toArray()));
         // which function has been called - if parallel tools on
         $toolCalls = [];
         foreach ($response->choices[0]->message->toolCalls as $data) {

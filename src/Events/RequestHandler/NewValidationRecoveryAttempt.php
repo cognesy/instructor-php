@@ -3,11 +3,11 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseGenerationFailed extends Event
+class NewValidationRecoveryAttempt extends Event
 {
     public function __construct(
-        public int $retries,
-        public string $errors
+        public int    $retry,
+        public string $errors,
     )
     {
         parent::__construct();
@@ -16,9 +16,8 @@ class ResponseGenerationFailed extends Event
     public function __toString(): string
     {
         return json_encode([
-            'retries' => $this->retries,
+            'retry' => $this->retry,
             'errors' => $this->errors
         ]);
     }
 }
-

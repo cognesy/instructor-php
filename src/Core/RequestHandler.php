@@ -4,14 +4,15 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Events\RequestHandler\RequestSentToLLM;
-use Cognesy\Instructor\Events\RequestHandler\ResponseGenerated;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallResultReady;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
-use Cognesy\Instructor\Events\RequestHandler\ResponseReceivedFromLLM;
-use Cognesy\Instructor\Events\RequestHandler\ResponseTransformed;
-use Cognesy\Instructor\Events\RequestHandler\ResponseConvertedToObject;
-use Cognesy\Instructor\Events\RequestHandler\ResponseValidationFailed;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseTransformed;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
+use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Exception;
 
 class RequestHandler
@@ -20,16 +21,19 @@ class RequestHandler
     private CanCallFunction $llm;
     private ResponseModelFactory $responseModelFactory;
     private EventDispatcher $eventDispatcher;
+    private ResponseHandler $responseHandler;
 
     public function __construct(
         CanCallFunction $llm,
         ResponseModelFactory $responseModelFactory,
-        EventDispatcher $eventDispatcher
+        EventDispatcher $eventDispatcher,
+        ResponseHandler $responseHandler,
     )
     {
         $this->llm = $llm;
         $this->responseModelFactory = $responseModelFactory;
         $this->eventDispatcher = $eventDispatcher;
+        $this->responseHandler = $responseHandler;
     }
 
     /**
@@ -53,7 +57,7 @@ class RequestHandler
         $retries = 0;
         $messages = $request->messages();
         while ($retries <= $request->maxRetries) {
-            $this->eventDispatcher->dispatch(new RequestSentToLLM(
+            $this->eventDispatcher->dispatch(new FunctionCallRequested(
                 $messages,
                 $responseModel,
                 $request
@@ -65,26 +69,28 @@ class RequestHandler
                 $request->model,
                 $request->options
             );
-            $this->eventDispatcher->dispatch(new ResponseReceivedFromLLM($response));
+            $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($response));
             $json = $response->toolCalls[0]->functionArguments;
-            [$object, $errors] = $responseModel->toResponse($json);
+            [$object, $errors] = $this->responseHandler->toResponse($responseModel, $json);
             if (empty($errors)) {
-                $this->eventDispatcher->dispatch(new ResponseConvertedToObject($object));
+                $this->eventDispatcher->dispatch(new FunctionCallResponseConvertedToObject($object));
                 if ($object instanceof CanTransformResponse) {
                     $result = $object->transform();
-                    $this->eventDispatcher->dispatch(new ResponseTransformed($result));
+                    $this->eventDispatcher->dispatch(new FunctionCallResponseTransformed($result));
                 } else {
                     $result = $object;
                 }
-                $this->eventDispatcher->dispatch(new ResponseGenerated($result));
+                $this->eventDispatcher->dispatch(new FunctionCallResultReady($result));
                 return $result;
             }
-            $this->eventDispatcher->dispatch(new ResponseValidationFailed($retries, $errors));
             $messages[] = ['role' => 'assistant', 'content' => $json];
             $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . '\n' . $errors];
             $retries++;
+            if ($retries <= $request->maxRetries) {
+                $this->eventDispatcher->dispatch(new NewValidationRecoveryAttempt($retries, $errors));
+            }
         }
-        $this->eventDispatcher->dispatch(new ResponseGenerationFailed($retries, $errors));
+        $this->eventDispatcher->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
         throw new Exception("Failed to extract data due to validation constraints: " . $errors);
     }
 }

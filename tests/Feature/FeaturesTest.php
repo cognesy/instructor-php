@@ -2,7 +2,7 @@
 namespace Tests;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Events\LLM\ResponseReceived;
+use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Extraction\Person;
 
@@ -42,7 +42,7 @@ it('supports streaming', function () {
 
     $person = (new Instructor)
         ->wiretap(fn($e)=>dump($e->toConsole()))
-        ->onEvent(ResponseReceived::class, fn($e)=>dump($e->response))
+        ->onEvent(ResponseReceivedFromLLM::class, fn($e)=>dump($e->response))
         ->onError(fn($e)=>dump($e->error))
         ->respond(
             messages: "His name is Jason, he is 28 years old.",

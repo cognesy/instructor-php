@@ -6,7 +6,7 @@ use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Core\ResponseModel;
 use Cognesy\Instructor\Events\Event;
 
-class RequestSentToLLM extends Event
+class FunctionCallRequested extends Event
 {
 
     /**

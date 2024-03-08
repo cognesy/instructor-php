@@ -4,17 +4,16 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseGenerated extends Event
+class FunctionCallResponseTransformed extends Event
 {
     public function __construct(
-        public mixed $response
-    )
-    {
+        public mixed $result
+    ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return json_encode($this->result);
     }
 }

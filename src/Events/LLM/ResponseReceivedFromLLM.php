@@ -1,19 +1,18 @@
 <?php
-
-namespace Cognesy\Instructor\Events\RequestHandler;
+namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseTransformed extends Event
+class ResponseReceivedFromLLM extends Event
 {
     public function __construct(
-        public mixed $result
+        public array $response = [],
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->result);
+        return json_encode($this->response);
     }
 }

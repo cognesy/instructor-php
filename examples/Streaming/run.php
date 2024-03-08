@@ -15,8 +15,27 @@ $instructor = (new Instructor)
     ->onEvent(StreamedFunctionCallUpdated::class, fn($e)=>dump($e->functionCall))
     ->onError(fn($e)=>dump($e->error));
 
-$instructor->respond(
+// CASE 1: Keep generating Person objects based on the input message
+
+$stream = $instructor->respond(
     messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
+    responseModel: Stream::of(Person::class),
     options: ['stream' => true],
 );
+
+foreach($stream as $response){
+    dump($response);
+}
+
+// CASE 2: Get partial updates of the Person object
+
+$person = $instructor->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+    onUpdate: onUpdate(...),
+    options: ['stream' => true],
+);
+
+function onUpdate(Person $person) {
+    dump($person);
+}

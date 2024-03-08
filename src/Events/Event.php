@@ -42,7 +42,7 @@ abstract class Event
             [7, '(.'.substr($this->eventId, -4).')'],
             [14, $this->createdAt->format('H:i:s v').'ms'],
             //[15, "{$eventGroup}\\", STR_PAD_LEFT],
-            [24, "{$eventName}"],
+            [30, "{$eventName}"],
             '-',
             [-1, $message],
         ], 140);

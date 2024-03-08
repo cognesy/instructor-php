@@ -6,6 +6,7 @@ use Cognesy\Instructor\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\ResponseHandler;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
@@ -52,6 +53,15 @@ function autowire(Configuration $config) : Configuration
             'llm' => $config->reference(CanCallFunction::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'responseHandler' => $config->reference(ResponseHandler::class),
+        ]
+    );
+    $config->declare(
+        class: ResponseHandler::class,
+        context: [
+            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'deserializer' => $config->reference(CanDeserializeResponse::class),
+            'validator' => $config->reference(CanValidateResponse::class),
         ]
     );
     $config->declare(
@@ -70,6 +80,7 @@ function autowire(Configuration $config) : Configuration
             'schemaMap' => $config->reference(SchemaMap::class),
             'propertyMap' => $config->reference(PropertyMap::class),
             'typeDetailsFactory' => $config->reference(TypeDetailsFactory::class),
+            'useObjectReferences' => false,
         ]
     );
     $config->declare(class: TypeDetailsFactory::class);

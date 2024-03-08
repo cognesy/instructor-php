@@ -4,11 +4,12 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseReceivedFromLLM extends Event
+class FunctionCallResultReady extends Event
 {
     public function __construct(
         public mixed $response
-    ) {
+    )
+    {
         parent::__construct();
     }
 

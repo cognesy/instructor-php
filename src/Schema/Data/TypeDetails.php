@@ -11,6 +11,14 @@ class TypeDetails
         public ?array       $enumValues = null, // for enums OR null
     ) {}
 
+    public function classOnly() : string {
+        if ($this->type !== 'object' && $this->type !== 'enum') {
+            throw new \Exception('Trying to get class name for type that is not an object or enum');
+        }
+        $segments = explode('\\', $this->class);
+        return array_pop($segments);
+    }
+
     public function __toString() : string
     {
         return match ($this->type) {

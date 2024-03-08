@@ -22,7 +22,7 @@ use Cognesy\Instructor\Schema\Utils\ClassInfo;
 class SchemaFactory
 {
     /** @var bool allows to render schema with object properties inlined or referenced */
-    protected $useObjectReferences = false;
+    protected $useObjectReferences;
     protected SchemaMap $schemaMap;
     protected PropertyMap $propertyMap;
     protected TypeDetailsFactory $typeDetailsFactory;
@@ -31,10 +31,12 @@ class SchemaFactory
         SchemaMap $schemaMap,
         PropertyMap $propertyMap,
         TypeDetailsFactory $typeDetailsFactory,
+        bool $useObjectReferences,
     ) {
         $this->schemaMap = $schemaMap;
         $this->propertyMap = $propertyMap;
         $this->typeDetailsFactory = $typeDetailsFactory;
+        $this->useObjectReferences = $useObjectReferences;
     }
 
     /**
@@ -112,7 +114,7 @@ class SchemaFactory
         return match ($type->type) {
             'object' => new ObjectSchema(
                 $type,
-                $type->class,
+                $type->classOnly(),
                 (new ClassInfo)->getClassDescription($type->class),
                 $this->getPropertySchemas($type->class),
                 (new ClassInfo)->getRequiredProperties($type->class),
@@ -126,7 +128,7 @@ class SchemaFactory
                 $type,
                 '',
                 '',
-                $this->makePropertySchema($type, 'item', 'Array item'),
+                $this->makePropertySchema($type, 'item', 'Correctly extract items of '.$type->nestedType->classOnly())
             ),
             'int', 'string', 'bool', 'float' => new ScalarSchema($type, 'value', 'Correctly extracted value'),
             default => throw new \Exception('Unknown type: '.$type->type),
@@ -150,7 +152,7 @@ class SchemaFactory
                 $type,
                 $name,
                 $description,
-                $this->makePropertySchema($type->nestedType, 'item', 'Array item'),
+                $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of '.$type->nestedType->classOnly()),
             ),
             'int', 'string', 'bool', 'float' => new ScalarSchema($type, $name, $description),
             default => throw new \Exception('Unknown type: ' . $type->type),

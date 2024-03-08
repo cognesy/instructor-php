@@ -1,18 +1,19 @@
 <?php
-namespace Cognesy\Instructor\Events\LLM;
+
+namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class RequestSent extends Event
+class ResponseValidationAttempt extends Event
 {
     public function __construct(
-        public array $request = [],
+        public object $response
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->request);
+        return json_encode($this->response);
     }
 }

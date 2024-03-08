@@ -7,6 +7,7 @@ class Reference
     public function __construct(
         public string $id = '',
         public string $class = '',
-        public bool $isRendered = false,
+        public string $classShort = '',
+        public bool   $isRendered = false,
     ) {}
 }

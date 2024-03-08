@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\LLMs\OpenAI;
 use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
-use Cognesy\Instructor\Events\LLM\RequestSent;
+use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
@@ -27,7 +27,7 @@ class StreamedFunctionCallHandler
      * Handle streamed chat call
      */
     public function handle() : LLMResponse {
-        $this->eventDispatcher->dispatch(new RequestSent($this->request));
+        $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
         $responseJson = '';
         $toolCalls = [];
         $stream = $this->client->chat()->createStreamed($this->request);
