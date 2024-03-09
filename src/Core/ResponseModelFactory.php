@@ -1,31 +1,32 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Contracts\CanDeserializeResponse;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
-use Cognesy\Instructor\Contracts\CanValidateResponse;
+use Cognesy\Instructor\Contracts\CanReceiveEvents;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Factories\FunctionCallFactory;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 use Exception;
 
 
 class ResponseModelFactory
 {
     private FunctionCallFactory $functionCallFactory;
-    private CanDeserializeResponse $responseDeserializer;
-    private CanValidateResponse $responseValidator;
+    private SchemaFactory $schemaFactory;
+    private SchemaBuilder $schemaBuilder;
 
     private string $functionName = 'extract_data';
     private string $functionDescription = 'Extract data from provided content';
 
     public function __construct(
         FunctionCallFactory    $functionCallFactory,
-        CanDeserializeResponse $responseDeserializer,
-        CanValidateResponse    $responseValidator,
+        SchemaFactory          $schemaFactory,
+        SchemaBuilder          $schemaBuilder
     ) {
         $this->functionCallFactory = $functionCallFactory;
-        $this->responseDeserializer = $responseDeserializer;
-        $this->responseValidator = $responseValidator;
+        $this->schemaFactory = $schemaFactory;
+        $this->schemaBuilder = $schemaBuilder;
     }
 
     public function from(mixed $requestedModel) : ResponseModel {
@@ -41,8 +42,10 @@ class ResponseModelFactory
     private function makeStringResponseModel(string $requestedModel) : ResponseModel {
         $class = $requestedModel;
         $instance = new $class;
-        $functionCall = $this->functionCallFactory->fromClass(
-            $requestedModel,
+        $schema = $this->schemaFactory->schema($class);
+        $jsonSchema = $schema->toArray($this->functionCallFactory->onObjectRef(...));
+        $functionCall = $this->functionCallFactory->render(
+            $jsonSchema,
             $this->functionName,
             $this->functionDescription
         );
@@ -50,9 +53,9 @@ class ResponseModelFactory
         return new ResponseModel(
             $class,
             $instance,
+            $schema,
+            $jsonSchema,
             $functionCall,
-            $this->responseDeserializer,
-            $this->responseValidator
         );
     }
 
@@ -62,8 +65,10 @@ class ResponseModelFactory
             throw new Exception('Provided JSON schema must contain $comment field with fully qualified class name');
         }
         $instance = new $class;
-        $functionCall = $this->functionCallFactory->fromArray(
-            $requestedModel,
+        $schema = $this->schemaBuilder->fromArray($requestedModel);
+        $jsonSchema = $requestedModel;
+        $functionCall = $this->functionCallFactory->render(
+            $jsonSchema,
             $this->functionName,
             $this->functionDescription
         );
@@ -71,9 +76,9 @@ class ResponseModelFactory
         return new ResponseModel(
             $class,
             $instance,
+            $schema,
+            $jsonSchema,
             $functionCall,
-            $this->responseDeserializer,
-            $this->responseValidator
         );
     }
 
@@ -85,8 +90,10 @@ class ResponseModelFactory
             $class = $requestedModel;
             $instance = new $class;
         }
-        $functionCall = $this->functionCallFactory->fromArray(
-            $instance->toJsonSchema(),
+        $jsonSchema = $instance->toJsonSchema();
+        $schema = $this->schemaBuilder->fromArray($jsonSchema);
+        $functionCall = $this->functionCallFactory->render(
+            $jsonSchema,
             $this->functionName,
             $this->functionDescription
         );
@@ -94,9 +101,9 @@ class ResponseModelFactory
         return new ResponseModel(
             $class,
             $instance,
+            $schema,
+            $jsonSchema,
             $functionCall,
-            $this->responseDeserializer,
-            $this->responseValidator
         );
     }
 
@@ -104,8 +111,10 @@ class ResponseModelFactory
         $schema = $requestedModel;
         $class = $schema->type->class;
         $instance = new $class;
-        $functionCall = $this->functionCallFactory->fromSchema(
-            $schema,
+        $schema = $requestedModel;
+        $jsonSchema = $schema->toArray($this->functionCallFactory->onObjectRef(...));
+        $functionCall = $this->functionCallFactory->render(
+            $jsonSchema,
             $this->functionName,
             $this->functionDescription
         );
@@ -113,17 +122,19 @@ class ResponseModelFactory
         return new ResponseModel(
             $class,
             $instance,
+            $schema,
+            $jsonSchema,
             $functionCall,
-            $this->responseDeserializer,
-            $this->responseValidator
         );
     }
 
     private function makeInstanceResponseModel(object $requestedModel) : ResponseModel {
         $class = get_class($requestedModel);
         $instance = $requestedModel;
-        $functionCall = $this->functionCallFactory->fromClass(
-            get_class($requestedModel),
+        $schema = $this->schemaFactory->schema($class);
+        $jsonSchema = $schema->toArray($this->functionCallFactory->onObjectRef(...));
+        $functionCall = $this->functionCallFactory->render(
+            $jsonSchema,
             $this->functionName,
             $this->functionDescription
         );
@@ -131,9 +142,20 @@ class ResponseModelFactory
         return new ResponseModel(
             $class,
             $instance,
+            $schema,
+            $jsonSchema,
             $functionCall,
-            $this->responseDeserializer,
-            $this->responseValidator
         );
+    }
+
+    private function canReceiveEvents(mixed $requestedModel, ResponseModel $responseModel) : array {
+        return match (true) {
+            //$requestedModel instanceof ObjectSchema => $requestedModel->eventHandlers,
+            is_subclass_of($requestedModel, CanReceiveEvents::class) => true,
+            is_subclass_of($responseModel, CanReceiveEvents::class) => true,
+            is_string($requestedModel) => [],
+            is_array($requestedModel) => [],
+            default => [],
+        };
     }
 }

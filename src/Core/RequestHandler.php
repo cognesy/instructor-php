@@ -43,6 +43,8 @@ class RequestHandler
             $request->responseModel
         );
         $this->eventDispatcher->dispatch(new ResponseModelBuilt($requestedModel));
+        if ($requestedModel->class) {
+        }
         return $this->tryRespond($request, $requestedModel);
     }
 
@@ -85,6 +87,11 @@ class RequestHandler
             } catch (Exception $e) {
                 $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, $e->getMessage()));
                 throw $e;
+            }
+            // TODO: this is workaround for now, find the source of bug
+            // something is not returning array of errors, but a DeserializationException
+            if (!is_array($errors)) {
+                $errors = [$errors->getMessage()];
             }
             $messages[] = ['role' => 'assistant', 'content' => $json];
             $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . ': ' . implode(", ", $errors)];

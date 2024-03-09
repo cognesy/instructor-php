@@ -17,25 +17,32 @@ $instructor = (new Instructor)
 
 // CASE 1: Keep generating Person objects based on the input message
 
-$stream = $instructor->respond(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Stream::of(Person::class),
+class Person {
+    public string $name;
+    public ?int $age;
+}
+
+$sequence = $instructor->respond(
+    messages: "His name is Jason and he's 28 yo, and his friend is John. They both work with Kate, who is CMO.",
+    responseModel: Sequence::of(Person::class),
     options: ['stream' => true],
 );
 
-foreach($stream as $response){
-    dump($response);
+foreach($sequence as $person){
+    dump($person);
 }
 
 // CASE 2: Get partial updates of the Person object
 
-$person = $instructor->respond(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-    onUpdate: onUpdate(...),
-    options: ['stream' => true],
-);
-
-function onUpdate(Person $person) {
-    dump($person);
-}
+//$person = $instructor->respond(
+//    messages: "His name is Jason, he is 28 years old.",
+//    responseModel: Person::class,
+//    onObjectUpdate: onObjectUpdate(...), // runs all validations
+//    onFieldUpdate: onFieldUpdate(...), // runs field validations
+//    onEachUpdate: onUpdate(...), // does not run validations
+//    options: ['stream' => true],
+//);
+//
+//function onUpdate(Person $person) {
+//    dump($person);
+//}

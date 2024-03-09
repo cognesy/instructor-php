@@ -2,83 +2,24 @@
 namespace Cognesy\Instructor\Schema\Factories;
 
 use Cognesy\Instructor\Schema\Data\Reference;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 
 class FunctionCallFactory {
-    private SchemaFactory $schemaFactory;
-    private SchemaBuilder $schemaBuilder;
     private ReferenceQueue $references;
-
-    private ?Schema $schema;
-    private ?array $jsonSchema;
+    private SchemaFactory $schemaFactory;
 
     public function __construct(
         SchemaFactory $schemaFactory,
-        SchemaBuilder $schemaBuilder,
         ReferenceQueue $referenceQueue,
     ) {
         $this->schemaFactory = $schemaFactory;
-        $this->schemaBuilder = $schemaBuilder;
         $this->references = $referenceQueue;
-    }
-
-    /**
-     * Renders function call based on the class
-     */
-    public function fromClass(
-        string $class,
-        string $customName = 'extract_object',
-        string $customDescription = 'Extract parameters from chat content'
-    ) : array {
-        $this->schema = $this->schemaFactory->schema($class);
-        $this->jsonSchema = $this->schema->toArray($this->onObjectRef(...));
-        return $this->render(
-            $this->jsonSchema,
-            $customName,
-            $customDescription
-        );
-    }
-
-    /**
-     * Render function call based on the Schema object
-     */
-    public function fromSchema(
-        Schema $schema,
-        string $customName = 'extract_object',
-        string $customDescription = 'Extract parameters from chat content'
-    ) : array {
-        $this->schema = $schema;
-        $this->jsonSchema = $schema->toArray($this->onObjectRef(...));
-        return $this->render(
-            $this->jsonSchema,
-            $customName,
-            $customDescription
-        );
-    }
-
-    /**
-     * Render function call based on the raw JSON Schema array
-     */
-    public function fromArray(
-        array $jsonSchema,
-        string $customName = 'extract_object',
-        string $customDescription = 'Extract parameters from chat content'
-    ) : array {
-        $this->schema = $this->schemaBuilder->fromArray($jsonSchema);
-        $this->jsonSchema = $jsonSchema;
-        return $this->render(
-            $this->jsonSchema,
-            $customName,
-            $customDescription
-        );
     }
 
     /**
      * Extract the schema model from a function and constructs a function call JSON schema array
      */
-    protected function render(
+    public function render(
         array $jsonSchema,
         string $name,
         string $description
@@ -117,7 +58,7 @@ class FunctionCallFactory {
     /**
      * Callback called when an object reference is found
      */
-    private function onObjectRef(Reference $reference) {
+    public function onObjectRef(Reference $reference) {
         $this->references->queue($reference);
     }
 }

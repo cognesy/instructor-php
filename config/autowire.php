@@ -31,7 +31,6 @@ function autowire(Configuration $config) : Configuration
         class: FunctionCallFactory::class,
         context: [
             'schemaFactory' => $config->reference(SchemaFactory::class),
-            'schemaBuilder' => $config->reference(SchemaBuilder::class),
             'referenceQueue' => $config->reference(ReferenceQueue::class),
         ]
     );
@@ -68,8 +67,8 @@ function autowire(Configuration $config) : Configuration
         class: ResponseModelFactory::class,
         context: [
             'functionCallFactory' => $config->reference(FunctionCallFactory::class),
-            'responseDeserializer' => $config->reference(CanDeserializeResponse::class),
-            'responseValidator' => $config->reference(CanValidateResponse::class),
+            'schemaFactory' => $config->reference(SchemaFactory::class),
+            'schemaBuilder' => $config->reference(SchemaBuilder::class),
         ]
     );
     $config->declare(class: SchemaMap::class);
@@ -80,7 +79,7 @@ function autowire(Configuration $config) : Configuration
             'schemaMap' => $config->reference(SchemaMap::class),
             'propertyMap' => $config->reference(PropertyMap::class),
             'typeDetailsFactory' => $config->reference(TypeDetailsFactory::class),
-            'useObjectReferences' => false,
+            'useObjectReferences' => true,
         ]
     );
     $config->declare(class: TypeDetailsFactory::class);

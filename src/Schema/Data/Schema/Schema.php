@@ -2,13 +2,15 @@
 
 namespace Cognesy\Instructor\Schema\Data\Schema;
 
+use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
-class Schema
+abstract class Schema
 {
     public TypeDetails $type;
     public string $name = '';
     public string $description = '';
+    public bool $canReceiveEvents = false;
 
     public function __construct(
         TypeDetails $type,
@@ -26,5 +28,8 @@ class Schema
             'type' => $this->type->type,
             'description' => $this->description,
         ]);
+    }
+
+    public function onEvent(Event $event) : void {
     }
 }
