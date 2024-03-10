@@ -132,6 +132,7 @@ nav:
   - Concepts:
     - Philosophy: 'concepts/philosophy.md'
     - Prompting Tips: 'concepts/prompting.md'
+    - Instructor Internals: 'concepts/internals.md'
 #    - Models: 'concepts/models.md'
 #    - Fields: 'concepts/fields.md'
 #    - Types: 'concepts/types.md'
