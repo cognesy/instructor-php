@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Deserializers\Symfony;
 
-use Cognesy\Instructor\Contracts\CanDeserializeDataClass;
+use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Validators\Symfony\BackedEnumNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -12,9 +12,9 @@ use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class Deserializer implements CanDeserializeDataClass
+class Deserializer implements CanDeserializeClass
 {
-    public function deserialize(string $jsonData, string $dataClass): object
+    public function fromJson(string $jsonData, string $dataClass): object
     {
         // Initialize PhpDocExtractor
         $phpDocExtractor = new PhpDocExtractor();

@@ -3,10 +3,10 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Contracts\CanDeserializeDataClass;
+use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Contracts\CanTransformResponse;
-use Cognesy\Instructor\Contracts\CanValidateResponse;
+use Cognesy\Instructor\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Contracts\CanValidateObject;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationAttempt;
@@ -21,13 +21,13 @@ use Cognesy\Instructor\Utils\Result;
 class ResponseHandler
 {
     private EventDispatcher $eventDispatcher;
-    private CanDeserializeDataClass $deserializer;
-    private CanValidateResponse $validator;
+    private CanDeserializeClass $deserializer;
+    private CanValidateObject $validator;
 
     public function __construct(
-        EventDispatcher         $eventDispatcher,
-        CanDeserializeDataClass $deserializer,
-        CanValidateResponse     $validator,
+        EventDispatcher     $eventDispatcher,
+        CanDeserializeClass $deserializer,
+        CanValidateObject   $validator,
     )
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -72,7 +72,7 @@ class ResponseHandler
         }
         // else - use standard deserializer
         $this->eventDispatcher->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
-        return Result::try(fn() => $this->deserializer->deserialize($json, $responseModel->class));
+        return Result::try(fn() => $this->deserializer->fromJson($json, $responseModel->class));
     }
 
     /**
@@ -100,7 +100,7 @@ class ResponseHandler
      * Transform response object
      */
     protected function transform(object $object) : mixed {
-        if ($object instanceof CanTransformResponse) {
+        if ($object instanceof CanTransformSelf) {
             $result = $object->transform();
             $this->eventDispatcher->dispatch(new ResponseTransformed($result));
             return $result;

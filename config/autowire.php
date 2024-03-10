@@ -3,8 +3,8 @@ namespace Cognesy\config;
 
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Contracts\CanDeserializeDataClass;
-use Cognesy\Instructor\Contracts\CanValidateResponse;
+use Cognesy\Instructor\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Contracts\CanValidateObject;
 use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\ResponseHandler;
@@ -24,7 +24,7 @@ function autowire(Configuration $config) : Configuration
 {
     $config->declare(
         class: Deserializer::class,
-        name: CanDeserializeDataClass::class
+        name: CanDeserializeClass::class
     );
     $config->declare(class: EventDispatcher::class);
     $config->declare(
@@ -59,8 +59,8 @@ function autowire(Configuration $config) : Configuration
         class: ResponseHandler::class,
         context: [
             'eventDispatcher' => $config->reference(EventDispatcher::class),
-            'deserializer' => $config->reference(CanDeserializeDataClass::class),
-            'validator' => $config->reference(CanValidateResponse::class),
+            'deserializer' => $config->reference(CanDeserializeClass::class),
+            'validator' => $config->reference(CanValidateObject::class),
         ]
     );
     $config->declare(
@@ -85,7 +85,7 @@ function autowire(Configuration $config) : Configuration
     $config->declare(class: TypeDetailsFactory::class);
     $config->declare(
         class: Validator::class,
-        name: CanValidateResponse::class,
+        name: CanValidateObject::class,
     );
 
     return $config;

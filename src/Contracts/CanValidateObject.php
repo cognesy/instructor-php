@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-interface CanValidateResponse
+interface CanValidateObject
 {
     /**
      * Validate response object
-     * @param object $response
+     * @param object $dataObject
      * @return array
      */
-    public function validate(object $response) : array;
+    public function validate(object $dataObject) : array;
 }

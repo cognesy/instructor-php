@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-interface CanTransformResponse
+interface CanTransformSelf
 {
     public function transform() : mixed;
 }

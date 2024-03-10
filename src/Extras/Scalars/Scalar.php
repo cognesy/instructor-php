@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Scalars;
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Contracts\CanTransformResponse;
+use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Exception;
 use ReflectionEnum;
@@ -14,7 +14,7 @@ use ReflectionEnum;
  * Scalar value adapter.
  * Improved DX via simplified retrieval of scalar value from LLM response.
  */
-class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformResponse, CanValidateSelf
+class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSelf, CanValidateSelf
 {
     public mixed $value;
 

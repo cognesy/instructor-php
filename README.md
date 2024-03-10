@@ -516,7 +516,7 @@ Instructor requires information on the class of each nested object in your JSON 
 
 This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema.
 
-Current design useses JSON Schema `comment` field on property to overcome this. Instructor expects developer to use `comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+Current design uses JSON Schema `$comment` field on property to overcome this. Instructor expects developer to use `comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
 
 
 ### Response model contracts
@@ -524,11 +524,9 @@ Current design useses JSON Schema `comment` field on property to overcome this. 
 Instructor allows you to customize processing of $responseModel value also by looking at the interfaces the class or instance implements:
 
  - `CanProvideJsonSchema` - implement to be able to provide JSON Schema or the response model, overriding the default approach of Instructor, which is analyzing $responseModel value class information,
- - `CanDeserializeResponse` - implement to customize the way the response from LLM is deserialized from JSON into PHP object, 
- - `CanSelfValidate` - implement to customize the way the deserialized object is validated,
- - `CanTransformResponse` - implement to transform the validated object into target value received by the caller (e.g. unwrap simple type from a class to a scalar value).
-
-For a practical example of using those contracts to customize Instructor processing flow see: src/Extras/Scalars/. It contains an implementation of scalar value response support with a wrapper class implementing custom schema provider, deserialization, validation and transformation into requested value type.
+ - `CanDeserializeSelf` - implement to customize the way the response from LLM is deserialized from JSON into PHP object, 
+ - `CanValidateSelf` - implement to customize the way the deserialized object is validated,
+ - `CanTransformSelf` - implement to transform the validated object into target value received by the caller (e.g. unwrap simple type from a class to a scalar value).
 
 
 ## Additional Notes
