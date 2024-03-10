@@ -166,7 +166,7 @@ $value = (new Instructor)->respond(
     responseModel: Person::class,
 );
 
-// But if you want to keep it simple and just analyze a piece of text:
+// ...but if you want to keep it simple, you can just pass a string:
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
@@ -382,7 +382,31 @@ class Skill {
 }
 ```
 
-## Custom Validators
+## Customizing Validation
+
+### ValidationMixin
+
+You can use ValidationMixin trait to add ability of easy, custom data object validation.
+
+```php
+use Cognesy\Instructor\Traits\ValidationMixin
+
+class User {
+    use ValidationMixin;
+
+    public int $age;
+    public int $name;
+
+    public function validate() : array {
+        if ($this->age < 18) {
+            return ["User has to be adult to sign the contract."];
+        }
+        return [];
+    }
+}
+```
+
+### Validation Callback
 
 Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
 
@@ -396,18 +420,18 @@ class UserDetails
     public string $name;
     public int $age;
     
-        #[Assert\Callback]
-        public function validateName(ExecutionContextInterface $context, mixed $payload) {
-            if ($this->name !== strtoupper($this->name)) {
-                $context->buildViolation("Name must be in uppercase.")
-                    ->atPath('name')
-                    ->setInvalidValue($this->name)
-                    ->addViolation();
-            }
+    #[Assert\Callback]
+    public function validateName(ExecutionContextInterface $context, mixed $payload) {
+        if ($this->name !== strtoupper($this->name)) {
+            $context->buildViolation("Name must be in uppercase.")
+                ->atPath('name')
+                ->setInvalidValue($this->name)
+                ->addViolation();
         }
     }
-    
-    $user = (new Instructor)->respond(
+}
+
+$user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
