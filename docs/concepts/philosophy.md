@@ -8,17 +8,17 @@ Instructor values [simplicity](https://eugeneyan.com/writing/simplicity/) and fl
 
 > “Simplicity is a great virtue, but it requires hard work to achieve it and education to appreciate it. And to make matters worse: complexity sells better.” — Edsger Dijkstra
 
-### Proof that its simple
+### Simplicity
 
 1. Most users will only need to learn `responseModel` and `Instructor::respond()` to get started.
 2. No new prompting language to learn, no new abstractions to learn.
 
-### Proof that its transparent
+### Transparency
 
 1. We write very little prompts, and we don't try to hide the prompts from you.
 2. We give you config over the prompts we do write ('reasking' and in the future - JSON_MODE prompts).
 
-### Proof that its flexible
+### Flexibility
 
 1. If you build a system with OpenAI directly, it is easy to incrementally adopt Instructor by just adding `Instructor::respond()` with data schemas fed in via `responseModel`.
 2. Use any class to define your data schema (no need to inherit from some base class).
