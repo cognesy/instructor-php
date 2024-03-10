@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Schema\Factories;
 use Cognesy\Instructor\Schema\Data\Reference;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 
-class FunctionCallFactory {
+class FunctionCallBuilder {
     private ReferenceQueue $references;
     private SchemaFactory $schemaFactory;
 

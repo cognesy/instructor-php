@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Schema\ReflectionBased\Factories\FunctionCallFactory;
+use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Tests\Examples\Complex\ProjectEvent;
 use Tests\Examples\Complex\ProjectEvents;
 
@@ -19,7 +19,7 @@ if (!function_exists('createEvent')) {
 }
 
 it('creates function call - function', function () {
-    $array = (new FunctionCallFactory)->fromFunction(createEvent(...));
+    $array = (new FunctionCallBuilder)->fromFunction(createEvent(...));
     // dump($array);
     expect($array)->toBeArray();
     expect($array['type'])->toEqual('function');
@@ -34,7 +34,7 @@ it('creates function call - function', function () {
 })->skip('Deprecated schema engine');
 
 it('creates function call - method', function () {
-    $array = (new FunctionCallFactory)->fromMethod((new ProjectEvents)->createEvent(...));
+    $array = (new FunctionCallBuilder)->fromMethod((new ProjectEvents)->createEvent(...));
     // dump($array);
     expect($array)->toBeArray();
     expect($array['type'])->toEqual('function');
@@ -49,7 +49,7 @@ it('creates function call - method', function () {
 })->skip('Deprecated schema engine');
 
 it('creates function call - object', function () {
-    $array = (new FunctionCallFactory)->fromClass(ProjectEvents::class, 'createEvent', 'Extract object from provided content');
+    $array = (new FunctionCallBuilder)->fromClass(ProjectEvents::class, 'createEvent', 'Extract object from provided content');
     // dump($array);
     expect($array)->toBeArray();
     expect($array['type'])->toEqual('function');

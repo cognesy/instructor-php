@@ -11,7 +11,7 @@ class Sequence implements Sequenceable, IteratorAggregate
     private string $class;
     private Iterator $iterator;
 
-    public function __construct(string $class) {
+    private function __construct(string $class) {
         $this->class = $class;
     }
 
@@ -19,9 +19,11 @@ class Sequence implements Sequenceable, IteratorAggregate
         return new self($class);
     }
 
-    public function getSequenceClass() : string {
-        return $this->class;
-    }
+    //////////////////////////////////////////////////////////////////////
+
+    // when asked for schema - return $class[]
+
+    //////////////////////////////////////////////////////////////////////
 
     public function getIterator(): Traversable
     {

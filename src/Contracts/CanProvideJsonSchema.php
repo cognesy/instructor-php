@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-interface CanProvideSchema
+interface CanProvideJsonSchema
 {
     public function toJsonSchema() : array;
 }

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-interface CanSelfValidate
+interface CanValidateSelf
 {
     public function validate(): array;
 }

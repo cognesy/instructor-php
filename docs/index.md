@@ -3,11 +3,15 @@
 Structured data extraction in PHP, powered by LLMs. Designed for simplicity, transparency, and control.
 
 
+
+
 ## What is Instructor?
 
 Instructor is a library that allows you to extract structured, validated data from unstructured text or OpenAI style chat sequence arrays. It is powered by Large Language Models.
 
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
+
+
 
 
 ## Instructor in Other Languages
@@ -19,6 +23,8 @@ Check out implementations in other languages below:
  - [Elixir](https://github.com/thmsmlr/instructor_ex/) (port)
 
 If you want to port Instructor to another language, please reach out to us on [Twitter](https://twitter.com/jxnlco) we'd love to help you get started!
+
+
 
 
 ## How Instructor Enhances Your Workflow
@@ -46,6 +52,17 @@ You can set the number of retry attempts for requests.
 Instructor will repeat requests in case of validation error (or API failure) up to the specified number of times.
 
 
+
+## Explore
+
+ - [Philosophy of Instructor](./philosophy.md)
+ - [Cookbook](./examples.md)
+ - [Internals of Instructor](./internals.md)
+
+Also, check examples in the `examples` directory of this repository for fully working, tested code examples that you can execute from the command line and see Instructor in action.
+
+
+
 ## Additional Notes
 
 PHP ecosystem does not (yet) have a strong equivalent of [Pydantic](https://pydantic.dev/), which is at the core of Instructor for Python.
@@ -60,6 +77,7 @@ To provide an essential functionality we needed here Instructor for PHP leverage
 Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models capable of function calling may be added in the future.
 
 
+
 ## Dependencies
 
 Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal dependencies, should work with any framework of your choice.
@@ -67,6 +85,7 @@ Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal depen
  - [OpenAI PHP client](https://github.com/openai-php/client) - for communication with OpenAI API
  - [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
  - [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
+
 
 
 ## License

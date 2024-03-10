@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanReceiveEvents;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Factories\FunctionCallFactory;
+use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 use Exception;
@@ -12,7 +12,7 @@ use Exception;
 
 class ResponseModelFactory
 {
-    private FunctionCallFactory $functionCallFactory;
+    private FunctionCallBuilder $functionCallFactory;
     private SchemaFactory $schemaFactory;
     private SchemaBuilder $schemaBuilder;
 
@@ -20,9 +20,9 @@ class ResponseModelFactory
     private string $functionDescription = 'Extract data from provided content';
 
     public function __construct(
-        FunctionCallFactory    $functionCallFactory,
-        SchemaFactory          $schemaFactory,
-        SchemaBuilder          $schemaBuilder
+        FunctionCallBuilder $functionCallFactory,
+        SchemaFactory       $schemaFactory,
+        SchemaBuilder       $schemaBuilder
     ) {
         $this->functionCallFactory = $functionCallFactory;
         $this->schemaFactory = $schemaFactory;
@@ -32,7 +32,7 @@ class ResponseModelFactory
     public function from(mixed $requestedModel) : ResponseModel {
         return match (true) {
             $requestedModel instanceof ObjectSchema => $this->makeSchemaResponseModel($requestedModel),
-            is_subclass_of($requestedModel, CanProvideSchema::class) => $this->makeSchemaProviderResponseModel($requestedModel),
+            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->makeSchemaProviderResponseModel($requestedModel),
             is_string($requestedModel) => $this->makeStringResponseModel($requestedModel),
             is_array($requestedModel) => $this->makeArrayResponseModel($requestedModel),
             default => $this->makeInstanceResponseModel($requestedModel),

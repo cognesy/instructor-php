@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\Scalars;
 
-use Cognesy\Instructor\Contracts\CanDeserializeJson;
-use Cognesy\Instructor\Contracts\CanProvideSchema;
-use Cognesy\Instructor\Contracts\CanSelfValidate;
+use Cognesy\Instructor\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
+use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Exception;
@@ -14,7 +14,7 @@ use ReflectionEnum;
  * Scalar value adapter.
  * Improved DX via simplified retrieval of scalar value from LLM response.
  */
-class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformResponse, CanSelfValidate
+class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformResponse, CanValidateSelf
 {
     public mixed $value;
 
@@ -75,16 +75,16 @@ class Scalar implements CanProvideSchema, CanDeserializeJson, CanTransformRespon
     /**
      * Deserialize JSON into scalar value
      */
-    public function fromJson(string $json) : static {
-        if (empty($json)) {
+    public function fromJson(string $jsonData) : static {
+        if (empty($jsonData)) {
             $this->value = $this->defaultValue;
             return $this;
         }
         try {
             // decode JSON into array
-            $array = json_decode($json, true);
+            $array = json_decode($jsonData, true);
         } catch (Exception $e) {
-            throw new DeserializationException($e->getMessage(), $this->name, $json);
+            throw new DeserializationException($e->getMessage(), $this->name, $jsonData);
         }
         // check if value exists in JSON
         $this->value = $array[$this->name] ?? $this->defaultValue;

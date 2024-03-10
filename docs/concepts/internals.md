@@ -55,7 +55,7 @@ If `string` value is provided, it is used as a name of the class of the response
 
 Instructor checks if the class exists and analyzes the class & properties type information & doc comments to generate a schema needed to specify LLM response constraints.
 
-The best way to provided the name of the response model class is to use `NameOfTheClass::class`, making it easy for IDE to check the type, handle refactorings, etc.
+The best way to provide the name of the response model class is to use `NameOfTheClass::class`, making it easy for IDE to check the type, handle refactorings, etc.
 
 
 #### Handling object $responseModel value
@@ -69,18 +69,18 @@ If `array` value is provided, it is considered a raw JSON Schema, therefore allo
 
 Instructor requires information on the class of each nested object in your JSON Schema, so it can correctly deserialize the data into appropriate type.
 
-This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema.
+This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema. Lack of the information on target class makes it impossible for Instructor to deserialize the data into appropriate, expected type.
 
-Current design useses JSON Schema `comment` field on property to overcome this. Instructor expects developer to use `comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+Current design uses JSON Schema `$comment` field on property to overcome this information gap. Instructor expects developer to use `comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
 
 
 ### Response model contracts
 
 Instructor allows you to customize processing of $responseModel value also by looking at the interfaces the class or instance implements:
 
- - `CanProvideSchema` - implement to be able to provide custom schema, instead of default approach of Instructor analyzing $responseModel value class
+ - `CanProvideJsonSchema` - implement to be able to return JSON Schema of the response model, overriding the default approach of Instructor, which is analyzing $responseModel value class information,
  - `CanDeserializeResponse` - implement to customize the way the response from LLM is deserialized from JSON into PHP object, 
- - `CanSelfValidate` - implement to customize the way the deserialized object is validated,
- - `CanTransformResponse` - implement to transform the validated object into target value received by the caller (eg. unwrap simple type from a class to scalar value
+ - `CanValidateSelf` - implement to customize the way the deserialized object is validated - it fully replaces the default validation process for given response model, 
+ - `CanTransformResponse` - implement to transform the validated object into any target value that will be then passed back to the caller (e.g. unwrap simple type from a class to scalar value)
 
 For a practical example of using those contracts to customize Instructor processing flow see: src/Extras/Scalars/. It contains an implementation of scalar value response support with a wrapper class implementing custom schema provider, deserialization, validation and transformation into requested value type.

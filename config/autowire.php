@@ -3,7 +3,7 @@ namespace Cognesy\config;
 
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Contracts\CanDeserializeResponse;
+use Cognesy\Instructor\Contracts\CanDeserializeDataClass;
 use Cognesy\Instructor\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Core\RequestHandler;
@@ -11,7 +11,7 @@ use Cognesy\Instructor\Core\ResponseHandler;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
-use Cognesy\Instructor\Schema\Factories\FunctionCallFactory;
+use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\PropertyMap;
@@ -24,11 +24,11 @@ function autowire(Configuration $config) : Configuration
 {
     $config->declare(
         class: Deserializer::class,
-        name: CanDeserializeResponse::class
+        name: CanDeserializeDataClass::class
     );
     $config->declare(class: EventDispatcher::class);
     $config->declare(
-        class: FunctionCallFactory::class,
+        class: FunctionCallBuilder::class,
         context: [
             'schemaFactory' => $config->reference(SchemaFactory::class),
             'referenceQueue' => $config->reference(ReferenceQueue::class),
@@ -59,14 +59,14 @@ function autowire(Configuration $config) : Configuration
         class: ResponseHandler::class,
         context: [
             'eventDispatcher' => $config->reference(EventDispatcher::class),
-            'deserializer' => $config->reference(CanDeserializeResponse::class),
+            'deserializer' => $config->reference(CanDeserializeDataClass::class),
             'validator' => $config->reference(CanValidateResponse::class),
         ]
     );
     $config->declare(
         class: ResponseModelFactory::class,
         context: [
-            'functionCallFactory' => $config->reference(FunctionCallFactory::class),
+            'functionCallFactory' => $config->reference(FunctionCallBuilder::class),
             'schemaFactory' => $config->reference(SchemaFactory::class),
             'schemaBuilder' => $config->reference(SchemaBuilder::class),
         ]

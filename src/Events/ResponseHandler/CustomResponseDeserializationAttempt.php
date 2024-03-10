@@ -2,14 +2,14 @@
 
 namespace Cognesy\Instructor\Events\ResponseHandler;
 
-use Cognesy\Instructor\Contracts\CanDeserializeJson;
+use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\Event;
 
 class CustomResponseDeserializationAttempt extends Event
 {
     public function __construct(
-        public CanDeserializeJson $instance,
-        public string $json)
+        public CanDeserializeSelf $instance,
+        public string             $json)
     {
         parent::__construct();
     }

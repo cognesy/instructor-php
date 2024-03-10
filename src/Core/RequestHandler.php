@@ -43,8 +43,6 @@ class RequestHandler
             $request->responseModel
         );
         $this->eventDispatcher->dispatch(new ResponseModelBuilt($requestedModel));
-        if ($requestedModel->class) {
-        }
         return $this->tryRespond($request, $requestedModel);
     }
 

@@ -2,9 +2,9 @@
 
 namespace Tests\Examples\ResponseModel;
 
-use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 
-class UserWithProvider implements CanProvideSchema {
+class UserWithProvider implements CanProvideJsonSchema {
     public function toJsonSchema() : array {
         return [
             '$comment' => User::class,

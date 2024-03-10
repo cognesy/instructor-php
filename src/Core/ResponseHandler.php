@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Contracts\CanDeserializeJson;
-use Cognesy\Instructor\Contracts\CanDeserializeResponse;
-use Cognesy\Instructor\Contracts\CanSelfValidate;
+use Cognesy\Instructor\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Contracts\CanDeserializeDataClass;
+use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Contracts\CanTransformResponse;
 use Cognesy\Instructor\Contracts\CanValidateResponse;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
@@ -21,13 +21,13 @@ use Cognesy\Instructor\Utils\Result;
 class ResponseHandler
 {
     private EventDispatcher $eventDispatcher;
-    private CanDeserializeResponse $deserializer;
+    private CanDeserializeDataClass $deserializer;
     private CanValidateResponse $validator;
 
     public function __construct(
-        EventDispatcher        $eventDispatcher,
-        CanDeserializeResponse $deserializer,
-        CanValidateResponse    $validator,
+        EventDispatcher         $eventDispatcher,
+        CanDeserializeDataClass $deserializer,
+        CanValidateResponse     $validator,
     )
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -40,7 +40,7 @@ class ResponseHandler
      */
     public function toResponse(ResponseModel $responseModel, string $json) : Result {
         // ...deserialize
-        $deserializationResult = $this->deserialize($responseModel, $json);
+        $deserializationResult = $this->deserialize($json, $responseModel);
         if ($deserializationResult->isFailure()) {
             $this->eventDispatcher->dispatch(new ResponseDeserializationFailed($deserializationResult->errorMessage()));
             return $deserializationResult;
@@ -65,8 +65,8 @@ class ResponseHandler
     /**
      * Deserialize response JSON
      */
-    protected function deserialize(ResponseModel $responseModel, string $json) : Result {
-        if ($responseModel->instance instanceof CanDeserializeJson) {
+    protected function deserialize(string $json, ResponseModel $responseModel) : Result {
+        if ($responseModel->instance instanceof CanDeserializeSelf) {
             $this->eventDispatcher->dispatch(new CustomResponseDeserializationAttempt($responseModel->instance, $json));
             return Result::try(fn() => $responseModel->instance->fromJson($json));
         }
@@ -79,7 +79,7 @@ class ResponseHandler
      * Validate deserialized response object
      */
     protected function validate(object $response) : Result {
-        if ($response instanceof CanSelfValidate) {
+        if ($response instanceof CanValidateSelf) {
             $this->eventDispatcher->dispatch(new CustomResponseValidationAttempt($response));
             $errors = $response->validate();
             return match(count($errors)) {
