@@ -5,11 +5,12 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 class ResponseModel
 {
-    public mixed $instance; // calculated
-    public ?string $class; // calculated
-    public ?array $functionCall; // calculated
-    public Schema $schema; // calculated
+    public mixed $instance;
+    public ?string $class;
+    public Schema $schema;
     public array $jsonSchema;
+    public ?array $functionCall;
+
     public bool $receivesEvents = false;
 
     public string $functionName = 'extract_data';
