@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor\Contracts;
 
+/**
+ * Class can validate other objects - used by validator classes
+ */
 interface CanValidateObject
 {
     /**
