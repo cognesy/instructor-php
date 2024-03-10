@@ -523,12 +523,12 @@ Current design useses JSON Schema `comment` field on property to overcome this. 
 
 Instructor allows you to customize processing of $responseModel value also by looking at the interfaces the class or instance implements:
 
- - CanProvideSchema - implement to be able to provide custom schema, instead of default approach of Instructor analyzing $responseModel value class
- - CanDeserializeResponse - implement to customize the way the response from LLM is deserialized from JSON into PHP object, 
- - CanSelfValidate - implement to customize the way the deserialized object is validated,
- - CanTransformResponse - implement to transform the validated object into target value received by the caller (eg. unwrap simple type from a class to scalar value
+ - `CanProvideSchema` - implement to be able to provide custom schema, instead of default approach of Instructor analyzing $responseModel value class
+ - `CanDeserializeResponse` - implement to customize the way the response from LLM is deserialized from JSON into PHP object, 
+ - `CanSelfValidate` - implement to customize the way the deserialized object is validated,
+ - `CanTransformResponse` - implement to transform the validated object into target value received by the caller (eg. unwrap simple type from a class to scalar value
 
-For a practical example of using those contracts to customize Instructor processing flow see: src/Extras/Scalars/.
+For a practical example of using those contracts to customize Instructor processing flow see: src/Extras/Scalars/. It contains an implementation of scalar value response support with a wrapper class implementing custom schema provider, deserialization, validation and transformation into requested value type.
 
 
 ## Additional Notes
