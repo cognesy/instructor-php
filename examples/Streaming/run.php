@@ -17,14 +17,14 @@ $instructor = (new Instructor)
 
 // CASE 1: Keep generating Person objects based on the input message
 
-class Person {
+class StreamedPerson {
     public string $name;
     public ?int $age;
 }
 
 $sequence = $instructor->respond(
     messages: "His name is Jason and he's 28 yo, and his friend is John. They both work with Kate, who is CMO.",
-    responseModel: Sequence::of(Person::class),
+    responseModel: Sequence::of(StreamedPerson::class),
     options: ['stream' => true],
 );
 

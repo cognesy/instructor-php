@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Contracts\CanValidateObject;
@@ -18,7 +19,7 @@ use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationFailed;
 use Cognesy\Instructor\Utils\Result;
 
-class ResponseHandler
+class ResponseHandler implements CanHandleResponse
 {
     private EventDispatcher $eventDispatcher;
     private CanDeserializeClass $deserializer;
@@ -38,9 +39,9 @@ class ResponseHandler
     /**
      * Deserialize JSON and validate response object
      */
-    public function toResponse(ResponseModel $responseModel, string $json) : Result {
+    public function toResponse(string $jsonData, ResponseModel $responseModel) : Result {
         // ...deserialize
-        $deserializationResult = $this->deserialize($json, $responseModel);
+        $deserializationResult = $this->deserialize($jsonData, $responseModel);
         if ($deserializationResult->isFailure()) {
             $this->eventDispatcher->dispatch(new ResponseDeserializationFailed($deserializationResult->errorMessage()));
             return $deserializationResult;

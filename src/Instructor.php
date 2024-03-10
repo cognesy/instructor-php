@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Core\EventDispatcher;
 use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Core\RequestHandler;
@@ -25,8 +26,10 @@ class Instructor {
 
     public function __construct(array $config = []) {
         $this->queuedEvents[] = new InstructorStarted($config);
+        /** @var Configuration */
         $this->config = Configuration::fresh($config);
         $this->queuedEvents[] = new InstructorReady($this->config);
+        /** @var EventDispatcher */
         $this->eventDispatcher = $this->config->get(EventDispatcher::class);
     }
 
@@ -49,8 +52,9 @@ class Instructor {
             $request = new Request($messages, $responseModel, $model, $maxRetries, $options);
             $this->dispatchQueuedEvents();
             $this->eventDispatcher->dispatch(new RequestReceived($request));
-            $requestHandler = $this->config->get(RequestHandler::class);
-            $response = $requestHandler->respond($request);
+            /** @var CanHandleRequest */
+            $requestHandler = $this->config->get(CanHandleRequest::class);
+            $response = $requestHandler->respondTo($request);
             $this->eventDispatcher->dispatch(new ResponseReturned($response));
             return $response;
         } catch (Throwable $error) {

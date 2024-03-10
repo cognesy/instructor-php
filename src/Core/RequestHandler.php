@@ -3,6 +3,8 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
+use Cognesy\Instructor\Contracts\CanHandleRequest;
+use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
@@ -14,19 +16,19 @@ use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\ValidationException;
 use Exception;
 
-class RequestHandler
+class RequestHandler implements CanHandleRequest
 {
     public $retryPrompt = "Recall function correctly, fix following errors:";
     private CanCallFunction $llm;
     private ResponseModelFactory $responseModelFactory;
     private EventDispatcher $eventDispatcher;
-    private ResponseHandler $responseHandler;
+    private CanHandleResponse $responseHandler;
 
     public function __construct(
         CanCallFunction $llm,
         ResponseModelFactory $responseModelFactory,
         EventDispatcher $eventDispatcher,
-        ResponseHandler $responseHandler,
+        CanHandleResponse $responseHandler,
     )
     {
         $this->llm = $llm;
@@ -38,7 +40,7 @@ class RequestHandler
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
-    public function respond(Request $request) : mixed {
+    public function respondTo(Request $request) : mixed {
         $requestedModel = $this->responseModelFactory->from(
             $request->responseModel
         );
@@ -69,9 +71,9 @@ class RequestHandler
                 $request->options
             );
             $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($response));
-            $json = $response->toolCalls[0]->functionArguments;
+            $jsonData = $response->toolCalls[0]->functionArguments;
             try {
-                $result = $this->responseHandler->toResponse($responseModel, $json);
+                $result = $this->responseHandler->toResponse($jsonData, $responseModel);
                 if ($result->isSuccess()) {
                     $object = $result->value();
                     $this->eventDispatcher->dispatch(new FunctionCallResponseConvertedToObject($object));
@@ -91,7 +93,7 @@ class RequestHandler
             if (!is_array($errors)) {
                 $errors = [$errors->getMessage()];
             }
-            $messages[] = ['role' => 'assistant', 'content' => $json];
+            $messages[] = ['role' => 'assistant', 'content' => $jsonData];
             $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . ': ' . implode(", ", $errors)];
             $retries++;
             if ($retries <= $request->maxRetries) {
