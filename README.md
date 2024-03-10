@@ -443,6 +443,52 @@ assert($user->name === "JASON");
 See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
 
 
+## Internals
+
+### Lifecycle
+
+As Instructor for PHP processes your request, it goes through several stages:
+
+ 1. Initialize and self-configure (with possible overrides defined by developer).
+ 2. Analyze classes and properties of the response data model specified by developer.
+ 3. Encode data model into a schema that can be provided to LLM.
+ 4. Execute request to LLM using specified messages (content) and response model metadata.
+ 5. Receive a response from LLM or multiple partial responses (if streaming enabled).
+ 6. Deserialize response received from LLM into originally requested classes and their properties.
+ 7. In case response contained incomplete or corrupted data - if errors are encountered, create feedback message for LLM and requests regeneration of the response.
+ 8. Execute validations defined by developer for the data model - if any of them fail, create feedback message for LLM and requests regeneration of the response.
+ 9. Repeat the steps 4-8, unless specified limit of retries has been reached or response passes validation
+
+
+### Receiving notification on internal events
+
+Instructor allows you to receive a detailed information at every stage of request and response processing via events.
+
+ * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
+ * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
+ * `(new Instructor)->onError(callable $callback)` method - receive callback on any uncaught error, so you can customize handling it, for example logging the error or using some fallback mechanism in an attempt to recover
+
+Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
+
+```php
+$instructor = (new Instructor)
+    // see requests to LLM
+    ->onEvent(RequestSentToLLM::class, fn($e) => dump($e))
+    // see responses from LLM
+    ->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
+    // see all events in console-friendly format
+    ->wiretap(fn($event) => dump($event->toConsole()))
+    // log errors via your custom logger
+    ->onError(fn($request, $error) => $logger->log($error));
+
+$instructor->respond(
+    messages: "What is the population of Paris?",
+    responseModel: Scalar::integer(),
+);
+// check your console for the details on the Instructor execution
+```
+
+
 ## Additional Notes
 
 PHP ecosystem does not (yet) have a strong equivalent of [Pydantic](https://pydantic.dev/), which is at the core of Instructor for Python.
