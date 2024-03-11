@@ -11,7 +11,7 @@ use Cognesy\Instructor\Traits\ValidationMixin;
 
 class Property
 {
-    /**  Monotonically increasing ID */
+    /**  Monotonically increasing ID, not larger than 2 */
     public string $index;
     public string $key;
     public string $value;
@@ -32,7 +32,7 @@ class UserDetail
             return [];
         }
         return [[
-            'message' => "Number of properties must be less than 3.",
+            'message' => "Number of properties must not more than 2.",
             'path' => 'properties',
             'value' => $this->name
         ]];
@@ -41,13 +41,17 @@ class UserDetail
 
 $text = "Jason is 25 years old. He is a programmer. He has a car. He lives in a small house in Alamo. He likes to play guitar.";
 
-$user = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => $text]],
-    responseModel: UserDetail::class,
-    //maxRetries: 2
-);
+try {
+    $user = (new Instructor)->respond(
+        messages: [['role' => 'user', 'content' => $text]],
+        responseModel: UserDetail::class,
+        maxRetries: 0 // change to 1 or 2 to reattempt generation in case of validation error
+    );
 
-assert($user->age === 25);
-assert($user->name === "Jason");
-assert(count($user->properties) < 3);
-dump($user);
+    assert($user->age === 25);
+    assert($user->name === "Jason");
+    assert(count($user->properties) < 3);
+    dump($user);
+} catch (\Exception $e) {
+    dump("Max retries exceeded\nMessage: {$e->getMessage()}");
+}

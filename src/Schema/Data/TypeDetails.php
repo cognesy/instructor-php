@@ -11,14 +11,6 @@ class TypeDetails
         public ?array       $enumValues = null, // for enums OR null
     ) {}
 
-    public function classOnly() : string {
-        if ($this->type !== 'object' && $this->type !== 'enum') {
-            throw new \Exception('Trying to get class name for type that is not an object or enum');
-        }
-        $segments = explode('\\', $this->class);
-        return array_pop($segments);
-    }
-
     public function __toString() : string
     {
         return match ($this->type) {
@@ -41,6 +33,23 @@ class TypeDetails
             'float' => 'number',
             default => throw new \Exception('Unknown type: '.$this->type),
         };
+    }
+
+    public function shortName() : string {
+        return match ($this->type) {
+            'object' => $this->classOnly(),
+            'enum' => "one of ".implode(', ', $this->enumValues),
+            'array' => $this->nestedType->shortName().'[]',
+            default => $this->type,
+        };
+    }
+
+    public function classOnly() : string {
+        if (!in_array($this->type, ['object', 'enum'])) {
+            throw new \Exception('Trying to get class name for type that is not an object or enum');
+        }
+        $segments = explode('\\', $this->class);
+        return array_pop($segments);
     }
 
     static public function fromJsonType(string $jsonType) : string {

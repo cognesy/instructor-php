@@ -30,6 +30,7 @@ $user = (new Instructor)
     ->respond(
         messages: [["role" => "user",  "content" => "Contact our CTO, Jason is -28 years old -- Tom"]],
         responseModel: UserDetail::class,
+        maxRetries: 2,
     )
 ;
 

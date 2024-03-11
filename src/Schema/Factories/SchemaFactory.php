@@ -128,7 +128,7 @@ class SchemaFactory
                 $type,
                 '',
                 '',
-                $this->makePropertySchema($type, 'item', 'Correctly extract items of '.$type->nestedType->classOnly())
+                $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
             ),
             'int', 'string', 'bool', 'float' => new ScalarSchema($type, 'value', 'Correctly extracted value'),
             default => throw new \Exception('Unknown type: '.$type->type),
@@ -145,18 +145,19 @@ class SchemaFactory
      */
     protected function makePropertySchema(TypeDetails $type, string $name, string $description): Schema
     {
-        return match ($type->type) {
+        $match = match ($type->type) {
             'object' => $this->makePropertyObject($type, $name, $description),
             'enum' => new EnumSchema($type, $name, $description),
             'array' => new ArraySchema(
                 $type,
                 $name,
                 $description,
-                $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of '.$type->nestedType->classOnly()),
+                $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
             ),
             'int', 'string', 'bool', 'float' => new ScalarSchema($type, $name, $description),
             default => throw new \Exception('Unknown type: ' . $type->type),
         };
+        return $match;
     }
 
     /**
