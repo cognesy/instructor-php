@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Tests\Examples\ResponseModel\User;
@@ -9,7 +10,7 @@ use Tests\Examples\ResponseModel\UserWithProvider;
 it('can handle string class name', function() {
     $responseModel = Configuration::fresh()
         ->get(ResponseModelFactory::class)
-        ->from(User::class);
+        ->fromAny(User::class);
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -29,7 +30,7 @@ it('can handle string class name', function() {
 it('can handle array schema', function($user) {
     $responseModel = Configuration::fresh()
         ->get(ResponseModelFactory::class)
-        ->from($user);
+        ->fromAny($user);
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -49,7 +50,7 @@ it('can handle array schema', function($user) {
 it('can handle schema provider - via instance', function() {
     $responseModel = Configuration::fresh()
         ->get(ResponseModelFactory::class)
-        ->from(new UserWithProvider());
+        ->fromAny(new UserWithProvider());
     expect($responseModel->class)->toBe(UserWithProvider::class);
     expect($responseModel->instance)->toBeInstanceOf(UserWithProvider::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -69,7 +70,7 @@ it('can handle schema provider - via instance', function() {
 it('can handle schema provider - via class name', function() {
     $responseModel = Configuration::fresh()
         ->get(ResponseModelFactory::class)
-        ->from(UserWithProvider::class);
+        ->fromAny(UserWithProvider::class);
     expect($responseModel->class)->toBe(UserWithProvider::class);
     expect($responseModel->instance)->toBeInstanceOf(UserWithProvider::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -92,7 +93,7 @@ it('can handle ObjectSchema instance', function() {
         ->schema(User::class);
     $responseModel = Configuration::fresh()
         ->get(ResponseModelFactory::class)
-        ->from($schema);
+        ->fromAny($schema);
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();
@@ -112,7 +113,7 @@ it('can handle ObjectSchema instance', function() {
 it('can handle raw object', function() {
     $responseModel = Configuration::fresh()
         ->get(ResponseModelFactory::class)
-        ->from(new User());
+        ->fromAny(new User());
     expect($responseModel->class)->toBe(User::class);
     expect($responseModel->instance)->toBeInstanceOf(User::class);
     expect($responseModel->functionCall)->toBeArray();

@@ -9,6 +9,8 @@ class Request
     public string $model = 'gpt-4-0125-preview';
     public int $maxRetries = 0;
     public array $options = [];
+    public string $functionName = 'extract_data';
+    public string $functionDescription = 'Extract data from provided content';
 
     public function __construct(
         string|array $messages,

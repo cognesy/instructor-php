@@ -164,7 +164,7 @@ class Failure extends Result {
     }
 
     public function errorMessage() : string {
-        if (is_subclass_of($this->error, Exception::class)) {
+        if (is_a($this->error, Exception::class)) {
             return $this->error->getMessage();
         }
         return (string) $this->error;

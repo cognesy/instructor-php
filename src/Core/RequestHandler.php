@@ -25,10 +25,10 @@ class RequestHandler implements CanHandleRequest
     private CanHandleResponse $responseHandler;
 
     public function __construct(
-        CanCallFunction $llm,
+        CanCallFunction      $llm,
         ResponseModelFactory $responseModelFactory,
-        EventDispatcher $eventDispatcher,
-        CanHandleResponse $responseHandler,
+        EventDispatcher      $eventDispatcher,
+        CanHandleResponse    $responseHandler,
     )
     {
         $this->llm = $llm;
@@ -41,9 +41,7 @@ class RequestHandler implements CanHandleRequest
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
     public function respondTo(Request $request) : mixed {
-        $requestedModel = $this->responseModelFactory->from(
-            $request->responseModel
-        );
+        $requestedModel = $this->responseModelFactory->fromRequest($request);
         $this->eventDispatcher->dispatch(new ResponseModelBuilt($requestedModel));
         return $this->tryRespond($request, $requestedModel);
     }
@@ -72,6 +70,7 @@ class RequestHandler implements CanHandleRequest
             );
             $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($response));
             $jsonData = $response->toolCalls[0]->functionArguments;
+            // check if JSON not empty and not malformed
             try {
                 $result = $this->responseHandler->toResponse($jsonData, $responseModel);
                 if ($result->isSuccess()) {
@@ -80,15 +79,15 @@ class RequestHandler implements CanHandleRequest
                     return $object;
                 }
                 $errors = $result->errorValue();
-            } catch (ValidationException $e) {
+            } catch (ValidationException $e) { // handle uncaught validation exceptions
                 $errors = [$e->getMessage()];
-            } catch (DeserializationException $e) {
+            } catch (DeserializationException $e) { // handle uncaught deserialization exceptions
                 $errors = [$e->getMessage()];
             } catch (Exception $e) {
                 $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, $e->getMessage()));
                 throw $e;
             }
-            // TODO: this is workaround for now, find the source of bug
+            // TODO: this is workaround, find the source of bug
             // something is not returning array of errors, but a DeserializationException
             if (!is_array($errors)) {
                 $errors = [$errors->getMessage()];
