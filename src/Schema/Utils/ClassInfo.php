@@ -24,7 +24,11 @@ class ClassInfo {
     }
 
     public function getTypes(string $class, string $property) : array {
-        return $this->extractor()->getTypes($class, $property);
+        $types = $this->extractor()->getTypes($class, $property);
+        if (is_null($types)) {
+            $types = [new Type(Type::BUILTIN_TYPE_STRING)];
+        }
+        return $types;
     }
 
     public function getType(string $class, string $property): Type {
@@ -58,8 +62,14 @@ class ClassInfo {
 
     public function getRequiredProperties(string $class) : array {
         $properties = $this->getProperties($class);
+        if (empty($properties)) {
+            return [];
+        }
         $required = [];
         foreach ($properties as $property) {
+            if (!$this->isPublic($class, $property)) {
+                continue;
+            }
             if (!$this->isNullable($class, $property)) {
                 $required[] = $property;
             }
