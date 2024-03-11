@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\ResponseHandler;
 
-use Cognesy\Instructor\Core\ResponseModel;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
 
 class ResponseDeserializationAttempt extends Event

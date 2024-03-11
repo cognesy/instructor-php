@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\RequestHandler;
 
-use Cognesy\Instructor\Core\Request;
+use Cognesy\Instructor\Core\Data\Request;
 use Cognesy\Instructor\Events\Event;
 
 class ResponseGenerationFailed extends Event

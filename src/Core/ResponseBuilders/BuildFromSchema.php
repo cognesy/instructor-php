@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
-use Cognesy\Instructor\Core\ResponseModel;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 
 class BuildFromSchema extends AbstractBuilder

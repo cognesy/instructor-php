@@ -5,12 +5,15 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
+use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
+use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
-use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\ValidationException;
@@ -18,7 +21,6 @@ use Exception;
 
 class RequestHandler implements CanHandleRequest
 {
-    public $retryPrompt = "Recall function correctly, fix following errors:";
     private CanCallFunction $llm;
     private ResponseModelFactory $responseModelFactory;
     private EventDispatcher $eventDispatcher;
@@ -90,10 +92,10 @@ class RequestHandler implements CanHandleRequest
             // TODO: this is workaround, find the source of bug
             // something is not returning array of errors, but a DeserializationException
             if (!is_array($errors)) {
+                dd($errors);
                 $errors = [$errors->getMessage()];
             }
-            $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-            $messages[] = ['role' => 'user', 'content' => $this->retryPrompt . ': ' . implode(", ", $errors)];
+            $messages = $this->makeRetryMessages($messages, $responseModel, $jsonData, $errors);
             $retries++;
             if ($retries <= $request->maxRetries) {
                 $this->eventDispatcher->dispatch(new NewValidationRecoveryAttempt($retries, $errors));
@@ -102,5 +104,16 @@ class RequestHandler implements CanHandleRequest
         $this->eventDispatcher->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
         $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, $errors));
         throw new Exception("Failed to extract data due to validation errors: " . implode(", ", $errors));
+    }
+
+    protected function makeRetryMessages(
+        array $messages,
+        ResponseModel $responseModel,
+        string $jsonData,
+        array $errors
+    ) : array {
+        $messages[] = ['role' => 'assistant', 'content' => $jsonData];
+        $messages[] = ['role' => 'user', 'content' => $responseModel->retryPrompt . ': ' . implode(", ", $errors)];
+        return $messages;
     }
 }

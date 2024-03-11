@@ -1,8 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
-
-use Cognesy\Instructor\Events\Event;
+namespace Cognesy\Instructor\Events;
 
 class EventDispatcher
 {

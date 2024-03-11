@@ -3,9 +3,8 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
-use Cognesy\Instructor\Core\EventDispatcher;
-use Cognesy\Instructor\Core\Request;
-use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
@@ -29,7 +28,7 @@ class Instructor {
         /** @var Configuration */
         $this->config = Configuration::fresh($config);
         $this->queuedEvents[] = new InstructorReady($this->config);
-        /** @var EventDispatcher */
+        /** @var \Cognesy\Instructor\Events\EventDispatcher */
         $this->eventDispatcher = $this->config->get(EventDispatcher::class);
     }
 

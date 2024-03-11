@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\Data;
 
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
@@ -13,6 +13,7 @@ class ResponseModel
 
     public string $functionName = 'extract_data';
     public string $functionDescription = 'Extract data from provided content';
+    public string $retryPrompt = "Recall function correctly, fix following errors:";
 
     public function __construct(
         string $class = null,

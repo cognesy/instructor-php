@@ -3,11 +3,14 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanReceiveEvents;
+use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Core\ResponseBuilders\BuildFromArray;
 use Cognesy\Instructor\Core\ResponseBuilders\BuildFromClass;
 use Cognesy\Instructor\Core\ResponseBuilders\BuildFromInstance;
 use Cognesy\Instructor\Core\ResponseBuilders\BuildFromSchema;
 use Cognesy\Instructor\Core\ResponseBuilders\BuildFromSchemaProvider;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;

@@ -2,12 +2,14 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
-use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Contracts\CanValidateObject;
+use Cognesy\Instructor\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationAttempt;

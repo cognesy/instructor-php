@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
-use Cognesy\Instructor\Core\ResponseModel;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\RequestHandler;
 
-use Cognesy\Instructor\Core\Request;
-use Cognesy\Instructor\Core\ResponseModel;
+use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
 
 class FunctionCallRequested extends Event

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Core\Request;
+use Cognesy\Instructor\Core\Data\Request;
 use Cognesy\Instructor\Events\Event;
 
 class RequestReceived extends Event

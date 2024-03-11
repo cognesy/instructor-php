@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\LLMs\OpenAI;
 
-use Cognesy\Instructor\Core\EventDispatcher;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;

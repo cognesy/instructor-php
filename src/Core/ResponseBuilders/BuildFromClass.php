@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
-use Cognesy\Instructor\Core\ResponseModel;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 
 class BuildFromClass extends AbstractBuilder
 {

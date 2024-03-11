@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\Data;
 
 class Request
 {
@@ -11,6 +11,7 @@ class Request
     public array $options = [];
     public string $functionName = 'extract_data';
     public string $functionDescription = 'Extract data from provided content';
+    public $retryPrompt = "Recall function correctly, fix following errors:";
 
     public function __construct(
         string|array $messages,

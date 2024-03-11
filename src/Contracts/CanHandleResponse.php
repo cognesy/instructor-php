@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Core\ResponseModel;
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Result;
 
 interface CanHandleResponse

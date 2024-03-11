@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Core\Request;
+use Cognesy\Instructor\Core\Data\Request;
 
 interface CanHandleRequest
 {

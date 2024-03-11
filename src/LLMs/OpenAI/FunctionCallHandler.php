@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\LLMs\OpenAI;
 
-use Cognesy\Instructor\Core\EventDispatcher;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\LLMs\FunctionCall;

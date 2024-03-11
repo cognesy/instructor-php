@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\LLMs\OpenAI;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Core\EventDispatcher;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\LLMs\LLMResponse;
 use OpenAI;
 use OpenAI\Client;
