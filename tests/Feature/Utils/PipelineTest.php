@@ -76,6 +76,33 @@ test('then callback', function () {
     expect($result)->toBe(24);
 });
 
+it('breaks processing when payload becomes null', function () {
+    $pipeline = new Pipeline();
+
+    $pipeline->through([
+        fn ($payload) => $payload + 1,
+        fn ($payload) => null, // This will cause the payload to become null
+        fn ($payload) => $payload * 2,
+    ]);
+
+    $result = $pipeline->process(5);
+
+    expect($result)->toBeNull();
+});
+
+it('assigns result to carry when result is not null', function () {
+    $pipeline = new Pipeline();
+
+    $pipeline->through([
+        fn ($payload) => $payload + 1,
+    ])->beforeEach(fn ($payload) => $payload * 2);
+
+    $result = $pipeline->process(5);
+
+    // The result should be 11 because the beforeEach callback multiplies the payload by 2
+    expect($result)->toBe(11);
+});
+
 test('on error callback', function () {
     $exception = null;
     $pipeline = (new Pipeline())
