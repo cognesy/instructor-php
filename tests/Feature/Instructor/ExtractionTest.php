@@ -96,8 +96,8 @@ it('can extract complex, multi-nested structure', function ($text) use ($isMock)
     $instructor = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM]); //$mockLLM
     /** @var \Tests\Examples\Complex\ProjectEvents $events */
     $events = $instructor
-        ->wiretap(fn($e)=>dump($e->toConsole()))
-        ->onEvent(ResponseModelBuilt::class, fn($e)=>dump($e))
+//        ->wiretap(fn($e)=>dump($e->toConsole()))
+//        ->onEvent(ResponseModelBuilt::class, fn($e)=>dump($e))
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: ProjectEvents::class,

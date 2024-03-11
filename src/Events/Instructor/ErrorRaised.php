@@ -2,13 +2,16 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
+use Cognesy\Instructor\Core\Request;
 use Cognesy\Instructor\Events\Event;
 use Throwable;
 
 class ErrorRaised extends Event
 {
     public function __construct(
-        public Throwable $e
+        public Throwable $error,
+        public ?Request $request = null,
+        public mixed $context = null,
     )
     {
         parent::__construct();
@@ -16,6 +19,6 @@ class ErrorRaised extends Event
 
     public function __toString(): string
     {
-        return $this->e->getMessage();
+        return $this->error->getMessage();
     }
 }

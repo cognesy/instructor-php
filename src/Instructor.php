@@ -48,10 +48,10 @@ class Instructor {
         int $maxRetries = 0,
         array $options = [],
     ) : mixed {
+        $request = new Request($messages, $responseModel, $model, $maxRetries, $options);
+        $this->dispatchQueuedEvents();
+        $this->eventDispatcher->dispatch(new RequestReceived($request));
         try {
-            $request = new Request($messages, $responseModel, $model, $maxRetries, $options);
-            $this->dispatchQueuedEvents();
-            $this->eventDispatcher->dispatch(new RequestReceived($request));
             /** @var CanHandleRequest */
             $requestHandler = $this->config->get(CanHandleRequest::class);
             $response = $requestHandler->respondTo($request);
@@ -59,10 +59,11 @@ class Instructor {
             return $response;
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
-            $this->eventDispatcher->dispatch(new ErrorRaised($error));
+            $event = new ErrorRaised($error, $request);
+            $this->eventDispatcher->dispatch($event);
             if (isset($this->onError)) {
                 // final attempt to recover from the error (e.g. give fallback response)
-                return ($this->onError)($request, $error);
+                return ($this->onError)($event);
             }
             throw $error;
         }

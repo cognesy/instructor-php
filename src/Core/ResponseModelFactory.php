@@ -19,15 +19,18 @@ class ResponseModelFactory
     private FunctionCallBuilder $functionCallBuilder;
     private SchemaFactory $schemaFactory;
     private SchemaBuilder $schemaBuilder;
+    private EventDispatcher $eventDispatcher;
 
     public function __construct(
         FunctionCallBuilder $functionCallFactory,
         SchemaFactory       $schemaFactory,
-        SchemaBuilder       $schemaBuilder
+        SchemaBuilder       $schemaBuilder,
+        EventDispatcher     $eventDispatcher
     ) {
         $this->functionCallBuilder = $functionCallFactory;
         $this->schemaFactory = $schemaFactory;
         $this->schemaBuilder = $schemaBuilder;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function fromRequest(Request $request) : ResponseModel {
@@ -40,9 +43,14 @@ class ResponseModelFactory
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => BuildFromSchemaProvider::class,
             is_string($requestedModel) => BuildFromClass::class,
             is_array($requestedModel) => BuildFromArray::class,
-            default => BuildFromInstance::class,
+            is_object($requestedModel) => BuildFromInstance::class,
+            default => throw new \InvalidArgumentException('Unsupported response model type: ' . gettype($requestedModel))
         };
         $builder = new $builderClass($this->functionCallBuilder, $this->schemaFactory, $this->schemaBuilder);
-        return $builder->build($requestedModel);
+        $responseModel = $builder->build($requestedModel);
+        if ($responseModel instanceof CanReceiveEvents) {
+            $this->eventDispatcher->wiretap(fn($event) => $responseModel->onEvent($event));
+        }
+        return $responseModel;
     }
 }

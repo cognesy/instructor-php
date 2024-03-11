@@ -11,8 +11,6 @@ class ResponseModel
     public array $jsonSchema;
     public ?array $functionCall;
 
-    public bool $receivesEvents = false;
-
     public string $functionName = 'extract_data';
     public string $functionDescription = 'Extract data from provided content';
 

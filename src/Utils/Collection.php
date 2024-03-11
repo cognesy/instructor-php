@@ -46,7 +46,7 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
     public function add(mixed ...$items): self
     {
         foreach ($items as $item) {
-            if (!is_a($item, $this->class)) {
+            if ($item instanceof $this->class) {
                 throw new \InvalidArgumentException("Item must be of type {$this->class}");
             }
             $this->items[] = $item;

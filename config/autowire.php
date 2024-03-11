@@ -78,6 +78,7 @@ function autowire(Configuration $config) : Configuration
             'functionCallFactory' => $config->reference(FunctionCallBuilder::class),
             'schemaFactory' => $config->reference(SchemaFactory::class),
             'schemaBuilder' => $config->reference(SchemaBuilder::class),
+            'eventDispatcher' => $config->reference(EventDispatcher::class),
         ]
     );
     $config->declare(class: SchemaMap::class);
