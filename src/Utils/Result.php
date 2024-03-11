@@ -84,7 +84,7 @@ abstract class Result {
     public function recover(callable $f): Result {
         if ($this->isFailure()) {
             try {
-                return self::success($f($this->getError()));
+                return self::success($f($this->errorValue()));
             } catch (Exception $e) {
                 return self::failure($e);
             }

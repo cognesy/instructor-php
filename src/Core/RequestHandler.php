@@ -84,7 +84,7 @@ class RequestHandler implements CanHandleRequest
             } catch (DeserializationException $e) { // handle uncaught deserialization exceptions
                 $errors = [$e->getMessage()];
             } catch (Exception $e) {
-                $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, $e->getMessage()));
+                $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, [$e->getMessage()]));
                 throw $e;
             }
             // TODO: this is workaround, find the source of bug
@@ -100,6 +100,7 @@ class RequestHandler implements CanHandleRequest
             }
         }
         $this->eventDispatcher->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
+        $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, $errors));
         throw new Exception("Failed to extract data due to validation errors: " . implode(", ", $errors));
     }
 }

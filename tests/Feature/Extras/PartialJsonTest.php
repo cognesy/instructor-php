@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Partials\JsonParser;
+use Cognesy\Instructor\Utils\JsonParser;
 
 enum TestStringEnum : string {
     case A = 'initial';

@@ -115,7 +115,6 @@ class Pipeline {
                             break 2;
                         }
                     }
-                    break;
                 }
             }
             if ($this->thenCall) {

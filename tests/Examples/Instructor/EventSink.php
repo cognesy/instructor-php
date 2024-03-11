@@ -23,4 +23,8 @@ class EventSink
     public function first() : Event {
         return $this->events[0];
     }
+
+    public function all() : array {
+        return $this->events;
+    }
 }

@@ -19,79 +19,86 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
     private string $class;
 
     /**
-     * @param T $class
+     * @param string $class
      * @param array<int, T> $items
      */
-    private function __construct(string $class, array $items = []) {
+    public function __construct(string $class, array $items = [])
+    {
         $this->class = $class;
         $this->items = $items;
     }
 
     /**
-     * @param T ...$items
-     * @return self<T>
+     * @param string $class
+     * @return static<T>
      */
-    public static function of(string $class): self {
+    public static function of(string $class): self
+    {
         return new self($class);
     }
 
-    public function type(): string {
+    public function getType(): string
+    {
         return $this->class;
     }
 
     /**
-     * @param T ...$items
-     * @return self<T>
+     * @param array<int, T> $items
+     * @return static<T>
      */
-    public function add(mixed ...$items): self
+    public function add(array $items): self
     {
-        foreach ($items as $item) {
-            if ($item instanceof $this->class) {
-                throw new \InvalidArgumentException("Item must be of type {$this->class}");
-            }
-            $this->items[] = $item;
+        $newItems = array_filter($items, fn($item) => $item instanceof $this->class);
+        if (count($items) !== count($newItems)) {
+            throw new \InvalidArgumentException("All items must be of type {$this->class}");
         }
-        return $this;
+        return new self($this->class, array_merge($this->items, $newItems));
     }
 
-    public function count(): int {
+    public function count(): int
+    {
         return count($this->items);
     }
 
     /**
      * @param int $offset
      */
-    public function offsetExists(mixed $offset): bool {
+    public function offsetExists(mixed $offset): bool
+    {
         return isset($this->items[$offset]);
     }
 
     /**
      * @param int $offset
-     * @return T
+     * @return T|null
      */
-    public function offsetGet(mixed $offset): mixed {
-        return $this->items[$offset];
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->items[$offset] ?? null;
     }
 
     /**
      * @param int $offset
      * @param T $value
      */
-    public function offsetSet(mixed $offset, mixed $value): void {
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
         $this->items[$offset] = $value;
     }
 
     /**
      * @param int $offset
      */
-    public function offsetUnset(mixed $offset): void {
+    public function offsetUnset(mixed $offset): void
+    {
         unset($this->items[$offset]);
     }
 
     /**
      * @return Traversable<int, T>
      */
-    public function getIterator(): Traversable {
+    public function getIterator(): Traversable
+    {
         return new ArrayIterator($this->items);
     }
 }

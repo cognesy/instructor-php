@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
+use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseReturned;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
@@ -38,8 +39,7 @@ use Tests\MockLLM;
 $isMock = true;
 $text = "His name is Jason, he is 28 years old.";
 
-it('handles events for simple case', function ($event) use ($isMock, $text) {
-dump($event);
+it('handles events for simple case w/reattempt on validation - success', function ($event) use ($isMock, $text) {
     $mockLLM = !$isMock ? null : MockLLM::get([
         '{"name": "Jason", "age":-28}',
         '{"name": "Jason", "age":28}',
@@ -95,8 +95,62 @@ dump($event);
 ]);
 
 
+it('handles events for simple case w/reattempt on validation - failure', function ($event) use ($isMock, $text) {
+    $mockLLM = !$isMock ? null : MockLLM::get([
+        '{"name": "Jason", "age":-28}',
+        '{"name": "Jason", "age":-28}',
+    ]);
+    $events = new EventSink();
+    $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
+        ->withConfig([CanCallFunction::class => $mockLLM])
+        ->onError(fn($e) => $events->onEvent($e))
+        ->respond(
+            messages: [['role' => 'user', 'content' => $text]],
+            responseModel: Person::class,
+            maxRetries: 1,
+        );
+    expect($person)->toBeNull();
+    expect($events->count())->toBeGreaterThan(0);
+    expect($events->first())->toBeInstanceOf($event);
+    expect((string) $events->first())->toBeString()->not()->toBeEmpty();
+})->with([
+    // Instructor
+    //    [InstructorStarted::class],
+    //    [InstructorReady::class],
+    [RequestReceived::class],
+    //[ResponseReturned::class],
+    // RequestHandler
+    [FunctionCallRequested::class],
+    //[FunctionCallResponseConvertedToObject::class],
+    [FunctionCallResponseReceived::class],
+    //[FunctionCallResultReady::class],
+    [NewValidationRecoveryAttempt::class],
+    [ResponseGenerationFailed::class],
+    [ResponseModelBuilt::class],
+    [ValidationRecoveryLimitReached::class],
+    // LLM
+    //[ChunkReceived::class],
+    //[PartialJsonReceived::class],
+    //[RequestSentToLLM::class],
+    //[ResponseReceivedFromLLM::class],
+    //[StreamedFunctionCallCompleted::class],
+    //[StreamedFunctionCallStarted::class],
+    //[StreamedFunctionCallUpdated::class],
+    //[StreamedResponseFinished::class],
+    //[StreamedResponseReceived::class],
+    // ResponseHandler
+    //[CustomResponseDeserializationAttempt::class],
+    //[CustomResponseValidationAttempt::class],
+    [ResponseDeserializationAttempt::class],
+    //[ResponseDeserializationFailed::class],
+    //[ResponseTransformed::class],
+    //[ResponseValidated::class],
+    [ResponseValidationAttempt::class],
+    [ResponseValidationFailed::class],
+    [ErrorRaised::class],
+]);
+
 it('handles events for custom case', function ($event) use ($isMock, $text) {
-    dump($event);
     $mockLLM = !$isMock ? null : MockLLM::get([
         '{"age":28}'
     ]);
@@ -146,3 +200,4 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     //[ResponseValidationAttempt::class],
     //[ResponseValidationFailed::class]
 ]);
+
