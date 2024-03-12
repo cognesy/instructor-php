@@ -10,6 +10,7 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseReturned;
+use Exception;
 use Iterator;
 use Throwable;
 
@@ -46,7 +47,9 @@ class Instructor {
      * Sets the request to be used for the next call
      */
     public function withRequest(Request $request) : self {
+        $this->dispatchQueuedEvents();
         $this->request = $request;
+        $this->eventDispatcher->dispatch(new RequestReceived($request));
         return $this;
     }
 
@@ -60,40 +63,17 @@ class Instructor {
         string $functionDescription = 'Extract data from provided content',
         string $retryPrompt = "Recall function correctly, fix following errors:"
     ) : self {
-        $this->dispatchQueuedEvents();
-        $this->request = new Request($messages, $responseModel, $model, $maxRetries, $options, $functionName, $functionDescription, $retryPrompt);
-        $this->eventDispatcher->dispatch(new RequestReceived(new Request($messages, $responseModel, $model, $maxRetries, $options)));
-        return $this;
-    }
-
-    /**
-     * Executes the request and returns the response as a stream
-     */
-    public function stream() : Iterator {
-        $this->request->options['stream'] = true;
-        return $this->get(stream: true);
-    }
-
-    /**
-     * Executes the request and returns the response
-     */
-    public function get(bool $stream = false) : mixed {
-        try {
-            /** @var CanHandleRequest */
-            $requestHandler = $this->config->get(CanHandleRequest::class);
-            $response = $requestHandler->respondTo($this->request);
-            $this->eventDispatcher->dispatch(new ResponseReturned($response));
-            return $response;
-        } catch (Throwable $error) {
-            // if anything goes wrong, we first dispatch an event (e.g. to log error)
-            $event = new ErrorRaised($error, $this->request);
-            $this->eventDispatcher->dispatch($event);
-            if (isset($this->onError)) {
-                // final attempt to recover from the error (e.g. give fallback response)
-                return ($this->onError)($event);
-            }
-            throw $error;
-        }
+        $request = new Request(
+            $messages,
+            $responseModel,
+            $model,
+            $maxRetries,
+            $options,
+            $functionName,
+            $functionDescription,
+            $retryPrompt
+        );
+        return $this->withRequest($request);
     }
 
     /**
@@ -109,7 +89,16 @@ class Instructor {
         string $functionDescription = 'Extract data from provided content',
         string $retryPrompt = "Recall function correctly, fix following errors:"
     ) : mixed {
-        $this->request($messages, $responseModel, $model, $maxRetries, $options, $functionName, $functionDescription, $retryPrompt)->get();
+        $this->request(
+            $messages,
+            $responseModel,
+            $model,
+            $maxRetries,
+            $options,
+            $functionName,
+            $functionDescription,
+            $retryPrompt
+        );
         return $this->get();
     }
 
@@ -135,6 +124,37 @@ class Instructor {
     public function onError(callable $listener) : self {
         $this->onError = $listener;
         return $this;
+    }
+
+    /**
+     * Executes the request and returns the response as a stream
+     */
+    public function stream() : Iterator {
+        throw new Exception('Not implemented');
+        //$this->request->options['stream'] = true;
+        //return $this->get(stream: true);
+    }
+
+    /**
+     * Executes the request and returns the response
+     */
+    public function get(bool $stream = false) : mixed {
+        try {
+            /** @var CanHandleRequest */
+            $requestHandler = $this->config->get(CanHandleRequest::class);
+            $response = $requestHandler->respondTo($this->request);
+            $this->eventDispatcher->dispatch(new ResponseReturned($response));
+            return $response;
+        } catch (Throwable $error) {
+            // if anything goes wrong, we first dispatch an event (e.g. to log error)
+            $event = new ErrorRaised($error, $this->request);
+            $this->eventDispatcher->dispatch($event);
+            if (isset($this->onError)) {
+                // final attempt to recover from the error (e.g. give fallback response)
+                return ($this->onError)($event);
+            }
+            throw $error;
+        }
     }
 
     /**
