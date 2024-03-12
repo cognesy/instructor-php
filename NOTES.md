@@ -46,12 +46,12 @@ We MUST support models which offer OpenAI compatible API and function calling (s
 Most likely we do already, but it should be tested and documented, so anybody can do it easily.
 
 Things missing currently:
- - Tests
- - Documentation
- - Examples
+- Tests
+- Documentation
+- Examples
 
 Next steps:
- - Implement custom LLM class - for Claude?
+- Implement custom LLM class - for Claude?
 
 
 
@@ -98,6 +98,183 @@ To achieve this I need a way to generate a skeleton JSON, send it back to the cl
 
 Question: How to make partial updates and streaming / iterables compatible?
 
+### Using events
+
+Library currently dispatches events on every chunk received from LLM in streaming mode and on every partial update of the response model.
+
+Questions:
+1. How does the client receive partially updated data model? What's the API? Do we want separate endpoint for regular `response()` method vs partial / streamed one?
+2. How do we distinguish between partial updates and collection streaming (getting a stream of instances of the same model)?
+3. Can the streamed collections models be partially updated?
+4. Is there a need for a separate event on property completed, not just updated?
+
+Below is some exploration of potential API for partial updates and streaming.
+
+#### Iterable results: Separate endpoint which returns Iterable
+
+Client iterates over it and receives partial updates until iterator is exhausted.
+If the model implements iterable, it can be used to return partial updates.
+
+```php
+$instructor = new Instructor();
+$taskUpdates = $instructor->respond(
+    messages: "Notify Jason about the upcoming meeting on Thursday at 10:00 AM",
+    responseModel: Task::class,
+    stream: true
+);
+foreach($taskUpdates as $partial) {
+    // Partially updated model
+    $this->updateView($partial);
+}
+// do something with task
+TaskStore::save($partial);
+```
+
+#### Iterable results: separate, optional callback parameter
+
+Client receives partially updated model via callback, while `response()` will still return complete answer when done.
+
+```php
+$instructor = new Instructor();
+$task = $instructor->respond(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+    onEachUpdate: function (Task $partial) {
+        // Partially updated model
+        $this->updateView($partial);
+    },
+    stream: true
+);
+// do something with task
+TaskStore::save($task);
+```
+
+#### Async - no streaming
+
+```php
+$instructor = new Instructor();
+$async = $instructor->request(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+    onDone: function (Task $task) {
+        // Completed model
+        $this->saveTask($task);
+    },
+    onError: function (Exception $e) {
+        // Handle error
+    },
+)->async();
+// continue execution
+```
+
+#### Async - with streaming / partials
+
+```php
+$instructor = new Instructor();
+$async = $instructor->->request(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+    onEachUpdate: function (Task $task) {
+        // Partially updated model
+        $this->updateTask($task);
+    },
+    onDone: function (Task $task) {
+        // Completed model
+        $this->saveTask($task);
+    },
+    onError: function (Exception $e) {
+        // Handle error
+    },
+)->async();
+// continue execution
+```
+
+#### Inference
+
+Get the task.
+
+```php
+$instructor = new Instructor();
+$task = $instructor->respond(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+);
+
+$this->updateView($task);
+```
+or
+
+```php
+$instructor = new Instructor();
+$task = $instructor->request(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+)->get();
+
+$this->updateView($task);
+```
+or
+
+```php
+$instructor = new Instructor();
+$task = $instructor->withRequest(new Request(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+    partials: true
+))->get();
+
+
+Get partial updates of task.
+
+```php
+$instructor = new Instructor();
+$stream = $instructor->request(
+    messages: "Jason is 35 years old",
+    responseModel: Task::class,
+)->stream();
+
+foreach($stream->partial as $taskUpdate) {
+    // Partially updated model
+    $this->updateView($taskUpdate);
+    // Complete model is null until done
+    // $stream->complete == null
+}
+// Only now $stream->complete is set & validated
+if($stream->complete) {
+    $task = $stream->complete;
+}
+```
+
+Get the list of tasks, one by one.
+
+```php
+$instructor = new Instructor();
+$stream = $instructor->request(
+    messages: "Jason is 35 years old",
+    responseModel: Sequence::of(Task::class),
+)->get();
+
+foreach($stream as $taskUpdate) {
+    // Partially updated model
+    $this->updateView($taskUpdate);
+}
+```
+
+Get the list of tasks, one by one, with partial updates.
+
+```php
+$instructor = new Instructor();
+$stream = $instructor->request(
+    messages: "Jason is 35 years old",
+    responseModel: Sequence::of(Task::class),
+    partials: true
+)->stream();
+
+foreach($stream as $taskUpdate) {
+    // Partially updated model
+    $this->updateView($taskUpdate);
+}
+```
 
 ### IDEA: Denormalization of model structure
 
@@ -182,9 +359,9 @@ It is doable with composite models via custom deserialization, but would be nice
 
 Need a better way to handle model metadata. Currently, we rely on 2 building blocks:
 
- - PHPDocs
- - Type information
- - Attributes (limited - validation)
+- PHPDocs
+- Type information
+- Attributes (limited - validation)
 
 Redesigned engine does not offer an easy way to handle custom Attributes.
 
@@ -204,9 +381,9 @@ class User {
 
 We need a way to inject examples in a more structured way than as a text in PHPDocs.
 
- - It mixes instructions with examples.
- - It's not easy to extract examples from PHPDocs and manage them separately (e.g. using larger external source of examples)
- - PHPDocs cannot be easily manipulated - it's not easy to inject / replace examples in PHPDocs.
+- It mixes instructions with examples.
+- It's not easy to extract examples from PHPDocs and manage them separately (e.g. using larger external source of examples)
+- PHPDocs cannot be easily manipulated - it's not easy to inject / replace examples in PHPDocs.
 
 ### Questions
 
@@ -232,13 +409,13 @@ Schema could be saved in version controlled, versioned JSON files and loaded fro
 
 Currently, there is no special treatment for common data types, such as:
 
- - Date
- - Time
- - DateTime
- - Period
- - Duration
- - Money
- - Currency
+- Date
+- Time
+- DateTime
+- Period
+- Duration
+- Money
+- Currency
 
 There are no tests around those types of data, nor support for parsing that Pydantic has.
 
@@ -290,11 +467,21 @@ FrankenPHP could be used as default, fast server.
 Can we make it easy to automatically convert models between Python, JS and PHP versions of Instructor?
 
 
+## Research
 
-
-
-
-
+- Queue-based load leveling
+- Throttling
+- Circuit breaker
+- Producer-consumer / queue-worker
+- Rate limiting
+- Retry on service failure
+- Backpressure
+- Batch stage chain
+- Request aggregator
+- Rolling poller window
+- Sparse task scheduler
+- Marker and sweeper
+- Actor model
 
 
 
@@ -312,7 +499,7 @@ HasSchemaProvider = schema() : Schema, which, if present, will be used to genera
 Instead of the default schema generation mechanism
 This will allow for custom schema generation
 
-### Solution 
+### Solution
 
 Ultimately the implemented solution has much nicer DX:
 
@@ -333,16 +520,16 @@ SchemaProvider could be a trait, which would allow for easy implementation.
 
 Example SchemaProvider:
 class SchemaProvider {
-    public function schema(): Schema {
-        return new Schema([
-            'type' => 'object',
-            'properties' => [
-                'id' => ['type' => 'integer', 'description' => 'Description'],
-                'name' => ['type' => 'string', 'description' => 'Description'],
-            ],
-            'required' => ['id', 'name'],
-        ]);
-    }
+public function schema(): Schema {
+return new Schema([
+'type' => 'object',
+'properties' => [
+'id' => ['type' => 'integer', 'description' => 'Description'],
+'name' => ['type' => 'string', 'description' => 'Description'],
+],
+'required' => ['id', 'name'],
+]);
+}
 }
 
 ### Solution

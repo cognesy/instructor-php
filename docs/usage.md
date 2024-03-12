@@ -7,7 +7,7 @@ Response model class is a plain PHP class with typehints specifying the types of
 ```php
 <?php
 
-use Cognesy/Instructor;
+use Cognesy\Instructor;
 use OpenAI;
 
 // Step 1: Define target data structure(s)
@@ -52,7 +52,7 @@ var_dump($person);
 You can provide a string instead of an array of messages. This is useful when you want to extract data from a single block of text and want to keep your code simple.
 
 ```php
-use Cognesy/Instructor;
+use Cognesy\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
@@ -66,7 +66,7 @@ $value = (new Instructor)->respond(
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-use Cognesy/Instructor;
+use Cognesy\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
@@ -82,7 +82,7 @@ In this example, we're extracting a single integer value from the text. You can 
 Additionally, you can use Scalar adapter to extract one of the provided options.
 
 ```php
-use Cognesy/Instructor;
+use Cognesy\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he currently plays Doom Eternal.",
@@ -97,3 +97,29 @@ var_dump($value);
 ```
 
 NOTE: Currently Scalar::select() always returns strings and its ```options``` parameter only accepts string values.
+
+
+### Alternative ways to use Instructor
+
+You can set call `request()` method to set the parameters of the request and then call `get()` to get the response.
+
+```php
+use Cognesy\Instructor;
+$instructor = (new Instructor)->request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+);
+$person = $instructor->get();
+```
+
+You can also initialize Instructor with a request object.
+
+```php
+use Cognesy\Instructor;
+use Cognesy\Instructor\Core\Data\Request;
+
+$instructor = (new Instructor)->withRequest(new Request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+))->get();
+```

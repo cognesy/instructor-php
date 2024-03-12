@@ -89,11 +89,10 @@ class RequestHandler implements CanHandleRequest
                 $this->eventDispatcher->dispatch(new ResponseGenerationFailed($request, [$e->getMessage()]));
                 throw $e;
             }
-            // TODO: this is workaround, find the source of bug
-            // something is not returning array of errors, but a DeserializationException
             if (!is_array($errors)) {
-                dd($errors);
-                $errors = [$errors->getMessage()];
+                // TODO: this is workaround, find the source of bug
+                // something is not returning array of errors, but a DeserializationException
+                throw new Exception("Unexpected errors format: " . $errors->getMessage());
             }
             $messages = $this->makeRetryMessages($messages, $responseModel, $jsonData, $errors);
             $retries++;
