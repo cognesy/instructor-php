@@ -2,6 +2,7 @@
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+///--- code
 use Cognesy\Instructor\Instructor;
 
 class Employee {

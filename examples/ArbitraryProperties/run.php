@@ -6,9 +6,10 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+///--- code
 use Cognesy\Instructor\Instructor;
 
-class Property
+class Propertyxxx
 {
     public string $key;
     public string $value;
@@ -32,4 +33,5 @@ $user = (new Instructor)->respond(
 assert($user->age === 25);
 assert($user->name === "Jason");
 assert(!empty($user->properties));
+
 dump($user);
