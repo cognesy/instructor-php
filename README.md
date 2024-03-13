@@ -43,7 +43,7 @@ You can also provide a context object to use enhanced validator capabilities.
 
 You can set the number of retry attempts for requests.
 
-Instructor will repeat requests in case of validation error (or API failure) up to the specified number of times.
+Instructor will repeat requests in case of validation or deserialization error up to the specified number of times, trying to get a valid response from LLM.
 
 
 ## Get Started
