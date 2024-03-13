@@ -101,7 +101,7 @@ NOTE: Currently Scalar::select() always returns strings and its ```options``` pa
 
 ### Alternative ways to call Instructor
 
-You can set call `request()` method to set the parameters of the request and then call `get()` to get the response.
+You can call `request()` method to set the parameters of the request and then call `get()` to get the response.
 
 ```php
 use Cognesy\Instructor;
