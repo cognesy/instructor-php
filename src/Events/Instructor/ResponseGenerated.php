@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseReturned extends Event
+class ResponseGenerated extends Event
 {
     public function __construct(
         public mixed $response,

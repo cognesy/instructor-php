@@ -9,7 +9,8 @@ use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Events\Instructor\ResponseReturned;
+use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Exception;
 use Iterator;
 use Throwable;
@@ -23,6 +24,7 @@ class Instructor {
     public Configuration $config;
     private EventDispatcher $eventDispatcher;
     private $onError;
+    private $onPartialResponse;
     private $queuedEvents = [];
     private Request $request;
 
@@ -126,25 +128,35 @@ class Instructor {
         return $this;
     }
 
-    /**
-     * Executes the request and returns the response as a stream
-     */
-    public function stream() : Iterator {
-        throw new Exception('Not implemented');
-        //$this->request->options['stream'] = true;
-        //return $this->get(stream: true);
+    public function onPartialUpdate(callable $listener) : self {
+        $this->request->options['stream'] = true;
+        $this->onPartialResponse = $listener;
+        $this->eventDispatcher->addListener(PartialResponseGenerated::class, $this->handlePartialResponse(...));
+        return $this;
+    }
+
+    private function handlePartialResponse(PartialResponseGenerated $event) : void {
+        if (!is_null($this->onPartialResponse)) {
+            ($this->onPartialResponse)($event->partialResponse);
+        }
     }
 
     /**
      * Executes the request and returns the response
      */
-    public function get(bool $stream = false) : mixed {
+    public function get() : mixed {
+        if ($this->request === null) {
+            throw new Exception('Request not defined, call withRequest() or request() first');
+        }
         try {
             /** @var CanHandleRequest */
             $requestHandler = $this->config->get(CanHandleRequest::class);
-            $response = $requestHandler->respondTo($this->request);
-            $this->eventDispatcher->dispatch(new ResponseReturned($response));
-            return $response;
+            $responseResult = $requestHandler->respondTo($this->request);
+            if ($responseResult->isFailure()) {
+                throw $responseResult->error();
+            }
+            $this->eventDispatcher->dispatch(new ResponseGenerated($responseResult->value()));
+            return $responseResult->value();
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
             $event = new ErrorRaised($error, $this->request);

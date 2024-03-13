@@ -33,6 +33,10 @@ class JsonParser
         };
     }
 
+    public function fix(string $partialJson) : string {
+        return json_encode($this->parse($partialJson));
+    }
+
     public function parse(string $json, bool $associative = true)
     {
         if (strlen($json) >= 1) {

@@ -6,6 +6,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
+use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
@@ -13,6 +14,8 @@ use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
+use Cognesy\Instructor\Utils\Result;
+use Exception;
 use OpenAI\Client;
 
 class StreamedFunctionCallHandler
@@ -26,11 +29,17 @@ class StreamedFunctionCallHandler
     /**
      * Handle streamed chat call
      */
-    public function handle() : LLMResponse {
-        $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
+    public function handle() : Result {
         $responseJson = '';
         $toolCalls = [];
-        $stream = $this->client->chat()->createStreamed($this->request);
+        try {
+            $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
+            $stream = $this->client->chat()->createStreamed($this->request);
+        } catch (Exception $e) {
+            $event = new RequestToLLMFailed($this->request, [$e->getMessage()]);
+            $this->eventDispatcher->dispatch($event);
+            return Result::failure($event);
+        }
         foreach($stream as $response){
             $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
             $maybeFunctionName = $response->choices[0]->delta->toolCalls[0]->function->name ?? null;
@@ -54,6 +63,13 @@ class StreamedFunctionCallHandler
                 $this->eventDispatcher->dispatch(new PartialJsonReceived($responseJson));
                 $this->updateFunctionCall($toolCalls, $responseJson);
             }
+
+            // situation 3: finishReason other than 'stop'
+            //$finishReason = $response->choices[0]->finishReason ?? null;
+            //if ($finishReason) {
+            //    $this->finalizeFunctionCall($toolCalls, $responseJson);
+            //    return Result::success(new LLMResponse($toolCalls, $finishReason, $response->toArray(), true));
+            //}
         }
         // finalize last function call
         if (count($toolCalls) > 0) {
@@ -61,9 +77,9 @@ class StreamedFunctionCallHandler
         }
         // handle finishReason other than 'stop'
         $finishReason = $response->choices[0]->finishReason ?? null;
-        $response = new LLMResponse($toolCalls, $finishReason, $response->toArray());
+        $response = new LLMResponse($toolCalls, $finishReason, $response->toArray(), true);
         $this->eventDispatcher->dispatch(new StreamedResponseFinished($response));
-        return $response;
+        return Result::success($response);
     }
 
     private function newFunctionCall($response) : FunctionCall {

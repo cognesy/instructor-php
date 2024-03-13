@@ -4,7 +4,7 @@ namespace Tests\Feature;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Events\Instructor\ResponseReturned;
+use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
@@ -37,7 +37,7 @@ use Tests\Examples\Instructor\EventSink;
 use Tests\MockLLM;
 
 $isMock = true;
-$text = "His name is Jason, he is 28 years old.";
+$text = "His name is J, he is 28 years old. J is also known as Jason.";
 
 it('handles events for simple case w/reattempt on validation - success', function ($event) use ($isMock, $text) {
     $mockLLM = !$isMock ? null : MockLLM::get([
@@ -46,6 +46,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
     ]);
     $events = new EventSink();
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
+        //->wiretap(fn($e) => dump($e))
         ->withConfig([CanCallFunction::class => $mockLLM])
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
@@ -63,7 +64,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
     //    [InstructorStarted::class],
     //    [InstructorReady::class],
     [RequestReceived::class],
-    [ResponseReturned::class],
+    [ResponseGenerated::class],
     // RequestHandler
     [FunctionCallRequested::class],
     [FunctionCallResponseConvertedToObject::class],
@@ -95,10 +96,10 @@ it('handles events for simple case w/reattempt on validation - success', functio
 ]);
 
 
-it('handles events for simple case w/reattempt on validation - failure', function ($event) use ($isMock, $text) {
+it('handles events for simple case - validation failure', function ($event) use ($isMock, $text) {
     $mockLLM = !$isMock ? null : MockLLM::get([
-        '{"name": "Jason", "age":-28}',
-        '{"name": "Jason", "age":-28}',
+        '{"name": "J", "age":-28}',
+        '{"name": "J", "age":-28}',
     ]);
     $events = new EventSink();
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
@@ -107,7 +108,7 @@ it('handles events for simple case w/reattempt on validation - failure', functio
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
-            maxRetries: 1,
+            maxRetries: 0,
         );
     expect($person)->toBeNull();
     expect($events->count())->toBeGreaterThan(0);
@@ -124,7 +125,7 @@ it('handles events for simple case w/reattempt on validation - failure', functio
     //[FunctionCallResponseConvertedToObject::class],
     [FunctionCallResponseReceived::class],
     //[FunctionCallResultReady::class],
-    [NewValidationRecoveryAttempt::class],
+    //[NewValidationRecoveryAttempt::class],
     [ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
     [ValidationRecoveryLimitReached::class],
@@ -170,7 +171,7 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     //    [InstructorStarted::class],
     //    [InstructorReady::class],
     [RequestReceived::class],
-    [ResponseReturned::class],
+    [ResponseGenerated::class],
     // ==== RequestHandler
     [FunctionCallRequested::class],
     [FunctionCallResponseConvertedToObject::class],

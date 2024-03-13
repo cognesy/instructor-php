@@ -5,11 +5,12 @@ namespace Tests;
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
 use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
+use Cognesy\Instructor\Utils\Result;
 use Mockery;
 
 class MockLLM
 {
-    static public function get(array $args) : OpenAIFunctionCaller {
+    static public function get(array $args) : ?OpenAIFunctionCaller {
         $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
         $list = [];
         foreach ($args as $arg) {
@@ -20,7 +21,7 @@ class MockLLM
     }
 
     static private function makeFunc(string $json) {
-        return fn() => new LLMResponse(
+        return fn() => Result::success(new LLMResponse(
             toolCalls: [
                 new FunctionCall(
                     toolCallId: '1',
@@ -30,6 +31,6 @@ class MockLLM
             ],
             finishReason: 'success',
             rawData: null,
-        );
+        ));
     }
 }

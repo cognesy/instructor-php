@@ -19,7 +19,7 @@ test('it creates a failure result', function () {
     expect($result)->toBeInstanceOf(Failure::class)
         ->and($result->isSuccess())->toBeFalse()
         ->and($result->isFailure())->toBeTrue()
-        ->and($result->errorValue())->toBe('An error occurred')
+        ->and($result->error())->toBe('An error occurred')
         ->and($result->errorMessage())->toBe('An error occurred');
 });
 
@@ -38,7 +38,7 @@ test('it applies a failure function', function () {
 
     expect($transformedResult)->toBeInstanceOf(Failure::class)
         ->and($transformedResult->isFailure())->toBeTrue()
-        ->and($transformedResult->errorValue())->toBe('An error occurred');
+        ->and($transformedResult->error())->toBe('An error occurred');
 });
 
 test('it recovers from a success result', function () {
@@ -72,6 +72,6 @@ test('it tries a failure function', function () {
 
     expect($result)->toBeInstanceOf(Failure::class)
         ->and($result->isFailure())->toBeTrue()
-        ->and($result->errorValue())->toBeInstanceOf(Exception::class)
+        ->and($result->error())->toBeInstanceOf(Exception::class)
         ->and($result->errorMessage())->toBe('An error occurred');
 });

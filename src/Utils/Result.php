@@ -84,7 +84,7 @@ abstract class Result {
     public function recover(callable $f): Result {
         if ($this->isFailure()) {
             try {
-                return self::success($f($this->errorValue()));
+                return self::success($f($this->error()));
             } catch (Exception $e) {
                 return self::failure($e);
             }
@@ -147,7 +147,7 @@ class Failure extends Result {
     /**
      * @var E
      */
-    private $error;
+    private mixed $error;
 
     /**
      * @param E $error The error value
@@ -159,7 +159,7 @@ class Failure extends Result {
     /**
      * @return E
      */
-    public function errorValue() : mixed {
+    public function error() : mixed {
         return $this->error;
     }
 

@@ -8,6 +8,7 @@ class LLMResponse
         /** @var FunctionCall[] */
         public array $toolCalls,
         public string $finishReason,
-        public mixed $rawData
+        public mixed $rawData,
+        public bool $isComplete = false,
     ) {}
 }

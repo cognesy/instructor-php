@@ -4,6 +4,17 @@ namespace Cognesy\Instructor\Utils;
 
 class Arrays
 {
+    public static function toArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_null($value)) {
+            return [];
+        }
+        return [$value];
+    }
+
     static public function flatten(array $arrays, string $separator): string
     {
         return self::doFlatten($arrays, $separator);

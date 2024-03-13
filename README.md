@@ -116,7 +116,7 @@ class Person {
 }
 
 $text = "His name is Jason, he is -28 years old.";
-$person = (new Instructor(llm: $mockLLM))->respond(
+$person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
 );

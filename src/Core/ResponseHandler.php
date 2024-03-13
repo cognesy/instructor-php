@@ -39,7 +39,7 @@ class ResponseHandler implements CanHandleResponse
     }
 
     /**
-     * Deserialize JSON and validate response object
+     * Deserialize JSON, validate and transform response
      */
     public function toResponse(string $jsonData, ResponseModel $responseModel) : Result {
         // ...deserialize
@@ -54,10 +54,29 @@ class ResponseHandler implements CanHandleResponse
         // ...validate
         $validationResult = $this->validate($object);
         if ($validationResult->isFailure()) {
-            $this->eventDispatcher->dispatch(new ResponseValidationFailed($validationResult->errorValue()));
+            $this->eventDispatcher->dispatch(new ResponseValidationFailed($validationResult->error()));
             return $validationResult;
         }
         $this->eventDispatcher->dispatch(new ResponseValidated($object));
+
+        // ...transform
+        $transformedObject = $this->transform($object);
+
+        return Result::success($transformedObject);
+    }
+
+    /**
+     * Deserialize JSON and transform partial response
+     */
+    public function toPartialResponse(string $jsonData, ResponseModel $responseModel) : Result {
+        // ...deserialize
+        $result = $this->deserialize($jsonData, $responseModel);
+        if ($result->isFailure()) {
+            $this->eventDispatcher->dispatch(new ResponseDeserializationFailed($result->errorMessage()));
+            return $result;
+        }
+        $object = $result->value();
+        $this->eventDispatcher->dispatch(new ResponseDeserialized($object));
 
         // ...transform
         $transformedObject = $this->transform($object);

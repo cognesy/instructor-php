@@ -4,16 +4,16 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseGenerationFailed extends Event
+class PartialResponseGenerated extends Event
 {
     public function __construct(
-        public array $errors,
+        public mixed $partialResponse
     ) {
         parent::__construct();
     }
 
     public function __toString(): string
     {
-        return json_encode($this->errors);
+        return json_encode($this->partialResponse);
     }
 }

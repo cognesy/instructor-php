@@ -4,11 +4,10 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
 
-class ResponseGenerationFailed extends Event
+class PartialResponseGenerationFailed extends Event
 {
-    public function __construct(
-        public array $errors,
-    ) {
+    public function __construct(public array $errors)
+    {
         parent::__construct();
     }
 

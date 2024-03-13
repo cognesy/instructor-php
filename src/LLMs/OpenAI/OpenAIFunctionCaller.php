@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\LLMs\OpenAI;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\LLMs\LLMResponse;
+use Cognesy\Instructor\Utils\Result;
 use OpenAI;
 use OpenAI\Client;
 
@@ -39,7 +40,7 @@ class OpenAIFunctionCaller implements CanCallFunction
         array $functionSchema,
         string $model = 'gpt-4-0125-preview',
         array $options = [],
-    ) : LLMResponse {
+    ) : Result {
         $request = array_merge([
             'model' => $model,
             'messages' => $messages,
@@ -51,14 +52,8 @@ class OpenAIFunctionCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedFunctionCallHandler(
-                $this->eventDispatcher,
-                $this->client,
-                $request))->handle(),
-            default => (new FunctionCallHandler(
-                $this->eventDispatcher,
-                $this->client,
-                $request))->handle()
+            true => (new StreamedFunctionCallHandler($this->eventDispatcher, $this->client, $request))->handle(),
+            default => (new FunctionCallHandler($this->eventDispatcher, $this->client, $request))->handle()
         };
     }
 }
