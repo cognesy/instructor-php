@@ -71,7 +71,7 @@ Instructor requires information on the class of each nested object in your JSON 
 
 This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema. Lack of the information on target class makes it impossible for Instructor to deserialize the data into appropriate, expected type.
 
-Current design uses JSON Schema `$comment` field on property to overcome this information gap. Instructor expects developer to use `comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+Current design uses JSON Schema `$comment` field on property to overcome this information gap. Instructor expects developer to use `$comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
 
 
 ### Response model contracts

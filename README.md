@@ -151,6 +151,59 @@ $person = (new Instructor)->respond(
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```
 
+### Alternative ways to call Instructor
+
+You can set call `request()` method to set the parameters of the request and then call `get()` to get the response.
+
+```php
+use Cognesy\Instructor;
+$instructor = (new Instructor)->request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+);
+$person = $instructor->get();
+```
+
+You can also initialize Instructor with a request object.
+
+```php
+use Cognesy\Instructor;
+use Cognesy\Instructor\Core\Data\Request;
+
+$instructor = (new Instructor)->withRequest(new Request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+))->get();
+```
+
+### Partial results
+
+You can define `onPartialUpdate()` callback to receive partial results that can be used to start updating UI before LLM completes the inference.
+
+> NOTE: Partial updates are not validated. The response is only validated after it is fully received.
+
+```php
+use Cognesy\Instructor;
+
+function updateUI($person) {
+    // Here you get partially completed Person object update UI with the partial result
+}
+
+$person = (new Instructor)->request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+)->onPartialUpdate(
+    fn($partial) => updateUI($partial)
+)->get();
+
+// Here you get completed and validated Person object
+$this->db->save($person); // ...for example: save to DB
+```
+
+
+
+
+
 
 ## Shortcuts 
 
@@ -219,6 +272,9 @@ var_dump($value);
 ```
 
 
+
+
+
 ## Specifying Data Model
 
 ### Type Hints
@@ -271,7 +327,6 @@ class Event {
     // ...
 }
 ```
-
 
 ### Complex data extraction
 
@@ -341,6 +396,9 @@ var_dump($person);
 // }
 ```
 
+
+
+
 ## Changing LLM model and options
 
 You can specify model and other options that will be passed to OpenAI / LLM endpoint.
@@ -359,6 +417,9 @@ $person = (new Instructor)->respond(
 // you can specify e.g. different base URL
 ```
 > Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate ```model``` and ```base URI``` via ```options``` parameter.
+
+
+
 
 
 ## Using DocBlocks as Additional Instructions for LLM
@@ -381,6 +442,9 @@ class Skill {
     public string $context;
 }
 ```
+
+
+
 
 ## Customizing Validation
 
@@ -443,6 +507,10 @@ assert($user->name === "JASON");
 See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
 
 
+
+
+
+
 ## Internals
 
 ### Lifecycle
@@ -462,7 +530,7 @@ As Instructor for PHP processes your request, it goes through several stages:
 
 ### Receiving notification on internal events
 
-Instructor allows you to receive a detailed information at every stage of request and response processing via events.
+Instructor allows you to receive detailed information at every stage of request and response processing via events.
 
  * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
  * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
@@ -516,7 +584,7 @@ Instructor requires information on the class of each nested object in your JSON 
 
 This information is available to Instructor when you are passing $responseModel as a class name or an instance, but it is missing from raw JSON Schema.
 
-Current design uses JSON Schema `$comment` field on property to overcome this. Instructor expects developer to use `comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
+Current design uses JSON Schema `$comment` field on property to overcome this. Instructor expects developer to use `$comment` field to provide fully qualified name of the target class to be used to deserialize property data of object or enum type.
 
 
 ### Response model contracts
@@ -527,6 +595,10 @@ Instructor allows you to customize processing of $responseModel value also by lo
  - `CanDeserializeSelf` - implement to customize the way the response from LLM is deserialized from JSON into PHP object, 
  - `CanValidateSelf` - implement to customize the way the deserialized object is validated,
  - `CanTransformSelf` - implement to transform the validated object into target value received by the caller (e.g. unwrap simple type from a class to a scalar value).
+
+
+
+
 
 
 ## Additional Notes

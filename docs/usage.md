@@ -126,7 +126,7 @@ $instructor = (new Instructor)->withRequest(new Request(
 
 ### Partial results
 
-You can get define `onPartialUpdate()` callback to receive partial results that can be used to start updating UI before LLM completes the inference. 
+You can define `onPartialUpdate()` callback to receive partial results that can be used to start updating UI before LLM completes the inference. 
 
 > NOTE: Partial updates are not validated. The response is only validated after it is fully received.
 
