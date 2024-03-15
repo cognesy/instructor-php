@@ -1,6 +1,5 @@
 <?php
-
-namespace Cognesy\Instructor\Hub;
+namespace Cognesy\InstructorHub\Data;
 
 class ErrorEvent {
     public function __construct(

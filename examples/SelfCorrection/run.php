@@ -1,12 +1,14 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Self-correction
 
+Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
+
+In case maxRetries parameter is provided and LLM response does not meet validation criteria, Instructor will make subsequent inference attempts until results meet the requirements or maxRetries is reached.
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -25,3 +27,5 @@ $user = (new Instructor)->respond(
 
 assert($user->email === "jason@gmail.com");
 dump($user);
+?>
+```

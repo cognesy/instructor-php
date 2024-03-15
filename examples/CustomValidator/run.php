@@ -1,12 +1,13 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Custom validation using Symfony Validator
 
+Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
+
 use Cognesy\Instructor\Instructor;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -36,3 +37,6 @@ $user = (new Instructor)->respond(
 assert($user->name === "JASON");
 
 dump($user);
+?>
+```
+

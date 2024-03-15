@@ -1,12 +1,12 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Reusing components
 
+You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 
 class TimeRange {
@@ -37,3 +37,5 @@ assert($user->workTime->endTime === 14);
 assert($user->leisureTime->startTime === 17);
 assert($user->leisureTime->endTime === 19);
 dump($user);
+?>
+```

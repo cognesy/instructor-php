@@ -55,7 +55,6 @@ it('handles onError()', function () use ($instructor, $text) {
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: '',
     );
-dump($events);
     expect($events->count())->toBe(1);
 });
 

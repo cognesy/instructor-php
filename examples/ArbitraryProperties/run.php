@@ -1,15 +1,15 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Arbitrary properties
 
+When you need to extract undefined attributes, use a list of key-value pairs.
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 
-class Propertyxxx
+class Property
 {
     public string $key;
     public string $value;
@@ -22,7 +22,14 @@ class UserDetail
     /** @var Property[] Extract any other properties that might be relevant */
     public array $properties;
 }
+?>
+```
 
+Now we can use this data model to extract arbitrary properties from a text message in a form that is easier for future processing.
+
+
+```php
+<?php
 $text = "Jason is 25 years old. He is a programmer. He has a car. He lives in a small house in Alamo. He likes to play guitar.";
 
 $user = (new Instructor)->respond(
@@ -35,3 +42,5 @@ assert($user->name === "Jason");
 assert(!empty($user->properties));
 
 dump($user);
+?>
+```

@@ -1,23 +1,20 @@
+# Restating instructions
+
+Make Instructor restate long or complex instructions and rules to improve inference accuracy.
+
+```php
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
-
-// PROMPTING HINT: Make Instructor restate the instructions and rules to improve inference accuracy.
 
 /**
  * Identify what kind of job the user is doing.
  * Typical roles we're working with are CEO, CTO, CFO, CMO.
  * Sometimes user does not state their role directly - you will need to make a guess, based on their description.
  */
-class Role
+class UserRole
 {
     /** Restate instructions and rules, so you can correctly determine the title. */
     public string $instructions;
@@ -32,7 +29,7 @@ class UserDetail
 {
     public string $name;
     public int $age;
-    public Role $role;
+    public UserRole $role;
 }
 
 $instructor = new Instructor;
@@ -41,3 +38,5 @@ $user = ($instructor)->respond(
     responseModel: UserDetail::class,
 );
 dump($user);
+?>
+```

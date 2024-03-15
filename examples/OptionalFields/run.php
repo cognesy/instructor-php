@@ -1,25 +1,24 @@
+# Optional fields
+
+Use PHP's nullable types by prefixing type name with question mark (?) to mark component fields which are optional and set a default value to prevent undesired defaults like empty strings.
+
+```php
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 
 class UserRole
 {
-    public string $title = '';
+    public ?string $title = 'unknown';
 }
 
 class UserDetail
 {
     public int $age;
     public string $name;
-    public ?UserRole $role = null;
+    public UserRole $role;
 }
 
 $user = (new Instructor)->respond(
@@ -29,3 +28,5 @@ $user = (new Instructor)->respond(
 
 assert($user->role == null);
 dump($user);
+?>
+```

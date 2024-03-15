@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9c57bc533e486db09f0344e9e7c71bdc",
+    "content-hash": "a883915c4db1ec9dca3e9afd1f90d765",
     "packages": [
         {
             "name": "brick/math",
@@ -2536,6 +2536,77 @@
                 }
             ],
             "time": "2024-02-27T12:53:56+00:00"
+        },
+        {
+            "name": "symfony/yaml",
+            "version": "v7.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "2d4fca631c00700597e9442a0b2451ce234513d3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/2d4fca631c00700597e9442a0b2451ce234513d3",
+                "reference": "2d4fca631c00700597e9442a0b2451ce234513d3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "symfony/polyfill-ctype": "^1.8"
+            },
+            "conflict": {
+                "symfony/console": "<6.4"
+            },
+            "require-dev": {
+                "symfony/console": "^6.4|^7.0"
+            },
+            "bin": [
+                "Resources/bin/yaml-lint"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Yaml\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Loads and dumps YAML files",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/yaml/tree/v7.0.3"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-01-23T15:02:46+00:00"
         }
     ],
     "packages-dev": [
@@ -2632,6 +2703,70 @@
                 }
             ],
             "time": "2024-02-20T07:24:02+00:00"
+        },
+        {
+            "name": "cebe/markdown",
+            "version": "1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/cebe/markdown.git",
+                "reference": "9bac5e971dd391e2802dca5400bbeacbaea9eb86"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/cebe/markdown/zipball/9bac5e971dd391e2802dca5400bbeacbaea9eb86",
+                "reference": "9bac5e971dd391e2802dca5400bbeacbaea9eb86",
+                "shasum": ""
+            },
+            "require": {
+                "lib-pcre": "*",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "cebe/indent": "*",
+                "facebook/xhprof": "*@dev",
+                "phpunit/phpunit": "4.1.*"
+            },
+            "bin": [
+                "bin/markdown"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "cebe\\markdown\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Carsten Brandt",
+                    "email": "mail@cebe.cc",
+                    "homepage": "http://cebe.cc/",
+                    "role": "Creator"
+                }
+            ],
+            "description": "A super fast, highly extensible markdown parser for PHP",
+            "homepage": "https://github.com/cebe/markdown#readme",
+            "keywords": [
+                "extensible",
+                "fast",
+                "gfm",
+                "markdown",
+                "markdown-extra"
+            ],
+            "support": {
+                "issues": "https://github.com/cebe/markdown/issues",
+                "source": "https://github.com/cebe/markdown"
+            },
+            "time": "2018-03-26T11:24:36+00:00"
         },
         {
             "name": "doctrine/deprecations",
@@ -3841,6 +3976,50 @@
                 "source": "https://github.com/phpDocumentor/TypeResolver/tree/1.8.2"
             },
             "time": "2024-02-23T11:10:43+00:00"
+        },
+        {
+            "name": "phppkg/cli-markdown",
+            "version": "v2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phppkg/cli-markdown.git",
+                "reference": "941b003b9a45da47e4348cb849d5925b5ae17d2c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phppkg/cli-markdown/zipball/941b003b9a45da47e4348cb849d5925b5ae17d2c",
+                "reference": "941b003b9a45da47e4348cb849d5925b5ae17d2c",
+                "shasum": ""
+            },
+            "require": {
+                "cebe/markdown": "^1.2",
+                "ext-mbstring": "*",
+                "php": ">8.0.0",
+                "toolkit/cli-utils": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PhpPkg\\CliMarkdown\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "inhere",
+                    "email": "in.798@qq.com"
+                }
+            ],
+            "description": "Render colored markdown contents on console terminal",
+            "homepage": "https://github.com/phppkg/cli-markdown",
+            "support": {
+                "issues": "https://github.com/phppkg/cli-markdown/issues",
+                "source": "https://github.com/phppkg/cli-markdown/tree/v2.0.2"
+            },
+            "time": "2023-11-10T02:56:32+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -5636,6 +5815,64 @@
                 }
             ],
             "time": "2024-03-03T12:36:25+00:00"
+        },
+        {
+            "name": "toolkit/cli-utils",
+            "version": "v2.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-toolkit/cli-utils.git",
+                "reference": "bc07930a1669372566d8bc9f521a57cc3bb5b499"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-toolkit/cli-utils/zipball/bc07930a1669372566d8bc9f521a57cc3bb5b499",
+                "reference": "bc07930a1669372566d8bc9f521a57cc3bb5b499",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">8.0.0"
+            },
+            "require-dev": {
+                "ext-posix": "*",
+                "ext-readline": "*"
+            },
+            "suggest": {
+                "inhere/console": "a lightweight php console application library.",
+                "toolkit/pflag": "Command line flag parse library of the php"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Toolkit\\Cli\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "inhere",
+                    "email": "in.798@qq.com",
+                    "homepage": "http://github.com/inhere"
+                }
+            ],
+            "description": "useful cli tool library of the php",
+            "homepage": "https://github.com/php-toolkit/cli-utils",
+            "keywords": [
+                "cli",
+                "cli-color",
+                "command-line",
+                "library",
+                "php",
+                "tool"
+            ],
+            "support": {
+                "issues": "https://github.com/php-toolkit/cli-utils/issues",
+                "source": "https://github.com/php-toolkit/cli-utils/tree/v2.0.3"
+            },
+            "time": "2022-06-15T08:50:01+00:00"
         },
         {
             "name": "webmozart/assert",

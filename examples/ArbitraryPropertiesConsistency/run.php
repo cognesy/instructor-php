@@ -1,12 +1,12 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Consistent values of arbitrary properties
 
+For multiple records containing arbitrary properties, instruct LLM to get more consistent key names when extracting properties.
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 
 class UserDetail
@@ -16,7 +16,7 @@ class UserDetail
     public string $value;
 }
 
-class UserDetails
+class UserDetailsxxx
 {
     /** @var UserDetail[] Extract information for multiple users. Use consistent key names for properties across users. */
     public array $users;
@@ -31,3 +31,5 @@ $list = (new Instructor)->respond(
 
 assert(!empty($list->users));
 dump($list);
+?>
+```

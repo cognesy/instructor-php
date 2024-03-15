@@ -16,6 +16,9 @@ class Configuration
 
     private static ?Configuration $instance = null;
 
+    /**
+     * Get the singleton of the configuration
+     */
     static public function instance() : Configuration {
         if (is_null(self::$instance)) {
             self::$instance = new Configuration();
@@ -23,6 +26,9 @@ class Configuration
         return self::$instance;
     }
 
+    /**
+     * Auto-wire configuration
+     */
     static public function auto(array $overrides = []) : Configuration {
         if (is_null(self::$instance)) {
             self::$instance = autowire(new Configuration())->override($overrides);
@@ -30,14 +36,23 @@ class Configuration
         return self::$instance;
     }
 
+    /**
+     * Create a fresh configuration
+     */
     static public function fresh(array $overrides = []) : Configuration {
         return autowire(new Configuration())->override($overrides);
     }
 
+    /**
+     * Get a component configuration for provided name (recommended: class or interface)
+     */
     static public function for(string $name) : Configuration {
         return self::instance()->get($name);
     }
 
+    /**
+     * Declare a component configuration
+     */
     public function declare(
         string $class,
         string $name = null,
@@ -52,6 +67,9 @@ class Configuration
         return $this;
     }
 
+    /**
+     * Register a component for provided configuration instance
+     */
     public function register(ComponentConfig $componentConfig) : self {
         $componentName = $componentConfig->name;
         if (!$this->allowOverride && isset($this->config[$componentName])) {
@@ -61,12 +79,18 @@ class Configuration
         return $this;
     }
 
+    /**
+     * Get a reference to a component
+     */
     public function reference(string $componentName) : callable {
         return function () use ($componentName) {
             return $this->resolveReference($componentName);
         };
     }
 
+    /**
+     * Get a component instance
+     */
     public function get(string $componentName) : mixed {
         return $this->resolveReference($componentName);
     }
@@ -92,6 +116,8 @@ class Configuration
         }
         return $this;
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     private function resolveReference(string $componentName) : mixed
     {

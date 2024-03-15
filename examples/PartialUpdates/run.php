@@ -1,12 +1,13 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Partial updates
 
+Instructor can process LLM's streamed responses to provide partial updates that you can use to update the model with new data as the response is being generated. You can use it to improve user experience by updating the UI with partial data before the full response is received.
+
+```php
+<?php
+sleep(3);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 
 class UserRole
@@ -34,7 +35,8 @@ $user = (new Instructor)->request(
 
 function partialUpdate($partial) {
     echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
-    var_dump($partial);
+    dump($partial);
+    usleep(100000);
 }
 
 assert($user->roles[0]->title == 'engineer');
@@ -44,3 +46,5 @@ assert($user->hobbies[0] == 'soccer');
 assert($user->hobbies[1] == 'climb mountains');
 assert($user->age == 25);
 assert($user->name == 'Jason');
+?>
+```

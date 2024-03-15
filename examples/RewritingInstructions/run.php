@@ -1,23 +1,22 @@
+# Ask LLM to rewrite instructions
+
+Asking LLM to rewrite the instructions and rules is another way to improve inference results.
+
+You can provide arbitrary instructions on the data handling in the class and property PHPDocs. Instructor will use these instructions to guide LLM in the inference process.
+
+```php
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
-
-// PROMPTING HINT: Make Instructor rewrite the instructions and rules to improve LLM inference results.
 
 /**
  * Identify what kind of job the user is doing.
  * Typical roles we're working with are CEO, CTO, CFO, CMO.
  * Sometimes user does not state their role directly - you will need to make a guess, based on their description.
  */
-class Role
+class UserRole
 {
     /** Rewrite the instructions and rules in a concise form to correctly determine the user's title - just the essence. */
     public string $instructions;
@@ -31,7 +30,7 @@ class UserDetail
 {
     public string $name;
     public int $age;
-    public Role $role;
+    public UserRole $role;
 }
 
 $instructor = new Instructor;
@@ -40,3 +39,6 @@ $user = $instructor->respond(
     responseModel: UserDetail::class,
 );
 dump($user);
+?>
+```
+

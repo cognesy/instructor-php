@@ -15,8 +15,12 @@
         "psr-4": {
             "Tests\\": "tests/",
             "Examples\\": "examples/",
+            "Cognesy\\InstructorHub\\": "src-hub/",
             "Cognesy\\Experimental\\": "experimental/"
-        }
+        },
+        "files": [
+            "config/hub.php"
+        ]
     },
     "authors": [
         {
@@ -27,7 +31,8 @@
     "require-dev": {
         "pestphp/pest": "^2.34",
         "symfony/var-dumper": "^7.0",
-        "mockery/mockery": "^1.6"
+        "mockery/mockery": "^1.6",
+        "phppkg/cli-markdown": "^2.0"
     },
     "config": {
         "allow-plugins": {
@@ -46,6 +51,7 @@
         "jasny/phpdoc-parser": "^1.0",
         "symfony/property-access": "^7.0",
         "nesbot/carbon": "^3.0",
-        "ramsey/uuid": "^4.7"
+        "ramsey/uuid": "^4.7",
+        "symfony/yaml": "^7.0"
     }
 }

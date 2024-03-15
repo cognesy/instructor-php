@@ -1,12 +1,14 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Limiting the length of lists
 
+When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
+
+> To be 100% certain the list does not exceed the limit add extra validation, e.g. using ValidationMixin (see: Validation).
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Traits\ValidationMixin;
 
@@ -56,3 +58,5 @@ try {
 } catch (\Exception $e) {
     dump("Max retries exceeded\nMessage: {$e->getMessage()}");
 }
+?>
+```

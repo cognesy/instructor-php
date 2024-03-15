@@ -1,12 +1,14 @@
-<?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+# Using CoT to improve interpretation of component data
 
+You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
+
+We're additionally starting the data structure with a Chain of Thought field to elicit LLM reasoning for the time range calculation, which can improve the accuracy of the response.
+
+```php
+<?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-///--- code
 use Cognesy\Instructor\Instructor;
 
 class TimeRange
@@ -28,3 +30,5 @@ $timeRange = (new Instructor)->respond(
 assert($timeRange->startTime === 9);
 assert($timeRange->endTime === 17);
 dump($timeRange);
+?>
+```
