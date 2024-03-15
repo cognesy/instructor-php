@@ -113,7 +113,7 @@ class Runner
                 Cli::outln("[$file]", Color::DARK_YELLOW);
                 foreach ($group as $error) {
                     Cli::outln('---', Color::DARK_YELLOW);
-                    Cli::marginln($error->output, 4, Color::RED);
+                    Cli::margin($error->output, 4, Color::RED, Color::GRAY);
                     Cli::outln();
                 }
             }

@@ -2,7 +2,8 @@
 
 ## Defining the Structures
 
-For multi-label classification, we introduce a new enum class and a different PHP class to handle multiple labels.
+For multi-label classification, we introduce a new enum class and a different PHP class
+to handle multiple labels.
 
 ```php
 <?php

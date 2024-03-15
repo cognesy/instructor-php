@@ -1,10 +1,12 @@
 # ValidationMixin
 
-Sometimes property level validation is not enough - you may want to check values of multiple properties
-and based on the combination of them decide to accept or reject the response. Or the assertions provided
-by Symfony may not be enough for your use case.
+Sometimes property level validation is not enough - you may want to check
+values of multiple properties and based on the combination of them decide
+to accept or reject the response. Or the assertions provided by Symfony may
+not be enough for your use case.
 
-In such case you can easily add custom validation code to your response model by:
+In such case you can easily add custom validation code to your response
+model by:
 - using `ValidationTrait`
 - and defining validation logic in `validate()` method.
 

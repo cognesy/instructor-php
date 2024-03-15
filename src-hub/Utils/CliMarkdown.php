@@ -42,9 +42,9 @@ class CliMarkdown extends GithubMarkdown
         'paragraph' => '',
         'list' => '',
         'image' => 'info',
-        'link' => 'underscore',
+        'link' => IColor::BLUE,
         'code' => 'brown',
-        'quote' => 'cyan',
+        'quote' => IColor::DARK_YELLOW,
         'strong' => 'bold',
         'inlineCode' => IColor::YELLOW,
     ];
@@ -80,7 +80,10 @@ class CliMarkdown extends GithubMarkdown
         $hlText = $prefix . ' ' . $title;
 
         $out = [
+            Cli::strln(),
+            Cli::strln(),
             Cli::strln($hlText, $this->theme['headline']),
+            Cli::strln(),
         ];
 
         return implode('', $out);
@@ -169,7 +172,8 @@ class CliMarkdown extends GithubMarkdown
     }
 
     protected function renderLink($block): string {
-        return ColorTag::add('♆ ' . $block['orig'], $this->theme['link']);
+        return Cli::str($block['orig'], $this->theme['link']);
+        //return ColorTag::add('♆ ' . $block['orig'], $this->theme['link']);
     }
 
     protected function renderUrl($block): string {
@@ -193,10 +197,16 @@ class CliMarkdown extends GithubMarkdown
 
     protected function renderQuote($block): string {
         // ¶ §
-        $prefix = Color::render('¶ ', [Color::FG_GREEN, Color::BOLD]);
-        $content = ltrim($this->renderAbsy($block['content']));
-
-        return self::NL . $prefix . ColorTag::add($content, $this->theme['quote']);
+        //$prefix = Color::render('¶ ', [Color::FG_GREEN, Color::BOLD]);
+        //$content = ltrim($this->renderAbsy($block['content']));
+        //return self::NL . $prefix . ColorTag::add($content, $this->theme['quote']);
+        $content = $block['content'][0]['content'][0][1] ?? '';
+        $color = $this->theme['quote'];
+        return implode('', [
+            Cli::strln(),
+            Cli::smargin($content, 6, $color, $color),
+            Cli::strln(),
+        ]);
     }
 
     protected function oldRenderCode($block): string {
@@ -230,6 +240,7 @@ class CliMarkdown extends GithubMarkdown
         $out = [
             Cli::strln(),
             $code,
+            Cli::strln(),
             Cli::strln(),
         ];
         return implode('', $out);

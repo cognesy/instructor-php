@@ -27,16 +27,21 @@ class Cli
         self::out($output . "\n", $color);
     }
 
-    static public function marginln(string $output = '', int $size = 3, string|array $color = null) : void {
+    static public function margin(string $output = '', int $size = 3, string|array $mcolor = null, string|array $color = null) : void {
+        $margined = self::smargin($output, $size, $mcolor, $color);
+        self::out($margined);
+    }
+
+    static public function smargin(string $output = '', int $size = 3, string|array $mcolor = null, string|array $color = null) : string {
         $lines = explode("\n", $output);
         $margined = [];
         foreach ($lines as $line) {
             $margined[] = implode('', [
-                Cli::str(" |".str_repeat(' ', $size), $color),
-                $line,
+                Cli::str(" |".str_repeat(' ', $size), $mcolor),
+                Cli::str($line, $color),
             ]);
         }
-        self::outln(implode("\n", $margined));
+        return self::strln(implode("\n", $margined));
     }
 
     static public function grid(array $data) : void {

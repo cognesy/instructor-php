@@ -1,6 +1,8 @@
 # Handling errors
 
-You can create a wrapper class to hold either the result of an operation or an error message. This allows you to remain within a function call even if an error occurs, facilitating better error handling without breaking the code flow.
+You can create a wrapper class to hold either the result of an operation or an error message.
+This allows you to remain within a function call even if an error occurs, facilitating
+better error handling without breaking the code flow.
 
 ```php
 <?php

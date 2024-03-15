@@ -15,7 +15,7 @@ class Property
     public string $value;
 }
 
-class UserDetailxxx
+class UserDetail
 {
     public int $age;
     public string $name;
@@ -25,12 +25,16 @@ class UserDetailxxx
 ?>
 ```
 
-Now we can use this data model to extract arbitrary properties from a text message in a form that is easier for future processing.
+Now we can use this data model to extract arbitrary properties from a text message
+in a form that is easier for future processing.
 
 
 ```php
 <?php
-$text = "Jason is 25 years old. He is a programmer. He has a car. He lives in a small house in Alamo. He likes to play guitar.";
+$text = <<<TEXT
+    Jason is 25 years old. He is a programmer. He has a car. He lives
+    in a small house in Alamo. He likes to play guitar.
+TEXT;
 
 $user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],

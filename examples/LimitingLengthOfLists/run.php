@@ -1,8 +1,11 @@
 # Limiting the length of lists
 
-When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage the length. You can use prompting and enumeration to limit the list length, ensuring a manageable set of properties.
+When dealing with lists of attributes, especially arbitrary properties, it's crucial to manage
+the length of list. You can use prompting and enumeration to limit the list length, ensuring
+a manageable set of properties.
 
-> To be 100% certain the list does not exceed the limit add extra validation, e.g. using ValidationMixin (see: Validation).
+> To be 100% certain the list does not exceed the limit, add extra
+> validation, e.g. using ValidationMixin (see: Validation).
 
 ```php
 <?php
@@ -42,13 +45,16 @@ class UserDetail
     }
 }
 
-$text = "Jason is 25 years old. He is a programmer. He has a car. He lives in a small house in Alamo. He likes to play guitar.";
+$text = <<<TEXT
+    Jason is 25 years old. He is a programmer. He has a car. He lives in
+    a small house in Alamo. He likes to play guitar.
+TEXT;
 
 try {
     $user = (new Instructor)->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: UserDetail::class,
-        maxRetries: 0 // change to 1 or 2 to reattempt generation in case of validation error
+        maxRetries: 0 // change to >0 to reattempt generation in case of validation error
     );
 
     assert($user->age === 25);

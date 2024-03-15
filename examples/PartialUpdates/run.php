@@ -1,6 +1,9 @@
 # Partial updates
 
-Instructor can process LLM's streamed responses to provide partial updates that you can use to update the model with new data as the response is being generated. You can use it to improve user experience by updating the UI with partial data before the full response is received.
+Instructor can process LLM's streamed responses to provide partial updates that you
+can use to update the model with new data as the response is being generated. You can
+use it to improve user experience by updating the UI with partial data before the full
+response is received.
 
 ```php
 <?php
@@ -28,8 +31,13 @@ class UserDetail
     public array $hobbies;
 }
 
+$text = <<<TEXT
+    Jason is 25 years old, he is an engineer and tech lead. He lives in
+    San Francisco. He likes to play soccer and climb mountains.
+TEXT;
+
 $user = (new Instructor)->request(
-    messages: "Jason is 25 years old, he is an engineer and tech lead. He lives in San Francisco. He likes to play soccer and climb mountains.",
+    messages: $text,
     responseModel: UserDetail::class,
 )->onPartialUpdate(partialUpdate(...))->get();
 

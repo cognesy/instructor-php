@@ -1,6 +1,7 @@
 # Reusing components
 
-You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
+You can reuse the same component for different contexts within a model. In this
+example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
 
 ```php
 <?php

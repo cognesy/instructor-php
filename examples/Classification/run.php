@@ -2,7 +2,8 @@
 
 ## Defining the Structures
 
-For single-label classification, we first define an `enum` for possible labels and a PHP class for the output.
+For single-label classification, we first define an `enum` for possible labels
+and a PHP class for the output.
 
 ```php
 <?php

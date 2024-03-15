@@ -1,6 +1,7 @@
 # Custom validation using Symfony Validator
 
-Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
+Instructor uses Symfony validation component to validate properties of extracted data. Symfony
+offers you #[Assert/Callback] annotation to build fully customized validation logic.
 
 ```php
 <?php

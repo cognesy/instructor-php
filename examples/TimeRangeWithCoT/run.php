@@ -1,8 +1,11 @@
 # Using CoT to improve interpretation of component data
 
-You can reuse the same component for different contexts within a model. In this example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
+You can reuse the same component for different contexts within a model. In this
+example, the TimeRange component is used for both `$workTime` and `$leisureTime`.
 
-We're additionally starting the data structure with a Chain of Thought field to elicit LLM reasoning for the time range calculation, which can improve the accuracy of the response.
+We're additionally starting the data structure with a Chain of Thought field
+to elicit LLM reasoning for the time range calculation, which can improve
+the accuracy of the response.
 
 ```php
 <?php

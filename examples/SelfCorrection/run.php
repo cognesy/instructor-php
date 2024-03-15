@@ -1,8 +1,11 @@
 # Self-correction
 
-Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
+Instructor uses validation errors to inform LLM on the problems identified
+in the response, so that LLM can try self-correcting in the next attempt.
 
-In case maxRetries parameter is provided and LLM response does not meet validation criteria, Instructor will make subsequent inference attempts until results meet the requirements or maxRetries is reached.
+In case maxRetries parameter is provided and LLM response does not meet
+validation criteria, Instructor will make subsequent inference attempts
+until results meet the requirements or maxRetries is reached.
 
 ```php
 <?php
