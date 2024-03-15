@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Utils;
 
-use Cognesy\InstructorHub\Core\Color;
+use Cognesy\InstructorHub\Utils\Color;
 
 class Console
 {

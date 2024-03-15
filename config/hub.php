@@ -6,7 +6,6 @@ use Cognesy\InstructorHub\Commands\ListAllExamples;
 use Cognesy\InstructorHub\Commands\RunAllExamples;
 use Cognesy\InstructorHub\Commands\RunOneExample;
 use Cognesy\InstructorHub\Commands\ShowExample;
-use Cognesy\InstructorHub\Commands\ShowHelp;
 use Cognesy\InstructorHub\Core\CommandRegistry;
 use Cognesy\InstructorHub\Services\DocGenerator;
 use Cognesy\InstructorHub\Services\Examples;
@@ -42,8 +41,8 @@ function hub(Configuration $config) : Configuration
         class: Runner::class,
         context: [
             'examples' => $config->reference(Examples::class),
-            'displayErrors' => false,
-            'stopAfter' => 0,
+            'displayErrors' => true,
+            'stopAfter' => 2,
             'stopOnError' => true,
         ],
     );
@@ -76,6 +75,7 @@ function hub(Configuration $config) : Configuration
         class: RunOneExample::class,
         context: [
             'runner' => $config->reference(Runner::class),
+            'examples' => $config->reference(Examples::class),
         ],
     );
 

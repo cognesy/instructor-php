@@ -16,9 +16,11 @@ class UserDetail
     public string $value;
 }
 
-class UserDetailsxxx
+class UserDetails
 {
-    /** @var UserDetail[] Extract information for multiple users. Use consistent key names for properties across users. */
+    /** @var UserDetail[] Extract information for multiple users.
+     * Use consistent key names for properties across users.
+     */
     public array $users;
 }
 

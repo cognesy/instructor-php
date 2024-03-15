@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\InstructorHub\Services;
 
-use PhpPkg\CliMarkdown\CliMarkdown;
+use Cognesy\InstructorHub\Utils\CliMarkdown;
 
 class DocGenerator
 {
@@ -15,8 +15,8 @@ class DocGenerator
         $this->parser = new CliMarkdown();
     }
 
-    public function viewFile(mixed $file) : void {
+    public function copyAsMd(mixed $file) : void {
         $output = file_get_contents($this->baseDir . '/' . $file . '/run.php');
-        echo $this->parser->render($output);
+        throw new \Exception('Not implemented');
     }
 }

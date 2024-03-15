@@ -2,8 +2,8 @@
 namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Core\Cli;
-use Cognesy\InstructorHub\Core\Color;
 use Cognesy\InstructorHub\Data\ErrorEvent;
+use Cognesy\InstructorHub\Utils\Color;
 use Exception;
 
 class Runner
@@ -24,16 +24,24 @@ class Runner
         $this->baseDir = $this->examples->getBaseDir();
     }
 
-    public function runOne(string $file) : void {
-        Cli::outln("Executing example...", [Color::BOLD, Color::YELLOW]);
-        Cli::out(" [.] ", Color::WHITE);
-        Cli::out($file);
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public function runSingle($file) : void {
         $this->runFile($file);
+        $this->displayErrors();
+    }
+
+    public function runAll() : void {
+        $this->examples->forEachFile(function($file, $index) {
+            return $this->runFile($file);
+        });
+        $this->stats();
+        $this->displayErrors();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public function runFile(mixed $file) : bool {
+    private function runFile(mixed $file) : bool {
         // execute run.php and print the output to CLI
         Cli::grid([[3, "[.]", STR_PAD_LEFT, Color::DARK_GRAY]]);
         Cli::grid([[30, $file, STR_PAD_RIGHT, Color::WHITE]]);
@@ -41,13 +49,6 @@ class Runner
         $output = $this->execute($this->baseDir, $file);
         // process output
         return $this->processOutput($output, $file);
-    }
-
-    public function runAll() : void {
-        $this->examples->forEachFile(function($file) {
-            return $this->runFile($file);
-        });
-        $this->stats();
     }
 
     private function execute(string $dir, string $file) : string {
@@ -90,27 +91,31 @@ class Runner
     }
 
     public function stats() : void {
-        // stats
         $correctPercent = $this->percent($this->correct, $this->total);
         $incorrectPercent = $this->percent($this->incorrect, $this->total);
         Cli::outln();
         Cli::outln();
         Cli::outln("RESULTS:", [Color::YELLOW, Color::BOLD]);
         Cli::out("[+]", Color::GREEN);
-        Cli::out(" Correct runs ..... $this->correct ($correctPercent%)");
+        Cli::outln(" Correct runs ..... $this->correct ($correctPercent%)");
         Cli::out("[-]", Color::RED);
         Cli::outln(" Incorrect runs ... $this->incorrect ($incorrectPercent%)");
         Cli::outln("Total ................ $this->total (100%)", [Color::BOLD, Color::WHITE]);
         Cli::outln();
-        // errors
+    }
+
+    private function displayErrors() {
         if ($this->displayErrors && !empty($this->errors)) {
             Cli::outln();
             Cli::outln();
             Cli::outln("ERRORS:", [Color::YELLOW, Color::BOLD]);
-            foreach ($this->errors as $file => $error) {
-                Cli::outln("[$file]");
-                Cli::outln("$error->output");
-                Cli::outln();
+            foreach ($this->errors as $file => $group) {
+                Cli::outln("[$file]", Color::DARK_YELLOW);
+                foreach ($group as $error) {
+                    Cli::outln('---', Color::DARK_YELLOW);
+                    Cli::marginln($error->output, 4, Color::RED);
+                    Cli::outln();
+                }
             }
         }
     }

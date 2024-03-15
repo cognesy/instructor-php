@@ -32,7 +32,8 @@
         "pestphp/pest": "^2.34",
         "symfony/var-dumper": "^7.0",
         "mockery/mockery": "^1.6",
-        "phppkg/cli-markdown": "^2.0"
+        "toolkit/cli-utils": "^2.0",
+        "cebe/markdown": "^1.2"
     },
     "config": {
         "allow-plugins": {

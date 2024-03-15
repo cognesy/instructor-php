@@ -2,14 +2,11 @@
 
 In cases where relationships exist between entities, it's vital to define them explicitly in the model.
 
-Following example demonstrates how to define relationships between users by incorporating an `$id` and `$coworkers` fields.
+Following example demonstrates how to define relationships between users by incorporating an `$id`
+and `$coworkers` fields.
 
 ```php
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
@@ -32,7 +29,10 @@ class UserRelationships
     public array $users;
 }
 
-$text = "Jason is 25 years old. He is a Python programmer of Apex website. Amanda is a contractor working with Jason on Apex website. John is 40yo and he's CEO - Jason reports to him.";
+$text = <<<TEXT
+    Jason is 25 years old. He is a Python programmer of Apex website. Amanda is a contractor
+    working with Jason on Apex website. John is 40yo and he's CEO - Jason reports to him.
+TEXT;
 
 $relationships = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],

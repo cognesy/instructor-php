@@ -2,9 +2,9 @@
 namespace Cognesy\InstructorHub\Commands;
 
 use Cognesy\InstructorHub\Core\Cli;
-use Cognesy\InstructorHub\Core\Color;
 use Cognesy\InstructorHub\Core\Command;
 use Cognesy\InstructorHub\Services\Examples;
+use Cognesy\InstructorHub\Utils\Color;
 
 class ListAllExamples extends Command
 {
@@ -17,9 +17,11 @@ class ListAllExamples extends Command
 
     public function execute(array $params = []) : void {
         Cli::outln("Listing all examples...", [Color::BOLD, Color::YELLOW]);
-        $this->examples->forEachFile(function($file) {
+        $this->examples->forEachFile(function($file, $index) {
             Cli::grid([
-                [4, '[ ]', STR_PAD_LEFT, Color::WHITE],
+                [1, '(', STR_PAD_LEFT, Color::DARK_GRAY],
+                [2, $index, STR_PAD_LEFT, Color::WHITE],
+                [1, ')', STR_PAD_LEFT, Color::DARK_GRAY],
                 [32, $file, STR_PAD_RIGHT, Color::GREEN],
                 [2, '-', STR_PAD_LEFT, Color::WHITE],
                 [50, $this->examples->getHeader($file), STR_PAD_RIGHT, Color::DARK_GRAY]

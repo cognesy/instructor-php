@@ -22,13 +22,15 @@ class Examples {
         $files = scandir($this->baseDir);
         // remove . and .. from the list
         $files = array_diff($files, array('.', '..'));
+        $directories = [];
         foreach ($files as $key => $file) {
             // check if the file is a directory
             if (!is_dir($this->baseDir . '/' . $file)) {
-                unset($files[$key]);
+                continue;
             }
+            $directories[] = $file;
         }
-        return $files;
+        return $directories;
     }
 
     public function exampleExists(string $file) : bool {
@@ -38,19 +40,25 @@ class Examples {
     public function forEachFile(callable $callback) : void {
         $directories = $this->getExampleDirectories();
         // loop through the files and select only directories
+        $index = 1;
         foreach ($directories as $file) {
             // check if run.php exists in the directory
             if (!$this->exampleExists($file)) {
                 continue;
             }
-            if (!$callback($file)) {
+            if (!$callback($file, $index)) {
                 break;
             }
+            $index++;
         }
     }
 
+    public function getContent(string $file) : string {
+        return file_get_contents($this->baseDir . '/' . $file . '/run.php');
+    }
+
     public function getHeader(string $file) : string {
-        $output = file_get_contents($this->baseDir . '/' . $file . '/run.php');
+        $output = $this->getContent($file);
         $lines = explode("\n", $output);
         $header = $lines[0];
         // skip first 2 new lines
@@ -66,5 +74,18 @@ class Examples {
         // remove any ANSI codes
         $header = preg_replace('/\e\[[\d;]*m/', '', $header);
         return substr(trim($header), 0, 60);
+    }
+
+    public function exampleName(string $input) : string {
+        // handle example provided by index
+        $example = (int) ($input ?? '');
+        if ($example > 0) {
+            $list = $this->getExampleDirectories();
+            $index = $example - 1;
+            if (isset($list[$index])) {
+                return $list[$index];
+            }
+        }
+        return $input;
     }
 }

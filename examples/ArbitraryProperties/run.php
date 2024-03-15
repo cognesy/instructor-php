@@ -15,7 +15,7 @@ class Property
     public string $value;
 }
 
-class UserDetail
+class UserDetailxxx
 {
     public int $age;
     public string $name;

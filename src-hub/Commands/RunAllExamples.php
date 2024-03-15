@@ -2,9 +2,9 @@
 namespace Cognesy\InstructorHub\Commands;
 
 use Cognesy\InstructorHub\Core\Cli;
-use Cognesy\InstructorHub\Core\Color;
 use Cognesy\InstructorHub\Core\Command;
 use Cognesy\InstructorHub\Services\Runner;
+use Cognesy\InstructorHub\Utils\Color;
 
 class RunAllExamples extends Command
 {

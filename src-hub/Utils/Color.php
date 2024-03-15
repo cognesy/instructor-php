@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\InstructorHub\Core;
+namespace Cognesy\InstructorHub\Utils;
 
 class Color
 {
