@@ -25,8 +25,9 @@ class Runner
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     public function runSingle(Example $example) : void {
-        $this->runFile($example);
-        $this->displayErrors();
+        //$this->runFile($example);
+        $this->executeAndShow($example->runPath);
+        //$this->displayErrors();
     }
 
     public function runAll() : void {
@@ -60,6 +61,19 @@ class Runner
         $bufferedOutput = ob_get_contents();
         ob_end_clean();
         return $output . $bufferedOutput;
+    }
+
+    private function executeAndShow(string $runPath) : void {
+        //ob_start();
+        try {
+            $command = 'php ' . $runPath;// . ' 2>&1';
+            $output = shell_exec($command);
+        } catch (Exception $e) {
+            $output = $e->getMessage();
+        }
+        //$bufferedOutput = ob_get_contents();
+        //ob_end_clean();
+        //return $output . $bufferedOutput;
     }
 
     private function processOutput(string $output, Example $example) : bool {
