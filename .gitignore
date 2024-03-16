@@ -6,4 +6,4 @@ experimental/
 .env
 vendor
 php_errors.log
-NOTES.md
+composer.lock
