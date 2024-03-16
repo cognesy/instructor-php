@@ -27,7 +27,7 @@ class Console
             }
             $message .= ' ';
         }
-        return $message;
+        return trim($message);
     }
 
     static private function toColumn(int $chars, mixed $text, int $align, string $color = ''): string {
@@ -40,6 +40,9 @@ class Console
                 : substr($short, 0, -1).'…';
         }
         $output = str_pad($short, $chars, ' ', $align);
-        return $color . $output . Color::RESET;
+        if ($color) {
+            $output = $color . $output . Color::RESET;
+        }
+        return $output;
     }
 }

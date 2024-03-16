@@ -45,7 +45,7 @@ class Cli
     }
 
     static public function grid(array $data) : void {
-        self::out(Console::columns($data, 80));
+        self::out(Console::columns($data, 80)." ");
     }
 
     public static function limit(string $line, int $param) {
