@@ -7,7 +7,6 @@ response is received.
 
 ```php
 <?php
-sleep(3);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
