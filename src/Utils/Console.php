@@ -27,7 +27,7 @@ class Console
             }
             $message .= ' ';
         }
-        return trim($message);
+        return $message;
     }
 
     static private function toColumn(int $chars, mixed $text, int $align, string $color = ''): string {

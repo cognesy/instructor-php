@@ -5,7 +5,7 @@ use Cognesy\Instructor\Utils\Console;
 
 it('displays single string column correctly', function () {
     $output = Console::columns(['Sample text'], 80);
-    expect($output)->toBe('Sample text');
+    expect($output)->toBe('Sample text ');
 });
 
 it('aligns single column text to the left by default', function () {
@@ -21,13 +21,13 @@ it('aligns single column text to the right', function () {
 it('truncates and appends ellipsis to long text based on maxWidth', function () {
     $longText = str_repeat('A', 100);
     $output = Console::columns([[-1, $longText]], 80);
-    $expected = str_pad(substr($longText, 0, 79) . '…', 80);
+    $expected = str_pad(substr($longText, 0, 79) . '… ', 80);
     expect($output)->toBe($expected);
 });
 
 it('handles mixed array of strings and column specifications', function () {
     $output = Console::columns(['Static text', [-1, 'Dynamic text', STR_PAD_RIGHT]], 80);
-    expect($output)->toBe('Static text Dynamic text');
+    expect($output)->toBe('Static text Dynamic text                                                         ');
 });
 
 it('ensures minWidth of 80 if maxWidth is less', function () {
