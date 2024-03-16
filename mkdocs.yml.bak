@@ -171,7 +171,8 @@ nav:
 #    - Ollama: 'examples/ollama.md'
 #    - SQLModel Integration: 'examples/sqlmodel.md'
   - Hub:
-#    - Introducing Instructor Hub: 'hub/index.md'
+    - Introducing Instructor Hub: 'hub/index.md'
+###HUB###
 #    - Single Classification Model: 'hub/single_classification.md'
 #    - Multiple Classification Model: 'hub/multiple_classification.md'
 #    - Extracting Tables using GPT-V: 'hub/tables_from_vision.md'

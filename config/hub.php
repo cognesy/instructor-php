@@ -8,7 +8,7 @@ use Cognesy\InstructorHub\Commands\RunOneExample;
 use Cognesy\InstructorHub\Commands\ShowExample;
 use Cognesy\InstructorHub\Core\CommandRegistry;
 use Cognesy\InstructorHub\Services\DocGenerator;
-use Cognesy\InstructorHub\Services\Examples;
+use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\Runner;
 
 
@@ -31,7 +31,7 @@ function hub(Configuration $config) : Configuration
     );
 
     $config->declare(
-        class: Examples::class,
+        class: ExampleRepository::class,
         context: [
             'baseDir' => __DIR__ . '/../examples/',
         ],
@@ -40,9 +40,9 @@ function hub(Configuration $config) : Configuration
     $config->declare(
         class: Runner::class,
         context: [
-            'examples' => $config->reference(Examples::class),
+            'examples' => $config->reference(ExampleRepository::class),
             'displayErrors' => true,
-            'stopAfter' => 2,
+            'stopAfter' => 0,
             'stopOnError' => true,
         ],
     );
@@ -60,7 +60,7 @@ function hub(Configuration $config) : Configuration
     $config->declare(
         class: ListAllExamples::class,
         context: [
-            'examples' => $config->reference(Examples::class),
+            'examples' => $config->reference(ExampleRepository::class),
         ],
     );
 
@@ -75,14 +75,14 @@ function hub(Configuration $config) : Configuration
         class: RunOneExample::class,
         context: [
             'runner' => $config->reference(Runner::class),
-            'examples' => $config->reference(Examples::class),
+            'examples' => $config->reference(ExampleRepository::class),
         ],
     );
 
     $config->declare(
         class: ShowExample::class,
         context: [
-            'examples' => $config->reference(Examples::class),
+            'examples' => $config->reference(ExampleRepository::class),
         ],
     );
 

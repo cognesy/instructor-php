@@ -170,8 +170,10 @@ nav:
 #    - Image to Ad Copy: 'examples/image_to_ad_copy.md'
 #    - Ollama: 'examples/ollama.md'
 #    - SQLModel Integration: 'examples/sqlmodel.md'
-#  - Hub:
-#    - Introducing Instructor Hub: 'hub/index.md'
+  - Hub:
+    - Introducing Instructor Hub: 'hub/index.md'
+###HUB-START###
+###HUB-END###
 #    - Single Classification Model: 'hub/single_classification.md'
 #    - Multiple Classification Model: 'hub/multiple_classification.md'
 #    - Extracting Tables using GPT-V: 'hub/tables_from_vision.md'

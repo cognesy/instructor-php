@@ -3,6 +3,7 @@ namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\ErrorEvent;
+use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Utils\Color;
 use Exception;
 
@@ -13,27 +14,24 @@ class Runner
     public int $total = 0;
     /** @var ErrorEvent[] */
     public array $errors;
-    private string $baseDir;
 
     public function __construct(
-        public Examples $examples,
-        public bool     $displayErrors,
-        public int      $stopAfter,
-        public bool     $stopOnError,
-    ) {
-        $this->baseDir = $this->examples->getBaseDir();
-    }
+        public ExampleRepository $examples,
+        public bool              $displayErrors,
+        public int               $stopAfter,
+        public bool              $stopOnError,
+    ) {}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public function runSingle($file) : void {
-        $this->runFile($file);
+    public function runSingle(Example $example) : void {
+        $this->runFile($example);
         $this->displayErrors();
     }
 
     public function runAll() : void {
-        $this->examples->forEachFile(function($file, $index) {
-            return $this->runFile($file);
+        $this->examples->forEachExample(function(Example $example) {
+            return $this->runFile($example);
         });
         $this->stats();
         $this->displayErrors();
@@ -41,21 +39,21 @@ class Runner
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private function runFile(mixed $file) : bool {
+    private function runFile(Example $example) : bool {
         // execute run.php and print the output to CLI
         Cli::grid([[3, "[.]", STR_PAD_LEFT, Color::DARK_GRAY]]);
-        Cli::grid([[30, $file, STR_PAD_RIGHT, Color::WHITE]]);
+        Cli::grid([[30, $example->name, STR_PAD_RIGHT, Color::WHITE]]);
         Cli::grid([[13, "> running ...", STR_PAD_RIGHT, Color::DARK_GRAY]]);
-        $output = $this->execute($this->baseDir, $file);
+        $output = $this->execute($example->runPath);
         // process output
-        return $this->processOutput($output, $file);
+        return $this->processOutput($output, $example);
     }
 
-    private function execute(string $dir, string $file) : string {
+    private function execute(string $runPath) : string {
         ob_start();
         try {
-            $path = 'php ' . $dir . '/' . $file . '/run.php 2>&1';
-            $output = shell_exec($path);
+            $command = 'php ' . $runPath . ' 2>&1';
+            $output = shell_exec($command);
         } catch (Exception $e) {
             $output = $e->getMessage();
         }
@@ -64,10 +62,10 @@ class Runner
         return $output . $bufferedOutput;
     }
 
-    private function processOutput(string $output, string $file) : bool {
+    private function processOutput(string $output, Example $example) : bool {
         Cli::grid([[1, ">", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         if (strpos($output, 'Fatal error') !== false) {
-            $this->errors[$file][] = new ErrorEvent($file, $output);
+            $this->errors[$example->name][] = new ErrorEvent($example->name, $output);
             Cli::grid([[5, "ERROR", STR_PAD_LEFT, Color::RED]]);
             Cli::outln();
             $this->incorrect++;
@@ -109,8 +107,8 @@ class Runner
             Cli::outln();
             Cli::outln();
             Cli::outln("ERRORS:", [Color::YELLOW, Color::BOLD]);
-            foreach ($this->errors as $file => $group) {
-                Cli::outln("[$file]", Color::DARK_YELLOW);
+            foreach ($this->errors as $name => $group) {
+                Cli::outln("[$name]", Color::DARK_YELLOW);
                 foreach ($group as $error) {
                     Cli::outln('---', Color::DARK_YELLOW);
                     Cli::margin($error->output, 4, Color::RED, Color::GRAY);

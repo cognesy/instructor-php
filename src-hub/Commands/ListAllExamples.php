@@ -3,7 +3,8 @@ namespace Cognesy\InstructorHub\Commands;
 
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
-use Cognesy\InstructorHub\Services\Examples;
+use Cognesy\InstructorHub\Data\Example;
+use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Utils\Color;
 
 class ListAllExamples extends Command
@@ -12,23 +13,20 @@ class ListAllExamples extends Command
     public string $description = "List all examples";
 
     public function __construct(
-        public Examples $examples
+        public ExampleRepository $examples
     ) {}
 
     public function execute(array $params = []) : void {
         Cli::outln("Listing all examples...", [Color::BOLD, Color::YELLOW]);
-        $this->examples->forEachFile(function($file, $index) {
+        $this->examples->forEachExample(function(Example $example) {
             Cli::grid([
                 [1, '(', STR_PAD_LEFT, Color::DARK_GRAY],
-                [2, $index, STR_PAD_LEFT, Color::WHITE],
+                [2, $example->index, STR_PAD_LEFT, Color::WHITE],
                 [1, ')', STR_PAD_LEFT, Color::DARK_GRAY],
-                [32, $file, STR_PAD_RIGHT, Color::GREEN],
+                [32, $example->name, STR_PAD_RIGHT, Color::GREEN],
                 [2, '-', STR_PAD_LEFT, Color::WHITE],
-                [50, $this->examples->getHeader($file), STR_PAD_RIGHT, Color::DARK_GRAY]
+                [50, $example->title, STR_PAD_RIGHT, Color::DARK_GRAY]
             ]);
-//            Cli::out($file, Color::GREEN);
-//            //Cli::out(" - ");
-//            //Cli::out($this->examples->getHeader($file), Color::GRAY)
             Cli::outln();
             return true;
         });
