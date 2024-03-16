@@ -10,10 +10,11 @@ class ExampleRepository {
         $this->baseDir = $baseDir ?: ($this->guessBaseDir() . '/');
     }
 
-    public function forEachExample(callable $callback) : void {
+    public function forEachExample(callable $callback) : array {
         $directories = $this->getExampleDirectories();
         // loop through the files and select only directories
         $index = 1;
+        $list = [];
         foreach ($directories as $file) {
             // check if run.php exists in the directory
             if (!$this->exampleExists($file)) {
@@ -24,7 +25,9 @@ class ExampleRepository {
                 break;
             }
             $index++;
+            $list[] = $example;
         }
+        return $list;
     }
 
     public function resolveToExample(string $input) : ?Example {

@@ -49,12 +49,22 @@ function hub(Configuration $config) : Configuration
 
     $config->declare(
         class: DocGenerator::class,
+        context: [
+            'examples' => $config->reference(ExampleRepository::class),
+            'hubDocsDir' => __DIR__ . '/../docs/hub',
+            'mkDocsFile' => __DIR__ . '/../mkdocs.yml',
+            'sectionStartMarker' => '###HUB-INDEX-START###',
+            'sectionEndMarker' => '###HUB-INDEX-END###',
+        ],
     );
 
     /// COMMANDS //////////////////////////////////////////////////////////////////
 
     $config->declare(
         class: GenerateDocs::class,
+        context: [
+            'docGen' => $config->reference(DocGenerator::class),
+        ],
     );
 
     $config->declare(
