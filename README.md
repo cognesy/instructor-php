@@ -9,6 +9,7 @@ Instructor is a library that allows you to extract structured, validated data fr
 
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
 
+![image](./docs/img/concept.png)
 
 ## Instructor in Other Languages
 
