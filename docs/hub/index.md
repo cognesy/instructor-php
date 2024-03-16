@@ -12,8 +12,9 @@ composer install cognesy/instructor-php
 
 We welcome contributions to the instructor hub, if you have a tutorial or example you'd like to add, please open a pull request in `docs/hub` and we'll review it.
 
-1. The code must be in a single file
-2. Make sure that the code is tested.
+1. The code must be in a single .php file.
+2. Please include documentation in the file - check existing examples for the format.
+3. Make sure that the code is tested.
 
 
 
@@ -21,6 +22,7 @@ We welcome contributions to the instructor hub, if you have a tutorial or exampl
 ## CLI Usage
 
 Instructor hub comes with a command line interface (CLI) that allows you to view and interact with the tutorials and examples and allows you to pull in the code you need to get started with the API.
+
 
 
 ### List Cookbooks
