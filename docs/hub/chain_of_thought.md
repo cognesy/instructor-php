@@ -28,5 +28,7 @@ $employee = (new Instructor)->respond(
 );
 
 dump($employee);
+
+assert($employee->yearOfEmployment === 2014);
 ?>
 ```

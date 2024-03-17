@@ -75,12 +75,14 @@ function segment(string $data) : Search {
     );
 }
 
-foreach (segment("Search for a picture of a cat and a video of a dog")->queries as $query) {
+$search = segment("Find a picture of a cat and a video of a dog");
+foreach ($search->queries as $query) {
     $query->execute();
-    // dump($query);
 }
 // Results:
 // Searching with query `picture of a cat` using `image`
 // Searching with query `video of a dog` using `video`
+
+assert(count($search->queries) === 2);
 ?>
 ```

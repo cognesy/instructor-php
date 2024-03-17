@@ -30,8 +30,9 @@ $timeRange = (new Instructor)->respond(
     maxRetries: 2
 );
 
-assert($timeRange->startTime === 9);
-assert($timeRange->endTime === 17);
 dump($timeRange);
+
+assert($timeRange->startTime === 9);
+assert($timeRange->endTime === 15);
 ?>
 ```

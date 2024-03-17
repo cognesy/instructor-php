@@ -13,14 +13,14 @@ use Cognesy\Instructor\Instructor;
 
 class UserRole
 {
-    public ?string $title = 'unknown';
+    public string $title;
 }
 
 class UserDetail
 {
     public int $age;
     public string $name;
-    public UserRole $role;
+    public ?UserRole $role;
 }
 
 $user = (new Instructor)->respond(
@@ -28,7 +28,8 @@ $user = (new Instructor)->respond(
     responseModel: UserDetail::class,
 );
 
-assert($user->role == null);
 dump($user);
+
+assert(!isset($user->role));
 ?>
 ```

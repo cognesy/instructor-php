@@ -30,6 +30,7 @@ class DocGenerator
                 Cli::outln("ERROR", [Color::RED]);
                 throw new \Exception("Failed to copy or replace example: {$example->name}");
             }
+            Cli::out("> ", [Color::DARK_GRAY]);
             Cli::outln("DONE", [Color::GREEN]);
             return true;
         });
@@ -38,6 +39,7 @@ class DocGenerator
             Cli::outln("ERROR", [Color::RED]);
             throw new \Exception('Failed to update hub docs index');
         }
+        Cli::out("> ", [Color::DARK_GRAY]);
         Cli::outln("DONE", [Color::WHITE]);
     }
 
@@ -47,13 +49,26 @@ class DocGenerator
         $targetPath = $this->hubDocsDir . '/' . $newFileName;
         // copy example file to docs
         if (file_exists($targetPath)) {
+            // compare update dates of $targetPath and $example->runPath
+            $targetDate = filemtime($targetPath);
+            $exampleDate = filemtime($example->runPath);
+            if ($exampleDate <= $targetDate) {
+                Cli::out("> ", [Color::DARK_GRAY]);
+                Cli::grid([[20, "no changes", STR_PAD_RIGHT, Color::DARK_GRAY]]);
+                Cli::out("> ", [Color::DARK_GRAY]);
+                Cli::grid([[12, "skipping", STR_PAD_RIGHT, Color::DARK_GRAY]]);
+                return true;
+            }
             // if the file already exists, replace it
-            Cli::grid([[20, "> replacing existing", STR_PAD_RIGHT, Color::DARK_GRAY]]);
+            Cli::out("> ", [Color::DARK_GRAY]);
+            Cli::grid([[20, "found updated example", STR_PAD_RIGHT, Color::GRAY]]);
             unlink($targetPath);
         } else {
-            Cli::grid([[20, "> new doc found", STR_PAD_RIGHT, Color::DARK_YELLOW]]);
+            Cli::out("> ", [Color::DARK_GRAY]);
+            Cli::grid([[20, "found new example", STR_PAD_RIGHT, Color::DARK_YELLOW]]);
         }
-        Cli::out("> copying file > ", Color::DARK_GRAY);
+        Cli::out("> ", [Color::DARK_GRAY]);
+        Cli::grid([[12, "copying file", STR_PAD_RIGHT, Color::GRAY]]);
         return copy($example->runPath, $targetPath);
     }
 

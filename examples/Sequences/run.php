@@ -14,7 +14,6 @@ completed item in a sequence, rather than on any property update.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Instructor;
 
@@ -25,7 +24,8 @@ class Person
 }
 
 $text = <<<TEXT
-    Jason is 25 years old. Jane is 18 yo. John is 30 years old and Anna is 2 years younger than him.
+    Jason is 25 years old. Jane is 18 yo. John is 30 years old
+    and Anna is 2 years younger than him.
 TEXT;
 
 $list = (new Instructor)

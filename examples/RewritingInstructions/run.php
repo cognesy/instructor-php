@@ -41,7 +41,8 @@ class UserDetail
 }
 
 $text = <<<TEXT
-    I'm Jason, I'm 28 yo. I am responsible for driving growth of our company.
+    I'm Jason, I'm 28 yo. I am responsible for driving growth of our
+    company.
 TEXT;
 
 $instructor = new Instructor;

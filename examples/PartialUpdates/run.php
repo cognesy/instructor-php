@@ -47,9 +47,10 @@ function partialUpdate($partial) {
 }
 ?>
 ```
-Now we can use this data model to extract arbitrary properties from a text message. As the
-tokens are streamed from LLM API, the `partialUpdate` function will be called with partially
-updated object of type `UserDetail` that you can use, usually to update the UI.
+Now we can use this data model to extract arbitrary properties from a text message.
+As the tokens are streamed from LLM API, the `partialUpdate` function will be called
+with partially updated object of type `UserDetail` that you can use, usually to update
+the UI.
 
 ```php
 <?php

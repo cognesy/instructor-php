@@ -41,7 +41,8 @@ class UserDetail
 }
 
 $text = <<<TEXT
-    I'm Jason, I'm 28 yo. I am responsible for driving growth of our company.
+    I'm Jason, I'm 28 yo. I am responsible for driving growth of our
+    company.
 TEXT;
 
 $instructor = new Instructor;
@@ -49,7 +50,12 @@ $user = $instructor->respond(
     messages: [["role" => "user",  "content" => $text]],
     responseModel: UserDetail::class,
 );
+
 dump($user);
+
+assert($user->name === "Jason");
+assert($user->age === 28);
+assert(!empty($user->role->title));
 ?>
 ```
 
