@@ -304,6 +304,7 @@ $list = (new Instructor)->respond(
 );
 ```
 
+See more about sequences in the [Sequences](data_model.md) section.
 
 
 
@@ -439,16 +440,24 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
 
 ```php
+// get your API key from .env file
+$yourApiKey = getenv('YOUR_API_KEY');
+
 $person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     model: 'gpt-3.5-turbo',
-    options: ['temperature' => 0.0],
+    options: [
+        'temperature' => 0.0
+    ],
     client: OpenAI::client($yourApiKey),
 );
 // client is passed explicitly
 // you can specify e.g. different base URL
 ```
+
+See OpenAI PHP client documentation for more details on how to use it and what options are available: https://github.com/openai-php/client
+
 > Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate ```model``` and ```base URI``` via ```options``` parameter.
 
 

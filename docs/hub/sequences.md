@@ -14,7 +14,6 @@ completed item in a sequence, rather than on any property update.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Instructor;
 
@@ -32,11 +31,9 @@ $list = (new Instructor)
     ->request(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Sequence::of(Person::class),
-        maxRetries: 2,
         options: ['stream' => true]
     )
-    ->onEvent(SequenceUpdated::class, fn($event) => dump($event->items->last()))
-    //->onEvent(PartialResponseGenerated::class, fn($event) => dump($event->partialResponse))
+    ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->get();
 
 dump(count($list));

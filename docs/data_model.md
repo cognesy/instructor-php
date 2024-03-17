@@ -1,6 +1,7 @@
-## Specifying Data Model
+# Specifying Data Model
 
-### Type Hints
+
+## Type Hints
 
 Use PHP type hints to specify the type of extracted data.
 
@@ -19,7 +20,10 @@ class Person {
 Instructor will only fill in the fields that are public. Private and protected fields are ignored and their values are not going to be extracted (they will be left empty, with default values set as defined in your class).
 
 
-### DocBlock type hints
+
+
+
+## DocBlock type hints
 
 You can also use PHP DocBlock style comments to specify the type of extracted data. This is useful when you want to specify property types for LLM, but can't or don't want to enforce type at the code level.
 
@@ -39,7 +43,33 @@ class Person {
 See PHPDoc documentation for more details on DocBlock: https://docs.phpdoc.org/3.0/guide/getting-started/what-is-a-docblock.html#what-is-a-docblock
 
 
-### Typed Collections / Arrays
+
+
+## Using DocBlocks as Additional Instructions for LLM
+
+You can use PHP DocBlocks (/** */) to provide additional instructions for LLM at class or field level, for example to clarify what you expect or how LLM should process your data.
+
+Instructor extracts PHP DocBlocks comments from class and property defined and includes them in specification of response model sent to LLM.
+
+Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
+
+```php
+    /**
+     * Represents a skill of a person and context in which it was mentioned. 
+     */
+    class Skill {
+        public string $name;
+        /** @var SkillType $type type of the skill, derived from the description and context */
+        public SkillType $type;
+        /** Directly quoted, full sentence mentioning person's skill */
+        public string $context;
+    }
+```
+
+
+
+
+## Typed Collections / Arrays
 
 PHP currently [does not support generics](https://wiki.php.net/rfc/generics) or typehints to specify array element types.
 
@@ -61,7 +91,10 @@ class Event {
 ```
 
 
-### Complex data extraction
+
+
+
+## Complex data extraction
 
 Instructor can retrieve complex data structures from text. Your response model can contain nested objects, arrays, and enums.
 
@@ -131,26 +164,9 @@ var_dump($person);
 // }
 ```
 
-## Using DocBlocks as Additional Instructions for LLM
 
-You can use PHP DocBlocks (/** */) to provide additional instructions for LLM at class or field level, for example to clarify what you expect or how LLM should process your data.
 
-Instructor extracts PHP DocBlocks comments from class and property defined and includes them in specification of response model sent to LLM.
 
-Using PHP DocBlocks instructions is not required, but sometimes you may want to clarify your intentions to improve LLM's inference results.
-
-```php
-    /**
-     * Represents a skill of a person and context in which it was mentioned. 
-     */
-    class Skill {
-        public string $name;
-        /** @var SkillType $type type of the skill, derived from the description and context */
-        public SkillType $type;
-        /** Directly quoted, full sentence mentioning person's skill */
-        public string $context;
-    }
-```
 
 ## Scalar Values
 
@@ -224,6 +240,12 @@ $age = (new Instructor)->respond(
 // expect($age)->toBe('other');
 ```
 
+
+
+
+
+## Sequences
+
 ### Extracting Sequences of Objects
 
 Sequence is a wrapper class that can be used to represent a list of objects to
@@ -250,10 +272,23 @@ $list = (new Instructor)->respond(
 );
 ```
 
+
+### Streaming Sequences
+
 Additional, unique feature of sequences is that they can be streamed per each
 completed item in a sequence, rather than on any property update.
 
 > **NOTE** This feature requires the `stream` option to be set to `true`.
+
+To receive sequence updates provide a callback via Instructor's
+`onSequenceUpdate()` that will be called each  time a new item is received from LLM.
+
+The callback provided a full sequence that has been retrieved so far. You can
+get the last added object from the sequence via `$sequence->last()`.
+
+Remember that while the sequence is being updated, the data is not validated -
+only when the sequence is fully extracted, the objects are validated and a full
+sequence is returned (see example below).
 
 ```php
 class Person
@@ -264,6 +299,8 @@ class Person
 
 function updateUI(Person $person) {
     // add newly extracted person to the UI list
+    $this->ui->appendToList($person);
+    // remember those objects are not validated yet
 }
 
 $text = <<<TEXT
@@ -275,19 +312,27 @@ $list = (new Instructor)->request(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Sequence::of(Person::class),
     options: ['stream' => true]
-)->onEvent(
-    SequenceUpdated::class,
-    fn($event) => updateUI($event->item->last()) // get last added object
+)->onSequenceUpdate(
+    fn($sequence) => updateUI($sequence->last()) // get last added object
 )->get();
+
+// now the list is fully extracted and validated
+foreach ($list as $person) {
+    // do something with each person
+    $this->db->save($person);
+}
 ```
+
+
+### Working with Sequences
 
 Sequences offer array access (via ArrayAccess) and convenience methods
 to work with the list of extracted objects.
 
 ```php
-$list->count(); // returns the number of extracted items
-$list->first(); // returns the first extracted item
-$list->last(); // returns the last extracted item
-$list->get(1); // returns the second extracted item
-$list->toArray(); // returns the list of extracted items as an array
+$sequence->count();   // returns the number of extracted items
+$sequence->first();   // returns the first extracted item
+$sequence->last();    // returns the last extracted item
+$sequence->get(1);    // returns the second extracted item
+$sequence->toArray(); // returns the list of extracted items as an array
 ```
