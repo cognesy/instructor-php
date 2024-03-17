@@ -123,28 +123,3 @@ $instructor = (new Instructor)->withRequest(new Request(
     responseModel: Person::class,
 ))->get();
 ```
-
-### Partial results
-
-You can define `onPartialUpdate()` callback to receive partial results that can be used to start updating UI before LLM completes the inference. 
-
-> NOTE: Partial updates are not validated. The response is only validated after it is fully received.
-
-```php
-use Cognesy\Instructor;
-
-function updateUI($person) {
-    // Here you get partially completed Person object update UI with the partial result
-}
-
-$person = (new Instructor)->request(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-    options: ['stream' => true]
-)->onPartialUpdate(
-    fn($partial) => updateUI($partial)
-)->get();
-
-// Here you get completed and validated Person object
-$this->db->save($person); // ...for example: save to DB
-```

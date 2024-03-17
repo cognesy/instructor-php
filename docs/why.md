@@ -146,11 +146,11 @@ See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callbac
 ```
 
 
-## Iterables and Lists
+## Sequences (iterables / lists)
 
-> Streaming of iterable and list items is not yet supported by Instructor for PHP.
+See: [Sequences](sequences.md)
 
 
 ## Partial Extraction
 
-> Partial extraction is not yet supported by Instructor for PHP.
+See: [Partial Extraction](partials.md)
