@@ -193,6 +193,7 @@ function updateUI($person) {
 $person = (new Instructor)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
+    options: ['stream' => true]
 )->onPartialUpdate(
     fn($partial) => updateUI($partial)
 )->get();
@@ -248,6 +249,7 @@ var_dump($value);
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
 
+
 ### Extracting Enum Values
 
 Additionally, you can use Scalar adapter to extract one of the provided options by using `Scalar::enum()`.
@@ -272,6 +274,35 @@ var_dump($value);
 // enum(ActivityType:Entertainment)
 ```
 
+### Extracting Sequences of Objects
+
+Sequence is a wrapper class that can be used to represent a list of objects to
+be extracted by Instructor from provided context.
+
+It is usually more convenient not create a dedicated class with a single array
+property just to handle a list of objects of a given class.
+
+Additional, unique feature of sequences is that they can be streamed per each
+completed item in a sequence, rather than on any property update.
+
+```php
+class Person
+{
+    public string $name;
+    public int $age;
+}
+
+$text = <<<TEXT
+    Jason is 25 years old. Jane is 18 yo. John is 30 years old
+    and Anna is 2 years younger than him.
+TEXT;
+
+$list = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Sequence::of(Person::class),
+    options: ['stream' => true]
+);
+```
 
 
 
@@ -328,6 +359,7 @@ class Event {
     // ...
 }
 ```
+
 
 ### Complex data extraction
 

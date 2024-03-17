@@ -140,6 +140,7 @@ function updateUI($person) {
 $person = (new Instructor)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
+    options: ['stream' => true]
 )->onPartialUpdate(
     fn($partial) => updateUI($partial)
 )->get();

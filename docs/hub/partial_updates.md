@@ -38,6 +38,7 @@ TEXT;
 $user = (new Instructor)->request(
     messages: $text,
     responseModel: UserDetail::class,
+    options: ['stream' => true]
 )->onPartialUpdate(partialUpdate(...))->get();
 
 function partialUpdate($partial) {

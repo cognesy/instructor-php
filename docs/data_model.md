@@ -224,4 +224,70 @@ $age = (new Instructor)->respond(
 // expect($age)->toBe('other');
 ```
 
+### Extracting Sequences of Objects
 
+Sequence is a wrapper class that can be used to represent a list of objects to
+be extracted by Instructor from provided context.
+
+It is usually more convenient not create a dedicated class with a single array
+property just to handle a list of objects of a given class.
+
+```php
+class Person
+{
+    public string $name;
+    public int $age;
+}
+
+$text = <<<TEXT
+    Jason is 25 years old. Jane is 18 yo. John is 30 years old
+    and Anna is 2 years younger than him.
+TEXT;
+
+$list = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Sequence::of(Person::class),
+);
+```
+
+Additional, unique feature of sequences is that they can be streamed per each
+completed item in a sequence, rather than on any property update.
+
+> **NOTE** This feature requires the `stream` option to be set to `true`.
+
+```php
+class Person
+{
+    public string $name;
+    public int $age;
+}
+
+function updateUI(Person $person) {
+    // add newly extracted person to the UI list
+}
+
+$text = <<<TEXT
+    Jason is 25 years old. Jane is 18 yo. John is 30 years old
+    and Anna is 2 years younger than him.
+TEXT;
+
+$list = (new Instructor)->request(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Sequence::of(Person::class),
+    options: ['stream' => true]
+)->onEvent(
+    SequenceUpdated::class,
+    fn($event) => updateUI($event->item->last()) // get last added object
+)->get();
+```
+
+Sequences offer array access (via ArrayAccess) and convenience methods
+to work with the list of extracted objects.
+
+```php
+$list->count(); // returns the number of extracted items
+$list->first(); // returns the first extracted item
+$list->last(); // returns the last extracted item
+$list->get(1); // returns the second extracted item
+$list->toArray(); // returns the list of extracted items as an array
+```

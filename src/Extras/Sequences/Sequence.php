@@ -115,7 +115,18 @@ class Sequence
         return count($this->list);
     }
 
+    public function get(int $index) : mixed {
+        return $this->list[$index] ?? null;
+    }
+
+    public function first() : mixed {
+        return $this->list[0] ?? null;
+    }
+
     public function last() : mixed {
+        if (empty($this->list)) {
+            return null;
+        }
         $count = count($this->list);
         return $this->list[$count - 1];
     }
