@@ -17,7 +17,7 @@ class Console
                     $row[0] = $maxWidth - strlen($message);
                 }
                 if ($color = $row[3] ?? 0) {
-                    $message .= $color;
+                    $message .= self::color($color);
                 }
                 $message .= self::toColumn(
                     chars: $row[0],
@@ -30,7 +30,7 @@ class Console
         return $message;
     }
 
-    static private function toColumn(int $chars, mixed $text, int $align, string $color = ''): string {
+    static private function toColumn(int $chars, mixed $text, int $align, string|array $color = ''): string {
         $short = ($align == STR_PAD_LEFT)
             ? substr($text, -$chars)
             : substr($text, 0, $chars);
@@ -40,9 +40,24 @@ class Console
                 : substr($short, 0, -1).'…';
         }
         $output = str_pad($short, $chars, ' ', $align);
-        if ($color) {
-            $output = $color . $output . Color::RESET;
-        }
+        $output = self::color($color, $output);
         return $output;
+    }
+
+    static private function color(string|array $color, string $output = '') : string {
+        if (!$color) {
+            return $output;
+        }
+        if (is_array($color)) {
+            $colorStr = implode('', $color);
+        } else {
+            $colorStr = $color;
+        }
+        // if no output, then just return the color
+        if (!$output) {
+            return $colorStr;
+        }
+        // if output, wrap the output in color and reset
+        return $colorStr . $output . Color::RESET;
     }
 }

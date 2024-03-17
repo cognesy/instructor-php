@@ -177,9 +177,13 @@ class RequestHandler implements CanHandleRequest
     }
 
     protected function finalizePartialResponse(ResponseModel $responseModel) : void {
-        if (($this->lastPartialResponse instanceof Sequenceable)) {
-            $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        if (
+            !isset($this->lastPartialResponse)
+            || !($this->lastPartialResponse instanceof Sequenceable)
+        ) {
+            return;
         }
+        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
     }
 
     protected function makeRetryMessages(

@@ -82,4 +82,4 @@ it('can parse partial JSON', function () {
             break;
         }
     }
-})->skip("Partials not implemented yet");
+})->skip("Tests to be implemented");

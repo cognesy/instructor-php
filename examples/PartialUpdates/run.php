@@ -1,4 +1,4 @@
-# Partial updates
+# Streaming partial updates during inference
 
 Instructor can process LLM's streamed responses to provide partial updates that you
 can use to update the model with new data as the response is being generated. You can

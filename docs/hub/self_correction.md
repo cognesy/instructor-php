@@ -1,4 +1,4 @@
-# Self-correction
+# Automatic correction based on validation results
 
 Instructor uses validation errors to inform LLM on the problems identified
 in the response, so that LLM can try self-correcting in the next attempt.

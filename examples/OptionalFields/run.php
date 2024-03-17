@@ -1,4 +1,4 @@
-# Optional fields
+# Making some fields optional
 
 Use PHP's nullable types by prefixing type name with question mark (?) to mark
 component fields which are optional and set a default value to prevent undesired

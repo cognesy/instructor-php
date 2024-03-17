@@ -2,6 +2,9 @@
 
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Symfony\Component\PropertyInfo\Type;
+use Tests\Examples\ClassInfo\EnumType;
+use Tests\Examples\ClassInfo\IntEnumType;
+use Tests\Examples\ClassInfo\StringEnumType;
 use Tests\Examples\ClassInfo\TestClassA;
 
 beforeEach(function () {
@@ -44,6 +47,7 @@ it('can determine required properties', function () {
     $requiredProperties = $this->classInfo->getRequiredProperties(TestClassA::class);
     expect($requiredProperties)->toBeArray();
     expect($requiredProperties)->toContain('nonNullableProperty');
+    expect($requiredProperties)->not()->toContain('nullableProperty');
 });
 
 it('can check if property is public', function () {
@@ -58,32 +62,35 @@ it('can check if property is nullable', function () {
     expect($isNullable)->toBeTrue();
 });
 
-//it('can check if a class is an enum', function () {
-//    // Assuming EnumClass is an enum
-//    $isEnum = $this->classInfo->isEnum(EnumClass::class);
-//    expect($isEnum)->toBeTrue();
-//
-//    // Assuming TestClass is not an enum
-//    $isEnum = $this->classInfo->isEnum(TestClassA::class);
-//    expect($isEnum)->toBeFalse();
-//});
-//
-//it('can check if an enum is backed', function () {
-//    // Assuming BackedEnumClass is a backed enum
-//    $isBackedEnum = $this->classInfo->isBackedEnum(BackedEnumClass::class);
-//    expect($isBackedEnum)->toBeTrue();
-//
-//    // Assuming EnumClass is not a backed enum
-//    $isBackedEnum = $this->classInfo->isBackedEnum(EnumClass::class);
-//    expect($isBackedEnum)->toBeFalse();
-//});
-//
-//it('can get the backing type of an enum', function () {
-//    // Assuming BackedEnumClass is a backed enum with a string backing type
-//    $backingType = $this->classInfo->enumBackingType(BackedEnumClass::class);
-//    expect($backingType)->toEqual('string');
-//});
-//
+it('can check if a class is an enum', function () {
+    // Assuming EnumClass is an enum
+    $isEnum = $this->classInfo->isEnum(EnumType::class);
+    expect($isEnum)->toBeTrue();
+
+    // Assuming TestClass is not an enum
+    $isEnum = $this->classInfo->isEnum(TestClassA::class);
+    expect($isEnum)->toBeFalse();
+});
+
+
+it('can check if an enum is backed', function () {
+    // Assuming BackedEnumClass is a backed enum
+    $isBackedEnum = $this->classInfo->isBackedEnum(StringEnumType::class);
+    expect($isBackedEnum)->toBeTrue();
+
+    // Assuming EnumClass is not a backed enum
+    $isBackedEnum = $this->classInfo->isBackedEnum(EnumType::class);
+    expect($isBackedEnum)->toBeFalse();
+});
+
+it('can get the backing type of an enum', function () {
+    // Assuming BackedEnumClass is a backed enum with a string backing type
+    $backingType = $this->classInfo->enumBackingType(StringEnumType::class);
+    expect($backingType)->toEqual('string');
+    $backingType = $this->classInfo->enumBackingType(IntEnumType::class);
+    expect($backingType)->toEqual('int');
+});
+
 //it('can get the values of an enum', function () {
 //    // Assuming EnumClass is an enum with defined values
 //    $values = $this->classInfo->enumValues(EnumClass::class);

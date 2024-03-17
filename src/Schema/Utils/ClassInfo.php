@@ -83,6 +83,9 @@ class ClassInfo {
 
     public function isNullable(string $class, string $property) : bool {
         $types = $this->extractor()->getTypes($class, $property);
+        if (is_null($types)) {
+            return false;
+        }
         foreach ($types as $type) {
             if ($type->isNullable()) {
                 return true;

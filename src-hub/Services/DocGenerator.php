@@ -1,7 +1,9 @@
 <?php
 namespace Cognesy\InstructorHub\Services;
 
+use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
+use Cognesy\InstructorHub\Utils\Color;
 use Cognesy\InstructorHub\Utils\Str;
 
 class DocGenerator
@@ -19,17 +21,24 @@ class DocGenerator
         if (!is_dir($this->hubDocsDir)) {
             throw new \Exception("Hub docs directory '$this->hubDocsDir' does not exist");
         }
+        Cli::outln("Updating files...", [Color::GRAY]);
         $list = $this->examples->forEachExample(function(Example $example) {
+            Cli::out(" [.] ", Color::DARK_GRAY);
+            Cli::grid([[22, $example->name, STR_PAD_RIGHT, [Color::BOLD, Color::WHITE]]]);
             $success = $this->copyOrReplace($example);
             if (!$success) {
+                Cli::outln("ERROR", [Color::RED]);
                 throw new \Exception("Failed to copy or replace example: {$example->name}");
             }
+            Cli::outln("DONE", [Color::GREEN]);
             return true;
         });
-//dump($list);
+        Cli::out("Updating mkdocs index... ", [Color::GRAY]);
         if (!$this->updateIndex($list)) {
+            Cli::outln("ERROR", [Color::RED]);
             throw new \Exception('Failed to update hub docs index');
         }
+        Cli::outln("DONE", [Color::WHITE]);
     }
 
     private function copyOrReplace(Example $example) : bool {
@@ -39,13 +48,16 @@ class DocGenerator
         // copy example file to docs
         if (file_exists($targetPath)) {
             // if the file already exists, replace it
+            Cli::grid([[20, "> replacing existing", STR_PAD_RIGHT, Color::DARK_GRAY]]);
             unlink($targetPath);
+        } else {
+            Cli::grid([[20, "> new doc found", STR_PAD_RIGHT, Color::DARK_YELLOW]]);
         }
+        Cli::out("> copying file > ", Color::DARK_GRAY);
         return copy($example->runPath, $targetPath);
     }
 
     private function updateIndex(array $list) : bool {
-#    - Single Classification Model: 'hub/single_classification.md'
         $yamlLines = [];
         foreach ($list as $example) {
             $fileName = Str::snake($example->name).'.md';
