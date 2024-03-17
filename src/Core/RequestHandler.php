@@ -5,10 +5,12 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Core\Data\Request;
 use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
+use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
@@ -17,6 +19,7 @@ use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
+use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\ValidationException;
@@ -31,6 +34,9 @@ class RequestHandler implements CanHandleRequest
     private ResponseModelFactory $responseModelFactory;
     private EventDispatcher $eventDispatcher;
     private CanHandleResponse $responseHandler;
+    private string $previousHash = '';
+    private Sequenceable $lastPartialResponse;
+    private int $previousSequenceLength = 1;
 
     public function __construct(
         CanCallFunction      $llm,
@@ -52,9 +58,15 @@ class RequestHandler implements CanHandleRequest
         $requestedModel = $this->responseModelFactory->fromRequest($request);
         if ($request->options['stream'] ?? false) {
             $this->eventDispatcher->addListener(
-                PartialJsonReceived::class,
-                function(PartialJsonReceived $event) use ($requestedModel) {
+                eventClass: PartialJsonReceived::class,
+                listener: function(PartialJsonReceived $event) use ($requestedModel) {
                     $this->processPartialResponse($event->partialJson, $requestedModel);
+                }
+            );
+            $this->eventDispatcher->addListener(
+                eventClass: StreamedFunctionCallCompleted::class,
+                listener: function(StreamedFunctionCallCompleted $event) use ($requestedModel) {
+                    $this->finalizePartialResponse($requestedModel);
                 }
             );
         }
@@ -134,12 +146,39 @@ class RequestHandler implements CanHandleRequest
     protected function processPartialResponse(string $partialJsonData, ResponseModel $responseModel) : void {
         $jsonData = (new JsonParser)->fix($partialJsonData);
         $result = $this->responseHandler->toPartialResponse($jsonData, $responseModel);
-        if ($result->isSuccess()) {
-            $partialResponse = $result->value();
-            $this->eventDispatcher->dispatch(new PartialResponseGenerated($partialResponse));
-        } else {
+        if ($result->isFailure()) {
             $errors = Arrays::toArray($result->error());
             $this->eventDispatcher->dispatch(new PartialResponseGenerationFailed($errors));
+            //throw new Exception(implode(';', $errors));
+            return;
+        }
+
+        // proceed if converting to object was successful
+        $partialResponse = clone $result->value();
+        $currentHash = hash('xxh3', json_encode($partialResponse));
+        if ($this->previousHash != $currentHash) {
+            // send partial response to listener only if new tokens changed resulting response object
+            $this->eventDispatcher->dispatch(new PartialResponseGenerated($partialResponse));
+            if (($partialResponse instanceof Sequenceable)) {
+                $this->processSequenceable($partialResponse);
+                $this->lastPartialResponse = clone $partialResponse;
+            }
+            $this->previousHash = $currentHash;
+        }
+    }
+
+    protected function processSequenceable(Sequenceable $partialResponse) : void {
+        $currentLength = count($partialResponse);
+        if ($currentLength <= $this->previousSequenceLength) {
+            return;
+        }
+        $this->previousSequenceLength = $currentLength;
+        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+    }
+
+    protected function finalizePartialResponse(ResponseModel $responseModel) : void {
+        if (($this->lastPartialResponse instanceof Sequenceable)) {
+            $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
         }
     }
 

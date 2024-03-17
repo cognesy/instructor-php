@@ -8,12 +8,15 @@ class BuildFromInstance extends AbstractBuilder
 {
     public function build(mixed $requestedModel) : ResponseModel
     {
-        return $this->makeInstanceResponseModel($requestedModel);
-    }
-
-    private function makeInstanceResponseModel(object $requestedModel) : ResponseModel {
         $class = get_class($requestedModel);
         $instance = $requestedModel;
+        return $this->makeInstanceResponseModel($class, $instance);
+    }
+
+    private function makeInstanceResponseModel(
+        string $class,
+        object $instance
+    ) : ResponseModel {
         $schema = $this->schemaFactory->schema($class);
         $jsonSchema = $schema->toArray($this->functionCallBuilder->onObjectRef(...));
         $functionCall = $this->functionCallBuilder->render(

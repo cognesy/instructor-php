@@ -129,7 +129,7 @@ class Instructor {
     }
 
     public function onPartialUpdate(callable $listener) : self {
-        $this->request->options['stream'] = true;
+        //$this->request->options['stream'] = true;
         $this->onPartialResponse = $listener;
         $this->eventDispatcher->addListener(PartialResponseGenerated::class, $this->handlePartialResponse(...));
         return $this;
@@ -153,7 +153,7 @@ class Instructor {
             $requestHandler = $this->config->get(CanHandleRequest::class);
             $responseResult = $requestHandler->respondTo($this->request);
             if ($responseResult->isFailure()) {
-                throw $responseResult->error();
+                throw new Exception($responseResult->error());
             }
             $this->eventDispatcher->dispatch(new ResponseGenerated($responseResult->value()));
             return $responseResult->value();

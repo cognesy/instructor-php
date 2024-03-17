@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
 use Cognesy\Instructor\Core\Data\ResponseModel;
-use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 class BuildFromSchema extends AbstractBuilder
 {
@@ -12,7 +12,7 @@ class BuildFromSchema extends AbstractBuilder
         return $this->makeSchemaResponseModel($requestedModel);
     }
 
-    private function makeSchemaResponseModel(ObjectSchema $requestedModel) : ResponseModel {
+    private function makeSchemaResponseModel(Schema $requestedModel) : ResponseModel {
         $schema = $requestedModel;
         $class = $schema->type->class;
         $instance = new $class;

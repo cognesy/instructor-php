@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
-use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Core\Data\ResponseModel;
 
-class BuildFromSchemaProvider extends AbstractBuilder
+class BuildFromJsonSchemaProvider extends AbstractBuilder
 {
     public function build(mixed $requestedModel) : ResponseModel
     {
@@ -21,10 +21,10 @@ class BuildFromSchemaProvider extends AbstractBuilder
 
     private function makeSchemaProviderResponseModel(
         string $class,
-        CanProvideSchema $instance
+        CanProvideJsonSchema $instance
     ) : ResponseModel {
-        $schema = $instance->toSchema($this->schemaFactory, $this->typeDetailsFactory);
-        $jsonSchema = $schema->toArray($this->functionCallBuilder->onObjectRef(...));
+        $jsonSchema = $instance->toJsonSchema();
+        $schema = $this->schemaBuilder->fromArray($jsonSchema);
         $functionCall = $this->functionCallBuilder->render(
             $jsonSchema,
             $this->functionName,

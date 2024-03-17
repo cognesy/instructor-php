@@ -47,7 +47,10 @@ class SchemaFactory
     public function schema(string $anyType) : Schema
     {
         if (!$this->schemaMap->has($anyType)) {
-            $this->schemaMap->register($anyType, $this->makeSchema($this->typeDetailsFactory->fromTypeName($anyType)));
+            $this->schemaMap->register(
+                $anyType,
+                $this->makeSchema($this->typeDetailsFactory->fromTypeName($anyType))
+            );
         }
         return $this->schemaMap->get($anyType);
     }
