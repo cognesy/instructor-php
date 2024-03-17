@@ -23,7 +23,6 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
-use Symfony\Component\Validator\Constraints as Assert;
 
 enum Role : string {
     case CEO = 'ceo';
@@ -36,20 +35,20 @@ class UserDetail
 {
     public string $name;
     public Role $role;
-    #[Assert\Positive]
     public int $age;
 }
 
 $user = (new Instructor)
-    ->wiretap(fn($event) => $event->print())
-    ->respond(
-        messages: [["role" => "user",  "content" => "Contact our CTO, Jason is -28 years old -- Tom"]],
+    ->request(
+        messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Tom"]],
         responseModel: UserDetail::class,
-        maxRetries: 2,
         options: ['stream' => true]
     )
-;
+    ->wiretap(fn($event) => $event->print())
+    ->get();
 
-assert($user->role == null);
+assert($user->name == "Jason");
+assert($user->role == Role::CTO);
+assert($user->age == 28);
 ?>
 ```

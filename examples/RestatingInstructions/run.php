@@ -22,7 +22,7 @@ class UserRole
     public string $instructions;
     /** Role description */
     public string $description;
-    /* Most likely job title */
+    /* Guess job title */
     public string $title;
 }
 
@@ -47,6 +47,11 @@ $user = ($instructor)->respond(
     messages: [["role" => "user",  "content" => $text]],
     responseModel: UserDetail::class,
 );
+
 dump($user);
+
+assert($user->name === "Jason");
+assert($user->age === 28);
+assert(!empty($user->role->title));
 ?>
 ```

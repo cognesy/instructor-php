@@ -41,8 +41,8 @@ $user = (new Instructor)->respond(
     maxRetries: 2
 );
 
-assert($user->name === "JASON");
-
 dump($user);
+
+assert($user->name === "JASON");
 ?>
 ```

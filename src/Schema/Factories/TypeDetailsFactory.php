@@ -77,14 +77,18 @@ class TypeDetailsFactory
      */
     protected function arrayType(string $typeSpec) : TypeDetails {
         $typeName = $this->getArrayType($typeSpec);
-        $instance = new TypeDetails('array', null, null, null, null);
-        $instance->nestedType = match ($typeName) {
+        $nestedType = match ($typeName) {
             'mixed' => throw new \Exception('Mixed type not supported'),
             'array' => throw new \Exception('Nested arrays not supported'),
             'int', 'string', 'bool', 'float' => $this->scalarType($typeName),
             default => $this->objectType($typeName),
         };
-        return $instance;
+        return new TypeDetails(
+            type: 'array',
+            class: null,
+            nestedType: $nestedType,
+            enumType: null,
+            enumValues: null);
     }
 
     /**
@@ -117,11 +121,13 @@ class TypeDetailsFactory
         if (!in_array($backingType, ['int', 'string'])) {
             throw new \Exception('Enum must be backed by a string or int');
         }
-        $instance = new TypeDetails('enum', $typeName, null, null, null);
-        $instance->class = $typeName;
-        $instance->enumType = $backingType;
-        $instance->enumValues = (new ClassInfo)->enumValues($typeName);
-        return $instance;
+        return new TypeDetails(
+            type: 'enum',
+            class: $typeName,
+            nestedType: null,
+            enumType: $backingType,
+            enumValues: (new ClassInfo)->enumValues($typeName)
+        );
     }
 
     /**

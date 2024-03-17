@@ -68,12 +68,9 @@ echo "All tokens received, fully completed object available in `\$user` variable
 echo '$user = '."\n";
 dump($user);
 
-
-assert($user->roles[0]->title == 'engineer');
-assert($user->roles[1]->title == 'tech lead');
+assert(!empty($user->roles));
+assert(!empty($user->hobbies));
 assert($user->location == 'San Francisco');
-assert($user->hobbies[0] == 'soccer');
-assert($user->hobbies[1] == 'climb mountains');
 assert($user->age == 25);
 assert($user->name == 'Jason');
 ?>

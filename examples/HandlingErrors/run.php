@@ -13,20 +13,20 @@ use Cognesy\Instructor\Instructor;
 
 class UserDetail
 {
-    public int $age;
     public string $name;
-    public ?string $role = null;
+    public int $age;
 }
 
 class MaybeUser
 {
-    public ?UserDetail $result = null;
+    public ?UserDetail $user = null;
+    public bool $noUserData = false;
+    /** If no user data, provide reason */
     public ?string $errorMessage = '';
-    public bool $error = false;
 
     public function get(): ?UserDetail
     {
-        return $this->error ? null : $this->result;
+        return $this->noUserData ? null : $this->user;
     }
 }
 
@@ -36,6 +36,10 @@ $user = (new Instructor)->respond(
 );
 
 dump($user);
+
+assert($user->noUserData);
+assert(!empty($user->errorMessage));
+assert($user->get() === null);
 ?>
 ```
 

@@ -28,7 +28,6 @@ class UserDetail
 Now we can use this data model to extract arbitrary properties from a text message
 in a form that is easier for future processing.
 
-
 ```php
 <?php
 $text = <<<TEXT
@@ -41,10 +40,10 @@ $user = (new Instructor)->respond(
     responseModel: UserDetail::class
 );
 
+dump($user);
+
 assert($user->age === 25);
 assert($user->name === "Jason");
 assert(!empty($user->properties));
-
-dump($user);
 ?>
 ```

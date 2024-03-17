@@ -49,7 +49,12 @@ $user = $instructor->respond(
     messages: [["role" => "user",  "content" => $text]],
     responseModel: UserDetail::class,
 );
+
 dump($user);
+
+assert($user->name === "Jason");
+assert($user->age === 28);
+assert(!empty($user->role->title));
 ?>
 ```
 

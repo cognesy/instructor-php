@@ -48,5 +48,7 @@ $relationships = (new Instructor)->respond(
 );
 
 dump($relationships);
+
+assert(!empty($relationships->users));
 ?>
 ```

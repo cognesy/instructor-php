@@ -19,7 +19,7 @@ class TimeRange {
 
 class UserDetail
 {
-    public int $name;
+    public string $name;
     /** Time range during which the user is working. */
     public TimeRange $workTime;
     /** Time range reserved for leisure activities. */
@@ -32,11 +32,12 @@ $user = (new Instructor)->respond(
     maxRetries: 2
 );
 
-assert($user->name === "Jason");
+dump($user);
+
+assert($user->name == "Jason");
 assert($user->workTime->startTime === 9);
 assert($user->workTime->endTime === 14);
 assert($user->leisureTime->startTime === 17);
 assert($user->leisureTime->endTime === 19);
-dump($user);
 ?>
 ```

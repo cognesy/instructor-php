@@ -32,14 +32,13 @@ $list = (new Instructor)
     ->request(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Sequence::of(Person::class),
-        maxRetries: 2,
         options: ['stream' => true]
     )
-    ->onEvent(SequenceUpdated::class, fn($event) => dump($event->items->last()))
-    //->onEvent(PartialResponseGenerated::class, fn($event) => dump($event->partialResponse))
+    ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->get();
 
 dump(count($list));
-//dump($list);
+
+assert(count($list) === 4);
 ?>
 ```

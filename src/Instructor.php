@@ -11,6 +11,7 @@ use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
+use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Exception;
 use Iterator;
 use Throwable;
@@ -25,6 +26,7 @@ class Instructor {
     private EventDispatcher $eventDispatcher;
     private $onError;
     private $onPartialResponse;
+    private $onSequenceUpdate;
     private $queuedEvents = [];
     private Request $request;
 
@@ -134,9 +136,21 @@ class Instructor {
         return $this;
     }
 
+    public function onSequenceUpdate(callable $listener) : self {
+        $this->onSequenceUpdate = $listener;
+        $this->eventDispatcher->addListener(SequenceUpdated::class, $this->handleSequenceUpdate(...));
+        return $this;
+    }
+
     private function handlePartialResponse(PartialResponseGenerated $event) : void {
         if (!is_null($this->onPartialResponse)) {
             ($this->onPartialResponse)($event->partialResponse);
+        }
+    }
+
+    private function handleSequenceUpdate(SequenceUpdated $event) : void {
+        if (!is_null($this->onSequenceUpdate)) {
+            ($this->onSequenceUpdate)($event->sequence);
         }
     }
 

@@ -38,7 +38,7 @@ class UserDetail
             return [];
         }
         return [[
-            'message' => "Number of properties must not more than 2.",
+            'message' => "Number of properties must be not more than 2.",
             'path' => 'properties',
             'value' => $this->name
         ]];
@@ -50,19 +50,16 @@ $text = <<<TEXT
     a small house in Alamo. He likes to play guitar.
 TEXT;
 
-try {
-    $user = (new Instructor)->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: UserDetail::class,
-        maxRetries: 0 // change to >0 to reattempt generation in case of validation error
-    );
+$user = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: UserDetail::class,
+    maxRetries: 1 // change to 0 to see validation error
+);
 
-    assert($user->age === 25);
-    assert($user->name === "Jason");
-    assert(count($user->properties) < 3);
-    dump($user);
-} catch (\Exception $e) {
-    dump("Max retries exceeded\nMessage: {$e->getMessage()}");
-}
+dump($user);
+
+assert($user->age === 25);
+assert($user->name === "Jason");
+assert(count($user->properties) < 3);
 ?>
 ```

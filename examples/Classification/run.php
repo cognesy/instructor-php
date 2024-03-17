@@ -52,7 +52,9 @@ Let's run an example to see if it correctly identifies a spam message.
 <?php
 // Test single-label classification
 $prediction = classify("Hello there I'm a Nigerian prince and I want to give you money");
-assert($prediction->classLabel == Label::SPAM);
+
 dump($prediction);
+
+assert($prediction->classLabel == Label::SPAM);
 ?>
 ```

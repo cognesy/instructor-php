@@ -8,12 +8,12 @@ use Cognesy\Instructor\Events\Event;
 class SequenceUpdated extends Event
 {
     public function __construct(
-        public Sequenceable $items
+        public Sequenceable $sequence
     ) {
         parent::__construct();
     }
 
     public function __toString() : string {
-        return json_encode($this->items);
+        return json_encode($this->sequence);
     }
 }

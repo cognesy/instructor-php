@@ -36,7 +36,8 @@ $list = (new Instructor)->respond(
     responseModel: UserDetails::class
 );
 
-assert(!empty($list->users));
 dump($list);
+
+assert(!empty($list->users));
 ?>
 ```

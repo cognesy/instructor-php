@@ -58,8 +58,9 @@ Finally, we test the multi-label classification function using a sample support 
 $ticket = "My account is locked and I can't access my billing info.";
 $prediction = multi_classify($ticket);
 
+dump($prediction);
+
 assert(in_array(Label::TECH_ISSUE, $prediction->labels));
 assert(in_array(Label::BILLING, $prediction->labels));
-dump($prediction);
 ?>
 ```

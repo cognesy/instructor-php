@@ -28,7 +28,8 @@ $user = (new Instructor)->respond(
     maxRetries: 2
 );
 
-assert($user->email === "jason@gmail.com");
 dump($user);
+
+assert($user->email === "jason@gmail.com");
 ?>
 ```
