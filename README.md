@@ -304,7 +304,7 @@ $list = (new Instructor)->respond(
 );
 ```
 
-See more about sequences in the [Sequences](data_model.md) section.
+See more about sequences in the [Sequences](docs/data_model.md) section.
 
 
 
