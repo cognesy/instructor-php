@@ -5,8 +5,7 @@ If you want to help, check out some of the issues. They could be anything from c
 
 ## TODOs
 
-- [ ] Support for iterables / collections (via ArrayAccess, Iterator)
-- [ ] Async and streaming support
+- [ ] Async support
 - [ ] Open source LLM support
-- [ ] Document creation of custom serializers, validators and LLMs
-- [ ] Public vs protected / private fields - document behavior
+- [ ] Documentation - custom serializers, validators and LLMs
+- [ ] Documentation - public vs protected / private fields

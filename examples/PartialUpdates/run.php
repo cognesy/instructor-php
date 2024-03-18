@@ -57,7 +57,7 @@ the UI.
 $text = <<<TEXT
     Jason is 25 years old, he is an engineer and tech lead. He lives in
     San Francisco. He likes to play soccer and climb mountains.
-TEXT;
+    TEXT;
 
 $user = (new Instructor)->request(
     messages: $text,

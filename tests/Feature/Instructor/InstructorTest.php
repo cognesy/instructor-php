@@ -4,6 +4,7 @@ namespace Tests\Feature;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Tests\Examples\Instructor\Person;
 use Tests\Examples\Instructor\EventSink;
 use Tests\MockLLM;
@@ -12,7 +13,7 @@ $isMock = true;
 $mockLLM = !$isMock ? null : MockLLM::get([
     '{"name":"Jason","age":28}'
 ]);
-$instructor = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM]);
+$instructor = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM]);
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($instructor, $text) {
@@ -63,7 +64,7 @@ it('throws exception if no onxError() provided', function () use ($isMock, $text
     $mockLLM = !$isMock ? null : MockLLM::get([
         '{"name":"Jason","age":28}'
     ]);
-    $instructor = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM]);
+    $instructor = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM]);
 
     $e = null;
     $thrownException = false;

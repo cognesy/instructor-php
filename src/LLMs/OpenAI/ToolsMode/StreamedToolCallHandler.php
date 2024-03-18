@@ -1,7 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\LLMs\OpenAI;
+namespace Cognesy\Instructor\LLMs\OpenAI\ToolsMode;
 
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
@@ -18,20 +19,20 @@ use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
 
-class StreamedFunctionCallHandler
+class StreamedToolCallHandler
 {
     public function __construct(
         private EventDispatcher $eventDispatcher,
         private Client $client,
         private array $request,
+        private ResponseModel $responseModel,
     ) {}
 
     /**
      * Handle streamed chat call
      */
     public function handle() : Result {
-        $responseJson = '';
-        $toolCalls = [];
+        // get stream
         try {
             $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
             $stream = $this->client->chat()->createStreamed($this->request);
@@ -40,6 +41,10 @@ class StreamedFunctionCallHandler
             $this->eventDispatcher->dispatch($event);
             return Result::failure($event);
         }
+
+        // process stream
+        $responseJson = '';
+        $toolCalls = [];
         foreach($stream as $response){
             $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
             $maybeFunctionName = $response->choices[0]->delta->toolCalls[0]->function->name ?? null;
@@ -71,13 +76,21 @@ class StreamedFunctionCallHandler
             //    return Result::success(new LLMResponse($toolCalls, $finishReason, $response->toArray(), true));
             //}
         }
+        // check if there are any toolCalls
+        if (count($toolCalls) === 0) {
+            return Result::failure(new RequestToLLMFailed($this->request, ['No tool calls found in the response']));
+        }
         // finalize last function call
         if (count($toolCalls) > 0) {
             $this->finalizeFunctionCall($toolCalls, $responseJson);
         }
         // handle finishReason other than 'stop'
-        $finishReason = $response->choices[0]->finishReason ?? null;
-        $response = new LLMResponse($toolCalls, $finishReason, $response->toArray(), true);
+        $response = new LLMResponse(
+            toolCalls: $toolCalls,
+            finishReason: ($response->choices[0]->finishReason ?? null),
+            rawData: $response->toArray(),
+            isComplete: true,
+        );
         $this->eventDispatcher->dispatch(new StreamedResponseFinished($response));
         return Result::success($response);
     }
@@ -92,15 +105,14 @@ class StreamedFunctionCallHandler
         return $newFunctionCall;
     }
 
-    private function finalizeFunctionCall(array $toolCalls, string $responseJson) {
+    private function finalizeFunctionCall(array $toolCalls, string $responseJson) : void {
         /** @var FunctionCall $currentFunctionCall */
         $currentFunctionCall = $toolCalls[count($toolCalls) - 1];
         $currentFunctionCall->functionArguments = $responseJson;
         $this->eventDispatcher->dispatch(new StreamedFunctionCallCompleted($currentFunctionCall));
     }
 
-    private function updateFunctionCall(array $toolCalls, string $responseJson)
-    {
+    private function updateFunctionCall(array $toolCalls, string $responseJson) : void {
         /** @var FunctionCall $currentFunctionCall */
         $currentFunctionCall = $toolCalls[count($toolCalls) - 1];
         $currentFunctionCall->functionArguments = $responseJson;

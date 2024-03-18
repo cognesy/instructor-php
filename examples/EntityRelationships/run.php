@@ -40,7 +40,7 @@ $text = <<<TEXT
     Jason is 25 years old. He is a Python programmer of Apex website.
     Amanda is a contractor working with Jason on Apex website. John is
     40yo and he's CEO - Jason reports to him.
-TEXT;
+    TEXT;
 
 $relationships = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],

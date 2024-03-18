@@ -4,6 +4,7 @@ namespace Tests;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Tests\Examples\Complex\ProjectEvent;
 use Tests\Examples\Complex\ProjectEvents;
 use Tests\Examples\Complex\Stakeholder;
@@ -22,7 +23,7 @@ it('supports simple properties', function () use ($isMock) {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
+    $person = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM])->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     );
@@ -39,7 +40,7 @@ it('supports enum properties', function () use ($isMock) {
     ]);
 
     $text = "His name is Jason, he is 28 years old. He is self-employed.";
-    $person = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
+    $person = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM])->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithJob::class,
     );
@@ -57,7 +58,7 @@ it('supports object type property', function () use ($isMock) {
     ]);
 
     $text = "His name is Jason, he is 28 years old. He lives in San Francisco.";
-    $person = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
+    $person = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM])->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddress::class,
     );
@@ -75,7 +76,7 @@ it('supports arrays of objects property', function () use ($isMock) {
     ]);
 
     $text = "His name is Jason, he is 28 years old. He lives in USA - he works from his home office in San Francisco, he also has an apartment in New York.";
-    $person = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM])->respond(
+    $person = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM])->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddresses::class,
     );
@@ -93,7 +94,7 @@ it('can extract complex, multi-nested structure', function ($text) use ($isMock)
         '{"events":[{"title":"Project Status RED","description":"Acme Insurance project to implement SalesTech CRM solution is currently in RED status due to delayed delivery of document production system, led by 3rd party vendor - Alfatech.","type":"risk","status":"open","stakeholders":[{"name":"Alfatech","role":"vendor"},{"name":"Acme","role":"customer"}],"date":"2021-09-01"},{"title":"Ecommerce Track Delay","description":"Due to dependencies, the ecommerce track will be delayed by 2 sprints because of the delayed delivery of the document production system.","type":"issue","status":"open","stakeholders":[{"name":"Acme","role":"customer"},{"name":"SysCorp","role":"system integrator"}]},{"title":"Test Data Availability Issue","description":"customer is not able to provide the test data for the ecommerce track, which will impact the stabilization schedule unless resolved by the end of the month.","type":"issue","status":"open","stakeholders":[{"name":"Acme","role":"customer"},{"name":"SysCorp","role":"system integrator"}]},{"title":"Steerco Maintains Schedule","description":"Steerco insists on maintaining the release schedule due to marketing campaign already ongoing, regardless of the project issues.","type":"issue","status":"open","stakeholders":[{"name":"Acme","role":"customer"}]},{"title":"Communication Issues","description":"SalesTech team struggling with communication issues as SysCorp team has not shown up on 2 recent calls, leading to lack of insight. This has been escalated to SysCorp\'s leadership team.","type":"issue","status":"open","stakeholders":[{"name":"SysCorp","role":"system integrator"},{"name":"Acme","role":"customer"}]},{"title":"Integration Proxy Issue Resolved","description":"The previously reported Integration Proxy connectivity issue, which was blocking the policy track, has been resolved.","type":"progress","status":"closed","stakeholders":[{"name":"SysCorp","role":"system integrator"}],"date":"2021-08-30"},{"title":"Finalized Production Deployment Plan","description":"Production deployment plan has been finalized on Aug 15th and is awaiting customer approval.","type":"progress","status":"open","stakeholders":[{"name":"Acme","role":"customer"}],"date":"2021-08-15"}]}'
     ]);
 
-    $instructor = (new Instructor)->withConfig([CanCallFunction::class => $mockLLM]); //$mockLLM
+    $instructor = (new Instructor)->withConfig([OpenAIToolCaller::class => $mockLLM]); //$mockLLM
     /** @var \Tests\Examples\Complex\ProjectEvents $events */
     $events = $instructor
 //        ->wiretap(fn($e)=>dump($e->toConsole()))

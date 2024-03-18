@@ -1,12 +1,8 @@
 # Instructor Hub
 
-Welcome to instructor hub, the goal of this project is to provide a set of tutorials and examples to help you get started, and allow you to pull in the code you need to get started with `instructor`
+Welcome to Instructor Hub. The goal of this section is to provide a set of tutorials and examples to help you get started, and allow you to pull in the code you need to get started with Instructor.
 
-Make sure you're using the latest version of `instructor` by running:
 
-```bash
-composer install cognesy/instructor-php
-```
 
 ## Contributing
 
@@ -81,7 +77,7 @@ We're looking for a bunch more hub examples, if you have a tutorial or example y
 - [ ] Batch Data Processing examples
 - [ ] Batch Data Processing examples with Cache
 
-We're also looking for help to catch up with the features available in Instructor for Python (see: https://github.com/jxnl/instructor/blob/main/docs/hub/index.md).
+We're also looking for help to catch up with the features available in Instructor Hub for Python (see: https://github.com/jxnl/instructor/blob/main/docs/hub/index.md).
 
 - [ ] Better viewer with pagination
 - [ ] Examples database

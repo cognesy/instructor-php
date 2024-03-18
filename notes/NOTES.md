@@ -1,9 +1,84 @@
 # NOTES
 
 
-## Public vs private/protected fields
+
+## Gaps or issues in docs or code
+
+### Instructor init
+
+Currently, Instructor uses Configuration::fresh() to always get new instance of
+configuration. If switched to auto(), which returns singleton instance, we get
+errors in tests - there's some problem to be diagnosed, its unclear why it happens.
+
+### Handling of union types
+
+Currently not supported, needs to be supported to allow better interaction with external code, eg. Carbon dates.
+
+### Handling of some usual data types
+
+ - date/time - via Carbon?
+ - currency
+
+### Integrations with DTO libraries
+
+ - Spatie data object
+ - Symfony DTO
+ - Laravel DTO
+
+### Public vs private/protected fields
 
 Document and write tests around the behavior of public vs private/protected fields.
+
+### Full customization of OpenAI client
+
+Not documented, for sure unclear to users.
+
+### Code coverage
+
+Catch up with the latest additions.
+
+### Instructor::response()/request() default params
+
+Default values are duplicated across method declarations and Request class.
+Clean it up.
+
+### Usage data for streamed responses
+
+Usage for streamed responses is available via events, but not via rawResponse().
+Should we provide some general way to handle usage data across LLM drivers? 
+
+
+
+
+## Design decisions to revisit
+
+### Sequenceable/Sequence::toSchema()
+
+Currently:
+
+```php
+public function toSchema(
+    SchemaFactory $schemaFactory,
+    TypeDetailsFactory $typeDetailsFactory,
+): Schema {}
+```
+
+Should be changed to:
+
+```php
+public function toSchema(): Schema {}
+```
+
+But I need to figure out how to provide access to the SchemaFactory and TypeDetailsFactory.
+
+### ResponseHandler
+
+Currently, it's a big pile of `ifs`, should be refactored to a chain of responsibility or pipeline.
+
+### Handling of Sequenceables and Partials
+
+There must be a better, more generic way to do it.
+
 
 
 ## Research

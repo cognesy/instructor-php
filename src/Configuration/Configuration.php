@@ -6,18 +6,22 @@ use function Cognesy\config\autowire;
 
 class Configuration
 {
-    /** @var ComponentConfig[] */
-    public array $config = [];
-    /** @var object[] */
+    /** @var ComponentConfig[] array of component configurations */
+    private array $config = [];
+    /** @var object[] array of component instances */
     private array $instances = [];
-    /** @var int[] */
+    /** @var int[] uses to prevent dependency cycles */
     private array $trace = [];
-    private bool $allowOverride = true;
+    private bool $allowOverride = true; // does configuration allow override
 
     private static ?Configuration $instance = null;
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // ACCESS
+
     /**
-     * Get the singleton of the configuration
+     * Get the singleton of empty configuration
      */
     static public function instance() : Configuration {
         if (is_null(self::$instance)) {
@@ -27,7 +31,7 @@ class Configuration
     }
 
     /**
-     * Auto-wire configuration
+     * Get singleton of autowired configuration
      */
     static public function auto(array $overrides = []) : Configuration {
         if (is_null(self::$instance)) {
@@ -37,11 +41,15 @@ class Configuration
     }
 
     /**
-     * Create a fresh configuration
+     * Always new, autowired configuration; useful mostly for tests
      */
     static public function fresh(array $overrides = []) : Configuration {
         return autowire(new Configuration())->override($overrides);
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // USE
 
     /**
      * Get a component configuration for provided name (recommended: class or interface)
@@ -51,41 +59,10 @@ class Configuration
     }
 
     /**
-     * Declare a component configuration
+     * Does component exist
      */
-    public function declare(
-        string $class,
-        string $name = null,
-        array $context = [],
-        callable $instanceCall = null,
-        bool $injectContext = true,
-    ) : self {
-        if (is_null($name)) {
-            $name = $class;
-        }
-        $this->register(new ComponentConfig($name, $class, $context, $instanceCall, $injectContext));
-        return $this;
-    }
-
-    /**
-     * Register a component for provided configuration instance
-     */
-    public function register(ComponentConfig $componentConfig) : self {
-        $componentName = $componentConfig->name;
-        if (!$this->allowOverride && isset($this->config[$componentName])) {
-            throw new Exception("Component $componentName already defined");
-        }
-        $this->config[$componentName] = $componentConfig;
-        return $this;
-    }
-
-    /**
-     * Get a reference to a component
-     */
-    public function reference(string $componentName) : callable {
-        return function () use ($componentName) {
-            return $this->resolveReference($componentName);
-        };
+    public function has(string $componentName) : mixed {
+        return isset($this->config[$componentName]);
     }
 
     /**
@@ -95,10 +72,22 @@ class Configuration
         return $this->resolveReference($componentName);
     }
 
-    public function context(array $context) : self {
-        foreach ($context as $name => $value) {
-            $this->declare($name, context: [$name => $value]);
+    /**
+     * Get a component instance
+     */
+    public function getConfig(string $componentName) : mixed {
+        return $this->config[$componentName];
+    }
+
+    /**
+     * Register a component with provided component configuration instance
+     */
+    public function register(ComponentConfig $componentConfig) : self {
+        $componentName = $componentConfig->name;
+        if (!$this->allowOverride && isset($this->config[$componentName])) {
+            throw new Exception("Component $componentName already defined");
         }
+        $this->config[$componentName] = $componentConfig;
         return $this;
     }
 
@@ -112,16 +101,56 @@ class Configuration
         }
         // ...apply
         foreach ($configOverrides as $name => $value) {
-            $this->declare($name, instanceCall: fn() => $value);
+            $this->declare($name, getInstance: fn() => $value);
+        }
+        return $this;
+    }
+
+    /**
+     * Set context values
+     */
+    public function context(array $context) : self {
+        foreach ($context as $name => $value) {
+            $this->declare($name, context: [$name => $value]);
         }
         return $this;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // CONFIGURE
+
+    /**
+     * Declare a component configuration
+     */
+    public function declare(
+        string   $class,
+        string   $name = null,
+        array    $context = [],
+        callable $getInstance = null,
+        bool     $injectContext = true,
+    ) : self {
+        if (is_null($name)) {
+            $name = $class;
+        }
+        $this->register(new ComponentConfig($name, $class, $context, $getInstance, $injectContext));
+        return $this;
+    }
+
+    /**
+     * Get a reference to a component
+     */
+    public function reference(string $componentName) : callable {
+        return function () use ($componentName) {
+            return $this->resolveReference($componentName);
+        };
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     private function resolveReference(string $componentName) : mixed
     {
-        if (!isset($this->config[$componentName])) {
+        if (!$this->has($componentName)) {
             throw new Exception('Component ' . $componentName . ' is not defined');
         }
         if (isset($this->instances[$componentName])) {

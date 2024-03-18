@@ -1,9 +1,11 @@
 <?php
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
@@ -13,7 +15,6 @@ use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Exception;
-use Iterator;
 use Throwable;
 
 /**
@@ -22,7 +23,7 @@ use Throwable;
  * Use respond() method to generate structured responses from LLM calls.
  */
 class Instructor {
-    public Configuration $config;
+    private Configuration $config;
     private EventDispatcher $eventDispatcher;
     private $onError;
     private $onPartialResponse;
@@ -48,6 +49,33 @@ class Instructor {
     }
 
     /**
+     * Returns the current configuration
+     */
+    public function getConfig() : Configuration {
+        return $this->config;
+    }
+
+    /**
+     * Returns the current configuration
+     */
+    public function getComponentConfig(string $component) : ?ComponentConfig {
+        if (!$this->config->has($component)) {
+            return null;
+        }
+        return $this->config->getConfig($component);
+    }
+
+    /**
+     * Returns the current configuration
+     */
+    public function getComponent(string $component) : ?object {
+        if (!$this->config->has($component)) {
+            return null;
+        }
+        return $this->config->get($component);
+    }
+
+    /**
      * Sets the request to be used for the next call
      */
     public function withRequest(Request $request) : self {
@@ -65,7 +93,8 @@ class Instructor {
         array $options = [],
         string $functionName = 'extract_data',
         string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors:"
+        string $retryPrompt = "Recall function correctly, fix following errors:",
+        Mode $mode = Mode::Tools
     ) : self {
         $request = new Request(
             $messages,
@@ -75,7 +104,8 @@ class Instructor {
             $options,
             $functionName,
             $functionDescription,
-            $retryPrompt
+            $retryPrompt,
+            $mode
         );
         return $this->withRequest($request);
     }
@@ -91,7 +121,8 @@ class Instructor {
         array $options = [],
         string $functionName = 'extract_data',
         string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors:"
+        string $retryPrompt = "Recall function correctly, fix following errors:",
+        Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
             $messages,
@@ -101,7 +132,8 @@ class Instructor {
             $options,
             $functionName,
             $functionDescription,
-            $retryPrompt
+            $retryPrompt,
+            $mode
         );
         return $this->get();
     }

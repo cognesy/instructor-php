@@ -1,4 +1,4 @@
-# Example: Text Classification using LLM
+# Text Classification using LLM
 
 This tutorial showcases how to implement text classification tasks—specifically, single-label and multi-label classifications—using LLM (via OpenAI API), PHP's **`enums`** and classes.
 
@@ -9,9 +9,6 @@ This tutorial showcases how to implement text classification tasks—specificall
 
 ## Single-Label Classification
 
-!!! example
-
-    Run full example from CLI: `php examples/Classification/run.php`
 
 
 ### Defining the Structures
@@ -32,6 +29,7 @@ class SinglePrediction {
     public Label $classLabel;
 }
 ```
+
 
 ### Classifying Text
 
@@ -56,6 +54,7 @@ function classify(string $data) : SinglePrediction {
     );
 }
 ```
+
 
 ### Testing and Evaluation
 

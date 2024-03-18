@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Contracts;
 
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Result;
 
 /**
@@ -9,8 +10,7 @@ use Cognesy\Instructor\Utils\Result;
 interface CanCallFunction {
     public function callFunction(
         array $messages,
-        string $functionName,
-        array $functionSchema,
+        ResponseModel $responseModel,
         string $model,
         array $options
     ) : Result;

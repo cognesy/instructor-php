@@ -59,7 +59,7 @@ test('it can override components for testing', function () {
 
 test('it can use a factory method to create instances', function () {
     $config = Configuration::fresh();
-    $config->declare(TestComponentA::class, instanceCall: function () {
+    $config->declare(TestComponentA::class, getInstance: function () {
         return new TestComponentA(42);
     });
 

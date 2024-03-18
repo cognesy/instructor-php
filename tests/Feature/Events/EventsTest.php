@@ -32,6 +32,7 @@ use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationFailed;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Tests\Examples\Extraction\Person;
 use Tests\Examples\Instructor\EventSink;
 use Tests\MockLLM;
@@ -47,7 +48,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
     $events = new EventSink();
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
-        ->withConfig([CanCallFunction::class => $mockLLM])
+        ->withConfig([OpenAIToolCaller::class => $mockLLM])
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -103,7 +104,7 @@ it('handles events for simple case - validation failure', function ($event) use 
     ]);
     $events = new EventSink();
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
-        ->withConfig([CanCallFunction::class => $mockLLM])
+        ->withConfig([OpenAIToolCaller::class => $mockLLM])
         ->onError(fn($e) => $events->onEvent($e))
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
@@ -157,7 +158,7 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     ]);
     $events = new EventSink();
     $age = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
-        ->withConfig([CanCallFunction::class => $mockLLM])
+        ->withConfig([OpenAIToolCaller::class => $mockLLM])
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Scalar::integer('age'),

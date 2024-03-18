@@ -4,14 +4,14 @@ namespace Tests;
 
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
-use Cognesy\Instructor\LLMs\OpenAI\OpenAIFunctionCaller;
+use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Cognesy\Instructor\Utils\Result;
 use Mockery;
 
 class MockLLM
 {
-    static public function get(array $args) : ?OpenAIFunctionCaller {
-        $mockLLM = Mockery::mock(OpenAIFunctionCaller::class);
+    static public function get(array $args) : ?OpenAIToolCaller {
+        $mockLLM = Mockery::mock(OpenAIToolCaller::class);
         $list = [];
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);

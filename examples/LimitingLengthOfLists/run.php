@@ -48,7 +48,7 @@ class UserDetail
 $text = <<<TEXT
     Jason is 25 years old. He is a programmer. He has a car. He lives in
     a small house in Alamo. He likes to play guitar.
-TEXT;
+    TEXT;
 
 $user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],

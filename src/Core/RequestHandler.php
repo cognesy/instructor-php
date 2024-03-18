@@ -30,26 +30,17 @@ use Exception;
 
 class RequestHandler implements CanHandleRequest
 {
-    private CanCallFunction $llm;
-    private ResponseModelFactory $responseModelFactory;
-    private EventDispatcher $eventDispatcher;
-    private CanHandleResponse $responseHandler;
     private string $previousHash = '';
     private Sequenceable $lastPartialResponse;
     private int $previousSequenceLength = 1;
 
     public function __construct(
-        CanCallFunction      $llm,
-        ResponseModelFactory $responseModelFactory,
-        EventDispatcher      $eventDispatcher,
-        CanHandleResponse    $responseHandler,
+        private FunctionCallerFactory $functionCallerFactory,
+        private ResponseModelFactory $responseModelFactory,
+        private EventDispatcher $eventDispatcher,
+        private CanHandleResponse $responseHandler,
     )
-    {
-        $this->llm = $llm;
-        $this->responseModelFactory = $responseModelFactory;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->responseHandler = $responseHandler;
-    }
+    {}
 
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
@@ -84,12 +75,14 @@ class RequestHandler implements CanHandleRequest
         $retries = 0;
         $messages = $request->messages();
         while ($retries <= $request->maxRetries) {
-            // run LLM inference
+            // get function caller instance
+            $functionCaller = $this->functionCallerFactory->fromRequest($request);
             $this->eventDispatcher->dispatch(new FunctionCallRequested($messages, $responseModel, $request));
-            $llmResult = $this->llm->callFunction(
+
+            // run LLM inference
+            $llmResult = $functionCaller->callFunction(
                 $messages,
-                $responseModel->functionName,
-                $responseModel->functionCall,
+                $responseModel,
                 $request->model,
                 $request->options
             );
@@ -97,10 +90,14 @@ class RequestHandler implements CanHandleRequest
                 $this->eventDispatcher->dispatch(new ResponseGenerationFailed(Arrays::toArray($llmResult->error())));
                 return $llmResult;
             }
+            $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmResult));
+
+            // get response JSON data
+            // TODO: handle multiple tool calls
+            $jsonData = $llmResult->value()->toolCalls[0]->functionArguments ?? '';
+            // TODO: END OF TODO
 
             // process LLM response
-            $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmResult));
-            $jsonData = $llmResult->value()->toolCalls[0]->functionArguments;
             $processingResult = $this->processResponse($jsonData, $responseModel);
             if ($processingResult->isSuccess()) {
                 return $processingResult;

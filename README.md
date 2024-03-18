@@ -667,11 +667,10 @@ Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal depen
 
 ## TODOs
 
-- [ ] Support for iterables / collections (via ArrayAccess, Iterator)
-- [ ] Async
-- [ ] Document creation of custom serializers, validators and LLMs
+- [ ] Async support
 - [ ] Open source LLM support
-- [ ] Public vs protected / private fields - document behavior
+- [ ] Documentation - custom serializers, validators and LLMs
+- [ ] Documentation - public vs protected / private fields
 
 
 ## Contributing

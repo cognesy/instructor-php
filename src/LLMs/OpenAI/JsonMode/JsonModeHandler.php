@@ -1,23 +1,25 @@
 <?php
+namespace Cognesy\Instructor\LLMs\OpenAI\JsonMode;
 
-namespace Cognesy\Instructor\LLMs\OpenAI;
-
+use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
+use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
+use OpenAI\Responses\Chat\CreateResponse;
 
-class FunctionCallHandler
+class JsonModeHandler
 {
     public function __construct(
         private EventDispatcher $eventDispatcher,
         private Client $client,
         private array $request,
+        private ResponseModel $responseModel,
     ) {}
 
     /**
@@ -35,16 +37,29 @@ class FunctionCallHandler
             return Result::failure($event);
         }
         // which functions have been selected - if parallel tools on
-        $toolCalls = [];
-        foreach ($response->choices[0]->message->toolCalls as $data) {
-            $toolCalls[] = new FunctionCall(
-                $data->id ?? '',
-                $data->function->name ?? '',
-                $data->function->arguments ?? ''
-            );
+        $toolCalls = $this->getFunctionCalls($response);
+        if (empty($toolCalls)) {
+            return Result::failure(new RequestToLLMFailed($this->request, ['No tool calls found in the response']));
         }
         // handle finishReason other than 'stop'
-        $finishReason = $response->choices[0]->finishReason ?? null;
-        return Result::success(new LLMResponse($toolCalls, $finishReason, $response->toArray(), true));
+        return Result::success(new LLMResponse(
+                toolCalls: $toolCalls,
+                finishReason: ($response->choices[0]->finishReason ?? null),
+                rawData: $response->toArray(),
+                isComplete: true)
+        );
+    }
+
+    private function getFunctionCalls(CreateResponse $response) : array {
+        if (!isset($response->choices[0]->message->content)) {
+            return [];
+        }
+        $toolCalls = [];
+        $toolCalls[] = new FunctionCall(
+            toolCallId: '', // ???
+            functionName: $this->responseModel->functionName,
+            functionArguments: $response->choices[0]->message->content
+        );
+        return $toolCalls;
     }
 }

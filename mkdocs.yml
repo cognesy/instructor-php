@@ -134,7 +134,8 @@ nav:
   - Concepts:
     - Philosophy: 'concepts/philosophy.md'
     - Prompting Tips: 'concepts/prompting.md'
-    - Instructor Internals: 'concepts/internals.md'
+    - Search / RAG: 'concepts/search.md'
+    - Classification: 'concepts/classification.md'
 #    - Models: 'concepts/models.md'
 #    - Fields: 'concepts/fields.md'
 #    - Types: 'concepts/types.md'
@@ -154,10 +155,18 @@ nav:
 #    - Alias: 'concepts/alias.md'
 #    - Enums: 'concepts/enums.md'
 #    - Type Adapter: 'concepts/typeadapter.md'
-  - Cookbook:
-    - Cookbooks: 'examples/index.md'
-    - Text Classification: 'examples/classification.md'
-    - Expanding Search Queries (RAG): 'examples/search.md'
+  - Internals:
+      - Overview: 'internals/index.md'
+      - Instructor class: 'internals/instructor.md'
+      - Configuration: 'internals/configuration.md'
+      - Lifecycle: 'internals/lifecycle.md'
+      - Response models: 'internals/response_models.md'
+      - Contracts: 'internals/contracts.md'
+      - Events: 'internals/events.md'
+#  - Cookbook:
+#    - Cookbooks: 'examples/index.md'
+#    - Text Classification: 'examples/classification.md'
+#    - Expanding Search Queries (RAG): 'examples/search.md'
 #    - Batch Classification (User Defined): 'examples/batch_classification.md'
 #    - LLM Self Critique: 'examples/self_critique.md'
 #    - Extracting Tables with GPT-V: 'examples/extracting_tables.md'
