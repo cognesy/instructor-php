@@ -14,6 +14,7 @@ use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\LLMs\OpenAI\JsonMode\OpenAIJsonCaller;
+use Cognesy\Instructor\LLMs\OpenAI\MdJsonMode\OpenAIMdJsonCaller;
 use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
@@ -58,13 +59,21 @@ function autowire(Configuration $config) : Configuration
         ]
     );
     $config->declare(
+        class: OpenAIMdJsonCaller::class,
+        context: [
+            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'client' => $config->reference(Client::class),
+        ]
+    );
+    $config->declare(
         class: FunctionCallerFactory::class,
         context: [
             'modeHandlers' => [
                 Mode::Tools->value => $config->reference(OpenAIToolCaller::class),
                 Mode::Json->value => $config->reference(OpenAIJsonCaller::class),
+                Mode::MdJson->value => $config->reference(OpenAIMdJsonCaller::class),
             ],
-            'forceMode' => Mode::Json,
+            //'forceMode' => Mode::Tools,
         ]
     );
     $config->declare(

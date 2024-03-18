@@ -1,15 +1,17 @@
 <?php
-namespace Cognesy\Instructor\LLMs\OpenAI\JsonMode;
+namespace Cognesy\Instructor\LLMs\OpenAI\MdJsonMode;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Core\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\LLMs\OpenAI\JsonMode\JsonModeHandler;
+use Cognesy\Instructor\LLMs\OpenAI\JsonMode\StreamedJsonModeCallHandler;
 use Cognesy\Instructor\Utils\Result;
 use OpenAI\Client;
 
-class OpenAIJsonCaller implements CanCallFunction
+class OpenAIMdJsonCaller implements CanCallFunction
 {
-    private string $prompt = "\nRespond with JSON. Response must follow this JSON Schema:\n";
+    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {}``` codeblock. Do not return JSONSchema. Response must follow this JSON Schema:\n";
 
     public function __construct(
         private EventDispatcher $eventDispatcher,
@@ -29,7 +31,6 @@ class OpenAIJsonCaller implements CanCallFunction
         $request = array_merge([
             'model' => $model,
             'messages' => $messages,
-            'response_format' => ['type' => 'json_object'],
         ], $options);
 
         return match($options['stream'] ?? false) {

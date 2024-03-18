@@ -7,7 +7,7 @@ class LLMResponse
     public function __construct(
         /** @var FunctionCall[] */
         public array $toolCalls,
-        public string $finishReason,
+        public ?string $finishReason,
         public mixed $rawData,
         public bool $isComplete = false,
     ) {}

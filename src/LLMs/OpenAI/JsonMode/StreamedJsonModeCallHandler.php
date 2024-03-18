@@ -14,6 +14,7 @@ use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
@@ -48,7 +49,9 @@ class StreamedJsonModeCallHandler
         $newFunctionCall = $this->newFunctionCall();
         $toolCalls[] = $newFunctionCall;
         $responseJson = '';
+        $lastResponse = null;
         foreach($stream as $response){
+            $lastResponse = $response;
             $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
             $maybeArgumentChunk = $response->choices[0]->delta->content ?? null;
 
@@ -57,27 +60,26 @@ class StreamedJsonModeCallHandler
             }
             $this->eventDispatcher->dispatch(new ChunkReceived($maybeArgumentChunk));
             $responseJson .= $maybeArgumentChunk;
-            $this->eventDispatcher->dispatch(new PartialJsonReceived($responseJson));
+            $this->eventDispatcher->dispatch(new PartialJsonReceived(Json::extractPartial($responseJson)));
             $this->updateFunctionCall($toolCalls, $responseJson);
         }
-
         // check if there are any toolCalls
         if (count($toolCalls) === 0) {
             return Result::failure(new RequestToLLMFailed($this->request, ['No tool calls found in the response']));
         }
         // finalize last function call
         if (count($toolCalls) > 0) {
-            $this->finalizeFunctionCall($toolCalls, $responseJson);
+            $this->finalizeFunctionCall($toolCalls, Json::extract($responseJson));
         }
         // handle finishReason other than 'stop'
-        $response = new LLMResponse(
+        $llmResponse = new LLMResponse(
             toolCalls: $toolCalls,
-            finishReason: ($response->choices[0]->finishReason ?? null),
-            rawData: $response->toArray(),
+            finishReason: ($lastResponse->choices[0]->finishReason ?? ''),
+            rawData: $lastResponse?->toArray(),
             isComplete: true,
         );
-        $this->eventDispatcher->dispatch(new StreamedResponseFinished($response));
-        return Result::success($response);
+        $this->eventDispatcher->dispatch(new StreamedResponseFinished($llmResponse));
+        return Result::success($llmResponse);
     }
 
     private function newFunctionCall() : FunctionCall {

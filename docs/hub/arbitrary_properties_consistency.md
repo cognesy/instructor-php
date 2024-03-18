@@ -29,11 +29,11 @@ class UserDetails
 $text = <<<TEXT
     Jason is 25 years old. He is a Python programmer. Amanda is UX designer.
     John is 40yo and he's CEO.
-TEXT;
+    TEXT;
 
 $list = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
-    responseModel: UserDetails::class
+    responseModel: UserDetails::class,
 );
 
 dump($list);

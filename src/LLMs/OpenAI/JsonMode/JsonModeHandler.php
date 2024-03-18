@@ -8,6 +8,7 @@ use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\LLMs\FunctionCall;
 use Cognesy\Instructor\LLMs\LLMResponse;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
@@ -51,14 +52,15 @@ class JsonModeHandler
     }
 
     private function getFunctionCalls(CreateResponse $response) : array {
-        if (!isset($response->choices[0]->message->content)) {
+        if (!($content = $response->choices[0]->message->content)) {
             return [];
         }
+        $jsonData = Json::extract($content);
         $toolCalls = [];
         $toolCalls[] = new FunctionCall(
             toolCallId: '', // ???
             functionName: $this->responseModel->functionName,
-            functionArguments: $response->choices[0]->message->content
+            functionArguments: $jsonData
         );
         return $toolCalls;
     }

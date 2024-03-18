@@ -67,7 +67,6 @@ Response model class is a plain PHP class with typehints specifying the types of
 
 ```php
 use Cognesy\Instructor\Instructor;
-use OpenAI;
 
 // Step 1: Define target data structure(s)
 class Person {

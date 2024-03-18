@@ -36,7 +36,7 @@ function partialUpdate($partial) {
     echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
 
     // Print explanation
-    echo "Waiting 250ms on every token received to make changes easier to observe...\n";
+    echo "Waiting 250ms on every update received to make changes easier to observe...\n";
 
     // Display the partial object
     dump($partial);

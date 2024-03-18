@@ -33,7 +33,7 @@ $text = <<<TEXT
 
 $list = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
-    responseModel: UserDetails::class
+    responseModel: UserDetails::class,
 );
 
 dump($list);

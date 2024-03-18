@@ -40,7 +40,7 @@ class UserDetail
 $text = <<<TEXT
     I'm Jason, I'm 28 yo. I am the head of Apex Software, responsible for
     driving growth of our company.
-TEXT;
+    TEXT;
 
 $instructor = new Instructor;
 $user = ($instructor)->respond(
