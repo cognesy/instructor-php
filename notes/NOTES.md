@@ -52,6 +52,9 @@ Should we provide some general way to handle usage data across LLM drivers?
 To handle types like Carbon. Register adapters for given type and
 use them in sequence until first succeeds.
 
+### CanProvideExamples contract
+
+initially to feed extraction prompts, esp for weak models
 
 
 ## Design decisions to revisit
