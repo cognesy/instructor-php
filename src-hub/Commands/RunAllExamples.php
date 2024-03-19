@@ -17,6 +17,11 @@ class RunAllExamples extends Command
 
     public function execute(array $params = []) {
         Cli::outln("Executing all examples...", [Color::BOLD, Color::YELLOW]);
+        $timeStart = microtime(true);
         $this->runner->runAll();
+        $timeEnd = microtime(true);
+        $totalTime = $timeEnd - $timeStart;
+        Cli::out("All examples executed in ", [Color::DARK_GRAY]);
+        Cli::out(round($totalTime, 2) . " seconds", [Color::BOLD, Color::WHITE]);
     }
 }

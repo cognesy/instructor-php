@@ -106,10 +106,11 @@ it('handles events for simple case - validation failure', function ($event) use 
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
         ->withConfig([OpenAIToolCaller::class => $mockLLM])
         ->onError(fn($e) => $events->onEvent($e))
+        //->wiretap(fn($e) => $e->print())
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
-            maxRetries: 0,
+            maxRetries: 1,
         );
     expect($person)->toBeNull();
     expect($events->count())->toBeGreaterThan(0);

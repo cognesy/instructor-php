@@ -14,6 +14,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Traits\ValidationMixin;
+use Cognesy\Instructor\Data\ValidationResult;
 
 class Property
 {
@@ -32,16 +33,16 @@ class UserDetail
     /** @var Property[] List other extracted properties - not more than 2. */
     public array $properties;
 
-    public function validate() : array
+    public function validate() : ValidationResult
     {
         if (count($this->properties) < 3) {
-            return [];
+            return ValidationResult::valid();
         }
-        return [[
-            'message' => "Number of properties must be not more than 2.",
-            'path' => 'properties',
-            'value' => $this->name
-        ]];
+        return ValidationResult::fieldError(
+            field: 'properties',
+            value: $this->name,
+            message: "Number of properties must be not more than 2.",
+        );
     }
 }
 

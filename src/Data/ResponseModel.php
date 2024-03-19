@@ -12,8 +12,8 @@ class ResponseModel
     public ?array $functionCall;
 
     public string $functionName = 'extract_data';
-    public string $functionDescription = 'Extract data from provided content';
-    public string $retryPrompt = "Recall function correctly, fix following errors:";
+    public string $functionDescription = 'Extract data in JSON format from provided content';
+    public string $retryPrompt = "JSON generated incorrectly, fix following errors:";
 
     public function __construct(
         string $class = null,

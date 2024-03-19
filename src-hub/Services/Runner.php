@@ -55,9 +55,18 @@ class Runner
         Cli::grid([[3, "[.]", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         Cli::grid([[30, $example->name, STR_PAD_RIGHT, Color::WHITE]]);
         Cli::grid([[13, "> running ...", STR_PAD_RIGHT, Color::DARK_GRAY]]);
+        $timeStart = microtime(true);
         $output = $this->execute($example->runPath);
+        // measure time elapsed
+        $timeEnd = microtime(true);
         // process output
-        return $this->processOutput($output, $example);
+        $result = $this->processOutput($output, $example);
+        // display time elapsed
+        $totalTime = $timeEnd - $timeStart;
+        Cli::out(" (", [Color::DARK_GRAY]);
+        Cli::grid([[10, (round($totalTime, 2) . " sec"), STR_PAD_LEFT, Color::DARK_GRAY]]);
+        Cli::outln(")", [Color::DARK_GRAY]);
+        return $result;
     }
 
     private function execute(string $runPath) : string {
@@ -78,20 +87,20 @@ class Runner
         if (strpos($output, 'Fatal error') !== false) {
             $this->errors[$example->name][] = new ErrorEvent($example->name, $output);
             Cli::grid([[5, "ERROR", STR_PAD_LEFT, Color::RED]]);
-            Cli::outln();
             $this->incorrect++;
             if ($this->stopOnError) {
+                Cli::outln();
                 Cli::out("[!] ", Color::DARK_YELLOW);
                 Cli::outln("Terminating - error encountered...", Color::YELLOW);
                 return false;
             }
         } else {
             Cli::grid([[5, "OK", STR_PAD_RIGHT, Color::GREEN]]);
-            Cli::outln();
             $this->correct++;
         }
         $this->total++;
         if (($this->stopAfter > 0) && ($this->total >= $this->stopAfter)) {
+            Cli::outln();
             Cli::out("[!] ", Color::DARK_YELLOW);
             Cli::outln("Terminating - set limit reached...", Color::YELLOW);
             return false;

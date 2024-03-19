@@ -2,7 +2,9 @@
 
 namespace Tests\Examples\Extraction;
 
+use Cognesy\Instructor\Data\ValidationError;
 use Cognesy\Instructor\Traits\ValidationMixin;
+use Cognesy\Instructor\Data\ValidationResult;
 
 class PersonWithValidationMixin
 {
@@ -10,16 +12,16 @@ class PersonWithValidationMixin
     public string $name;
     public int $age;
 
-    public function validate(): array
+    public function validate(): ValidationResult
     {
         $errors = [];
         if ($this->age < 18) {
-            $errors[] = [
-                'value' => $this->age,
-                'path' => 'age',
-                'message' => 'Person must be adult.',
-            ];
+            $errors[] = new ValidationError(
+                'age',
+                $this->age,
+                'Person must be adult.',
+            );
         }
-        return $errors;
+        return new ValidationResult($errors, 'Person data is invalid.');
     }
 }

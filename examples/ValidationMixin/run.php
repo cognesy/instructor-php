@@ -15,6 +15,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Traits\ValidationMixin;
+use Cognesy\Instructor\Data\ValidationResult;
 
 class UserDetails
 {
@@ -23,15 +24,15 @@ class UserDetails
     public string $name;
     public int $age;
 
-    public function validate() : array {
+    public function validate() : ValidationResult {
         if ($this->name === strtoupper($this->name)) {
-            return [];
+            return ValidationResult::valid();
         }
-        return [[
-            'message' => "Name must be in uppercase.",
-            'path' => 'name',
-            'value' => $this->name
-        ]];
+        return ValidationResult::fieldError(
+            field: 'name',
+            value: $this->name,
+            message: "Name must be in uppercase.",
+        );
     }
 }
 

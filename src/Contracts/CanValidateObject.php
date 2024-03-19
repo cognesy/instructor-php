@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Contracts;
 
+use Cognesy\Instructor\Data\ValidationResult;
+
 /**
  * Class can validate other objects - used by validator classes
  */
@@ -12,5 +14,5 @@ interface CanValidateObject
      * @param object $dataObject
      * @return array
      */
-    public function validate(object $dataObject) : array;
+    public function validate(object $dataObject) : ValidationResult;
 }

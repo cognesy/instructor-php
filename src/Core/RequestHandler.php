@@ -9,6 +9,7 @@ use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
@@ -71,21 +72,22 @@ class RequestHandler implements CanHandleRequest
             $this->eventDispatcher->dispatch(new FunctionCallRequested($messages, $responseModel, $request));
 
             // run LLM inference
-            $llmResult = $functionCaller->callFunction(
+            $llmCallResult = $functionCaller->callFunction(
                 $messages,
                 $responseModel,
                 $request->model,
                 $request->options
             );
-            if ($llmResult->isFailure()) {
-                $this->eventDispatcher->dispatch(new ResponseGenerationFailed(Arrays::toArray($llmResult->error())));
-                return $llmResult;
+            if ($llmCallResult->isFailure()) {
+                $this->eventDispatcher->dispatch(new ResponseGenerationFailed(Arrays::toArray($llmCallResult->error())));
+                return $llmCallResult;
             }
-            $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmResult));
+
+            $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmCallResult));
 
             // get response JSON data
             /** @var LLMResponse $llmResponse */
-            $llmResponse = $llmResult->value();
+            $llmResponse = $llmCallResult->value();
 
             // TODO: handle multiple tool calls
             $jsonData = $llmResponse->functionCalls[0]->functionArgsJson ?? '';
@@ -119,7 +121,7 @@ class RequestHandler implements CanHandleRequest
                 $this->eventDispatcher->dispatch(new FunctionCallResponseConvertedToObject($object));
                 return Result::success($object);
             }
-            $errors = Arrays::toArray($result->error());
+            $errors = $this->extractErrors($result);
         } catch (ValidationException $e) {
             // handle uncaught validation exceptions
             $errors = [$e->getMessage()];
@@ -134,47 +136,18 @@ class RequestHandler implements CanHandleRequest
         return Result::failure($errors);
     }
 
-    protected function processPartialResponse(string $partialJsonData, ResponseModel $responseModel) : void {
-        $jsonData = (new JsonParser)->fix($partialJsonData);
-        $result = $this->partialResponseHandler->toPartialResponse($jsonData, $responseModel);
-        if ($result->isFailure()) {
-            $errors = Arrays::toArray($result->error());
-            $this->eventDispatcher->dispatch(new PartialResponseGenerationFailed($errors));
-            //throw new Exception(implode(';', $errors));
-            return;
+    protected function extractErrors(Result $result) : array {
+        if ($result->isSuccess()) {
+            return [];
         }
-
-        // proceed if converting to object was successful
-        $partialResponse = clone $result->value();
-        $currentHash = hash('xxh3', json_encode($partialResponse));
-        if ($this->previousHash != $currentHash) {
-            // send partial response to listener only if new tokens changed resulting response object
-            $this->eventDispatcher->dispatch(new PartialResponseGenerated($partialResponse));
-            if (($partialResponse instanceof Sequenceable)) {
-                $this->processSequenceable($partialResponse);
-                $this->lastPartialResponse = clone $partialResponse;
-            }
-            $this->previousHash = $currentHash;
-        }
-    }
-
-    protected function processSequenceable(Sequenceable $partialResponse) : void {
-        $currentLength = count($partialResponse);
-        if ($currentLength <= $this->previousSequenceLength) {
-            return;
-        }
-        $this->previousSequenceLength = $currentLength;
-        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
-    }
-
-    protected function finalizePartialResponse(ResponseModel $responseModel) : void {
-        if (
-            !isset($this->lastPartialResponse)
-            || !($this->lastPartialResponse instanceof Sequenceable)
-        ) {
-            return;
-        }
-        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        $errorValue = $result->error();
+        return match($errorValue) {
+            is_array($errorValue) => $errorValue,
+            is_string($errorValue) => [$errorValue],
+            $errorValue instanceof Exception => [$errorValue->getMessage()],
+            $errorValue instanceof ValidationResult => [$errorValue->getErrorMessage()],
+            default => [json_encode($errorValue)]
+        };
     }
 
     protected function makeRetryMessages(
@@ -202,5 +175,47 @@ class RequestHandler implements CanHandleRequest
                 $this->finalizePartialResponse($requestedModel);
             }
         );
+    }
+
+    protected function finalizePartialResponse(ResponseModel $responseModel) : void {
+        if (
+            !isset($this->lastPartialResponse)
+            || !($this->lastPartialResponse instanceof Sequenceable)
+        ) {
+            return;
+        }
+        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+    }
+
+    protected function processPartialResponse(string $partialJsonData, ResponseModel $responseModel) : void {
+        $jsonData = (new JsonParser)->fix($partialJsonData);
+        $result = $this->partialResponseHandler->toPartialResponse($jsonData, $responseModel);
+        if ($result->isFailure()) {
+            $errors = Arrays::toArray($result->error());
+            $this->eventDispatcher->dispatch(new PartialResponseGenerationFailed($errors));
+            return;
+        }
+
+        // proceed if converting to object was successful
+        $partialResponse = clone $result->value();
+        $currentHash = hash('xxh3', json_encode($partialResponse));
+        if ($this->previousHash != $currentHash) {
+            // send partial response to listener only if new tokens changed resulting response object
+            $this->eventDispatcher->dispatch(new PartialResponseGenerated($partialResponse));
+            if (($partialResponse instanceof Sequenceable)) {
+                $this->processSequenceable($partialResponse);
+                $this->lastPartialResponse = clone $partialResponse;
+            }
+            $this->previousHash = $currentHash;
+        }
+    }
+
+    protected function processSequenceable(Sequenceable $partialResponse) : void {
+        $currentLength = count($partialResponse);
+        if ($currentLength <= $this->previousSequenceLength) {
+            return;
+        }
+        $this->previousSequenceLength = $currentLength;
+        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
     }
 }

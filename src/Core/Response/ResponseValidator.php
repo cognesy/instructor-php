@@ -4,9 +4,12 @@ namespace Cognesy\Instructor\Core\Response;
 
 use Cognesy\Instructor\Contracts\CanValidateObject;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseValidationAttempt;
+use Cognesy\Instructor\Events\ResponseHandler\ResponseValidated;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
+use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationFailed;
 use Cognesy\Instructor\Utils\Result;
 
 class ResponseValidator
@@ -20,27 +23,25 @@ class ResponseValidator
      * Validate deserialized response object
      */
     public function validate(object $response) : Result {
-        return match(true) {
+        $result = match(true) {
             $response instanceof CanValidateSelf => $this->validateSelf($response),
             default => $this->validateObject($response)
         };
+        if ($result->isInvalid()) {
+            $this->eventDispatcher->dispatch(new ResponseValidationFailed($result));
+            return Result::failure($result->getErrorMessage());
+        }
+        $this->eventDispatcher->dispatch(new ResponseValidated($result));
+        return Result::success($response);
     }
 
-    protected function validateSelf(CanValidateSelf $response) : Result {
+    protected function validateSelf(CanValidateSelf $response) : ValidationResult {
         $this->eventDispatcher->dispatch(new CustomResponseValidationAttempt($response));
-        $errors = $response->validate();
-        return match(count($errors)) {
-            0 => Result::success($response),
-            default => Result::failure($errors)
-        };
+        return $response->validate();
     }
 
-    protected function validateObject(object $response) : Result {
+    protected function validateObject(object $response) : ValidationResult {
         $this->eventDispatcher->dispatch(new ResponseValidationAttempt($response));
-        $errors = $this->validator->validate($response);
-        return match(count($errors)) {
-            0 => Result::success($response),
-            default => Result::failure($errors)
-        };
+        return $this->validator->validate($response);
     }
 }

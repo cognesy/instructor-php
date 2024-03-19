@@ -10,7 +10,7 @@ it('validates using attribute rules', function () {
     $person->name = 'Jason';
     $person->age = 28;
     $validator = new Validator();
-    expect(count($validator->validate($person)))->toBe(0);
+    expect($validator->validate($person)->isValid())->toBe(true);
 });
 
 
@@ -19,7 +19,7 @@ it('finds validation error', function () {
     $person->name = 'Jason';
     $person->age = -28;
     $validator = new Validator();
-    expect(count($validator->validate($person)))->toBe(1);
+    expect($validator->validate($person)->isInvalid())->toBe(true);
 });
 
 
@@ -29,9 +29,9 @@ it('uses custom validation via ValidationMixin', function () {
     // age is less than 18
     $person->age = 12;
     $validator = new Validator();
-    expect(count($validator->validate($person)))->toBe(1);
+    expect($validator->validate($person)->isInvalid())->toBe(true);
     // age is more or equal to 18
     $person->age = 19;
     $validator = new Validator();
-    expect(count($validator->validate($person)))->toBe(0);
+    expect($validator->validate($person)->isValid())->toBe(true);
 });

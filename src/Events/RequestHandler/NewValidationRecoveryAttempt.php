@@ -6,7 +6,7 @@ use Cognesy\Instructor\Events\Event;
 class NewValidationRecoveryAttempt extends Event
 {
     public function __construct(
-        public int    $retry,
+        public int   $retry,
         public array $errors,
     )
     {
@@ -17,7 +17,7 @@ class NewValidationRecoveryAttempt extends Event
     {
         return json_encode([
             'retry' => $this->retry,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ]);
     }
 }

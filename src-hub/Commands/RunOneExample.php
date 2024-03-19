@@ -3,6 +3,7 @@ namespace Cognesy\InstructorHub\Commands;
 
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
+use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\Runner;
 use Cognesy\InstructorHub\Utils\Color;
@@ -29,6 +30,16 @@ class RunOneExample extends Command
             Cli::outln("Example not found", [Color::RED]);
             return;
         }
+        $this->run($example);
+    }
+
+    public function run(Example $example) : void {
+        Cli::outln("Executing all examples...", [Color::BOLD, Color::YELLOW]);
+        $timeStart = microtime(true);
         $this->runner->runSingle($example);
+        $timeEnd = microtime(true);
+        $totalTime = $timeEnd - $timeStart;
+        Cli::out("Example executed in ", [Color::DARK_GRAY]);
+        Cli::out(round($totalTime, 2) . " seconds", [Color::BOLD, Color::WHITE]);
     }
 }

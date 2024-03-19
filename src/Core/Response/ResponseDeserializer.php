@@ -8,6 +8,8 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationAttempt;
+use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationFailed;
+use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserialized;
 use Cognesy\Instructor\Utils\Result;
 
 class ResponseDeserializer
@@ -18,10 +20,16 @@ class ResponseDeserializer
     ) {}
 
     public function deserialize(string $json, ResponseModel $responseModel) : Result {
-        return match(true) {
+        $result = match(true) {
             $responseModel->instance instanceof CanDeserializeSelf => $this->deserializeSelf($json, $responseModel->instance),
             default => $this->deserializeAny($json, $responseModel)
         };
+        if ($result->isFailure()) {
+            $this->eventDispatcher->dispatch(new ResponseDeserializationFailed($result->errorMessage()));
+            return $result;
+        }
+        $this->eventDispatcher->dispatch(new ResponseDeserialized($result->value()));
+        return $result;
     }
 
     protected function deserializeSelf(string $json, CanDeserializeSelf $response) : Result {

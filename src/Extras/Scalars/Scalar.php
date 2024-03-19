@@ -6,6 +6,8 @@ use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Data\ValidationError;
+use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Exception;
 use ReflectionEnum;
@@ -94,15 +96,21 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
     /**
      * Validate scalar value
      */
-    public function validate() : array {
+    public function validate() : ValidationResult {
         $errors = [];
         if ($this->required && $this->value === null) {
-            $errors[] = "Value '{$this->name}' is required";
+            $errors[] = new ValidationError(
+                $this->name,
+                $this->value,
+                "Value '{$this->name}' is required");
         }
         if (!empty($this->options) && !in_array($this->value, $this->options)) {
-            $errors[] = "Value '{$this->name}' must be one of: " . implode(", ", $this->options);
+            $errors[] = new ValidationError(
+                $this->name,
+                $this->value,
+                "Value '{$this->name}' must be one of: " . implode(", ", $this->options));
         }
-        return $errors;
+        return ValidationResult::make($errors, "Validation failed for '{$this->name}'");
     }
 
     /**

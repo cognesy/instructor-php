@@ -18,6 +18,7 @@ use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 use IteratorAggregate;
 use Traversable;
+use Cognesy\Instructor\Data\ValidationResult;
 
 class Sequence
     implements Sequenceable, IteratorAggregate, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, ArrayAccess
@@ -90,15 +91,15 @@ class Sequence
         return $this;
     }
 
-    public function validate(): array {
+    public function validate(): ValidationResult {
         $validationErrors = [];
         foreach ($this->list as $item) {
-            $errors = $this->validator->validate($item);
-            if (!empty($errors)) {
-                $validationErrors = array_merge($validationErrors, $errors);
+            $result = $this->validator->validate($item);
+            if ($result->isInvalid()) {
+                $validationErrors[] = $result->getErrors();
             }
         }
-        return $validationErrors;
+        return ValidationResult::make( array_merge(...$validationErrors), 'Sequence validation failed');
     }
 
     //////////////////////////////////////////////////////////////////////

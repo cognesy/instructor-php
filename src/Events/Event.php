@@ -37,7 +37,7 @@ abstract class Event
     private function consoleFormat(string $message = '') : string {
         $segments = explode('\\', (new \ReflectionClass($this))->getName());
         $eventName = array_pop($segments);
-        $eventGroup = implode('\\', $segments);
+        //$eventGroup = implode('\\', $segments);
         return Console::columns([
             [7, '(.'.substr($this->eventId, -4).')'],
             [14, $this->createdAt->format('H:i:s v').'ms'],

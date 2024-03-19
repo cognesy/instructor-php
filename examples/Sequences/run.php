@@ -24,8 +24,7 @@ class Person
 }
 
 $text = <<<TEXT
-    Jason is 25 years old. Jane is 18 yo. John is 30 years old
-    and Anna is 2 years younger than him.
+    Jason is 25 years old. Jane is 18 yo. John is 30 years old and Anna is 2 years younger than him.
     TEXT;
 
 $list = (new Instructor)

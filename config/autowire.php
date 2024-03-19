@@ -158,7 +158,6 @@ function autowire(Configuration $config) : Configuration
         class: ResponseHandler::class,
         name: CanHandleResponse::class,
         context: [
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
             'responseDeserializer' => $config->reference(ResponseDeserializer::class),
             'responseValidator' => $config->reference(ResponseValidator::class),
             'responseTransformer' => $config->reference(ResponseTransformer::class),
@@ -169,7 +168,6 @@ function autowire(Configuration $config) : Configuration
         class: PartialResponseHandler::class,
         name: CanHandlePartialResponse::class,
         context: [
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
             'responseDeserializer' => $config->reference(ResponseDeserializer::class),
             'responseTransformer' => $config->reference(ResponseTransformer::class),
         ]
