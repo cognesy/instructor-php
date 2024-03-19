@@ -52,6 +52,19 @@ Should we provide some general way to handle usage data across LLM drivers?
 To handle types like Carbon. Register adapters for given type and
 use them in sequence until first succeeds.
 
+### CanProvideExamples contract
+
+initially to feed extraction prompts, esp for weak models
+
+### CanProcessResponseMessage
+
+to manually process text of response
+
+### CanProcessRawResponse
+
+to work with raw response object
+
+
 
 
 ## Design decisions to revisit
@@ -100,6 +113,18 @@ There must be a better, more generic way to do it.
 - Sparse task scheduler
 - Marker and sweeper
 - Actor model
+
+
+
+
+## Other
+
+### PR to OAI PHP client
+
+RawResponseHandler to allow fixing issues
+with incorrect responses of oai api proxies
+
+
 
 
 
