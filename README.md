@@ -465,9 +465,13 @@ $person = $instructor->respond(
 
 See OpenAI PHP client documentation for more details on how to use it and what options are available: https://github.com/openai-php/client
 
-> Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate  ```base URI``` via client factory API and ```model``` when calling Instructor.
 
+### Support for OS models
 
+Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate  ```base URI``` via client factory API and ```model``` when calling Instructor.
+
+See this example of using Ollama with Instructor:
+https://cognesy.github.io/instructor-php/hub/l_l_m_support_ollama/
 
 
 
