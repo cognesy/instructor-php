@@ -56,6 +56,16 @@ use them in sequence until first succeeds.
 
 initially to feed extraction prompts, esp for weak models
 
+### CanProcessResponseMessage
+
+to manually process text of response
+
+### CanProcessRawResponse
+
+to work with raw response object
+
+
+
 
 ## Design decisions to revisit
 
