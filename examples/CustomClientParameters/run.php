@@ -19,28 +19,23 @@ class User {
     public string $name;
 }
 
-/// modify API key and base URI...
+/// Custom client parameter, e.g. API key and base URI
 $yourApiKey = getenv('OPENAI_API_KEY');
 $yourBaseUri = 'https://api.openai.com/v1';
-$model = 'gpt-3.5-turbo';
-$executionMode = Mode::Json;
 
-// create instance of OpenAI client initialized with custom parameters
+// Create instance of OpenAI client initialized with custom parameters
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)
     ->withOrganization(null) // default: null
     ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
-    // you can provide other parameters as well...
-    //->withHttpClient($client = new \GuzzleHttp\Client([]))
-    //->withHttpHeader('X-My-Header', 'foo')
-    //->withQueryParam('my-param', 'bar')
-    //->withStreamHandler(fn (RequestInterface $request): ResponseInterface => $client->send($request, [
-    //    'stream' => true // Allows to provide a custom stream handler for the http client.
-    //]))
     ->make();
 
-/// now you can get Instructor with the default client component overridden with your own
+/// Get Instructor with the default client component overridden with your own
 $instructor = new Instructor([Client::class => $client]);
+
+// Custom model and execution mode
+$model = 'gpt-3.5-turbo';
+$executionMode = Mode::Json;
 
 $user = $instructor
     ->respond(
