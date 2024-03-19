@@ -29,20 +29,20 @@ class User {
     public array $hobbies;
 }
 
-// ...e.g. connect to local Ollama instance
+// Local Ollama instance params
 $yourApiKey = 'ollama';
 $yourBaseUri = 'http://localhost:11434/v1';
 $model = 'llama2';
 $executionMode = Mode::MdJson;
 
-// create instance of OpenAI client initialized with custom parameters
+// Create instance of OpenAI client initialized with custom parameters
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)
     ->withOrganization(null) // default: null
     ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
     ->make();
 
-/// now you can get Instructor with the default client component overridden with your own
+/// Get Instructor with the default client component overridden with your own
 $instructor = new Instructor([Client::class => $client]);
 
 print("Printing partial updates:\n\n");
@@ -51,7 +51,7 @@ $user = $instructor
     ->onEvent(PartialJsonReceived::class, fn(PartialJsonReceived $event) => $event->print())
     ->onEvent(ResponseGenerated::class, fn(ResponseGenerated $event) => $event->print())
     ->respond(
-        messages: "Jason (@jxnlco) is 25 years old is admin of the project. He likes playing football and reading books.",
+        messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
         model: $model,
         mode: $executionMode,
