@@ -47,6 +47,10 @@ Clean it up.
 Usage for streamed responses is available via events, but not via rawResponse().
 Should we provide some general way to handle usage data across LLM drivers? 
 
+### Type adapters
+
+To handle types like Carbon. Register adapters for given type and
+use them in sequence until first succeeds.
 
 
 
