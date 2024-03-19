@@ -1,6 +1,6 @@
 # `Instructor` class
 
-Instructor class is the main entry point to the library. It is responsible for
+`Instructor` class is the main entry point to the library. It is responsible for
 handling all interactions with the client code and internal Instructor components.
 
 One of the essential tasks of the `Instructor` class is to read the configuration
@@ -20,11 +20,12 @@ errors before throwing them to the client code.
 
 `Instructor` class provides several methods allowing client code to plug
 into Instructor event system, including:
- - onEvent() - to receive a callback when specified type of event is dispatched
- - wiretap() - to receive any event dispatched by Instructor
- - onError() - to receive callback on any uncaught error
+ - `onEvent()` - to receive a callback when specified type of event is dispatched
+ - `wiretap()` - to receive any event dispatched by Instructor
+ - `onError()` - to receive callback on any uncaught error
 
 Additionally, `Instructor` class provides convenience methods allowing client code to
 receive model updates when streaming is enabled:
-- onPartialUpdate() - to handle partial model updates of the response
-- onSequenceUpdate() - to handle partial sequence updates of the response
+
+ - `onPartialUpdate()` - to handle partial model updates of the response
+ - `onSequenceUpdate()` - to handle partial sequence updates of the response

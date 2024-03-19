@@ -465,7 +465,7 @@ $person = $instructor->respond(
 
 See OpenAI PHP client documentation for more details on how to use it and what options are available: https://github.com/openai-php/client
 
-> Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate ```model``` and ```base URI``` via ```options``` parameter.
+> Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate  ```base URI``` via client factory API and ```model``` when calling Instructor.
 
 
 
@@ -660,7 +660,7 @@ To provide an essential functionality we needed here Instructor for PHP leverage
 - [PHP DocBlock](https://docs.phpdoc.org/2.9/references/phpdoc/index.html) type hinting conventions,
 - [Symfony](https://symfony.com/doc/current/index.html) serialization and validation capabilities
 
-Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models capable of function calling may be added in the future.
+Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models may be added in the future.
 
 
 ## Dependencies

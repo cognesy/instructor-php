@@ -11,7 +11,7 @@ use OpenAI\Client;
 
 class OpenAIMdJsonCaller implements CanCallFunction
 {
-    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {}``` codeblock. Do not return JSONSchema. Response must follow this JSON Schema:\n";
+    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {} ``` codeblock. Do not return JSONSchema, only JSON. Response must follow this JSONSchema:\n";
 
     public function __construct(
         private EventDispatcher $eventDispatcher,

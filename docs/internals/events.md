@@ -32,3 +32,14 @@ $instructor->respond(
 );
 // check your console for the details on the Instructor execution
 ```
+
+## Convenience methods for get streamed model updates
+
+`Instructor` class provides convenience methods allowing client code to receive
+model updates  when streaming is enabled:
+
+ * `onPartialUpdate(callable $callback)` - to handle partial model updates of the response
+ * `onSequenceUpdate(callable $callback)` - to handle partial sequence updates of the response
+
+In both cases your callback will receive updated model, so you don't have to
+extract it from the event.

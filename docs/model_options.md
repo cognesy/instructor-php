@@ -63,3 +63,7 @@ $person = $instructor->respond(
     options: ['temperature' => 0.0],
 );
 ```
+
+!!! note
+
+    For more details on `OpenAI::factory()` options - see [OpenAI PHP client](https://github.com/openai-php/client).

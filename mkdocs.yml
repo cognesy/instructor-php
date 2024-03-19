@@ -193,6 +193,7 @@ nav:
     - Custom validation using Symfony Validator: 'hub/custom_validator.md'
     - Entity Relationship Extraction: 'hub/entity_relationships.md'
     - Handling errors: 'hub/handling_errors.md'
+    - Support for local Ollama: 'hub/l_l_m_support_ollama.md'
     - Limiting the length of lists: 'hub/limiting_length_of_lists.md'
     - Making some fields optional: 'hub/optional_fields.md'
     - Streaming partial updates during inference: 'hub/partial_updates.md'

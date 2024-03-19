@@ -11,7 +11,6 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Instructor;
 use OpenAI\Client;
 
@@ -25,12 +24,6 @@ $yourApiKey = getenv('OPENAI_API_KEY');
 $yourBaseUri = 'https://api.openai.com/v1';
 $model = 'gpt-3.5-turbo';
 $executionMode = Mode::Json;
-
-// ...e.g. connect to local OpenRouter instance
-//$yourApiKey = 'xxx';
-//$yourBaseUri = 'https://openrouter.ai/api/v1'; // 'http://localhost:11434/api';
-//$model = 'mistralai/mistral-7b-instruct:free'; // 'llama2'
-//$executionMode = Mode::MdJson;
 
 // create instance of OpenAI client initialized with custom parameters
 $client = OpenAI::factory()
@@ -55,7 +48,6 @@ $user = $instructor
     responseModel: User::class,
     model: $model,
     mode: $executionMode,
-    //options: ['stream' => true]
 );
 
 dump($user);

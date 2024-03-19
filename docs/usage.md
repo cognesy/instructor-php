@@ -92,9 +92,6 @@ $instructor = (new Instructor)->withRequest(new Request(
 
 ## Custom OpenAI client
 
-> WARNING: This feature currently does not work with OS models with OpenAI API
-> due to how PHP OpenAI client handles responses with no choice index specified. 
-
 You can provide your own OpenAI client to Instructor. This is useful when you want to initialize OpenAI client with custom values - e.g. to call other LLMs which support OpenAI API.
 
 ```php
@@ -108,14 +105,12 @@ class User {
 
 /// fully customize OpenAI client parameters
 $yourApiKey = 'ollama';
-$yourBaseUri = 'http://localhost:11434/api/';
+$yourBaseUri = 'http://localhost:11434/v1/';
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)
     ->withOrganization('') // default: null
     ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
-    //
     // you can also customize other OpenAI client parameters
-    //
     //->withHttpClient($client = new \GuzzleHttp\Client([]))
     //->withHttpHeader('X-My-Header', 'foo')
     //->withQueryParam('my-param', 'bar')
@@ -125,9 +120,11 @@ $client = OpenAI::factory()
     //
     ->make();
 
-/// now you can use the client with Instructor
+// override default OpenAI client configuration with your own
+$instructor = new Instructor([Client::class => $client]);
 
-$user = (new Instructor([Client::class => $client]))->respond(
+/// now you can use the client with Instructor
+$user = $instructor->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
     model: 'llama2',
