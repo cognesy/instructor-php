@@ -116,3 +116,15 @@ There must be a better, more generic way to do it.
 
 
 
+
+## Other
+
+### PR to OAI PHP client
+
+RawResponseHandler to allow fixing issues
+with incorrect responses of oai api proxies
+
+
+
+
+
