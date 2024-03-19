@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 
 class FunctionCallerFactory

@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\LLMs\OpenAI\ToolsMode;
 
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\FunctionCall;
+use Cognesy\Instructor\Data\LLMResponse;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
-use Cognesy\Instructor\LLMs\Data\FunctionCall;
-use Cognesy\Instructor\LLMs\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
@@ -25,7 +25,7 @@ class ToolCallHandler
 
     /**
      * Handle chat call
-     * @return Result<LLMResponse, mixed>
+     * @return Result<\Cognesy\Instructor\Data\LLMResponse, mixed>
      */
     public function handle() : Result {
         try {
@@ -46,7 +46,7 @@ class ToolCallHandler
         return Result::success(new LLMResponse(
             functionCalls: $functionCalls,
             finishReason: ($response->choices[0]->finishReason ?? null),
-            rawData: $response->toArray(),
+                rawResponse: $response->toArray(),
             isComplete: true)
         );
     }
@@ -60,7 +60,7 @@ class ToolCallHandler
             $functionCalls[] = new FunctionCall(
                 toolCallId: $data->id ?? '',
                 functionName: $data->function->name ?? '',
-                functionArguments: $data->function->arguments ?? ''
+                functionArgsJson: $data->function->arguments ?? ''
             );
         }
         return $functionCalls;

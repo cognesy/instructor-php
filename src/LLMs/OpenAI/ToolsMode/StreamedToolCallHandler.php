@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor\LLMs\OpenAI\ToolsMode;
 
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\FunctionCall;
+use Cognesy\Instructor\Data\LLMResponse;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
@@ -13,8 +15,6 @@ use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
 use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
-use Cognesy\Instructor\LLMs\Data\FunctionCall;
-use Cognesy\Instructor\LLMs\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
@@ -88,7 +88,7 @@ class StreamedToolCallHandler
         $response = new LLMResponse(
             functionCalls: $functionCalls,
             finishReason: ($response->choices[0]->finishReason ?? null),
-            rawData: $response->toArray(),
+            rawResponse: $response->toArray(),
             isComplete: true,
         );
         $this->eventDispatcher->dispatch(new StreamedResponseFinished($response));
@@ -99,23 +99,23 @@ class StreamedToolCallHandler
         $newFunctionCall = new FunctionCall(
             toolCallId: $response->choices[0]->delta->toolCalls[0]->id,
             functionName: $response->choices[0]->delta->toolCalls[0]->function->name,
-            functionArguments: ''
+            functionArgsJson: ''
         );
         $this->eventDispatcher->dispatch(new StreamedFunctionCallStarted($newFunctionCall));
         return $newFunctionCall;
     }
 
     private function finalizeFunctionCall(array $functionCalls, string $responseJson) : void {
-        /** @var \Cognesy\Instructor\LLMs\Data\FunctionCall $currentFunctionCall */
+        /** @var \Cognesy\Instructor\Data\FunctionCall $currentFunctionCall */
         $currentFunctionCall = $functionCalls[count($functionCalls) - 1];
-        $currentFunctionCall->functionArguments = $responseJson;
+        $currentFunctionCall->functionArgsJson = $responseJson;
         $this->eventDispatcher->dispatch(new StreamedFunctionCallCompleted($currentFunctionCall));
     }
 
     private function updateFunctionCall(array $functionCalls, string $responseJson) : void {
-        /** @var FunctionCall $currentFunctionCall */
+        /** @var \Cognesy\Instructor\Data\FunctionCall $currentFunctionCall */
         $currentFunctionCall = $functionCalls[count($functionCalls) - 1];
-        $currentFunctionCall->functionArguments = $responseJson;
+        $currentFunctionCall->functionArgsJson = $responseJson;
         $this->eventDispatcher->dispatch(new StreamedFunctionCallUpdated($currentFunctionCall));
     }
 }

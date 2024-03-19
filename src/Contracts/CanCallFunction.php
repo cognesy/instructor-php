@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Result;
 
 /**

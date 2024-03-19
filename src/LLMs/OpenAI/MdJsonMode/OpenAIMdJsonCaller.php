@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\LLMs\OpenAI\MdJsonMode;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\LLMs\OpenAI\JsonMode\JsonModeHandler;
 use Cognesy\Instructor\LLMs\OpenAI\JsonMode\StreamedJsonModeCallHandler;

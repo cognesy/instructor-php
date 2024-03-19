@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Data\Request;
 use Generator;
 
 interface CanHandleStreamRequest

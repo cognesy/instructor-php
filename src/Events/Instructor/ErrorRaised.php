@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\Event;
 use Throwable;
 

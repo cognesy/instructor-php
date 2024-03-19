@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core\Data;
+namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Enums\Mode;
 

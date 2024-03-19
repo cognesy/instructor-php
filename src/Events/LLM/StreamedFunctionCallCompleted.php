@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\LLM;
 
+use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\LLMs\Data\FunctionCall;
 
 class StreamedFunctionCallCompleted extends Event
 {

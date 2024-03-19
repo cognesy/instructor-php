@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\LLMs\OpenAI\ToolsMode;
 
 use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Utils\Result;
 use OpenAI\Client;

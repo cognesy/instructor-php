@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\ResponseModel;
 
 class BuildFromJsonSchemaProvider extends AbstractBuilder
 {

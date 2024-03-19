@@ -2,8 +2,8 @@
 
 namespace Tests;
 
-use Cognesy\Instructor\LLMs\Data\FunctionCall;
-use Cognesy\Instructor\LLMs\Data\LLMResponse;
+use Cognesy\Instructor\Data\FunctionCall;
+use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Cognesy\Instructor\Utils\Result;
 use Mockery;
@@ -26,11 +26,11 @@ class MockLLM
                 new FunctionCall(
                     toolCallId: '1',
                     functionName: 'callFunction',
-                    functionArguments: $json,
+                    functionArgsJson: $json,
                 ),
             ],
             finishReason: 'success',
-            rawData: null,
+            rawResponse: null,
         ));
     }
 }

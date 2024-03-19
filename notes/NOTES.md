@@ -54,15 +54,16 @@ use them in sequence until first succeeds.
 
 ### CanProvideExamples contract
 
-initially to feed extraction prompts, esp for weak models
+Initially just to feed extraction prompts, esp. for weak models. Later: to
+generate examples for prompt optimization.
 
 ### CanProcessResponseMessage
 
-to manually process text of response
+To manually process text of response.
 
 ### CanProcessRawResponse
 
-to work with raw response object
+To work with raw response object.
 
 
 
@@ -98,6 +99,7 @@ There must be a better, more generic way to do it.
 
 
 
+
 ## Research
 
 - Queue-based load leveling
@@ -121,10 +123,5 @@ There must be a better, more generic way to do it.
 
 ### PR to OAI PHP client
 
-RawResponseHandler to allow fixing issues
-with incorrect responses of oai api proxies
-
-
-
-
+RawResponseHandler to allow fixing issues with incorrect responses of OpenAI API proxies.
 

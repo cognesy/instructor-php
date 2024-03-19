@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\LLMs\Data;
+namespace Cognesy\Instructor\Data;
 
 class LLMResponse
 {
@@ -8,7 +8,7 @@ class LLMResponse
         /** @var FunctionCall[] */
         public array   $functionCalls,
         public ?string $finishReason,
-        public mixed   $rawData,
+        public mixed   $rawResponse,
         public bool    $isComplete = false,
     ) {}
 }

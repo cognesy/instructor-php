@@ -2,12 +2,13 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Contracts\CanCallFunction;
+use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Core\Data\Request;
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\LLMResponse;
+use Cognesy\Instructor\Data\Request;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
@@ -23,7 +24,6 @@ use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\ValidationException;
-use Cognesy\Instructor\LLMs\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
@@ -40,6 +40,7 @@ class RequestHandler implements CanHandleRequest
         private ResponseModelFactory $responseModelFactory,
         private EventDispatcher $eventDispatcher,
         private CanHandleResponse $responseHandler,
+        private CanHandlePartialResponse $partialResponseHandler,
     )
     {}
 
@@ -49,18 +50,7 @@ class RequestHandler implements CanHandleRequest
     public function respondTo(Request $request) : Result {
         $requestedModel = $this->responseModelFactory->fromRequest($request);
         if ($request->options['stream'] ?? false) {
-            $this->eventDispatcher->addListener(
-                eventClass: PartialJsonReceived::class,
-                listener: function(PartialJsonReceived $event) use ($requestedModel) {
-                    $this->processPartialResponse($event->partialJson, $requestedModel);
-                }
-            );
-            $this->eventDispatcher->addListener(
-                eventClass: StreamedFunctionCallCompleted::class,
-                listener: function(StreamedFunctionCallCompleted $event) use ($requestedModel) {
-                    $this->finalizePartialResponse($requestedModel);
-                }
-            );
+            $this->registerStreamListeners($requestedModel);
         }
         $this->eventDispatcher->dispatch(new ResponseModelBuilt($requestedModel));
         return $this->tryRespond($request, $requestedModel);
@@ -98,7 +88,7 @@ class RequestHandler implements CanHandleRequest
             $llmResponse = $llmResult->value();
 
             // TODO: handle multiple tool calls
-            $jsonData = $llmResponse->functionCalls[0]->functionArguments ?? '';
+            $jsonData = $llmResponse->functionCalls[0]->functionArgsJson ?? '';
             // TODO: END OF TODO
 
             // process LLM response
@@ -146,7 +136,7 @@ class RequestHandler implements CanHandleRequest
 
     protected function processPartialResponse(string $partialJsonData, ResponseModel $responseModel) : void {
         $jsonData = (new JsonParser)->fix($partialJsonData);
-        $result = $this->responseHandler->toPartialResponse($jsonData, $responseModel);
+        $result = $this->partialResponseHandler->toPartialResponse($jsonData, $responseModel);
         if ($result->isFailure()) {
             $errors = Arrays::toArray($result->error());
             $this->eventDispatcher->dispatch(new PartialResponseGenerationFailed($errors));
@@ -196,5 +186,21 @@ class RequestHandler implements CanHandleRequest
         $messages[] = ['role' => 'assistant', 'content' => $jsonData];
         $messages[] = ['role' => 'user', 'content' => $responseModel->retryPrompt . ': ' . implode(", ", $errors)];
         return $messages;
+    }
+
+    private function registerStreamListeners(ResponseModel $requestedModel)
+    {
+        $this->eventDispatcher->addListener(
+            eventClass: PartialJsonReceived::class,
+            listener: function(PartialJsonReceived $event) use ($requestedModel) {
+                $this->processPartialResponse($event->partialJson, $requestedModel);
+            }
+        );
+        $this->eventDispatcher->addListener(
+            eventClass: StreamedFunctionCallCompleted::class,
+            listener: function(StreamedFunctionCallCompleted $event) use ($requestedModel) {
+                $this->finalizePartialResponse($requestedModel);
+            }
+        );
     }
 }

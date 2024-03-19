@@ -81,8 +81,7 @@ $person = $instructor->get();
 You can also initialize Instructor with a request object.
 
 ```php
-use Cognesy\Instructor;
-use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor;use Cognesy\Instructor\Data\Request;
 
 $instructor = (new Instructor)->withRequest(new Request(
     messages: "His name is Jason, he is 28 years old.",

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\RequestHandler;
 
-use Cognesy\Instructor\Core\Data\Request;
-use Cognesy\Instructor\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\Request;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
 
 class FunctionCallRequested extends Event
@@ -12,7 +12,7 @@ class FunctionCallRequested extends Event
     /**
      * @param array|array[] $messages
      * @param ResponseModel $responseModel
-     * @param Request $request
+     * @param \Cognesy\Instructor\Data\Request $request
      */
     public function __construct(
         public array $messages,

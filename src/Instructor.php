@@ -4,7 +4,7 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
-use Cognesy\Instructor\Core\Data\Request;
+use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
