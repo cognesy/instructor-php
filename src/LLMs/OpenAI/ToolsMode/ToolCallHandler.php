@@ -7,8 +7,8 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
-use Cognesy\Instructor\LLMs\FunctionCall;
-use Cognesy\Instructor\LLMs\LLMResponse;
+use Cognesy\Instructor\LLMs\Data\FunctionCall;
+use Cognesy\Instructor\LLMs\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
@@ -38,13 +38,13 @@ class ToolCallHandler
             return Result::failure($event);
         }
         // which functions have been selected - if parallel tools on
-        $toolCalls = $this->getFunctionCalls($response);
-        if (empty($toolCalls)) {
+        $functionCalls = $this->getFunctionCalls($response);
+        if (empty($functionCalls)) {
             return Result::failure(new RequestToLLMFailed($this->request, ['No tool calls found in the response']));
         }
         // handle finishReason other than 'stop'
         return Result::success(new LLMResponse(
-            toolCalls: $toolCalls,
+            functionCalls: $functionCalls,
             finishReason: ($response->choices[0]->finishReason ?? null),
             rawData: $response->toArray(),
             isComplete: true)
@@ -55,14 +55,14 @@ class ToolCallHandler
         if (!isset($response->choices[0]->message->toolCalls)) {
             return [];
         }
-        $toolCalls = [];
+        $functionCalls = [];
         foreach ($response->choices[0]->message->toolCalls as $data) {
-            $toolCalls[] = new FunctionCall(
+            $functionCalls[] = new FunctionCall(
                 toolCallId: $data->id ?? '',
                 functionName: $data->function->name ?? '',
                 functionArguments: $data->function->arguments ?? ''
             );
         }
-        return $toolCalls;
+        return $functionCalls;
     }
 }

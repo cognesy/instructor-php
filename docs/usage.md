@@ -4,9 +4,16 @@ This is a simple example demonstrating how Instructor retrieves structured infor
 
 Response model class is a plain PHP class with typehints specifying the types of fields of the object.
 
+> NOTE: By default, Instructor looks for OPENAI_API_KEY environment variable to get
+> your API key. You can also provide the API key explicitly when creating the
+> Instructor instance.
+
 ```php
 <?php
 use Cognesy\Instructor;
+
+// Step 0: Create .env file in your project root:
+// OPENAI_API_KEY=your_api_key
 
 // Step 1: Define target data structure(s)
 class Person {
@@ -18,7 +25,6 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-// NOTE: default OpenAI client is used, needs .env file with OPENAI_API_KEY
 $person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
@@ -85,6 +91,9 @@ $instructor = (new Instructor)->withRequest(new Request(
 ```
 
 ## Custom OpenAI client
+
+> WARNING: This feature currently does not work with OS models with OpenAI API
+> due to how PHP OpenAI client handles responses with no choice index specified. 
 
 You can provide your own OpenAI client to Instructor. This is useful when you want to initialize OpenAI client with custom values - e.g. to call other LLMs which support OpenAI API.
 

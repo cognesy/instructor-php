@@ -25,7 +25,19 @@ class Runner
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     public function runSingle(Example $example) : void {
-        include $example->runPath;
+        try {
+            include $example->runPath;
+        } catch (Exception $e) {
+            Cli::outln();
+            Cli::out("[!] ", Color::DARK_YELLOW);
+            Cli::outln("Failure while running example: {$example->name}", Color::RED);
+            Cli::outln();
+            Cli::outln("[Message]", Color::DARK_GRAY);
+            Cli::outln($e->getMessage(), Color::GRAY);
+            Cli::outln();
+            Cli::outln("[Trace]", Color::DARK_GRAY);
+            Cli::outln($e->getTraceAsString(), Color::GRAY);
+        }
     }
 
     public function runAll() : void {

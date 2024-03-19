@@ -28,6 +28,8 @@ You can pass a custom configured instance of OpenAI client to the Instructor. Th
 
 ```php
 <?php
+use Cognesy\Instructor\Instructor;
+use OpenAI\Client;
 
 $yourApiKey = getenv('YOUR_API_KEY');
 
@@ -52,11 +54,12 @@ $client = OpenAI::factory()
     )
     ->make();
 
-$person = (new Instructor)->respond(
+$instructor = new Instructor([Client::class => $client]);
+
+$person = $instructor->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     model: 'gpt-3.5-turbo',
     options: ['temperature' => 0.0],
-    client: $client
 );
 ```

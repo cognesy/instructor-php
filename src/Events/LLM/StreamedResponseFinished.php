@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\LLMs\LLMResponse;
+use Cognesy\Instructor\LLMs\Data\LLMResponse;
 
 class StreamedResponseFinished extends Event
 {

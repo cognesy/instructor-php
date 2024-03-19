@@ -102,7 +102,6 @@ Instructor can retrieve complex data structures from text. Your response model c
 <?php
 
 use Cognesy/Instructor;
-use OpenAI;
 
 // define a data structures to extract data into
 class Person {
@@ -128,7 +127,6 @@ $text = "Alex is 25 years old software engineer, who knows PHP, Python and can p
 $person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-    client: OpenAI::client($yourApiKey),
 ); // client is passed explicitly, can specify e.g. different base URL
 
 // data is extracted into an object of given class

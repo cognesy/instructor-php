@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\LLMs\FunctionCall;
+use Cognesy\Instructor\LLMs\Data\FunctionCall;
 
 class StreamedFunctionCallStarted extends Event
 {

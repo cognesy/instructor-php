@@ -23,6 +23,7 @@ use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\ValidationException;
+use Cognesy\Instructor\LLMs\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
@@ -93,8 +94,11 @@ class RequestHandler implements CanHandleRequest
             $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmResult));
 
             // get response JSON data
+            /** @var LLMResponse $llmResponse */
+            $llmResponse = $llmResult->value();
+
             // TODO: handle multiple tool calls
-            $jsonData = $llmResult->value()->toolCalls[0]->functionArguments ?? '';
+            $jsonData = $llmResponse->functionCalls[0]->functionArguments ?? '';
             // TODO: END OF TODO
 
             // process LLM response

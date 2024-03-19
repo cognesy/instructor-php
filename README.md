@@ -68,6 +68,9 @@ Response model class is a plain PHP class with typehints specifying the types of
 ```php
 use Cognesy\Instructor\Instructor;
 
+// Step 0: Create .env file in your project root:
+// OPENAI_API_KEY=your_api_key
+
 // Step 1: Define target data structure(s)
 class Person {
     public string $name;
@@ -81,7 +84,7 @@ $text = "His name is Jason and he is 28 years old.";
 $person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-); // default OpenAI client is used, needs .env file with OPENAI_API_KEY
+);
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -367,7 +370,6 @@ Instructor can retrieve complex data structures from text. Your response model c
 
 ```php
 use Cognesy\Instructor\Instructor;
-use OpenAI;
 
 // define a data structures to extract data into
 class Person {
@@ -393,7 +395,6 @@ $text = "Alex is 25 years old software engineer, who knows PHP, Python and can p
 $person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-    client: OpenAI::client($yourApiKey),
 ); // client is passed explicitly, can specify e.g. different base URL
 
 // data is extracted into an object of given class
@@ -439,17 +440,24 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
 
 ```php
-// get your API key from .env file
-$yourApiKey = getenv('YOUR_API_KEY');
+use Cognesy\Instructor\Instructor;
+use OpenAI\Client;
 
-$person = (new Instructor)->respond(
+// get your API key from .env file
+$yourApiKey = 'your api key';
+$client = OpenAI::factory()
+    ->withApiKey($yourApiKey)
+    ->make();
+
+$instructor = new Instructor([Client::class => $client]);
+
+$person = $instructor->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     model: 'gpt-3.5-turbo',
     options: [
         'temperature' => 0.0
     ],
-    client: OpenAI::client($yourApiKey),
 );
 // client is passed explicitly
 // you can specify e.g. different base URL
