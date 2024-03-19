@@ -9,7 +9,7 @@ use OpenAI\Client;
 
 class OpenAIJsonCaller implements CanCallFunction
 {
-    private string $prompt = "\nRespond with JSON. Response must follow this JSON Schema:\n";
+    private string $prompt = "\nRespond with JSON. Response must follow this JSONSchema:\n";
 
     public function __construct(
         private EventDispatcher $eventDispatcher,
