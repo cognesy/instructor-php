@@ -29,11 +29,8 @@ Currently not supported, needs to be supported to allow better interaction with 
 
 Document and write tests around the behavior of public vs private/protected fields.
 
-### Full customization of OpenAI client
 
-Not documented, for sure unclear to users.
-
-### Code coverage
+### Test coverage
 
 Catch up with the latest additions.
 

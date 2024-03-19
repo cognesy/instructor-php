@@ -1,7 +1,7 @@
 # Support for local Ollama
 
 You can use Instructor with local Ollama instance. Please note that, at least currently,
-OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model.
+OS models do not perform on par with OpenAI ones (GPT-3.5 or GPT-4).
 
 ```php
 <?php

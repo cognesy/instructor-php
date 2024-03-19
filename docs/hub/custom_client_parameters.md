@@ -39,7 +39,7 @@ $executionMode = Mode::Json;
 
 $user = $instructor
     ->respond(
-    messages: "Jason is 25 years old.",
+    messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     model: $model,
     mode: $executionMode,

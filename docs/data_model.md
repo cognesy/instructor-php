@@ -238,3 +238,12 @@ $age = (new Instructor)->respond(
 // expect($age)->toBe('other');
 ```
 
+
+## Private vs public object field
+
+Instructor only sets public fields of the object with the data provided by LLM.
+Private and protected fields are left unchanged. If you want to access them
+directly after extraction, consider providing default values for them.
+
+See `examples/PrivateVsPublicFields/run.php` to check the details on the behavior
+of extraction for classes with private and public fields.
