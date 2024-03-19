@@ -12,6 +12,7 @@ class Runner
     public int $correct = 0;
     public int $incorrect = 0;
     public int $total = 0;
+    public float $timeStart = 0;
     /** @var ErrorEvent[] */
     public array $errors;
 
@@ -55,18 +56,10 @@ class Runner
         Cli::grid([[3, "[.]", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         Cli::grid([[30, $example->name, STR_PAD_RIGHT, Color::WHITE]]);
         Cli::grid([[13, "> running ...", STR_PAD_RIGHT, Color::DARK_GRAY]]);
-        $timeStart = microtime(true);
+        $this->timeStart = microtime(true);
         $output = $this->execute($example->runPath);
-        // measure time elapsed
-        $timeEnd = microtime(true);
         // process output
-        $result = $this->processOutput($output, $example);
-        // display time elapsed
-        $totalTime = $timeEnd - $timeStart;
-        Cli::out(" (", [Color::DARK_GRAY]);
-        Cli::grid([[10, (round($totalTime, 2) . " sec"), STR_PAD_LEFT, Color::DARK_GRAY]]);
-        Cli::outln(")", [Color::DARK_GRAY]);
-        return $result;
+        return $this->processOutput($output, $example);
     }
 
     private function execute(string $runPath) : string {
@@ -86,7 +79,8 @@ class Runner
         Cli::grid([[1, ">", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         if (strpos($output, 'Fatal error') !== false) {
             $this->errors[$example->name][] = new ErrorEvent($example->name, $output);
-            Cli::grid([[5, "ERROR", STR_PAD_LEFT, Color::RED]]);
+            Cli::grid([[8, "   ERROR", STR_PAD_RIGHT, [Color::WHITE, Color::BG_RED]]]);
+            $this->printTimeElapsed();
             $this->incorrect++;
             if ($this->stopOnError) {
                 Cli::outln();
@@ -95,7 +89,8 @@ class Runner
                 return false;
             }
         } else {
-            Cli::grid([[5, "OK", STR_PAD_RIGHT, Color::GREEN]]);
+            Cli::grid([[7, "OK ", STR_PAD_LEFT, [Color::WHITE, Color::BG_GREEN]]]);
+            $this->printTimeElapsed();
             $this->correct++;
         }
         $this->total++;
@@ -106,6 +101,16 @@ class Runner
             return false;
         }
         return true;
+    }
+
+    private function printTimeElapsed() {
+        // measure time elapsed
+        $timeEnd = microtime(true);
+        // display time elapsed
+        $totalTime = $timeEnd - $this->timeStart;
+        Cli::out(" (", [Color::DARK_GRAY]);
+        Cli::grid([[10, (round($totalTime, 2) . " sec"), STR_PAD_LEFT, Color::DARK_GRAY]]);
+        Cli::outln(")", [Color::DARK_GRAY]);
     }
 
     public function stats() : void {
