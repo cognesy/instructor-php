@@ -26,20 +26,20 @@ class ResponseModelFactory
     private SchemaFactory $schemaFactory;
     private SchemaBuilder $schemaBuilder;
     private TypeDetailsFactory $typeDetailsFactory;
-    private EventDispatcher $eventDispatcher;
+    private EventDispatcher $events;
 
     public function __construct(
         FunctionCallBuilder $functionCallFactory,
         SchemaFactory       $schemaFactory,
         SchemaBuilder       $schemaBuilder,
         TypeDetailsFactory  $typeDetailsFactory,
-        EventDispatcher     $eventDispatcher,
+        EventDispatcher     $events,
     ) {
         $this->functionCallBuilder = $functionCallFactory;
         $this->schemaFactory = $schemaFactory;
         $this->schemaBuilder = $schemaBuilder;
         $this->typeDetailsFactory = $typeDetailsFactory;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->events = $events;
     }
 
     public function fromRequest(Request $request) : ResponseModel {
@@ -64,7 +64,7 @@ class ResponseModelFactory
         );
         $responseModel = $builder->build($requestedModel);
         if ($responseModel instanceof CanReceiveEvents) {
-            $this->eventDispatcher->wiretap(fn($event) => $responseModel->onEvent($event));
+            $this->events->wiretap(fn($event) => $responseModel->onEvent($event));
         }
         return $responseModel;
     }

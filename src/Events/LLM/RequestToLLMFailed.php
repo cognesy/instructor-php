@@ -8,7 +8,7 @@ class RequestToLLMFailed extends Event
 {
     public function __construct(
         public array $request,
-        public array $errors,
+        public string $errors,
         public array $response = [],
     ) {
         parent::__construct();

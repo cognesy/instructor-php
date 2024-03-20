@@ -2,59 +2,57 @@
 
 namespace Cognesy\Instructor\LLMs\OpenAI\ToolsMode;
 
-use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\LLM\ChunkReceived;
-use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
 use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
+use Cognesy\Instructor\LLMs\AbstractStreamedCallHandler;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
 
-class StreamedToolCallHandler
+class StreamedToolCallHandler extends AbstractStreamedCallHandler
 {
-    public function __construct(
-        private EventDispatcher $eventDispatcher,
-        private Client $client,
-        private array $request,
-        private ResponseModel $responseModel,
-    ) {}
+    private Client $client;
 
-    /**
-     * Handle streamed chat call
-     */
-    public function handle() : Result {
-        // get stream
+    public function __construct(
+        EventDispatcher $events,
+        Client $client,
+        array $request,
+        ResponseModel $responseModel,
+    ) {
+        $this->client = $client;
+        $this->events = $events;
+        $this->request = $request;
+        $this->responseModel = $responseModel;
+    }
+
+    protected function getStream() : Result {
         try {
-            $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
             $stream = $this->client->chat()->createStreamed($this->request);
         } catch (Exception $e) {
-            $event = new RequestToLLMFailed($this->request, [$e->getMessage()]);
-            $this->eventDispatcher->dispatch($event);
-            return Result::failure($event);
+            return Result::failure($e);
         }
+        return Result::success($stream);
+    }
 
+    protected function processStream($stream) : Result {
         // process stream
-        $responseJson = '';
         $functionCalls = [];
         foreach($stream as $response){
-            $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
-            $maybeFunctionName = $response->choices[0]->delta->toolCalls[0]->function->name ?? null;
-            $maybeArgumentChunk = $response->choices[0]->delta->toolCalls[0]->function->arguments ?? null;
+            // receive data
+            $this->events->dispatch(new StreamedResponseReceived($response->toArray()));
+            $this->lastResponse = $response;
 
             // situation 1: new function call
+            $maybeFunctionName = $this->getFunctionName($response);
             if ($maybeFunctionName) {
                 if (count($functionCalls) > 0) {
-                    $this->finalizeFunctionCall($functionCalls, $responseJson);
-                    $responseJson = ''; // reset json buffer
+                    $this->finalizeFunctionCall($functionCalls, $this->responseJson);
+                    $this->responseJson = ''; // reset json buffer
                 }
                 // start capturing new function call
                 $newFunctionCall = $this->newFunctionCall($response);
@@ -62,60 +60,36 @@ class StreamedToolCallHandler
             }
 
             // situation 2: regular data chunk
+            $maybeArgumentChunk = $this->getArgumentChunk($response);
             if ($maybeArgumentChunk) {
-                $this->eventDispatcher->dispatch(new ChunkReceived($maybeArgumentChunk));
-                $responseJson .= $maybeArgumentChunk;
-                $this->eventDispatcher->dispatch(new PartialJsonReceived($responseJson));
-                $this->updateFunctionCall($functionCalls, $responseJson);
+                $this->responseJson .= $maybeArgumentChunk;
+                $this->updateFunctionCall(
+                    $functionCalls,
+                    $this->responseJson,
+                    $maybeArgumentChunk
+                );
             }
-
-            // situation 3: finishReason other than 'stop'
-            //$finishReason = $response->choices[0]->finishReason ?? null;
-            //if ($finishReason) {
-            //    $this->finalizeFunctionCall($toolCalls, $responseJson);
-            //    return Result::success(new LLMResponse($toolCalls, $finishReason, $response->toArray(), true));
-            //}
         }
         // check if there are any toolCalls
         if (count($functionCalls) === 0) {
-            return Result::failure(new RequestToLLMFailed($this->request, ['No tool calls found in the response']));
+            return Result::failure(new RequestToLLMFailed($this->request, 'No tool calls found in the response'));
         }
         // finalize last function call
         if (count($functionCalls) > 0) {
-            $this->finalizeFunctionCall($functionCalls, $responseJson);
+            $this->finalizeFunctionCall($functionCalls, $this->responseJson);
         }
-        // handle finishReason other than 'stop'
-        $response = new LLMResponse(
-            functionCalls: $functionCalls,
-            finishReason: ($response->choices[0]->finishReason ?? null),
-            rawResponse: $response->toArray(),
-            isComplete: true,
-        );
-        $this->eventDispatcher->dispatch(new StreamedResponseFinished($response));
-        return Result::success($response);
+        return Result::success($functionCalls);
     }
 
-    private function newFunctionCall($response) : FunctionCall {
-        $newFunctionCall = new FunctionCall(
-            toolCallId: $response->choices[0]->delta->toolCalls[0]->id,
-            functionName: $response->choices[0]->delta->toolCalls[0]->function->name,
-            functionArgsJson: ''
-        );
-        $this->eventDispatcher->dispatch(new StreamedFunctionCallStarted($newFunctionCall));
-        return $newFunctionCall;
+    protected function getFinishReason(mixed $response) : string {
+        return $response->choices[0]->finishReason ?? '';
     }
 
-    private function finalizeFunctionCall(array $functionCalls, string $responseJson) : void {
-        /** @var \Cognesy\Instructor\Data\FunctionCall $currentFunctionCall */
-        $currentFunctionCall = $functionCalls[count($functionCalls) - 1];
-        $currentFunctionCall->functionArgsJson = $responseJson;
-        $this->eventDispatcher->dispatch(new StreamedFunctionCallCompleted($currentFunctionCall));
+    protected function getFunctionName($response) : ?string {
+        return $response->choices[0]->delta->toolCalls[0]->function->name ?? null;
     }
 
-    private function updateFunctionCall(array $functionCalls, string $responseJson) : void {
-        /** @var \Cognesy\Instructor\Data\FunctionCall $currentFunctionCall */
-        $currentFunctionCall = $functionCalls[count($functionCalls) - 1];
-        $currentFunctionCall->functionArgsJson = $responseJson;
-        $this->eventDispatcher->dispatch(new StreamedFunctionCallUpdated($currentFunctionCall));
+    protected function getArgumentChunk($response) : ?string {
+        return $response->choices[0]->delta->toolCalls[0]->function->arguments ?? null;
     }
 }

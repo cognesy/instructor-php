@@ -15,7 +15,7 @@ use Cognesy\Instructor\Utils\Result;
 class ResponseDeserializer
 {
     public function __construct(
-        private EventDispatcher $eventDispatcher,
+        private EventDispatcher $events,
         private CanDeserializeClass $deserializer,
     ) {}
 
@@ -25,20 +25,20 @@ class ResponseDeserializer
             default => $this->deserializeAny($json, $responseModel)
         };
         if ($result->isFailure()) {
-            $this->eventDispatcher->dispatch(new ResponseDeserializationFailed($result->errorMessage()));
+            $this->events->dispatch(new ResponseDeserializationFailed($result->errorMessage()));
             return $result;
         }
-        $this->eventDispatcher->dispatch(new ResponseDeserialized($result->value()));
+        $this->events->dispatch(new ResponseDeserialized($result->value()));
         return $result;
     }
 
     protected function deserializeSelf(string $json, CanDeserializeSelf $response) : Result {
-        $this->eventDispatcher->dispatch(new CustomResponseDeserializationAttempt($response, $json));
+        $this->events->dispatch(new CustomResponseDeserializationAttempt($response, $json));
         return Result::try(fn() => $response->fromJson($json));
     }
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {
-        $this->eventDispatcher->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
+        $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
         return Result::try(fn() => $this->deserializer->fromJson($json, $responseModel->class));
     }
 }

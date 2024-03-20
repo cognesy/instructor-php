@@ -25,7 +25,7 @@ use Throwable;
  */
 class Instructor {
     private Configuration $config;
-    private EventDispatcher $eventDispatcher;
+    private EventDispatcher $events;
     private $onError;
     private $onPartialResponse;
     private $onSequenceUpdate;
@@ -41,7 +41,7 @@ class Instructor {
         $this->config = Configuration::fresh($config);
         $this->queuedEvents[] = new InstructorReady($this->config);
         /** @var \Cognesy\Instructor\Events\EventDispatcher */
-        $this->eventDispatcher = $this->config->get(EventDispatcher::class);
+        $this->events = $this->config->get(EventDispatcher::class);
     }
 
     /// INITIALIZATION ENDPOINTS /////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ class Instructor {
     public function withRequest(Request $request) : self {
         $this->dispatchQueuedEvents();
         $this->request = $request;
-        $this->eventDispatcher->dispatch(new RequestReceived($request));
+        $this->events->dispatch(new RequestReceived($request));
         return $this;
     }
 
@@ -138,12 +138,12 @@ class Instructor {
             if ($responseResult->isFailure()) {
                 throw new Exception($responseResult->error());
             }
-            $this->eventDispatcher->dispatch(new ResponseGenerated($responseResult->value()));
+            $this->events->dispatch(new ResponseGenerated($responseResult->value()));
             return $responseResult->value();
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
             $event = new ErrorRaised($error, $this->request);
-            $this->eventDispatcher->dispatch($event);
+            $this->events->dispatch($event);
             if (isset($this->onError)) {
                 // final attempt to recover from the error (e.g. give fallback response)
                 return ($this->onError)($event);
@@ -189,7 +189,7 @@ class Instructor {
      * Listener to all events
      */
     public function wiretap(callable $listener) : self {
-        $this->eventDispatcher->wiretap($listener);
+        $this->events->wiretap($listener);
         return $this;
     }
 
@@ -197,7 +197,7 @@ class Instructor {
      * Listen to a specific event
      */
     public function onEvent(string $class, callable $listener) : self {
-        $this->eventDispatcher->addListener($class, $listener);
+        $this->events->addListener($class, $listener);
         return $this;
     }
 
@@ -214,7 +214,7 @@ class Instructor {
      */
     public function onPartialUpdate(callable $listener) : self {
         $this->onPartialResponse = $listener;
-        $this->eventDispatcher->addListener(
+        $this->events->addListener(
             PartialResponseGenerated::class,
             $this->handlePartialResponse(...)
         );
@@ -226,7 +226,7 @@ class Instructor {
      */
     public function onSequenceUpdate(callable $listener) : self {
         $this->onSequenceUpdate = $listener;
-        $this->eventDispatcher->addListener(
+        $this->events->addListener(
             SequenceUpdated::class,
             $this->handleSequenceUpdate(...)
         );
@@ -254,12 +254,12 @@ class Instructor {
     }
 
     /**
-     * Dispatches all events queued before $eventDispatcher was initialized
+     * Dispatches all events queued before $events was initialized
      */
     private function dispatchQueuedEvents()
     {
         foreach ($this->queuedEvents as $event) {
-            $this->eventDispatcher->dispatch($event);
+            $this->events->dispatch($event);
         }
         $this->queuedEvents = [];
     }

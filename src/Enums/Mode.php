@@ -12,5 +12,6 @@ enum Mode : string
     case MdJson = 'markdown_json_mode';
     case JsonSchema = 'json_schema_mode';
     case Yaml = 'yaml_mode';
+    case AnthropicTools = 'anthropic_tool_call';
     case Functions = 'function_call'; // deprecated by OpenAI, low priority (but probably easy)
 }

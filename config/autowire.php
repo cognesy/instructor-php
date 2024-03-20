@@ -28,7 +28,6 @@ use Cognesy\Instructor\Schema\PropertyMap;
 use Cognesy\Instructor\Schema\SchemaMap;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
-use Cognesy\Instructor\Utils\Env;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 use OpenAI;
 use OpenAI\Client;
@@ -66,9 +65,9 @@ function autowire(Configuration $config) : Configuration
         class: FunctionCallerFactory::class,
         context: [
             'modeHandlers' => [
-                Mode::Tools->value => $config->reference(OpenAIToolCaller::class),
-                Mode::Json->value => $config->reference(OpenAIJsonCaller::class),
-                Mode::MdJson->value => $config->reference(OpenAIMdJsonCaller::class),
+                Mode::Tools->value => $config->reference(OpenAIToolCaller::class, true),
+                Mode::Json->value => $config->reference(OpenAIJsonCaller::class, true),
+                Mode::MdJson->value => $config->reference(OpenAIMdJsonCaller::class, true),
             ],
             //'forceMode' => Mode::Tools,
         ]
@@ -77,7 +76,7 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: OpenAIToolCaller::class,
         context: [
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
             'client' => $config->reference(Client::class),
         ]
     );
@@ -85,7 +84,7 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: OpenAIJsonCaller::class,
         context: [
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
             'client' => $config->reference(Client::class),
         ]
     );
@@ -93,7 +92,7 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: OpenAIMdJsonCaller::class,
         context: [
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
             'client' => $config->reference(Client::class),
         ]
     );
@@ -108,7 +107,7 @@ function autowire(Configuration $config) : Configuration
             'schemaFactory' => $config->reference(SchemaFactory::class),
             'schemaBuilder' => $config->reference(SchemaBuilder::class),
             'typeDetailsFactory' => $config->reference(TypeDetailsFactory::class),
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
         ]
     );
 
@@ -149,7 +148,7 @@ function autowire(Configuration $config) : Configuration
         context: [
             'functionCallerFactory' => $config->reference(FunctionCallerFactory::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
             'responseHandler' => $config->reference(CanHandleResponse::class),
             'partialResponseHandler' => $config->reference(CanHandlePartialResponse::class),
         ]
@@ -181,21 +180,21 @@ function autowire(Configuration $config) : Configuration
         class: ResponseDeserializer::class,
         context: [
             'deserializer' => $config->reference(CanDeserializeClass::class),
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
         ]
     );
     $config->declare(
         class: ResponseValidator::class,
         context: [
             'validator' => $config->reference(CanValidateObject::class),
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
         ]
     );
 
     $config->declare(
         class: ResponseTransformer::class,
         context: [
-            'eventDispatcher' => $config->reference(EventDispatcher::class),
+            'events' => $config->reference(EventDispatcher::class),
         ]
     );
 

@@ -1,18 +1,18 @@
 <?php
 namespace Cognesy\Instructor\Events;
-use Carbon\Carbon;
 use Cognesy\Instructor\Utils\Console;
+use DateTimeImmutable;
 use Ramsey\Uuid\Uuid;
 
 abstract class Event
 {
     public readonly string $eventId;
-    public readonly Carbon $createdAt;
+    public readonly DateTimeImmutable $createdAt;
 
     public function __construct()
     {
         $this->eventId = Uuid::uuid4();
-        $this->createdAt = Carbon::now();
+        $this->createdAt = new DateTimeImmutable();
     }
 
     public function toLog(): string {

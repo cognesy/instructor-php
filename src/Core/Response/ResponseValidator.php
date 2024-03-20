@@ -15,7 +15,7 @@ use Cognesy\Instructor\Utils\Result;
 class ResponseValidator
 {
     public function __construct(
-        private EventDispatcher $eventDispatcher,
+        private EventDispatcher $events,
         private CanValidateObject $validator,
     ) {}
 
@@ -28,20 +28,20 @@ class ResponseValidator
             default => $this->validateObject($response)
         };
         if ($result->isInvalid()) {
-            $this->eventDispatcher->dispatch(new ResponseValidationFailed($result));
+            $this->events->dispatch(new ResponseValidationFailed($result));
             return Result::failure($result->getErrorMessage());
         }
-        $this->eventDispatcher->dispatch(new ResponseValidated($result));
+        $this->events->dispatch(new ResponseValidated($result));
         return Result::success($response);
     }
 
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {
-        $this->eventDispatcher->dispatch(new CustomResponseValidationAttempt($response));
+        $this->events->dispatch(new CustomResponseValidationAttempt($response));
         return $response->validate();
     }
 
     protected function validateObject(object $response) : ValidationResult {
-        $this->eventDispatcher->dispatch(new ResponseValidationAttempt($response));
+        $this->events->dispatch(new ResponseValidationAttempt($response));
         return $this->validator->validate($response);
     }
 }

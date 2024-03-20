@@ -47,6 +47,8 @@ $user = (new Instructor)
     ->wiretap(fn($event) => $event->print())
     ->get();
 
+dump($user);
+
 assert($user->name == "Jason");
 assert($user->role == Role::CTO);
 assert($user->age == 28);

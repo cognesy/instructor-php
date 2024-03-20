@@ -11,7 +11,7 @@ use OpenAI\Client;
 class OpenAIToolCaller implements CanCallFunction
 {
     public function __construct(
-        private EventDispatcher $eventDispatcher,
+        private EventDispatcher $events,
         private Client $client,
     ) {}
 
@@ -35,8 +35,8 @@ class OpenAIToolCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedToolCallHandler($this->eventDispatcher, $this->client, $request, $responseModel))->handle(),
-            default => (new ToolCallHandler($this->eventDispatcher, $this->client, $request, $responseModel))->handle()
+            true => (new StreamedToolCallHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new ToolCallCallHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 }

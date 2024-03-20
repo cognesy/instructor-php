@@ -13,7 +13,7 @@ use Exception;
 class ResponseTransformer
 {
     public function __construct(
-        private EventDispatcher $eventDispatcher
+        private EventDispatcher $events
     ) {}
 
     public function transform(object $object) : Result {
@@ -24,14 +24,14 @@ class ResponseTransformer
     }
 
     protected function transformSelf(CanTransformSelf $object) : Result {
-        $this->eventDispatcher->dispatch(new ResponseTransformationAttempt($object));
+        $this->events->dispatch(new ResponseTransformationAttempt($object));
         try {
             $transformed = $object->transform();
         } catch (Exception $e) {
-            $this->eventDispatcher->dispatch(new ResponseTransformationFailed($object, $e->getMessage()));
+            $this->events->dispatch(new ResponseTransformationFailed($object, $e->getMessage()));
             return Result::failure($e->getMessage());
         }
-        $this->eventDispatcher->dispatch(new ResponseTransformed($transformed));
+        $this->events->dispatch(new ResponseTransformed($transformed));
         return Result::success($transformed);
     }
 }

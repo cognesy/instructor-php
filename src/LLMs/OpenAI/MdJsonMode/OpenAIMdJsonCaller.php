@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\LLMs\OpenAI\MdJsonMode;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\OpenAI\JsonMode\JsonModeHandler;
+use Cognesy\Instructor\LLMs\OpenAI\JsonMode\JsonModeCallHandler;
 use Cognesy\Instructor\LLMs\OpenAI\JsonMode\StreamedJsonModeCallHandler;
 use Cognesy\Instructor\Utils\Result;
 use OpenAI\Client;
@@ -14,7 +14,7 @@ class OpenAIMdJsonCaller implements CanCallFunction
     private string $prompt = "\nRespond with JSON containing extracted data within a ```json {} ``` codeblock. Do not return JSONSchema, only JSON. Response must follow this JSONSchema:\n";
 
     public function __construct(
-        private EventDispatcher $eventDispatcher,
+        private EventDispatcher $events,
         private Client $client,
     ) {}
 
@@ -34,8 +34,8 @@ class OpenAIMdJsonCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedJsonModeCallHandler($this->eventDispatcher, $this->client, $request, $responseModel))->handle(),
-            default => (new JsonModeHandler($this->eventDispatcher, $this->client, $request, $responseModel))->handle()
+            true => (new StreamedJsonModeCallHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new JsonModeCallHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 

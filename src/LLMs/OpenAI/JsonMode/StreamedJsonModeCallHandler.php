@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\LLMs\OpenAI\JsonMode;
 
-use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -9,103 +8,154 @@ use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
 use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
 use Cognesy\Instructor\Exceptions\JSONParsingException;
+use Cognesy\Instructor\LLMs\AbstractStreamedCallHandler;
+use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use OpenAI\Client;
 
-class StreamedJsonModeCallHandler
+class StreamedJsonModeCallHandler extends AbstractStreamedCallHandler
 {
-    public function __construct(
-        private EventDispatcher $eventDispatcher,
-        private Client $client,
-        private array $request,
-        private ResponseModel $responseModel,
-    ) {}
+    private Client $client;
+    private bool $matchToExpectedFields = false;
+    private bool $preventJsonSchema = true;
+    private string $responseText = '';
 
-    /**
-     * Handle streamed chat call
-     */
-    public function handle() : Result {
-        // get stream
+    public function __construct(
+        EventDispatcher $events,
+        Client $client,
+        array $request,
+        ResponseModel $responseModel,
+    ) {
+        $this->client = $client;
+        $this->events = $events;
+        $this->request = $request;
+        $this->responseModel = $responseModel;
+    }
+
+    protected function getStream() : Result {
         try {
-            $this->eventDispatcher->dispatch(new RequestSentToLLM($this->request));
             $stream = $this->client->chat()->createStreamed($this->request);
         } catch (Exception $e) {
-            $event = new RequestToLLMFailed($this->request, [$e->getMessage()]);
-            $this->eventDispatcher->dispatch($event);
-            return Result::failure($event);
+            return Result::failure($e);
         }
+        return Result::success($stream);
+    }
 
+    protected function processStream($stream) : Result {
         // process stream
         $functionCalls = [];
         $newFunctionCall = $this->newFunctionCall();
         $functionCalls[] = $newFunctionCall;
-        $responseJson = '';
-        $lastResponse = null;
         foreach($stream as $response){
-            $lastResponse = $response;
-            $this->eventDispatcher->dispatch(new StreamedResponseReceived($response->toArray()));
-            $maybeArgumentChunk = $response->choices[0]->delta->content ?? null;
+            // receive data
+            $this->events->dispatch(new StreamedResponseReceived($response->toArray()));
+            $this->lastResponse = $response;
 
-            if ($maybeArgumentChunk === null) {
+            // skip if chunk empty
+            $maybeArgumentChunk = $this->getArgumentChunk($response);
+            if (empty($maybeArgumentChunk)) {
                 continue;
             }
-            $this->eventDispatcher->dispatch(new ChunkReceived($maybeArgumentChunk));
-            $responseJson .= $maybeArgumentChunk;
+
+            // process response
+            $this->responseText .= $maybeArgumentChunk;
+            $this->responseJson = Json::extractPartial($this->responseText);
+
             try {
-                $this->eventDispatcher->dispatch(new PartialJsonReceived(Json::extractPartial($responseJson)));
+                $this->preventJsonSchemaResponse();
+                $this->detectNonMatchingJson();
             } catch (JsonParsingException $e) {
                 return Result::failure($e);
             }
-            $this->updateFunctionCall($functionCalls, $responseJson);
+
+            $this->events->dispatch(new PartialJsonReceived($this->responseJson));
+            $this->updateFunctionCall($functionCalls, $this->responseJson, $maybeArgumentChunk);
         }
         // check if there are any toolCalls
         if (count($functionCalls) === 0) {
-            return Result::failure(new RequestToLLMFailed($this->request, ['No tool calls found in the response']));
+            return Result::failure(new RequestToLLMFailed($this->request, 'No tool calls found in the response'));
         }
         // finalize last function call
         if (count($functionCalls) > 0) {
-            $this->finalizeFunctionCall($functionCalls, Json::extract($responseJson));
+            $this->finalizeFunctionCall($functionCalls, Json::extract($this->responseText));
         }
-        // handle finishReason other than 'stop'
-        $llmResponse = new LLMResponse(
-            functionCalls: $functionCalls,
-            finishReason: ($lastResponse->choices[0]->finishReason ?? ''),
-            rawResponse: $lastResponse?->toArray(),
-            isComplete: true,
-        );
-        $this->eventDispatcher->dispatch(new StreamedResponseFinished($llmResponse));
-        return Result::success($llmResponse);
+        return Result::success($functionCalls);
     }
 
-    private function newFunctionCall() : FunctionCall {
-        $newFunctionCall = new FunctionCall(
-            toolCallId: '',
-            functionName: $this->responseModel->functionName,
-            functionArgsJson: ''
-        );
-        $this->eventDispatcher->dispatch(new StreamedFunctionCallStarted($newFunctionCall));
-        return $newFunctionCall;
+
+    protected function getFinishReason(mixed $response) : string {
+        return $response->choices[0]->finishReason ?? '';
     }
 
-    private function finalizeFunctionCall(array $functionCalls, string $responseJson) : void {
-        /** @var \Cognesy\Instructor\Data\FunctionCall $currentFunctionCall */
-        $currentFunctionCall = $functionCalls[count($functionCalls) - 1];
-        $currentFunctionCall->functionArgsJson = $responseJson;
-        $this->eventDispatcher->dispatch(new StreamedFunctionCallCompleted($currentFunctionCall));
+    private function getArgumentChunk($response) : string {
+        return $response->choices[0]->delta->content ?? '';
     }
 
-    private function updateFunctionCall(array $functionCalls, string $responseJson) : void {
-        /** @var \Cognesy\Instructor\Data\FunctionCall $currentFunctionCall */
-        $currentFunctionCall = $functionCalls[count($functionCalls) - 1];
-        $currentFunctionCall->functionArgsJson = $responseJson;
-        $this->eventDispatcher->dispatch(new StreamedFunctionCallUpdated($currentFunctionCall));
+    private function preventJsonSchemaResponse() {
+        if (
+            $this->preventJsonSchema
+            && $this->isJsonSchemaResponse($this->responseJson)
+        ) {
+            throw new JsonParsingException(
+                message: 'You started responding with JSONSchema. Respond with JSON data instead.',
+                json: $this->responseText,
+            );
+        }
+    }
+
+    private function isJsonSchemaResponse(string $jsonData) : bool {
+        // ...detect JSONSchema response
+        try {
+            $decoded = json_decode($jsonData, true);
+        } catch (Exception $e) {
+            return false;
+        }
+        if (isset($decoded['type']) && $decoded['type'] === 'object') {
+            return true;
+        }
+        return false;
+    }
+
+    private function detectNonMatchingJson() {
+        if (
+            $this->matchToExpectedFields
+            && !$this->isMatchingResponseModel($this->responseJson, $this->responseModel)
+        ) {
+            throw new JsonParsingException(
+                message: 'JSON does not match schema.',
+                json: $this->responseText,
+            );
+        }
+    }
+
+    private function isMatchingResponseModel(
+        string $jsonData,
+        ResponseModel $responseModel
+    ) : bool {
+        // ...check for response model property names
+        $propertyNames = isset($responseModel->schema->properties)
+            ? array_keys($responseModel->schema->properties)
+            : [];
+        if (empty($propertyNames)) {
+            return true;
+        }
+        // ...detect matching response model
+        try {
+            $decoded = json_decode($jsonData, true);
+        } catch (Exception $e) {
+            return false;
+        }
+        // Question: how to make this work while we're getting partially
+        // retrieved field names
+        $decodedKeys = array_filter(array_keys($decoded));
+        if (empty($decodedKeys)) {
+            return true;
+        }
+        return Arrays::isSubset($decodedKeys, $propertyNames);
     }
 }

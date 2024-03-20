@@ -40,7 +40,7 @@ class RequestHandler implements CanHandleRequest
     public function __construct(
         private FunctionCallerFactory $functionCallerFactory,
         private ResponseModelFactory $responseModelFactory,
-        private EventDispatcher $eventDispatcher,
+        private EventDispatcher $events,
         private CanHandleResponse $responseHandler,
         private CanHandlePartialResponse $partialResponseHandler,
     )
@@ -54,7 +54,7 @@ class RequestHandler implements CanHandleRequest
         if ($request->options['stream'] ?? false) {
             $this->registerStreamListeners($requestedModel);
         }
-        $this->eventDispatcher->dispatch(new ResponseModelBuilt($requestedModel));
+        $this->events->dispatch(new ResponseModelBuilt($requestedModel));
         return $this->tryRespond($request, $requestedModel);
     }
 
@@ -70,7 +70,7 @@ class RequestHandler implements CanHandleRequest
         while ($retries <= $request->maxRetries) {
             // get function caller instance
             $functionCaller = $this->functionCallerFactory->fromRequest($request);
-            $this->eventDispatcher->dispatch(new FunctionCallRequested($messages, $responseModel, $request));
+            $this->events->dispatch(new FunctionCallRequested($messages, $responseModel, $request));
 
             // run LLM inference
             $llmCallResult = $functionCaller->callFunction(
@@ -81,7 +81,7 @@ class RequestHandler implements CanHandleRequest
             );
 
             if ($llmCallResult->isSuccess()) {
-                $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmCallResult));
+                $this->events->dispatch(new FunctionCallResponseReceived($llmCallResult));
                 // get response JSON data
                 /** @var LLMResponse $llmResponse */
                 $llmResponse = $llmCallResult->value();
@@ -98,7 +98,7 @@ class RequestHandler implements CanHandleRequest
 
             if ($llmCallResult->isFailure()) {
                 $errors = $this->extractErrors($llmCallResult);
-                $this->eventDispatcher->dispatch(new ResponseGenerationFailed($errors));
+                $this->events->dispatch(new ResponseGenerationFailed($errors));
                 if (!($llmCallResult->error() instanceof JsonParsingException)) {
                     // we don't handle errors other than JSONParsingException
                     return $llmCallResult;
@@ -111,11 +111,11 @@ class RequestHandler implements CanHandleRequest
             $messages = $this->makeRetryMessages($messages, $responseModel, $jsonData, $errors);
             $retries++;
             if ($retries <= $request->maxRetries) {
-                $this->eventDispatcher->dispatch(new NewValidationRecoveryAttempt($retries, $errors));
+                $this->events->dispatch(new NewValidationRecoveryAttempt($retries, $errors));
             }
         }
-        $this->eventDispatcher->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
-        $this->eventDispatcher->dispatch(new ResponseGenerationFailed($errors));
+        $this->events->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
+        $this->events->dispatch(new ResponseGenerationFailed($errors));
         return Result::failure(new ValidationRecoveryLimitReached($retries-1, $errors));
     }
 
@@ -125,7 +125,7 @@ class RequestHandler implements CanHandleRequest
             $result = $this->responseHandler->toResponse($jsonData, $responseModel);
             if ($result->isSuccess()) {
                 $object = $result->value();
-                $this->eventDispatcher->dispatch(new FunctionCallResponseConvertedToObject($object));
+                $this->events->dispatch(new FunctionCallResponseConvertedToObject($object));
                 return Result::success($object);
             }
             $errors = $this->extractErrors($result);
@@ -137,7 +137,7 @@ class RequestHandler implements CanHandleRequest
             $errors = $this->extractErrors($e);
         } catch (Exception $e) {
             // throw on other exceptions
-            $this->eventDispatcher->dispatch(new ResponseGenerationFailed([$e->getMessage()]));
+            $this->events->dispatch(new ResponseGenerationFailed([$e->getMessage()]));
             throw new Exception($e->getMessage());
         }
         return Result::failure($errors);
@@ -174,13 +174,13 @@ class RequestHandler implements CanHandleRequest
 
     private function registerStreamListeners(ResponseModel $requestedModel)
     {
-        $this->eventDispatcher->addListener(
+        $this->events->addListener(
             eventClass: PartialJsonReceived::class,
             listener: function(PartialJsonReceived $event) use ($requestedModel) {
                 $this->processPartialResponse($event->partialJson, $requestedModel);
             }
         );
-        $this->eventDispatcher->addListener(
+        $this->events->addListener(
             eventClass: StreamedFunctionCallCompleted::class,
             listener: function(StreamedFunctionCallCompleted $event) use ($requestedModel) {
                 $this->finalizePartialResponse($requestedModel);
@@ -196,7 +196,7 @@ class RequestHandler implements CanHandleRequest
         $result = $this->partialResponseHandler->toPartialResponse($jsonData, $responseModel);
         if ($result->isFailure()) {
             $errors = Arrays::toArray($result->error());
-            $this->eventDispatcher->dispatch(new PartialResponseGenerationFailed($errors));
+            $this->events->dispatch(new PartialResponseGenerationFailed($errors));
             return;
         }
 
@@ -205,7 +205,7 @@ class RequestHandler implements CanHandleRequest
         $currentHash = hash('xxh3', json_encode($partialResponse));
         if ($this->previousHash != $currentHash) {
             // send partial response to listener only if new tokens changed resulting response object
-            $this->eventDispatcher->dispatch(new PartialResponseGenerated($partialResponse));
+            $this->events->dispatch(new PartialResponseGenerated($partialResponse));
             if (($partialResponse instanceof Sequenceable)) {
                 $this->processSequenceable($partialResponse);
                 $this->lastPartialResponse = clone $partialResponse;
@@ -226,7 +226,7 @@ class RequestHandler implements CanHandleRequest
             return;
         }
         $this->previousSequenceLength = $currentLength;
-        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        $this->events->dispatch(new SequenceUpdated($this->lastPartialResponse));
     }
 
     protected function finalizePartialResponse(ResponseModel $responseModel) : void {
@@ -236,6 +236,6 @@ class RequestHandler implements CanHandleRequest
         if (!($this->lastPartialResponse instanceof Sequenceable)) {
             return;
         }
-        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        $this->events->dispatch(new SequenceUpdated($this->lastPartialResponse));
     }
 }

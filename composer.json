@@ -49,12 +49,10 @@
         "openai-php/client": "^0.8.4",
         "symfony/http-client": "^7.0",
         "nyholm/psr7": "^1.8",
-        "jasny/phpdoc-parser": "^1.0",
         "symfony/property-access": "^7.0",
-        "nesbot/carbon": "^3.0",
         "ramsey/uuid": "^4.7",
-        "symfony/yaml": "^7.0",
         "vlucas/phpdotenv": "^5.6",
-        "guzzlehttp/guzzle": "^7.8"
+        "guzzlehttp/guzzle": "^7.8",
+        "wpai-inc/anthropic-sdk-php": "^0.1.0"
     }
 }

@@ -12,7 +12,7 @@ class OpenAIJsonCaller implements CanCallFunction
     private string $prompt = "\nRespond with JSON. Response must follow this JSONSchema:\n";
 
     public function __construct(
-        private EventDispatcher $eventDispatcher,
+        private EventDispatcher $events,
         private Client $client,
     ) {}
 
@@ -33,8 +33,8 @@ class OpenAIJsonCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedJsonModeCallHandler($this->eventDispatcher, $this->client, $request, $responseModel))->handle(),
-            default => (new JsonModeHandler($this->eventDispatcher, $this->client, $request, $responseModel))->handle()
+            true => (new StreamedJsonModeCallHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new JsonModeCallHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 
