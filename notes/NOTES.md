@@ -25,11 +25,6 @@ Currently not supported, needs to be supported to allow better interaction with 
  - Symfony DTO
  - Laravel DTO
 
-### Public vs private/protected fields
-
-Document and write tests around the behavior of public vs private/protected fields.
-
-
 ### Test coverage
 
 Catch up with the latest additions.
@@ -62,7 +57,22 @@ To manually process text of response.
 
 To work with raw response object.
 
+### Non empty constructors
 
+Infer constructor arguments from the provided data
+
+### Early validation of streamed responses
+
+Currently, streamed responses are validated at the end of the process.
+Validating response early would allow to get the correct response faster,
+as we could restart processing and trigger inference re-attempt as soon
+as we recognize that the response for sure will be invalid - esp. for weak
+models.
+
+### Moderation
+
+Use moderation endpoint to automatically verify request prior to sending
+it to the model.
 
 
 ## Design decisions to revisit

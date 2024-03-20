@@ -13,7 +13,7 @@ class ResponseModel
 
     public string $functionName = 'extract_data';
     public string $functionDescription = 'Extract data in JSON format from provided content';
-    public string $retryPrompt = "JSON generated incorrectly, fix following errors:";
+    public string $retryPrompt = "JSON generated incorrectly, fix following errors";
 
     public function __construct(
         string $class = null,

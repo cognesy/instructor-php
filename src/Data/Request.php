@@ -14,7 +14,7 @@ class Request
         public array $options = [],
         public string $functionName = 'extract_data',
         public string $functionDescription = 'Extract data from provided content',
-        public string $retryPrompt = "Recall function correctly, fix following errors:",
+        public string $retryPrompt = "Recall function correctly, fix following errors",
         public Mode $mode = Mode::Tools,
     ) {}
 

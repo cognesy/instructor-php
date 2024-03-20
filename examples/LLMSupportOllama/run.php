@@ -38,8 +38,8 @@ $executionMode = Mode::MdJson;
 // Create instance of OpenAI client initialized with custom parameters
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)
-    ->withOrganization(null) // default: null
-    ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
+    ->withOrganization(null)
+    ->withBaseUri($yourBaseUri)
     ->make();
 
 /// Get Instructor with the default client component overridden with your own

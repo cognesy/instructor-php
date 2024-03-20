@@ -28,26 +28,29 @@ use Cognesy\Instructor\Schema\PropertyMap;
 use Cognesy\Instructor\Schema\SchemaMap;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
+use Cognesy\Instructor\Utils\Env;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 use OpenAI;
 use OpenAI\Client;
 
 function autowire(Configuration $config) : Configuration
 {
-    /// CORE ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// CORE /////////////////////////////////////////////////////////////////////////////////
 
     $config->declare(class: EventDispatcher::class);
 
-    /// LLM CLIENTS /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// LLM CLIENTS //////////////////////////////////////////////////////////////////////////
 
     $config->declare(
         class: Client::class,
         context: [
-            'apiKey' => getenv('OPENAI_API_KEY') ?? '',
-            'baseUri' => getenv('OPENAI_BASE_URI') ?? '',
-            'organization' => getenv('OPENAI_ORGANIZATION') ?? '',
+            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
         ],
         getInstance: function($context) {
+            // load from .env
             return OpenAI::factory()
                 ->withApiKey($context['apiKey'])
                 ->withOrganization($context['organization'])
@@ -56,7 +59,8 @@ function autowire(Configuration $config) : Configuration
         },
     );
 
-    /// MODE SUPPORT ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// MODE SUPPORT /////////////////////////////////////////////////////////////////////////
 
     $config->declare(
         class: FunctionCallerFactory::class,
@@ -95,7 +99,7 @@ function autowire(Configuration $config) : Configuration
     );
 
 
-    /// SCHEMA MODEL HANDLING ///////////////////////////////////////////////////////////////////////////////////////
+    /// SCHEMA MODEL HANDLING ////////////////////////////////////////////////////////////////
 
     $config->declare(
         class: ResponseModelFactory::class,
@@ -137,7 +141,7 @@ function autowire(Configuration $config) : Configuration
     $config->declare(class: ReferenceQueue::class);
 
 
-    /// REQUEST HANDLING ////////////////////////////////////////////////////////////////////////////////////////////
+    /// REQUEST HANDLING /////////////////////////////////////////////////////////////////////
 
     $config->declare(
         class: RequestHandler::class,
@@ -152,7 +156,7 @@ function autowire(Configuration $config) : Configuration
     );
 
 
-    /// RESPONSE HANDLING ///////////////////////////////////////////////////////////////////////////////////////////
+    /// RESPONSE HANDLING ////////////////////////////////////////////////////////////////////
 
     $config->declare(
         class: ResponseHandler::class,

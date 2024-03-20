@@ -1,7 +1,7 @@
 # Support for local Ollama
 
 You can use Instructor with local Ollama instance. Please note that, at least currently,
-OS models do not perform on par with OpenAI ones (GPT-3.5 or GPT-4).
+OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model.
 
 ```php
 <?php
@@ -38,8 +38,8 @@ $executionMode = Mode::MdJson;
 // Create instance of OpenAI client initialized with custom parameters
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)
-    ->withOrganization(null) // default: null
-    ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
+    ->withOrganization(null)
+    ->withBaseUri($yourBaseUri)
     ->make();
 
 /// Get Instructor with the default client component overridden with your own

@@ -14,6 +14,7 @@ use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
 use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
+use Cognesy\Instructor\Exceptions\JSONParsingException;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
@@ -58,7 +59,11 @@ class StreamedJsonModeCallHandler
             }
             $this->eventDispatcher->dispatch(new ChunkReceived($maybeArgumentChunk));
             $responseJson .= $maybeArgumentChunk;
-            $this->eventDispatcher->dispatch(new PartialJsonReceived(Json::extractPartial($responseJson)));
+            try {
+                $this->eventDispatcher->dispatch(new PartialJsonReceived(Json::extractPartial($responseJson)));
+            } catch (JsonParsingException $e) {
+                return Result::failure($e);
+            }
             $this->updateFunctionCall($functionCalls, $responseJson);
         }
         // check if there are any toolCalls

@@ -24,6 +24,7 @@ use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Exceptions\DeserializationException;
+use Cognesy\Instructor\Exceptions\JSONParsingException;
 use Cognesy\Instructor\Exceptions\ValidationException;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\JsonParser;
@@ -33,7 +34,7 @@ use Exception;
 class RequestHandler implements CanHandleRequest
 {
     private string $previousHash = '';
-    private Sequenceable $lastPartialResponse;
+    private ?Sequenceable $lastPartialResponse;
     private int $previousSequenceLength = 1;
 
     public function __construct(
@@ -78,29 +79,35 @@ class RequestHandler implements CanHandleRequest
                 $request->model,
                 $request->options
             );
-            if ($llmCallResult->isFailure()) {
-                $this->eventDispatcher->dispatch(new ResponseGenerationFailed(Arrays::toArray($llmCallResult->error())));
-                return $llmCallResult;
+
+            if ($llmCallResult->isSuccess()) {
+                $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmCallResult));
+                // get response JSON data
+                /** @var LLMResponse $llmResponse */
+                $llmResponse = $llmCallResult->value();
+                // TODO: handle multiple tool calls
+                $jsonData = $llmResponse->functionCalls[0]->functionArgsJson ?? '';
+                // TODO: END OF TODO
+                // process LLM response
+                $processingResult = $this->processResponse($jsonData, $responseModel);
+                if ($processingResult->isSuccess()) {
+                    return $processingResult;
+                }
+                $errors = $this->extractErrors($processingResult);
             }
 
-            $this->eventDispatcher->dispatch(new FunctionCallResponseReceived($llmCallResult));
-
-            // get response JSON data
-            /** @var LLMResponse $llmResponse */
-            $llmResponse = $llmCallResult->value();
-
-            // TODO: handle multiple tool calls
-            $jsonData = $llmResponse->functionCalls[0]->functionArgsJson ?? '';
-            // TODO: END OF TODO
-
-            // process LLM response
-            $processingResult = $this->processResponse($jsonData, $responseModel);
-            if ($processingResult->isSuccess()) {
-                return $processingResult;
+            if ($llmCallResult->isFailure()) {
+                $errors = $this->extractErrors($llmCallResult);
+                $this->eventDispatcher->dispatch(new ResponseGenerationFailed($errors));
+                if (!($llmCallResult->error() instanceof JsonParsingException)) {
+                    // we don't handle errors other than JSONParsingException
+                    return $llmCallResult;
+                }
+                $jsonData = $llmCallResult->error()->json;
             }
 
             // retry if validation failed
-            $errors = $processingResult->error();
+            $this->resetPartialResponse();
             $messages = $this->makeRetryMessages($messages, $responseModel, $jsonData, $errors);
             $retries++;
             if ($retries <= $request->maxRetries) {
@@ -109,7 +116,7 @@ class RequestHandler implements CanHandleRequest
         }
         $this->eventDispatcher->dispatch(new ValidationRecoveryLimitReached($retries, $errors));
         $this->eventDispatcher->dispatch(new ResponseGenerationFailed($errors));
-        return Result::failure(new ValidationRecoveryLimitReached($retries, $errors));
+        return Result::failure(new ValidationRecoveryLimitReached($retries-1, $errors));
     }
 
     protected function processResponse(string $jsonData, ResponseModel $responseModel) : Result {
@@ -124,10 +131,10 @@ class RequestHandler implements CanHandleRequest
             $errors = $this->extractErrors($result);
         } catch (ValidationException $e) {
             // handle uncaught validation exceptions
-            $errors = [$e->getMessage()];
+            $errors = $this->extractErrors($e);
         } catch (DeserializationException $e) {
             // handle uncaught deserialization exceptions
-            $errors = [$e->getMessage()];
+            $errors = $this->extractErrors($e);
         } catch (Exception $e) {
             // throw on other exceptions
             $this->eventDispatcher->dispatch(new ResponseGenerationFailed([$e->getMessage()]));
@@ -136,7 +143,10 @@ class RequestHandler implements CanHandleRequest
         return Result::failure($errors);
     }
 
-    protected function extractErrors(Result $result) : array {
+    protected function extractErrors(Result|Exception $result) : array {
+        if ($result instanceof Exception) {
+            return [$result->getMessage()];
+        }
         if ($result->isSuccess()) {
             return [];
         }
@@ -144,8 +154,9 @@ class RequestHandler implements CanHandleRequest
         return match($errorValue) {
             is_array($errorValue) => $errorValue,
             is_string($errorValue) => [$errorValue],
-            $errorValue instanceof Exception => [$errorValue->getMessage()],
             $errorValue instanceof ValidationResult => [$errorValue->getErrorMessage()],
+            $errorValue instanceof JSONParsingException => [$errorValue->message],
+            $errorValue instanceof Exception => [$errorValue->getMessage()],
             default => [json_encode($errorValue)]
         };
     }
@@ -177,17 +188,10 @@ class RequestHandler implements CanHandleRequest
         );
     }
 
-    protected function finalizePartialResponse(ResponseModel $responseModel) : void {
-        if (
-            !isset($this->lastPartialResponse)
-            || !($this->lastPartialResponse instanceof Sequenceable)
-        ) {
-            return;
-        }
-        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
-    }
-
-    protected function processPartialResponse(string $partialJsonData, ResponseModel $responseModel) : void {
+    protected function processPartialResponse(
+        string $partialJsonData,
+        ResponseModel $responseModel
+    ) : void {
         $jsonData = (new JsonParser)->fix($partialJsonData);
         $result = $this->partialResponseHandler->toPartialResponse($jsonData, $responseModel);
         if ($result->isFailure()) {
@@ -210,12 +214,28 @@ class RequestHandler implements CanHandleRequest
         }
     }
 
+    protected function resetPartialResponse() : void {
+        $this->previousHash = '';
+        $this->lastPartialResponse = null;
+        $this->previousSequenceLength = 1;
+    }
+
     protected function processSequenceable(Sequenceable $partialResponse) : void {
         $currentLength = count($partialResponse);
         if ($currentLength <= $this->previousSequenceLength) {
             return;
         }
         $this->previousSequenceLength = $currentLength;
+        $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
+    }
+
+    protected function finalizePartialResponse(ResponseModel $responseModel) : void {
+        if (!isset($this->lastPartialResponse)) {
+            return;
+        }
+        if (!($this->lastPartialResponse instanceof Sequenceable)) {
+            return;
+        }
         $this->eventDispatcher->dispatch(new SequenceUpdated($this->lastPartialResponse));
     }
 }

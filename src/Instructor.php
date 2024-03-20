@@ -14,6 +14,7 @@ use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
+use Cognesy\Instructor\Utils\Env;
 use Exception;
 use Throwable;
 
@@ -31,8 +32,11 @@ class Instructor {
     private $queuedEvents = [];
     private Request $request;
 
+
     public function __construct(array $config = []) {
         $this->queuedEvents[] = new InstructorStarted($config);
+        // load .env (if paths are set)
+        Env::load();
         /** @var Configuration */
         $this->config = Configuration::fresh($config);
         $this->queuedEvents[] = new InstructorReady($this->config);
@@ -40,39 +44,14 @@ class Instructor {
         $this->eventDispatcher = $this->config->get(EventDispatcher::class);
     }
 
+    /// INITIALIZATION ENDPOINTS /////////////////////////////////////////////////////////////
+
     /**
      * Overrides the default configuration
      */
     public function withConfig(array $config) : self {
         $this->config->override($config);
         return $this;
-    }
-
-    /**
-     * Returns the current configuration
-     */
-    public function getConfig() : Configuration {
-        return $this->config;
-    }
-
-    /**
-     * Returns the current configuration
-     */
-    public function getComponentConfig(string $component) : ?ComponentConfig {
-        if (!$this->config->has($component)) {
-            return null;
-        }
-        return $this->config->getConfig($component);
-    }
-
-    /**
-     * Returns the current configuration
-     */
-    public function getComponent(string $component) : ?object {
-        if (!$this->config->has($component)) {
-            return null;
-        }
-        return $this->config->get($component);
     }
 
     /**
@@ -85,6 +64,13 @@ class Instructor {
         return $this;
     }
 
+    public function withEnv(string|array $paths, string|array $names = '') : self {
+        Env::set($paths, $names);
+        return $this;
+    }
+
+    /// EXTRACTION EXECUTION ENDPOINTS ///////////////////////////////////////////////////////
+
     public function request(
         string|array $messages,
         string|object|array $responseModel,
@@ -93,7 +79,7 @@ class Instructor {
         array $options = [],
         string $functionName = 'extract_data',
         string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors:",
+        string $retryPrompt = "Recall function correctly, fix following errors",
         Mode $mode = Mode::Tools
     ) : self {
         $request = new Request(
@@ -121,7 +107,7 @@ class Instructor {
         array $options = [],
         string $functionName = 'extract_data',
         string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors:",
+        string $retryPrompt = "Recall function correctly, fix following errors",
         Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
@@ -136,54 +122,6 @@ class Instructor {
             $mode
         );
         return $this->get();
-    }
-
-    /**
-     * Adds a listener to all events
-     */
-    public function wiretap(callable $listener) : self {
-        $this->eventDispatcher->wiretap($listener);
-        return $this;
-    }
-
-    /**
-     * Adds a listener to a specific event
-     */
-    public function onEvent(string $class, callable $listener) : self {
-        $this->eventDispatcher->addListener($class, $listener);
-        return $this;
-    }
-
-    /**
-     * Adds a listener to any error
-     */
-    public function onError(callable $listener) : self {
-        $this->onError = $listener;
-        return $this;
-    }
-
-    public function onPartialUpdate(callable $listener) : self {
-        $this->onPartialResponse = $listener;
-        $this->eventDispatcher->addListener(PartialResponseGenerated::class, $this->handlePartialResponse(...));
-        return $this;
-    }
-
-    public function onSequenceUpdate(callable $listener) : self {
-        $this->onSequenceUpdate = $listener;
-        $this->eventDispatcher->addListener(SequenceUpdated::class, $this->handleSequenceUpdate(...));
-        return $this;
-    }
-
-    private function handlePartialResponse(PartialResponseGenerated $event) : void {
-        if (!is_null($this->onPartialResponse)) {
-            ($this->onPartialResponse)($event->partialResponse);
-        }
-    }
-
-    private function handleSequenceUpdate(SequenceUpdated $event) : void {
-        if (!is_null($this->onSequenceUpdate)) {
-            ($this->onSequenceUpdate)($event->sequence);
-        }
     }
 
     /**
@@ -214,8 +152,109 @@ class Instructor {
         }
     }
 
+
+    /// ACCESS CURRENT INSTRUCTOR CONFIGURATION //////////////////////////////////////////////
+
     /**
-     * Dispatches all queued events
+     * Returns the current configuration
+     */
+    public function getConfig() : Configuration {
+        return $this->config;
+    }
+
+    /**
+     * Returns the current configuration
+     */
+    public function getComponentConfig(string $component) : ?ComponentConfig {
+        if (!$this->config->has($component)) {
+            return null;
+        }
+        return $this->config->getConfig($component);
+    }
+
+    /**
+     * Returns the current configuration
+     */
+    public function getComponent(string $component) : ?object {
+        if (!$this->config->has($component)) {
+            return null;
+        }
+        return $this->config->get($component);
+    }
+
+
+    /// EVENT HANDLERS ///////////////////////////////////////////////////////////////////////
+
+    /**
+     * Listener to all events
+     */
+    public function wiretap(callable $listener) : self {
+        $this->eventDispatcher->wiretap($listener);
+        return $this;
+    }
+
+    /**
+     * Listen to a specific event
+     */
+    public function onEvent(string $class, callable $listener) : self {
+        $this->eventDispatcher->addListener($class, $listener);
+        return $this;
+    }
+
+    /**
+     * Listen to Instructor execution error
+     */
+    public function onError(callable $listener) : self {
+        $this->onError = $listener;
+        return $this;
+    }
+
+    /**
+     * Listen to partial responses
+     */
+    public function onPartialUpdate(callable $listener) : self {
+        $this->onPartialResponse = $listener;
+        $this->eventDispatcher->addListener(
+            PartialResponseGenerated::class,
+            $this->handlePartialResponse(...)
+        );
+        return $this;
+    }
+
+    /**
+     * Listen to sequence updates
+     */
+    public function onSequenceUpdate(callable $listener) : self {
+        $this->onSequenceUpdate = $listener;
+        $this->eventDispatcher->addListener(
+            SequenceUpdated::class,
+            $this->handleSequenceUpdate(...)
+        );
+        return $this;
+    }
+
+    /// PRIVATE //////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Provides partial response instead of event - for developer convenience
+     */
+    private function handlePartialResponse(PartialResponseGenerated $event) : void {
+        if (!is_null($this->onPartialResponse)) {
+            ($this->onPartialResponse)($event->partialResponse);
+        }
+    }
+
+    /**
+     * Provides sequence instead of event - for developer convenience
+     */
+    private function handleSequenceUpdate(SequenceUpdated $event) : void {
+        if (!is_null($this->onSequenceUpdate)) {
+            ($this->onSequenceUpdate)($event->sequence);
+        }
+    }
+
+    /**
+     * Dispatches all events queued before $eventDispatcher was initialized
      */
     private function dispatchQueuedEvents()
     {

@@ -41,9 +41,9 @@ class Runner
         }
     }
 
-    public function runAll() : void {
-        $this->examples->forEachExample(function(Example $example) {
-            return $this->runFile($example);
+    public function runAll(int $index) : void {
+        $this->examples->forEachExample(function(Example $example) use ($index) {
+            return $this->runFile($example, $index);
         });
         $this->stats();
         $this->displayErrors();
@@ -51,7 +51,10 @@ class Runner
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private function runFile(Example $example) : bool {
+    private function runFile(Example $example, int $index) : bool {
+        if ($index > 0 && $example->index < $index) {
+            return true;
+        }
         // execute run.php and print the output to CLI
         Cli::grid([[3, "[.]", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         Cli::grid([[30, $example->name, STR_PAD_RIGHT, Color::WHITE]]);
@@ -79,7 +82,7 @@ class Runner
         Cli::grid([[1, ">", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         if (strpos($output, 'Fatal error') !== false) {
             $this->errors[$example->name][] = new ErrorEvent($example->name, $output);
-            Cli::grid([[8, "   ERROR", STR_PAD_RIGHT, [Color::WHITE, Color::BG_RED]]]);
+            Cli::grid([[7, "   ERROR", STR_PAD_RIGHT, [Color::WHITE, Color::BG_RED]]]);
             $this->printTimeElapsed();
             $this->incorrect++;
             if ($this->stopOnError) {

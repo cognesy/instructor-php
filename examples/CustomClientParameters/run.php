@@ -12,6 +12,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Env;
 use OpenAI\Client;
 
 class User {
@@ -20,7 +21,7 @@ class User {
 }
 
 /// Custom client parameter, e.g. API key and base URI
-$yourApiKey = getenv('OPENAI_API_KEY');
+$yourApiKey = Env::get('OPENAI_API_KEY'); // or your own value/source
 $yourBaseUri = 'https://api.openai.com/v1';
 
 // Create instance of OpenAI client initialized with custom parameters

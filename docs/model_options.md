@@ -29,9 +29,10 @@ You can pass a custom configured instance of OpenAI client to the Instructor. Th
 ```php
 <?php
 use Cognesy\Instructor\Instructor;
+use Cognesy\Utils\Env;
 use OpenAI\Client;
 
-$yourApiKey = getenv('YOUR_API_KEY');
+$yourApiKey = "sk-xxx"; // or load from .env
 
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)

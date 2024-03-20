@@ -38,4 +38,8 @@ class Arrays
         }
         return rtrim($flat, $separator);
     }
+
+    public static function isSubset(array $decodedKeys, array $propertyNames) {
+        return count(array_diff($decodedKeys, $propertyNames)) === 0;
+    }
 }
