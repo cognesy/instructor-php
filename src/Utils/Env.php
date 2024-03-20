@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Utils;
 
 use Dotenv\Dotenv;
+use Exception;
 
 class Env
 {
@@ -38,6 +39,6 @@ class Env
             return;
         }
         self::$dotenv = Dotenv::createImmutable(self::$paths, self::$names);
-        self::$dotenv->load();
+        self::$dotenv->safeLoad();
     }
 }
