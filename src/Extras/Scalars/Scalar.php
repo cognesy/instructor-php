@@ -9,6 +9,8 @@ use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Data\ValidationError;
 use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Exceptions\DeserializationException;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Exception;
 use ReflectionEnum;
 
@@ -53,7 +55,7 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
      * Custom JSON schema for scalar value - we ignore all fields in this class and pass only what we want
      * by manually creating the array representing JSON Schema of our desired structure.
      */
-    public function toJsonSchema() : array {
+    public function toJsonSchema(SchemaFactory $schemaFactory, TypeDetailsFactory $typeDetailsFactory) : array {
         $array = [
             '$comment' => Scalar::class,
             'type' => 'object',
