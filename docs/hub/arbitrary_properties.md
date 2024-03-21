@@ -37,7 +37,7 @@ $text = <<<TEXT
 
 $user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
-    responseModel: UserDetail::class
+    responseModel: UserDetail::class,
 );
 
 dump($user);

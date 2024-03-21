@@ -193,6 +193,7 @@ nav:
     - Custom validation using Symfony Validator: 'hub/custom_validator.md'
     - Entity Relationship Extraction: 'hub/entity_relationships.md'
     - Handling errors: 'hub/handling_errors.md'
+    - Customize parameters of OpenAI client: 'hub/l_l_m_support_azure_o_a_i.md'
     - Support for local Ollama: 'hub/l_l_m_support_ollama.md'
     - Support for OpenRouter API: 'hub/l_l_m_support_open_router.md'
     - Limiting the length of lists: 'hub/limiting_length_of_lists.md'
