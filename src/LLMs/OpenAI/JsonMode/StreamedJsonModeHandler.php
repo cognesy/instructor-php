@@ -72,12 +72,12 @@ class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
         // ...detect JSONSchema response
         try {
             $jsonFragment = Json::findPartial($responseText);
-            $parsedJson = (new JsonParser)->parse($jsonFragment, true);
+            $decoded = (new JsonParser)->parse($jsonFragment, true);
         } catch (Exception $e) {
             // also covers no JSON at all - which is fine, as some models will respond with text
             return false;
         }
-        if (isset($parsedJson['type']) && $parsedJson['type'] === 'object') {
+        if (isset($decoded['type']) && $decoded['type'] === 'object') {
             return true;
         }
         return false;
@@ -105,15 +105,15 @@ class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
         // ...detect matching response model
         try {
             $jsonFragment = Json::findPartial($partialResponseText);
-            $parsedJson = (new JsonParser)->parse($jsonFragment, true);
+            $decoded = (new JsonParser)->parse($jsonFragment, true);
             // we can try removing last item as it is likely to be still incomplete
-            $parsedJson = Arrays::removeTail($parsedJson, 1);
+            $decoded = Arrays::removeTail($decoded, 1);
         } catch (Exception $e) {
             return false;
         }
         // Question: how to make this work while we're getting partially
         // retrieved field names
-        $decodedKeys = array_filter(array_keys($parsedJson));
+        $decodedKeys = array_filter(array_keys($decoded));
         if (empty($decodedKeys)) {
             return true;
         }

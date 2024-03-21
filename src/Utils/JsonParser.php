@@ -32,7 +32,7 @@ class JsonParser
 
         $this->onExtraToken = function ($text, $data, $reminding) {
             //$message = 'Parsed JSON with extra tokens: ' . json_encode(['text' => $text, 'data' => $data, 'reminding' => $reminding]);
-            // throw new JSONParsingException($message, $text);
+            //throw new JSONParsingException($message, $text);
         };
     }
 
