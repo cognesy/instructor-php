@@ -106,6 +106,8 @@ class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
         try {
             $jsonFragment = Json::findPartial($partialResponseText);
             $parsedJson = (new JsonParser)->parse($jsonFragment, true);
+            // we can try removing last item as it is likely to be still incomplete
+            $parsedJson = Arrays::removeTail($parsedJson, 1);
         } catch (Exception $e) {
             return false;
         }

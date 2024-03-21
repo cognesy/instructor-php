@@ -42,4 +42,11 @@ class Arrays
     public static function isSubset(array $decodedKeys, array $propertyNames) {
         return count(array_diff($decodedKeys, $propertyNames)) === 0;
     }
+
+    public static function removeTail(array $array, int $count) : array {
+        if ($count < 1) {
+            return $array;
+        }
+        return array_slice($array, 0, -$count);
+    }
 }
