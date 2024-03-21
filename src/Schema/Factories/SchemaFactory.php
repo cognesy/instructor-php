@@ -22,7 +22,7 @@ use Cognesy\Instructor\Schema\Utils\ClassInfo;
 class SchemaFactory
 {
     /** @var bool allows to render schema with object properties inlined or referenced */
-    protected $useObjectReferences;
+    protected bool $useObjectReferences;
     protected SchemaMap $schemaMap;
     protected PropertyMap $propertyMap;
     protected TypeDetailsFactory $typeDetailsFactory;

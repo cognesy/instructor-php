@@ -40,7 +40,7 @@ class JsonParser
         return json_encode($this->parse($partialJson));
     }
 
-    public function parse(string $json, bool $associative = true)
+    public function parse(string $json, bool $associative = true) : array|object
     {
         if (strlen($json) >= 1) {
             try {

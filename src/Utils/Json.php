@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Utils;
 
 class Json
 {
-    static public function extract(string $text) : string {
+    static public function find(string $text) : string {
         if (empty($text)) {
             return '';
         }
@@ -19,7 +19,7 @@ class Json
         return substr($text, $firstOpenBracket, $lastCloseBracket - $firstOpenBracket + 1);
     }
 
-    static public function extractPartial(string $text) : string {
+    static public function findPartial(string $text) : string {
         if (empty($text)) {
             return '';
         }

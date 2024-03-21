@@ -148,6 +148,9 @@ class Configuration
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Resolve a component reference and return existing or fresh instance
+     */
     private function resolveReference(string $componentName, bool $fresh = false) : mixed
     {
         if (!$this->has($componentName)) {

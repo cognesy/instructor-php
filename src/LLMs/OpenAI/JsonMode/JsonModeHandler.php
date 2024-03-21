@@ -1,15 +1,14 @@
 <?php
 namespace Cognesy\Instructor\LLMs\OpenAI\JsonMode;
 
-use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\AbstractCallHandler;
+use Cognesy\Instructor\LLMs\AbstractJsonHandler;
 use Cognesy\Instructor\Utils\Json;
 use OpenAI\Client;
 use OpenAI\Responses\Chat\CreateResponse;
 
-class JsonModeCallHandler extends AbstractCallHandler
+class JsonModeHandler extends AbstractJsonHandler
 {
     private Client $client;
 
@@ -29,19 +28,17 @@ class JsonModeCallHandler extends AbstractCallHandler
         return $this->client->chat()->create($this->request);
     }
 
-    protected function getFunctionCalls(mixed $response) : array {
-        /** @var CreateResponse $response */
-        if (!($content = $response->choices[0]->message->content)) {
-            return [];
+    protected function getJsonData(mixed $response): string
+    {
+        if (!($content = $this->getResponseContent($response))) {
+            return '';
         }
-        $jsonData = Json::extract($content);
-        $toolCalls = [];
-        $toolCalls[] = new FunctionCall(
-            toolCallId: '', // ???
-            functionName: $this->responseModel->functionName,
-            functionArgsJson: $jsonData
-        );
-        return $toolCalls;
+        return Json::find($content);
+    }
+
+    protected function getResponseContent(mixed $response) : string {
+        /** @var CreateResponse $response */
+        return $response->choices[0]->message->content ?? '';
     }
 
     protected function getFinishReason(mixed $response) : string {

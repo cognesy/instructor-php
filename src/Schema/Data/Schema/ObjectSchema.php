@@ -37,4 +37,8 @@ class ObjectSchema extends Schema
             'required' => $this->required,
         ]);
     }
+
+    public function getPropertyNames() : array {
+        return array_keys($this->properties);
+    }
 }

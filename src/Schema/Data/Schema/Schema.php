@@ -27,4 +27,8 @@ abstract class Schema
             'description' => $this->description,
         ]);
     }
+
+    public function getPropertyNames() : array {
+        return [];
+    }
 }

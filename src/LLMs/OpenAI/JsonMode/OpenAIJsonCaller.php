@@ -33,8 +33,8 @@ class OpenAIJsonCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedJsonModeCallHandler($this->events, $this->client, $request, $responseModel))->handle(),
-            default => (new JsonModeCallHandler($this->events, $this->client, $request, $responseModel))->handle()
+            true => (new StreamedJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new JsonModeHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 
