@@ -10,8 +10,6 @@ to handle multiple labels.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Instructor;
-
 /** Potential ticket labels */
 enum Label : string {
     case TECH_ISSUE = "tech_issue";

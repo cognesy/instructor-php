@@ -1,23 +1,12 @@
 <?php
 namespace Tests\Feature;
 
-use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\LLM\ChunkReceived;
-use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
-use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
-use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
-use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
-use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
 use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResultReady;
 use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
@@ -25,7 +14,6 @@ use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseTransformed;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidated;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;

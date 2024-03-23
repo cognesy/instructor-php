@@ -26,8 +26,6 @@ to execute the search query.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Instructor;
-
 enum SearchType : string {
     case TEXT = "text";
     case IMAGE = "image";

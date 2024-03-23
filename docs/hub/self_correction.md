@@ -12,8 +12,7 @@ until results meet the requirements or maxRetries is reached.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Instructor;
-use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
 {

@@ -36,12 +36,12 @@ class AbstractStreamedCallHandler
             return $result;
         }
         // process stream
-        $result = $this->processStream($result->value());
+        $result = $this->processStream($result->unwrap());
         if ($result->isFailure()) {
             return $result;
         }
         $llmResponse = new LLMResponse(
-            functionCalls: $result->value(),
+            functionCalls: $result->unwrap(),
             finishReason: $this->getFinishReason($this->lastResponse),
             rawResponse: $this->lastResponse?->toArray(),
             isComplete: true,

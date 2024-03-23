@@ -28,7 +28,7 @@ class ResponseDeserializer
             $this->events->dispatch(new ResponseDeserializationFailed($result->errorMessage()));
             return $result;
         }
-        $this->events->dispatch(new ResponseDeserialized($result->value()));
+        $this->events->dispatch(new ResponseDeserialized($result->unwrap()));
         return $result;
     }
 

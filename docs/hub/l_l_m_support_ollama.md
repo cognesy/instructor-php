@@ -8,11 +8,7 @@ OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
-use Cognesy\Instructor\Instructor;
-use OpenAI\Client;
+use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Events\Instructor\ResponseGenerated;use Cognesy\Instructor\Events\LLM\PartialJsonReceived;use Cognesy\Instructor\Instructor;use OpenAI\Client;
 
 enum UserType : string {
     case Guest = 'Guest';

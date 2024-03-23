@@ -13,9 +13,7 @@ In such case you can easily add custom validation code to your response model by
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Traits\ValidationMixin;
-use Cognesy\Instructor\Data\ValidationResult;
+use Cognesy\Instructor\Data\ValidationResult;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\Traits\ValidationMixin;
 
 class UserDetails
 {

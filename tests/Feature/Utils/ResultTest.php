@@ -10,7 +10,7 @@ test('it creates a success result', function () {
     expect($result)->toBeInstanceOf(Success::class)
         ->and($result->isSuccess())->toBeTrue()
         ->and($result->isFailure())->toBeFalse()
-        ->and($result->value())->toBe(42);
+        ->and($result->unwrap())->toBe(42);
 });
 
 test('it creates a failure result', function () {
@@ -29,7 +29,7 @@ test('it applies a success function', function () {
 
     expect($transformedResult)->toBeInstanceOf(Success::class)
         ->and($transformedResult->isSuccess())->toBeTrue()
-        ->and($transformedResult->value())->toBe(42);
+        ->and($transformedResult->unwrap())->toBe(42);
 });
 
 test('it applies a failure function', function () {
@@ -47,7 +47,7 @@ test('it recovers from a success result', function () {
 
     expect($transformedResult)->toBeInstanceOf(Success::class)
         ->and($transformedResult->isSuccess())->toBeTrue()
-        ->and($transformedResult->value())->toBe(42);
+        ->and($transformedResult->unwrap())->toBe(42);
 });
 
 test('it recovers from a failure result', function () {
@@ -56,7 +56,7 @@ test('it recovers from a failure result', function () {
 
     expect($transformedResult)->toBeInstanceOf(Success::class)
         ->and($transformedResult->isSuccess())->toBeTrue()
-        ->and($transformedResult->value())->toBe('Recovered from error: An error occurred');
+        ->and($transformedResult->unwrap())->toBe('Recovered from error: An error occurred');
 });
 
 test('it tries a success function', function () {
@@ -64,7 +64,7 @@ test('it tries a success function', function () {
 
     expect($result)->toBeInstanceOf(Success::class)
         ->and($result->isSuccess())->toBeTrue()
-        ->and($result->value())->toBe(42);
+        ->and($result->unwrap())->toBe(42);
 });
 
 test('it tries a failure function', function () {

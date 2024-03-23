@@ -85,8 +85,7 @@ answer
 Here, the `LeadReport` model is passed as the `$responseModel`, and `$maxRetries` is set to 2. It means that if the extracted data does not match the model, Instructor will re-ask the model 2 times before giving up.
 
 ```php
-use Cognesy\Instructor\Instructor;
-use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
 {
@@ -116,9 +115,7 @@ Instructor uses Symfony validation component to validate extracted data. You can
 See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
 
 ```php
-    use Cognesy\Instructor\Instructor;
-    use Symfony\Component\Validator\Constraints as Assert;
-    use Symfony\Component\Validator\Context\ExecutionContextInterface;
+    use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;use Symfony\Component\Validator\Context\ExecutionContextInterface;
     
     class UserDetails
     {

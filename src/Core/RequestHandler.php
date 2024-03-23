@@ -84,7 +84,7 @@ class RequestHandler implements CanHandleRequest
                 $this->events->dispatch(new FunctionCallResponseReceived($llmCallResult));
                 // get response JSON data
                 /** @var LLMResponse $llmResponse */
-                $llmResponse = $llmCallResult->value();
+                $llmResponse = $llmCallResult->unwrap();
                 // TODO: handle multiple tool calls
                 $jsonData = $llmResponse->functionCalls[0]->functionArgsJson ?? '';
                 // TODO: END OF TODO
@@ -124,7 +124,7 @@ class RequestHandler implements CanHandleRequest
         try {
             $result = $this->responseHandler->toResponse($jsonData, $responseModel);
             if ($result->isSuccess()) {
-                $object = $result->value();
+                $object = $result->unwrap();
                 $this->events->dispatch(new FunctionCallResponseConvertedToObject($object));
                 return Result::success($object);
             }
@@ -201,7 +201,7 @@ class RequestHandler implements CanHandleRequest
         }
 
         // proceed if converting to object was successful
-        $partialResponse = clone $result->value();
+        $partialResponse = clone $result->unwrap();
         $currentHash = hash('xxh3', json_encode($partialResponse));
         if ($this->previousHash != $currentHash) {
             // send partial response to listener only if new tokens changed resulting response object

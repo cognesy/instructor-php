@@ -138,8 +138,8 @@ class Instructor {
             if ($responseResult->isFailure()) {
                 throw new Exception($responseResult->error());
             }
-            $this->events->dispatch(new ResponseGenerated($responseResult->value()));
-            return $responseResult->value();
+            $this->events->dispatch(new ResponseGenerated($responseResult->unwrap()));
+            return $responseResult->unwrap();
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
             $event = new ErrorRaised($error, $this->request);

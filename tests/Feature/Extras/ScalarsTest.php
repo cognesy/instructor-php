@@ -1,7 +1,6 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;

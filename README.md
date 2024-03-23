@@ -236,8 +236,7 @@ $value = (new Instructor)->respond(
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalars\Scalar;use Cognesy\Instructor\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
@@ -256,8 +255,7 @@ In this example, we're extracting a single integer value from the text. You can 
 Additionally, you can use Scalar adapter to extract one of the provided options by using `Scalar::enum()`.
 
 ```php
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalars\Scalar;use Cognesy\Instructor\Instructor;
 
 enum ActivityType {
     case Work = 'work';
@@ -439,8 +437,7 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
 
 ```php
-use Cognesy\Instructor\Instructor;
-use OpenAI\Client;
+use Cognesy\Instructor\Instructor;use OpenAI\Client;
 
 // get your API key from .env file
 $yourApiKey = 'your api key';
@@ -527,9 +524,7 @@ class User {
 Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
 
 ```php
-use Cognesy\Instructor\Instructor;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class UserDetails
 {

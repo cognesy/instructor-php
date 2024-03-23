@@ -20,7 +20,7 @@ class PartialResponseHandler implements CanHandlePartialResponse
         if ($result->isFailure()) {
             return $result;
         }
-        $object = $result->value();
+        $object = $result->unwrap();
 
         // ...transform
         $result = $this->responseTransformer->transform($object);
