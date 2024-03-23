@@ -4,8 +4,8 @@ namespace Cognesy\Instructor\LLMs\OpenAI\MdJsonMode;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\OpenAI\JsonMode\JsonModeHandler;
-use Cognesy\Instructor\LLMs\OpenAI\JsonMode\StreamedJsonModeHandler;
+use Cognesy\Instructor\LLMs\OpenAI\JsonMode\MdJsonModeHandler;
+use Cognesy\Instructor\LLMs\OpenAI\JsonMode\StreamedMdJsonModeHandler;
 use Cognesy\Instructor\Utils\Result;
 use OpenAI\Client;
 
@@ -34,8 +34,8 @@ class OpenAIMdJsonCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle(),
-            default => (new JsonModeHandler($this->events, $this->client, $request, $responseModel))->handle()
+            true => (new StreamedMdJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new MdJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 

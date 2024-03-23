@@ -1,10 +1,9 @@
 <?php
 namespace Cognesy\InstructorHub\Services;
 
-use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
-use Cognesy\InstructorHub\Utils\Color;
 use Cognesy\InstructorHub\Utils\Str;
+use Cognesy\InstructorHub\Views\DocGenView;
 
 class DocGenerator
 {
@@ -21,26 +20,20 @@ class DocGenerator
         if (!is_dir($this->hubDocsDir)) {
             throw new \Exception("Hub docs directory '$this->hubDocsDir' does not exist");
         }
-        Cli::outln("Updating files...", [Color::GRAY]);
+        (new DocGenView)->renderHeader();
         $list = $this->examples->forEachExample(function(Example $example) {
-            Cli::out(" [.] ", Color::DARK_GRAY);
-            Cli::grid([[22, $example->name, STR_PAD_RIGHT, [Color::BOLD, Color::WHITE]]]);
             $success = $this->copyOrReplace($example);
+            (new DocGenView)->renderFile($example, $success);
             if (!$success) {
-                Cli::outln("ERROR", [Color::RED]);
                 throw new \Exception("Failed to copy or replace example: {$example->name}");
             }
-            Cli::out("> ", [Color::DARK_GRAY]);
-            Cli::outln("DONE", [Color::GREEN]);
             return true;
         });
-        Cli::out("Updating mkdocs index... ", [Color::GRAY]);
-        if (!$this->updateIndex($list)) {
-            Cli::outln("ERROR", [Color::RED]);
+        $success = $this->updateIndex($list);
+        (new DocGenView)->renderUpdate($success);
+        if (!$success) {
             throw new \Exception('Failed to update hub docs index');
         }
-        Cli::out("> ", [Color::DARK_GRAY]);
-        Cli::outln("DONE", [Color::WHITE]);
     }
 
     private function copyOrReplace(Example $example) : bool {
@@ -52,23 +45,14 @@ class DocGenerator
             // compare update dates of $targetPath and $example->runPath
             $targetDate = filemtime($targetPath);
             $exampleDate = filemtime($example->runPath);
-            if ($exampleDate <= $targetDate) {
-                Cli::out("> ", [Color::DARK_GRAY]);
-                Cli::grid([[20, "no changes", STR_PAD_RIGHT, Color::DARK_GRAY]]);
-                Cli::out("> ", [Color::DARK_GRAY]);
-                Cli::grid([[12, "skipping", STR_PAD_RIGHT, Color::DARK_GRAY]]);
-                return true;
+            if ($exampleDate > $targetDate) {
+                // if the file already exists, replace it
+                unlink($targetPath);
             }
-            // if the file already exists, replace it
-            Cli::out("> ", [Color::DARK_GRAY]);
-            Cli::grid([[20, "found updated example", STR_PAD_RIGHT, Color::GRAY]]);
-            unlink($targetPath);
-        } else {
-            Cli::out("> ", [Color::DARK_GRAY]);
-            Cli::grid([[20, "found new example", STR_PAD_RIGHT, Color::DARK_YELLOW]]);
+            (new DocGenView)->renderExists($exampleDate > $targetDate);
+            return true;
         }
-        Cli::out("> ", [Color::DARK_GRAY]);
-        Cli::grid([[12, "copying file", STR_PAD_RIGHT, Color::GRAY]]);
+        (new DocGenView)->renderNew();
         return copy($example->runPath, $targetPath);
     }
 
