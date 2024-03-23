@@ -1,0 +1,33 @@
+"id" => "gen-Cx36hYHCox2ISm6tiVkPKb02vWd6"
+"object" => "chat.completion"
+"created" => 1711215873
+"model" => "anthropic/claude-3-haiku"
+"choices" => array:1 [
+  0 => array:3 [
+    "index" => 0
+    "message" => array:2 [
+      "role" => "assistant"
+      "content" => """
+        {\n
+          "function": "extract_data",\n
+          "parameters": {\n
+            "age": 25,\n
+            "name": "Jason",\n
+            "username": "jxnlco",\n
+            "role": "Admin",\n
+            "hobbies": [\n
+              "playing football",\n
+              "reading books"\n
+            ]\n
+          }\n
+        }
+        """
+    ]
+    "finish_reason" => "end_turn"
+  ]
+]
+"usage" => array:3 [
+  "prompt_tokens" => 136
+  "completion_tokens" => 84
+  "total_tokens" => 220
+]

@@ -20,6 +20,9 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\LLM\ChunkReceived;
+use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
+use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
@@ -43,7 +46,7 @@ class User {
     public array $hobbies;
 }
 
-// Local Ollama instance params
+// OpenRouter client params
 $yourApiKey = Env::get('OPENROUTER_API_KEY'); // or your own value/source
 $yourBaseUri = 'https://openrouter.ai/api/v1';
 $model = 'mistralai/mistral-7b-instruct:free';
@@ -63,7 +66,9 @@ $instructor = new Instructor([Client::class => $client]);
 print("Printing partial updates:\n\n");
 
 $user = $instructor
-    //->onEvent(PartialJsonReceived::class, fn(PartialJsonReceived $event) => $event->print())
+    //->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
+    ->onEvent(ChunkReceived::class, fn($event) => $event->print(quote: true))
+    ->onEvent(PartialJsonReceived::class, fn($event) => $event->print(quote: true))
     ->onEvent(ResponseValidationAttempt::class, fn($event) => $event->print())
     ->onEvent(NewValidationRecoveryAttempt::class, fn($event) => $event->print())
     ->onEvent(ValidationRecoveryLimitReached::class, fn($event) => $event->print())

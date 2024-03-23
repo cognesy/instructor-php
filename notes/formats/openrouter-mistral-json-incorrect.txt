@@ -1,0 +1,57 @@
+"id" => "gen-bM1Ocom0zZgkQeMavfzkIaQQ3CZq"
+"object" => "chat.completion"
+"created" => 1711216300
+"model" => "mistralai/mistral-7b-instruct:free"
+"choices" => array:1 [
+  0 => array:3 [
+    "index" => 0
+    "message" => array:2 [
+      "role" => "assistant"
+      "content" => """
+        Here's the next response in the fictional roleplay:\n
+        \n
+        {\n
+        "type": "object",\n
+        "title": "User",\n
+        "properties": {\n
+        "age": {\n
+        "type": "integer"\n
+        },\n
+        "name": {\n
+        "type": "string"\n
+        },\n
+        "username": {\n
+        "type": "string"\n
+        },\n
+        "role": {\n
+        "type": "string",\n
+        "enum": ["Guest", "User", "Admin"]\n
+        },\n
+        "hobbies": {\n
+        "type": "array",\n
+        "items": {\n
+        "type": "string",\n
+        "description": "Correctly extract items of type: string"\n
+        }\n
+        }\n
+        },\n
+        "required": [\n
+        "age",\n
+        "name",\n
+        "username",\n
+        "role",\n
+        "hobbies"\n
+        ]\n
+        }\n
+        \n
+        Jason (@jxnlco) is 25 years old and is the admin of the project. He likes playing football and reading books.
+        """
+    ]
+    "finish_reason" => "stop"
+  ]
+]
+"usage" => array:3 [
+  "prompt_tokens" => 184
+  "completion_tokens" => 241
+  "total_tokens" => 425
+]

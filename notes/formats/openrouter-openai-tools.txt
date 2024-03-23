@@ -1,0 +1,30 @@
+"id" => "chatcmpl-95zbiyl25FH9wEf78GJIsYy8ArydS"
+"object" => "chat.completion"
+"created" => 1711215486
+"model" => "gpt-4-0125-preview"
+"system_fingerprint" => "fp_aff4b0ea4d"
+"choices" => array:1 [
+  0 => array:3 [
+    "index" => 0
+    "message" => array:3 [
+      "role" => "assistant"
+      "content" => null
+      "tool_calls" => array:1 [
+        0 => array:3 [
+          "id" => "call_D8TnfgvT130CHaJgCm2DretJ"
+          "type" => "function"
+          "function" => array:2 [
+            "name" => "extract_data"
+            "arguments" => "{"age":25,"name":"Jason","username":"jxnlco","role":"Admin","hobbies":["playing football","reading books"]}"
+          ]
+        ]
+      ]
+    ]
+    "finish_reason" => "stop"
+  ]
+]
+"usage" => array:3 [
+  "prompt_tokens" => 124
+  "completion_tokens" => 29
+  "total_tokens" => 153
+]

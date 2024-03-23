@@ -11,8 +11,7 @@ class PartialJsonReceived extends Event
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
-        return $this->partialJson;
+    public function __toString(): string {
+        return "`".$this->partialJson."`";
     }
 }

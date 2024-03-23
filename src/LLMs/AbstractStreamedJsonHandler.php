@@ -41,7 +41,6 @@ abstract class AbstractStreamedJsonHandler extends AbstractStreamedCallHandler
                 return Result::failure($e);
             }
 
-            $this->events->dispatch(new PartialJsonReceived($this->responseJson));
             $this->updateFunctionCall($functionCalls, $this->responseJson, $maybeArgumentChunk);
         }
         // check if there are any toolCalls

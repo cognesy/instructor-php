@@ -11,8 +11,7 @@ class ChunkReceived extends Event
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
+    public function __toString(): string {
         return $this->chunk;
     }
 }

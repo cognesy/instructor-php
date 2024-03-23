@@ -1,0 +1,31 @@
+"id" => "gen-vwjzm0h7b6Hd8HqnObS9XWue6vst"
+"object" => "chat.completion"
+"created" => 1711216255
+"model" => "mistralai/mistral-7b-instruct:free"
+"choices" => array:1 [
+  0 => array:3 [
+    "index" => 0
+    "message" => array:2 [
+      "role" => "assistant"
+      "content" => """
+        Here's the requested JSON response:\r\n
+        \r\n
+        {\r\n
+          "age": 25,\r\n
+          "name": "Jason",\r\n
+          "username": "@jxnlco",\r\n
+          "role": "Admin",\r\n
+          "hobbies": ["football", "reading"]\r\n
+        }\r\n
+        \r\n
+        This JSON response conforms to the specified JSON schema by providing all required properties with their correct types and satisfying any additional constraints or validations implied in the schema.
+        """
+    ]
+    "finish_reason" => "stop"
+  ]
+]
+"usage" => array:3 [
+  "prompt_tokens" => 204
+  "completion_tokens" => 108
+  "total_tokens" => 312
+]

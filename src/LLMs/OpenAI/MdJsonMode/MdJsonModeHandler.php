@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\LLMs\OpenAI\JsonMode;
+namespace Cognesy\Instructor\LLMs\OpenAI\MdJsonMode;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;

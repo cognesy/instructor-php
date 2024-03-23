@@ -54,3 +54,30 @@ class ToolCallCallHandler extends AbstractCallHandler
         return $response->choices[0]->finishReason ?? '';
     }
 }
+
+// EXAMPLE OUTPUT
+
+//$output = [
+//    // ...other properties...
+//    "choices" => [
+//        0 => [
+//            "index" => 0,
+//            "message" => [
+//                "role" => "assistant",
+//                "content" => null,
+//                "tool_calls" => [
+//                    0 => [
+//                        "id" => "call_D8TnfgvT130CHaJgCm2DretJ",
+//                        "type" => "function",
+//                        "function" => [
+//                            "name" => "extract_data",
+//                            "arguments" => '{"age":25,"name":"Jason","username":"jxnlco","role":"Admin","hobbies":["playing football","reading books"]}',
+//                        ],
+//                    ],
+//                ],
+//            ],
+//            "finish_reason" => "stop",
+//        ],
+//    ],
+//    // "usage" => [...]
+//];
