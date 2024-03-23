@@ -13,20 +13,12 @@ lower quality of responses or extraction errors. You can mitigate this (parially
 validation and `maxRetries` option to make Instructor automatically reattempt the extraction
 in case of extraction issues.
 
-
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenRouter\OpenRouterClient;
-use Cognesy\Instructor\Utils\Env;
-use OpenAI\Client;
+use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\LLMs\OpenRouter\OpenRouterClient;use Cognesy\Instructor\Utils\Env;use OpenAI\Client;
 
 enum UserType : string {
     case Guest = 'Guest';

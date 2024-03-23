@@ -1,8 +1,6 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Tests\Examples\Complex\ProjectEvent;

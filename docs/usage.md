@@ -94,8 +94,7 @@ $instructor = (new Instructor)->withRequest(new Request(
 You can provide your own OpenAI client to Instructor. This is useful when you want to initialize OpenAI client with custom values - e.g. to call other LLMs which support OpenAI API.
 
 ```php
-use Cognesy\Instructor\Instructor;
-use OpenAI\Client;
+use Cognesy\Instructor\Instructor;use OpenAI\Client;
 
 class User {
     public int $age;

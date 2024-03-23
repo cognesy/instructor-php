@@ -59,7 +59,10 @@ To work with raw response object.
 
 ### Non empty constructors
 
-Infer constructor arguments from the provided data
+Infer constructor arguments from the provided data. This is non trivial,
+as params may be objects (hard to handle, may require another constructor
+call to instantiate the object, or callables which I don't know how to handle
+in this case.
 
 ### Early validation of streamed responses
 

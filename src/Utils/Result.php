@@ -68,7 +68,7 @@ abstract class Result {
     public function apply(callable $f): Result {
         if ($this->isSuccess()) {
             try {
-                return self::success($f($this->value()));
+                return self::success($f($this->unwrap()));
             } catch (Exception $e) {
                 return self::failure($e);
             }
@@ -126,7 +126,7 @@ class Success extends Result {
     /**
      * @return T
      */
-    public function value() {
+    public function unwrap() {
         return $this->value;
     }
 

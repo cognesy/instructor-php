@@ -21,7 +21,7 @@ Mode can be also set in `Request` object, if you are building it manually for
 Instructor.
 
 ```php
-use Cognesy\Instructor\Instructor;
+
 
 $request = new Request(
     messages: "...",

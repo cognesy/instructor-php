@@ -24,7 +24,7 @@ class ResponseHandler implements CanHandleResponse
         if ($result->isFailure()) {
             return $result;
         }
-        $object = $result->value();
+        $object = $result->unwrap();
 
         // ...validate
         $result = $this->responseValidator->validate($object);

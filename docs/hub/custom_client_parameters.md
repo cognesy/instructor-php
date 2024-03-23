@@ -4,16 +4,12 @@ You can provide your own OpenAI client instance to Instructor. This is useful
 when you want to initialize OpenAI client with custom values - e.g. to call
 other LLMs which support OpenAI API.
 
-
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Env;
-use OpenAI\Client;
+use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\Utils\Env;use OpenAI\Client;
 
 class User {
     public int $age;

@@ -30,8 +30,7 @@ class ToolCallCallHandler extends AbstractCallHandler
     }
 
     protected function getFunctionCalls(mixed $response) : array {
-        /** @var CreateResponse $response */
-        if (!isset($response->choices[0]->message->toolCalls)) {
+        if (!$this->hasToolCalls($response)) {
             return [];
         }
         $functionCalls = [];
@@ -43,6 +42,11 @@ class ToolCallCallHandler extends AbstractCallHandler
             );
         }
         return $functionCalls;
+    }
+
+    protected function hasToolCalls(mixed $response) : bool {
+        /** @var CreateResponse $response */
+        return isset($response->choices[0]->message->toolCalls);
     }
 
     protected function getFinishReason(mixed $response) : string {

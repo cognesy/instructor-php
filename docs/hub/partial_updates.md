@@ -10,8 +10,6 @@ response is received.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Instructor;
-
 class UserRole
 {
     /** Monotonically increasing identifier */
