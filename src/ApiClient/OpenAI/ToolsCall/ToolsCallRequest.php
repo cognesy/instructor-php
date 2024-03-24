@@ -1,24 +1,28 @@
 <?php
+namespace Cognesy\Instructor\ApiClient\OpenAI;
 
-namespace Cognesy\Instructor\HttpClient\Anthropic;
+use Cognesy\Instructor\ApiClient\JsonRequest;
 
-use Cognesy\Instructor\HttpClient\JsonPostRequest;
-
-class MessageRequest extends JsonPostRequest
+class ToolsCallRequest extends JsonRequest
 {
     public function __construct(
         public array $messages,
         public string $model,
+        public array $toolChoice,
+        public array $tools,
         public array $options = [],
-    ) {
+    )
+    {
         $payload = array_merge([
             'messages' => $messages,
             'model' => $model,
+            'tool_choice' => $toolChoice,
+            'tools' => $tools,
         ], $options);
 
         parent::__construct(
             payload: $payload,
-            endpoint: '/messages',
+            endpoint: '/chat/completions',
         );
     }
 }

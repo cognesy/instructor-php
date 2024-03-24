@@ -1,21 +1,18 @@
 <?php
+namespace Cognesy\Instructor\ApiClient\OpenAI;
 
-namespace Cognesy\Instructor\HttpClient\Mistral;
+use Cognesy\Instructor\ApiClient\JsonRequest;
 
-use Cognesy\Instructor\HttpClient\JsonPostRequest;
-
-class JsonCompletionRequest extends JsonPostRequest
+class ChatCompletionRequest extends JsonRequest
 {
     public function __construct(
-        public array  $messages,
+        public array $messages,
         public string $model,
-        public array  $options = [],
-    )
-    {
+        public array $options = [],
+    ) {
         $payload = array_merge([
             'messages' => $messages,
             'model' => $model,
-            'response_format' => ['type' => 'json_object']
         ], $options);
 
         parent::__construct(

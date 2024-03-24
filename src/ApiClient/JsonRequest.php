@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\HttpClient;
+namespace Cognesy\Instructor\ApiClient;
 
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
