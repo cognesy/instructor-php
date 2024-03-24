@@ -55,6 +55,6 @@
         "guzzlehttp/guzzle": "^7.8",
         "wpai-inc/anthropic-sdk-php": "^0.1.0",
         "ext-sqlite3": "*",
-        "saloonphp/saloon": "^3.0"
+        "saloonphp/saloon": "^3.8"
     }
 }

@@ -16,7 +16,7 @@ class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
 {
     private Client $client;
     private bool $matchToExpectedFields = false;
-    private bool $preventJsonSchema = true;
+    private bool $preventJsonSchema = false;
 
     public function __construct(
         EventDispatcher $events,

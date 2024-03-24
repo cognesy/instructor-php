@@ -4,14 +4,12 @@ namespace Cognesy\Instructor\LLMs\OpenAI\MdJsonMode;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\OpenAI\MdJsonMode\MdJsonModeHandler;
-use Cognesy\Instructor\LLMs\OpenAI\MdJsonMode\StreamedMdJsonModeHandler;
 use Cognesy\Instructor\Utils\Result;
 use OpenAI\Client;
 
 class OpenAIMdJsonCaller implements CanCallFunction
 {
-    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {} ``` codeblock. Do not return JSONSchema, only JSON. Response must follow this JSONSchema:\n";
+    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
     public function __construct(
         private EventDispatcher $events,

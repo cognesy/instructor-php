@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Utils;
 
 use Cognesy\Instructor\Exceptions\JSONParsingException;
+use Exception;
 use JsonException;
 
 /**
@@ -52,6 +53,8 @@ class JsonParser
                     ($this->onExtraToken)($json, $data, $reminding);
                 }
                 return $data;
+            } catch (Exception $e) {
+                throw new Exception('Unexpected error: ' . $e->getMessage());
             }
         } else {
             return json_decode('{}', $associative);

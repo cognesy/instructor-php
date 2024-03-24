@@ -27,7 +27,7 @@ use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenRouter\OpenRouterClient;
+use Cognesy\Instructor\Interceptor\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Utils\Env;
 use OpenAI\Client;
 
@@ -49,9 +49,9 @@ class User {
 // OpenRouter client params
 $yourApiKey = Env::get('OPENROUTER_API_KEY'); // or your own value/source
 $yourBaseUri = 'https://openrouter.ai/api/v1';
-$model = 'mistralai/mistral-7b-instruct:free';
+$model = 'mistralai/mixtral-8x7b-instruct:nitro';
 
-$executionMode = Mode::MdJson;
+$executionMode = Mode::Json;
 
 // Create instance of OpenAI client initialized with custom parameters
 $client = OpenAI::factory()
@@ -66,8 +66,8 @@ $instructor = new Instructor([Client::class => $client]);
 print("Printing partial updates:\n\n");
 
 $user = $instructor
-    //->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
-    ->onEvent(ChunkReceived::class, fn($event) => $event->print(quote: true))
+//    ->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
+//    ->onEvent(ChunkReceived::class, fn($event) => $event->print(quote: true))
     ->onEvent(PartialJsonReceived::class, fn($event) => $event->print(quote: true))
     ->onEvent(ResponseValidationAttempt::class, fn($event) => $event->print())
     ->onEvent(NewValidationRecoveryAttempt::class, fn($event) => $event->print())
@@ -78,7 +78,7 @@ $user = $instructor
         model: $model,
         mode: $executionMode,
         options: ['stream' => true],
-        maxRetries: 3,
+        maxRetries: 1,
     );
 
 print("Completed response model:\n\n");

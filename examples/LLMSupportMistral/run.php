@@ -4,11 +4,11 @@ Mistral.ai is a company that builds OS language models, but also offers a platfo
 hosting those models. You can use Instructor with Mistral API by configuring the
 client parameters as demonstrated below.
 
-Please note that the larger Mistral models support Mode::Json and Mode::Tools, which
-are much more reliable than Mode::MdJson.
+Please note that the larger Mistral models support Mode::Json, which is much more
+reliable than Mode::MdJson. Currently, Instructor does not support Mistral's Mode::Tools.
 
 Mode compatibility:
- - Mode::Tools, Mode::Json - Mistral-Small / Mistral-Medium / Mistral-Large
+ - Mode::Json - Mistral-Small / Mistral-Medium / Mistral-Large
  - Mode::MdJson - Mistral 7B / Mixtral 8x7B
 
 
@@ -38,7 +38,7 @@ class User {
     public array $hobbies;
 }
 
-// Local Ollama instance params
+// Mistral instance params
 $yourApiKey = Env::get('MISTRAL_API_KEY');
 $yourBaseUri = 'https://api.mistral.ai/v1';
 
@@ -55,8 +55,8 @@ $instructor = new Instructor([Client::class => $client]);
 print("Printing partial updates:\n\n");
 
 //$models = ['open-mistral-7b', 'open-mixtral-8x7b', 'mistral-small-latest	', 'mistral-medium-latest', 'mistral-large-latest'];
-$model = 'mistral-large-latest';
-$executionMode = Mode::Tools;
+$model = 'mistral-small-latest';
+$executionMode = Mode::MdJson;
 
 $user = $instructor
     ->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))

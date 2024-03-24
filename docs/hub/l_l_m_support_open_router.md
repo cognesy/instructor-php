@@ -18,7 +18,7 @@ in case of extraction issues.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\LLMs\OpenRouter\OpenRouterClient;use Cognesy\Instructor\Utils\Env;use OpenAI\Client;
+use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\Interceptor\InterceptorClient;use Cognesy\Instructor\Utils\Env;use OpenAI\Client;
 
 enum UserType : string {
     case Guest = 'Guest';
@@ -46,7 +46,7 @@ $executionMode = Mode::MdJson;
 $client = OpenAI::factory()
     ->withApiKey($yourApiKey)
     ->withBaseUri($yourBaseUri)
-    ->withHttpClient(OpenRouterClient::getClient()) // required!
+    ->withHttpClient(InterceptorClient::getClient()) // required!
     ->make();
 
 /// Get Instructor with the default client component overridden with your own
