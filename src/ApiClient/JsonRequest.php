@@ -7,7 +7,7 @@ use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Traits\Body\HasJsonBody;
 
-class JsonPostRequest extends Request implements HasBody
+class JsonRequest extends Request implements HasBody
 {
     use HasJsonBody;
 

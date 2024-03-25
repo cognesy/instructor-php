@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\HttpClient;
+namespace Cognesy\Instructor\ApiClient;
 
 // Credit: https://github.com/openai-php/client/blob/main/src/Responses/StreamResponse.php
 use Generator;

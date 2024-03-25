@@ -1,10 +1,14 @@
 <?php
 
-namespace Cognesy\Instructor\HttpClient\Anthropic;
+namespace Cognesy\Instructor\ApiClient\Anthropic;
 
-use Cognesy\Instructor\HttpClient\LLMClient;
+use Cognesy\Instructor\ApiClient\Anthropic\ChatCompletion\ChatCompletionRequest;
+use Cognesy\Instructor\ApiClient\Anthropic\ChatCompletion\ChatCompletionResponse;
+use Cognesy\Instructor\ApiClient\Anthropic\ChatCompletion\PartialChatCompletionResponse;
+use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\ApiClient\JsonResponse;
 
-class AnthropicClient extends LLMClient
+class AnthropicClient extends ApiClient
 {
     public function __construct(
         protected $apiKey,
@@ -22,6 +26,20 @@ class AnthropicClient extends LLMClient
             $metadata,
         );
     }
+
+    /// PUBLIC API ////////////////////////////////////////////////////////////////////////////////
+
+    public function chatCompletion(array $messages, string $model, array $options = []): self {
+        $this->request = new ChatCompletionRequest($messages, $model, $options);
+        if ($this->request->isStreamed()) {
+            $this->responseClass = PartialChatCompletionResponse::class;
+        } else {
+            $this->responseClass = ChatCompletionResponse::class;
+        }
+        return $this;
+    }
+
+    /// INTERNAL //////////////////////////////////////////////////////////////////////////////////
 
     protected function isDone(string $data): bool {
         return $data === 'event: message_stop';

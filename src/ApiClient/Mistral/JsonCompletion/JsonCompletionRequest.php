@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient\Mistral;
+namespace Cognesy\Instructor\ApiClient\Mistral\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\JsonRequest;
 

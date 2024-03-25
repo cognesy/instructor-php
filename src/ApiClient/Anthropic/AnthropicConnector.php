@@ -1,12 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor\HttpClient\Anthropic;
+namespace Cognesy\Instructor\ApiClient\Anthropic;
 
-use Cognesy\Instructor\HttpClient\LLMConnector;
+use Cognesy\Instructor\ApiClient\ApiConnector;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\HeaderAuthenticator;
 
-class AnthropicConnector extends LLMConnector
+class AnthropicConnector extends ApiConnector
 {
     private string $defaultBaseUrl = 'https://api.anthropic.com/v1';
 

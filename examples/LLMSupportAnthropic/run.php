@@ -11,10 +11,8 @@ Mode compatibility:
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\HttpClient\Anthropic\AnthropicClient;
-use Cognesy\Instructor\HttpClient\JsonPostRequest;
-use Cognesy\Instructor\HttpClient\Mistral\JsonCompletionRequest;
-use Cognesy\Instructor\HttpClient\Mistral\MistralClient;
+use Cognesy\Instructor\ApiClient\Anthropic\AnthropicClient;
+use Cognesy\Instructor\ApiClient\Mistral\MistralClient;
 use Cognesy\Instructor\Utils\Env;
 
 enum UserType : string {
@@ -32,63 +30,64 @@ class User {
     public array $hobbies;
 }
 
+//// Anthropic instance params
+//$yourApiKey = Env::get('MISTRAL_API_KEY');
+//$yourBaseUri = 'https://api.mistral.ai/v1';
+//
+//// Create instance of OpenAI client initialized with custom parameters
+//$client = new MistralClient(
+//    baseUri: $yourBaseUri,
+//    apiKey: $yourApiKey,
+//);
+
+//$response = $client
+//    ->wiretap(fn($event) => $event->print())
+//    ->jsonCompletion(
+//        messages: [
+//            ["role" => "user", "content" => "Hello, Mistral. Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
+//        ],
+//        model: 'mistral-small-latest',
+//        //options: ['stream' => true ]
+//    )->respond();
+//
+//dump($response);
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Anthropic instance params
-$yourApiKey = Env::get('MISTRAL_API_KEY');
-$yourBaseUri = 'https://api.mistral.ai/v1';
+$yourApiKey = Env::get('ANTHROPIC_API_KEY');
+$yourBaseUri = 'https://api.anthropic.com/v1';
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new MistralClient(
+$client = new AnthropicClient(
     baseUri: $yourBaseUri,
     apiKey: $yourApiKey,
 );
 
-$response = $client->withRequest(new JsonCompletionRequest(
-    messages: [
-        ["role" => "user", "content" => "Hello, Mistral"],
-    ],
-    model: 'mistral-small-latest',
-    options: ['stream' => true ]
-))
-->wiretap(fn($event) => $event->print())
-->streamAll();
-//dump($response);
+$response = $client
+    ->wiretap(fn($event) => $event->print())
+    ->chatCompletion(
+        messages: [
+            ["role" => "user", "content" => "Hello, Mistral. Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
+        ],
+        model: 'claude-3-haiku-20240307',
+        options: [
+            'stream' => true,
+            'max_tokens' => 100,
+        ]
+    )->streamAll();
 
-
-
-
-
-
-
-
-
-
-
-
-
-//// Anthropic instance params
-//$yourApiKey = Env::get('ANTHROPIC_API_KEY');
-//$yourBaseUri = 'https://api.anthropic.com/v1';
-//
-//// Create instance of OpenAI client initialized with custom parameters
-//$client = new AnthropicClient(
-//    baseUri: $yourBaseUri,
-//    apiKey: $yourApiKey,
-//);
-//
-//$response = $client->withRequest(new JsonPostRequest(
-//    payload: [
-//        'model' => 'claude-3-haiku-20240307',
-//        'max_tokens' => 100,
-//        'messages' => [
-//            ["role" => "user", "content" => "Hello, Claude"],
-//        ],
-//        //'stream' => true,
-//    ],
-//    endpoint: '/messages',
-//))
-//->wiretap(fn($event) => $event->print())
-//->send();
-//dump($response);
+dump($response);
 
 
 

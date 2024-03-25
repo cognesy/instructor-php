@@ -1,18 +1,19 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\OpenAI\ChatCompletion;
+namespace Cognesy\Instructor\ApiClient\OpenRouter\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\JsonRequest;
 
-class ChatCompletionRequest extends JsonRequest
+class JsonCompletionRequest extends JsonRequest
 {
     public function __construct(
-        public array $messages,
+        public array  $messages,
         public string $model,
-        public array $options = [],
+        public array  $options = [],
     ) {
         $payload = array_merge([
             'messages' => $messages,
             'model' => $model,
+            'response_format' => ['type' => 'json_object']
         ], $options);
 
         parent::__construct(

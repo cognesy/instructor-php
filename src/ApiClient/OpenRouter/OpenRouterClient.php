@@ -1,19 +1,18 @@
 <?php
-
-namespace Cognesy\Instructor\ApiClient\Mistral;
+namespace Cognesy\Instructor\ApiClient\OpenRouter;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
-use Cognesy\Instructor\ApiClient\Mistral\ChatCompletion\ChatCompletionRequest;
-use Cognesy\Instructor\ApiClient\Mistral\ChatCompletion\ChatCompletionResponse;
-use Cognesy\Instructor\ApiClient\Mistral\ChatCompletion\PartialChatCompletionResponse;
-use Cognesy\Instructor\ApiClient\Mistral\JsonCompletion\JsonCompletionRequest;
-use Cognesy\Instructor\ApiClient\Mistral\JsonCompletion\JsonCompletionResponse;
-use Cognesy\Instructor\ApiClient\Mistral\JsonCompletion\PartialJsonCompletionResponse;
-use Cognesy\Instructor\ApiClient\Mistral\ToolsCall\PartialToolsCallResponse;
-use Cognesy\Instructor\ApiClient\Mistral\ToolsCall\ToolsCallRequest;
-use Cognesy\Instructor\ApiClient\Mistral\ToolsCall\ToolsCallResponse;
+use Cognesy\Instructor\ApiClient\OpenRouter\ChatCompletion\ChatCompletionRequest;
+use Cognesy\Instructor\ApiClient\OpenRouter\ChatCompletion\ChatCompletionResponse;
+use Cognesy\Instructor\ApiClient\OpenRouter\ChatCompletion\PartialChatCompletionResponse;
+use Cognesy\Instructor\ApiClient\OpenRouter\JsonCompletion\JsonCompletionRequest;
+use Cognesy\Instructor\ApiClient\OpenRouter\JsonCompletion\JsonCompletionResponse;
+use Cognesy\Instructor\ApiClient\OpenRouter\JsonCompletion\PartialJsonCompletionResponse;
+use Cognesy\Instructor\ApiClient\OpenRouter\ToolsCall\PartialToolsCallResponse;
+use Cognesy\Instructor\ApiClient\OpenRouter\ToolsCall\ToolsCallRequest;
+use Cognesy\Instructor\ApiClient\OpenRouter\ToolsCall\ToolsCallResponse;
 
-class MistralClient extends ApiClient
+class OpenRouterClient extends ApiClient
 {
     public function __construct(
         protected $apiKey,
@@ -23,7 +22,7 @@ class MistralClient extends ApiClient
         protected $metadata = [],
     ) {
         parent::__construct();
-        $this->connector = new MistralConnector(
+        $this->connector = new OpenRouterConnector(
             $apiKey,
             $baseUri,
             $connectTimeout,

@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\OpenAI;
+namespace Cognesy\Instructor\ApiClient\OpenAI\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\JsonRequest;
 

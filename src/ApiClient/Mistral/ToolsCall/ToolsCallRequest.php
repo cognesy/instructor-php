@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\Mistral;
+namespace Cognesy\Instructor\ApiClient\Mistral\ToolsCall;
 
 use Cognesy\Instructor\ApiClient\JsonRequest;
 

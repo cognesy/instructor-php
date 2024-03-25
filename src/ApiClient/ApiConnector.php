@@ -1,14 +1,12 @@
 <?php
-namespace Cognesy\Instructor\HttpClient;
+namespace Cognesy\Instructor\ApiClient;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Saloon\Contracts\Authenticator;
-use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use Saloon\Traits\Plugins\HasTimeout;
 
-class LLMConnector extends Connector
+class ApiConnector extends Connector
 {
     use HasTimeout;
     use AlwaysThrowOnErrors;
@@ -34,29 +32,23 @@ class LLMConnector extends Connector
         $this->requestTimeout = $requestTimeout;
     }
 
-    public function withEventDispatcher(EventDispatcher $events): self
-    {
+    public function withEventDispatcher(EventDispatcher $events): self {
         $this->events = $events;
         return $this;
     }
 
-    public function resolveBaseUrl(): string
-    {
+    public function resolveBaseUrl(): string {
         return $this->baseUrl;
     }
 
-    protected function defaultHeaders(): array
-    {
+    protected function defaultHeaders(): array {
         return [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
     }
 
-    public function defaultConfig(): array
-    {
-        return [
-            'stream' => false,
-        ];
+    public function defaultConfig(): array {
+        return ['stream' => false,];
     }
 }

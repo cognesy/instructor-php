@@ -1,11 +1,11 @@
 <?php
-namespace Cognesy\Instructor\HttpClient\Mistral;
+namespace Cognesy\Instructor\ApiClient\Mistral;
 
-use Cognesy\Instructor\HttpClient\LLMConnector;
+use Cognesy\Instructor\ApiClient\ApiConnector;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\TokenAuthenticator;
 
-class MistralConnector extends LLMConnector
+class MistralConnector extends ApiConnector
 {
     private string $defaultBaseUrl = 'https://api.mistral.ai/v1';
 

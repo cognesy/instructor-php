@@ -1,44 +1,33 @@
 <?php
 
-namespace Cognesy\Instructor\HttpClient;
+namespace Cognesy\Instructor\ApiClient;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\HttpClient\ApiAsyncRequestInitiated;
-use Cognesy\Instructor\Events\HttpClient\ApiAsyncResponseReceived;
-use Cognesy\Instructor\Events\HttpClient\ApiRequestErrorRaised;
-use Cognesy\Instructor\Events\HttpClient\ApiRequestInitiated;
-use Cognesy\Instructor\Events\HttpClient\ApiResponseReceived;
-use Cognesy\Instructor\Events\HttpClient\ApiStreamRequestInitiated;
-use Cognesy\Instructor\Events\HttpClient\ApiStreamResponseReceived;
-use Cognesy\Instructor\Events\HttpClient\ApiStreamUpdateReceived;
 use Exception;
 use Generator;
 use GuzzleHttp\Promise\PromiseInterface;
-use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
 
-abstract class LLMClient
+abstract class ApiClient
 {
-    use HandlesStreamedResponses;
-
     protected EventDispatcher $events;
-    protected LLMConnector $connector;
-    protected JsonPostRequest $request;
+    protected ApiConnector $connector;
+    protected JsonRequest $request;
+    protected string $responseClass;
 
     public function __construct()
     {
         $this->events = new EventDispatcher();
     }
 
-    /// PUBLIC API /////////////////////////////////////////////////////////////////////////////
+    /// PUBLIC API - INIT //////////////////////////////////////////////////////////////////////
 
-    public function withEventDispatcher(EventDispatcher $events): self
-    {
+    public function withEventDispatcher(EventDispatcher $events): self {
         $this->events = $events;
         return $this;
     }
 
-    public function withRequest(JsonPostRequest $request) : static {
+    public function withRequest(JsonRequest $request) : static {
         $this->request = $request;
         return $this;
     }
@@ -53,43 +42,37 @@ abstract class LLMClient
         return $this;
     }
 
-    public function send(): Response {
-        $this?->events->dispatch(new ApiRequestInitiated($this->request));
-        try {
-            $response = $this->connector->send($this->request);
-        } catch (RequestException $exception) {
-            $this?->events->dispatch(new ApiRequestErrorRaised($exception));
-            throw $exception;
+    /// PUBLIC API - RAW //////////////////////////////////////////////////////////////////////
+
+    public function respondRaw(): Response {
+        if ($this->request->isStreamed()) {
+            throw new Exception('You need to use stream() when option stream is set to true');
         }
-        $this?->events->dispatch(new ApiResponseReceived($response));
-        return $response;
+        return (new ApiResponseHandler($this->connector, $this->events))->respondRaw($this->request);
     }
 
-    public function stream(): Generator {
-        $isStreamed = $this->request->isStreamed();
-        if (!$isStreamed) {
-            throw new Exception('Streaming is not enabled: set "stream" = true in the request options.');
+    public function streamRaw(): Generator {
+        if (!$this->request->isStreamed()) {
+            throw new Exception('You need to use respond() when option stream is set to false');
         }
+        return (new ApiStreamHandler($this->connector, $this->events, $this->isDone(...), $this->getData(...)))->streamRaw($this->request);
+    }
 
-        $this?->events->dispatch(new ApiStreamRequestInitiated($this->request));
-        try {
-            $response = $this->connector->send($this->request);
-        } catch (RequestException $exception) {
-            $this?->events->dispatch(new ApiRequestErrorRaised($exception));
-            throw $exception;
-        }
-        $this?->events->dispatch(new ApiStreamResponseReceived($response));
+    public function asyncRaw(callable $onSuccess, callable $onError) : PromiseInterface {
+        return (new ApiAsyncHandler($this->connector, $this->events))->asyncRaw($this->request, $onSuccess, $onError);
+    }
 
-        foreach ($this->getStreamIterator(
-            stream: $response->stream(),
-            getData: $this->getData(...),
-            isDone: $this->isDone(...),
-        ) as $streamedData) {
-            if (empty($streamedData)) {
-                continue;
-            }
-            $this?->events->dispatch(new ApiStreamUpdateReceived($streamedData));
-            yield $streamedData;
+    /// PUBLIC API - PROCESSED ////////////////////////////////////////////////////////////////
+
+    public function respond() : JsonResponse {
+        $response = $this->respondRaw($this->request);
+        return ($this->responseClass)::fromResponse($response);
+    }
+
+    public function stream() : Generator {
+        $stream = $this->streamRaw($this->request);
+        foreach ($stream as $response) {
+            yield ($this->responseClass)::fromPartialResponse($response);
         }
     }
 
@@ -101,28 +84,9 @@ abstract class LLMClient
         return $responses;
     }
 
-    public function async(callable $onSuccess, callable $onError) : PromiseInterface {
-        if ($this->request->isStreamed()) {
-            throw new Exception('Async does not support streaming');
-        }
+    /// INTERNAL //////////////////////////////////////////////////////////////////////////////
 
-        $this?->events->dispatch(new ApiAsyncRequestInitiated($this->request));
-        $promise = $this->connector->sendAsync($this->request);
-        $promise
-            ->then(function (Response $response) use ($onSuccess) {
-                $this?->events->dispatch(new ApiAsyncResponseReceived($response));
-                $onSuccess($response);
-            })
-            ->otherwise(function (RequestException $exception) use ($onError) {
-                $this?->events->dispatch(new ApiRequestErrorRaised($exception));
-                $onError($exception);
-            });
-        return $promise;
-    }
+    abstract protected function isDone(string $data): bool;
 
-    /// API SPECIFIC IMPLEMENTATIONS ///////////////////////////////////////////////////////////////
-
-    abstract protected function isDone(string $data) : bool;
-
-    abstract protected function getData(string $data) : string;
+    abstract protected function getData(string $data): string;
 }

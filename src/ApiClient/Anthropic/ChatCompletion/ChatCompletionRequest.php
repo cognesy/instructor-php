@@ -1,5 +1,6 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\OpenAI\ChatCompletion;
+
+namespace Cognesy\Instructor\ApiClient\Anthropic\ChatCompletion;
 
 use Cognesy\Instructor\ApiClient\JsonRequest;
 
@@ -17,7 +18,7 @@ class ChatCompletionRequest extends JsonRequest
 
         parent::__construct(
             payload: $payload,
-            endpoint: '/chat/completions',
+            endpoint: '/messages',
         );
     }
 }

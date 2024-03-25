@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\OpenAI\ChatCompletion;
+namespace Cognesy\Instructor\ApiClient\OpenRouter\ChatCompletion;
 
 use Cognesy\Instructor\ApiClient\JsonRequest;
 
