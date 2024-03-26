@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
@@ -66,6 +67,13 @@ class Instructor {
 
     public function withEnv(string|array $paths, string|array $names = '') : self {
         Env::set($paths, $names);
+        return $this;
+    }
+
+    public function withClient(CanCallApi $client) : self {
+        $this->config->override([
+            CanCallApi::class => $client->withEventDispatcher($this->events)
+        ]);
         return $this;
     }
 

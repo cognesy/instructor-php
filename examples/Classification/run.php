@@ -38,7 +38,6 @@ function classify(string $data) : SinglePrediction {
             "content" => "Classify the following text: $data",
         ]],
         responseModel: SinglePrediction::class,
-        model: "gpt-3.5-turbo-0613",
     );
 }
 ?>

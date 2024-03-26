@@ -9,7 +9,7 @@ class ChatCompletionResponse extends ApiResponse
 {
     public static function fromResponse(Response $response): self {
         $decoded = json_decode($response->body(), true);
-        $content = $decoded['content']['text'] ?? '';
+        $content = $decoded['content'][0]['text'] ?? '';
         return new self($content, $decoded, '');
     }
 }

@@ -13,6 +13,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class AnthropicClient extends ApiClient implements CanCallChatCompletion
 {
     public string $defaultModel = 'claude-3-haiku-20240307';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected $apiKey,
@@ -40,6 +41,9 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion
 
     public function chatCompletion(array $messages, string $model, array $options = []): static {
         $model = $model ?: $this->defaultModel;
+        if (!isset($options['max_tokens'])) {
+            $options['max_tokens'] = $this->defaultMaxTokens;
+        }
         $this->request = new ChatCompletionRequest($messages, $model, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialChatCompletionResponse::class;

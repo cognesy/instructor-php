@@ -19,7 +19,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
-    public string $defaultModel = 'gpt-3.5-turbo';
+    public string $defaultModel = 'gpt-4-turbo-preview';
 
     public function __construct(
         protected $apiKey,

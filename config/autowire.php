@@ -29,9 +29,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\LLMs\ApiClient\JsonMode\ApiClientJsonCaller;
 use Cognesy\Instructor\LLMs\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
 use Cognesy\Instructor\LLMs\ApiClient\ToolsMode\ApiClientToolCaller;
-use Cognesy\Instructor\LLMs\OpenAI\JsonMode\OpenAIJsonCaller;
-use Cognesy\Instructor\LLMs\OpenAI\MdJsonMode\OpenAIMdJsonCaller;
-use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
@@ -65,7 +62,6 @@ function autowire(Configuration $config) : Configuration
 
     $config->declare(
         class: OpenAIClient::class,
-        name: CanCallApi::class,
         context: [
             'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
             'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
@@ -79,8 +75,8 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: OpenRouterClient::class,
         context: [
-            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
-            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'apiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
+            'baseUri' => $_ENV['OPENROUTER_BASE_URI'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'metadata' => [],
@@ -90,9 +86,10 @@ function autowire(Configuration $config) : Configuration
 
     $config->declare(
         class: AnthropicClient::class,
+        name: CanCallApi::class,
         context: [
-            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
-            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
+            'baseUri' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'metadata' => [],
@@ -105,12 +102,13 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: FunctionCallerFactory::class,
         context: [
+            'client' => $config->reference(CanCallApi::class),
             'modeHandlers' => [
                 Mode::Tools->value => $config->reference(CanCallTools::class, true),
                 Mode::Json->value => $config->reference(CanCallJsonCompletion::class, true),
                 Mode::MdJson->value => $config->reference(CanCallChatCompletion::class, true),
             ],
-            //'forceMode' => Mode::Tools,
+            //'forceMode' => Mode::MdJson,
         ]
     );
 
