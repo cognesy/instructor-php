@@ -1,9 +1,9 @@
 <?php
 namespace Tests\Feature;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\ApiClient\ToolsMode\ApiClientToolCaller;
 use Tests\Examples\Instructor\EventSink;
 use Tests\Examples\Instructor\Person;
 use Tests\MockLLM;
@@ -12,7 +12,7 @@ $isMock = true;
 $mockLLM = !$isMock ? null : MockLLM::get([
     '{"name":"Jason","age":28}'
 ]);
-$instructor = (new Instructor)->withConfig([ApiClientToolCaller::class => $mockLLM]);
+$instructor = (new Instructor)->withConfig([CanCallTools::class => $mockLLM]);
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($instructor, $text) {
@@ -63,7 +63,7 @@ it('throws exception if no onxError() provided', function () use ($isMock, $text
     $mockLLM = !$isMock ? null : MockLLM::get([
         '{"name":"Jason","age":28}'
     ]);
-    $instructor = (new Instructor)->withConfig([ApiClientToolCaller::class => $mockLLM]);
+    $instructor = (new Instructor)->withConfig([CanCallTools::class => $mockLLM]);
 
     $e = null;
     $thrownException = false;

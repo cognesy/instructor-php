@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
 use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\LLMResponse;
