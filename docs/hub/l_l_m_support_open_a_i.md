@@ -36,7 +36,13 @@ class User {
 $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient($yourApiKey);
+$client = new OpenAIClient(
+    apiKey: $yourApiKey,
+    baseUri: 'https://api.openai.com/v1',
+    organization: '',
+    connectTimeout: 3,
+    requestTimeout: 30,
+);
 
 /// Get Instructor with the default client component overridden with your own
 $instructor = (new Instructor)->withClient($client);

@@ -38,7 +38,7 @@ class User {
 // OpenRouter client params
 $yourApiKey = Env::get('OPENROUTER_API_KEY'); // or your own value/source
 
-// Create instance of OpenRouter client initialized with custom parameters
+// Create instance of OpenAI client initialized with custom parameters
 $client = new OpenRouterClient(
     apiKey: $yourApiKey,
 );
