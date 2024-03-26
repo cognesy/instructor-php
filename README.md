@@ -681,10 +681,8 @@ Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal depen
 
 ## TODOs
 
-- [ ] Async support
-- [ ] Open source LLM support
-- [ ] Documentation - custom serializers, validators and LLMs
-- [ ] Documentation - public vs protected / private fields
+ - [ ] Async support
+ - [ ] Documentation - custom serializers, validators and LLMs
 
 
 ## Contributing
