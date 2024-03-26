@@ -4,8 +4,17 @@ namespace Cognesy\Instructor\Utils;
 
 class Arrays
 {
-    public static function toArray(mixed $value): array
-    {
+    public static function unset(array $array, array|string $fields) : array {
+        if (!is_array($fields)) {
+            $fields = [$fields];
+        }
+        foreach ($fields as $field) {
+            unset($array[$field]);
+        }
+        return $array;
+    }
+
+    public static function toArray(mixed $value): array {
         if (is_array($value)) {
             return $value;
         }
@@ -15,13 +24,22 @@ class Arrays
         return [$value];
     }
 
-    static public function flatten(array $arrays, string $separator): string
-    {
+    static public function isSubset(array $decodedKeys, array $propertyNames) {
+        return count(array_diff($decodedKeys, $propertyNames)) === 0;
+    }
+
+    static public function removeTail(array $array, int $count) : array {
+        if ($count < 1) {
+            return $array;
+        }
+        return array_slice($array, 0, -$count);
+    }
+
+    static public function flatten(array $arrays, string $separator): string {
         return self::doFlatten($arrays, $separator);
     }
 
-    static private function doFlatten(array $arrays, string $separator): string
-    {
+    private static function doFlatten(array $arrays, string $separator): string {
         $flat = '';
         foreach ($arrays as $item) {
             if (is_array($item)) {
@@ -37,16 +55,5 @@ class Arrays
             }
         }
         return rtrim($flat, $separator);
-    }
-
-    public static function isSubset(array $decodedKeys, array $propertyNames) {
-        return count(array_diff($decodedKeys, $propertyNames)) === 0;
-    }
-
-    public static function removeTail(array $array, int $count) : array {
-        if ($count < 1) {
-            return $array;
-        }
-        return array_slice($array, 0, -$count);
     }
 }

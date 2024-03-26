@@ -1,6 +1,14 @@
 <?php
 namespace Cognesy\config;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
+use Cognesy\Instructor\Clients\Mistral\MistralClient;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
@@ -18,6 +26,9 @@ use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\LLMs\ApiClient\JsonMode\ApiClientJsonCaller;
+use Cognesy\Instructor\LLMs\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
+use Cognesy\Instructor\LLMs\ApiClient\ToolsMode\ApiClientToolCaller;
 use Cognesy\Instructor\LLMs\OpenAI\JsonMode\OpenAIJsonCaller;
 use Cognesy\Instructor\LLMs\OpenAI\MdJsonMode\OpenAIMdJsonCaller;
 use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
@@ -29,8 +40,7 @@ use Cognesy\Instructor\Schema\SchemaMap;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 use Cognesy\Instructor\Validators\Symfony\Validator;
-use OpenAI;
-use OpenAI\Client;
+
 
 function autowire(Configuration $config) : Configuration
 {
@@ -42,22 +52,53 @@ function autowire(Configuration $config) : Configuration
     /// LLM CLIENTS //////////////////////////////////////////////////////////////////////////
 
     $config->declare(
-        class: Client::class,
+        class: MistralClient::class,
+        context: [
+            'apiKey' => $_ENV['MISTRAL_API_KEY'] ?? '',
+            'baseUri' => $_ENV['MISTRAL_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: OpenAIClient::class,
+        name: CanCallApi::class,
         context: [
             'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
             'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
-            'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
         ],
-        getInstance: function($context) {
-            // load from .env
-            return OpenAI::factory()
-                ->withApiKey($context['apiKey'])
-                ->withOrganization($context['organization'])
-                ->withBaseUri($context['baseUri'])
-                ->make();
-        },
     );
 
+    $config->declare(
+        class: OpenRouterClient::class,
+        context: [
+            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: AnthropicClient::class,
+        context: [
+            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
 
     /// MODE SUPPORT /////////////////////////////////////////////////////////////////////////
 
@@ -65,35 +106,38 @@ function autowire(Configuration $config) : Configuration
         class: FunctionCallerFactory::class,
         context: [
             'modeHandlers' => [
-                Mode::Tools->value => $config->reference(OpenAIToolCaller::class, true),
-                Mode::Json->value => $config->reference(OpenAIJsonCaller::class, true),
-                Mode::MdJson->value => $config->reference(OpenAIMdJsonCaller::class, true),
+                Mode::Tools->value => $config->reference(CanCallTools::class, true),
+                Mode::Json->value => $config->reference(CanCallJsonCompletion::class, true),
+                Mode::MdJson->value => $config->reference(CanCallChatCompletion::class, true),
             ],
             //'forceMode' => Mode::Tools,
         ]
     );
 
     $config->declare(
-        class: OpenAIToolCaller::class,
+        class: ApiClientToolCaller::class,
+        name: CanCallTools::class,
         context: [
             'events' => $config->reference(EventDispatcher::class),
-            'client' => $config->reference(Client::class),
+            'client' => $config->reference(CanCallApi::class),
         ]
     );
 
     $config->declare(
-        class: OpenAIJsonCaller::class,
+        class: ApiClientJsonCaller::class,
+        name: CanCallJsonCompletion::class,
         context: [
             'events' => $config->reference(EventDispatcher::class),
-            'client' => $config->reference(Client::class),
+            'client' => $config->reference(CanCallApi::class),
         ]
     );
 
     $config->declare(
-        class: OpenAIMdJsonCaller::class,
+        class: ApiClientMdJsonCaller::class,
+        name: CanCallChatCompletion::class,
         context: [
             'events' => $config->reference(EventDispatcher::class),
-            'client' => $config->reference(Client::class),
+            'client' => $config->reference(CanCallApi::class),
         ]
     );
 

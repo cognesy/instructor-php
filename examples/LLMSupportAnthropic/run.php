@@ -11,8 +11,7 @@ Mode compatibility:
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\ApiClient\Anthropic\AnthropicClient;
-use Cognesy\Instructor\ApiClient\Mistral\MistralClient;
+use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Utils\Env;
 
 enum UserType : string {
@@ -30,64 +29,91 @@ class User {
     public array $hobbies;
 }
 
-//// Anthropic instance params
-//$yourApiKey = Env::get('MISTRAL_API_KEY');
-//$yourBaseUri = 'https://api.mistral.ai/v1';
-//
-//// Create instance of OpenAI client initialized with custom parameters
-//$client = new MistralClient(
-//    baseUri: $yourBaseUri,
-//    apiKey: $yourApiKey,
-//);
-
-//$response = $client
-//    ->wiretap(fn($event) => $event->print())
-//    ->jsonCompletion(
-//        messages: [
-//            ["role" => "user", "content" => "Hello, Mistral. Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
-//        ],
-//        model: 'mistral-small-latest',
-//        //options: ['stream' => true ]
-//    )->respond();
-//
-//dump($response);
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Anthropic instance params
-$yourApiKey = Env::get('ANTHROPIC_API_KEY');
-$yourBaseUri = 'https://api.anthropic.com/v1';
+// Mistral instance params
+$yourApiKey = Env::get('MISTRAL_API_KEY');
+$yourBaseUri = 'https://api.mistral.ai/v1';
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new AnthropicClient(
+$client = new MistralClient(
     baseUri: $yourBaseUri,
     apiKey: $yourApiKey,
 );
 
+$functions = [
+    'type' => 'function',
+    'function' => [
+        'name' => 'get_temperature',
+        'description' => 'Gets temperature for a given location in a given unit.',
+        'parameters' => [
+            'type' => 'array',
+            'items' => [
+                'type' => 'object',
+                'properties' => [
+                    'location' => [
+                        'type' => 'string'
+                    ],
+                    'location_timezone' => [
+                        'type' => 'string'
+                    ],
+                    'unit' => [
+                        'type' => 'string'
+                    ],
+                ],
+                'required' => ['location', 'timezone', 'unit']
+            ]
+        ]
+    ]
+];
+
 $response = $client
     ->wiretap(fn($event) => $event->print())
-    ->chatCompletion(
+    ->jsonCompletion(
         messages: [
-            ["role" => "user", "content" => "Hello, Mistral. Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
+            ["role" => "user", "content" => "Hello, Mistral. Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object wrapped in ```json``` tags."],
         ],
-        model: 'claude-3-haiku-20240307',
-        options: [
-            'stream' => true,
-            'max_tokens' => 100,
-        ]
-    )->streamAll();
+        model: 'mistral-small-latest',
+        //tools: [$functions],
+        //options: ['stream' => true ]
+    )->respond();
 
 dump($response);
+
+
+
+
+
+
+
+
+
+
+
+
+
+//// Anthropic instance params
+//$yourApiKey = Env::get('ANTHROPIC_API_KEY');
+//$yourBaseUri = 'https://api.anthropic.com/v1';
+//
+//// Create instance of OpenAI client initialized with custom parameters
+//$client = new AnthropicClient(
+//    baseUri: $yourBaseUri,
+//    apiKey: $yourApiKey,
+//);
+//
+//$response = $client
+//    ->wiretap(fn($event) => $event->print())
+//    ->chatCompletion(
+//        messages: [
+//            ["role" => "user", "content" => "Hello, Mistral. Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
+//        ],
+//        model: 'claude-3-haiku-20240307',
+//        options: [
+//            'stream' => true,
+//            'max_tokens' => 100,
+//        ]
+//    )->streamAll();
+//
+//dump($response);
 
 
 

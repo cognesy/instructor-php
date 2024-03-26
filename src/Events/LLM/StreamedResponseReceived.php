@@ -1,12 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Events\LLM;
 
+use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
 
 class StreamedResponseReceived extends Event
 {
     public function __construct(
-        public array $response = [],
+        public PartialApiResponse $response,
     ) {
         parent::__construct();
     }

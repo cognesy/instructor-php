@@ -9,7 +9,7 @@ class Request
     public function __construct(
         public string|array $messages,
         public string|object|array $responseModel,
-        public string $model = 'gpt-4-0125-preview',
+        public string $model = '',
         public int $maxRetries = 0,
         public array $options = [],
         public string $functionName = 'extract_data',

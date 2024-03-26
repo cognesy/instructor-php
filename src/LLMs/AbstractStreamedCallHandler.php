@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\LLMs;
 
+use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\Data\ResponseModel;
@@ -16,7 +17,7 @@ use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
 use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Utils\Result;
 
-class AbstractStreamedCallHandler
+abstract class AbstractStreamedCallHandler
 {
     protected EventDispatcher $events;
     protected ResponseModel $responseModel;
@@ -42,15 +43,15 @@ class AbstractStreamedCallHandler
         }
         $llmResponse = new LLMResponse(
             functionCalls: $result->unwrap(),
-            finishReason: $this->getFinishReason($this->lastResponse),
-            rawResponse: $this->lastResponse?->toArray(),
+            finishReason: $this->lastResponse->finishReason ?? '',
+            rawResponse: $this->lastResponse->responseData ?? [],
             isComplete: true,
         );
         $this->events->dispatch(new StreamedResponseFinished($llmResponse));
         return Result::success($llmResponse);
     }
 
-    protected function newFunctionCall($response = null) : FunctionCall {
+    protected function newFunctionCall(PartialApiResponse $response = null) : FunctionCall {
         $newFunctionCall = new FunctionCall(
             toolCallId: '',
             functionName: $this->responseModel->functionName, // ATTENTION!
@@ -79,4 +80,6 @@ class AbstractStreamedCallHandler
         $currentFunctionCall->functionArgsJson = $responseJson;
         $this->events->dispatch(new StreamedFunctionCallCompleted($currentFunctionCall));
     }
+
+    abstract protected function getStream() : Result;
 }

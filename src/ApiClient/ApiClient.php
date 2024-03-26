@@ -2,22 +2,31 @@
 
 namespace Cognesy\Instructor\ApiClient;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
+use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Handlers\ApiAsyncHandler;
+use Cognesy\Instructor\ApiClient\Handlers\ApiResponseHandler;
+use Cognesy\Instructor\ApiClient\Handlers\ApiStreamHandler;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
 use Generator;
 use GuzzleHttp\Promise\PromiseInterface;
 use Saloon\Http\Response;
 
-abstract class ApiClient
+abstract class ApiClient implements CanCallApi
 {
+    public string $defaultModel = '';
     protected EventDispatcher $events;
     protected ApiConnector $connector;
-    protected JsonRequest $request;
+    protected ApiRequest $request;
+    /** @var class-string */
     protected string $responseClass;
 
-    public function __construct()
-    {
-        $this->events = new EventDispatcher();
+    public function __construct(
+        EventDispatcher $events = null,
+    ) {
+        $this->events = $events ?? new EventDispatcher();
     }
 
     /// PUBLIC API - INIT //////////////////////////////////////////////////////////////////////
@@ -27,8 +36,13 @@ abstract class ApiClient
         return $this;
     }
 
-    public function withRequest(JsonRequest $request) : static {
+    public function withRequest(ApiRequest $request) : static {
         $this->request = $request;
+        return $this;
+    }
+
+    public function withPayload(array $payload) : static {
+        $this->request = $this->makeRequest($payload);
         return $this;
     }
 
@@ -40,6 +54,10 @@ abstract class ApiClient
     public function wiretap(callable $callback) : static {
         $this?->events->wiretap($callback);
         return $this;
+    }
+
+    public function getDefaultModel() : string {
+        return $this->defaultModel;
     }
 
     /// PUBLIC API - RAW //////////////////////////////////////////////////////////////////////
@@ -64,13 +82,13 @@ abstract class ApiClient
 
     /// PUBLIC API - PROCESSED ////////////////////////////////////////////////////////////////
 
-    public function respond() : JsonResponse {
-        $response = $this->respondRaw($this->request);
+    public function respond() : ApiResponse {
+        $response = $this->respondRaw();
         return ($this->responseClass)::fromResponse($response);
     }
 
     public function stream() : Generator {
-        $stream = $this->streamRaw($this->request);
+        $stream = $this->streamRaw();
         foreach ($stream as $response) {
             yield ($this->responseClass)::fromPartialResponse($response);
         }
@@ -85,6 +103,8 @@ abstract class ApiClient
     }
 
     /// INTERNAL //////////////////////////////////////////////////////////////////////////////
+
+    abstract protected function makeRequest(array $payload): ApiRequest;
 
     abstract protected function isDone(string $data): bool;
 

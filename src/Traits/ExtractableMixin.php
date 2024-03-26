@@ -6,7 +6,7 @@ use Cognesy\Instructor\Instructor;
 trait ExtractableMixin {
     static public function extract(
         string|array $messages,
-        string $model = 'gpt-4-0125-preview',
+        string $model,
         int $maxRetries = 2,
         array $options = [],
         Instructor $instructor = null

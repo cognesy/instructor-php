@@ -2,29 +2,25 @@
 
 namespace Cognesy\Instructor\LLMs;
 
+use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\Data\FunctionCall;
+use Cognesy\Instructor\Utils\Json;
 
 abstract class AbstractJsonHandler extends AbstractCallHandler
 {
-    protected function getFunctionCalls(mixed $response) : array {
-        $jsonData = $this->getJsonData($response);
+    protected function getFunctionCalls(ApiResponse $response) : array {
+        $jsonData = Json::find($response->content);
         if (empty($jsonData)) {
             return [];
         }
         $toolCalls = [];
         $toolCalls[] = new FunctionCall(
             toolCallId: '', // ???
-            functionName: $this->getFunctionName($response),
+            functionName: $this->responseModel->functionName ?? '',
             functionArgsJson: $jsonData
         );
         return $toolCalls;
     }
 
-    protected function getFunctionName(mixed $response) : string {
-        return $this->responseModel->functionName ?? '';
-    }
-
-    abstract protected function getResponse() : mixed;
-    abstract protected function getJsonData(mixed $response) : string;
-    abstract protected function getFinishReason(mixed $response) : string;
+    abstract protected function getResponse() : ApiResponse;
 }

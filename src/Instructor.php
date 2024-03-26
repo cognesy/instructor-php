@@ -74,7 +74,7 @@ class Instructor {
     public function request(
         string|array $messages,
         string|object|array $responseModel,
-        string $model = 'gpt-4-0125-preview',
+        string $model = '',
         int $maxRetries = 0,
         array $options = [],
         string $functionName = 'extract_data',
@@ -102,7 +102,7 @@ class Instructor {
     public function respond(
         string|array $messages,
         string|object|array $responseModel,
-        string $model = 'gpt-4-0125-preview',
+        string $model = '',
         int $maxRetries = 0,
         array $options = [],
         string $functionName = 'extract_data',

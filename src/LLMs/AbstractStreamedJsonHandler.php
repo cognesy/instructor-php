@@ -2,30 +2,37 @@
 
 namespace Cognesy\Instructor\LLMs;
 
-use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
+use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
 use Cognesy\Instructor\Exceptions\JSONParsingException;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
+use Generator;
 
 abstract class AbstractStreamedJsonHandler extends AbstractStreamedCallHandler
 {
+    use ValidatesPartialResponse;
+    private bool $matchToExpectedFields = false;
+    private bool $preventJsonSchema = false;
+
     protected string $responseText = '';
     protected string $responseJson = '';
 
-    protected function processStream($stream) : Result {
+    protected function processStream(Generator $stream) : Result {
         // process stream
         $functionCalls = [];
         $newFunctionCall = $this->newFunctionCall();
         $functionCalls[] = $newFunctionCall;
+
+        /** @var PartialApiResponse $response */
         foreach($stream as $response){
             // receive data
             $this->events->dispatch(new StreamedResponseReceived($response->toArray()));
             $this->lastResponse = $response;
 
             // skip if chunk empty
-            $maybeArgumentChunk = $this->getArgumentChunk($response);
+            $maybeArgumentChunk = $response->delta;
             if (empty($maybeArgumentChunk)) {
                 continue;
             }
@@ -36,7 +43,7 @@ abstract class AbstractStreamedJsonHandler extends AbstractStreamedCallHandler
 
             // fix this - change to Result based instead of exception based handling
             try {
-                $this->validatePartialResponse($this->responseText);
+                $this->validatePartialResponse($this->responseText, $this->responseModel, $this->preventJsonSchema, $this->matchToExpectedFields);
             } catch (JsonParsingException $e) {
                 return Result::failure($e);
             }
@@ -54,5 +61,5 @@ abstract class AbstractStreamedJsonHandler extends AbstractStreamedCallHandler
         return Result::success($functionCalls);
     }
 
-    abstract protected function validatePartialResponse(string $partialResponseText) : void;
+    abstract protected function getStream() : Result;
 }

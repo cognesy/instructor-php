@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\LLMs;
 
+use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -25,7 +26,7 @@ abstract class AbstractCallHandler
         try {
             $this->events->dispatch(new RequestSentToLLM($this->request));
             $response = $this->getResponse();
-            $this->events->dispatch(new ResponseReceivedFromLLM($response->toArray()));
+            $this->events->dispatch(new ResponseReceivedFromLLM($response));
         } catch (Exception $e) {
             $event = new RequestToLLMFailed($this->request, $e->getMessage());
             $this->events->dispatch($event);
@@ -38,14 +39,13 @@ abstract class AbstractCallHandler
         }
         // handle finishReason other than 'stop'
         return Result::success(new LLMResponse(
-                functionCalls: $functionCalls,
-                finishReason: ($this->getFinishReason($response)),
-                rawResponse: $response->toArray(),
-                isComplete: true)
-        );
+            functionCalls: $functionCalls,
+            finishReason: $response->finishReason,
+            rawResponse: $response->responseData,
+            isComplete: true
+        ));
     }
 
-    abstract protected function getResponse() : mixed;
-    abstract protected function getFunctionCalls(mixed $response) : array;
-    abstract protected function getFinishReason(mixed $response) : string;
+    abstract protected function getResponse() : ApiResponse;
+    abstract protected function getFunctionCalls(ApiResponse $response) : array;
 }
