@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Feature;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
@@ -20,7 +21,6 @@ use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationFailed;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Tests\Examples\Extraction\Person;
 use Tests\Examples\Instructor\EventSink;
 use Tests\MockLLM;
@@ -36,7 +36,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
     $events = new EventSink();
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
-        ->withConfig([OpenAIToolCaller::class => $mockLLM])
+        ->withConfig([CanCallTools::class => $mockLLM])
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -92,7 +92,7 @@ it('handles events for simple case - validation failure', function ($event) use 
     ]);
     $events = new EventSink();
     $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
-        ->withConfig([OpenAIToolCaller::class => $mockLLM])
+        ->withConfig([CanCallTools::class => $mockLLM])
         ->onError(fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => $e->print())
         ->respond(
@@ -147,7 +147,7 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     ]);
     $events = new EventSink();
     $age = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
-        ->withConfig([OpenAIToolCaller::class => $mockLLM])
+        ->withConfig([CanCallTools::class => $mockLLM])
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Scalar::integer('age'),
@@ -191,4 +191,3 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     //[ResponseValidationAttempt::class],
     //[ResponseValidationFailed::class]
 ]);
-

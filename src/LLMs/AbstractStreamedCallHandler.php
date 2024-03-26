@@ -22,7 +22,7 @@ abstract class AbstractStreamedCallHandler
     protected EventDispatcher $events;
     protected ResponseModel $responseModel;
     protected array $request;
-    protected mixed $lastResponse;
+    protected PartialApiResponse $lastResponse;
     protected string $responseJson = '';
 
     /**

@@ -1,40 +1,43 @@
 <?php
-namespace Cognesy\Instructor\Clients\OpenAI;
+namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
 use Saloon\Contracts\Authenticator;
-use Saloon\Http\Auth\TokenAuthenticator;
+use Saloon\Http\Auth\HeaderAuthenticator;
 
-class OpenAIConnector extends ApiConnector
+class AzureConnector extends ApiConnector
 {
-    private string $defaultBaseUrl = 'https://api.openai.com/v1';
-    private string $organization;
+    private string $defaultBaseUrl = 'openai.azure.com';
+    private string $resourceName;
+    private string $deploymentId;
 
     public function __construct(
         string $apiKey,
+        string $resourceName,
+        string $deploymentId,
         string $baseUrl = '',
-        string $organization = '',
         int    $connectTimeout = 3,
         int    $requestTimeout = 30,
         array  $metadata = [],
     ) {
+        $baseUrl = $baseUrl ?: $this->defaultBaseUrl;
         parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata);
-        $this->organization = $organization;
+        $this->resourceName = $resourceName;
+        $this->deploymentId = $deploymentId;
     }
 
     public function resolveBaseUrl(): string {
-        return $this->baseUrl ?: $this->defaultBaseUrl;
+        return "https://{$this->resourceName}.{$this->baseUrl}/openai/deployments/{$this->deploymentId}";
     }
 
     protected function defaultAuth() : Authenticator {
-        return new TokenAuthenticator($this->apiKey);
+        return new HeaderAuthenticator($this->apiKey, 'api-key');
     }
 
     protected function defaultHeaders(): array {
         $headers = [
             'content-type' => 'application/json',
             'accept' => 'application/json',
-            'OpenAI-Organization' => $this->organization,
         ];
         return $headers;
     }

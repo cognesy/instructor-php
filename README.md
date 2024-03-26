@@ -160,6 +160,7 @@ You can call `request()` method to set the parameters of the request and then ca
 
 ```php
 use Cognesy\Instructor;
+
 $instructor = (new Instructor)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
@@ -170,7 +171,8 @@ $person = $instructor->get();
 You can also initialize Instructor with a request object.
 
 ```php
-use Cognesy\Instructor;use Cognesy\Instructor\Data\Request;
+use Cognesy\Instructor;
+use Cognesy\Instructor\Data\Request;
 
 $instructor = (new Instructor)->withRequest(new Request(
     messages: "His name is Jason, he is 28 years old.",
@@ -236,7 +238,8 @@ $value = (new Instructor)->respond(
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-use Cognesy\Instructor\Extras\Scalars\Scalar;use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
@@ -255,7 +258,8 @@ In this example, we're extracting a single integer value from the text. You can 
 Additionally, you can use Scalar adapter to extract one of the provided options by using `Scalar::enum()`.
 
 ```php
-use Cognesy\Instructor\Extras\Scalars\Scalar;use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Instructor;
 
 enum ActivityType {
     case Work = 'work';
@@ -434,32 +438,33 @@ var_dump($person);
 
 You can specify model and other options that will be passed to OpenAI / LLM endpoint.
 
-For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
-
 ```php
-use Cognesy\Instructor\Instructor;use OpenAI\Client;
+use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 
-// get your API key from .env file
-$yourApiKey = 'your api key';
-$client = OpenAI::factory()
-    ->withApiKey($yourApiKey)
-    ->make();
+// OpenAI auth params
+$yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
-$instructor = new Instructor([Client::class => $client]);
-
-$person = $instructor->respond(
-    messages: [['role' => 'user', 'content' => $text]],
-    responseModel: Person::class,
-    model: 'gpt-3.5-turbo',
-    options: [
-        'temperature' => 0.0
-    ],
+// Create instance of OpenAI client initialized with custom parameters
+$client = new OpenAIClient(
+    $yourApiKey,
+    baseUri: 'https://api.openai.com', // you can change base URI
+    organization: '',
+    connectTimeout: 3,
+    requestTimeout: 30,
 );
-// client is passed explicitly
-// you can specify e.g. different base URL
+
+/// Get Instructor with the default client component overridden with your own
+$instructor = (new Instructor)->withClient($client);
+
+$user = $instructor->respond(
+    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
+    responseModel: User::class,
+    model: 'gpt-3.5-turbo',
+    options: ['stream' => true ]
+);
 ```
 
-See OpenAI PHP client documentation for more details on how to use it and what options are available: https://github.com/openai-php/client
 
 
 ### Support for OS models
@@ -468,6 +473,9 @@ Some open source LLMs support OpenAI API, so you can use them with Instructor by
 
 See this example of using Ollama with Instructor:
 https://cognesy.github.io/instructor-php/hub/l_l_m_support_ollama/
+
+For more examples, check Hub section or `examples` directory in the code repository.
+
 
 
 
@@ -524,7 +532,9 @@ class User {
 Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
 
 ```php
-use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Cognesy\Instructor\Instructor;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class UserDetails
 {
@@ -658,16 +668,15 @@ To provide an essential functionality we needed here Instructor for PHP leverage
 - [PHP DocBlock](https://docs.phpdoc.org/2.9/references/phpdoc/index.html) type hinting conventions,
 - [Symfony](https://symfony.com/doc/current/index.html) serialization and validation capabilities
 
-Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models may be added in the future.
 
 
 ## Dependencies
 
 Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal dependencies, should work with any framework of your choice.
 
-- [OpenAI PHP client](https://github.com/openai-php/client) - for communication with OpenAI API
 - [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
 - [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
+
 
 
 ## TODOs

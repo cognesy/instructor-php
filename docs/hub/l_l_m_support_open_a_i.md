@@ -1,8 +1,11 @@
-# Azure support
+# Support for OpenAI API
 
-You can connect to Azure OpenAI instance using a dedicated client provided
-by Instructor. Please note it requires setting up your own model deployment
-using Azure OpenAI service console.
+This is the default client used by Instructor.
+
+Mode compatibility:
+ - Mode::Tools (recommended)
+ - Mode::Json
+ - Mode::MdJson
 
 
 ```php
@@ -10,7 +13,7 @@ using Azure OpenAI service console.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\Azure\AzureClient;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
@@ -29,24 +32,19 @@ class User {
     public array $hobbies;
 }
 
-/// Custom client parameters: base URI
-$resourceName = Env::get('AZURE_OPENAI_RESOURCE_NAME'); // set your own value/source
+// OpenAI auth params
+$yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
-$client = (new AzureClient(
-    apiKey: Env::get('AZURE_OPENAI_API_KEY'),
-    resourceName: 'instructor-dev', // set your own value/source
-    deploymentId: 'gpt-35-turbo-16k', // set your own value/source
-    apiVersion: '2024-02-01',
-));
+// Create instance of OpenAI client initialized with custom parameters
+$client = new OpenAIClient($yourApiKey);
 
 /// Get Instructor with the default client component overridden with your own
 $instructor = (new Instructor)->withClient($client);
 
-// Call with your model name and preferred execution mode
 $user = $instructor->respond(
-    messages: "Our user Jason is 25 years old.",
+    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'gpt-35-turbo-16k', // set your own value/source
+    model: 'gpt-3.5-turbo',
     //options: ['stream' => true ]
 );
 

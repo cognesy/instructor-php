@@ -17,43 +17,28 @@ $person = (new Instructor)->respond(
 );
 ```
 
-!!! note
 
-    For more details on options available - see [OpenAI PHP client](https://github.com/openai-php/client).
+## Providing custom client
 
-
-## Providing custom OpenAI client
-
-You can pass a custom configured instance of OpenAI client to the Instructor. This allows you to specify your own API key, organization, base URI, HTTP client, HTTP headers, query parameters, and stream handler.
+You can pass a custom configured instance of client to the Instructor. This allows you to specify your own API key, base URI or organization.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;use Cognesy\Utils\Env;use OpenAI\Client;
+use Cognesy\Instructor\Instructor;
+use Cognesy\Utils\Env;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 
-$yourApiKey = "sk-xxx"; // or load from .env
+// Create instance of OpenAI client initialized with custom parameters
+$client = new OpenAIClient(
+    apiKey: $yourApiKey,
+    baseUri: 'https://api.openai.com/v1',
+    organization: '',
+    connectTimeout: 3,
+    requestTimeout: 30,
+);
 
-$client = OpenAI::factory()
-    ->withApiKey($yourApiKey)
-    // default: null
-    ->withOrganization('your-organization')
-    // default: api.openai.com/v1
-    ->withBaseUri('openai.example.com/v1')
-    // default: HTTP client found using PSR-18 HTTP Client Discovery
-    ->withHttpClient($client = new \GuzzleHttp\Client([]))
-    // custom headers
-    ->withHttpHeader('X-My-Header', 'foo')
-    // ...and query params
-    ->withQueryParam('my-param', 'bar')
-    // allows to provide a custom stream handler for the http client
-    ->withStreamHandler(
-        fn (RequestInterface $request): ResponseInterface => $client->send(
-            $request,                
-            ['stream' => true]
-        )
-    )
-    ->make();
-
-$instructor = new Instructor([Client::class => $client]);
+/// Get Instructor with the default client component overridden with your own
+$instructor = (new Instructor)->withClient($client);
 
 $person = $instructor->respond(
     messages: [['role' => 'user', 'content' => $text]],
@@ -62,7 +47,3 @@ $person = $instructor->respond(
     options: ['temperature' => 0.0],
 );
 ```
-
-!!! note
-
-    For more details on `OpenAI::factory()` options - see [OpenAI PHP client](https://github.com/openai-php/client).

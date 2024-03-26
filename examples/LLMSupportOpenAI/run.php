@@ -1,5 +1,6 @@
 # Support for OpenAI API
 
+This is the default client used by Instructor.
 
 Mode compatibility:
  - Mode::Tools (recommended)
@@ -13,6 +14,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
 enum UserType : string {
@@ -30,68 +32,32 @@ class User {
     public array $hobbies;
 }
 
-// Mistral instance params
-$yourApiKey = Env::get('OPENAI_API_KEY');
+// OpenAI auth params
+$yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient($yourApiKey);
+$client = new OpenAIClient(
+    apiKey: $yourApiKey,
+    baseUri: 'https://api.openai.com/v1',
+    organization: '',
+    connectTimeout: 3,
+    requestTimeout: 30,
+);
 
-$functions = [
-    'type' => 'function',
-    'function' => [
-        'name' => 'get_temperature',
-        'description' => 'Gets temperature for a given location in a given unit.',
-        'parameters' => [
-            'type' => 'object',
-            'properties' => [
-                'location' => [
-                    'type' => 'string'
-                ],
-                'location_timezone' => [
-                    'type' => 'string'
-                ],
-                'unit' => [
-                    'type' => 'string'
-                ],
-            ],
-            'required' => ['location', 'timezone', 'unit']
-        ]
-    ]
-];
+/// Get Instructor with the default client component overridden with your own
+$instructor = (new Instructor)->withClient($client);
 
-$response = $client
-    ->wiretap(fn($event) => $event->print())
-    ->jsonCompletion(
-        messages: [
-            ["role" => "user", "content" => "Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
-            // ["role" => "user", "content" => "Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object wrapped in ```json``` tags."],
-        ],
-        model: 'gpt-3.5-turbo',
-        //options: ['stream' => true]
-    )->respond();
+$user = $instructor->respond(
+    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
+    responseModel: User::class,
+    model: 'gpt-3.5-turbo',
+    //options: ['stream' => true ]
+);
 
-//$response = $client
-//    ->wiretap(fn($event) => $event->print())
-//    ->jsonCompletion(
-//        messages: [
-//            ["role" => "user", "content" => "Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
-//        ],
-//        model: 'gpt-3.5-turbo',
-//        options: ['stream' => true]
-//    )->streamAll();
+print("Completed response model:\n\n");
+dump($user);
 
-//$response = $client
-//    ->wiretap(fn($event) => $event->print())
-//    ->toolsCall(
-//        messages: [
-//            ["role" => "user", "content" => "Call the sensor to check the temperature in Warsaw in Celsius degrees. Respond with JSON object."],
-//        ],
-//        model: 'gpt-3.5-turbo',
-//        toolChoice: ["type" => "function", "function" => ["name" => "get_temperature"]],
-//        tools: [$functions],
-//        options: ['stream' => true]
-//    )->streamAll();
-
-dump($response);
+assert(isset($user->name));
+assert(isset($user->age));
 ?>
 ```

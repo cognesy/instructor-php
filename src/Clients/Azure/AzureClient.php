@@ -1,43 +1,47 @@
 <?php
-namespace Cognesy\Instructor\Clients\OpenAI;
+namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
-use Cognesy\Instructor\Clients\OpenAI\ChatCompletion\ChatCompletionRequest;
-use Cognesy\Instructor\Clients\OpenAI\ChatCompletion\ChatCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\ChatCompletion\PartialChatCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\JsonCompletion\JsonCompletionRequest;
-use Cognesy\Instructor\Clients\OpenAI\JsonCompletion\JsonCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\JsonCompletion\PartialJsonCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\ToolsCall\PartialToolsCallResponse;
-use Cognesy\Instructor\Clients\OpenAI\ToolsCall\ToolsCallRequest;
-use Cognesy\Instructor\Clients\OpenAI\ToolsCall\ToolsCallResponse;
+use Cognesy\Instructor\Clients\Azure\ChatCompletion\ChatCompletionRequest;
+use Cognesy\Instructor\Clients\Azure\ChatCompletion\ChatCompletionResponse;
+use Cognesy\Instructor\Clients\Azure\ChatCompletion\PartialChatCompletionResponse;
+use Cognesy\Instructor\Clients\Azure\JsonCompletion\JsonCompletionRequest;
+use Cognesy\Instructor\Clients\Azure\JsonCompletion\JsonCompletionResponse;
+use Cognesy\Instructor\Clients\Azure\JsonCompletion\PartialJsonCompletionResponse;
+use Cognesy\Instructor\Clients\Azure\ToolsCall\PartialToolsCallResponse;
+use Cognesy\Instructor\Clients\Azure\ToolsCall\ToolsCallRequest;
+use Cognesy\Instructor\Clients\Azure\ToolsCall\ToolsCallResponse;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
+class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'gpt-4-turbo-preview';
 
     public function __construct(
-        protected $apiKey,
-        protected $baseUri = '',
-        protected $organization = '',
-        protected $connectTimeout = 3,
-        protected $requestTimeout = 30,
-        protected $metadata = [],
+        protected string $apiKey,
+        protected string $resourceName,
+        protected string $deploymentId,
+        protected string $apiVersion,
+        protected string $baseUri = '',
+        protected int $connectTimeout = 3,
+        protected int $requestTimeout = 30,
+        protected array $metadata = [],
         EventDispatcher $events = null,
     ) {
         parent::__construct($events);
-        $this->connector = new OpenAIConnector(
+        $this->connector = new AzureConnector(
             $apiKey,
+            $resourceName,
+            $deploymentId,
             $baseUri,
-            $organization,
             $connectTimeout,
             $requestTimeout,
             $metadata,
         );
+        $this->queryParams = ['api-version' => $apiVersion];
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

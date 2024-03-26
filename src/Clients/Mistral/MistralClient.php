@@ -6,7 +6,6 @@ use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
 use Cognesy\Instructor\Clients\Mistral\ChatCompletion\ChatCompletionRequest;
 use Cognesy\Instructor\Clients\Mistral\ChatCompletion\ChatCompletionResponse;
 use Cognesy\Instructor\Clients\Mistral\ChatCompletion\PartialChatCompletionResponse;
@@ -40,16 +39,6 @@ class MistralClient extends ApiClient implements CanCallChatCompletion, CanCallJ
         );
     }
 
-    public function makeRequest(array $payload) : ApiRequest {
-        $hasTools = $payload['tools'] ?? false;
-        $responseFormat = $payload['response_format'] ?? false;
-        $isJsonFormat = $responseFormat && $responseFormat['type'] === 'json_object';
-        return match(true) {
-            $hasTools => ToolsCallRequest::fromArray($payload),
-            $isJsonFormat => JsonCompletionRequest::fromArray($payload),
-            default => ChatCompletionRequest::fromArray($payload),
-        };
-    }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 

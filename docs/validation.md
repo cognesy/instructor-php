@@ -133,7 +133,9 @@ You can use ```#[Assert/Callback]``` annotation to build fully customized valida
 ```php
 <?php
 
-use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Cognesy\Instructor\Instructor;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class UserDetails
 {

@@ -10,6 +10,8 @@ and a PHP class for the output.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Instructor;
+
 // Enumeration for single-label text classification.
 enum Label : string {
     case SPAM = "spam";
@@ -36,7 +38,6 @@ function classify(string $data) : SinglePrediction {
             "content" => "Classify the following text: $data",
         ]],
         responseModel: SinglePrediction::class,
-        model: "gpt-3.5-turbo-0613",
     );
 }
 ?>

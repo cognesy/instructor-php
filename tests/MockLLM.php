@@ -2,16 +2,17 @@
 
 namespace Tests;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\Contracts\CanCallFunction;
 use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\LLMResponse;
-use Cognesy\Instructor\LLMs\OpenAI\ToolsMode\OpenAIToolCaller;
 use Cognesy\Instructor\Utils\Result;
 use Mockery;
 
 class MockLLM
 {
-    static public function get(array $args) : ?OpenAIToolCaller {
-        $mockLLM = Mockery::mock(OpenAIToolCaller::class);
+    static public function get(array $args) : ?CanCallFunction {
+        $mockLLM = Mockery::mock(CanCallFunction::class);
         $list = [];
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);

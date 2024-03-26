@@ -9,26 +9,30 @@ other LLMs which support OpenAI API.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\Utils\Env;use OpenAI\Client;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Env;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 
 class User {
     public int $age;
     public string $name;
 }
 
-/// Custom client parameter, e.g. API key and base URI
-$yourApiKey = Env::get('OPENAI_API_KEY'); // or your own value/source
-$yourBaseUri = 'https://api.openai.com/v1';
+// OpenAI auth params
+$yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = OpenAI::factory()
-    ->withApiKey($yourApiKey)
-    ->withOrganization(null) // default: null
-    ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
-    ->make();
+$client = new OpenAIClient(
+    apiKey: $yourApiKey,
+    baseUri: 'https://api.openai.com/v1',
+    organization: '',
+    connectTimeout: 3,
+    requestTimeout: 30,
+);
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = new Instructor([Client::class => $client]);
+$instructor = (new Instructor)->withClient($client);
 
 // Custom model and execution mode
 $model = 'gpt-3.5-turbo';

@@ -6,6 +6,7 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
+use Cognesy\Instructor\Clients\Azure\AzureClient;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
@@ -45,7 +46,6 @@ function autowire(Configuration $config) : Configuration
 
     $config->declare(class: EventDispatcher::class);
 
-
     /// LLM CLIENTS //////////////////////////////////////////////////////////////////////////
 
     $config->declare(
@@ -62,8 +62,24 @@ function autowire(Configuration $config) : Configuration
 
     $config->declare(
         class: OpenAIClient::class,
+        name: CanCallApi::class, // default client
         context: [
             'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: AzureClient::class,
+        context: [
+            'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
+            'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
+            'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
+            'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
             'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
@@ -86,7 +102,6 @@ function autowire(Configuration $config) : Configuration
 
     $config->declare(
         class: AnthropicClient::class,
-        name: CanCallApi::class,
         context: [
             'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
             'baseUri' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',

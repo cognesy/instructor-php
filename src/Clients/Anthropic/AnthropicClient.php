@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\ChatCompletionRequest;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\ChatCompletionResponse;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\PartialChatCompletionResponse;
@@ -31,10 +30,6 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion
             $requestTimeout,
             $metadata,
         );
-    }
-
-    public function makeRequest(array $payload) : ApiRequest {
-        return ChatCompletionRequest::fromArray($payload);
     }
 
     /// PUBLIC API ////////////////////////////////////////////////////////////////////////////////

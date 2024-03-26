@@ -9,7 +9,9 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
 
-use Cognesy\Instructor\Instructor;use Symfony\Component\Validator\Constraints as Assert;use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Cognesy\Instructor\Instructor;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class UserDetails
 {

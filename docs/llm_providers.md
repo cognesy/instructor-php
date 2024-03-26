@@ -49,8 +49,7 @@ Supported extraction modes:
 
  - Mode::MdJson
  - Mode::Json (for selected models)
-
-Mode::Tools is not supported yet.
+ - Mode::Tools (for selected models)
 
 Example:
  - `./examples/LLMSupportMistral/run.php`
@@ -80,6 +79,7 @@ Supported extraction modes:
 
  - Mode::MdJson
  - Mode::Json (for selected models)
+ - Mode::Tools (for selected models)
 
 Example:
  - `./examples/LLMSupportOpenRouter/run.php`

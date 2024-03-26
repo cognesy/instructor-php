@@ -8,11 +8,9 @@ OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
 use Cognesy\Instructor\Instructor;
-use OpenAI\Client;
 
 enum UserType : string {
     case Guest = 'Guest';
@@ -29,37 +27,29 @@ class User {
     public array $hobbies;
 }
 
-// Local Ollama instance params
-$yourApiKey = 'ollama';
-$yourBaseUri = 'http://localhost:11434/v1';
-$model = 'llama2';
-$executionMode = Mode::MdJson;
-
-// Create instance of OpenAI client initialized with custom parameters
-$client = OpenAI::factory()
-    ->withApiKey($yourApiKey)
-    ->withOrganization(null)
-    ->withBaseUri($yourBaseUri)
-    ->make();
+// Create instance of OpenAI client initialized with custom parameters for Ollama
+$client = new OpenAIClient(
+    apiKey: 'ollama',
+    baseUri: 'http://localhost:11434/v1',
+    connectTimeout: 3,
+    requestTimeout: 60, // set based on your machine performance :)
+);
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = new Instructor([Client::class => $client]);
+$instructor = (new Instructor)->withClient($client);
 
-print("Printing partial updates:\n\n");
-
-$user = $instructor
-    ->onEvent(PartialJsonReceived::class, fn(PartialJsonReceived $event) => $event->print())
-    ->onEvent(ResponseGenerated::class, fn(ResponseGenerated $event) => $event->print())
-    ->respond(
-        messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
-        responseModel: User::class,
-        model: $model,
-        mode: $executionMode,
-        options: ['stream' => true]
-    );
+$user = $instructor->respond(
+    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
+    responseModel: User::class,
+    model: 'llama2',
+    mode: Mode::MdJson
+    //options: ['stream' => true ]
+);
 
 print("Completed response model:\n\n");
 dump($user);
 
+assert(isset($user->name));
+assert(isset($user->age));
 ?>
 ```

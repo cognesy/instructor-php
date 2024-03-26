@@ -1,8 +1,8 @@
-# Customize parameters of OpenAI client
+# Azure support
 
-You can provide your own OpenAI client instance to Instructor. This is useful
-when you want to initialize OpenAI client with custom values - e.g. to call
-other LLMs which support OpenAI API.
+You can connect to Azure OpenAI instance using a dedicated client provided
+by Instructor. Please note it requires setting up your own model deployment
+using Azure OpenAI service console.
 
 
 ```php
@@ -10,44 +10,47 @@ other LLMs which support OpenAI API.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Clients\Azure\AzureClient;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
-use OpenAI\Client;
+
+enum UserType : string {
+    case Guest = 'Guest';
+    case User = 'User';
+    case Admin = 'Admin';
+}
 
 class User {
     public int $age;
     public string $name;
+    public string $username;
+    public UserType $role;
+    /** @var string[] */
+    public array $hobbies;
 }
 
-/// Custom client parameter, e.g. API key and base URI
-$apiKey = Env::get('AZURE_OPENAI_API_KEY'); // set your own value/source
+/// Custom client parameters: base URI
 $resourceName = Env::get('AZURE_OPENAI_RESOURCE_NAME'); // set your own value/source
-$deploymentId = 'gpt-35-turbo-16k'; // set your own value/source
-$apiVersion = '2024-02-01'; // set your own value/source
-$baseUri = "{$resourceName}.openai.azure.com/openai/deployments/{$deploymentId}";
 
-$client = OpenAI::factory()
-    ->withBaseUri($baseUri)
-    ->withHttpHeader('api-key', $apiKey)
-    ->withQueryParam('api-version', $apiVersion)
-    ->make();
+$client = (new AzureClient(
+    apiKey: Env::get('AZURE_OPENAI_API_KEY'),
+    resourceName: 'instructor-dev', // set your own value/source
+    deploymentId: 'gpt-35-turbo-16k', // set your own value/source
+    apiVersion: '2024-02-01',
+));
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = new Instructor([Client::class => $client]);
+$instructor = (new Instructor)->withClient($client);
 
-// Custom model and execution mode
-$model = 'gpt-35-turbo-16k';
-$executionMode = Mode::Tools;
+// Call with your model name and preferred execution mode
+$user = $instructor->respond(
+    messages: "Our user Jason is 25 years old.",
+    responseModel: User::class,
+    model: 'gpt-35-turbo-16k', // set your own value/source
+    //options: ['stream' => true ]
+);
 
-$user = $instructor
-    ->respond(
-        messages: "Our user Jason is 25 years old.",
-        responseModel: User::class,
-        model: $model,
-        mode: $executionMode,
-    );
-
+print("Completed response model:\n\n");
 dump($user);
 
 assert(isset($user->name));

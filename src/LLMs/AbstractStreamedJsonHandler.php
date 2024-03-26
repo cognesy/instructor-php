@@ -28,7 +28,7 @@ abstract class AbstractStreamedJsonHandler extends AbstractStreamedCallHandler
         /** @var PartialApiResponse $response */
         foreach($stream as $response){
             // receive data
-            $this->events->dispatch(new StreamedResponseReceived($response->toArray()));
+            $this->events->dispatch(new StreamedResponseReceived($response));
             $this->lastResponse = $response;
 
             // skip if chunk empty

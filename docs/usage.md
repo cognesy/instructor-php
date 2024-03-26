@@ -81,7 +81,8 @@ $person = $instructor->get();
 You can also initialize Instructor with a request object.
 
 ```php
-use Cognesy\Instructor;use Cognesy\Instructor\Data\Request;
+use Cognesy\Instructor;
+use Cognesy\Instructor\Data\Request;
 
 $instructor = (new Instructor)->withRequest(new Request(
     messages: "His name is Jason, he is 28 years old.",
@@ -94,38 +95,31 @@ $instructor = (new Instructor)->withRequest(new Request(
 You can provide your own OpenAI client to Instructor. This is useful when you want to initialize OpenAI client with custom values - e.g. to call other LLMs which support OpenAI API.
 
 ```php
-use Cognesy\Instructor\Instructor;use OpenAI\Client;
+use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 
 class User {
     public int $age;
     public string $name;
 }
 
-/// fully customize OpenAI client parameters
-$yourApiKey = 'ollama';
-$yourBaseUri = 'http://localhost:11434/v1/';
-$client = OpenAI::factory()
-    ->withApiKey($yourApiKey)
-    ->withOrganization('') // default: null
-    ->withBaseUri($yourBaseUri) // default: api.openai.com/v1
-    // you can also customize other OpenAI client parameters
-    //->withHttpClient($client = new \GuzzleHttp\Client([]))
-    //->withHttpHeader('X-My-Header', 'foo')
-    //->withQueryParam('my-param', 'bar')
-    //->withStreamHandler(fn (RequestInterface $request): ResponseInterface => $client->send($request, [
-    //    'stream' => true // Allows to provide a custom stream handler for the http client.
-    //]))
-    //
-    ->make();
+/ Create instance of OpenAI client initialized with custom parameters for Ollama
+$client = new OpenAIClient(
+    apiKey: 'ollama',
+    baseUri: 'http://localhost:11434/v1',
+    connectTimeout: 3,
+    requestTimeout: 60, // set based on your machine performance :)
+);
 
-// override default OpenAI client configuration with your own
-$instructor = new Instructor([Client::class => $client]);
+/// Get Instructor with the default client component overridden with your own
+$instructor = (new Instructor)->withClient($client);
 
-/// now you can use the client with Instructor
 $user = $instructor->respond(
-    messages: "Jason is 25 years old.",
+    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     model: 'llama2',
+    mode: Mode::MdJson
+    //options: ['stream' => true ]
 );
 
 dump($user);

@@ -39,17 +39,6 @@ class OpenRouterClient extends ApiClient implements CanCallChatCompletion, CanCa
         );
     }
 
-    public function makeRequest(array $payload) : ApiRequest {
-        $hasTools = $payload['tools'] ?? false;
-        $responseFormat = $payload['response_format'] ?? false;
-        $isJsonFormat = $responseFormat && $responseFormat['type'] === 'json_object';
-        return match(true) {
-            $hasTools => ToolsCallRequest::fromArray($payload),
-            $isJsonFormat => JsonCompletionRequest::fromArray($payload),
-            default => ChatCompletionRequest::fromArray($payload),
-        };
-    }
-
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
     public function chatCompletion(array $messages, string $model, array $options = []): static {

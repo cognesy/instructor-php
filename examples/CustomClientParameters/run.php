@@ -10,7 +10,8 @@ other LLMs which support OpenAI API.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 

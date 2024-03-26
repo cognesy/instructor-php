@@ -9,7 +9,6 @@ class RequestToLLMFailed extends Event
     public function __construct(
         public array $request,
         public string $errors,
-        public array $response = [],
     ) {
         parent::__construct();
     }
@@ -19,7 +18,6 @@ class RequestToLLMFailed extends Event
         return json_encode([
             'errors' => $this->errors,
             'request' => $this->request,
-            'response' => $this->response,
         ]);
     }
 }

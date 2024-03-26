@@ -7,7 +7,7 @@ use Saloon\Http\Auth\TokenAuthenticator;
 
 class OpenRouterConnector extends ApiConnector
 {
-    private string $defaultBaseUrl = 'https://api.openai.com/v1';
+    private string $defaultBaseUrl = 'https://openrouter.ai/api/v1';
 
     public function resolveBaseUrl(): string {
         return $this->baseUrl ?: $this->defaultBaseUrl;
@@ -21,7 +21,6 @@ class OpenRouterConnector extends ApiConnector
         return [
             'content-type' => 'application/json',
             'accept' => 'application/json',
-            'OpenAI-Organization' => $this->metadata['organization'] ?? '',
         ];
     }
 }

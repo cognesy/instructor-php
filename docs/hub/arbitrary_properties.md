@@ -7,6 +7,9 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Instructor;
+
 class Property
 {
     public string $key;
@@ -36,6 +39,7 @@ $text = <<<TEXT
 $user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
+    mode: Mode::MdJson,
 );
 
 dump($user);
