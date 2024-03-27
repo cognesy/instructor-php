@@ -15,7 +15,7 @@ abstract class AbstractJsonHandler extends AbstractCallHandler
         }
         $toolCalls = [];
         $toolCalls[] = new FunctionCall(
-            toolCallId: '', // ???
+            id: '', // ???
             functionName: $this->responseModel->functionName ?? '',
             functionArgsJson: $jsonData
         );

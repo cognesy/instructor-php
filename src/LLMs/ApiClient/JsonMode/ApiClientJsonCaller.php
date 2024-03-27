@@ -9,8 +9,6 @@ use Cognesy\Instructor\Utils\Result;
 
 class ApiClientJsonCaller implements CanCallFunction
 {
-    private string $prompt = "\nRespond with JSON. Response must follow this JSONSchema:\n";
-
     public function __construct(
         private EventDispatcher $events,
         private CanCallJsonCompletion $client,
@@ -25,11 +23,10 @@ class ApiClientJsonCaller implements CanCallFunction
         string $model,
         array $options,
     ) : Result {
-        $messages = $this->appendInstructions($messages, $responseModel->jsonSchema);
         $request = array_merge([
             'model' => $model,
             'messages' => $messages,
-            'response_format' => ['type' => 'json_object'],
+            'response_format' => ['type' => 'json_object', 'schema' => $responseModel->jsonSchema],
         ], $options);
 
         return match($options['stream'] ?? false) {
@@ -46,14 +43,5 @@ class ApiClientJsonCaller implements CanCallFunction
                 $responseModel
             ))->handle()
         };
-    }
-
-    private function appendInstructions(array $messages, array $jsonSchema) : array {
-        $lastIndex = count($messages) - 1;
-        if (!isset($messages[$lastIndex]['content'])) {
-            $messages[$lastIndex]['content'] = '';
-        }
-        $messages[$lastIndex]['content'] .= $this->prompt . json_encode($jsonSchema);
-        return $messages;
     }
 }

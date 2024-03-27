@@ -44,7 +44,7 @@ class ToolCallCallHandler extends AbstractCallHandler
             return [];
         }
         return [new FunctionCall(
-            toolCallId: '',
+            id: '',
             functionName: $response->functionName ?? '',
             functionArgsJson: $response->content ?? ''
         )];

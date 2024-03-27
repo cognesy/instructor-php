@@ -53,9 +53,9 @@ class MistralClient extends ApiClient implements CanCallChatCompletion, CanCallJ
         return $this;
     }
 
-    public function jsonCompletion(array $messages, string $model, array $options = []): static {
+    public function jsonCompletion(array $messages, array $responseFormat, string $model, array $options = []): static {
         $model = $model ?: $this->defaultModel;
-        $this->request = new JsonCompletionRequest($messages, $model, $options);
+        $this->request = new JsonCompletionRequest($messages, $responseFormat, $model, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialJsonCompletionResponse::class;
         } else {

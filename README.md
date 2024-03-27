@@ -674,9 +674,8 @@ To provide an essential functionality we needed here Instructor for PHP leverage
 
 Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal dependencies, should work with any framework of your choice.
 
-- [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
-- [Jasny PHP DocBlock Parser](https://www.jasny.net/phpdoc-parser/) - for parsing PHP DocBlocks
-
+ - [SaloonPHP](https://docs.saloon.dev/) - for handling communication with LLM API providers
+ - [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
 
 
 ## TODOs

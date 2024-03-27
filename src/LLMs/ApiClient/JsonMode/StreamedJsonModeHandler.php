@@ -29,6 +29,7 @@ class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
         try {
             $stream = $this->client->jsonCompletion(
                 messages: $this->request['messages'] ?? [],
+                responseFormat: $this->request['response_format'] ?? [],
                 model: $this->request['model'] ?? '',
                 options: Arrays::unset($this->request, ['model', 'messages'])
             )->stream();

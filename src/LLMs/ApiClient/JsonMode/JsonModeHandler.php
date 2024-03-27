@@ -27,6 +27,7 @@ class JsonModeHandler extends AbstractJsonHandler
     protected function getResponse() : ApiResponse {
         return $this->client->jsonCompletion(
             messages: $this->request['messages'] ?? [],
+            responseFormat: $this->request['response_format'] ?? [],
             model: $this->request['model'] ?? '',
             options: Arrays::unset($this->request, ['model', 'messages'])
         )->respond();

@@ -17,10 +17,12 @@ class GenerateDocs extends Command
     }
 
     public function execute(array $params = []) {
+        $arg = $params[0] ?? '';
+        $refresh = $this->isRefresh($arg);
         $timeStart = microtime(true);
         Cli::outln("Generating docs...", [Color::BOLD, Color::YELLOW]);
         try {
-            $this->docGen->makeDocs();
+            $this->docGen->makeDocs($refresh);
         } catch (\Exception $e) {
             Cli::outln("Error:", [Color::BOLD, Color::RED]);
             Cli::outln($e->getMessage(), Color::GRAY);
@@ -28,5 +30,9 @@ class GenerateDocs extends Command
         }
         $time = round(microtime(true) - $timeStart, 2);
         Cli::outln("Done - in {$time} secs", [Color::BOLD, Color::YELLOW]);
+    }
+
+    private function isRefresh(string $arg) : bool {
+        return $arg === 'all';
     }
 }

@@ -15,14 +15,18 @@ class DocGenerator
         private string $sectionEndMarker,
     ) {}
 
-    public function makeDocs() : void {
+    public function makeDocs(bool $refresh = false) : void {
         // check if hub docs directory exists
         if (!is_dir($this->hubDocsDir)) {
             throw new \Exception("Hub docs directory '$this->hubDocsDir' does not exist");
         }
         (new DocGenView)->renderHeader();
-        $list = $this->examples->forEachExample(function(Example $example) {
-            $success = $this->copyOrReplace($example);
+        $list = $this->examples->forEachExample(function(Example $example) use ($refresh) {
+            if ($refresh) {
+                $success = $this->replaceAll($example);
+            } else {
+                $success = $this->replaceNew($example);
+            }
             (new DocGenView)->renderFile($example, $success);
             if (!$success) {
                 throw new \Exception("Failed to copy or replace example: {$example->name}");
@@ -36,7 +40,19 @@ class DocGenerator
         }
     }
 
-    private function copyOrReplace(Example $example) : bool {
+    private function replaceAll(Example $example) : bool {
+        // make target md filename - replace .php with .md,
+        $newFileName = Str::snake($example->name).'.md';
+        $targetPath = $this->hubDocsDir . '/' . $newFileName;
+        // copy example file to docs
+        if (file_exists($targetPath)) {
+            unlink($targetPath);
+        }
+        (new DocGenView)->renderNew();
+        return copy($example->runPath, $targetPath);
+    }
+
+    private function replaceNew(Example $example) : bool {
         // make target md filename - replace .php with .md,
         $newFileName = Str::snake($example->name).'.md';
         $targetPath = $this->hubDocsDir . '/' . $newFileName;

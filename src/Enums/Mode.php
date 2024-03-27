@@ -4,14 +4,10 @@ namespace Cognesy\Instructor\Enums;
 
 enum Mode : string
 {
-    // default - use OpenAI PHP client
     case Tools = 'tool_call';
     case Json = 'json_mode';
     case MdJson = 'markdown_json_mode';
-    // use Mistral client?
-    case MistralTools = 'mistral_tools';
-    // use Anthropic client?
-    case AnthropicTools = 'anthropic_tool_call';
+    case Grammar = 'grammar_mode';
     // modes below are not implemented yet
     //case ParallelTools = 'parallel_tool_call';
     //case JsonSchema = 'json_schema_mode';

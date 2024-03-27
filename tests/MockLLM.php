@@ -24,7 +24,7 @@ class MockLLM
         return fn() => Result::success(new LLMResponse(
             functionCalls: [
                 new FunctionCall(
-                    toolCallId: '1',
+                    id: '1',
                     functionName: 'callFunction',
                     functionArgsJson: $json,
                 ),

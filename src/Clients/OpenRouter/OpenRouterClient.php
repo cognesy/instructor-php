@@ -5,7 +5,6 @@ use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
 use Cognesy\Instructor\Clients\OpenRouter\ChatCompletion\ChatCompletionRequest;
 use Cognesy\Instructor\Clients\OpenRouter\ChatCompletion\ChatCompletionResponse;
 use Cognesy\Instructor\Clients\OpenRouter\ChatCompletion\PartialChatCompletionResponse;
@@ -52,9 +51,9 @@ class OpenRouterClient extends ApiClient implements CanCallChatCompletion, CanCa
         return $this;
     }
 
-    public function jsonCompletion(array $messages, string $model, array $options = []): static {
+    public function jsonCompletion(array $messages, array $responseFormat, string $model, array $options = []): static {
         $model = $model ?: $this->defaultModel;
-        $this->request = new JsonCompletionRequest($messages, $model, $options);
+        $this->request = new JsonCompletionRequest($messages, $responseFormat, $model, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialJsonCompletionResponse::class;
         } else {

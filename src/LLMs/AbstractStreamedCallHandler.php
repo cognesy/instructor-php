@@ -53,7 +53,7 @@ abstract class AbstractStreamedCallHandler
 
     protected function newFunctionCall(PartialApiResponse $response = null) : FunctionCall {
         $newFunctionCall = new FunctionCall(
-            toolCallId: '',
+            id: '',
             functionName: $this->responseModel->functionName, // ATTENTION!
             functionArgsJson: ''
         );
