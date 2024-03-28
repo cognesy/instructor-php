@@ -1,11 +1,13 @@
-# Support for Anthropic API
+# Support for Fireworks.ai API
 
-Instructor supports Anthropic API - you can find the details on how to configure
-the client in the example below.
+
+Please note that the larger Mistral models support Mode::Json, which is much more
+reliable than Mode::MdJson.
 
 Mode compatibility:
-- Mode::MdJson, Mode::Json - supported
-- Mode::Tools - not supported yet
+- Mode::Tools - selected models
+- Mode::Json - selected models
+- Mode::MdJson
 
 
 ```php
@@ -13,7 +15,7 @@ Mode compatibility:
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
+use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
@@ -33,21 +35,25 @@ class User {
     public array $hobbies;
 }
 
+// Mistral instance params
+$yourApiKey = Env::get('FIREWORKSAI_API_KEY'); // set your own API key
+
 // Create instance of client initialized with custom parameters
-$client = new AnthropicClient(
-    apiKey: Env::get('ANTHROPIC_API_KEY'),
+$client = new FireworksAIClient(
+    apiKey: $yourApiKey,
 );
 
 /// Get Instructor with the default client component overridden with your own
 $instructor = (new Instructor)->withClient($client);
 
-$user = $instructor->respond(
-    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
-    responseModel: User::class,
-    model: 'claude-3-haiku-20240307',
-    mode: Mode::Tools,
+$user = $instructor
+    ->respond(
+        messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
+        responseModel: User::class,
+        model: 'accounts/fireworks/models/mixtral-8x7b-instruct',
+        mode: Mode::Json,
     //options: ['stream' => true ]
-);
+    );
 
 print("Completed response model:\n\n");
 dump($user);
