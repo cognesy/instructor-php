@@ -30,18 +30,8 @@ class ApiClientJsonCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedJsonModeHandler(
-                $this->events,
-                $this->client,
-                $request,
-                $responseModel
-            ))->handle(),
-            default => (new JsonModeHandler(
-                $this->events,
-                $this->client,
-                $request,
-                $responseModel
-            ))->handle()
+            true => (new StreamedJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new JsonModeHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 }

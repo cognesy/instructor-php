@@ -4,12 +4,12 @@ namespace Cognesy\Instructor\LLMs\ApiClient\JsonMode;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\AbstractStreamedJsonHandler;
+use Cognesy\Instructor\LLMs\AbstractStreamedCallHandler;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
-class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
+class StreamedJsonModeHandler extends AbstractStreamedCallHandler
 {
     private CanCallJsonCompletion $client;
 

@@ -3,12 +3,14 @@
 namespace Cognesy\Instructor\LLMs;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\Data\FunctionCall;
 use Cognesy\Instructor\Data\LLMResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
 use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
@@ -46,6 +48,27 @@ abstract class AbstractCallHandler
         ));
     }
 
+    protected function getFunctionCalls(ApiResponse $response) : array {
+        $jsonData = Json::find($response->content);
+        if (empty($jsonData)) {
+            return [];
+        }
+        $functionName = $response->functionName ?: $this->responseModel->functionName;
+        return [new FunctionCall(
+            id: $response->id ?? '',
+            functionName: $functionName,
+            functionArgsJson: $jsonData
+        )];
+//        $functionCalls = [];
+//        foreach ($response->choices[0]->message->toolCalls as $data) {
+//            $functionCalls[] = new FunctionCall(
+//                toolCallId: $data->id ?? '',
+//                functionName: $data->function->name ?? '',
+//                functionArgsJson: $data->function->arguments ?? ''
+//            );
+//        }
+//        return $functionCalls;
+    }
+
     abstract protected function getResponse() : ApiResponse;
-    abstract protected function getFunctionCalls(ApiResponse $response) : array;
 }

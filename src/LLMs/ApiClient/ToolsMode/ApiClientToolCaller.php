@@ -35,18 +35,8 @@ class ApiClientToolCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedToolCallHandler(
-                $this->events,
-                $this->client,
-                $request,
-                $responseModel
-            ))->handle(),
-            default => (new ToolCallHandler(
-                $this->events,
-                $this->client,
-                $request,
-                $responseModel
-            ))->handle()
+            true => (new StreamedToolCallHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new ToolCallHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 }

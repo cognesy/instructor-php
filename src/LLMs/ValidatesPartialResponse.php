@@ -7,6 +7,7 @@ use Cognesy\Instructor\Exceptions\JSONParsingException;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\JsonParser;
+use Cognesy\Instructor\Utils\Result;
 use Exception;
 
 trait ValidatesPartialResponse
@@ -16,29 +17,34 @@ trait ValidatesPartialResponse
         ResponseModel $responseModel,
         bool $preventJsonSchema,
         bool $matchToExpectedFields
-    ) : void {
-        if ($preventJsonSchema) {
-            $this->preventJsonSchemaResponse($partialResponseText);
+    ) : Result {
+        $result = $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText);
+        if ($result->isFailure()) {
+            return $result;
         }
-        if ($matchToExpectedFields) {
-            $this->detectNonMatchingJson($partialResponseText, $responseModel);
+        $result = $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel);
+        if ($result->isFailure()) {
+            return $result;
         }
+        return Result::success(true);
     }
 
     /// VALIDATIONS //////////////////////////////////////////////////////////////////
 
-    private function preventJsonSchemaResponse(string $partialResponseText) {
-        if (!$this->isJsonSchemaResponse($partialResponseText)) {
-            return;
+    private function preventJsonSchemaResponse(bool $check, string $partialResponseText) : Result {
+        if (!$check) {
+            return Result::success(true);
         }
-        throw new JsonParsingException(
+        if (!$this->isJsonSchemaResponse($partialResponseText)) {
+            return Result::success(true);
+        }
+        return Result::failure(new JsonParsingException(
             message: 'You started responding with JSONSchema. Respond with JSON data instead.',
             json: $partialResponseText,
-        );
+        ));
     }
 
     private function isJsonSchemaResponse(string $responseText) : bool {
-        // ...detect JSONSchema response
         try {
             $jsonFragment = Json::findPartial($responseText);
             $decoded = (new JsonParser)->parse($jsonFragment, true);
@@ -52,14 +58,17 @@ trait ValidatesPartialResponse
         return false;
     }
 
-    private function detectNonMatchingJson(string $responseText, ResponseModel $responseModel) : void {
-        if ($this->isMatchingResponseModel($responseText, $responseModel)) {
-            return;
+    private function detectNonMatchingJson(bool $check, string $responseText, ResponseModel $responseModel) : Result {
+        if (!$check) {
+            return Result::success(true);
         }
-        throw new JsonParsingException(
+        if ($this->isMatchingResponseModel($responseText, $responseModel)) {
+            return Result::success(true);
+        }
+        return Result::failure(new JsonParsingException(
             message: 'JSON does not match schema.',
             json: $responseText,
-        );
+        ));
     }
 
     private function isMatchingResponseModel(

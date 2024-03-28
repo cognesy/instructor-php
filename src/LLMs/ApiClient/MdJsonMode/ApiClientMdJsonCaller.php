@@ -32,18 +32,8 @@ class ApiClientMdJsonCaller implements CanCallFunction
         ], $options);
 
         return match($options['stream'] ?? false) {
-            true => (new StreamedMdJsonModeHandler(
-                $this->events,
-                $this->client,
-                $request,
-                $responseModel
-            ))->handle(),
-            default => (new MdJsonModeHandler(
-                $this->events,
-                $this->client,
-                $request,
-                $responseModel
-            ))->handle()
+            true => (new StreamedMdJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle(),
+            default => (new MdJsonModeHandler($this->events, $this->client, $request, $responseModel))->handle()
         };
     }
 

@@ -37,25 +37,5 @@ class ToolCallHandler extends AbstractCallHandler
             options: Arrays::unset($this->request, ['model', 'messages', 'tools', 'tool_choice'])
         )->respond();
     }
-
-    protected function getFunctionCalls(ApiResponse $response) : array {
-        if (empty($response->content)) {
-            return [];
-        }
-        return [new FunctionCall(
-            id: '',
-            functionName: $response->functionName ?? '',
-            functionArgsJson: $response->content ?? ''
-        )];
-//        $functionCalls = [];
-//        foreach ($response->choices[0]->message->toolCalls as $data) {
-//            $functionCalls[] = new FunctionCall(
-//                toolCallId: $data->id ?? '',
-//                functionName: $data->function->name ?? '',
-//                functionArgsJson: $data->function->arguments ?? ''
-//            );
-//        }
-//        return $functionCalls;
-    }
 }
 

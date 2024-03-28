@@ -8,20 +8,19 @@ the provided text.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Env;
 
 $report = <<<'EOT'
     [2021-09-01]
     Acme Insurance project to implement SalesTech CRM solution is currently in RED status due to delayed delivery of document production system, led by 3rd party vendor - Alfatech. Customer (Acme) is discussing the resolution with the vendor. Due to dependencies it will result in delay of the ecommerce track by 2 sprints. System integrator (SysCorp) are working to absorb some of the delay by deploying extra resources to speed up development when the doc production is done. Another issue is that the customer is not able to provide the test data for the ecommerce track. SysCorp notified it will impact stabilization schedule unless resolved by the end of the month. Steerco has been informed last week about the potential impact of the issues, but insists on maintaining release schedule due to marketing campaign already ongoing. Customer executives are asking us - SalesTech team - to confirm SysCorp's assessment of the situation. We're struggling with that due to communication issues - SysCorp team has not shown up on 2 recent calls. Lack of insight has been escalated to SysCorp's leadership team yesterday, but we've got no response yet. The previously reported Integration Proxy connectivity issue which was blocking policy track has been resolved on 2021-08-30 - the track is now GREEN. Production deployment plan has been finalized on Aug 15th and awaiting customer approval.
     EOT;
 
-class ProjectEvents {
-    /**
-     * List of events extracted from the text
-     * @var ProjectEvent[]
-     */
-    public array $events = [];
-}
+echo "Extracting project events from the report:\n\n";
+echo $report . "\n\n";
 
 /** Represents a project event */
 class ProjectEvent {
@@ -73,14 +72,45 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$user = (new Instructor)->respond(
-    messages: $report,
-    responseModel: ProjectEvents::class,
-    model: 'gpt-4-turbo-preview',
-    options: ['max_tokens' => 2048 ]
+$client = new OpenAIClient(
+    apiKey: Env::get('OPENAI_API_KEY'),
+    requestTimeout: 90,
 );
 
-print("Completed response model:\n\n");
-dump($user);
+$instructor = (new Instructor)->withClient($client);
+
+echo "PROJECT EVENTS:\n\n";
+
+$events = $instructor
+    ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))//dump($sequence))
+    ->request(
+        messages: $report,
+        responseModel: Sequence::of(ProjectEvent::class),
+        model: 'gpt-4-turbo-preview',
+        mode: Mode::Json,
+        options: [
+            'max_tokens' => 2048,
+            'stream' => true,
+        ])
+    ->get();
+
+echo "TOTAL EVENTS: " . count($events) . "\n";
+
+function displayEvent(ProjectEvent $event) : void {
+    echo "Event: {$event->title}\n";
+    echo " - Descriptions: {$event->description}\n";
+    echo " - Type: {$event->type->value}\n";
+    echo " - Status: {$event->status->value}\n";
+    echo " - Date: {$event->date}\n";
+    if (empty($event->stakeholders)) {
+        echo " - Stakeholders: none\n";
+    } else {
+        echo " - Stakeholders:\n";
+        foreach($event->stakeholders as $stakeholder) {
+            echo "   - {$stakeholder->name} ({$stakeholder->role->value})\n";
+        }
+    }
+    echo "\n";
+}
 ?>
 ```

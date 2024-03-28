@@ -5,10 +5,10 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\AbstractJsonHandler;
+use Cognesy\Instructor\LLMs\AbstractCallHandler;
 use Cognesy\Instructor\Utils\Arrays;
 
-class JsonModeHandler extends AbstractJsonHandler
+class JsonModeHandler extends AbstractCallHandler
 {
     private CanCallJsonCompletion $client;
 

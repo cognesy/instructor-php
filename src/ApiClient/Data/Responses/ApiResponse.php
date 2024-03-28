@@ -9,6 +9,7 @@ class ApiResponse
         public array  $responseData,
         public string $functionName = '',
         public string $finishReason = '',
+        public string $id = '',
     ) {}
 
     public function toArray(): array {
