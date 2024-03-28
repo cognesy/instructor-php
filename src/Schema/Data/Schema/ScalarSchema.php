@@ -11,4 +11,15 @@ class ScalarSchema extends Schema
             'description' => $this->description,
         ]);
     }
+
+    public function toXml() : string {
+        $lines = [
+            '<parameter>',
+            '<name>'.$this->name.'</name>',
+            '<type>'.$this->type->jsonType().'</type>',
+            '<description>'.$this->description.'</description>',
+            '</parameter>',
+        ];
+        return implode("\n", $lines);
+    }
 }

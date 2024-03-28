@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\LLMs;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;

@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\LLMs\ApiClient\ToolsMode;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
@@ -10,7 +9,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\LLMs\AbstractCallHandler;
 use Cognesy\Instructor\Utils\Arrays;
 
-class ToolCallCallHandler extends AbstractCallHandler
+class ToolCallHandler extends AbstractCallHandler
 {
     protected CanCallTools $client;
 

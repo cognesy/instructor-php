@@ -6,8 +6,4 @@ use Cognesy\Instructor\ApiClient\Data\Requests\ApiChatCompletionRequest;
 class ChatCompletionRequest extends ApiChatCompletionRequest
 {
     protected string $endpoint = '/messages';
-
-    public function getEndpoint(): string {
-        return $this->endpoint;
-    }
 }

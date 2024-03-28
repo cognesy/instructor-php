@@ -45,7 +45,7 @@ $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     model: 'claude-3-haiku-20240307',
-    mode: Mode::MdJson,
+    mode: Mode::Json,
     //options: ['stream' => true ]
 );
 

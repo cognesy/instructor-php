@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Data\Requests;
 
-abstract class ApiToolsCallRequest extends ApiRequest
+class ApiToolsCallRequest extends ApiRequest
 {
     public function __construct(
         public array  $messages = [],
@@ -9,39 +9,17 @@ abstract class ApiToolsCallRequest extends ApiRequest
         public array  $tools = [],
         public array  $toolChoice = [],
         public array  $options = [],
-    )
-    {
-        $payload = array_merge([
-            'messages' => $messages,
-            'model' => $model,
-            'tool_choice' => $toolChoice ?: 'any',
-            'tools' => $tools,
-        ], $options);
-
-        parent::__construct(
-            payload: $payload,
-            endpoint: $this->getEndpoint(),
-        );
+    ) {
+        parent::__construct([], $this->getEndpoint());
+        $this->toolChoice = $toolChoice ?: 'any';
     }
 
-    static public function fromArray(array $payload): static {
-        $messages = $payload['messages'] ?? [];
-        $model = $payload['model'] ?? '';
-        $tools = $payload['tools'] ?? [];
-        $toolChoice = $payload['tool_choice'] ?? [];
-        $options = $payload ?? [];
-        unset($options['model']);
-        unset($options['messages']);
-        unset($options['tools']);
-        unset($options['tool_choice']);
-        return new static(
-            messages: $messages,
-            model: $model,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            options: $options,
-        );
+    protected function defaultBody(): array {
+        return array_filter(array_merge($this->payload, [
+            'messages' => $this->messages,
+            'model' => $this->model,
+            'tools' => $this->tools,
+            'tool_choice' => $this->toolChoice,
+        ], $this->options));
     }
-
-    abstract public function getEndpoint() : string;
 }

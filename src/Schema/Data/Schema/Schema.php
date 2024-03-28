@@ -31,4 +31,8 @@ abstract class Schema
     public function getPropertyNames() : array {
         return [];
     }
+
+    public function toXml() : string {
+        return '';
+    }
 }

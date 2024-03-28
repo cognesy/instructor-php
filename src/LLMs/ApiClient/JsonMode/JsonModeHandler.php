@@ -29,7 +29,7 @@ class JsonModeHandler extends AbstractJsonHandler
             messages: $this->request['messages'] ?? [],
             responseFormat: $this->request['response_format'] ?? [],
             model: $this->request['model'] ?? '',
-            options: Arrays::unset($this->request, ['model', 'messages'])
+            options: Arrays::unset($this->request, ['model', 'messages', 'response_format'])
         )->respond();
     }
 }

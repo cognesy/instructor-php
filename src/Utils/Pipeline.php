@@ -38,8 +38,6 @@ use Throwable;
  * });
  *
  * return $pipeline->process(5);
- *
- * @package Cognesy\Instructor\Utils
  */
 
 class Pipeline {

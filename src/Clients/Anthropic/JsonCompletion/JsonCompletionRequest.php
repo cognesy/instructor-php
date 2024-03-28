@@ -1,11 +1,11 @@
 <?php
-namespace Cognesy\Instructor\Clients\OpenAI\JsonCompletion;
+namespace Cognesy\Instructor\Clients\Anthropic\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\Data\Requests\ApiJsonCompletionRequest;
 
 class JsonCompletionRequest extends ApiJsonCompletionRequest
 {
-    protected string $endpoint = '/chat/completions';
+    protected string $endpoint = '/messages';
 
     public function __construct(
         public array  $messages = [],
@@ -16,7 +16,7 @@ class JsonCompletionRequest extends ApiJsonCompletionRequest
         $messages = $this->appendInstructions($messages, $responseFormat['schema']);
         parent::__construct(
             $messages,
-            ['type' => 'json_object'],
+            [],
             $model,
             $options,
         );

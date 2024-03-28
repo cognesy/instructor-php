@@ -20,8 +20,12 @@ class ApiRequest extends Request implements HasBody
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
     }
 
+    public function getEndpoint(): string {
+        return $this->endpoint;
+    }
+
     public function isStreamed(): bool {
-        return $this->payload['stream'] ?? false;
+        return $this->options['stream'] ?? false;
     }
 
     public function resolveEndpoint() : string {

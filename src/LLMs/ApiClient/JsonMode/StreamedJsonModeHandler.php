@@ -31,7 +31,7 @@ class StreamedJsonModeHandler extends AbstractStreamedJsonHandler
                 messages: $this->request['messages'] ?? [],
                 responseFormat: $this->request['response_format'] ?? [],
                 model: $this->request['model'] ?? '',
-                options: Arrays::unset($this->request, ['model', 'messages'])
+                options: Arrays::unset($this->request, ['model', 'messages', 'response_format'])
             )->stream();
         } catch (Exception $e) {
             return Result::failure($e);

@@ -21,7 +21,7 @@ class ApiResponseHandler
     public function respondRaw(ApiRequest $request): Response {
         $this?->events->dispatch(new ApiRequestInitiated($request));
         try {
-            $response = $this->connector->send($request);
+            $response = $this->connector->debug()->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;

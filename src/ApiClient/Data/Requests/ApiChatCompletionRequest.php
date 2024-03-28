@@ -1,36 +1,20 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Data\Requests;
 
-abstract class ApiChatCompletionRequest extends ApiRequest
+class ApiChatCompletionRequest extends ApiRequest
 {
     public function __construct(
         public array $messages = [],
         public string $model = '',
         public array $options = [],
     ) {
-        $payload = array_merge([
-            'messages' => $messages,
-            'model' => $model,
-        ], $options);
-
-        parent::__construct(
-            payload: $payload,
-            endpoint: $this->getEndpoint(),
-        );
+        parent::__construct([], $this->getEndpoint());
     }
 
-    static public function fromArray(array $payload): static {
-        $messages = $payload['messages'] ?? [];
-        $model = $payload['model'] ?? '';
-        $options = $payload ?? [];
-        unset($options['model']);
-        unset($options['messages']);
-        return new static(
-            messages: $messages,
-            model: $model,
-            options: $options,
-        );
+    protected function defaultBody(): array {
+        return array_filter(array_merge($this->payload, [
+            'messages' => $this->messages,
+            'model' => $this->model,
+        ], $this->options));
     }
-
-    abstract public function getEndpoint(): string;
 }

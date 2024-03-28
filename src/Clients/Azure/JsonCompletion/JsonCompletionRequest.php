@@ -15,17 +15,11 @@ class JsonCompletionRequest extends ApiJsonCompletionRequest
     )
     {
         $messages = $this->appendInstructions($messages, $responseFormat['schema']);
-        $responseFormat = ['type' => 'json_object'];
-
         parent::__construct(
             $messages,
-            $responseFormat,
+            ['type' => 'json_object'],
             $model,
             $options,
         );
-    }
-
-    public function getEndpoint(): string {
-        return $this->endpoint;
     }
 }

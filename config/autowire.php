@@ -6,10 +6,13 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
+use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
+use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
+use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
@@ -66,6 +69,7 @@ function autowire(Configuration $config) : Configuration
         context: [
             'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
             'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'metadata' => [],
@@ -105,6 +109,54 @@ function autowire(Configuration $config) : Configuration
         context: [
             'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
             'baseUri' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: AnyscaleClient::class,
+        context: [
+            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
+            'baseUri' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: AnyscaleClient::class,
+        context: [
+            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
+            'baseUri' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class:FireworksAIClient::class,
+        context: [
+            'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class:TogetherAIClient::class,
+        context: [
+            'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['TOGETHERAI_BASE_URI'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'metadata' => [],

@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Data\Requests;
 
-abstract class ApiJsonCompletionRequest extends ApiRequest
+class ApiJsonCompletionRequest extends ApiRequest
 {
     protected string $prompt = "\nRespond with JSON. Response must follow provided JSONSchema.\n";
 
@@ -10,21 +10,9 @@ abstract class ApiJsonCompletionRequest extends ApiRequest
         public array  $responseFormat = [],
         public string $model = '',
         public array  $options = [],
-    )
-    {
-        $payload = array_merge([
-            'messages' => $messages,
-            'model' => $model,
-            'response_format' => $responseFormat
-        ], $options);
-
-        parent::__construct(
-            payload: $payload,
-            endpoint: $this->getEndpoint(),
-        );
+    ) {
+        parent::__construct([], $this->getEndpoint());
     }
-
-    abstract public function getEndpoint() : string;
 
     protected function appendInstructions(array $messages, array $jsonSchema) : array {
         $lastIndex = count($messages) - 1;
@@ -33,5 +21,13 @@ abstract class ApiJsonCompletionRequest extends ApiRequest
         }
         $messages[$lastIndex]['content'] .= $this->prompt . json_encode($jsonSchema);
         return $messages;
+    }
+
+    protected function defaultBody(): array {
+        return array_filter(array_merge($this->payload, [
+            'messages' => $this->messages,
+            'model' => $this->model,
+            'response_format' => $this->responseFormat,
+        ], $this->options));
     }
 }

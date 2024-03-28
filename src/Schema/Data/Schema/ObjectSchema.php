@@ -41,4 +41,18 @@ class ObjectSchema extends Schema
     public function getPropertyNames() : array {
         return array_keys($this->properties);
     }
+
+    public function toXml() : string {
+        $lines = [
+            '<parameter>',
+            '<name>'.$this->name.'</name>',
+            '<type>object</type>',
+            '<description>'.$this->description.'</description>',
+            '<properties>',
+            implode("\n", array_map(fn($p) => $p->toXml(), $this->properties)),
+            '</properties>',
+            '</parameter>',
+        ];
+        return implode("\n", $lines);
+    }
 }

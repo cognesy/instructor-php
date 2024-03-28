@@ -41,7 +41,7 @@ class ApiClientToolCaller implements CanCallFunction
                 $request,
                 $responseModel
             ))->handle(),
-            default => (new ToolCallCallHandler(
+            default => (new ToolCallHandler(
                 $this->events,
                 $this->client,
                 $request,

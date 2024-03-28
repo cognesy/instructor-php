@@ -25,4 +25,18 @@ class ArraySchema extends Schema
             'description' => $this->description,
         ]);
     }
+
+    public function toXml() : string {
+        $lines = [
+            '<parameter>',
+            '<name>'.$this->name.'</name>',
+            '<type>array</type>',
+            '<description>'.$this->description.'</description>',
+            '<items>',
+            $this->nestedItemSchema->toXml(),
+            '</items>',
+            '</parameter>',
+        ];
+        return implode("\n", $lines);
+    }
 }
