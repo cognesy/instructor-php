@@ -27,7 +27,9 @@ class Maybe implements CanProvideJsonSchema {
         return $this->hasValue ? $this->value : null;
     }
 
-    public function toJsonSchema(SchemaFactory $schemaFactory, TypeDetailsFactory $typeDetailsFactory): array {
+    public function toJsonSchema(): array {
+        $schemaFactory = new SchemaFactory(false);
+        $typeDetailsFactory = new TypeDetailsFactory();
         $schema = $schemaFactory->schema($this->class);
         $schemaData = $schema->toArray();
         $schemaData['title'] = $this->name ?: $typeDetailsFactory->fromTypeName($this->class)->classOnly();

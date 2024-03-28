@@ -22,6 +22,7 @@ class ObjectRefSchema extends Schema
         return array_filter([
             '$ref' => $id,
             'description' => $this->description,
+            '$comment' => $this->type->class,
         ]);
     }
 

@@ -23,7 +23,7 @@ class BuildFromJsonSchemaProvider extends AbstractBuilder
         string $class,
         CanProvideJsonSchema $instance
     ) : ResponseModel {
-        $jsonSchema = $instance->toJsonSchema($this->schemaFactory, $this->typeDetailsFactory);
+        $jsonSchema = $instance->toJsonSchema();
         $schema = $this->schemaBuilder->fromArray($jsonSchema);
         $functionCall = $this->functionCallBuilder->render(
             $jsonSchema,

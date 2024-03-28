@@ -26,17 +26,28 @@ class ArraySchema extends Schema
         ]);
     }
 
-    public function toXml() : string {
-        $lines = [
-            '<parameter>',
-            '<name>'.$this->name.'</name>',
-            '<type>array</type>',
-            '<description>'.$this->description.'</description>',
-            '<items>',
-            $this->nestedItemSchema->toXml(),
-            '</items>',
-            '</parameter>',
-        ];
-        return implode("\n", $lines);
+    public function toXml(bool $asArrayItem = false) : string {
+        $xml = [];
+        if (!$asArrayItem) {
+            $xml[] = '<parameter>';
+            $xml[] = '<name>'.$this->name.'</name>';
+            $xml[] = '<type>array</type>';
+            if ($this->description) {
+                $xml[] = '<description>' . trim($this->description) . '</description>';
+            }
+            $xml[] = '<items>';
+            $xml[] = $this->nestedItemSchema->toXml(true);
+            $xml[] = '</items>';
+            $xml[] = '</parameter>';
+        } else {
+            $xml[] = '<type>array</type>';
+            if ($this->description) {
+                $xml[] = '<description>' . trim($this->description) . '</description>';
+            }
+            $xml[] = '<items>';
+            $xml[] = $this->nestedItemSchema->toXml(true);
+            $xml[] = '</items>';
+        }
+        return implode($this->xmlLineSeparator, $xml);
     }
 }

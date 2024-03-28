@@ -71,6 +71,9 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
 
     public function toolsCall(array $messages, string $model, array $tools, array $toolChoice, array $options = []): static {
         $model = $model ?: $this->defaultModel;
+        if (!isset($options['max_tokens'])) {
+            $options['max_tokens'] = $this->defaultMaxTokens;
+        }
         $this->request = new ToolsCallRequest($messages, $model, $tools, $toolChoice, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialToolsCallResponse::class;

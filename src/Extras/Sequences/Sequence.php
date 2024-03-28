@@ -44,10 +44,9 @@ class Sequence
 
     //////////////////////////////////////////////////////////////////////
 
-    public function toSchema(
-        SchemaFactory $schemaFactory,
-        TypeDetailsFactory $typeDetailsFactory,
-    ): Schema {
+    public function toSchema(): Schema {
+        $schemaFactory = new SchemaFactory(false);
+        $typeDetailsFactory = new TypeDetailsFactory();
         $nestedSchema = $schemaFactory->schema($this->class);
         $nestedTypeDetails = $typeDetailsFactory->fromTypeName($this->class);
         $arrayTypeDetails = new TypeDetails(

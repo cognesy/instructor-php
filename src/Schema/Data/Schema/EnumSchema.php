@@ -10,20 +10,32 @@ class EnumSchema extends Schema
             'type' => $this->type->enumType ?? 'string',
             'enum' => $this->type->enumValues ?? [],
             'description' => $this->description ?? '',
+            '$comment' => $this->type->class ?? '',
         ]);
     }
 
-    public function toXml() : string {
-        $lines = [
-            '<parameter>',
-            '<name>'.$this->name.'</name>',
-            '<type>'.$this->type->enumType.'</type>',
-            '<description>'.$this->description.'</description>',
-            '<enum>',
-            implode("\n", array_map(fn($v) => '<value>'.$v.'</value>', $this->type->enumValues)),
-            '</enum>',
-            '</parameter>',
-        ];
-        return implode("\n", $lines);
+    public function toXml(bool $asArrayItem = false) : string {
+        $xml = [];
+        if (!$asArrayItem) {
+            $xml[] = '<parameter>';
+            $xml[] = '<name>'.$this->name.'</name>';
+            $xml[] = '<type>'.$this->type->enumType.'</type>';
+            if ($this->description) {
+                $xml[] = '<description>'.trim($this->description).'</description>';
+            }
+            $xml[] = '<enum>';
+            $xml[] = implode($this->xmlLineSeparator, array_map(fn($v) => '<value>'.$v.'</value>', $this->type->enumValues));
+            $xml[] = '</enum>';
+            $xml[] = '</parameter>';
+        } else {
+            $xml[] = '<type>'.$this->type->enumType.'</type>';
+            if ($this->description) {
+                $xml[] = '<description>'.trim($this->description).'</description>';
+            }
+            $xml[] = '<enum>';
+            $xml[] = implode($this->xmlLineSeparator, array_map(fn($v) => '<value>'.$v.'</value>', $this->type->enumValues));
+            $xml[] = '</enum>';
+        }
+        return implode($this->xmlLineSeparator, $xml);
     }
 }

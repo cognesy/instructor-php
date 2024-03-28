@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Xml;
 
 class XmlFunctionCallUtils
 {
-    public function preambule() : string {
+    public function preamble() : string {
         $lines = [
             'In this environment you have access to a set of tools you can use to answer the user\'s question.',
             'You may call them like this:',

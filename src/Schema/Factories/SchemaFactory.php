@@ -23,20 +23,19 @@ class SchemaFactory
 {
     /** @var bool allows to render schema with object properties inlined or referenced */
     protected bool $useObjectReferences;
+    //
     protected SchemaMap $schemaMap;
     protected PropertyMap $propertyMap;
     protected TypeDetailsFactory $typeDetailsFactory;
 
     public function __construct(
-        SchemaMap $schemaMap,
-        PropertyMap $propertyMap,
-        TypeDetailsFactory $typeDetailsFactory,
         bool $useObjectReferences,
     ) {
-        $this->schemaMap = $schemaMap;
-        $this->propertyMap = $propertyMap;
-        $this->typeDetailsFactory = $typeDetailsFactory;
         $this->useObjectReferences = $useObjectReferences;
+        //
+        $this->schemaMap = new SchemaMap;
+        $this->propertyMap = new PropertyMap;
+        $this->typeDetailsFactory = new TypeDetailsFactory;
     }
 
     /**

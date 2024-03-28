@@ -16,29 +16,20 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
-
 
 class ResponseModelFactory
 {
     private FunctionCallBuilder $functionCallBuilder;
     private SchemaFactory $schemaFactory;
-    private SchemaBuilder $schemaBuilder;
-    private TypeDetailsFactory $typeDetailsFactory;
     private EventDispatcher $events;
 
     public function __construct(
         FunctionCallBuilder $functionCallFactory,
         SchemaFactory       $schemaFactory,
-        SchemaBuilder       $schemaBuilder,
-        TypeDetailsFactory  $typeDetailsFactory,
         EventDispatcher     $events,
     ) {
         $this->functionCallBuilder = $functionCallFactory;
         $this->schemaFactory = $schemaFactory;
-        $this->schemaBuilder = $schemaBuilder;
-        $this->typeDetailsFactory = $typeDetailsFactory;
         $this->events = $events;
     }
 
@@ -59,8 +50,6 @@ class ResponseModelFactory
         $builder = new $builderClass(
             $this->functionCallBuilder,
             $this->schemaFactory,
-            $this->schemaBuilder,
-            $this->typeDetailsFactory
         );
         $responseModel = $builder->build($requestedModel);
         if ($responseModel instanceof CanReceiveEvents) {

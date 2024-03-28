@@ -13,20 +13,20 @@ abstract class AbstractBuilder
     protected string $functionName = 'extract_data';
     protected string $functionDescription = 'Extract data from provided content';
     protected SchemaFactory $schemaFactory;
-    protected TypeDetailsFactory $typeDetailsFactory;
     protected FunctionCallBuilder $functionCallBuilder;
+    //
+    protected TypeDetailsFactory $typeDetailsFactory;
     protected SchemaBuilder $schemaBuilder;
 
     public function __construct(
         FunctionCallBuilder $functionCallFactory,
         SchemaFactory       $schemaFactory,
-        SchemaBuilder       $schemaBuilder,
-        TypeDetailsFactory  $typeDetailsFactory
     ) {
         $this->functionCallBuilder = $functionCallFactory;
         $this->schemaFactory = $schemaFactory;
-        $this->schemaBuilder = $schemaBuilder;
-        $this->typeDetailsFactory = $typeDetailsFactory;
+        //
+        $this->typeDetailsFactory = new TypeDetailsFactory;
+        $this->schemaBuilder = new SchemaBuilder;
     }
 
     abstract public function build($requestedModel) : ResponseModel;

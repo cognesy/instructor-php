@@ -30,8 +30,7 @@ class ResponseModel
         $this->jsonSchema = $jsonSchema;
     }
 
-    public function toXml() : string
-    {
+    public function toXml() : string {
         $lines = [
             '<tools>',
             '<tool_name>'.$this->functionName.'</tool_name>',

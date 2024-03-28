@@ -35,6 +35,7 @@ class ObjectSchema extends Schema
             'description' => $this->description,
             'properties' => $propertyDefs,
             'required' => $this->required,
+            '$comment' => $this->type->class,
         ]);
     }
 
@@ -42,17 +43,28 @@ class ObjectSchema extends Schema
         return array_keys($this->properties);
     }
 
-    public function toXml() : string {
-        $lines = [
-            '<parameter>',
-            '<name>'.$this->name.'</name>',
-            '<type>object</type>',
-            '<description>'.$this->description.'</description>',
-            '<properties>',
-            implode("\n", array_map(fn($p) => $p->toXml(), $this->properties)),
-            '</properties>',
-            '</parameter>',
-        ];
-        return implode("\n", $lines);
+    public function toXml(bool $asArrayItem = false) : string {
+        $xml = [];
+        if (!$asArrayItem) {
+            $xml[] = '<parameter>';
+            $xml[] = '<name>'.$this->name.'</name>';
+            $xml[] = '<type>object</type>';
+            if ($this->description) {
+                $xml[] = '<description>'.trim($this->description).'</description>';
+            }
+            $xml[] = '<properties>';
+            $xml[] = implode($this->xmlLineSeparator, array_map(fn($p) => $p->toXml(), $this->properties));
+            $xml[] = '</properties>';
+            $xml[] = '</parameter>';
+        } else {
+            $xml[] = '<type>object</type>';
+            if ($this->description) {
+                $xml[] = '<description>'.trim($this->description).'</description>';
+            }
+            $xml[] = '<properties>';
+            $xml[] = implode($this->xmlLineSeparator, array_map(fn($p) => $p->toXml(), $this->properties));
+            $xml[] = '</properties>';
+        }
+        return implode($this->xmlLineSeparator, $xml);
     }
 }

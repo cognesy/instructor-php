@@ -12,14 +12,22 @@ class ScalarSchema extends Schema
         ]);
     }
 
-    public function toXml() : string {
-        $lines = [
-            '<parameter>',
-            '<name>'.$this->name.'</name>',
-            '<type>'.$this->type->jsonType().'</type>',
-            '<description>'.$this->description.'</description>',
-            '</parameter>',
-        ];
-        return implode("\n", $lines);
+    public function toXml(bool $asArrayItem = false) : string {
+        $xml = [];
+        if (!$asArrayItem) {
+            $xml[] = '<parameter>';
+            $xml[] = '<name>'.$this->name.'</name>';
+            $xml[] = '<type>'.$this->type->jsonType().'</type>';
+            if ($this->description) {
+                $xml[] = '<description>'.trim($this->description).'</description>';
+            }
+            $xml[] = '</parameter>';
+        } else {
+            $xml[] = '<type>'.$this->type->jsonType().'</type>';
+            if ($this->description) {
+                $xml[] = '<description>'.trim($this->description).'</description>';
+            }
+        }
+        return implode($this->xmlLineSeparator, $xml);
     }
 }

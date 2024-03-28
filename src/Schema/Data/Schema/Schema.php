@@ -9,6 +9,7 @@ abstract class Schema
     public TypeDetails $type;
     public string $name = '';
     public string $description = '';
+    protected string $xmlLineSeparator = "";
 
     public function __construct(
         TypeDetails $type,
@@ -32,7 +33,7 @@ abstract class Schema
         return [];
     }
 
-    public function toXml() : string {
+    public function toXml(bool $asArrayItem = false) : string {
         return '';
     }
 }

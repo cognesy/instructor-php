@@ -21,8 +21,8 @@ class SchemaBuilder
      */
     public function fromArray(
         array $jsonSchema,
-        string $customName = 'extract_object',
-        string $customDescription = 'Extract parameters from chat content'
+        string $customName = 'extracted_object',
+        string $customDescription = 'Data extracted from chat content'
     ) : ObjectSchema {
         $class = $jsonSchema['$comment'] ?? null;
         if (!$class) {

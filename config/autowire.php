@@ -35,11 +35,7 @@ use Cognesy\Instructor\LLMs\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
 use Cognesy\Instructor\LLMs\ApiClient\ToolsMode\ApiClientToolCaller;
 use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\PropertyMap;
-use Cognesy\Instructor\Schema\SchemaMap;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 
 
@@ -214,8 +210,6 @@ function autowire(Configuration $config) : Configuration
         context: [
             'functionCallFactory' => $config->reference(FunctionCallBuilder::class),
             'schemaFactory' => $config->reference(SchemaFactory::class),
-            'schemaBuilder' => $config->reference(SchemaBuilder::class),
-            'typeDetailsFactory' => $config->reference(TypeDetailsFactory::class),
             'events' => $config->reference(EventDispatcher::class),
         ]
     );
@@ -223,9 +217,6 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: SchemaFactory::class,
         context: [
-            'schemaMap' => $config->reference(SchemaMap::class),
-            'propertyMap' => $config->reference(PropertyMap::class),
-            'typeDetailsFactory' => $config->reference(TypeDetailsFactory::class),
             'useObjectReferences' => false,
         ]
     );
@@ -237,14 +228,6 @@ function autowire(Configuration $config) : Configuration
             'referenceQueue' => $config->reference(ReferenceQueue::class),
         ]
     );
-
-    $config->declare(class: TypeDetailsFactory::class);
-
-    $config->declare(class: SchemaBuilder::class);
-
-    $config->declare(class: SchemaMap::class);
-
-    $config->declare(class: PropertyMap::class);
 
     $config->declare(class: ReferenceQueue::class);
 

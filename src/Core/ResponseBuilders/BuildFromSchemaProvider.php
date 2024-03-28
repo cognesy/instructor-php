@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Core\ResponseBuilders;
 
 use Cognesy\Instructor\Contracts\CanProvideSchema;
@@ -23,7 +22,7 @@ class BuildFromSchemaProvider extends AbstractBuilder
         string $class,
         CanProvideSchema $instance
     ) : ResponseModel {
-        $schema = $instance->toSchema($this->schemaFactory, $this->typeDetailsFactory);
+        $schema = $instance->toSchema();
         $jsonSchema = $schema->toArray($this->functionCallBuilder->onObjectRef(...));
         $functionCall = $this->functionCallBuilder->render(
             $jsonSchema,
