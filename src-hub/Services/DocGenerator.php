@@ -22,12 +22,13 @@ class DocGenerator
         }
         (new DocGenView)->renderHeader();
         $list = $this->examples->forEachExample(function(Example $example) use ($refresh) {
+            (new DocGenView)->renderFile($example);
             if ($refresh) {
                 $success = $this->replaceAll($example);
             } else {
                 $success = $this->replaceNew($example);
             }
-            (new DocGenView)->renderFile($example, $success);
+            (new DocGenView)->renderResult($success);
             if (!$success) {
                 throw new \Exception("Failed to copy or replace example: {$example->name}");
             }

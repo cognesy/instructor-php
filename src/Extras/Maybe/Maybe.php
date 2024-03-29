@@ -13,7 +13,7 @@ class Maybe implements CanProvideJsonSchema {
     public mixed $value;
     public bool $hasValue = false;
     /** If no value, provide reason */
-    public ?string $errorMessage = '';
+    public ?string $error = '';
 
     public static function is(string $class, string $name = '', string $description = '') : self {
         $instance = new self();
@@ -41,7 +41,7 @@ class Maybe implements CanProvideJsonSchema {
             'properties' => [
                 'value' => $schemaData,
                 'hasValue' => ['type' => 'boolean'],
-                'errorMessage' => ['type' => 'string'],
+                'error' => ['type' => 'string', "description" => "Obligatory if no value extracted - provide reason"],
             ],
             'required' => ['hasValue'],
         ];

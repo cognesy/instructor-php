@@ -256,6 +256,7 @@ function autowire(Configuration $config) : Configuration
             'responseDeserializer' => $config->reference(ResponseDeserializer::class),
             'responseValidator' => $config->reference(ResponseValidator::class),
             'responseTransformer' => $config->reference(ResponseTransformer::class),
+            'events' => $config->reference(EventDispatcher::class),
         ]
     );
 
@@ -265,6 +266,7 @@ function autowire(Configuration $config) : Configuration
         context: [
             'responseDeserializer' => $config->reference(ResponseDeserializer::class),
             'responseTransformer' => $config->reference(ResponseTransformer::class),
+            'events' => $config->reference(EventDispatcher::class),
         ]
     );
 

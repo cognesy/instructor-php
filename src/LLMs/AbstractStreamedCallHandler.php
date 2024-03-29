@@ -16,7 +16,6 @@ use Cognesy\Instructor\Events\LLM\StreamedFunctionCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedFunctionCallUpdated;
 use Cognesy\Instructor\Events\LLM\StreamedResponseFinished;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
-use Cognesy\Instructor\Exceptions\JSONParsingException;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Generator;

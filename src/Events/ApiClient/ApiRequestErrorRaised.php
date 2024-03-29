@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Events\HttpClient;
+namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
 use Saloon\Exceptions\Request\RequestException;

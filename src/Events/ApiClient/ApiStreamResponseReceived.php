@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Events\HttpClient;
+namespace Cognesy\Instructor\Events\ApiClient;
 
 class ApiStreamResponseReceived extends ApiResponseReceived
 {

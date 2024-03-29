@@ -12,9 +12,12 @@ class DocGenView
         Cli::outln("Updating files...", [Color::GRAY]);
     }
 
-    public function renderFile(Example $example, bool $success) : void {
+    public function renderFile(Example $example) : void {
         Cli::out(" [.] ", Color::DARK_GRAY);
         Cli::grid([[22, $example->name, STR_PAD_RIGHT, [Color::BOLD, Color::WHITE]]]);
+    }
+
+    public function renderResult(bool $success) : void {
         if (!$success) {
             Cli::out("> ", [Color::DARK_GRAY]);
             Cli::outln("ERROR", [Color::RED]);

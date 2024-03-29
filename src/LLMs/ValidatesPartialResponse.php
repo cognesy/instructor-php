@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\LLMs;
 
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Exceptions\JSONParsingException;
+use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\JsonParser;

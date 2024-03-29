@@ -25,10 +25,6 @@ Currently not supported, needs to be supported to allow better interaction with 
  - Symfony DTO
  - Laravel DTO
 
-### Test coverage
-
-Catch up with the latest additions.
-
 ### Instructor::response()/request() default params
 
 Default values are duplicated across method declarations and Request class.
@@ -38,11 +34,6 @@ Clean it up.
 
 Usage for streamed responses is available via events, but not via rawResponse().
 Should we provide some general way to handle usage data across LLM drivers? 
-
-### Type adapters
-
-To handle types like Carbon. Register adapters for given type and
-use them in sequence until first succeeds.
 
 ### CanProvideExamples contract
 
@@ -61,8 +52,8 @@ To work with raw response object.
 
 Infer constructor arguments from the provided data. This is non trivial,
 as params may be objects (hard to handle, may require another constructor
-call to instantiate the object, or callables which I don't know how to handle
-in this case.
+call to instantiate the object, or callables which I don't know yet how
+to handle.
 
 ### Early validation of streamed responses
 
@@ -77,36 +68,37 @@ models.
 Use moderation endpoint to automatically verify request prior to sending
 it to the model.
 
+### SaloonPHP debug
+
+Make it available to Instructor users.
+
 
 ## Design decisions to revisit
-
-### Sequenceable/Sequence::toSchema()
-
-Currently:
-
-```php
-public function toSchema(
-    SchemaFactory $schemaFactory,
-    TypeDetailsFactory $typeDetailsFactory,
-): Schema {}
-```
-
-Should be changed to:
-
-```php
-public function toSchema(): Schema {}
-```
-
-But I need to figure out how to provide access to the SchemaFactory and TypeDetailsFactory.
-
-### ResponseHandler
-
-Currently, it's a big pile of `ifs`, should be refactored to a chain of responsibility or pipeline.
 
 ### Handling of Sequenceables and Partials
 
 There must be a better, more generic way to do it.
 
+### Type adapters
+
+To handle types like Carbon. Register adapters for given type and
+use them in sequence until first succeeds.
+
+This might be also a cleaner way to handle Sequenceables and Scalars.
+
+
+
+## Example ideas
+
+Examples to demonstrate use cases.
+
+
+
+## Other
+
+### Test coverage
+
+Catch up with the latest additions.
 
 
 
@@ -125,13 +117,4 @@ There must be a better, more generic way to do it.
 - Sparse task scheduler
 - Marker and sweeper
 - Actor model
-
-
-
-
-## Other
-
-### PR to OAI PHP client
-
-RawResponseHandler to allow fixing issues with incorrect responses of OpenAI API proxies.
 

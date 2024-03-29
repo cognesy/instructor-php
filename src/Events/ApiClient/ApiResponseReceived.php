@@ -1,14 +1,14 @@
 <?php
 
-namespace Cognesy\Instructor\Events\HttpClient;
+namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
-use Saloon\Http\Request;
+use Saloon\Http\Response;
 
-class ApiRequestInitiated extends Event
+class ApiResponseReceived extends Event
 {
     public function __construct(
-        public Request $request,
+        public Response $response,
     )
     {
         parent::__construct();
@@ -16,6 +16,6 @@ class ApiRequestInitiated extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->request);
+        return $this->response;
     }
 }

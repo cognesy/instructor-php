@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Utils;
 
-use Cognesy\Instructor\Exceptions\JSONParsingException;
 use Exception;
 use JsonException;
 
@@ -32,6 +31,7 @@ class JsonParser
         }
 
         $this->onExtraToken = function ($text, $data, $reminding) {
+            // we're just skipping extra tokens
             //$message = 'Parsed JSON with extra tokens: ' . json_encode(['text' => $text, 'data' => $data, 'reminding' => $reminding]);
             //throw new JSONParsingException($message, $text);
         };
