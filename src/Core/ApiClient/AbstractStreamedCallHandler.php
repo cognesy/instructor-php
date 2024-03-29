@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Core\ApiClient;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
-use Cognesy\Instructor\Core\ValidatesPartialResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ToolCall;
 use Cognesy\Instructor\Events\EventDispatcher;
