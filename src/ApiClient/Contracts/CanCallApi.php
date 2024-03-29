@@ -7,7 +7,7 @@ use Generator;
 
 interface CanCallApi
 {
-    public function respond() : ApiResponse;
+    public function get() : ApiResponse;
     public function stream() : Generator;
     public function streamAll() : array;
 }

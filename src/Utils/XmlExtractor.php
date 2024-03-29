@@ -1,8 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Xml;
-
-use Cognesy\Instructor\Utils\Json;
+namespace Cognesy\Instructor\Utils;
 
 class XmlExtractor
 {

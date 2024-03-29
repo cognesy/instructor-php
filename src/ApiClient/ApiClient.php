@@ -63,9 +63,12 @@ abstract class ApiClient implements CanCallApi
 
     /// PUBLIC API - PROCESSED ////////////////////////////////////////////////////////////////
 
-    public function respond() : ApiResponse {
-        $response = $this->respondRaw();
-        return ($this->responseClass)::fromResponse($response);
+    public function respond(ApiRequest $request) : ApiResponse {
+        return $this->withRequest($request)->get();
+    }
+
+    public function get() : ApiResponse {
+        return ($this->responseClass)::fromResponse($this->respondRaw());
     }
 
     public function stream() : Generator {

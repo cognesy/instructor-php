@@ -17,6 +17,8 @@ use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
+use Generator;
+use GuzzleHttp\Promise\Promise;
 use Throwable;
 
 /**
@@ -159,7 +161,6 @@ class Instructor {
             throw $error;
         }
     }
-
 
     /// ACCESS CURRENT INSTRUCTOR CONFIGURATION //////////////////////////////////////////////
 

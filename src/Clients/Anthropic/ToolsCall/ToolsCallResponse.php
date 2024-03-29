@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Clients\Anthropic\ToolsCall;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
-use Cognesy\Instructor\Xml\XmlExtractor;
+use Cognesy\Instructor\Utils\XmlExtractor;
 use Saloon\Http\Response;
 
 class ToolsCallResponse extends ApiResponse

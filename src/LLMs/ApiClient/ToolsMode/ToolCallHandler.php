@@ -35,7 +35,7 @@ class ToolCallHandler extends AbstractCallHandler
                 'function' => ['name' => $this->responseModel->functionName]
             ],
             options: Arrays::unset($this->request, ['model', 'messages', 'tools', 'tool_choice'])
-        )->respond();
+        )->get();
     }
 }
 

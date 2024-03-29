@@ -29,6 +29,6 @@ class MdJsonModeHandler extends AbstractCallHandler
             messages: $this->request['messages'] ?? [],
             model: $this->request['model'] ?? '',
             options: Arrays::unset($this->request, ['model', 'messages'])
-        )->respond();
+        )->get();
     }
 }
