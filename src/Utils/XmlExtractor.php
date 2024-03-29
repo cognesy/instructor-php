@@ -4,20 +4,17 @@ namespace Cognesy\Instructor\Utils;
 
 class XmlExtractor
 {
-    public function extractFunctionCalls(string $content) : array {
-        $xml = $this->tryExtractFunctionCall($content);
-        $functionName = $this->tryExtractFunctionName($xml);
+    public function extractToolCalls(string $content) : array {
+        $xml = $this->tryExtractToolCall($content);
+        $name = $this->tryExtractFunctionName($xml);
         $args = $this->tryExtractXmlArgs($content);
         if (empty($args)) {
             $args = $this->tryExtractJsonArgs($content);
         }
-        return [
-            $functionName,
-            $args,
-        ];
+        return [$name, $args];
     }
 
-    protected function tryExtractFunctionCall(string $content) : string {
+    protected function tryExtractToolCall(string $content) : string {
         $pattern = '/<function_calls>.*<\/function_calls>/s';
         preg_match($pattern, $content, $matches);
         $xmlString = $matches[0] ?? '';

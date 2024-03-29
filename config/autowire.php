@@ -19,22 +19,22 @@ use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Contracts\CanValidateObject;
-use Cognesy\Instructor\Core\FunctionCallerFactory;
+use Cognesy\Instructor\Core\ApiClient\JsonMode\ApiClientJsonCaller;
+use Cognesy\Instructor\Core\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
+use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
+use Cognesy\Instructor\Core\ApiClient\ToolsMode\ApiClientToolCaller;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\PartialResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Core\Response\ResponseValidator;
-use Cognesy\Instructor\Core\ResponseModelFactory;
+use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\LLMs\ApiClient\JsonMode\ApiClientJsonCaller;
-use Cognesy\Instructor\LLMs\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
-use Cognesy\Instructor\LLMs\ApiClient\ToolsMode\ApiClientToolCaller;
-use Cognesy\Instructor\Schema\Factories\FunctionCallBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 
@@ -125,18 +125,6 @@ function autowire(Configuration $config) : Configuration
     );
 
     $config->declare(
-        class: AnyscaleClient::class,
-        context: [
-            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
-            'baseUri' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'events' => $config->reference(EventDispatcher::class),
-        ],
-    );
-
-    $config->declare(
         class:FireworksAIClient::class,
         context: [
             'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
@@ -163,7 +151,7 @@ function autowire(Configuration $config) : Configuration
     /// MODE SUPPORT /////////////////////////////////////////////////////////////////////////
 
     $config->declare(
-        class: FunctionCallerFactory::class,
+        class: ToolCallerFactory::class,
         context: [
             'client' => $config->reference(CanCallApi::class),
             'modeHandlers' => [
@@ -208,7 +196,7 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: ResponseModelFactory::class,
         context: [
-            'functionCallFactory' => $config->reference(FunctionCallBuilder::class),
+            'toolCallBuilder' => $config->reference(ToolCallBuilder::class),
             'schemaFactory' => $config->reference(SchemaFactory::class),
             'events' => $config->reference(EventDispatcher::class),
         ]
@@ -222,7 +210,7 @@ function autowire(Configuration $config) : Configuration
     );
 
     $config->declare(
-        class: FunctionCallBuilder::class,
+        class: ToolCallBuilder::class,
         context: [
             'schemaFactory' => $config->reference(SchemaFactory::class),
             'referenceQueue' => $config->reference(ReferenceQueue::class),
@@ -238,7 +226,7 @@ function autowire(Configuration $config) : Configuration
         class: RequestHandler::class,
         name: CanHandleRequest::class,
         context: [
-            'functionCallerFactory' => $config->reference(FunctionCallerFactory::class),
+            'toolCallerFactory' => $config->reference(ToolCallerFactory::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'events' => $config->reference(EventDispatcher::class),
             'responseHandler' => $config->reference(CanHandleResponse::class),

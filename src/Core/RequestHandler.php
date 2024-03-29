@@ -6,23 +6,25 @@ use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
+use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
-use Cognesy\Instructor\Events\LLM\StreamedFunctionCallCompleted;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
+use Cognesy\Instructor\Events\LLM\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
+use Cognesy\Instructor\Events\RequestHandler\ToolCallRequested;
+use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseReceived;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Utils\Result;
 
 class RequestHandler implements CanHandleRequest
 {
     public function __construct(
-        private FunctionCallerFactory $functionCallerFactory,
+        private ToolCallerFactory $toolCallerFactory,
         private ResponseModelFactory $responseModelFactory,
         private EventDispatcher $events,
         private CanHandleResponse $responseHandler,
@@ -50,11 +52,11 @@ class RequestHandler implements CanHandleRequest
         $messages = $request->messages();
         while ($retries <= $request->maxRetries) {
             // get function caller instance
-            $functionCaller = $this->functionCallerFactory->fromRequest($request);
-            $this->events->dispatch(new FunctionCallRequested($messages, $responseModel, $request));
+            $clientCaller = $this->toolCallerFactory->fromRequest($request);
+            $this->events->dispatch(new ToolCallRequested($messages, $responseModel, $request));
 
             // run LLM inference
-            $apiCallResult = $functionCaller->callFunction(
+            $apiCallResult = $clientCaller->callApiClient(
                 $messages,
                 $responseModel,
                 $request->model,
@@ -67,7 +69,7 @@ class RequestHandler implements CanHandleRequest
 
             /** @var ApiResponse $response */
             $response = $apiCallResult->unwrap();
-            $this->events->dispatch(new FunctionCallResponseReceived($response));
+            $this->events->dispatch(new ToolCallResponseReceived($response));
 
             $processingResult = $this->responseHandler->handleResponse($response, $responseModel);
             if ($processingResult->isSuccess()) {
@@ -107,8 +109,8 @@ class RequestHandler implements CanHandleRequest
             }
         );
         $this->events->addListener(
-            eventClass: StreamedFunctionCallCompleted::class,
-            listener: function(StreamedFunctionCallCompleted $event) use ($requestedModel) {
+            eventClass: StreamedToolCallCompleted::class,
+            listener: function(StreamedToolCallCompleted $event) use ($requestedModel) {
                 $this->partialResponseHandler->finalizePartialResponse($requestedModel);
             }
         );

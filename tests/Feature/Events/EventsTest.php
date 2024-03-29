@@ -5,9 +5,9 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallRequested;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseConvertedToObject;
-use Cognesy\Instructor\Events\RequestHandler\FunctionCallResponseReceived;
+use Cognesy\Instructor\Events\RequestHandler\ToolCallRequested;
+use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseConvertedToObject;
+use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseReceived;
 use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
@@ -55,10 +55,10 @@ it('handles events for simple case w/reattempt on validation - success', functio
     [RequestReceived::class],
     [ResponseGenerated::class],
     // RequestHandler
-    [FunctionCallRequested::class],
-    [FunctionCallResponseConvertedToObject::class],
-    [FunctionCallResponseReceived::class],
-    //[FunctionCallResultReady::class],
+    [ToolCallRequested::class],
+    [ToolCallResponseConvertedToObject::class],
+    [ToolCallResponseReceived::class],
+    //[ToolCallResultReady::class],
     [NewValidationRecoveryAttempt::class],
     //[ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
@@ -68,9 +68,9 @@ it('handles events for simple case w/reattempt on validation - success', functio
     //[PartialJsonReceived::class],
     //[RequestSentToLLM::class],
     //[ResponseReceivedFromLLM::class],
-    //[StreamedFunctionCallCompleted::class],
-    //[StreamedFunctionCallStarted::class],
-    //[StreamedFunctionCallUpdated::class],
+    //[StreamedToolCallCompleted::class],
+    //[StreamedToolCallStarted::class],
+    //[StreamedToolCallUpdated::class],
     //[StreamedResponseFinished::class],
     //[StreamedResponseReceived::class],
     // ResponseHandler
@@ -111,10 +111,10 @@ it('handles events for simple case - validation failure', function ($event) use 
     [RequestReceived::class],
     //[ResponseReturned::class],
     // RequestHandler
-    [FunctionCallRequested::class],
-    //[FunctionCallResponseConvertedToObject::class],
-    [FunctionCallResponseReceived::class],
-    //[FunctionCallResultReady::class],
+    [ToolCallRequested::class],
+    //[ToolCallResponseConvertedToObject::class],
+    [ToolCallResponseReceived::class],
+    //[ToolCallResultReady::class],
     //[NewValidationRecoveryAttempt::class],
     [ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
@@ -124,9 +124,9 @@ it('handles events for simple case - validation failure', function ($event) use 
     //[PartialJsonReceived::class],
     //[RequestSentToLLM::class],
     //[ResponseReceivedFromLLM::class],
-    //[StreamedFunctionCallCompleted::class],
-    //[StreamedFunctionCallStarted::class],
-    //[StreamedFunctionCallUpdated::class],
+    //[StreamedToolCallCompleted::class],
+    //[StreamedToolCallStarted::class],
+    //[StreamedToolCallUpdated::class],
     //[StreamedResponseFinished::class],
     //[StreamedResponseReceived::class],
     // ResponseHandler
@@ -163,10 +163,10 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     [RequestReceived::class],
     [ResponseGenerated::class],
     // ==== RequestHandler
-    [FunctionCallRequested::class],
-    [FunctionCallResponseConvertedToObject::class],
-    [FunctionCallResponseReceived::class],
-    //[FunctionCallResultReady::class],
+    [ToolCallRequested::class],
+    [ToolCallResponseConvertedToObject::class],
+    [ToolCallResponseReceived::class],
+    //[ToolCallResultReady::class],
     //[NewValidationRecoveryAttempt::class],
     //[ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
@@ -176,9 +176,9 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     //[PartialJsonReceived::class],
     //[RequestSentToLLM::class],
     //[ResponseReceivedFromLLM::class],
-    //[StreamedFunctionCallCompleted::class],
-    //[StreamedFunctionCallStarted::class],
-    //[StreamedFunctionCallUpdated::class],
+    //[StreamedToolCallCompleted::class],
+    //[StreamedToolCallStarted::class],
+    //[StreamedToolCallUpdated::class],
     //[StreamedResponseFinished::class],
     //[StreamedResponseReceived::class],
     // ==== ResponseHandler

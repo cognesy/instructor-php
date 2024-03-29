@@ -2,14 +2,18 @@
 
 namespace Cognesy\Instructor\ApiClient\Data\Responses;
 
+use Cognesy\Instructor\Data\ToolCall;
+use Cognesy\Instructor\Utils\Json;
+
 class ApiResponse
 {
     public function __construct(
-        public string $content,
-        public array  $responseData,
+        public string $content = '',
+        public array  $responseData = [],
         public string $functionName = '',
         public string $finishReason = '',
-        public string $id = '',
+        /** @var ToolCall[] */
+        public array  $toolCalls = [],
     ) {}
 
     public function toArray(): array {
@@ -19,5 +23,12 @@ class ApiResponse
             'finish_reason' => $this->finishReason,
             'response_data' => $this->responseData,
         ];
+    }
+
+    public function getJson(): string {
+        if (!empty($this->toolCalls)) {
+            return $this->toolCalls[0]->args;
+        }
+        return Json::find($this->content);
     }
 }

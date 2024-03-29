@@ -1,14 +1,13 @@
 <?php
 
-namespace Cognesy\Instructor\Events\LLM;
+namespace Cognesy\Instructor\Events\RequestHandler;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\Events\Event;
 
-class StreamedResponseFinished extends Event
+class ToolCallResultReady extends Event
 {
     public function __construct(
-        public ApiResponse $response
+        public mixed $response
     )
     {
         parent::__construct();

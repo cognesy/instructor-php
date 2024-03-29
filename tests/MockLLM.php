@@ -2,35 +2,26 @@
 
 namespace Tests;
 
-use Cognesy\Instructor\Contracts\CanCallFunction;
-use Cognesy\Instructor\Data\FunctionCall;
-use Cognesy\Instructor\Data\LLMResponse;
+use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\Contracts\CanCallApiClient;
 use Cognesy\Instructor\Utils\Result;
 use Mockery;
 
 class MockLLM
 {
-    static public function get(array $args) : ?CanCallFunction {
-        $mockLLM = Mockery::mock(CanCallFunction::class);
+    static public function get(array $args) : ?CanCallApiClient {
+        $mockLLM = Mockery::mock(CanCallApiClient::class);
         $list = [];
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);
         }
-        $mockLLM->shouldReceive('callFunction')->andReturnUsing(...$list);
+        $mockLLM->shouldReceive('callApiClient')->andReturnUsing(...$list);
         return $mockLLM;
     }
 
     static private function makeFunc(string $json) {
-        return fn() => Result::success(new LLMResponse(
-            functionCalls: [
-                new FunctionCall(
-                    id: '1',
-                    functionName: 'callFunction',
-                    functionArgsJson: $json,
-                ),
-            ],
-            finishReason: 'success',
-            rawResponse: null,
+        return fn() => Result::success(new ApiResponse(
+            content: $json,
         ));
     }
 }

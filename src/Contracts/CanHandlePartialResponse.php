@@ -6,5 +6,5 @@ use Cognesy\Instructor\Utils\Result;
 
 interface CanHandlePartialResponse
 {
-    public function toPartialResponse(string $jsonData, ResponseModel $responseModel): Result;
+    public function handlePartialResponse(string $partialJsonData, ResponseModel $responseModel): void;
 }
