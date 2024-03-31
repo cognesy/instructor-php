@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\ApiClient\Handlers\ApiAsyncHandler;
 use Cognesy\Instructor\ApiClient\Handlers\ApiResponseHandler;
 use Cognesy\Instructor\ApiClient\Handlers\ApiStreamHandler;
@@ -71,6 +72,9 @@ abstract class ApiClient implements CanCallApi
         return ($this->responseClass)::fromResponse($this->respondRaw());
     }
 
+    /**
+     * @return Generator<PartialApiResponse>
+     */
     public function stream() : Generator {
         $stream = $this->streamRaw();
         foreach ($stream as $response) {
@@ -110,8 +114,7 @@ abstract class ApiClient implements CanCallApi
         return (new ApiAsyncHandler($this->connector, $this->events))->asyncRaw($this->getRequest(), $onSuccess, $onError);
     }
 
-    protected function getRequest() : ApiRequest
-    {
+    public function getRequest() : ApiRequest {
         if (!empty($this->queryParams)) {
             $this->request->query()->set($this->queryParams);
         }

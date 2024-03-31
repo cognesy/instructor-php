@@ -49,11 +49,15 @@ use Exception;
  * @template E The type of the error in case of failure.
  */
 abstract class Result {
-    public static function success($value): Success {
+    public static function with(mixed $value) : Success {
         return new Success($value);
     }
 
-    public static function failure($error): Failure {
+    public static function success(mixed $value): Success {
+        return new Success($value);
+    }
+
+    public static function failure(mixed $error): Failure {
         return new Failure($error);
     }
 
@@ -62,13 +66,17 @@ abstract class Result {
 
     /**
      * @template S
-     * @param callable(T):S $f Function to apply to the value in case of success
+     * @param callable(T):Result<S, E> $f Function to apply to the value in case of success
      * @return Result<S, E> A new Result instance with the function applied, or the original failure
      */
-    public function apply(callable $f): Result {
+    public function then(callable $f): Result {
         if ($this->isSuccess()) {
             try {
-                return self::success($f($this->unwrap()));
+                $result = $f($this->unwrap());
+                return match(true) {
+                    $result instanceof Result => $result,
+                    default => self::success($result),
+                };
             } catch (Exception $e) {
                 return self::failure($e);
             }

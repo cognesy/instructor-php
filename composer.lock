@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2e6ce7dc23d32dc397dac2b775b4fa60",
+    "content-hash": "1ead93e5039d35c753d7a32aae2d3d47",
     "packages": [
         {
             "name": "brick/math",
@@ -447,6 +447,409 @@
                 }
             ],
             "time": "2023-12-03T20:05:35+00:00"
+        },
+        {
+            "name": "halaxa/json-machine",
+            "version": "1.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/halaxa/json-machine.git",
+                "reference": "5147f38f74d7ab3e27733e3f3bdabbd2fd28e3fa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/halaxa/json-machine/zipball/5147f38f74d7ab3e27733e3f3bdabbd2fd28e3fa",
+                "reference": "5147f38f74d7ab3e27733e3f3bdabbd2fd28e3fa",
+                "shasum": ""
+            },
+            "require": {
+                "php": "7.0 - 8.3"
+            },
+            "require-dev": {
+                "ext-json": "*",
+                "friendsofphp/php-cs-fixer": "^3.0",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^8.0"
+            },
+            "suggest": {
+                "ext-json": "To run JSON Machine out of the box without custom decoders.",
+                "guzzlehttp/guzzle": "To run example with GuzzleHttp"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "JsonMachine\\": "src/"
+                },
+                "exclude-from-classmap": [
+                    "src/autoloader.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filip Halaxa",
+                    "email": "filip@halaxa.cz"
+                }
+            ],
+            "description": "Efficient, easy-to-use and fast JSON pull parser",
+            "support": {
+                "issues": "https://github.com/halaxa/json-machine/issues",
+                "source": "https://github.com/halaxa/json-machine/tree/1.1.4"
+            },
+            "funding": [
+                {
+                    "url": "https://ko-fi.com/G2G57KTE4",
+                    "type": "other"
+                }
+            ],
+            "time": "2023-11-28T21:12:40+00:00"
+        },
+        {
+            "name": "league/flysystem",
+            "version": "3.26.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/flysystem.git",
+                "reference": "072735c56cc0da00e10716dd90d5a7f7b40b36be"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/072735c56cc0da00e10716dd90d5a7f7b40b36be",
+                "reference": "072735c56cc0da00e10716dd90d5a7f7b40b36be",
+                "shasum": ""
+            },
+            "require": {
+                "league/flysystem-local": "^3.0.0",
+                "league/mime-type-detection": "^1.0.0",
+                "php": "^8.0.2"
+            },
+            "conflict": {
+                "async-aws/core": "<1.19.0",
+                "async-aws/s3": "<1.14.0",
+                "aws/aws-sdk-php": "3.209.31 || 3.210.0",
+                "guzzlehttp/guzzle": "<7.0",
+                "guzzlehttp/ringphp": "<1.1.1",
+                "phpseclib/phpseclib": "3.0.15",
+                "symfony/http-client": "<5.2"
+            },
+            "require-dev": {
+                "async-aws/s3": "^1.5 || ^2.0",
+                "async-aws/simple-s3": "^1.1 || ^2.0",
+                "aws/aws-sdk-php": "^3.295.10",
+                "composer/semver": "^3.0",
+                "ext-fileinfo": "*",
+                "ext-ftp": "*",
+                "ext-zip": "*",
+                "friendsofphp/php-cs-fixer": "^3.5",
+                "google/cloud-storage": "^1.23",
+                "microsoft/azure-storage-blob": "^1.1",
+                "phpseclib/phpseclib": "^3.0.36",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^9.5.11|^10.0",
+                "sabre/dav": "^4.6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "League\\Flysystem\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Frank de Jonge",
+                    "email": "info@frankdejonge.nl"
+                }
+            ],
+            "description": "File storage abstraction for PHP",
+            "keywords": [
+                "WebDAV",
+                "aws",
+                "cloud",
+                "file",
+                "files",
+                "filesystem",
+                "filesystems",
+                "ftp",
+                "s3",
+                "sftp",
+                "storage"
+            ],
+            "support": {
+                "issues": "https://github.com/thephpleague/flysystem/issues",
+                "source": "https://github.com/thephpleague/flysystem/tree/3.26.0"
+            },
+            "funding": [
+                {
+                    "url": "https://ecologi.com/frankdejonge",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/frankdejonge",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-03-25T11:49:53+00:00"
+        },
+        {
+            "name": "league/flysystem-local",
+            "version": "3.25.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/flysystem-local.git",
+                "reference": "61a6a90d6e999e4ddd9ce5adb356de0939060b92"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/flysystem-local/zipball/61a6a90d6e999e4ddd9ce5adb356de0939060b92",
+                "reference": "61a6a90d6e999e4ddd9ce5adb356de0939060b92",
+                "shasum": ""
+            },
+            "require": {
+                "ext-fileinfo": "*",
+                "league/flysystem": "^3.0.0",
+                "league/mime-type-detection": "^1.0.0",
+                "php": "^8.0.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "League\\Flysystem\\Local\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Frank de Jonge",
+                    "email": "info@frankdejonge.nl"
+                }
+            ],
+            "description": "Local filesystem adapter for Flysystem.",
+            "keywords": [
+                "Flysystem",
+                "file",
+                "files",
+                "filesystem",
+                "local"
+            ],
+            "support": {
+                "source": "https://github.com/thephpleague/flysystem-local/tree/3.25.1"
+            },
+            "funding": [
+                {
+                    "url": "https://ecologi.com/frankdejonge",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/frankdejonge",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-03-15T19:58:44+00:00"
+        },
+        {
+            "name": "league/mime-type-detection",
+            "version": "1.15.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/mime-type-detection.git",
+                "reference": "ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/mime-type-detection/zipball/ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301",
+                "reference": "ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301",
+                "shasum": ""
+            },
+            "require": {
+                "ext-fileinfo": "*",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.2",
+                "phpstan/phpstan": "^0.12.68",
+                "phpunit/phpunit": "^8.5.8 || ^9.3 || ^10.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "League\\MimeTypeDetection\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Frank de Jonge",
+                    "email": "info@frankdejonge.nl"
+                }
+            ],
+            "description": "Mime-type detection for Flysystem",
+            "support": {
+                "issues": "https://github.com/thephpleague/mime-type-detection/issues",
+                "source": "https://github.com/thephpleague/mime-type-detection/tree/1.15.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/frankdejonge",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/league/flysystem",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-01-28T23:22:08+00:00"
+        },
+        {
+            "name": "loophp/collection",
+            "version": "7.5.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/loophp/collection.git",
+                "reference": "b0b44687c96374a63f30e36c2c52069f9e9c55e5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/loophp/collection/zipball/b0b44687c96374a63f30e36c2c52069f9e9c55e5",
+                "reference": "b0b44687c96374a63f30e36c2c52069f9e9c55e5",
+                "shasum": ""
+            },
+            "require": {
+                "loophp/iterators": "^3.2.0",
+                "php": ">= 8.1"
+            },
+            "require-dev": {
+                "amphp/parallel-functions": "^1",
+                "doctrine/collections": "^2",
+                "drupol/php-conventions": "^5",
+                "ext-pcov": "*",
+                "infection/infection": "^0.27",
+                "loophp/phpunit-iterable-assertions": "^1.0",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpunit/php-code-coverage": "^10",
+                "phpunit/phpunit": "^10",
+                "psr/cache": "^2.0 || 3.0",
+                "symfony/cache": "^6",
+                "vimeo/psalm": "^5.14"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "loophp\\collection\\": "./src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pol Dellaiera",
+                    "email": "pol.dellaiera@protonmail.com",
+                    "homepage": "https://not-a-number.io",
+                    "role": "author"
+                },
+                {
+                    "name": "Alex Gidei",
+                    "homepage": "https://github.com/AlexandruGG",
+                    "role": "maintainer"
+                }
+            ],
+            "description": "A (memory) friendly, easy, lazy and modular collection class.",
+            "homepage": "https://github.com/loophp/collection",
+            "keywords": [
+                "collection",
+                "generator",
+                "iterator",
+                "yield"
+            ],
+            "support": {
+                "docs": "https://loophp-collection.rtfd.io",
+                "issues": "https://github.com/loophp/collection/issues",
+                "source": "https://github.com/loophp/collection"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/drupol",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-02-20T19:42:06+00:00"
+        },
+        {
+            "name": "loophp/iterators",
+            "version": "3.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/loophp/iterators.git",
+                "reference": "1332fd9bb9ec6adc82ee9d93e9a5445daa47bf81"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/loophp/iterators/zipball/1332fd9bb9ec6adc82ee9d93e9a5445daa47bf81",
+                "reference": "1332fd9bb9ec6adc82ee9d93e9a5445daa47bf81",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 8.1"
+            },
+            "require-dev": {
+                "drupol/php-conventions": "^5",
+                "ext-pcov": "*",
+                "phpbench/phpbench": "^1.2",
+                "phpstan/phpstan-strict-rules": "^1.0",
+                "phpunit/php-code-coverage": "^10",
+                "phpunit/phpunit": "^10"
+            },
+            "suggest": {
+                "ext-mbstring": "For UTF-8 support in the StringIteratorAggregate."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "loophp\\iterators\\": "./src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pol Dellaiera",
+                    "email": "pol.dellaiera@protonmail.com",
+                    "homepage": "https://not-a-number.io",
+                    "role": "author"
+                }
+            ],
+            "description": "The missing PHP iterators.",
+            "homepage": "https://github.com/loophp/iterators",
+            "keywords": [
+                "iterators"
+            ],
+            "support": {
+                "issues": "https://github.com/loophp/iterators/issues",
+                "source": "https://github.com/loophp/iterators"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/drupol",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-02-18T17:17:56+00:00"
         },
         {
             "name": "nyholm/psr7",
@@ -1088,6 +1491,56 @@
                 }
             ],
             "time": "2023-11-08T05:53:05+00:00"
+        },
+        {
+            "name": "saloonphp/cache-plugin",
+            "version": "v3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/saloonphp/cache-plugin.git",
+                "reference": "9ed8efd0e08902ee105249c4d8d55edc0e8dc864"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/saloonphp/cache-plugin/zipball/9ed8efd0e08902ee105249c4d8d55edc0e8dc864",
+                "reference": "9ed8efd0e08902ee105249c4d8d55edc0e8dc864",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "saloonphp/saloon": "^3.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.13",
+                "league/flysystem": "^3.12.2",
+                "orchestra/testbench": "^8.0",
+                "pestphp/pest": "^2.3",
+                "psr/simple-cache": "^3.0",
+                "spatie/ray": "^1.34.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Saloon\\CachePlugin\\": "src/",
+                    "Saloon\\CachePlugin\\Tests\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sammyjo20",
+                    "email": "29132017+Sammyjo20@users.noreply.github.com"
+                }
+            ],
+            "description": "Official plugin for caching Saloon responses",
+            "support": {
+                "issues": "https://github.com/saloonphp/cache-plugin/issues",
+                "source": "https://github.com/saloonphp/cache-plugin/tree/v3.0.0"
+            },
+            "time": "2023-10-02T16:29:40+00:00"
         },
         {
             "name": "saloonphp/saloon",

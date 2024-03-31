@@ -31,7 +31,7 @@ class ToolCallerFactory
         }
         // check if handler for mode exists
         if (!isset($this->modeHandlers[$mode])) {
-            throw new \Exception("Mode handler not found for mode: `{$mode}`");
+            throw new Exception("Mode handler not found for mode: `{$mode}`");
         }
         // instantiate handler via provided callback
         $callback = $this->modeHandlers[$mode];

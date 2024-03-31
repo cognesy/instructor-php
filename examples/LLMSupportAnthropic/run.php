@@ -46,7 +46,7 @@ $user = $instructor->respond(
     responseModel: User::class,
     model: 'claude-3-haiku-20240307',
     mode: Mode::Tools,
-    //options: ['stream' => true ]
+    options: ['stream' => true ]
 );
 
 print("Completed response model:\n\n");

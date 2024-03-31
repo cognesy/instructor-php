@@ -54,6 +54,10 @@
         "guzzlehttp/guzzle": "^7.8",
         "saloonphp/saloon": "^3.8",
         "ext-dom": "*",
-        "spatie/array-to-xml": "^3.2"
+        "spatie/array-to-xml": "^3.2",
+        "halaxa/json-machine": "^1.1",
+        "loophp/collection": "^7.5",
+        "saloonphp/cache-plugin": "^3.0",
+        "league/flysystem": "^3.0"
     }
 }

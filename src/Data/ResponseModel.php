@@ -40,6 +40,9 @@ class ResponseModel
         ];
         return implode("\n", $lines);
     }
+
+    public function toFunctionCall() : array {
+    }
 }
 
 //'<tool_description>',

@@ -29,8 +29,7 @@ class RequestHandler implements CanHandleRequest
         private EventDispatcher $events,
         private CanHandleResponse $responseHandler,
         private CanHandlePartialResponse $partialResponseHandler,
-    )
-    {}
+    ) {}
 
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
