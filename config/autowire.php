@@ -15,6 +15,7 @@ use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
@@ -23,12 +24,14 @@ use Cognesy\Instructor\Core\ApiClient\JsonMode\ApiClientJsonCaller;
 use Cognesy\Instructor\Core\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
 use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
 use Cognesy\Instructor\Core\ApiClient\ToolsMode\ApiClientToolCaller;
+use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\PartialResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Core\Response\ResponseValidator;
+use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\Enums\Mode;
@@ -234,6 +237,27 @@ function autowire(Configuration $config) : Configuration
         ]
     );
 
+    $config->declare(
+        class: ResponseGenerator::class,
+        //name: CanHandleRequest::class,
+        context: [
+            'toolCallerFactory' => $config->reference(ToolCallerFactory::class),
+            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
+            'events' => $config->reference(EventDispatcher::class),
+            'responseHandler' => $config->reference(CanHandleResponse::class),
+            'partialsGenerator' => $config->reference(CanHandlePartialResponse::class),
+        ]
+    );
+
+    $config->declare(
+        class: PartialsGenerator::class,
+        name: CanGeneratePartials::class,
+        context: [
+            'events' => $config->reference(EventDispatcher::class),
+            'responseDeserializer' => $config->reference(ResponseDeserializer::class),
+            'responseTransformer' => $config->reference(ResponseTransformer::class),
+        ]
+    );
 
     /// RESPONSE HANDLING ////////////////////////////////////////////////////////////////////
 

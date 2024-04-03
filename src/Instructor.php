@@ -18,8 +18,6 @@ use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
-use Generator;
-use GuzzleHttp\Promise\Promise;
 use Throwable;
 
 /**
@@ -82,6 +80,9 @@ class Instructor {
 
     /// EXTRACTION EXECUTION ENDPOINTS ///////////////////////////////////////////////////////
 
+    /**
+     * Creates the request to be executed
+     */
     public function request(
         string|array $messages,
         string|object|array $responseModel,
@@ -163,36 +164,39 @@ class Instructor {
         }
     }
 
-    public function stream() : Iterable {
-        if ($this->request === null) {
-            throw new Exception('Request not defined, call withRequest() or request() first');
-        }
-        try {
-            /** @var RequestHandler $requestHandler */
-            $requestHandler = $this->config->get(CanHandleRequest::class);
-            $responseResult = $requestHandler->respondTo($this->request);
-            if ($responseResult->isFailure()) {
-                throw new Exception($responseResult->error());
-            }
-            $generator = $responseResult->unwrap();
-            $object = null;
-            foreach ($generator as $partialObject) {
-                $this->events->dispatch(new PartialResponseGenerated($partialObject));
-                yield $partialObject;
-                $object = $partialObject;
-            }
-            $this->events->dispatch(new ResponseGenerated($object));
-        } catch (Throwable $error) {
-            // if anything goes wrong, we first dispatch an event (e.g. to log error)
-            $event = new ErrorRaised($error, $this->request);
-            $this->events->dispatch($event);
-            if (isset($this->onError)) {
-                // final attempt to recover from the error (e.g. give fallback response)
-                return ($this->onError)($event);
-            }
-            throw $error;
-        }
-    }
+    /**
+     * Executes the request and returns the response stream
+     */
+//    public function stream() : Iterable {
+//        if ($this->request === null) {
+//            throw new Exception('Request not defined, call withRequest() or request() first');
+//        }
+//        try {
+//            /** @var RequestHandler $requestHandler */
+//            $requestHandler = $this->config->get(CanHandleRequest::class);
+//            $responseResult = $requestHandler->respondTo($this->request);
+//            if ($responseResult->isFailure()) {
+//                throw new Exception($responseResult->error());
+//            }
+//            $generator = $responseResult->unwrap();
+//            $object = null;
+//            foreach ($generator as $partialObject) {
+//                $this->events->dispatch(new PartialResponseGenerated($partialObject));
+//                yield $partialObject;
+//                $object = $partialObject;
+//            }
+//            $this->events->dispatch(new ResponseGenerated($object));
+//        } catch (Throwable $error) {
+//            // if anything goes wrong, we first dispatch an event (e.g. to log error)
+//            $event = new ErrorRaised($error, $this->request);
+//            $this->events->dispatch($event);
+//            if (isset($this->onError)) {
+//                // final attempt to recover from the error (e.g. give fallback response)
+//                return ($this->onError)($event);
+//            }
+//            throw $error;
+//        }
+//    }
 
     /// ACCESS CURRENT INSTRUCTOR CONFIGURATION //////////////////////////////////////////////
 
@@ -227,7 +231,7 @@ class Instructor {
     /// EVENT HANDLERS ///////////////////////////////////////////////////////////////////////
 
     /**
-     * Listener to all events
+     * Listens to all events
      */
     public function wiretap(callable $listener) : self {
         $this->events->wiretap($listener);
@@ -235,7 +239,7 @@ class Instructor {
     }
 
     /**
-     * Listen to a specific event
+     * Listens to a specific event
      */
     public function onEvent(string $class, callable $listener) : self {
         $this->events->addListener($class, $listener);
@@ -243,7 +247,7 @@ class Instructor {
     }
 
     /**
-     * Listen to Instructor execution error
+     * Listens to Instructor execution error
      */
     public function onError(callable $listener) : self {
         $this->onError = $listener;
@@ -251,7 +255,7 @@ class Instructor {
     }
 
     /**
-     * Listen to partial responses
+     * Listens to partial responses
      */
     public function onPartialUpdate(callable $listener) : self {
         $this->onPartialResponse = $listener;
@@ -263,7 +267,7 @@ class Instructor {
     }
 
     /**
-     * Listen to sequence updates
+     * Listens to sequence updates
      */
     public function onSequenceUpdate(callable $listener) : self {
         $this->onSequenceUpdate = $listener;

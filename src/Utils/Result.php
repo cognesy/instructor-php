@@ -22,24 +22,24 @@ use Exception;
 //
 //    $result = performOperation();
 //
+//    // Execute if operation succeeded, if not - continue with the error
+//    $result = $result->then(function (int $value): string {
+//        return "Transformed value: " . ($value * 2);
+//    });
+//
 //    if ($result->isSuccess()) {
-//        // IDE should suggest `getValue` method and understand its return type is `int`
-//        $value = $result->getValue();
+//        // IDE should suggest `unwrap` method and understand its return type is `int`
+//        $value = $result->unwrap();
 //        echo "Operation succeeded with result: $value";
 //    } elseif ($result->isFailure()) {
-//        // IDE should suggest `getError` method and understand its return type is `string`
-//        $error = $result->getError();
+//        // IDE should suggest `error` method and understand its return type is `string`
+//        $error = $result->error();
 //        echo "Operation failed with error: $error";
 //    }
 //
 //    // Transforming the result if operation succeeded
 //    $transformedResult = $result->try(function (int $value): string {
 //        return "Transformed value: " . ($value * 2);
-//    });
-//
-//    // Handling error, transforming it into a default value
-//    $defaultValue = $transformedResult->catch(function (string $error): string {
-//        return "Default value due to error: $error";
 //    });
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////

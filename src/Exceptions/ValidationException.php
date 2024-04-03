@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Exceptions;
 
+use Cognesy\Instructor\Utils\Json;
 use Exception;
 
 class ValidationException extends Exception
@@ -13,7 +14,7 @@ class ValidationException extends Exception
     }
 
     public function __toString() : string {
-        return json_encode([
+        return Json::encode([
             'message' => $this->message,
             'errors' => $this->errors
         ]);

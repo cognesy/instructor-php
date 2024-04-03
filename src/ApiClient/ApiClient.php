@@ -23,6 +23,7 @@ abstract class ApiClient implements CanCallApi
     protected array $queryParams = [];
     /** @var class-string */
     protected string $responseClass;
+    protected bool $debug = false;
 
     public function __construct(
         EventDispatcher $events = null,
@@ -56,9 +57,20 @@ abstract class ApiClient implements CanCallApi
         return $this->defaultModel;
     }
 
-    public function withQueryParam(string $name, string $value): self
-    {
+    public function withQueryParam(string $name, string $value): self {
         $this->queryParams[$name] = $value;
+        return $this;
+    }
+
+    public function withCache(bool $enabled = false, bool $refresh = true): self {
+        if ($enabled) {
+            $this->request->enableCaching();
+        } else {
+            $this->request->disableCaching();
+        }
+        if ($refresh) {
+            $this->request->invalidateCache();
+        }
         return $this;
     }
 
@@ -100,18 +112,18 @@ abstract class ApiClient implements CanCallApi
         if ($this->request->isStreamed()) {
             throw new Exception('You need to use stream() when option stream is set to true');
         }
-        return (new ApiResponseHandler($this->connector, $this->events))->respondRaw($this->getRequest());
+        return (new ApiResponseHandler($this->connector, $this->events, $this->debug))->respondRaw($this->getRequest());
     }
 
     protected function streamRaw(): Generator {
         if (!$this->request->isStreamed()) {
             throw new Exception('You need to use respond() when option stream is set to false');
         }
-        return (new ApiStreamHandler($this->connector, $this->events, $this->isDone(...), $this->getData(...)))->streamRaw($this->getRequest());
+        return (new ApiStreamHandler($this->connector, $this->events, $this->isDone(...), $this->getData(...), $this->debug))->streamRaw($this->getRequest());
     }
 
     protected function asyncRaw(callable $onSuccess, callable $onError) : PromiseInterface {
-        return (new ApiAsyncHandler($this->connector, $this->events))->asyncRaw($this->getRequest(), $onSuccess, $onError);
+        return (new ApiAsyncHandler($this->connector, $this->events, $this->debug))->asyncRaw($this->getRequest(), $onSuccess, $onError);
     }
 
     public function getRequest() : ApiRequest {
@@ -119,6 +131,10 @@ abstract class ApiClient implements CanCallApi
             $this->request->query()->set($this->queryParams);
         }
         return $this->request;
+    }
+
+    protected function getModel(string $model) : string {
+        return $model ?: $this->defaultModel;
     }
 
     abstract protected function isDone(string $data): bool;

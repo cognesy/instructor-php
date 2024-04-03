@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 use Saloon\Http\Request;
 
 class ApiRequestInitiated extends Event
@@ -16,6 +17,6 @@ class ApiRequestInitiated extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->request);
+        return Json::encode($this->request);
     }
 }

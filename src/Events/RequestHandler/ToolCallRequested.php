@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ToolCallRequested extends Event
 {
@@ -24,7 +25,7 @@ class ToolCallRequested extends Event
 
     public function __toString(): string
     {
-        return json_encode([
+        return Json::encode([
             'messages' => $this->messages,
             'tool' => $this->responseModel->functionName,
             'tools' => $this->responseModel->toolCall,

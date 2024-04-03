@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseGenerated extends Event
 {
@@ -14,6 +15,6 @@ class ResponseGenerated extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return Json::encode($this->response);
     }
 }

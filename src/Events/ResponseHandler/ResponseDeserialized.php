@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseDeserialized extends Event
 {
@@ -15,6 +16,6 @@ class ResponseDeserialized extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->object);
+        return Json::encode($this->object);
     }
 }

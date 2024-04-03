@@ -18,6 +18,7 @@ class ApiAsyncHandler
     public function __construct(
         protected ApiConnector $connector,
         protected EventDispatcher $events,
+        protected bool $debug = false,
     ) {}
 
     public function asyncRaw(ApiRequest $request, callable $onSuccess, callable $onError) : PromiseInterface {
@@ -26,6 +27,9 @@ class ApiAsyncHandler
         }
 
         $this?->events->dispatch(new ApiAsyncRequestInitiated($request));
+        if ($this->debug) {
+            $this->connector->debug();
+        }
         $promise = $this->connector->sendAsync($request);
         $promise
             ->then(function (Response $response) use ($onSuccess) {

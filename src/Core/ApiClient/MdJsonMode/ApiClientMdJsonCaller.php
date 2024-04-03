@@ -5,11 +5,12 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\Contracts\CanCallApiClient;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 
 class ApiClientMdJsonCaller implements CanCallApiClient
 {
-    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
+    private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
     public function __construct(
         private EventDispatcher $events,
@@ -42,7 +43,7 @@ class ApiClientMdJsonCaller implements CanCallApiClient
         if (!isset($messages[$lastIndex]['content'])) {
             $messages[$lastIndex]['content'] = '';
         }
-        $messages[$lastIndex]['content'] .= $this->prompt . json_encode($jsonSchema);
+        $messages[$lastIndex]['content'] .= $this->prompt . Json::encode($jsonSchema);
         return $messages;
     }
 }

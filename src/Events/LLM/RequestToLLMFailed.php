@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class RequestToLLMFailed extends Event
 {
@@ -15,7 +16,7 @@ class RequestToLLMFailed extends Event
 
     public function __toString(): string
     {
-        return json_encode([
+        return Json::encode([
             'errors' => $this->errors,
             'request' => $this->request,
         ]);

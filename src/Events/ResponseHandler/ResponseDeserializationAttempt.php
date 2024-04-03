@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseDeserializationAttempt extends Event
 {
@@ -16,7 +17,7 @@ class ResponseDeserializationAttempt extends Event
 
     public function __toString(): string
     {
-        return json_encode([
+        return Json::encode([
             'json' => $this->json,
             'responseModel' => $this->responseModel
         ]);

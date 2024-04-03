@@ -8,21 +8,20 @@ class JsonCompletionRequest extends ApiJsonCompletionRequest
     protected string $endpoint = '/chat/completions';
 
     public function __construct(
-        public array  $messages = [],
+        public string|array  $messages = [],
         public array  $responseFormat = [],
         public string $model = '',
         public array  $options = [],
     ) {
-        $messages = $this->appendInstructions($messages, $responseFormat['schema']);
         parent::__construct(
             $messages,
-            ['type' => 'json_object'],
+            $responseFormat,
             $model,
             $options,
         );
     }
 
-    public function getEndpoint(): string {
-        return $this->endpoint;
+    protected function getResponseFormat(): array {
+        return ['type' => 'json_object'];
     }
 }

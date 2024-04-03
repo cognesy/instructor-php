@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Exceptions;
 
+use Cognesy\Instructor\Utils\Json;
+
 class DeserializationException extends \Exception
 {
     public function __construct(
@@ -13,7 +15,7 @@ class DeserializationException extends \Exception
     }
 
     public function __toString() : string {
-        return json_encode([
+        return Json::encode([
             'message' => $this->message,
             'class' => $this->modelClass,
             'data' => $this->data,

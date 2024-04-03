@@ -16,12 +16,16 @@ class ApiResponseHandler
     public function __construct(
         protected ApiConnector $connector,
         protected EventDispatcher $events,
+        protected bool $debug = false,
     ) {}
 
     public function respondRaw(ApiRequest $request): Response {
         $this?->events->dispatch(new ApiRequestInitiated($request));
         try {
-            $response = $this->connector->debug()->send($request);
+            if ($this->debug) {
+                $this->connector->debug();
+            }
+            $response = $this->connector->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;

@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseModelBuilt extends Event
 {
@@ -16,6 +17,6 @@ class ResponseModelBuilt extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->requestedModel);
+        return Json::encode($this->requestedModel);
     }
 }

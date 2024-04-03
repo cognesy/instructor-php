@@ -61,7 +61,6 @@ class RequestHandler implements CanHandleRequest
                 $request->model,
                 $request->options
             );
-
             if ($apiCallResult->isFailure()) {
                 return $apiCallResult;
             }

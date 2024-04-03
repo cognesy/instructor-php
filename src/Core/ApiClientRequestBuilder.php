@@ -6,11 +6,12 @@ use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Utils\Json;
 use Exception;
 
 class ApiClientRequestBuilder
 {
-    private string $prompt = "\nRespond with JSON containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
+    private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
     public function __construct(
         private ApiClient $client,
@@ -27,25 +28,25 @@ class ApiClientRequestBuilder
         return match($mode) {
             Mode::Json => $this->client->jsonCompletion(
                 messages: $messages,
-                model: $model,
                 responseFormat: [
                     'type' => 'json_object',
                     'schema' => $responseModel->jsonSchema
                 ],
+                model: $model,
                 options: $options
             ),
             Mode::Tools => $this->client->toolsCall(
                 messages: $messages,
-                model: $model,
-                toolChoice: [
-                    'type' => 'function',
-                    'function' => ['name' => $responseModel->functionName]
-                ],
                 tools: $this->toolCallBuilder->render(
                     $responseModel->jsonSchema,
                     $responseModel->functionName,
                     $responseModel->functionDescription
                 ),
+                toolChoice: [
+                    'type' => 'function',
+                    'function' => ['name' => $responseModel->functionName]
+                ],
+                model: $model,
                 options: $options
             ),
             Mode::MdJson => $this->client->chatCompletion(
@@ -62,7 +63,7 @@ class ApiClientRequestBuilder
         if (!isset($messages[$lastIndex]['content'])) {
             $messages[$lastIndex]['content'] = '';
         }
-        $messages[$lastIndex]['content'] .= $this->prompt . json_encode($jsonSchema);
+        $messages[$lastIndex]['content'] .= $this->prompt . Json::encode($jsonSchema);
         return $messages;
     }
 }

@@ -46,9 +46,8 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
-    public function chatCompletion(array $messages, string $model, array $options = []): static {
-        $model = $model ?: $this->defaultModel;
-        $this->request = new ChatCompletionRequest($messages, $model, $options);
+    public function chatCompletion(string|array $messages, string $model = '', array $options = []): static {
+        $this->request = new ChatCompletionRequest($messages, $this->getModel($model), $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialChatCompletionResponse::class;
         } else {
@@ -57,9 +56,8 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
         return $this;
     }
 
-    public function jsonCompletion(array $messages, array $responseFormat, string $model, array $options = []): static {
-        $model = $model ?: $this->defaultModel;
-        $this->request = new JsonCompletionRequest($messages, $responseFormat, $model, $options);
+    public function jsonCompletion(string|array $messages, array $responseFormat, string $model = '', array $options = []): static {
+        $this->request = new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialJsonCompletionResponse::class;
         } else {
@@ -68,9 +66,8 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
         return $this;
     }
 
-    public function toolsCall(array $messages, string $model, array $tools, array $toolChoice, array $options = []): static {
-        $model = $model ?: $this->defaultModel;
-        $this->request = new ToolsCallRequest($messages, $model, $tools, $toolChoice, $options);
+    public function toolsCall(string|array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
+        $this->request = new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialToolsCallResponse::class;
         } else {

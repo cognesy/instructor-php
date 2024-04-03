@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class PartialResponseGenerated extends Event
 {
@@ -14,6 +15,6 @@ class PartialResponseGenerated extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->partialResponse);
+        return Json::encode($this->partialResponse);
     }
 }

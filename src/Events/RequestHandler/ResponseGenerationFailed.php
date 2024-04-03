@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseGenerationFailed extends Event
 {
@@ -14,6 +15,6 @@ class ResponseGenerationFailed extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->errors);
+        return Json::encode($this->errors);
     }
 }

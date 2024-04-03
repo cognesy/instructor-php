@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class StreamedResponseReceived extends Event
 {
@@ -14,6 +15,6 @@ class StreamedResponseReceived extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return Json::encode($this->response);
     }
 }

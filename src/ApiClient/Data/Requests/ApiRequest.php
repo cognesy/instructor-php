@@ -2,15 +2,16 @@
 
 namespace Cognesy\Instructor\ApiClient\Data\Requests;
 
+use Cognesy\Instructor\Utils\Json;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\CachePlugin\Contracts\Driver;
-use Saloon\CachePlugin\Data\CachedResponse;
 use Saloon\CachePlugin\Drivers\FlysystemDriver;
 use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
+use Saloon\Http\PendingRequest;
 use Saloon\Http\Request;
 use Saloon\Traits\Body\HasJsonBody;
 
@@ -53,10 +54,14 @@ class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     public function cacheExpiryInSeconds(): int {
-        return 1000000;
+        return 1000;
     }
 
     protected function getCacheableMethods(): array {
         return [Method::GET, Method::OPTIONS, Method::POST];
+    }
+
+    protected function cacheKey(PendingRequest $pendingRequest): string {
+        return md5(get_class($this) . Json::encode($this->defaultBody()));
     }
 }

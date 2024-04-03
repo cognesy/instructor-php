@@ -15,6 +15,7 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Validators\Symfony\Validator;
 use IteratorAggregate;
 use Traversable;
@@ -84,7 +85,7 @@ class Sequence
         $returnedList = $data['list'] ?? [];
         $list = [];
         foreach ($returnedList as $item) {
-            $list[] = $deserializer->fromJson(json_encode($item), $this->class);
+            $list[] = $deserializer->fromJson(Json::encode($item), $this->class);
         }
         $this->list = $list;
         return $this;

@@ -41,12 +41,11 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
 
     /// PUBLIC API ////////////////////////////////////////////////////////////////////////////////
 
-    public function chatCompletion(array $messages, string $model, array $options = []): static {
-        $model = $model ?: $this->defaultModel;
+    public function chatCompletion(string|array $messages, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = new ChatCompletionRequest($messages, $model, $options);
+        $this->request = new ChatCompletionRequest($messages, $this->getModel($model), $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialChatCompletionResponse::class;
         } else {
@@ -55,12 +54,11 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         return $this;
     }
 
-    public function jsonCompletion(array $messages, array $responseFormat, string $model, array $options = []): static {
-        $model = $model ?: $this->defaultModel;
+    public function jsonCompletion(string|array $messages, array $responseFormat, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = new JsonCompletionRequest($messages, $responseFormat, $model, $options);
+        $this->request = new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialJsonCompletionResponse::class;
         } else {
@@ -69,12 +67,11 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         return $this;
     }
 
-    public function toolsCall(array $messages, string $model, array $tools, array $toolChoice, array $options = []): static {
-        $model = $model ?: $this->defaultModel;
+    public function toolsCall(string|array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = new ToolsCallRequest($messages, $model, $tools, $toolChoice, $options);
+        $this->request = new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialToolsCallResponse::class;
         } else {

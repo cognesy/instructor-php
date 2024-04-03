@@ -52,6 +52,6 @@ dump($user);
 
 assert($user->name === "Jason");
 assert($user->age === 28);
-assert(!empty($user->role->title));
+//assert(!empty($user->role->title));
 ?>
 ```

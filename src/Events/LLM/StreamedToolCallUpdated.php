@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\Data\ToolCall;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class StreamedToolCallUpdated extends Event
 {
@@ -15,6 +16,6 @@ class StreamedToolCallUpdated extends Event
 
     public function __toString() : string
     {
-        return json_encode($this->toolCall);
+        return Json::encode($this->toolCall);
     }
 }

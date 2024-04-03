@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ValidationRecoveryLimitReached extends Event
 {
@@ -15,7 +16,7 @@ class ValidationRecoveryLimitReached extends Event
 
     public function __toString(): string
     {
-        return json_encode([
+        return Json::encode([
             'retries' => $this->retries,
             'errors' => $this->errors
         ]);

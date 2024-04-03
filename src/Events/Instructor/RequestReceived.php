@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class RequestReceived extends Event
 {
@@ -15,6 +16,6 @@ class RequestReceived extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->request);
+        return Json::encode($this->request);
     }
 }

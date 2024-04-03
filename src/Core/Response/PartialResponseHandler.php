@@ -10,6 +10,7 @@ use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
 use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
 
@@ -39,7 +40,7 @@ class PartialResponseHandler implements CanHandlePartialResponse
 
         // proceed if converting to object was successful
         $partialResponse = clone $result->unwrap();
-        $currentHash = hash('xxh3', json_encode($partialResponse));
+        $currentHash = hash('xxh3', Json::encode($partialResponse));
         if ($this->previousHash != $currentHash) {
             // send partial response to listener only if new tokens changed resulting response object
             $this->events->dispatch(new PartialResponseGenerated($partialResponse));
@@ -58,13 +59,14 @@ class PartialResponseHandler implements CanHandlePartialResponse
     }
 
     public function finalizePartialResponse(ResponseModel $responseModel) : void {
-        if (!isset($this->lastPartialResponse)) {
+        if (empty($this->lastPartialResponse)) {
             return;
         }
         if (!($this->lastPartialResponse instanceof Sequenceable)) {
             return;
         }
-        $this->events->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        //$this->events->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        $this->processSequenceable($this->lastPartialResponse);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,6 +95,6 @@ class PartialResponseHandler implements CanHandlePartialResponse
             return;
         }
         $this->previousSequenceLength = $currentLength;
-        $this->events->dispatch(new SequenceUpdated($this->lastPartialResponse));
+        $this->events->dispatch(new SequenceUpdated($partialResponse));
     }
 }

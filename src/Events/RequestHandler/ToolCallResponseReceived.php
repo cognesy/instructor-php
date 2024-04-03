@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ToolCallResponseReceived extends Event
 {
@@ -14,6 +15,6 @@ class ToolCallResponseReceived extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->response);
+        return Json::encode($this->response);
     }
 }

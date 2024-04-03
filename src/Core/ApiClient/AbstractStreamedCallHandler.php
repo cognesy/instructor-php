@@ -61,12 +61,12 @@ abstract class AbstractStreamedCallHandler
         return Result::success($response);
     }
 
-    protected function processStream(Generator $stream) : Result {
+    protected function processStream(Iterable $stream) : Result {
         // process stream
         $toolCalls = [];
         $toolCalls[] = $this->newToolCall();
         /** @var PartialApiResponse $partialResponse */
-        foreach($stream as $partialResponse){
+        foreach($stream as $partialResponse) {
             // receive data
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store for finalization when we leave the loop
@@ -96,11 +96,11 @@ abstract class AbstractStreamedCallHandler
                 $this->updateToolCall($toolCalls, $this->responseJson);
             }
         }
-        // check if there are any toolCalls
+        // check if there are any tool calls
         if (count($toolCalls) === 0) {
             return Result::failure(new RequestToLLMFailed($this->request, 'No tool calls found in the response'));
         }
-        // finalize last function call
+        // finalize last tool call
         if (count($toolCalls) > 0) {
             $this->finalizeToolCall($toolCalls, Json::find($this->responseText));
         }

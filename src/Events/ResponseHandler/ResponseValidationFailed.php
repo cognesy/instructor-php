@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseValidationFailed extends Event
 {
@@ -15,6 +16,6 @@ class ResponseValidationFailed extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->validationResult);
+        return Json::encode($this->validationResult);
     }
 }

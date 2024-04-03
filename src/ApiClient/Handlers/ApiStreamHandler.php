@@ -24,6 +24,7 @@ class ApiStreamHandler
         protected EventDispatcher $events,
         protected Closure $isDone,
         protected Closure $getData,
+        protected bool $debug = false,
     ) {}
 
     public function streamRaw(ApiRequest $request): Generator {
@@ -34,6 +35,9 @@ class ApiStreamHandler
 
         $this?->events->dispatch(new ApiStreamRequestInitiated($request));
         try {
+            if ($this->debug) {
+                $this->connector->debug();
+            }
             $response = $this->connector->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));

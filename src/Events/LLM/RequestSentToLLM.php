@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Events\LLM;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class RequestSentToLLM extends Event
 {
@@ -12,6 +13,6 @@ class RequestSentToLLM extends Event
     }
 
     public function __toString(): string {
-        return json_encode($this->request);
+        return Json::encode($this->request);
     }
 }

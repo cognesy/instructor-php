@@ -12,7 +12,7 @@ class ResponseModel
     public ?array $toolCall;
 
     public string $functionName = 'extract_data';
-    public string $functionDescription = 'Extract data in JSON format from provided content';
+    public string $functionDescription = 'Extract correct data in strict JSON format from provided content';
     public string $retryPrompt = "JSON generated incorrectly, fix following errors";
 
     public function __construct(
@@ -21,8 +21,7 @@ class ResponseModel
         Schema $schema = null,
         array  $jsonSchema = null,
         array  $toolCall = null,
-    )
-    {
+    ) {
         $this->class = $class;
         $this->instance = $instance;
         $this->toolCall = $toolCall;
@@ -40,19 +39,4 @@ class ResponseModel
         ];
         return implode("\n", $lines);
     }
-
-    public function toFunctionCall() : array {
-    }
 }
-
-//'<tool_description>',
-//'<tool_name>get_weather</tool_name>',
-//'<description>',
-////'Retrieves the current weather for a specified location.',
-////'Returns a dictionary with two fields:',
-////'- temperature: float, the current temperature in Fahrenheit',
-////'- conditions: string, a brief description of the current weather conditions',
-////'Raises ValueError if the provided location cannot be found.',
-//'</description>',
-//$this->parameters($parameters),
-//'</tool_description>',

@@ -39,7 +39,7 @@ trait ValidatesPartialResponse
             return Result::success(true);
         }
         return Result::failure(new JsonParsingException(
-            message: 'You started responding with JSONSchema. Respond with JSON data instead.',
+            message: 'You started responding with JSONSchema. Respond correctly with strict JSON object data instead.',
             json: $partialResponseText,
         ));
     }

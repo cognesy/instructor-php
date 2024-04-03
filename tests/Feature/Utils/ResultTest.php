@@ -25,7 +25,7 @@ test('it creates a failure result', function () {
 
 test('it applies a success function', function () {
     $result = Result::success(21);
-    $transformedResult = $result->apply(fn ($value) => $value * 2);
+    $transformedResult = $result->then(fn ($value) => $value * 2);
 
     expect($transformedResult)->toBeInstanceOf(Success::class)
         ->and($transformedResult->isSuccess())->toBeTrue()
@@ -34,7 +34,7 @@ test('it applies a success function', function () {
 
 test('it applies a failure function', function () {
     $result = Result::failure('An error occurred');
-    $transformedResult = $result->apply(fn ($value) => $value * 2);
+    $transformedResult = $result->then(fn ($value) => $value * 2);
 
     expect($transformedResult)->toBeInstanceOf(Failure::class)
         ->and($transformedResult->isFailure())->toBeTrue()

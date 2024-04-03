@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class InstructorStarted extends Event
 {
@@ -14,6 +15,6 @@ class InstructorStarted extends Event
 
     public function __toString(): string
     {
-        return json_encode($this->config);
+        return Json::encode($this->config);
     }
 }

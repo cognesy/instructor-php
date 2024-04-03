@@ -17,6 +17,7 @@ use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
 use Cognesy\Instructor\Events\RequestHandler\ToolCallRequested;
 use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseReceived;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Utils\Result;
 use Exception;
 use Generator;
 
@@ -33,7 +34,7 @@ class ResponseGenerator implements CanHandleRequest
     /**
      * Returns response object or generator wrapped in Result monad
      */
-    public function respondTo(Request $request) : Generator {
+    public function respondTo(Request $request) : Generator|Result {
         $isStreamingRequested = $request->options['stream'] ?? false;
         $responseModel = $this->responseModelFactory->fromRequest($request);
         $this->events->dispatch(new ResponseModelBuilt($responseModel));
@@ -43,14 +44,14 @@ class ResponseGenerator implements CanHandleRequest
         while ($retries <= $request->maxRetries) {
             // get function caller instance
             $clientCaller = $this->toolCallerFactory->fromRequest($request);
+            $this->events->dispatch(new ToolCallRequested($messages, $responseModel, $request));
             // run LLM inference
             /** @var ApiClient $apiCallRequest */
-            $this->events->dispatch(new ToolCallRequested($messages, $responseModel, $request));
             $apiCallRequest = $clientCaller->callApiClient($messages, $responseModel, $request->model, $request->options);
             if (!$isStreamingRequested) {
                 $apiResponse = $this->getResponse($apiCallRequest);
             } else {
-                // we're streaming - let's yield partial responses (target objects!) from partial generator
+                // we're streaming - let's yield partial responses (target objects wrapped in Result) from partial generator
                 yield $this->partialsGenerator->getPartialResponses($apiCallRequest, $request, $responseModel);
                 // ...and then get the final response
                 $apiResponse = $this->partialsGenerator->getApiResponse();
@@ -73,7 +74,7 @@ class ResponseGenerator implements CanHandleRequest
                 throw new Exception("Validation recovery attempts limit reached after {$retries} retries due to: $errors");
             }
         }
-        yield $responseProcessingResult->unwrap();
+        return $responseProcessingResult;
     }
 
     private function getResponse(ApiClient $apiCallRequest) : ApiResponse

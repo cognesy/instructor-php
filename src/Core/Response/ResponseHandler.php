@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Core\Response;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
@@ -12,6 +11,7 @@ use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Exceptions\ValidationException;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
@@ -102,7 +102,7 @@ class ResponseHandler implements CanHandleResponse
             $errorValue instanceof ValidationResult => [$errorValue->getErrorMessage()],
             $errorValue instanceof JsonParsingException => [$errorValue->message],
             $errorValue instanceof Exception => [$errorValue->getMessage()],
-            default => [json_encode($errorValue)]
+            default => [Json::encode($errorValue)]
         };
     }
 }

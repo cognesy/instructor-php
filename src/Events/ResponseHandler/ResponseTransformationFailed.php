@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\ResponseHandler;
 
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class ResponseTransformationFailed extends Event
 {
@@ -16,7 +17,7 @@ class ResponseTransformationFailed extends Event
 
     public function __toString(): string
     {
-        return json_encode([
+        return Json::encode([
             'message' => $this->message,
             'object' => $this->object
         ]);

@@ -29,12 +29,12 @@ class StreamedToolCallHandler extends AbstractStreamedCallHandler
         try {
             $stream = $this->client->toolsCall(
                 messages: $this->request['messages'] ?? [],
-                model: $this->request['model'] ?? '',
                 tools: [$this->responseModel->toolCall],
                 toolChoice: [
                     'type' => 'function',
                     'function' => ['name' => $this->responseModel->functionName]
                 ],
+                model: $this->request['model'] ?? '',
                 options: Arrays::unset($this->request, ['model', 'messages', 'tools', 'tool_choice'])
             )->stream();
         } catch (Exception $e) {

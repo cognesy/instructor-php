@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Events\RequestHandler;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Utils\Json;
 
 class SequenceUpdated extends Event
 {
@@ -14,6 +15,6 @@ class SequenceUpdated extends Event
     }
 
     public function __toString() : string {
-        return json_encode($this->sequence);
+        return Json::encode($this->sequence);
     }
 }

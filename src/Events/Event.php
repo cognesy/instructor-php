@@ -1,19 +1,21 @@
 <?php
 namespace Cognesy\Instructor\Events;
 use Cognesy\Instructor\Utils\Console;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\InstructorHub\Utils\Color;
 use DateTimeImmutable;
 use Ramsey\Uuid\Uuid;
 
-abstract class Event
+class Event
 {
     public readonly string $eventId;
     public readonly DateTimeImmutable $createdAt;
+    public mixed $data;
 
-    public function __construct()
-    {
+    public function __construct(mixed $data = []) {
         $this->eventId = Uuid::uuid4();
         $this->createdAt = new DateTimeImmutable();
+        $this->data = $data;
     }
 
     public function asLog(): string {
@@ -52,5 +54,9 @@ abstract class Event
             '-',
             [-1, $message],
         ], 140);
+    }
+
+    public function __toString(): string {
+        return Json::encode($this->data, JSON_PRETTY_PRINT);
     }
 }

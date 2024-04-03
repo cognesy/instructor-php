@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Core\ApiClient\ValidatesPartialResponse;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
@@ -31,7 +32,7 @@ use Cognesy\Instructor\Utils\Result;
 use Exception;
 use Generator;
 
-class PartialsGenerator
+class PartialsGenerator implements CanGeneratePartials
 {
     use ValidatesPartialResponse;
 
@@ -66,7 +67,6 @@ class PartialsGenerator
             $this->events->dispatch(new RequestToLLMFailed([], $e->getMessage()));
             throw new Exception($e->getMessage());
         }
-        /** @var StreamHandler $streamHandler */
         $generator = $this->partialObjectsGenerator($stream, $responseModel);
         foreach ($generator as $partialObject) {
             $this->events->dispatch(new PartialJsonReceived($partialObject));
@@ -138,7 +138,7 @@ class PartialsGenerator
 
         $partialObject = $result->unwrap();
         // we only want to send partial response if it's different from the previous one
-        $currentHash = hash('xxh3', json_encode($partialObject));
+        $currentHash = hash('xxh3', Json::encode($partialObject));
         if ($this->previousHash != $currentHash) {
             // send partial response to listener only if new tokens changed resulting response object
             $this->events->dispatch(new PartialResponseGenerated($partialObject));

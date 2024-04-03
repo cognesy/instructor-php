@@ -10,26 +10,6 @@ class ToolsCallRequest extends ApiToolsCallRequest
     protected string $endpoint = '/messages';
     protected string $xmlLineSeparator = "";
 
-    public function __construct(
-        public array  $messages = [],
-        public string $model = '',
-        public array  $tools = [],
-        public array  $toolChoice = [],
-        public array  $options = [],
-    ) {
-        parent::__construct(
-            messages: $messages,
-            model: $model,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            options: $options,
-        );
-    }
-
-    public function getEndpoint(): string {
-        return $this->endpoint;
-    }
-
     protected function defaultBody(): array {
         $system = $this->getSystemInstruction();
         $body = array_filter(array_merge($this->payload, [
