@@ -47,6 +47,7 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
         $this->request = new ChatCompletionRequest($messages, $model, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialChatCompletionResponse::class;
+            $this->request->config()->add('stream', true);
         } else {
             $this->responseClass = ChatCompletionResponse::class;
         }
@@ -58,6 +59,7 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
         $this->request = new JsonCompletionRequest($messages, $responseFormat, $model, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialJsonCompletionResponse::class;
+            $this->request->config()->add('stream', true);
         } else {
             $this->responseClass = JsonCompletionResponse::class;
         }
@@ -69,6 +71,7 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
         $this->request = new ToolsCallRequest($messages, $model, $tools, $toolChoice, $options);
         if ($this->request->isStreamed()) {
             $this->responseClass = PartialToolsCallResponse::class;
+            $this->request->config()->add('stream', true);
         } else {
             $this->responseClass = ToolsCallResponse::class;
         }
