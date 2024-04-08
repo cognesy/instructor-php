@@ -44,6 +44,6 @@ class Json
     }
 
     public static function encode(mixed $json, int $options = 0) : string {
-        return json_encode($json, $options | JSON_UNESCAPED_SLASHES);
+        return json_encode($json, $options);
     }
 }

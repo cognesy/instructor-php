@@ -13,9 +13,9 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
 enum UserType : string {
-    case Guest = 'Guest';
-    case User = 'User';
-    case Admin = 'Admin';
+    case Guest = 'guest';
+    case User = 'user';
+    case Admin = 'admin';
 }
 
 class User {

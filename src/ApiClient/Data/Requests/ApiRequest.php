@@ -2,12 +2,10 @@
 
 namespace Cognesy\Instructor\ApiClient\Data\Requests;
 
+use Cognesy\Instructor\ApiClient\CacheConfig;
 use Cognesy\Instructor\Utils\Json;
-use League\Flysystem\Filesystem;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\CachePlugin\Contracts\Driver;
-use Saloon\CachePlugin\Drivers\FlysystemDriver;
 use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -20,17 +18,25 @@ class ApiRequest extends Request implements HasBody, Cacheable
     use HasJsonBody, HasCaching;
 
     protected Method $method = Method::POST;
-    protected Filesystem $filesystem;
+    protected CacheConfig $cacheConfig;
 
     public function __construct(
         protected array $payload,
         protected string $endpoint,
     ) {
+        $this->disableCaching();
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
-        $adapter = new LocalFilesystemAdapter(
-            dirname(__DIR__, 4) . '/.cache/saloonphp'
-        );
-        $this->filesystem = new Filesystem($adapter);
+    }
+
+    public function withCacheConfig(CacheConfig $cacheConfig): static {
+        $this->cacheConfig = $cacheConfig;
+        if ($cacheConfig->isEnabled()) {
+            $this->enableCaching();
+        } else {
+            $this->disableCaching();
+            $this->invalidateCache();
+        }
+        return $this;
     }
 
     public function getEndpoint(): string {
@@ -50,11 +56,17 @@ class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     public function resolveCacheDriver(): Driver {
-        return new FlysystemDriver($this->filesystem);
+        if (!isset($this->cacheConfig)) {
+            throw new \Exception('Cache is not configured for this request');
+        }
+        return $this->cacheConfig->getDriver();
     }
 
     public function cacheExpiryInSeconds(): int {
-        return 1000;
+        if (!isset($this->cacheConfig)) {
+            throw new \Exception('Cache is not configured for this request');
+        }
+        return $this->cacheConfig->expiryInSeconds();
     }
 
     protected function getCacheableMethods(): array {
@@ -62,6 +74,11 @@ class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     protected function cacheKey(PendingRequest $pendingRequest): string {
-        return md5(get_class($this) . Json::encode($this->defaultBody()));
+        $keyBase = implode('|', [
+            get_class($this),
+            $pendingRequest->getUrl(),
+            Json::encode($this->defaultBody()),
+        ]);
+        return md5($keyBase);
     }
 }

@@ -9,7 +9,7 @@ use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Utils\Json;
 use Exception;
 
-class ApiClientRequestBuilder
+class RequestBuilder
 {
     private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 

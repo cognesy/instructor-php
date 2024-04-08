@@ -5,7 +5,7 @@ use Cognesy\Instructor\Utils\Json;
 
 class ApiJsonCompletionRequest extends ApiRequest
 {
-    protected string $prompt = "\nRespond correctly with strict JSON. Response must follow provided JSONSchema.\n";
+    protected string $prompt = "\nRespond correctly with JSON object. Response must follow provided JSONSchema.\n";
 
     public function __construct(
         public string|array $messages = [],

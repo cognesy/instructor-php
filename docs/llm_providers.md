@@ -2,17 +2,33 @@
 
 Only tested providers with examples are listed here.
 
-## OpenAI
 
-OpenAI is the default provider that is called by Instructor unless user
-configures different one.
+
+## Anthropic
 
 Supported extraction modes:
- - Mode::Tools (recommended)
- - Mode::Json
- - Mode::MdJson
 
-Majority of examples use OpenAI provider.
+- Mode::MdJson
+- Mode::Json (for selected models)
+
+Mode::Tools is not supported yet.
+
+Example:
+- `./examples/LLMSupportAnthropic/run.php`
+
+
+
+## Anyscale
+
+Supported extraction modes:
+
+- Mode::MdJson
+- Mode::Json (for selected models)
+- Mode::Tools (for selected models)
+
+Example:
+- `./examples/LLMSupportAnyscale/run.php`
+
 
 
 
@@ -31,15 +47,31 @@ Example:
 
 
 
-## Ollama
+## FireworksAI
 
 Supported extraction modes:
 
- - Mode::MdJson
- - Mode::Json (for selected models)
+- Mode::MdJson
+- Mode::Json (for selected models)
+- Mode::Tools (for selected models)
 
 Example:
- - `./examples/LLMSupportOllama/run.php`
+- `./examples/LLMSupportFireworksAI/run.php`
+
+
+
+
+## Groq
+
+Supported extraction modes:
+
+- Mode::MdJson
+- Mode::Json
+- Mode::Tools (experimental - not stable)
+
+Example:
+- `./examples/LLMSupportGroq/run.php`
+
 
 
 
@@ -47,26 +79,38 @@ Example:
 
 Supported extraction modes:
 
- - Mode::MdJson
- - Mode::Json (for selected models)
- - Mode::Tools (for selected models)
+- Mode::MdJson
+- Mode::Json (for selected models)
+- Mode::Tools (for selected models)
 
 Example:
- - `./examples/LLMSupportMistral/run.php`
+- `./examples/LLMSupportMistral/run.php`
 
 
 
-## Anthropic
+## Ollama
 
 Supported extraction modes:
 
 - Mode::MdJson
 - Mode::Json (for selected models)
 
-Mode::Tools is not supported yet.
-
 Example:
- - `./examples/LLMSupportAnthropic/run.php`
+- `./examples/LLMSupportOllama/run.php`
+
+
+
+## OpenAI
+
+OpenAI is the default provider that is called by Instructor unless user
+configures different one.
+
+Supported extraction modes:
+ - Mode::Tools (recommended)
+ - Mode::Json
+ - Mode::MdJson
+
+Majority of examples use OpenAI provider.
 
 
 
@@ -84,3 +128,15 @@ Supported extraction modes:
 Example:
  - `./examples/LLMSupportOpenRouter/run.php`
 
+
+
+## TogetherAI
+
+Supported extraction modes:
+
+- Mode::MdJson
+- Mode::Json (for selected models)
+- Mode::Tools (for selected models)
+
+Example:
+- `./examples/LLMSupportTogetherAI/run.php`

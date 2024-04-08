@@ -5,7 +5,9 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
+use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -167,36 +169,25 @@ class Instructor {
     /**
      * Executes the request and returns the response stream
      */
-//    public function stream() : Iterable {
-//        if ($this->request === null) {
-//            throw new Exception('Request not defined, call withRequest() or request() first');
-//        }
-//        try {
-//            /** @var RequestHandler $requestHandler */
-//            $requestHandler = $this->config->get(CanHandleRequest::class);
-//            $responseResult = $requestHandler->respondTo($this->request);
-//            if ($responseResult->isFailure()) {
-//                throw new Exception($responseResult->error());
-//            }
-//            $generator = $responseResult->unwrap();
-//            $object = null;
-//            foreach ($generator as $partialObject) {
-//                $this->events->dispatch(new PartialResponseGenerated($partialObject));
-//                yield $partialObject;
-//                $object = $partialObject;
-//            }
-//            $this->events->dispatch(new ResponseGenerated($object));
-//        } catch (Throwable $error) {
-//            // if anything goes wrong, we first dispatch an event (e.g. to log error)
-//            $event = new ErrorRaised($error, $this->request);
-//            $this->events->dispatch($event);
-//            if (isset($this->onError)) {
-//                // final attempt to recover from the error (e.g. give fallback response)
-//                return ($this->onError)($event);
-//            }
-//            throw $error;
-//        }
-//    }
+    public function stream() : Iterable {
+        if ($this->request === null) {
+            throw new Exception('Request not defined, call withRequest() or request() first');
+        }
+        try {
+            /** @var StreamRequestHandler $requestHandler */
+            $requestHandler = $this->config->get(CanHandleStreamRequest::class);
+            yield from $requestHandler->respondTo($this->request);
+        } catch (Throwable $error) {
+            // if anything goes wrong, we first dispatch an event (e.g. to log error)
+            $event = new ErrorRaised($error, $this->request);
+            $this->events->dispatch($event);
+            if (isset($this->onError)) {
+                // final attempt to recover from the error (e.g. give fallback response)
+                return ($this->onError)($event);
+            }
+            throw $error;
+        }
+    }
 
     /// ACCESS CURRENT INSTRUCTOR CONFIGURATION //////////////////////////////////////////////
 

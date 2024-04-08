@@ -86,6 +86,17 @@ use them in sequence until first succeeds.
 
 This might be also a cleaner way to handle Sequenceables and Scalars.
 
+### More consistent way to let user configure Instructor
+
+Currently, there are multiple ways to configure Instructor, which might be confusing.
+
+### Consistent way to turn on/off caching and debugging
+
+There is no way to turn on caching from developer's code - needs to be implemented.
+
+
+
+
 
 
 ## Example ideas
@@ -94,11 +105,16 @@ Examples to demonstrate use cases.
 
 
 
+
+
+
 ## Other
 
 ### Test coverage
 
 Catch up with the latest additions.
+
+
 
 
 

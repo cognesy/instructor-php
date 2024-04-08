@@ -36,7 +36,7 @@ class UserDetails
     }
 }
 
-$user = (new Instructor)->respond(
+$user = (new Instructor)->wiretap(fn($e)=>dump($e))->respond(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2

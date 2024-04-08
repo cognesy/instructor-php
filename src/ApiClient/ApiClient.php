@@ -62,15 +62,8 @@ abstract class ApiClient implements CanCallApi
         return $this;
     }
 
-    public function withCache(bool $enabled = false, bool $refresh = true): self {
-        if ($enabled) {
-            $this->request->enableCaching();
-        } else {
-            $this->request->disableCaching();
-        }
-        if ($refresh) {
-            $this->request->invalidateCache();
-        }
+    public function debug(bool $debug = true): self {
+        $this->debug = $debug;
         return $this;
     }
 
@@ -127,6 +120,9 @@ abstract class ApiClient implements CanCallApi
     }
 
     public function getRequest() : ApiRequest {
+        if (empty($this->request)) {
+            throw new Exception('Request is not set');
+        }
         if (!empty($this->queryParams)) {
             $this->request->query()->set($this->queryParams);
         }

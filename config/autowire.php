@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\config;
 
+use Cognesy\Instructor\ApiClient\CacheConfig;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
@@ -9,6 +10,7 @@ use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
 use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
+use Cognesy\Instructor\Clients\Groq\GroqClient;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
@@ -19,19 +21,21 @@ use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Contracts\CanValidateObject;
 use Cognesy\Instructor\Core\ApiClient\JsonMode\ApiClientJsonCaller;
 use Cognesy\Instructor\Core\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
 use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
 use Cognesy\Instructor\Core\ApiClient\ToolsMode\ApiClientToolCaller;
 use Cognesy\Instructor\Core\PartialsGenerator;
+use Cognesy\Instructor\Core\RequestBuilder;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\PartialResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Core\Response\ResponseValidator;
-use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
 use Cognesy\Instructor\Enums\Mode;
@@ -48,7 +52,81 @@ function autowire(Configuration $config) : Configuration
 
     $config->declare(class: EventDispatcher::class);
 
+    /// API CLIENT CACHE /////////////////////////////////////////////////////////////////////
+
+    $config->declare(
+        class: CacheConfig::class,
+        context: [
+            'enabled' => false,
+            'expiryInSeconds' => 3600,
+            'cacheDir' => '/tmp/instructor/cache',
+        ]
+    );
+
     /// LLM CLIENTS //////////////////////////////////////////////////////////////////////////
+
+    $config->declare(
+        class: AnthropicClient::class,
+        context: [
+            'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
+            'baseUri' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: AnyscaleClient::class,
+        context: [
+            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
+            'baseUri' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: AzureClient::class,
+        context: [
+            'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
+            'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
+            'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
+            'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
+            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class:FireworksAIClient::class,
+        context: [
+            'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
+            'baseUri' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
+
+    $config->declare(
+        class: GroqClient::class,
+        context: [
+            'apiKey' => $_ENV['GROQ_API_KEY'] ?? '',
+            'baseUri' => $_ENV['GROQ_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 30,
+            'metadata' => [],
+            'events' => $config->reference(EventDispatcher::class),
+        ],
+    );
 
     $config->declare(
         class: MistralClient::class,
@@ -77,61 +155,10 @@ function autowire(Configuration $config) : Configuration
     );
 
     $config->declare(
-        class: AzureClient::class,
-        context: [
-            'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
-            'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
-            'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
-            'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
-            'baseUri' => $_ENV['OPENAI_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'events' => $config->reference(EventDispatcher::class),
-        ],
-    );
-
-    $config->declare(
         class: OpenRouterClient::class,
         context: [
             'apiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
             'baseUri' => $_ENV['OPENROUTER_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'events' => $config->reference(EventDispatcher::class),
-        ],
-    );
-
-    $config->declare(
-        class: AnthropicClient::class,
-        context: [
-            'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
-            'baseUri' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'events' => $config->reference(EventDispatcher::class),
-        ],
-    );
-
-    $config->declare(
-        class: AnyscaleClient::class,
-        context: [
-            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
-            'baseUri' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'events' => $config->reference(EventDispatcher::class),
-        ],
-    );
-
-    $config->declare(
-        class:FireworksAIClient::class,
-        context: [
-            'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
-            'baseUri' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'metadata' => [],
@@ -152,6 +179,14 @@ function autowire(Configuration $config) : Configuration
     );
 
     /// MODE SUPPORT /////////////////////////////////////////////////////////////////////////
+
+    $config->declare(
+        class: RequestBuilder::class,
+        context: [
+            'client' => $config->reference(CanCallApi::class),
+            'toolCallBuilder' => $config->reference(ToolCallBuilder::class),
+        ]
+    );
 
     $config->declare(
         class: ToolCallerFactory::class,
@@ -238,14 +273,13 @@ function autowire(Configuration $config) : Configuration
     );
 
     $config->declare(
-        class: ResponseGenerator::class,
-        //name: CanHandleRequest::class,
+        class: StreamRequestHandler::class,
+        name: CanHandleStreamRequest::class,
         context: [
-            'toolCallerFactory' => $config->reference(ToolCallerFactory::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'events' => $config->reference(EventDispatcher::class),
             'responseHandler' => $config->reference(CanHandleResponse::class),
-            'partialsGenerator' => $config->reference(CanHandlePartialResponse::class),
+            'partialsGenerator' => $config->reference(CanGeneratePartials::class),
         ]
     );
 
@@ -256,6 +290,7 @@ function autowire(Configuration $config) : Configuration
             'events' => $config->reference(EventDispatcher::class),
             'responseDeserializer' => $config->reference(ResponseDeserializer::class),
             'responseTransformer' => $config->reference(ResponseTransformer::class),
+            'requestBuilder' => $config->reference(RequestBuilder::class),
         ]
     );
 

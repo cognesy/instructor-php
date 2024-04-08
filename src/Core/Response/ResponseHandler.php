@@ -11,6 +11,7 @@ use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Exceptions\ValidationException;
+use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
@@ -46,9 +47,7 @@ class ResponseHandler implements CanHandleResponse
         try {
             $result = $this->toResponse($jsonData, $responseModel);
             if ($result->isSuccess()) {
-                $object = $result->unwrap();
-                $this->events->dispatch(new ToolCallResponseConvertedToObject($object));
-                return Result::success($object);
+                return $result;
             }
             $errors = $this->extractErrors($result);
         } catch (ValidationException $e) {
@@ -65,27 +64,12 @@ class ResponseHandler implements CanHandleResponse
         return Result::failure($errors);
     }
 
-    /**
-     * Deserialize JSON, validate and transform response
-     */
     protected function toResponse(string $jsonData, ResponseModel $responseModel) : Result {
-        // ...deserialize
-        $result = $this->responseDeserializer->deserialize($jsonData, $responseModel);
-        if ($result->isFailure()) {
-            return $result;
-        }
-        $object = $result->unwrap();
-        // ...validate
-        $result = $this->responseValidator->validate($object);
-        if ($result->isFailure()) {
-            return $result;
-        }
-        // ...transform
-        $result = $this->responseTransformer->transform($object);
-        if ($result->isFailure()) {
-            return $result;
-        }
-        return $result;
+        return Chain::from(fn() => $this->responseDeserializer->deserialize($jsonData, $responseModel))
+            ->through(fn($object) => $this->responseValidator->validate($object))
+            ->through(fn($object) => $this->responseTransformer->transform($object))
+            ->tap(fn($object) => $this->events->dispatch(new ToolCallResponseConvertedToObject($object)))
+            ->result();
     }
 
     protected function extractErrors(Result|Exception $result) : array {

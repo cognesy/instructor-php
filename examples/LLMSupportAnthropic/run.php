@@ -19,9 +19,9 @@ use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
 enum UserType : string {
-    case Guest = 'Guest';
-    case User = 'User';
-    case Admin = 'Admin';
+    case Guest = 'guest';
+    case User = 'user';
+    case Admin = 'admin';
 }
 
 class User {
@@ -45,8 +45,8 @@ $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     model: 'claude-3-haiku-20240307',
-    mode: Mode::Tools,
-    options: ['stream' => true ]
+    mode: Mode::Json,
+    //options: ['stream' => true ]
 );
 
 print("Completed response model:\n\n");

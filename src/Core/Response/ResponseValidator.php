@@ -23,15 +23,15 @@ class ResponseValidator
      * Validate deserialized response object
      */
     public function validate(object $response) : Result {
-        $result = match(true) {
+        $validation = match(true) {
             $response instanceof CanValidateSelf => $this->validateSelf($response),
             default => $this->validateObject($response)
         };
-        if ($result->isInvalid()) {
-            $this->events->dispatch(new ResponseValidationFailed($result));
-            return Result::failure($result->getErrorMessage());
+        if ($validation->isInvalid()) {
+            $this->events->dispatch(new ResponseValidationFailed($validation));
+            return Result::failure($validation->getErrorMessage());
         }
-        $this->events->dispatch(new ResponseValidated($result));
+        $this->events->dispatch(new ResponseValidated($validation));
         return Result::success($response);
     }
 

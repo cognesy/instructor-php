@@ -1,11 +1,11 @@
 <?php
-namespace Cognesy\Instructor\Clients\Anthropic\JsonCompletion;
+namespace Cognesy\Instructor\Clients\Groq\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\Data\Requests\ApiJsonCompletionRequest;
 
 class JsonCompletionRequest extends ApiJsonCompletionRequest
 {
-    protected string $endpoint = '/messages';
+    protected string $endpoint = '/chat/completions';
 
     public function __construct(
         public string|array  $messages = [],
@@ -22,6 +22,6 @@ class JsonCompletionRequest extends ApiJsonCompletionRequest
     }
 
     protected function getResponseFormat(): array {
-        return [];
+        return ['type' => 'json_object'];
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Clients\TogetherAI\ToolsCall;
+namespace Cognesy\Instructor\Clients\Groq\ToolsCall;
 
 use Cognesy\Instructor\ApiClient\Data\Requests\ApiToolsCallRequest;
 

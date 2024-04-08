@@ -49,7 +49,10 @@ use Exception;
  * @template E The type of the error in case of failure.
  */
 abstract class Result {
-    public static function with(mixed $value) : Success {
+    public static function with(mixed $value) : Result {
+        if ($value instanceof Result) {
+            return $value;
+        }
         return new Success($value);
     }
 
