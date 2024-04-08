@@ -467,14 +467,22 @@ $user = $instructor->respond(
 
 
 
-### Support for OS models
+### Support for language models and API providers
 
-Some open source LLMs support OpenAI API, so you can use them with Instructor by specifying appropriate  ```base URI``` via client factory API and ```model``` when calling Instructor.
+Instructor offers out of the box support for following API providers:
 
-See this example of using Ollama with Instructor:
-https://cognesy.github.io/instructor-php/hub/l_l_m_support_ollama/
+- Anthropic
+- Anyscale
+- Azure OpenAI
+- Fireworks AI
+- Groq
+- Mistral
+- Ollama (on localhost)
+- OpenAI
+- OpenRouter
+- Together AI
 
-For more examples, check Hub section or `examples` directory in the code repository.
+For usage examples, check Hub section or `examples` directory in the code repository.
 
 
 

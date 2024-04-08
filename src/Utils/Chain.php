@@ -8,12 +8,17 @@ class Chain
 {
     private ?Result $carry;
     private ?Closure $source;
+    private array $onFailure = [];
     private array $processors;
 
     public function __construct(Result $value = null, Closure $source = null, array $processors = []) {
         $this->carry = $value;
         $this->source = $source;
         $this->processors = $processors;
+    }
+
+    static public function make() : Chain {
+        return new Chain();
     }
 
     static public function for(mixed $value): Chain {
@@ -33,7 +38,7 @@ class Chain
             };
             return match(true) {
                 $result instanceof Result => $result,
-                ($result === null) => Result::failure("Callback returned null: $processor"),
+                ($result === null) => Result::failure("Callback returned null"),
                 default => Result::success($result),
             };
         };
@@ -52,6 +57,15 @@ class Chain
         return $this;
     }
 
+    public function onFailure(callable $handler) : Chain {
+        $this->onFailure[] = function($result) use ($handler) {
+            if ($result->isFailure()) {
+                $handler($result);
+            }
+        };
+        return $this;
+    }
+
     public function result(): Result {
         return $this->then();
     }
@@ -64,6 +78,9 @@ class Chain
         foreach ($this->processors as $processor) {
             $result = $processor($carry);
             if ($result->isFailure()) {
+                foreach ($this->onFailure as $handler) {
+                    $handler($result);
+                }
                 break;
             }
             $carry = $result;
@@ -78,7 +95,7 @@ class Chain
         };
         return match(true) {
             $result instanceof Result => $result,
-            ($result === null) => Result::failure("Callback returned null: $callback"),
+            ($result === null) => Result::failure("Callback returned null"),
             default => Result::success($result),
         };
     }

@@ -18,7 +18,6 @@ use Cognesy\Instructor\Events\LLM\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedToolCallUpdated;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
-use Generator;
 
 abstract class AbstractStreamedCallHandler
 {

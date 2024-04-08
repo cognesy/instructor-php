@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Core\ApiClient;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
@@ -18,15 +19,14 @@ trait ValidatesPartialResponse
         bool $preventJsonSchema,
         bool $matchToExpectedFields
     ) : Result {
-        $result = $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText);
-        if ($result->isFailure()) {
-            return $result;
-        }
-        $result = $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel);
-        if ($result->isFailure()) {
-            return $result;
-        }
-        return Result::success(true);
+        return Chain::make()
+            ->through(fn() => $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText))
+            ->through(fn() => $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel))
+            ->onFailure(fn($result) => throw new JsonParsingException(
+                message: $result->errorMessage(),
+                json: $partialResponseText,
+            ))
+            ->result();
     }
 
     /// VALIDATIONS //////////////////////////////////////////////////////////////////

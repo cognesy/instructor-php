@@ -26,21 +26,26 @@ class ResponseHandler implements CanHandleResponse
     ) {}
 
     public function handleResponse(ApiResponse $response, ResponseModel $responseModel) : Result {
-        // which functions have been called (or selected - if parallel tools on)
-        $responseJson = $response->getJson();
-        if (empty($responseJson)) {
-            return Result::failure('No JSON found in the response');
-        }
-        // process LLM response
-        $processingResult = $this->processResponse($responseJson, $responseModel);
-        if ($processingResult->isSuccess()) {
-            return $processingResult;
-        }
-        $errors = $this->extractErrors($processingResult);
-        return Result::failure($errors);
+        return Chain::make()
+            ->through(fn() => $this->getResponseResult($response))
+            ->through(fn($responseJson) => $this->processResponse($responseJson, $responseModel))
+            ->then(function($result) {
+                return match(true) {
+                    $result->isSuccess() => $result,
+                    default => Result::failure($this->extractErrors($result))
+                };
+            });
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    protected function getResponseResult(ApiResponse $response) : Result {
+        $responseJson = $response->getJson();
+        return match(true) {
+            empty($responseJson) => Result::failure('No JSON found in the response'),
+            default => Result::success($responseJson)
+        };
+    }
 
     protected function processResponse(string $jsonData, ResponseModel $responseModel) : Result {
         // check if JSON not empty and not malformed
@@ -65,7 +70,8 @@ class ResponseHandler implements CanHandleResponse
     }
 
     protected function toResponse(string $jsonData, ResponseModel $responseModel) : Result {
-        return Chain::from(fn() => $this->responseDeserializer->deserialize($jsonData, $responseModel))
+        return Chain::make()
+            ->through(fn() => $this->responseDeserializer->deserialize($jsonData, $responseModel))
             ->through(fn($object) => $this->responseValidator->validate($object))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->tap(fn($object) => $this->events->dispatch(new ToolCallResponseConvertedToObject($object)))

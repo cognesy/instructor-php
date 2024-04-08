@@ -37,11 +37,11 @@ class RequestBuilder
             ),
             Mode::Tools => $this->client->toolsCall(
                 messages: $messages,
-                tools: $this->toolCallBuilder->render(
+                tools: [$this->toolCallBuilder->render(
                     $responseModel->jsonSchema,
                     $responseModel->functionName,
                     $responseModel->functionDescription
-                ),
+                )],
                 toolChoice: [
                     'type' => 'function',
                     'function' => ['name' => $responseModel->functionName]

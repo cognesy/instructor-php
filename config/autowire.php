@@ -27,6 +27,7 @@ use Cognesy\Instructor\Core\ApiClient\JsonMode\ApiClientJsonCaller;
 use Cognesy\Instructor\Core\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
 use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
 use Cognesy\Instructor\Core\ApiClient\ToolsMode\ApiClientToolCaller;
+use Cognesy\Instructor\Core\NewRequestHandler;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestBuilder;
 use Cognesy\Instructor\Core\RequestHandler;
@@ -269,6 +270,22 @@ function autowire(Configuration $config) : Configuration
             'events' => $config->reference(EventDispatcher::class),
             'responseHandler' => $config->reference(CanHandleResponse::class),
             'partialResponseHandler' => $config->reference(CanHandlePartialResponse::class),
+        ]
+    );
+
+//    private ResponseModelFactory $responseModelFactory,
+//        private EventDispatcher $events,
+//        private CanHandleResponse $responseHandler,
+//        private RequestBuilder $requestBuilder,
+
+    $config->declare(
+        class: NewRequestHandler::class,
+        name: CanHandleRequest::class,
+        context: [
+            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
+            'events' => $config->reference(EventDispatcher::class),
+            'responseHandler' => $config->reference(CanHandleResponse::class),
+            'requestBuilder' => $config->reference(RequestBuilder::class),
         ]
     );
 

@@ -41,21 +41,22 @@ class StreamRequestHandler implements CanHandleRequest
         $this->retries = 0;
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
-            // we're streaming - let's yield partial responses (target objects wrapped in Result) from partial generator
+            // stream responses (target objects wrapped in Result) from partial generator
             yield from $this->partialsGenerator->getPartialResponses($request, $responseModel, $this->messages);
 
             // ...and then get the final response
-            $apiResponse = $this->partialsGenerator->getApiResponse();
+            $apiResponse = $this->partialsGenerator->getCompleteResponse();
             // we have ApiResponse here - let's process it: deserialize, validate, transform
             $responseProcessingResult = $this->responseHandler->handleResponse($apiResponse, $responseModel);
             if ($responseProcessingResult->isSuccess()) {
                 $this->events->dispatch(new ResponseGenerated($responseProcessingResult->unwrap()));
-                yield $responseProcessingResult;
+                yield $responseProcessingResult->unwrap();
+                return;
             }
 
             // let's retry - as we have not managed to deserialize, validate or transform the response
             $errors = $responseProcessingResult->error();
-            $this->partialsGenerator->resetPartialSequence();
+            $this->partialsGenerator->resetPartialResponse();
             $this->messages = $this->makeRetryMessages($this->messages, $responseModel, $apiResponse->content, [$errors]);
             $this->retries++;
             if ($this->retries <= $request->maxRetries) {

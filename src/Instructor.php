@@ -189,6 +189,15 @@ class Instructor {
         }
     }
 
+    public function streamAll() : mixed {
+        $stream = $this->stream();
+        $result = null;
+        foreach ($stream as $item) {
+            $result = $item;
+        }
+        return $result;
+    }
+
     /// ACCESS CURRENT INSTRUCTOR CONFIGURATION //////////////////////////////////////////////
 
     /**

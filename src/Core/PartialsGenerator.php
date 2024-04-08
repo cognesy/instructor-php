@@ -13,6 +13,7 @@ use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ToolCall;
+use Cognesy\Instructor\Data\ToolCalls;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
@@ -24,9 +25,8 @@ use Cognesy\Instructor\Events\LLM\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\LLM\StreamedToolCallUpdated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerationFailed;
-use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
-use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
@@ -38,24 +38,25 @@ class PartialsGenerator implements CanGeneratePartials
     use ValidatesPartialResponse;
 
     // state
-    private PartialApiResponse $lastPartialResponse;
     private string $responseJson = '';
     private string $responseText = '';
-    // sequenceable support state
     private string $previousHash = '';
-    private ?Sequenceable $lastPartialSequence;
-    private int $previousSequenceLength = 1;
+    private PartialApiResponse $lastPartialResponse;
+    private ToolCalls $toolCalls;
+    private SequenceableHandler $sequenceableHandler;
     // options
     private bool $matchToExpectedFields = false;
     private bool $preventJsonSchema = false;
-    private array $toolCalls = [];
 
     public function __construct(
         private EventDispatcher $events,
         private ResponseDeserializer $responseDeserializer,
         private ResponseTransformer $responseTransformer,
         private RequestBuilder $requestBuilder,
-    ) {}
+    ) {
+        $this->toolCalls = new ToolCalls();
+        $this->sequenceableHandler = new SequenceableHandler($events);
+    }
 
     public function getPartialResponses(Request $request, ResponseModel $responseModel, array $messages = []) : Generator {
         // get function caller instance
@@ -63,8 +64,6 @@ class PartialsGenerator implements CanGeneratePartials
         $apiCallRequest = $this->requestBuilder->makeClientRequest(
             $messages, $responseModel, $request->model, $request->options, $request->mode
         );
-
-        $this->toolCalls[] = $this->newToolCall($responseModel);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiCallRequest->getRequest()));
             $stream = $apiCallRequest->stream();
@@ -72,32 +71,38 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new RequestToLLMFailed([], $e->getMessage()));
             throw new Exception($e->getMessage());
         }
-        $generator = $this->partialObjectsGenerator($stream, $responseModel);
-        yield from $generator;
+        yield from $this->partialObjectsGenerator($stream, $responseModel);
 
+        // finalize last function call
         // check if there are any toolCalls
-        if (count($this->toolCalls) === 0) {
+        if ($this->toolCalls->count() === 0) {
             throw new Exception('No tool calls found in the response');
         }
         // finalize last function call
-        if (count($this->toolCalls) > 0) {
-            $this->finalizeToolCall($this->toolCalls, Json::find($this->responseText));
+        if ($this->toolCalls->count() > 0) {
+            $this->finalizeToolCall(Json::find($this->responseText), $responseModel->functionName);
         }
+        // finalize sequenceable
+        $this->sequenceableHandler->finalize();
     }
 
     public function partialObjectsGenerator(Generator $stream, ResponseModel $responseModel) : Iterable {
+        // receive data
         /** @var PartialApiResponse $partialResponse */
-        foreach($stream as $partialResponse){
-            // receive data
+        foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store for finalization when we leave the loop
             $this->lastPartialResponse = $partialResponse;
             // situation 1: new function call
             $maybeFunctionName = $partialResponse->functionName;
             // create next FC only if JSON buffer is not empty (which is the case for 1st iteration)
-            if ($maybeFunctionName && $this->responseJson) {
-                $this->finalizeToolCall($this->toolCalls, $this->responseJson);
-                $this->responseJson = ''; // reset json buffer
+            if ($maybeFunctionName) {
+                if (empty($this->responseJson)) {
+                    $this->newToolCall($response->functionName ?? $responseModel->functionName);
+                } else {
+                    $this->finalizeToolCall($this->responseJson, $responseModel->functionName);
+                    $this->responseJson = ''; // reset json buffer
+                }
             }
             // situation 2: new delta
             // skip if no new delta
@@ -112,7 +117,7 @@ class PartialsGenerator implements CanGeneratePartials
                 continue;
             }
             $result = $this->handleDelta($this->responseJson, $responseModel);
-            if (is_null($result) || $result->isFailure()) {
+            if ($result->isFailure()) {
                 continue;
             }
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
@@ -120,123 +125,73 @@ class PartialsGenerator implements CanGeneratePartials
         }
     }
 
-    protected function handleDelta(string $partialJson, ResponseModel $responseModel) : ?Result {
-        $result = $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields);
-        if ($result->isFailure()) {
-            throw new JsonParsingException($result->error(), $partialJson);
-        }
-        $this->events->dispatch(new PartialJsonReceived($partialJson));
-        $this->updateToolCall($this->toolCalls, $partialJson);
-        $result = $this->tryGetPartialObject($partialJson, $responseModel);
-        if ($result->isFailure()) {
-            return $result;
-        }
-        $partialObject = $result->unwrap();
-        // we only want to send partial response if it's different from the previous one
-        $currentHash = hash('xxh3', Json::encode($partialObject));
-        if ($this->previousHash != $currentHash) {
-            // send partial response to listener only if new tokens changed resulting response object
-            $this->events->dispatch(new PartialResponseGenerated($partialObject));
-            if (($partialObject instanceof Sequenceable)) {
-                $this->emitNewSequenceable($partialObject);
-                $this->lastPartialSequence = clone $partialObject;
-            }
-            $this->previousHash = $currentHash;
-            return $result;
-        }
-        return null;
+    protected function handleDelta(string $partialJson, ResponseModel $responseModel) : Result {
+        return Chain::make()
+            ->through(fn() => $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
+            ->tap(fn() => $this->events->dispatch(new PartialJsonReceived($partialJson)))
+            ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->functionName))
+            ->through(fn() => $this->tryGetPartialObject($partialJson, $responseModel))
+            ->onFailure(fn($result) => $this->events->dispatch(new PartialResponseGenerationFailed(Arrays::toArray($result->error()))))
+            ->then(fn($result) => $this->getChangedOnly($result));
     }
 
     protected function tryGetPartialObject(
         string $partialJsonData,
         ResponseModel $responseModel,
     ) : Result {
-        $jsonData = (new JsonParser)->fix($partialJsonData);
-        $result = $this->toPartialObject($jsonData, $responseModel);
-        if ($result->isFailure()) {
-            $errors = Arrays::toArray($result->error());
-            $this->events->dispatch(new PartialResponseGenerationFailed($errors));
-            return $result;
-        }
-        // proceed if converting to object was successful
-        $partialObject = clone $result->unwrap();
-        return Result::success($partialObject);
+        return Chain::from(fn() => (new JsonParser)->fix($partialJsonData))
+            ->through(fn($jsonData) => $this->responseDeserializer->deserialize($jsonData, $responseModel))
+            ->through(fn($object) => $this->responseTransformer->transform($object))
+            ->result();
     }
 
-    protected function toPartialObject(string $jsonData, ResponseModel $responseModel): Result {
-        // ...deserialize
-        $result = $this->responseDeserializer->deserialize($jsonData, $responseModel);
+    protected function getChangedOnly(Result $result) : ?Result {
         if ($result->isFailure()) {
             return $result;
         }
-        $object = $result->unwrap();
-        // ...transform
-        $result = $this->responseTransformer->transform($object);
-        if ($result->isFailure()) {
-            return $result;
+        $partialObject = $result->unwrap();
+        // we only want to send partial response if it's different from the previous one
+        $currentHash = hash('xxh3', Json::encode($partialObject));
+        if ($this->previousHash == $currentHash) {
+            return Result::failure('No changes detected');
         }
+        $this->events->dispatch(new PartialResponseGenerated($partialObject));
+        if (($partialObject instanceof Sequenceable)) {
+            $this->sequenceableHandler->update($partialObject);
+        }
+        $this->previousHash = $currentHash;
         return $result;
     }
 
-    protected function emitNewSequenceable(Sequenceable $partialResponse) : void {
-        $currentLength = count($partialResponse);
-        if ($currentLength <= $this->previousSequenceLength) {
-            return;
-        }
-        $this->previousSequenceLength = $currentLength;
-        $this->events->dispatch(new SequenceUpdated($this->lastPartialSequence));
-    }
-
-    protected function finalizePartialSequence() : void {
-        if (!isset($this->lastPartialSequence)) {
-            return;
-        }
-        if (!($this->lastPartialSequence instanceof Sequenceable)) {
-            return;
-        }
-        $this->events->dispatch(new SequenceUpdated($this->lastPartialSequence));
-    }
-
-    public function resetPartialSequence() : void {
+    public function resetPartialResponse() : void {
         $this->previousHash = '';
-        $this->lastPartialSequence = null;
-        $this->previousSequenceLength = 1;
+        $this->sequenceableHandler->reset();
     }
 
-    public function getApiResponse() {
+    public function getCompleteResponse() : ApiResponse {
         return new ApiResponse(
             content: $this->responseText,
             responseData: $this->lastPartialResponse->responseData ?? [],
             finishReason: $this->lastPartialResponse->finishReason ?? '',
-            toolCalls: $this->toolCalls,
+            toolCalls: $this->toolCalls->all(),
         );
     }
 
-    protected function newToolCall(ResponseModel $responseModel, PartialApiResponse $response = null) : ToolCall {
-        $toolName = $response->functionName ?? $responseModel->functionName;
-        $newToolCall = new ToolCall(
-            name: $toolName,
-            args: ''
-        );
+    protected function newToolCall(string $name) : ToolCall {
+        $newToolCall = $this->toolCalls->create($name);
         $this->events->dispatch(new StreamedToolCallStarted($newToolCall));
         return $newToolCall;
     }
 
-    protected function updateToolCall(
-        array  $toolCalls,
-        string $responseJson,
-    ) : void {
-        /** @var \Cognesy\Instructor\Data\ToolCall $currentToolCall */
-        $currentToolCall = $toolCalls[count($toolCalls) - 1];
-        $currentToolCall->args = $responseJson;
-        $this->events->dispatch(new StreamedToolCallUpdated($currentToolCall));
+    protected function updateToolCall(string $responseJson, string $defaultName) : ToolCall {
+        $updatedToolCall = $this->toolCalls->updateLast($responseJson, $defaultName);
+        $this->events->dispatch(new StreamedToolCallUpdated($updatedToolCall));
+        return $updatedToolCall;
     }
 
-    protected function finalizeToolCall(array $toolCalls, string $responseJson) : void {
-        /** @var \Cognesy\Instructor\Data\ToolCall $currentToolCall */
-        $currentToolCall = $toolCalls[count($toolCalls) - 1];
-        $currentToolCall->args = $responseJson;
-        $this->events->dispatch(new StreamedToolCallCompleted($currentToolCall));
-        $this->finalizePartialSequence();
+    protected function finalizeToolCall(string $responseJson, string $defaultName) : ToolCall {
+        $finalizedToolCall = $this->toolCalls->finalizeLast($responseJson, $defaultName);
+        $this->events->dispatch(new StreamedToolCallCompleted($finalizedToolCall));
+        return $finalizedToolCall;
     }
 }
