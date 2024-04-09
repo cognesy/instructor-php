@@ -149,25 +149,7 @@ class Instructor {
         if ($this->request->options['stream']) {
             throw new Exception('Instructor::get() method does not support streaming: set "stream" = false in the request options.');
         }
-        try {
-            /** @var CanHandleRequest */
-            $requestHandler = $this->config->get(CanHandleRequest::class);
-            $responseResult = $requestHandler->respondTo($this->request);
-            if ($responseResult->isFailure()) {
-                throw new Exception($responseResult->error());
-            }
-            $this->events->dispatch(new ResponseGenerated($responseResult->unwrap()));
-            return $responseResult->unwrap();
-        } catch (Throwable $error) {
-            // if anything goes wrong, we first dispatch an event (e.g. to log error)
-            $event = new ErrorRaised($error, $this->request);
-            $this->events->dispatch($event);
-            if (isset($this->onError)) {
-                // final attempt to recover from the error (e.g. give fallback response)
-                return ($this->onError)($event);
-            }
-            throw $error;
-        }
+        return $this->handleRequest();
     }
 
     /**
@@ -178,23 +160,10 @@ class Instructor {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
         if (!$this->request->options['stream']) {
-            throw new Exception('Instructor::get() method requires response streaming: set "stream" = true in the request options.');
+            throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
-        try {
-            /** @var StreamRequestHandler $requestHandler */
-            $requestHandler = $this->config->get(CanHandleStreamRequest::class);
-            foreach($requestHandler->respondTo($this->request) as $update) {
-                yield $update;
-            }
-        } catch (Throwable $error) {
-            // if anything goes wrong, we first dispatch an event (e.g. to log error)
-            $event = new ErrorRaised($error, $this->request);
-            $this->events->dispatch($event);
-            if (isset($this->onError)) {
-                // final attempt to recover from the error (e.g. give fallback response)
-                return ($this->onError)($event);
-            }
-            throw $error;
+        foreach($this->handleStreamRequest() as $update) {
+            yield $update;
         }
     }
 
@@ -332,6 +301,47 @@ class Instructor {
     }
 
     /// PRIVATE //////////////////////////////////////////////////////////////////////////////
+
+    private function handleRequest() : mixed {
+        try {
+            /** @var RequestHandler $requestHandler */
+            $requestHandler = $this->config->get(CanHandleRequest::class);
+            $responseResult = $requestHandler->respondTo($this->request);
+            if ($responseResult->isFailure()) {
+                throw new Exception($responseResult->error());
+            }
+            $this->events->dispatch(new ResponseGenerated($responseResult->unwrap()));
+            return $responseResult->unwrap();
+        } catch (Throwable $error) {
+            // if anything goes wrong, we first dispatch an event (e.g. to log error)
+            $event = new ErrorRaised($error, $this->request);
+            $this->events->dispatch($event);
+            if (isset($this->onError)) {
+                // final attempt to recover from the error (e.g. give fallback response)
+                return ($this->onError)($event);
+            }
+            throw $error;
+        }
+    }
+
+    private function handleStreamRequest() : Iterable {
+        try {
+            /** @var StreamRequestHandler $requestHandler */
+            $requestHandler = $this->config->get(CanHandleStreamRequest::class);
+            foreach($requestHandler->respondTo($this->request) as $update) {
+                yield $update;
+            }
+        } catch (Throwable $error) {
+            // if anything goes wrong, we first dispatch an event (e.g. to log error)
+            $event = new ErrorRaised($error, $this->request);
+            $this->events->dispatch($event);
+            if (isset($this->onError)) {
+                // final attempt to recover from the error (e.g. give fallback response)
+                return ($this->onError)($event);
+            }
+            throw $error;
+        }
+    }
 
     /**
      * Provides partial response instead of event - for developer convenience
