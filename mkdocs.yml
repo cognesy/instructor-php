@@ -199,6 +199,7 @@ nav:
     - Support for Anyscale API: 'hub/l_l_m_support_anyscale.md'
     - Azure support: 'hub/l_l_m_support_azure_o_a_i.md'
     - Support for Fireworks.ai API: 'hub/l_l_m_support_fireworks_a_i.md'
+    - Support for Groq API: 'hub/l_l_m_support_groq.md'
     - Support for Mistral API: 'hub/l_l_m_support_mistral.md'
     - Support for local Ollama: 'hub/l_l_m_support_ollama.md'
     - Support for OpenAI API: 'hub/l_l_m_support_open_a_i.md'

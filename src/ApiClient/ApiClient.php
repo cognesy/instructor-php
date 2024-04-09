@@ -83,6 +83,9 @@ abstract class ApiClient implements CanCallApi
     public function stream() : Generator {
         $stream = $this->streamRaw();
         foreach ($stream as $response) {
+            if (empty($response) || $this->isDone($response)) {
+                continue;
+            }
             yield ($this->responseClass)::fromPartialResponse($response);
         }
     }
@@ -112,7 +115,16 @@ abstract class ApiClient implements CanCallApi
         if (!$this->request->isStreamed()) {
             throw new Exception('You need to use respond() when option stream is set to false');
         }
-        return (new ApiStreamHandler($this->connector, $this->events, $this->isDone(...), $this->getData(...), $this->debug))->streamRaw($this->getRequest());
+        $this->request->config()->add('stream', true);
+        $streamHandler = new ApiStreamHandler(
+            $this->connector, $this->events, $this->isDone(...), $this->getData(...), $this->debug
+        );
+        foreach($streamHandler->streamRaw($this->getRequest()) as $response) {
+            if (empty($response)) {
+                continue;
+            }
+            yield $response;
+        }
     }
 
     protected function asyncRaw(callable $onSuccess, callable $onError) : PromiseInterface {

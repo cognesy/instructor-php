@@ -71,7 +71,10 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new RequestToLLMFailed([], $e->getMessage()));
             throw new Exception($e->getMessage());
         }
-        yield from $this->partialObjectsGenerator($stream, $responseModel);
+
+        foreach($this->partialObjectsGenerator($stream, $responseModel) as $update) {
+            yield $update;
+        }
 
         // finalize last function call
         // check if there are any toolCalls
@@ -93,6 +96,7 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store for finalization when we leave the loop
             $this->lastPartialResponse = $partialResponse;
+
             // situation 1: new function call
             $maybeFunctionName = $partialResponse->functionName;
             // create next FC only if JSON buffer is not empty (which is the case for 1st iteration)
@@ -104,10 +108,11 @@ class PartialsGenerator implements CanGeneratePartials
                     $this->responseJson = ''; // reset json buffer
                 }
             }
+
             // situation 2: new delta
-            // skip if no new delta
             $maybeArgumentChunk = $partialResponse->delta;
             if (empty($maybeArgumentChunk)) {
+                // skip if no new delta
                 continue;
             }
             $this->events->dispatch(new ChunkReceived($maybeArgumentChunk));
@@ -115,6 +120,9 @@ class PartialsGenerator implements CanGeneratePartials
             $this->responseJson = Json::findPartial($this->responseText);
             if (empty($this->responseJson)) {
                 continue;
+            }
+            if ($this->toolCalls->empty()) {
+                $this->newToolCall($responseModel->functionName);
             }
             $result = $this->handleDelta($this->responseJson, $responseModel);
             if ($result->isFailure()) {
@@ -131,7 +139,9 @@ class PartialsGenerator implements CanGeneratePartials
             ->tap(fn() => $this->events->dispatch(new PartialJsonReceived($partialJson)))
             ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->functionName))
             ->through(fn() => $this->tryGetPartialObject($partialJson, $responseModel))
-            ->onFailure(fn($result) => $this->events->dispatch(new PartialResponseGenerationFailed(Arrays::toArray($result->error()))))
+            ->onFailure(fn($result) => $this->events->dispatch(
+                new PartialResponseGenerationFailed(Arrays::toArray($result->error()))
+            ))
             ->then(fn($result) => $this->getChangedOnly($result));
     }
 

@@ -32,7 +32,7 @@ $client = new OpenAIClient(
     apiKey: 'ollama',
     baseUri: 'http://localhost:11434/v1',
     connectTimeout: 3,
-    requestTimeout: 60, // set based on your machine performance :)
+    requestTimeout: 90, // set based on your machine performance :)
 );
 
 /// Get Instructor with the default client component overridden with your own

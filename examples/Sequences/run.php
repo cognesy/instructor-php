@@ -34,7 +34,7 @@ $list = (new Instructor)
         options: ['stream' => true]
     )
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
-    ->streamAll();
+    ->last();
 
 dump(count($list));
 assert(count($list) === 4);

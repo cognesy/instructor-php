@@ -1,29 +1,23 @@
-# Support for Fireworks.ai API
+# Support for Groq API
 
-
-Please note that the larger Mistral models support Mode::Json, which is much more
-reliable than Mode::MdJson.
-
-Mode compatibility:
-- Mode::Tools - selected models
-- Mode::Json - selected models
-- Mode::MdJson
-
+Groq is LLM providers offering a very fast inference thanks to their
+custom hardware. They provide a several models - Llama2, Mixtral and Gemma.
+Here's how you can use Instructor with Groq API.
 
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
+use Cognesy\Instructor\Clients\Groq\GroqClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
 enum UserType : string {
-    case Guest = 'Guest';
-    case User = 'User';
-    case Admin = 'Admin';
+    case Guest = 'guest';
+    case User = 'user';
+    case Admin = 'admin';
 }
 
 class User {
@@ -36,10 +30,10 @@ class User {
 }
 
 // Mistral instance params
-$yourApiKey = Env::get('FIREWORKSAI_API_KEY'); // set your own API key
+$yourApiKey = Env::get('GROQ_API_KEY'); // set your own API key
 
 // Create instance of client initialized with custom parameters
-$client = new FireworksAIClient(
+$client = new GroqClient(
     apiKey: $yourApiKey,
 );
 
@@ -50,9 +44,9 @@ $user = $instructor
     ->respond(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
-        model: 'accounts/fireworks/models/mixtral-8x7b-instruct',
+        model: 'mixtral-8x7b-32768',
         mode: Mode::Json,
-    //options: ['stream' => true ]
+        options: ['stream' => false, 'max_tokens' => 2048 ]
     );
 
 print("Completed response model:\n\n");

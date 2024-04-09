@@ -16,6 +16,10 @@ class ToolCalls
         return $this->toolCalls[$this->count() - 1];
     }
 
+    public function empty() : bool {
+        return empty($this->toolCalls);
+    }
+
     public function all() : array {
         return $this->toolCalls;
     }

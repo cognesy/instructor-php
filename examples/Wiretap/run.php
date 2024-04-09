@@ -40,17 +40,17 @@ class UserDetail
 
 $user = (new Instructor)
     ->request(
-        messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Tom"]],
+        messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Best regards, Tom"]],
         responseModel: UserDetail::class,
         options: ['stream' => true]
     )
     ->wiretap(fn($event) => $event->print())
-    ->get();
+    ->last();
 
 dump($user);
 
-assert($user->name == "Jason");
-assert($user->role == Role::CTO);
-assert($user->age == 28);
+assert($user->name === "Jason");
+assert($user->role === Role::CTO);
+assert($user->age === 28);
 ?>
 ```

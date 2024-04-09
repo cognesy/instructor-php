@@ -14,8 +14,8 @@ trait HandlesStreamedResponses
         callable        $isDone = null,
     ): Generator {
         while (!$stream->eof()) {
-            $line = $this->readLine($stream);
-            if ($line === '') {
+            $line = trim($this->readLine($stream));
+            if (empty($line)) {
                 continue;
             }
             if (!is_null($isDone) && $isDone($line)) {

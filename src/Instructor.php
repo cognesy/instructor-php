@@ -18,6 +18,7 @@ use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
+use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
 use Throwable;
@@ -145,6 +146,9 @@ class Instructor {
         if ($this->request === null) {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
+        if ($this->request->options['stream']) {
+            throw new Exception('Instructor::get() method does not support streaming: set "stream" = false in the request options.');
+        }
         try {
             /** @var CanHandleRequest */
             $requestHandler = $this->config->get(CanHandleRequest::class);
@@ -173,10 +177,15 @@ class Instructor {
         if ($this->request === null) {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
+        if (!$this->request->options['stream']) {
+            throw new Exception('Instructor::get() method requires response streaming: set "stream" = true in the request options.');
+        }
         try {
             /** @var StreamRequestHandler $requestHandler */
             $requestHandler = $this->config->get(CanHandleStreamRequest::class);
-            yield from $requestHandler->respondTo($this->request);
+            foreach($requestHandler->respondTo($this->request) as $update) {
+                yield $update;
+            }
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
             $event = new ErrorRaised($error, $this->request);
@@ -189,11 +198,55 @@ class Instructor {
         }
     }
 
-    public function streamAll() : mixed {
+    public function sequence() : Iterable {
+        $updates = $this->stream();
+        $lastSequence = null;
+        $lastSequenceCount = 1;
+        foreach ($updates as $update) {
+            if (!($update instanceof Sequence)) {
+                throw new Exception('Expected a sequence update, got ' . get_class($update));
+            }
+            if ($update->count() > $lastSequenceCount) {
+                $lastSequenceCount = $update->count();
+                yield $lastSequence;
+            }
+            $lastSequence = $update;
+        }
+        yield $lastSequence;
+    }
+
+    /// PROCESS STREAMED RESULTS /////////////////////////////////////////////////////////////
+
+    public function each(callable $callback) : void {
+        $stream = $this->stream();
+        foreach ($stream as $item) {
+            $callback($item);
+        }
+    }
+
+    public function map(callable $callback) : array {
+        $stream = $this->stream();
+        $result = [];
+        foreach ($stream as $item) {
+            $result[] = $callback($item);
+        }
+        return $result;
+    }
+
+    public function last() : mixed {
         $stream = $this->stream();
         $result = null;
         foreach ($stream as $item) {
             $result = $item;
+        }
+        return $result;
+    }
+
+    public function flatMap(callable $callback, mixed $initial) : mixed {
+        $stream = $this->stream();
+        $result = $initial;
+        foreach ($stream as $item) {
+            $result = $callback($item, $result);
         }
         return $result;
     }

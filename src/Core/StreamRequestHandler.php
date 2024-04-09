@@ -42,7 +42,9 @@ class StreamRequestHandler implements CanHandleRequest
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
             // stream responses (target objects wrapped in Result) from partial generator
-            yield from $this->partialsGenerator->getPartialResponses($request, $responseModel, $this->messages);
+            foreach($this->partialsGenerator->getPartialResponses($request, $responseModel, $this->messages) as $update) {
+                yield $update;
+            }
 
             // ...and then get the final response
             $apiResponse = $this->partialsGenerator->getCompleteResponse();
