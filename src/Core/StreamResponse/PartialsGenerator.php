@@ -16,6 +16,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialJsonReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerationFailed;
+use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseFinished;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
@@ -92,6 +93,7 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
             yield $result->unwrap();
         }
+        $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse));
 
         // finalize last function call
         // check if there are any toolCalls

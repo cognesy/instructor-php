@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Instructor\InstructorDone;
+use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Exception;
 
@@ -11,6 +14,7 @@ class Stream
 
     public function __construct(
         private Iterable $stream,
+        private EventDispatcher $events,
     ) {}
 
     /**
@@ -36,6 +40,8 @@ class Stream
             $this->lastUpdate = $update;
             yield $update;
         }
+        $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
+        $this->events->dispatch(new InstructorDone());
     }
 
     /**
@@ -47,6 +53,8 @@ class Stream
             $this->lastUpdate = $update;
             $result = $update;
         }
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone());
         return $result;
     }
 
@@ -58,6 +66,8 @@ class Stream
             $this->lastUpdate = $update;
             $callback($update);
         }
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone());
     }
 
     /**
@@ -69,6 +79,8 @@ class Stream
             $this->lastUpdate = $update;
             $result[] = $callback($update);
         }
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone());
         return $result;
     }
 
@@ -81,6 +93,8 @@ class Stream
             $this->lastUpdate = $update;
             $result = $callback($update, $result);
         }
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone());
         return $result;
     }
 
@@ -102,5 +116,7 @@ class Stream
             $lastSequence = $update;
         }
         yield $lastSequence;
+        $this->events->dispatch(new ResponseGenerated($lastSequence));
+        $this->events->dispatch(new InstructorDone());
     }
 }

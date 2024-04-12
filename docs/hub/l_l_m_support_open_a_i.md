@@ -7,12 +7,13 @@ Mode compatibility:
  - Mode::Json
  - Mode::MdJson
 
+
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\MockClient;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
@@ -35,7 +36,7 @@ class User {
 $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new MockClient(
+$client = new OpenAIClient(
     apiKey: $yourApiKey,
     baseUri: 'https://api.openai.com/v1',
     organization: '',

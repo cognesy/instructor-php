@@ -39,7 +39,8 @@ $text = <<<TEXT
 $user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
-    mode: Mode::MdJson,
+    model: 'gpt-3.5-turbo',
+    mode: Mode::Json,
 );
 
 dump($user);

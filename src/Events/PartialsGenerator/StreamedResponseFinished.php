@@ -2,14 +2,14 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
 
 class StreamedResponseFinished extends Event
 {
     public function __construct(
-        public ApiResponse $response
+        public PartialApiResponse $response
     )
     {
         parent::__construct();

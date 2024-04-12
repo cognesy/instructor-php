@@ -63,7 +63,7 @@ $user = (new Instructor)->request(
     messages: $text,
     responseModel: UserDetail::class,
     options: ['stream' => true],
-)->onPartialUpdate(partialUpdate(...))->last();
+)->onPartialUpdate(partialUpdate(...))->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";
 echo '$user = '."\n";

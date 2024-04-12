@@ -12,6 +12,7 @@ use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
+use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
@@ -35,7 +36,6 @@ class Instructor {
     private $onSequenceUpdate;
     private $queuedEvents = [];
     private Request $request;
-
 
     public function __construct(array $config = []) {
         $this->queuedEvents[] = new InstructorStarted($config);
@@ -78,92 +78,6 @@ class Instructor {
             CanCallApi::class => $client->withEventDispatcher($this->events)
         ]);
         return $this;
-    }
-
-    /// EXTRACTION EXECUTION ENDPOINTS ////////////////////////////////////////
-
-    /**
-     * Creates the request to be executed
-     */
-    public function request(
-        string|array $messages,
-        string|object|array $responseModel,
-        string $model = '',
-        int $maxRetries = 0,
-        array $options = [],
-        string $functionName = 'extract_data',
-        string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors",
-        Mode $mode = Mode::Tools
-    ) : self {
-        $request = new Request(
-            $messages,
-            $responseModel,
-            $model,
-            $maxRetries,
-            $options,
-            $functionName,
-            $functionDescription,
-            $retryPrompt,
-            $mode
-        );
-        return $this->withRequest($request);
-    }
-
-    /**
-     * Generates a response model via LLM based on provided string or OpenAI style message array
-     */
-    public function respond(
-        string|array $messages,
-        string|object|array $responseModel,
-        string $model = '',
-        int $maxRetries = 0,
-        array $options = [],
-        string $functionName = 'extract_data',
-        string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors",
-        Mode $mode = Mode::Tools
-    ) : mixed {
-        $this->request(
-            $messages,
-            $responseModel,
-            $model,
-            $maxRetries,
-            $options,
-            $functionName,
-            $functionDescription,
-            $retryPrompt,
-            $mode
-        );
-        return $this->get();
-    }
-
-    /**
-     * Executes the request and returns the response
-     */
-    public function get() : mixed {
-        if ($this->request === null) {
-            throw new Exception('Request not defined, call withRequest() or request() first');
-        }
-        $isStream = $this->request->options['stream'] ?? false;
-        if ($isStream) {
-            return $this->stream()->final();
-        }
-        return $this->handleRequest();
-    }
-
-    /**
-     * Executes the request and returns the response stream
-     */
-    public function stream() : Stream {
-        if ($this->request === null) {
-            throw new Exception('Request not defined, call withRequest() or request() first');
-        }
-        $isStream = $this->request->options['stream'] ?? false;
-        if (!$isStream) {
-            throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
-        }
-        return new Stream($this->handleStreamRequest());
     }
 
     /// ACCESS CURRENT INSTRUCTOR CONFIGURATION ///////////////////////////////
@@ -246,6 +160,94 @@ class Instructor {
         return $this;
     }
 
+    /// EXTRACTION EXECUTION ENDPOINTS ////////////////////////////////////////
+
+    /**
+     * Creates the request to be executed
+     */
+    public function request(
+        string|array $messages,
+        string|object|array $responseModel,
+        string $model = '',
+        int $maxRetries = 0,
+        array $options = [],
+        string $functionName = 'extract_data',
+        string $functionDescription = 'Extract data from provided content',
+        string $retryPrompt = "Recall function correctly, fix following errors",
+        Mode $mode = Mode::Tools
+    ) : self {
+        $request = new Request(
+            $messages,
+            $responseModel,
+            $model,
+            $maxRetries,
+            $options,
+            $functionName,
+            $functionDescription,
+            $retryPrompt,
+            $mode
+        );
+        return $this->withRequest($request);
+    }
+
+    /**
+     * Generates a response model via LLM based on provided string or OpenAI style message array
+     */
+    public function respond(
+        string|array $messages,
+        string|object|array $responseModel,
+        string $model = '',
+        int $maxRetries = 0,
+        array $options = [],
+        string $functionName = 'extract_data',
+        string $functionDescription = 'Extract data from provided content',
+        string $retryPrompt = "Recall function correctly, fix following errors",
+        Mode $mode = Mode::Tools,
+    ) : mixed {
+        $this->request(
+            $messages,
+            $responseModel,
+            $model,
+            $maxRetries,
+            $options,
+            $functionName,
+            $functionDescription,
+            $retryPrompt,
+            $mode
+        );
+        return $this->get();
+    }
+
+    /**
+     * Executes the request and returns the response
+     */
+    public function get() : mixed {
+        if ($this->request === null) {
+            throw new Exception('Request not defined, call withRequest() or request() first');
+        }
+        $isStream = $this->request->options['stream'] ?? false;
+        if ($isStream) {
+            return $this->stream()->final();
+        }
+        $result = $this->handleRequest();
+        $this->events->dispatch(new InstructorDone());
+        return $result;
+    }
+
+    /**
+     * Executes the request and returns the response stream
+     */
+    public function stream() : Stream {
+        if ($this->request === null) {
+            throw new Exception('Request not defined, call withRequest() or request() first');
+        }
+        $isStream = $this->request->options['stream'] ?? false;
+        if (!$isStream) {
+            throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
+        }
+        return new Stream($this->handleStreamRequest(), $this->events);
+    }
+
     /// INTERNAL //////////////////////////////////////////////////////////////
 
     private function handleRequest() : mixed {
@@ -283,6 +285,7 @@ class Instructor {
                 // final attempt to recover from the error (e.g. give fallback response)
                 return ($this->onError)($event);
             }
+            $this->events->dispatch(new InstructorDone());
             throw $error;
         }
     }
@@ -308,8 +311,7 @@ class Instructor {
     /**
      * Dispatches all events queued before $events was initialized
      */
-    private function dispatchQueuedEvents()
-    {
+    private function dispatchQueuedEvents() : void {
         foreach ($this->queuedEvents as $event) {
             $this->events->dispatch($event);
         }

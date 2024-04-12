@@ -36,10 +36,11 @@ $text = <<<TEXT
     in a small house in Alamo. He likes to play guitar.
     TEXT;
 
-$user = (new Instructor)->respond(
+$user = (new Instructor)->wiretap(fn($e)=>$e->print())->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
-    mode: Mode::MdJson,
+    model: 'gpt-3.5-turbo',
+    mode: Mode::Json,
 );
 
 dump($user);

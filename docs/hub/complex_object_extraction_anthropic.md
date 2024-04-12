@@ -121,7 +121,7 @@ $events = $instructor
             'max_tokens' => 2048,
             'stream' => true,
         ])
-    ->last();
+    ->get();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
 

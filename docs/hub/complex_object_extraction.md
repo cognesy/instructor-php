@@ -8,11 +8,9 @@ the provided text.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\Groq\GroqClient;
-use Cognesy\Instructor\Clients\Mistral\MistralClient;
-use Cognesy\Instructor\Clients\OpenAI\MockClient;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
@@ -94,32 +92,27 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$client = new MockClient(
+$client = new OpenAIClient(
     apiKey: Env::get('OPENAI_API_KEY'),
     requestTimeout: 90,
 );
-
-//$client = new MistralClient(
-//    apiKey: Env::get('MISTRAL_API_KEY'),
-//    requestTimeout: 90,
-//);
 
 $instructor = (new Instructor)->withClient($client);
 
 echo "PROJECT EVENTS:\n\n";
 
 $events = $instructor
+    ->onEvent(ChunkReceived::class, fn($e)=>$e->print())
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
     ->request(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        //model: 'gpt-4-turbo-preview',
         mode: Mode::Json,
         options: [
             'max_tokens' => 2048,
             'stream' => true,
         ])
-    ->last();
+    ->get();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";
 
