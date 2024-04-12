@@ -47,7 +47,7 @@ var_dump($person);
 
 !!! note
 
-    Currently, Instructor for PHP only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class.
+    Currently, Instructor for PHP only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class (or use `Scalar` helper class).
 
 
 
@@ -63,6 +63,80 @@ $value = (new Instructor)->respond(
     responseModel: Person::class,
 );
 ```
+
+
+## Extracting Scalar Values
+
+Instructor can extract scalar values from text and assign them to your response model's properties.
+
+### Example: String result
+
+```php
+<?php
+
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::string(name: 'firstName'),
+);
+// expect($value)->toBeString();
+// expect($value)->toBe("Jason");
+```
+
+### Example: Integer result
+
+```php
+<?php
+
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::integer('age'),
+);
+// expect($value)->toBeInt();
+// expect($value)->toBe(28);
+```
+
+### Example: Boolean result
+
+```php
+<?php
+
+$age = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::boolean(name: 'isAdult'),
+);
+// expect($age)->toBeBool();
+// expect($age)->toBe(true);
+```
+
+### Example: Float result
+
+```php
+<?php
+
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.",
+    responseModel: Scalar::float(name: 'recordTime'),
+);
+// expect($value)->toBeFloat();
+// expect($value)->toBe(11.6);
+```
+
+### Example: Select one of the options
+
+```php
+<?php
+
+$age = (new Instructor)->respond(
+    messages: "His name is Dietmar, he is 28 years old and he lives in Germany.",
+    responseModel: Scalar::select(
+        options: ['US citizen', 'Canada citizen', 'other'],
+        name: 'citizenshipGroup'
+    ),
+);
+// expect($age)->toBeString();
+// expect($age)->toBe('other');
+```
+
 
 
 ## Alternative ways to call Instructor
@@ -92,60 +166,6 @@ $instructor = (new Instructor)->withRequest(new Request(
 
 
 
-## Streaming responses
+## Partial responses and streaming
 
-You can get a stream of responses by setting the `stream` option to `true` and calling the `stream()` method
-instead of `get()`. It returns `Stream` object, which gives you access to the response streamed from LLM and
-processed by Instructor into structured data.
-
-Following methods to process the stream:
- - `partials()`: Returns a generator of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
- - `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
- - `final()`: Returns the final response object. It blocks until the response is fully processed.
- - `getLastUpdate()`: Returns the last object received and processed by Instructor.
-
-
-### Example: streaming partial responses
-
-```php
-use Cognesy\Instructor;
-
-$stream = (new Instructor)->request(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-)->stream();
-
-foreach ($stream->partials() as $update) {
-    // render updated person view
-    // for example:
-    $view->updateView($update); // render the updated person view
-}
-
-// now you can get final, fully processed person object
-$person = $stream->getLastUpdate();
-// ...and for example save it to the database
-$db->savePerson($person);
-```
-
-
-### Example: streaming sequence items
-
-```php
-use Cognesy\Instructor;
-
-$stream = (new Instructor)->request(
-    messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
-    responseModel: Sequence::of(Participant::class),
-)->stream();
-
-foreach ($stream->sequence() as $update) {
-    // append last completed item from the sequence
-    // for example:
-    $view->appendParticipant($update->last());
-}
-
-// now you can get final, fully processed sequence of participants
-$participants = $stream->getLastUpdate();
-// ...and for example save it to the database
-$db->saveParticipants($participants->toArray());
-```
+See: [Streaming and partial updates](partials.md) for more information on how to work with partial updates and streaming.

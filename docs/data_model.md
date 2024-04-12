@@ -23,6 +23,20 @@ Instructor will only fill in the fields that are public. Private and protected f
 
 
 
+
+## Private vs public object field
+
+Instructor only sets public fields of the object with the data provided by LLM.
+Private and protected fields are left unchanged. If you want to access them
+directly after extraction, consider providing default values for them.
+
+See `examples/PrivateVsPublicFields/run.php` to check the details on the behavior
+of extraction for classes with private and public fields.
+
+
+
+
+
 ## DocBlock type hints
 
 You can also use PHP DocBlock style comments to specify the type of extracted data. This is useful when you want to specify property types for LLM, but can't or don't want to enforce type at the code level.
@@ -161,89 +175,3 @@ var_dump($person);
 //     ]
 // }
 ```
-
-
-
-
-
-## Scalar Values
-
-Instructor can extract scalar values from text and assign them to your response model's properties.
-
-### Example: String result
-
-```php
-<?php
-
-$value = (new Instructor)->respond(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Scalar::string(name: 'firstName'),
-);
-// expect($value)->toBeString();
-// expect($value)->toBe("Jason");
-```
-
-### Example: Integer result
-
-```php
-<?php
-
-$value = (new Instructor)->respond(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Scalar::integer('age'),
-);
-// expect($value)->toBeInt();
-// expect($value)->toBe(28);
-```
-
-### Example: Boolean result
-
-```php
-<?php
-
-$age = (new Instructor)->respond(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Scalar::boolean(name: 'isAdult'),
-);
-// expect($age)->toBeBool();
-// expect($age)->toBe(true);
-```
-
-### Example: Float result
-
-```php
-<?php
-
-$value = (new Instructor)->respond(
-    messages: "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.",
-    responseModel: Scalar::float(name: 'recordTime'),
-);
-// expect($value)->toBeFloat();
-// expect($value)->toBe(11.6);
-```
-
-### Example: Select one of the options
-
-```php
-<?php
-
-$age = (new Instructor)->respond(
-    messages: "His name is Dietmar, he is 28 years old and he lives in Germany.",
-    responseModel: Scalar::select(
-        options: ['US citizen', 'Canada citizen', 'other'],
-        name: 'citizenshipGroup'
-    ),
-);
-// expect($age)->toBeString();
-// expect($age)->toBe('other');
-```
-
-
-## Private vs public object field
-
-Instructor only sets public fields of the object with the data provided by LLM.
-Private and protected fields are left unchanged. If you want to access them
-directly after extraction, consider providing default values for them.
-
-See `examples/PrivateVsPublicFields/run.php` to check the details on the behavior
-of extraction for classes with private and public fields.

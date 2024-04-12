@@ -92,3 +92,7 @@ $sequence->last();    // returns the last extracted item
 $sequence->get(1);    // returns the second extracted item
 $sequence->toArray(); // returns the list of extracted items as an array
 ```
+
+## Streaming sequence updates
+
+See: [Streaming and partial updates](partials.md) for more information on how to get partial updates and streaming of sequences.

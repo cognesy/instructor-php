@@ -123,7 +123,7 @@ nav:
     - Installation: 'installation.md'
     - Usage: 'usage.md'
     - Data model and types: 'data_model.md'
-    - Partial updates: 'partials.md'
+    - Partial updates and streaming: 'partials.md'
     - Sequences: 'sequences.md'
     - Validation: 'validation.md'
     - LLM model and options: 'model_options.md'
