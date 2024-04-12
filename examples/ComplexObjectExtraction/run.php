@@ -10,6 +10,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
@@ -101,6 +102,7 @@ $instructor = (new Instructor)->withClient($client);
 echo "PROJECT EVENTS:\n\n";
 
 $events = $instructor
+    ->onEvent(ChunkReceived::class, fn($e)=>$e->print())
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
     ->request(
         messages: $report,

@@ -6,10 +6,10 @@ use Cognesy\Instructor\Contracts\CanValidateObject;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\ResponseHandler\CustomResponseValidationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidated;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationFailed;
+use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseValidated;
+use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Utils\Result;
 
 class ResponseValidator

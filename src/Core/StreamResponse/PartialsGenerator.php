@@ -12,14 +12,14 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ToolCall;
 use Cognesy\Instructor\Data\ToolCalls;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\LLM\ChunkReceived;
-use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
-use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
-use Cognesy\Instructor\Events\LLM\StreamedToolCallCompleted;
-use Cognesy\Instructor\Events\LLM\StreamedToolCallStarted;
-use Cognesy\Instructor\Events\LLM\StreamedToolCallUpdated;
-use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
-use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerationFailed;
+use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
+use Cognesy\Instructor\Events\PartialsGenerator\PartialJsonReceived;
+use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerationFailed;
+use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
+use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
+use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
+use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
@@ -74,7 +74,6 @@ class PartialsGenerator implements CanGeneratePartials
             // situation 2: new delta
             $maybeArgumentChunk = $partialResponse->delta;
             if (empty($maybeArgumentChunk)) {
-                // skip if no new delta
                 continue;
             }
             $this->events->dispatch(new ChunkReceived($maybeArgumentChunk));

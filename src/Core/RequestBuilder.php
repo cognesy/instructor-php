@@ -18,7 +18,7 @@ class RequestBuilder
         private ToolCallBuilder $toolCallBuilder,
     ) {}
 
-    public function makeClientRequest(
+    public function clientWithRequest(
         array $messages,
         ResponseModel $responseModel,
         string $model,

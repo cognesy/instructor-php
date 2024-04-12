@@ -16,8 +16,8 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
-use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
+use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
+use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
 use Throwable;
@@ -274,9 +274,7 @@ class Instructor {
         try {
             /** @var StreamRequestHandler $requestHandler */
             $requestHandler = $this->config->get(CanHandleStreamRequest::class);
-            foreach($requestHandler->respondTo($this->request) as $update) {
-                yield $update;
-            }
+            yield from $requestHandler->respondTo($this->request);
         } catch (Throwable $error) {
             // if anything goes wrong, we first dispatch an event (e.g. to log error)
             $event = new ErrorRaised($error, $this->request);

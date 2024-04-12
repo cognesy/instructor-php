@@ -1,42 +1,38 @@
 <?php
 namespace Tests\Feature;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\RequestHandler\ToolCallRequested;
-use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseConvertedToObject;
-use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseReceived;
-use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
-use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
-use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\CustomResponseValidationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseTransformed;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidated;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseValidationFailed;
+use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
+use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
+use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
+use Cognesy\Instructor\Events\Response\ResponseTransformed;
+use Cognesy\Instructor\Events\Response\ResponseValidated;
+use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Extraction\Person;
 use Tests\Examples\Instructor\EventSink;
 use Tests\MockLLM;
 
-$isMock = true;
 $text = "His name is J, he is 28 years old. J is also known as Jason.";
 
-it('handles events for simple case w/reattempt on validation - success', function ($event) use ($isMock, $text) {
-    $mockLLM = !$isMock ? null : MockLLM::get([
+it('handles events for simple case w/reattempt on validation - success', function ($event) use ($text) {
+    $mockLLM = MockLLM::get([
         '{"name": "Jason", "age":-28}',
         '{"name": "Jason", "age":28}',
     ]);
     $events = new EventSink();
-    $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
+    $person = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])
+        ->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
-        ->withConfig([CanCallTools::class => $mockLLM])
         ->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -50,15 +46,11 @@ it('handles events for simple case w/reattempt on validation - success', functio
     expect((string) $events->first())->toBeString()->not()->toBeEmpty();
 })->with([
     // Instructor
-    //    [InstructorStarted::class],
-    //    [InstructorReady::class],
+    //[InstructorStarted::class],
+    //[InstructorReady::class],
     [RequestReceived::class],
     [ResponseGenerated::class],
     // RequestHandler
-    [ToolCallRequested::class],
-    [ToolCallResponseConvertedToObject::class],
-    [ToolCallResponseReceived::class],
-    //[ToolCallResultReady::class],
     [NewValidationRecoveryAttempt::class],
     //[ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
@@ -85,14 +77,14 @@ it('handles events for simple case w/reattempt on validation - success', functio
 ]);
 
 
-it('handles events for simple case - validation failure', function ($event) use ($isMock, $text) {
-    $mockLLM = !$isMock ? null : MockLLM::get([
+it('handles events for simple case - validation failure', function ($event) use ($text) {
+    $mockLLM = MockLLM::get([
         '{"name": "J", "age":-28}',
         '{"name": "J", "age":-28}',
     ]);
     $events = new EventSink();
-    $person = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
-        ->withConfig([CanCallTools::class => $mockLLM])
+    $person = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])
+        ->onEvent($event, fn($e) => $events->onEvent($e))
         ->onError(fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => $e->print())
         ->respond(
@@ -106,15 +98,11 @@ it('handles events for simple case - validation failure', function ($event) use 
     expect((string) $events->first())->toBeString()->not()->toBeEmpty();
 })->with([
     // Instructor
-    //    [InstructorStarted::class],
-    //    [InstructorReady::class],
+    //[InstructorStarted::class],
+    //[InstructorReady::class],
     [RequestReceived::class],
     //[ResponseReturned::class],
     // RequestHandler
-    [ToolCallRequested::class],
-    //[ToolCallResponseConvertedToObject::class],
-    [ToolCallResponseReceived::class],
-    //[ToolCallResultReady::class],
     //[NewValidationRecoveryAttempt::class],
     [ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],
@@ -141,13 +129,13 @@ it('handles events for simple case - validation failure', function ($event) use 
     [ErrorRaised::class],
 ]);
 
-it('handles events for custom case', function ($event) use ($isMock, $text) {
-    $mockLLM = !$isMock ? null : MockLLM::get([
+it('handles events for custom case', function ($event) use ($text) {
+    $mockLLM = MockLLM::get([
         '{"age":28}'
     ]);
     $events = new EventSink();
-    $age = (new Instructor)->onEvent($event, fn($e) => $events->onEvent($e))
-        ->withConfig([CanCallTools::class => $mockLLM])
+    $age = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])
+        ->onEvent($event, fn($e) => $events->onEvent($e))
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Scalar::integer('age'),
@@ -163,10 +151,6 @@ it('handles events for custom case', function ($event) use ($isMock, $text) {
     [RequestReceived::class],
     [ResponseGenerated::class],
     // ==== RequestHandler
-    [ToolCallRequested::class],
-    [ToolCallResponseConvertedToObject::class],
-    [ToolCallResponseReceived::class],
-    //[ToolCallResultReady::class],
     //[NewValidationRecoveryAttempt::class],
     //[ResponseGenerationFailed::class],
     [ResponseModelBuilt::class],

@@ -4,9 +4,9 @@ namespace Cognesy\Instructor\Core\Response;
 
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseTransformationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseTransformationFailed;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseTransformed;
+use Cognesy\Instructor\Events\Response\ResponseTransformationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
+use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 

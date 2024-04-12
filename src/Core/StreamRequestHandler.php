@@ -2,25 +2,23 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
-use Cognesy\Instructor\Contracts\CanHandleRequest;
+use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
-use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
-use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
-use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
-use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
+use Cognesy\Instructor\Events\Request\RequestSentToLLM;
+use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
+use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
+use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
+use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Exception;
 use Generator;
 
-class StreamRequestHandler implements CanHandleRequest
+class StreamRequestHandler implements CanHandleStreamRequest
 {
     private int $retries = 0;
     private array $messages = [];
@@ -37,44 +35,52 @@ class StreamRequestHandler implements CanHandleRequest
      * Returns response object or generator wrapped in Result monad
      */
     public function respondTo(Request $request) : Generator {
-        $isStreamingRequested = $request->options['stream'] ?? false;
-        if (!$isStreamingRequested) {
-            throw new Exception('Streaming is not requested');
-        }
         $responseModel = $this->responseModelFactory->fromRequest($request);
         $this->events->dispatch(new ResponseModelBuilt($responseModel));
+        // try to respond to the request until success or max retries reached
         $this->retries = 0;
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
-            // get stream from client for current set of messages (updated on each retry)
-            $stream = $this->getStream($this->messages, $responseModel, $request);
-            // stream responses (target objects wrapped in Result) from partial generator
-            foreach($this->partialsGenerator->getPartialResponses($stream, $responseModel, $this->messages) as $update) {
-                yield $update;
-            }
+            // (0) process stream...
+            yield from $this->getStreamedResponses($this->messages, $responseModel, $request);
 
-            // ...and then get the final response
+            // (1) ...and get API client response
             $apiResponse = $this->partialsGenerator->getCompleteResponse();
-            // we have ApiResponse here - let's process it: deserialize, validate, transform
-            $responseProcessingResult = $this->responseGenerator->makeResponse($apiResponse, $responseModel);
-            if ($responseProcessingResult->isSuccess()) {
-                $this->events->dispatch(new ResponseGenerated($responseProcessingResult->unwrap()));
-                yield $responseProcessingResult->unwrap();
+            $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
+
+            // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
+            $processingResult = $this->responseGenerator->makeResponse($apiResponse, $responseModel);
+            if ($processingResult->isSuccess()) {
+                yield $processingResult->unwrap();
+                // we're done here - no need to retry
                 return;
             }
 
-            // let's retry - as we have not managed to deserialize, validate or transform the response
-            $errors = $responseProcessingResult->error();
-            $this->partialsGenerator->resetPartialResponse();
+            // (3) retry - we have not managed to deserialize, validate or transform the response
+            $errors = $processingResult->error();
             $this->messages = $this->makeRetryMessages($this->messages, $responseModel, $apiResponse->content, [$errors]);
             $this->retries++;
             if ($this->retries <= $request->maxRetries) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
-            } else {
-                $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, [$errors]));
-                $this->events->dispatch(new ResponseGenerationFailed([$errors]));
-                throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: $errors");
             }
+            // (3.1) reset partials generator
+            $this->partialsGenerator->resetPartialResponse();
+        }
+        $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, [$errors]));
+        throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: $errors");
+    }
+
+    protected function getStreamedResponses(array $messages, ResponseModel $responseModel, Request $request) : Generator {
+        $apiClient = $this->requestBuilder->clientWithRequest(
+            $messages, $responseModel, $request->model, $request->options, $request->mode
+        );
+        try {
+            $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));
+            $stream = $apiClient->stream();
+            yield from $this->partialsGenerator->getPartialResponses($stream, $responseModel, $this->messages);
+        } catch(Exception $e) {
+            $this->events->dispatch(new RequestToLLMFailed($apiClient->getRequest(), $e->getMessage()));
+            throw $e;
         }
     }
 
@@ -82,20 +88,5 @@ class StreamRequestHandler implements CanHandleRequest
         $messages[] = ['role' => 'assistant', 'content' => $jsonData];
         $messages[] = ['role' => 'user', 'content' => $responseModel->retryPrompt . ': ' . implode(", ", $errors)];
         return $messages;
-    }
-
-    protected function getStream(array $messages, ResponseModel $responseModel, Request $request) : Generator {
-        // get function caller instance
-        /** @var ApiClient $apiCallRequest */
-        $apiCallRequest = $this->requestBuilder->makeClientRequest(
-            $messages, $responseModel, $request->model, $request->options, $request->mode
-        );
-        try {
-            $this->events->dispatch(new RequestSentToLLM($apiCallRequest->getRequest()));
-            return $apiCallRequest->stream();
-        } catch(Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed([], $e->getMessage()));
-            throw new Exception($e->getMessage());
-        }
     }
 }

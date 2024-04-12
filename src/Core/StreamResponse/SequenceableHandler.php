@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Core\StreamResponse;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
+use Cognesy\Instructor\Events\Request\SequenceUpdated;
 
 class SequenceableHandler
 {

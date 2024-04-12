@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Scalars\CitizenshipGroup;
@@ -10,7 +10,7 @@ it('extracts int type', function () {
     $mockLLM = MockLLM::get(['{"age":28}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $value = (new Instructor)->withConfig([CanCallTools::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s age?'],
@@ -25,7 +25,7 @@ it('extracts string type', function () {
     $mockLLM = MockLLM::get(['{"firstName":"Jason"}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $value = (new Instructor)->withConfig([CanCallTools::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is his name?'],
@@ -40,7 +40,7 @@ it('extracts float type', function () {
     $mockLLM = MockLLM::get(['{"recordTime":11.6}']);
 
     $text = "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.";
-    $value = (new Instructor)->withConfig([CanCallTools::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s best 100m run time?'],
@@ -55,7 +55,7 @@ it('extracts bool type', function () {
     $mockLLM = MockLLM::get(['{"isAdult":true}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $age = (new Instructor)->withConfig([CanCallTools::class => $mockLLM])->respond(
+    $age = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'Is he adult?'],
@@ -71,7 +71,7 @@ it('extracts enum type', function () {
     $mockLLM = MockLLM::get(['{"citizenshipGroup":"other"}']);
 
     $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-    $age = (new Instructor)->withConfig([CanCallTools::class => $mockLLM])->respond(
+    $age = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],

@@ -1,21 +1,21 @@
 <?php
 namespace Tests\Feature;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Instructor\EventSink;
 use Tests\Examples\Instructor\Person;
 use Tests\MockLLM;
+use Throwable;
 
-$isMock = true;
-$mockLLM = !$isMock ? null : MockLLM::get([
+$mockLLM = MockLLM::get([
     '{"name":"Jason","age":28}'
 ]);
-$instructor = (new Instructor)->withConfig([CanCallTools::class => $mockLLM]);
 $text = "His name is Jason, he is 28 years old.";
 
-it('handles direct call', function () use ($instructor, $text) {
+it('handles direct call', function () use ($mockLLM, $text) {
+    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
     $person = $instructor->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -25,8 +25,9 @@ it('handles direct call', function () use ($instructor, $text) {
     expect($person->age)->toBe(28);
 });
 
-it('handles onEvent()', function () use ($instructor, $text) {
+it('handles onEvent()', function () use ($mockLLM, $text) {
     $events = new EventSink();
+    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
     $person = $instructor->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -37,8 +38,9 @@ it('handles onEvent()', function () use ($instructor, $text) {
     expect($events->count())->toBe(1);
 });
 
-it('handles wiretap()', function () use ($instructor, $text) {
+it('handles wiretap()', function () use ($mockLLM, $text) {
     $events = new EventSink();
+    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
     $person = $instructor->wiretap(fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -49,8 +51,9 @@ it('handles wiretap()', function () use ($instructor, $text) {
     expect($events->count())->toBeGreaterThan(1);
 });
 
-it('handles onError()', function () use ($instructor, $text) {
+it('handles onError()', function () use ($mockLLM, $text) {
     $events = new EventSink();
+    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
     $person = $instructor->onError(fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: '',
@@ -58,22 +61,16 @@ it('handles onError()', function () use ($instructor, $text) {
     expect($events->count())->toBe(1);
 });
 
-it('throws exception if no onxError() provided', function () use ($isMock, $text) {
-    $isMock = true;
-    $mockLLM = !$isMock ? null : MockLLM::get([
-        '{"name":"Jason","age":28}'
-    ]);
-    $instructor = (new Instructor)->withConfig([CanCallTools::class => $mockLLM]);
-
-    $e = null;
+it('throws exception if no onError() provided', function () use ($mockLLM, $text) {
     $thrownException = false;
     try {
+        $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
         $person = $instructor->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: '',
         );
-    } catch (\Throwable $e) {
-        expect($e)->toBeInstanceOf(\Throwable::class);
+    } catch (Throwable $e) {
+        expect($e)->toBeInstanceOf(Throwable::class);
         $thrownException = true;
     }
     expect($thrownException)->toBeTrue();

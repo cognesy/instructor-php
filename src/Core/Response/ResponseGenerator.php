@@ -6,8 +6,8 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseConvertedToObject;
-use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
+use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
+use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
@@ -32,7 +32,7 @@ class ResponseGenerator implements CanGenerateResponse
             ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
             ->through(fn($object) => $this->responseValidator->validate($object))
             ->through(fn($object) => $this->responseTransformer->transform($object))
-            ->tap(fn($object) => $this->events->dispatch(new ToolCallResponseConvertedToObject($object)))
+            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject($object)))
             ->then(fn($result) => match(true) {
                 $result->isSuccess() => $result,
                 default => Result::failure($this->extractErrors($result))

@@ -6,10 +6,10 @@ use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\ResponseHandler\CustomResponseDeserializationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationAttempt;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserializationFailed;
-use Cognesy\Instructor\Events\ResponseHandler\ResponseDeserialized;
+use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
+use Cognesy\Instructor\Events\Response\ResponseDeserialized;
 use Cognesy\Instructor\Utils\Result;
 
 class ResponseDeserializer
