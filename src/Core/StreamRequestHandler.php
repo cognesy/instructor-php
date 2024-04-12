@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
@@ -9,6 +10,8 @@ use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
+use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\RequestHandler\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
 use Cognesy\Instructor\Events\RequestHandler\ResponseModelBuilt;
@@ -26,6 +29,7 @@ class StreamRequestHandler implements CanHandleRequest
         private EventDispatcher      $events,
         private CanHandleResponse    $responseHandler,
         private PartialsGenerator    $partialsGenerator,
+        private RequestBuilder       $requestBuilder,
     ) {}
 
     /**
@@ -41,8 +45,10 @@ class StreamRequestHandler implements CanHandleRequest
         $this->retries = 0;
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
+            // get stream from client for current set of messages (updated on each retry)
+            $stream = $this->getStream($this->messages, $responseModel, $request);
             // stream responses (target objects wrapped in Result) from partial generator
-            foreach($this->partialsGenerator->getPartialResponses($request, $responseModel, $this->messages) as $update) {
+            foreach($this->partialsGenerator->getPartialResponses($stream, $responseModel, $this->messages) as $update) {
                 yield $update;
             }
 
@@ -75,5 +81,20 @@ class StreamRequestHandler implements CanHandleRequest
         $messages[] = ['role' => 'assistant', 'content' => $jsonData];
         $messages[] = ['role' => 'user', 'content' => $responseModel->retryPrompt . ': ' . implode(", ", $errors)];
         return $messages;
+    }
+
+    protected function getStream(array $messages, ResponseModel $responseModel, Request $request) : Generator {
+        // get function caller instance
+        /** @var ApiClient $apiCallRequest */
+        $apiCallRequest = $this->requestBuilder->makeClientRequest(
+            $messages, $responseModel, $request->model, $request->options, $request->mode
+        );
+        try {
+            $this->events->dispatch(new RequestSentToLLM($apiCallRequest->getRequest()));
+            return $apiCallRequest->stream();
+        } catch(Exception $e) {
+            $this->events->dispatch(new RequestToLLMFailed([], $e->getMessage()));
+            throw new Exception($e->getMessage());
+        }
     }
 }

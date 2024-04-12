@@ -7,7 +7,9 @@ use Cognesy\Instructor\Core\ApiClient\AbstractCallHandler;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Utils\Arrays;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class MdJsonModeHandler extends AbstractCallHandler
 {
     private CanCallChatCompletion $client;

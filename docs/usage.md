@@ -96,7 +96,7 @@ You can provide your own OpenAI client to Instructor. This is useful when you wa
 
 ```php
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenAI\MockClient;
 
 class User {
     public int $age;
@@ -104,7 +104,7 @@ class User {
 }
 
 / Create instance of OpenAI client initialized with custom parameters for Ollama
-$client = new OpenAIClient(
+$client = new MockClient(
     apiKey: 'ollama',
     baseUri: 'http://localhost:11434/v1',
     connectTimeout: 3,

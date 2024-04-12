@@ -10,7 +10,9 @@ use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 abstract class AbstractCallHandler
 {
     protected EventDispatcher $events;

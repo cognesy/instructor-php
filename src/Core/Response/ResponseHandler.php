@@ -8,9 +8,7 @@ use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseConvertedToObject;
 use Cognesy\Instructor\Events\RequestHandler\ResponseGenerationFailed;
-use Cognesy\Instructor\Exceptions\DeserializationException;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
-use Cognesy\Instructor\Exceptions\ValidationException;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
@@ -26,56 +24,23 @@ class ResponseHandler implements CanHandleResponse
     ) {}
 
     public function handleResponse(ApiResponse $response, ResponseModel $responseModel) : Result {
-        return Chain::make()
-            ->through(fn() => $this->getResponseResult($response))
-            ->through(fn($responseJson) => $this->processResponse($responseJson, $responseModel))
-            ->then(function($result) {
-                return match(true) {
-                    $result->isSuccess() => $result,
-                    default => Result::failure($this->extractErrors($result))
-                };
-            });
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-
-    protected function getResponseResult(ApiResponse $response) : Result {
-        $responseJson = $response->getJson();
-        return match(true) {
-            empty($responseJson) => Result::failure('No JSON found in the response'),
-            default => Result::success($responseJson)
-        };
-    }
-
-    protected function processResponse(string $jsonData, ResponseModel $responseModel) : Result {
-        // check if JSON not empty and not malformed
-        try {
-            $result = $this->toResponse($jsonData, $responseModel);
-            if ($result->isSuccess()) {
-                return $result;
-            }
-            $errors = $this->extractErrors($result);
-        } catch (ValidationException $e) {
-            // handle uncaught validation exceptions
-            $errors = $this->extractErrors($e);
-        } catch (DeserializationException $e) {
-            // handle uncaught deserialization exceptions
-            $errors = $this->extractErrors($e);
-        } catch (Exception $e) {
-            // throw on other exceptions
-            $this->events->dispatch(new ResponseGenerationFailed([$e->getMessage()]));
-            throw new Exception($e->getMessage());
-        }
-        return Result::failure($errors);
-    }
-
-    protected function toResponse(string $jsonData, ResponseModel $responseModel) : Result {
-        return Chain::make()
-            ->through(fn() => $this->responseDeserializer->deserialize($jsonData, $responseModel))
+        $result = Chain::from(fn() => $response->getJson())
+            ->through(fn($responseJson) => match(true) {
+                empty($responseJson) => Result::failure('No JSON found in the response'),
+                default => Result::success($responseJson)
+            })
+            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
             ->through(fn($object) => $this->responseValidator->validate($object))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->tap(fn($object) => $this->events->dispatch(new ToolCallResponseConvertedToObject($object)))
-            ->result();
+            ->then(fn($result) => match(true) {
+                $result->isSuccess() => $result,
+                default => Result::failure($this->extractErrors($result))
+            });
+        if ($result->isFailure()) {
+            $this->events->dispatch(new ResponseGenerationFailed($result->error()));
+        }
+        return $result;
     }
 
     protected function extractErrors(Result|Exception $result) : array {

@@ -43,6 +43,16 @@ abstract class ApiClient implements CanCallApi
         return $this;
     }
 
+    public function getRequest() : ApiRequest {
+        if (empty($this->request)) {
+            throw new Exception('Request is not set');
+        }
+        if (!empty($this->queryParams)) {
+            $this->request->query()->set($this->queryParams);
+        }
+        return $this->request;
+    }
+
     public function onEvent(string $eventClass, callable $callback) : static {
         $this?->events->addListener($eventClass, $callback);
         return $this;
@@ -90,16 +100,11 @@ abstract class ApiClient implements CanCallApi
         }
     }
 
-    public function streamAll() : array {
-        $responses = [];
-        foreach ($this->stream() as $response) {
-            $responses[] = $response;
-        }
-        return $responses;
-    }
-
-    public function async() : ?PromiseInterface {
-        throw new Exception('Not implemented');
+    public function async() : PromiseInterface {
+        return $this->asyncRaw(
+            onSuccess: fn(Response $response) => ($this->responseClass)::fromResponse($response),
+            onError: fn(Exception $exception) => throw $exception
+        );
     }
 
     /// INTERNAL //////////////////////////////////////////////////////////////////////////////
@@ -108,7 +113,10 @@ abstract class ApiClient implements CanCallApi
         if ($this->request->isStreamed()) {
             throw new Exception('You need to use stream() when option stream is set to true');
         }
-        return (new ApiResponseHandler($this->connector, $this->events, $this->debug))->respondRaw($this->getRequest());
+        $responseHandler = new ApiResponseHandler(
+            $this->connector, $this->events, $this->debug
+        );
+        return $responseHandler->respondRaw($this->getRequest());
     }
 
     protected function streamRaw(): Generator {
@@ -116,29 +124,21 @@ abstract class ApiClient implements CanCallApi
             throw new Exception('You need to use respond() when option stream is set to false');
         }
         $this->request->config()->add('stream', true);
-        $streamHandler = new ApiStreamHandler(
+        $responseHandler = new ApiStreamHandler(
             $this->connector, $this->events, $this->isDone(...), $this->getData(...), $this->debug
         );
-        foreach($streamHandler->streamRaw($this->getRequest()) as $response) {
-            if (empty($response)) {
+        $stream = $responseHandler->streamRaw($this->getRequest());
+        foreach($stream as $response) {
+            if (empty($response) || $this->isDone($response)) {
                 continue;
             }
             yield $response;
         }
     }
 
-    protected function asyncRaw(callable $onSuccess, callable $onError) : PromiseInterface {
-        return (new ApiAsyncHandler($this->connector, $this->events, $this->debug))->asyncRaw($this->getRequest(), $onSuccess, $onError);
-    }
-
-    public function getRequest() : ApiRequest {
-        if (empty($this->request)) {
-            throw new Exception('Request is not set');
-        }
-        if (!empty($this->queryParams)) {
-            $this->request->query()->set($this->queryParams);
-        }
-        return $this->request;
+    protected function asyncRaw(callable $onSuccess = null, callable $onError = null) : PromiseInterface {
+        $responseHandler = new ApiAsyncHandler($this->connector, $this->events, $this->debug);
+        return $responseHandler->asyncRaw($this->getRequest(), $onSuccess, $onError);
     }
 
     protected function getModel(string $model) : string {

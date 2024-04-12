@@ -2,23 +2,18 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Core\ApiClient\ValidatesPartialResponse;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
-use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ToolCall;
 use Cognesy\Instructor\Data\ToolCalls;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\LLM\ChunkReceived;
 use Cognesy\Instructor\Events\LLM\PartialJsonReceived;
-use Cognesy\Instructor\Events\LLM\RequestSentToLLM;
-use Cognesy\Instructor\Events\LLM\RequestToLLMFailed;
 use Cognesy\Instructor\Events\LLM\StreamedResponseReceived;
 use Cognesy\Instructor\Events\LLM\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\LLM\StreamedToolCallStarted;
@@ -28,7 +23,6 @@ use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerationFailed;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 use Generator;
@@ -52,44 +46,12 @@ class PartialsGenerator implements CanGeneratePartials
         private EventDispatcher $events,
         private ResponseDeserializer $responseDeserializer,
         private ResponseTransformer $responseTransformer,
-        private RequestBuilder $requestBuilder,
     ) {
         $this->toolCalls = new ToolCalls();
         $this->sequenceableHandler = new SequenceableHandler($events);
     }
 
-    public function getPartialResponses(Request $request, ResponseModel $responseModel, array $messages = []) : Generator {
-        // get function caller instance
-        /** @var ApiClient $apiCallRequest */
-        $apiCallRequest = $this->requestBuilder->makeClientRequest(
-            $messages, $responseModel, $request->model, $request->options, $request->mode
-        );
-        try {
-            $this->events->dispatch(new RequestSentToLLM($apiCallRequest->getRequest()));
-            $stream = $apiCallRequest->stream();
-        } catch(Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed([], $e->getMessage()));
-            throw new Exception($e->getMessage());
-        }
-
-        foreach($this->partialObjectsGenerator($stream, $responseModel) as $update) {
-            yield $update;
-        }
-
-        // finalize last function call
-        // check if there are any toolCalls
-        if ($this->toolCalls->count() === 0) {
-            throw new Exception('No tool calls found in the response');
-        }
-        // finalize last function call
-        if ($this->toolCalls->count() > 0) {
-            $this->finalizeToolCall(Json::find($this->responseText), $responseModel->functionName);
-        }
-        // finalize sequenceable
-        $this->sequenceableHandler->finalize();
-    }
-
-    public function partialObjectsGenerator(Generator $stream, ResponseModel $responseModel) : Iterable {
+    public function getPartialResponses(Generator $stream, ResponseModel $responseModel, array $messages = []) : Iterable {
         // receive data
         /** @var PartialApiResponse $partialResponse */
         foreach($stream as $partialResponse) {
@@ -131,6 +93,18 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
             yield $result->unwrap();
         }
+
+        // finalize last function call
+        // check if there are any toolCalls
+        if ($this->toolCalls->count() === 0) {
+            throw new Exception('No tool calls found in the response');
+        }
+        // finalize last function call
+        if ($this->toolCalls->count() > 0) {
+            $this->finalizeToolCall(Json::find($this->responseText), $responseModel->functionName);
+        }
+        // finalize sequenceable
+        $this->sequenceableHandler->finalize();
     }
 
     protected function handleDelta(string $partialJson, ResponseModel $responseModel) : Result {
@@ -149,7 +123,7 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJsonData,
         ResponseModel $responseModel,
     ) : Result {
-        return Chain::from(fn() => (new JsonParser)->fix($partialJsonData))
+        return Chain::from(fn() => Json::fix($partialJsonData))
             ->through(fn($jsonData) => $this->responseDeserializer->deserialize($jsonData, $responseModel))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->result();

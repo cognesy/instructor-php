@@ -81,7 +81,7 @@ class Sequence
 
     public function fromJson(string $jsonData): static {
         $deserializer = $this->deserializer;
-        $data = json_decode($jsonData, true);
+        $data = Json::parse($jsonData);
         $returnedList = $data['list'] ?? [];
         $list = [];
         foreach ($returnedList as $item) {

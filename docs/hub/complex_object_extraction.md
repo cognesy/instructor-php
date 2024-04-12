@@ -10,7 +10,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Clients\Groq\GroqClient;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenAI\MockClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Extras\Sequences\Sequence;
@@ -94,7 +94,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$client = new OpenAIClient(
+$client = new MockClient(
     apiKey: Env::get('OPENAI_API_KEY'),
     requestTimeout: 90,
 );

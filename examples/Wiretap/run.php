@@ -45,7 +45,7 @@ $user = (new Instructor)
         options: ['stream' => true]
     )
     ->wiretap(fn($event) => $event->print())
-    ->last();
+    ->get();
 
 dump($user);
 

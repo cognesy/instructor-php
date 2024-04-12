@@ -35,12 +35,13 @@ class Json
         return (new JsonParser)->fix($text);
     }
 
-    static public function parse(string $text) : mixed {
-        return json_decode($text, true);
+    static public function parse(string $text, mixed $default = null) : mixed {
+        $decoded = json_decode($text, true);
+        return empty($decoded) ? $default : $decoded;
     }
 
-    static public function parsePartial(string $text) : mixed {
-        return (new JsonParser)->parse($text);
+    static public function parsePartial(string $text, bool $associative = true) : mixed {
+        return (new JsonParser)->parse($text, $associative);
     }
 
     public static function encode(mixed $json, int $options = 0) : string {

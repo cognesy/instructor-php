@@ -8,7 +8,9 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class StreamedMdJsonModeHandler extends AbstractStreamedCallHandler
 {
     private CanCallChatCompletion $client;

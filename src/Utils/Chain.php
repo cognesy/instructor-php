@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Utils;
 
 use Closure;
+use Exception;
 
 class Chain
 {
@@ -76,11 +77,17 @@ class Chain
             default => $this->carry,
         };
         foreach ($this->processors as $processor) {
-            $result = $processor($carry);
+            try {
+                $result = $processor($carry);
+            } catch (Exception $e) {
+                $result = Result::failure($e);
+            }
             if ($result->isFailure()) {
+                // if one chain step has failed - execute failure handlers...
                 foreach ($this->onFailure as $handler) {
                     $handler($result);
                 }
+                // ...and break the chain: skip to then() callback
                 break;
             }
             $carry = $result;

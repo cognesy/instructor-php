@@ -10,12 +10,12 @@ use Mockery;
 class MockLLM
 {
     static public function get(array $args) : ?CanCallApiClient {
-        $mockLLM = Mockery::mock(CanCallApiClient::class);
+        $mockLLM = Mockery::mock(RequestHandler::class);
         $list = [];
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);
         }
-        $mockLLM->shouldReceive('callApiClient')->andReturnUsing(...$list);
+        $mockLLM->shouldReceive('toolsCall')->andReturnUsing(...$list);
         return $mockLLM;
     }
 

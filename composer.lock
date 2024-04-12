@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0cb3324a92f34fca8d2e18bf8244a09a",
+    "content-hash": "4156d125647fa4f731152feb9786dcfc",
     "packages": [
         {
             "name": "brick/math",
@@ -449,65 +449,6 @@
             "time": "2023-12-03T20:05:35+00:00"
         },
         {
-            "name": "halaxa/json-machine",
-            "version": "1.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/halaxa/json-machine.git",
-                "reference": "5147f38f74d7ab3e27733e3f3bdabbd2fd28e3fa"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/halaxa/json-machine/zipball/5147f38f74d7ab3e27733e3f3bdabbd2fd28e3fa",
-                "reference": "5147f38f74d7ab3e27733e3f3bdabbd2fd28e3fa",
-                "shasum": ""
-            },
-            "require": {
-                "php": "7.0 - 8.3"
-            },
-            "require-dev": {
-                "ext-json": "*",
-                "friendsofphp/php-cs-fixer": "^3.0",
-                "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^8.0"
-            },
-            "suggest": {
-                "ext-json": "To run JSON Machine out of the box without custom decoders.",
-                "guzzlehttp/guzzle": "To run example with GuzzleHttp"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "JsonMachine\\": "src/"
-                },
-                "exclude-from-classmap": [
-                    "src/autoloader.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Filip Halaxa",
-                    "email": "filip@halaxa.cz"
-                }
-            ],
-            "description": "Efficient, easy-to-use and fast JSON pull parser",
-            "support": {
-                "issues": "https://github.com/halaxa/json-machine/issues",
-                "source": "https://github.com/halaxa/json-machine/tree/1.1.4"
-            },
-            "funding": [
-                {
-                    "url": "https://ko-fi.com/G2G57KTE4",
-                    "type": "other"
-                }
-            ],
-            "time": "2023-11-28T21:12:40+00:00"
-        },
-        {
             "name": "league/flysystem",
             "version": "3.27.0",
             "source": {
@@ -711,197 +652,6 @@
                 }
             ],
             "time": "2024-01-28T23:22:08+00:00"
-        },
-        {
-            "name": "loophp/collection",
-            "version": "7.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/loophp/collection.git",
-                "reference": "a068deed401f774be817c520db293769f9494847"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/loophp/collection/zipball/a068deed401f774be817c520db293769f9494847",
-                "reference": "a068deed401f774be817c520db293769f9494847",
-                "shasum": ""
-            },
-            "require": {
-                "loophp/iterators": "^3.2.0",
-                "php": ">= 8.1"
-            },
-            "require-dev": {
-                "amphp/parallel-functions": "^1",
-                "doctrine/collections": "^2",
-                "drupol/php-conventions": "^5",
-                "ext-pcov": "*",
-                "infection/infection": "^0.27",
-                "loophp/phpunit-iterable-assertions": "^1.0",
-                "phpstan/phpstan-strict-rules": "^1.0",
-                "phpunit/php-code-coverage": "^10",
-                "phpunit/phpunit": "^10",
-                "psr/cache": "^2.0 || 3.0",
-                "symfony/cache": "^6",
-                "vimeo/psalm": "^5.14"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "loophp\\collection\\": "./src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Pol Dellaiera",
-                    "email": "pol.dellaiera@protonmail.com",
-                    "homepage": "https://not-a-number.io",
-                    "role": "author"
-                },
-                {
-                    "name": "Alex Gidei",
-                    "homepage": "https://github.com/AlexandruGG",
-                    "role": "maintainer"
-                }
-            ],
-            "description": "A (memory) friendly, easy, lazy and modular collection class.",
-            "homepage": "https://github.com/loophp/collection",
-            "keywords": [
-                "collection",
-                "generator",
-                "iterator",
-                "yield"
-            ],
-            "support": {
-                "docs": "https://loophp-collection.rtfd.io",
-                "issues": "https://github.com/loophp/collection/issues",
-                "source": "https://github.com/loophp/collection"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/drupol",
-                    "type": "github"
-                }
-            ],
-            "time": "2024-04-02T08:40:20+00:00"
-        },
-        {
-            "name": "loophp/iterators",
-            "version": "3.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/loophp/iterators.git",
-                "reference": "1332fd9bb9ec6adc82ee9d93e9a5445daa47bf81"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/loophp/iterators/zipball/1332fd9bb9ec6adc82ee9d93e9a5445daa47bf81",
-                "reference": "1332fd9bb9ec6adc82ee9d93e9a5445daa47bf81",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">= 8.1"
-            },
-            "require-dev": {
-                "drupol/php-conventions": "^5",
-                "ext-pcov": "*",
-                "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan-strict-rules": "^1.0",
-                "phpunit/php-code-coverage": "^10",
-                "phpunit/phpunit": "^10"
-            },
-            "suggest": {
-                "ext-mbstring": "For UTF-8 support in the StringIteratorAggregate."
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "loophp\\iterators\\": "./src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Pol Dellaiera",
-                    "email": "pol.dellaiera@protonmail.com",
-                    "homepage": "https://not-a-number.io",
-                    "role": "author"
-                }
-            ],
-            "description": "The missing PHP iterators.",
-            "homepage": "https://github.com/loophp/iterators",
-            "keywords": [
-                "iterators"
-            ],
-            "support": {
-                "issues": "https://github.com/loophp/iterators/issues",
-                "source": "https://github.com/loophp/iterators"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/drupol",
-                    "type": "github"
-                }
-            ],
-            "time": "2024-02-18T17:17:56+00:00"
-        },
-        {
-            "name": "nikic/iter",
-            "version": "v2.4.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nikic/iter.git",
-                "reference": "09cd930fa9ff55747f34c7184532a5a1bd2385b1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nikic/iter/zipball/09cd930fa9ff55747f34c7184532a5a1bd2385b1",
-                "reference": "09cd930fa9ff55747f34c7184532a5a1bd2385b1",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^1.4",
-                "phpunit/phpunit": "^7.0 || ^8.0 || ^9.0",
-                "vimeo/psalm": "^4.18 || ^5.13"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/iter.func.php",
-                    "src/iter.php",
-                    "src/iter.rewindable.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Nikita Popov",
-                    "email": "nikic@php.net"
-                }
-            ],
-            "description": "Iteration primitives using generators",
-            "keywords": [
-                "functional",
-                "generator",
-                "iterator"
-            ],
-            "support": {
-                "issues": "https://github.com/nikic/iter/issues",
-                "source": "https://github.com/nikic/iter/tree/v2.4.0"
-            },
-            "time": "2023-12-10T20:43:19+00:00"
         },
         {
             "name": "nyholm/psr7",
@@ -1674,69 +1424,6 @@
                 }
             ],
             "time": "2024-04-08T11:53:06+00:00"
-        },
-        {
-            "name": "spatie/array-to-xml",
-            "version": "3.2.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/spatie/array-to-xml.git",
-                "reference": "c95fd4db94ec199f798d4b5b4a81757bd20d88ab"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/spatie/array-to-xml/zipball/c95fd4db94ec199f798d4b5b4a81757bd20d88ab",
-                "reference": "c95fd4db94ec199f798d4b5b4a81757bd20d88ab",
-                "shasum": ""
-            },
-            "require": {
-                "ext-dom": "*",
-                "php": "^8.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.2",
-                "pestphp/pest": "^1.21",
-                "spatie/pest-plugin-snapshots": "^1.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Spatie\\ArrayToXml\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Freek Van der Herten",
-                    "email": "freek@spatie.be",
-                    "homepage": "https://freek.dev",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Convert an array to xml",
-            "homepage": "https://github.com/spatie/array-to-xml",
-            "keywords": [
-                "array",
-                "convert",
-                "xml"
-            ],
-            "support": {
-                "source": "https://github.com/spatie/array-to-xml/tree/3.2.3"
-            },
-            "funding": [
-                {
-                    "url": "https://spatie.be/open-source/support-us",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/spatie",
-                    "type": "github"
-                }
-            ],
-            "time": "2024-02-07T10:39:02+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -6415,8 +6102,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.2",
-        "ext-dom": "*"
+        "php": "^8.2"
     },
     "platform-dev": [],
     "plugin-api-version": "2.6.0"

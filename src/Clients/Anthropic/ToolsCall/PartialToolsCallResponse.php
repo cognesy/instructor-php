@@ -2,14 +2,13 @@
 namespace Cognesy\Instructor\Clients\Anthropic\ToolsCall;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\Utils\Json;
 
 class PartialToolsCallResponse extends PartialApiResponse
 {
     static public function fromPartialResponse(string $partialData) : self {
-        $decoded = json_decode($partialData, true);
-        $decoded = (empty($decoded)) ? [] : $decoded;
-        $functionName = '';
+        $decoded = Json::parse($partialData, default: []);
         $argumentsJson = $decoded['delta']['text'] ?? '';
-        return new self($argumentsJson, $decoded, $functionName);
+        return new self($argumentsJson, $decoded);
     }
 }

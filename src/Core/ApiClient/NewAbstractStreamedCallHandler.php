@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Core\ApiClient;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\ValidatesPartialResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ToolCall;
@@ -22,7 +23,7 @@ use Cognesy\Instructor\Utils\Result;
 use JetBrains\PhpStorm\Deprecated;
 
 #[Deprecated]
-abstract class AbstractStreamedCallHandler
+abstract class NewAbstractStreamedCallHandler
 {
     use ValidatesPartialResponse;
 
@@ -35,6 +36,10 @@ abstract class AbstractStreamedCallHandler
 
     private bool $matchToExpectedFields = false;
     private bool $preventJsonSchema = false;
+
+    public function __construct() {
+        $this->partialsGenerator = new PartialsGenerator($events, $responseDeserializer, $responseTransformer, $requestBuilder);
+    }
 
     /**
      * Handle streamed chat call

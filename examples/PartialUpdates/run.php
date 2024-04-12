@@ -43,7 +43,7 @@ function partialUpdate($partial) {
 
     // Wait a bit before clearing the screen to make partial changes slower.
     // Don't use this in your application :)
-    //usleep(250000);
+    usleep(250000);
 }
 ?>
 ```
@@ -63,7 +63,7 @@ $user = (new Instructor)->request(
     messages: $text,
     responseModel: UserDetail::class,
     options: ['stream' => true],
-)->onPartialUpdate(partialUpdate(...))->last();
+)->onPartialUpdate(partialUpdate(...))->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";
 echo '$user = '."\n";

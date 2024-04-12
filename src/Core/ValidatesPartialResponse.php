@@ -1,13 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor\Core\ApiClient;
+namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Utils\JsonParser;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
@@ -47,7 +46,7 @@ trait ValidatesPartialResponse
     private function isJsonSchemaResponse(string $responseText) : bool {
         try {
             $jsonFragment = Json::findPartial($responseText);
-            $decoded = (new JsonParser)->parse($jsonFragment, true);
+            $decoded = Json::parsePartial($jsonFragment);
         } catch (Exception $e) {
             // also covers no JSON at all - which is fine, as some models will respond with text
             return false;
@@ -83,7 +82,7 @@ trait ValidatesPartialResponse
         // ...detect matching response model
         try {
             $jsonFragment = Json::findPartial($partialResponseText);
-            $decoded = (new JsonParser)->parse($jsonFragment, true);
+            $decoded = Json::parsePartial($jsonFragment);
             // we can try removing last item as it is likely to be still incomplete
             $decoded = Arrays::removeTail($decoded, 1);
         } catch (Exception $e) {

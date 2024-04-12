@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
-use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\NewRequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
@@ -18,7 +18,6 @@ use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\PartialResponseGenerated;
 use Cognesy\Instructor\Events\RequestHandler\SequenceUpdated;
-use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
 use Throwable;
@@ -49,7 +48,7 @@ class Instructor {
         $this->events = $this->config->get(EventDispatcher::class);
     }
 
-    /// INITIALIZATION ENDPOINTS /////////////////////////////////////////////////////////////
+    /// INITIALIZATION ENDPOINTS //////////////////////////////////////////////
 
     /**
      * Overrides the default configuration
@@ -81,7 +80,7 @@ class Instructor {
         return $this;
     }
 
-    /// EXTRACTION EXECUTION ENDPOINTS ///////////////////////////////////////////////////////
+    /// EXTRACTION EXECUTION ENDPOINTS ////////////////////////////////////////
 
     /**
      * Creates the request to be executed
@@ -146,8 +145,9 @@ class Instructor {
         if ($this->request === null) {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
-        if ($this->request->options['stream']) {
-            throw new Exception('Instructor::get() method does not support streaming: set "stream" = false in the request options.');
+        $isStream = $this->request->options['stream'] ?? false;
+        if ($isStream) {
+            return $this->stream()->final();
         }
         return $this->handleRequest();
     }
@@ -155,72 +155,18 @@ class Instructor {
     /**
      * Executes the request and returns the response stream
      */
-    public function stream() : Iterable {
+    public function stream() : Stream {
         if ($this->request === null) {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
-        if (!$this->request->options['stream']) {
+        $isStream = $this->request->options['stream'] ?? false;
+        if (!$isStream) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
-        foreach($this->handleStreamRequest() as $update) {
-            yield $update;
-        }
+        return new Stream($this->handleStreamRequest());
     }
 
-    public function sequence() : Iterable {
-        $updates = $this->stream();
-        $lastSequence = null;
-        $lastSequenceCount = 1;
-        foreach ($updates as $update) {
-            if (!($update instanceof Sequence)) {
-                throw new Exception('Expected a sequence update, got ' . get_class($update));
-            }
-            if ($update->count() > $lastSequenceCount) {
-                $lastSequenceCount = $update->count();
-                yield $lastSequence;
-            }
-            $lastSequence = $update;
-        }
-        yield $lastSequence;
-    }
-
-    /// PROCESS STREAMED RESULTS /////////////////////////////////////////////////////////////
-
-    public function each(callable $callback) : void {
-        $stream = $this->stream();
-        foreach ($stream as $item) {
-            $callback($item);
-        }
-    }
-
-    public function map(callable $callback) : array {
-        $stream = $this->stream();
-        $result = [];
-        foreach ($stream as $item) {
-            $result[] = $callback($item);
-        }
-        return $result;
-    }
-
-    public function last() : mixed {
-        $stream = $this->stream();
-        $result = null;
-        foreach ($stream as $item) {
-            $result = $item;
-        }
-        return $result;
-    }
-
-    public function flatMap(callable $callback, mixed $initial) : mixed {
-        $stream = $this->stream();
-        $result = $initial;
-        foreach ($stream as $item) {
-            $result = $callback($item, $result);
-        }
-        return $result;
-    }
-
-    /// ACCESS CURRENT INSTRUCTOR CONFIGURATION //////////////////////////////////////////////
+    /// ACCESS CURRENT INSTRUCTOR CONFIGURATION ///////////////////////////////
 
     /**
      * Returns the current configuration
@@ -250,7 +196,7 @@ class Instructor {
     }
 
 
-    /// EVENT HANDLERS ///////////////////////////////////////////////////////////////////////
+    /// EVENT HANDLERS ////////////////////////////////////////////////////////
 
     /**
      * Listens to all events
@@ -300,11 +246,11 @@ class Instructor {
         return $this;
     }
 
-    /// PRIVATE //////////////////////////////////////////////////////////////////////////////
+    /// INTERNAL //////////////////////////////////////////////////////////////
 
     private function handleRequest() : mixed {
         try {
-            /** @var RequestHandler $requestHandler */
+            /** @var NewRequestHandler $requestHandler */
             $requestHandler = $this->config->get(CanHandleRequest::class);
             $responseResult = $requestHandler->respondTo($this->request);
             if ($responseResult->isFailure()) {

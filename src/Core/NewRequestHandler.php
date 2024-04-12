@@ -20,9 +20,9 @@ class NewRequestHandler implements CanHandleRequest
 {
     public function __construct(
         private ResponseModelFactory $responseModelFactory,
-        private EventDispatcher $events,
-        private CanHandleResponse $responseHandler,
-        private RequestBuilder $requestBuilder,
+        private EventDispatcher      $events,
+        private CanHandleResponse    $responseHandler,
+        private RequestBuilder       $requestBuilder,
     ) {}
 
     /**

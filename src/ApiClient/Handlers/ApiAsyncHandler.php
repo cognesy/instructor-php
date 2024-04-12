@@ -21,25 +21,27 @@ class ApiAsyncHandler
         protected bool $debug = false,
     ) {}
 
-    public function asyncRaw(ApiRequest $request, callable $onSuccess, callable $onError) : PromiseInterface {
+    public function asyncRaw(ApiRequest $request, callable $onSuccess = null, callable $onError = null) : PromiseInterface {
         if ($request->isStreamed()) {
             throw new Exception('Async does not support streaming');
         }
-
         $this?->events->dispatch(new ApiAsyncRequestInitiated($request));
         if ($this->debug) {
             $this->connector->debug();
         }
         $promise = $this->connector->sendAsync($request);
-        $promise
-            ->then(function (Response $response) use ($onSuccess) {
+        if (!empty($onSuccess)) {
+            $promise->then(function (Response $response) use ($onSuccess) {
                 $this?->events->dispatch(new ApiAsyncResponseReceived($response));
                 $onSuccess($response);
-            })
-            ->otherwise(function (RequestException $exception) use ($onError) {
+            });
+        }
+        if (!empty($onError)) {
+            $promise->otherwise(function (RequestException $exception) use ($onError) {
                 $this?->events->dispatch(new ApiRequestErrorRaised($exception));
                 $onError($exception);
             });
+        }
         return $promise;
     }
 }

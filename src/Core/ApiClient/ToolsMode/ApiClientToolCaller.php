@@ -7,7 +7,9 @@ use Cognesy\Instructor\Contracts\CanCallApiClient;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Utils\Result;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class ApiClientToolCaller implements CanCallApiClient
 {
     public function __construct(

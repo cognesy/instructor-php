@@ -7,7 +7,9 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class ApiClientMdJsonCaller implements CanCallApiClient
 {
     private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";

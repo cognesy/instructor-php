@@ -58,13 +58,4 @@ class ApiStreamHandler
             yield $streamedData;
         }
     }
-
-//    public function streamAllRaw(ApiRequest $request) : array {
-//        $responses = [];
-//        $stream = $this->streamRaw($request);
-//        foreach ($stream as $response) {
-//            $responses[] = $response;
-//        }
-//        return $responses;
-//    }
 }

@@ -4,13 +4,12 @@ You can provide your own OpenAI client instance to Instructor. This is useful
 when you want to initialize OpenAI client with custom values - e.g. to call
 other LLMs which support OpenAI API.
 
-
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenAI\MockClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
@@ -21,7 +20,7 @@ class User {
 }
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient(
+$client = new MockClient(
     apiKey: Env::get('OPENAI_API_KEY'),
     baseUri: 'https://api.openai.com/v1',
     connectTimeout: 3,

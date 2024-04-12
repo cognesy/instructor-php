@@ -10,7 +10,9 @@ use Cognesy\Instructor\Contracts\CanCallApiClient;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Exception;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class ToolCallerFactory
 {
     public function __construct(

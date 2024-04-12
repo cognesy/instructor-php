@@ -9,6 +9,7 @@ use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Data\ValidationError;
 use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Exceptions\DeserializationException;
+use Cognesy\Instructor\Utils\Json;
 use Exception;
 use ReflectionEnum;
 
@@ -84,7 +85,7 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
         }
         try {
             // decode JSON into array
-            $array = json_decode($jsonData, true);
+            $array = Json::parse($jsonData);
         } catch (Exception $e) {
             throw new DeserializationException($e->getMessage(), $this->name, $jsonData);
         }

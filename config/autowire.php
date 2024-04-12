@@ -18,20 +18,19 @@ use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
-use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
+//use Cognesy\Instructor\Contracts\CanHandlePartialResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Contracts\CanValidateObject;
-use Cognesy\Instructor\Core\ApiClient\JsonMode\ApiClientJsonCaller;
-use Cognesy\Instructor\Core\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
-use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
-use Cognesy\Instructor\Core\ApiClient\ToolsMode\ApiClientToolCaller;
+//use Cognesy\Instructor\Core\ApiClient\JsonMode\ApiClientJsonCaller;
+//use Cognesy\Instructor\Core\ApiClient\MdJsonMode\ApiClientMdJsonCaller;
+//use Cognesy\Instructor\Core\ApiClient\ToolCallerFactory;
+//use Cognesy\Instructor\Core\ApiClient\ToolsMode\ApiClientToolCaller;
 use Cognesy\Instructor\Core\NewRequestHandler;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestBuilder;
-use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\Response\PartialResponseHandler;
+//use Cognesy\Instructor\Core\Response\PartialResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseHandler;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
@@ -39,7 +38,7 @@ use Cognesy\Instructor\Core\Response\ResponseValidator;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
-use Cognesy\Instructor\Enums\Mode;
+//use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
@@ -189,45 +188,45 @@ function autowire(Configuration $config) : Configuration
         ]
     );
 
-    $config->declare(
-        class: ToolCallerFactory::class,
-        context: [
-            'client' => $config->reference(CanCallApi::class),
-            'modeHandlers' => [
-                Mode::Tools->value => $config->reference(CanCallTools::class, true),
-                Mode::Json->value => $config->reference(CanCallJsonCompletion::class, true),
-                Mode::MdJson->value => $config->reference(CanCallChatCompletion::class, true),
-            ],
-            //'forceMode' => Mode::MdJson,
-        ]
-    );
-
-    $config->declare(
-        class: ApiClientToolCaller::class,
-        name: CanCallTools::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'client' => $config->reference(CanCallApi::class),
-        ]
-    );
-
-    $config->declare(
-        class: ApiClientJsonCaller::class,
-        name: CanCallJsonCompletion::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'client' => $config->reference(CanCallApi::class),
-        ]
-    );
-
-    $config->declare(
-        class: ApiClientMdJsonCaller::class,
-        name: CanCallChatCompletion::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'client' => $config->reference(CanCallApi::class),
-        ]
-    );
+//    $config->declare(
+//        class: ToolCallerFactory::class,
+//        context: [
+//            'client' => $config->reference(CanCallApi::class),
+//            'modeHandlers' => [
+//                Mode::Tools->value => $config->reference(CanCallTools::class, true),
+//                Mode::Json->value => $config->reference(CanCallJsonCompletion::class, true),
+//                Mode::MdJson->value => $config->reference(CanCallChatCompletion::class, true),
+//            ],
+//            //'forceMode' => Mode::MdJson,
+//        ]
+//    );
+//
+//    $config->declare(
+//        class: ApiClientToolCaller::class,
+//        name: CanCallTools::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'client' => $config->reference(CanCallApi::class),
+//        ]
+//    );
+//
+//    $config->declare(
+//        class: ApiClientJsonCaller::class,
+//        name: CanCallJsonCompletion::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'client' => $config->reference(CanCallApi::class),
+//        ]
+//    );
+//
+//    $config->declare(
+//        class: ApiClientMdJsonCaller::class,
+//        name: CanCallChatCompletion::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'client' => $config->reference(CanCallApi::class),
+//        ]
+//    );
 
 
     /// SCHEMA MODEL HANDLING ////////////////////////////////////////////////////////////////
@@ -261,22 +260,17 @@ function autowire(Configuration $config) : Configuration
 
     /// REQUEST HANDLING /////////////////////////////////////////////////////////////////////
 
-    $config->declare(
-        class: RequestHandler::class,
-        name: CanHandleRequest::class,
-        context: [
-            'toolCallerFactory' => $config->reference(ToolCallerFactory::class),
-            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
-            'events' => $config->reference(EventDispatcher::class),
-            'responseHandler' => $config->reference(CanHandleResponse::class),
-            'partialResponseHandler' => $config->reference(CanHandlePartialResponse::class),
-        ]
-    );
-
-//    private ResponseModelFactory $responseModelFactory,
-//        private EventDispatcher $events,
-//        private CanHandleResponse $responseHandler,
-//        private RequestBuilder $requestBuilder,
+//    $config->declare(
+//        class: RequestHandler::class,
+//        //name: CanHandleRequest::class,
+//        context: [
+//            'toolCallerFactory' => $config->reference(ToolCallerFactory::class),
+//            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
+//            'events' => $config->reference(EventDispatcher::class),
+//            'responseHandler' => $config->reference(CanHandleResponse::class),
+//            'partialResponseHandler' => $config->reference(CanHandlePartialResponse::class),
+//        ]
+//    );
 
     $config->declare(
         class: NewRequestHandler::class,
@@ -297,16 +291,6 @@ function autowire(Configuration $config) : Configuration
             'events' => $config->reference(EventDispatcher::class),
             'responseHandler' => $config->reference(CanHandleResponse::class),
             'partialsGenerator' => $config->reference(CanGeneratePartials::class),
-        ]
-    );
-
-    $config->declare(
-        class: PartialsGenerator::class,
-        name: CanGeneratePartials::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'responseDeserializer' => $config->reference(ResponseDeserializer::class),
-            'responseTransformer' => $config->reference(ResponseTransformer::class),
             'requestBuilder' => $config->reference(RequestBuilder::class),
         ]
     );
@@ -325,14 +309,24 @@ function autowire(Configuration $config) : Configuration
     );
 
     $config->declare(
-        class: PartialResponseHandler::class,
-        name: CanHandlePartialResponse::class,
+        class: PartialsGenerator::class,
+        name: CanGeneratePartials::class,
         context: [
+            'events' => $config->reference(EventDispatcher::class),
             'responseDeserializer' => $config->reference(ResponseDeserializer::class),
             'responseTransformer' => $config->reference(ResponseTransformer::class),
-            'events' => $config->reference(EventDispatcher::class),
         ]
     );
+
+//    $config->declare(
+//        class: PartialResponseHandler::class,
+//        name: CanHandlePartialResponse::class,
+//        context: [
+//            'responseDeserializer' => $config->reference(ResponseDeserializer::class),
+//            'responseTransformer' => $config->reference(ResponseTransformer::class),
+//            'events' => $config->reference(EventDispatcher::class),
+//        ]
+//    );
 
     $config->declare(
         class: ResponseDeserializer::class,

@@ -8,7 +8,7 @@ OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenAI\MockClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
@@ -28,7 +28,7 @@ class User {
 }
 
 // Create instance of OpenAI client initialized with custom parameters for Ollama
-$client = new OpenAIClient(
+$client = new MockClient(
     apiKey: 'ollama',
     baseUri: 'http://localhost:11434/v1',
     connectTimeout: 3,

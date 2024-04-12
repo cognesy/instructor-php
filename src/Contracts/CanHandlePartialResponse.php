@@ -2,8 +2,9 @@
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Utils\Result;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 interface CanHandlePartialResponse
 {
     public function handlePartialResponse(string $partialJsonData, ResponseModel $responseModel): void;

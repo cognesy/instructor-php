@@ -20,7 +20,9 @@ use Cognesy\Instructor\Events\RequestHandler\ToolCallRequested;
 use Cognesy\Instructor\Events\RequestHandler\ToolCallResponseReceived;
 use Cognesy\Instructor\Events\RequestHandler\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Utils\Result;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class RequestHandler implements CanHandleRequest
 {
     public function __construct(

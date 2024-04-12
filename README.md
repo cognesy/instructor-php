@@ -440,13 +440,13 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 
 ```php
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenAI\MockClient;
 
 // OpenAI auth params
 $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient(
+$client = new MockClient(
     $yourApiKey,
     baseUri: 'https://api.openai.com', // you can change base URI
     organization: '',
