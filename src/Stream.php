@@ -28,7 +28,7 @@ class Stream
     /**
      * Returns raw stream for custom processing
      */
-    public function getIterable() : Iterable {
+    public function getIterator() : Iterable {
         return $this->stream;
     }
 
@@ -59,46 +59,6 @@ class Stream
     }
 
     /**
-     * Processes response stream and calls a callback for each update
-     */
-    public function each(callable $callback) : void {
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $callback($update);
-        }
-        $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone());
-    }
-
-    /**
-     * Processes response stream and maps each update via provided function
-     */
-    public function map(callable $callback) : array {
-        $result = [];
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $result[] = $callback($update);
-        }
-        $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone());
-        return $result;
-    }
-
-    /**
-     * Processes response stream and flat maps each update via provided function
-     */
-    public function flatMap(callable $callback, mixed $initial) : mixed {
-        $result = $initial;
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $result = $callback($update, $result);
-        }
-        $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone());
-        return $result;
-    }
-
-    /**
      * Processes response stream, returning updated sequence for each completed item
      */
     public function sequence() : Iterable {
@@ -118,5 +78,45 @@ class Stream
         yield $lastSequence;
         $this->events->dispatch(new ResponseGenerated($lastSequence));
         $this->events->dispatch(new InstructorDone());
+    }
+
+    /**
+     * Processes response stream and calls a callback for each update
+     */
+    private function each(callable $callback) : void {
+        foreach ($this->stream as $update) {
+            $this->lastUpdate = $update;
+            $callback($update);
+        }
+        $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
+        $this->events->dispatch(new InstructorDone());
+    }
+
+    /**
+     * Processes response stream and maps each update via provided function
+     */
+    private function map(callable $callback) : array {
+        $result = [];
+        foreach ($this->stream as $update) {
+            $this->lastUpdate = $update;
+            $result[] = $callback($update);
+        }
+        $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
+        $this->events->dispatch(new InstructorDone());
+        return $result;
+    }
+
+    /**
+     * Processes response stream and flat maps each update via provided function
+     */
+    private function flatMap(callable $callback, mixed $initial) : mixed {
+        $result = $initial;
+        foreach ($this->stream as $update) {
+            $this->lastUpdate = $update;
+            $result = $callback($update, $result);
+        }
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone());
+        return $result;
     }
 }

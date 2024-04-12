@@ -26,10 +26,10 @@ You can pass a custom configured instance of client to the Instructor. This allo
 <?php
 use Cognesy\Instructor\Instructor;
 use Cognesy\Utils\Env;
-use Cognesy\Instructor\Clients\OpenAI\MockClient;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new MockClient(
+$client = new OpenAIClient(
     apiKey: $yourApiKey,
     baseUri: 'https://api.openai.com/v1',
     organization: '',

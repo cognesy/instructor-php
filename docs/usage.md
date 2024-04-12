@@ -90,37 +90,62 @@ $instructor = (new Instructor)->withRequest(new Request(
 ))->get();
 ```
 
-## Custom OpenAI client
 
-You can provide your own OpenAI client to Instructor. This is useful when you want to initialize OpenAI client with custom values - e.g. to call other LLMs which support OpenAI API.
+
+## Streaming responses
+
+You can get a stream of responses by setting the `stream` option to `true` and calling the `stream()` method
+instead of `get()`. It returns `Stream` object, which gives you access to the response streamed from LLM and
+processed by Instructor into structured data.
+
+Following methods to process the stream:
+ - `partials()`: Returns a generator of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
+ - `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
+ - `final()`: Returns the final response object. It blocks until the response is fully processed.
+ - `getLastUpdate()`: Returns the last object received and processed by Instructor.
+
+
+### Example: streaming partial responses
 
 ```php
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Clients\OpenAI\MockClient;
+use Cognesy\Instructor;
 
-class User {
-    public int $age;
-    public string $name;
+$stream = (new Instructor)->request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+)->stream();
+
+foreach ($stream->partials() as $update) {
+    // render updated person view
+    // for example:
+    $view->updateView($update); // render the updated person view
 }
 
-/ Create instance of OpenAI client initialized with custom parameters for Ollama
-$client = new MockClient(
-    apiKey: 'ollama',
-    baseUri: 'http://localhost:11434/v1',
-    connectTimeout: 3,
-    requestTimeout: 60, // set based on your machine performance :)
-);
+// now you can get final, fully processed person object
+$person = $stream->getLastUpdate();
+// ...and for example save it to the database
+$db->savePerson($person);
+```
 
-/// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
 
-$user = $instructor->respond(
-    messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
-    responseModel: User::class,
-    model: 'llama2',
-    mode: Mode::MdJson
-    //options: ['stream' => true ]
-);
+### Example: streaming sequence items
 
-dump($user);
+```php
+use Cognesy\Instructor;
+
+$stream = (new Instructor)->request(
+    messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
+    responseModel: Sequence::of(Participant::class),
+)->stream();
+
+foreach ($stream->sequence() as $update) {
+    // append last completed item from the sequence
+    // for example:
+    $view->appendParticipant($update->last());
+}
+
+// now you can get final, fully processed sequence of participants
+$participants = $stream->getLastUpdate();
+// ...and for example save it to the database
+$db->saveParticipants($participants->toArray());
 ```
