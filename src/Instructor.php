@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
-use Cognesy\Instructor\Core\NewRequestHandler;
+use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
@@ -250,7 +250,7 @@ class Instructor {
 
     private function handleRequest() : mixed {
         try {
-            /** @var NewRequestHandler $requestHandler */
+            /** @var RequestHandler $requestHandler */
             $requestHandler = $this->config->get(CanHandleRequest::class);
             $responseResult = $requestHandler->respondTo($this->request);
             if ($responseResult->isFailure()) {

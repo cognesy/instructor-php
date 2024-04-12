@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\StreamResponse;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Exceptions\JsonParsingException;

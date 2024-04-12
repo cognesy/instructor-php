@@ -3,9 +3,10 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
-use Cognesy\Instructor\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
+use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -27,7 +28,7 @@ class StreamRequestHandler implements CanHandleRequest
     public function __construct(
         private ResponseModelFactory $responseModelFactory,
         private EventDispatcher      $events,
-        private CanHandleResponse    $responseHandler,
+        private CanGenerateResponse  $responseGenerator,
         private PartialsGenerator    $partialsGenerator,
         private RequestBuilder       $requestBuilder,
     ) {}
@@ -55,7 +56,7 @@ class StreamRequestHandler implements CanHandleRequest
             // ...and then get the final response
             $apiResponse = $this->partialsGenerator->getCompleteResponse();
             // we have ApiResponse here - let's process it: deserialize, validate, transform
-            $responseProcessingResult = $this->responseHandler->handleResponse($apiResponse, $responseModel);
+            $responseProcessingResult = $this->responseGenerator->makeResponse($apiResponse, $responseModel);
             if ($responseProcessingResult->isSuccess()) {
                 $this->events->dispatch(new ResponseGenerated($responseProcessingResult->unwrap()));
                 yield $responseProcessingResult->unwrap();

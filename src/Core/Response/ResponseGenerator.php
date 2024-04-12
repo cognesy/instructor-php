@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Core\Response;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
-use Cognesy\Instructor\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -14,7 +14,7 @@ use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
-class ResponseHandler implements CanHandleResponse
+class ResponseGenerator implements CanGenerateResponse
 {
     public function __construct(
         private ResponseDeserializer $responseDeserializer,
@@ -23,7 +23,7 @@ class ResponseHandler implements CanHandleResponse
         private EventDispatcher $events,
     ) {}
 
-    public function handleResponse(ApiResponse $response, ResponseModel $responseModel) : Result {
+    public function makeResponse(ApiResponse $response, ResponseModel $responseModel) : Result {
         $result = Chain::from(fn() => $response->getJson())
             ->through(fn($responseJson) => match(true) {
                 empty($responseJson) => Result::failure('No JSON found in the response'),

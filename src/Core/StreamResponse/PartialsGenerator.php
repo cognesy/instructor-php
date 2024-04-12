@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\StreamResponse;
 
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
