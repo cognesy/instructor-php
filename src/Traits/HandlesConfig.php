@@ -13,10 +13,6 @@ trait HandlesConfig
         $this->config = $config;
     }
 
-    protected function overrideConfig(array $config) : void {
-        $this->config->override($config);
-    }
-
     /**
      * Returns the current configuration
      */
@@ -27,7 +23,7 @@ trait HandlesConfig
     /**
      * Overrides the default configuration
      */
-    public function withConfig(array $config) : self {
+    public function withConfig(array $config) : static {
         $this->config->override($config);
         return $this;
     }

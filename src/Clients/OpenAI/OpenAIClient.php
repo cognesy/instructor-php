@@ -32,7 +32,7 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new OpenAIConnector(
+        $this->withConnector($connector ?? new OpenAIConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             organization: $organization,
@@ -40,7 +40,7 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

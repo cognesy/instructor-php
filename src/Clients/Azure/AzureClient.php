@@ -34,7 +34,7 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new AzureConnector(
+        $this->withConnector($connector ?? new AzureConnector(
             apiKey: $apiKey,
             resourceName: $resourceName,
             deploymentId: $deploymentId,
@@ -43,7 +43,7 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
         $this->queryParams = ['api-version' => $apiVersion];
     }
 

@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\ApiClient;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Traits\HandlesEventListeners;
-use Cognesy\Instructor\Traits\HandlesEvents;
+use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
+use Cognesy\Instructor\Events\Traits\HandlesEvents;
 
 abstract class ApiClient implements CanCallApi
 {

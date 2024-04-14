@@ -8,14 +8,12 @@ use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
-use Cognesy\Instructor\Traits\HandlesDebug;
 use Exception;
 use Generator;
 use Saloon\Exceptions\Request\RequestException;
 
 trait HandlesStreamResponse
 {
-    use HandlesDebug;
     use HandlesApiConnector;
     use HandlesResponseClass;
     use HandlesRequest;
@@ -38,12 +36,8 @@ trait HandlesStreamResponse
         if (!$this->isStreamedRequest()) {
             throw new Exception('You need to use respond() when option stream is set to false');
         }
-        if ($this->debug()) {
-            $this->connector->debug();
-        }
         $request = $this->getRequest();
         $this->withStreaming(true);
-
         $stream = $this->getStream($request);
         foreach($stream as $response) {
             if (empty($response) || $this->isDone($response)) {
@@ -56,7 +50,7 @@ trait HandlesStreamResponse
     protected function getStream(ApiRequest $request): Generator {
         $this?->events->dispatch(new ApiStreamRequestInitiated($request));
         try {
-            $response = $this->connector->send($request);
+            $response = $this->connector()->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;

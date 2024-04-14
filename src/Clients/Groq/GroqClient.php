@@ -32,14 +32,14 @@ class GroqClient extends ApiClient implements CanCallChatCompletion, CanCallJson
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new GroqConnector(
+        $this->withConnector($connector ?? new GroqConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
 

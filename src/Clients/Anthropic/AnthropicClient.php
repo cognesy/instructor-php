@@ -32,14 +32,14 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new AnthropicConnector(
+        $this->withConnector($connector ?? new AnthropicConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
     /// PUBLIC API ////////////////////////////////////////////////////////////////////////////////

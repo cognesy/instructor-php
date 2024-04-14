@@ -25,11 +25,11 @@ use Throwable;
  * Use respond() method to generate structured responses from LLM calls.
  */
 class Instructor {
-    use Traits\HandlesEvents;
+    use Events\Traits\HandlesEvents;
     use Traits\HandlesConfig;
     use Traits\HandlesQueuedEvents;
     use Traits\HandlesErrors;
-    use Traits\HandlesEventListeners;
+    use Events\Traits\HandlesEventListeners;
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesDebug;
@@ -40,7 +40,8 @@ class Instructor {
         $this->queueEvent(new InstructorStarted($config));
         // try loading .env (if paths are set)
         Env::load();
-        $this->setConfig(Configuration::fresh($config));
+        $config = Configuration::fresh($config);
+        $this->setConfig($config);
         $this->withEventDispatcher($this->config()->get(EventDispatcher::class));
         $this->queueEvent(new InstructorReady($this->config()));
     }
@@ -53,7 +54,7 @@ class Instructor {
     }
 
     public function withClient(CanCallApi $client) : self {
-        $this->overrideConfig([
+        $this->withConfig([
             CanCallApi::class => $client->withEventDispatcher($this->events())
         ]);
         return $this;

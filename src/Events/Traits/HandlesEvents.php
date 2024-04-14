@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Events\Traits;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -9,7 +9,7 @@ trait HandlesEvents
 {
     protected EventDispatcher $events;
 
-    public function withEventDispatcher(EventDispatcher $events): self {
+    public function withEventDispatcher(EventDispatcher $events): static {
         $this->events = $events;
         return $this;
     }

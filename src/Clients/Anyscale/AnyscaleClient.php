@@ -31,14 +31,14 @@ class AnyscaleClient extends ApiClient implements CanCallChatCompletion, CanCall
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new AnyscaleConnector(
+        $this->withConnector($connector ?? new AnyscaleConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

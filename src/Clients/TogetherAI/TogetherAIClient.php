@@ -31,14 +31,14 @@ class TogetherAIClient extends ApiClient implements CanCallChatCompletion, CanCa
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new TogetherAIConnector(
+        $this->withConnector($connector ?? new TogetherAIConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

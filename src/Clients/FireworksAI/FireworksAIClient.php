@@ -31,14 +31,14 @@ class FireworksAIClient extends ApiClient implements CanCallChatCompletion, CanC
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new FireworksAIConnector(
+        $this->withConnector($connector ?? new FireworksAIConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

@@ -13,7 +13,6 @@ use Saloon\Http\Response;
 
 trait HandlesAsyncResponse
 {
-    use \Cognesy\Instructor\Traits\HandlesDebug;
     use HandlesRequest;
     use HandlesApiConnector;
     use HandlesResponseClass;
@@ -21,9 +20,6 @@ trait HandlesAsyncResponse
     public function async() : PromiseInterface {
         if ($this->isStreamedRequest()) {
             throw new Exception('Async does not support streaming');
-        }
-        if ($this->debug()) {
-            $this->connector->debug();
         }
 
         $request = $this->getRequest();
@@ -36,7 +32,7 @@ trait HandlesAsyncResponse
 
     protected function asyncRaw(ApiRequest $request, callable $onSuccess = null, callable $onError = null) : PromiseInterface {
         $this?->events->dispatch(new ApiAsyncRequestInitiated($request));
-        $promise = $this->connector->sendAsync($request);
+        $promise = $this->connector()->sendAsync($request);
         if (!empty($onSuccess)) {
             $promise->then(function (Response $response) use ($onSuccess) {
                 $this?->events->dispatch(new ApiAsyncResponseReceived($response));

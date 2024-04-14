@@ -2,6 +2,13 @@
 
 namespace Cognesy\Instructor\Configuration;
 
+use Cognesy\Instructor\Events\Configuration\ComponentCreationFailed;
+use Cognesy\Instructor\Events\Configuration\ContextBuildRequested;
+use Cognesy\Instructor\Events\Configuration\ContextBuilt;
+use Cognesy\Instructor\Events\Configuration\ContextInjected;
+use Cognesy\Instructor\Events\Configuration\ContextInjectionRequested;
+use Cognesy\Instructor\Events\Configuration\ComponentRequested;
+use Cognesy\Instructor\Events\Traits\HandlesEvents;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Exception;
 use Throwable;
@@ -16,6 +23,8 @@ use Throwable;
  * @property bool $injectContext Force attempt to set provided context values into the instance public properties (if they exist)
  */
 class ComponentConfig {
+    use HandlesEvents;
+
     public function __construct(
         public string  $name,
         public ?string $class = null,
@@ -29,17 +38,19 @@ class ComponentConfig {
      * Get the component instance
      */
     public function get() : object {
+        $this->emit(new ComponentRequested($this));
         try {
             $context = $this->buildContext();
             $instance = match (true) {
-                $this->getInstance !== null => ($this->getInstance)($context),
-                $this->class !== null => new $this->class(...$context),
+                ($this->getInstance !== null) => ($this->getInstance)($context),
+                ($this->class !== null) => new $this->class(...$context),
                 default => throw new Exception("Component $this->name has no class or factory defined"),
             };
             if (!empty($context) && ($this->injectContext === true)) {
                 $instance = $this->injectContext($instance, $context);
             }
         } catch (Throwable $e) {
+            $this->emit(new ComponentCreationFailed($this->name, $e));
             throw new Exception("Failed to create component $this->name: " . $e->getMessage());
         }
         if ($instance == null) {
@@ -54,6 +65,7 @@ class ComponentConfig {
      * Set context values - e.g. execute registered callables
      */
     private function buildContext() : array {
+        $this->emit(new ContextBuildRequested($this->name, $this->context));
         if (empty($this->context)) {
             return [];
         }
@@ -65,6 +77,7 @@ class ComponentConfig {
                 default => $value,
             };
         }
+        $this->emit(new ContextBuilt($this->name, $this->context));
         return $ctx;
     }
 
@@ -75,6 +88,7 @@ class ComponentConfig {
      * @return object
      */
     private function injectContext(object $instance, array $context) : object {
+        $this->emit(new ContextInjectionRequested($this->name, $instance, $context));
         foreach ($context as $property => $value) {
             if (!property_exists($instance, $property)) {
                 continue;
@@ -84,6 +98,7 @@ class ComponentConfig {
             }
             $instance->$property = $value;
         }
+        $this->emit(new ContextInjected($instance, $context));
         return $instance;
     }
 }

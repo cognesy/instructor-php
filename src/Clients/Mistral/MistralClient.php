@@ -32,14 +32,14 @@ class MistralClient extends ApiClient implements CanCallChatCompletion, CanCallJ
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = $connector ?? new MistralConnector(
+        $this->withConnector($connector ?? new MistralConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-        );
+        ));
     }
 
 
