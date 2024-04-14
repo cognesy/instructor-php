@@ -40,7 +40,6 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 

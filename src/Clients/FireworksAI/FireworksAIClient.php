@@ -38,7 +38,6 @@ class FireworksAIClient extends ApiClient implements CanCallChatCompletion, CanC
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 

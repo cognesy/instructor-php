@@ -39,7 +39,6 @@ class MistralClient extends ApiClient implements CanCallChatCompletion, CanCallJ
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 

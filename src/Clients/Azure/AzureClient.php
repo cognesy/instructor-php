@@ -43,7 +43,6 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
         $this->queryParams = ['api-version' => $apiVersion];
     }

@@ -25,23 +25,24 @@ use Throwable;
  * Use respond() method to generate structured responses from LLM calls.
  */
 class Instructor {
+    use Traits\HandlesEvents;
     use Traits\HandlesConfig;
+    use Traits\HandlesQueuedEvents;
     use Traits\HandlesErrors;
     use Traits\HandlesEventListeners;
-    use Traits\HandlesQueuedEvents;
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
+    use Traits\HandlesDebug;
 
-    protected EventDispatcher $events;
     protected Request $request;
 
     public function __construct(array $config = []) {
         $this->queueEvent(new InstructorStarted($config));
         // try loading .env (if paths are set)
         Env::load();
-        $this->config = Configuration::fresh($config);
-        $this->events = $this->config->get(EventDispatcher::class);
-        $this->queueEvent(new InstructorReady($this->config));
+        $this->setConfig(Configuration::fresh($config));
+        $this->withEventDispatcher($this->config()->get(EventDispatcher::class));
+        $this->queueEvent(new InstructorReady($this->config()));
     }
 
     /// INITIALIZATION ENDPOINTS //////////////////////////////////////////////
@@ -52,8 +53,8 @@ class Instructor {
     }
 
     public function withClient(CanCallApi $client) : self {
-        $this->config->override([
-            CanCallApi::class => $client->withEventDispatcher($this->events)
+        $this->overrideConfig([
+            CanCallApi::class => $client->withEventDispatcher($this->events())
         ]);
         return $this;
     }
@@ -153,7 +154,7 @@ class Instructor {
         if (!$isStream) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
-        return new Stream($this->handleStreamRequest(), $this->events);
+        return new Stream($this->handleStreamRequest(), $this->events());
     }
 
     /// INTERNAL //////////////////////////////////////////////////////////////
@@ -161,7 +162,7 @@ class Instructor {
     protected function handleRequest() : mixed {
         try {
             /** @var RequestHandler $requestHandler */
-            $requestHandler = $this->config->get(CanHandleRequest::class);
+            $requestHandler = $this->config()->get(CanHandleRequest::class);
             $responseResult = $requestHandler->respondTo($this->request);
             if ($responseResult->isFailure()) {
                 throw new Exception($responseResult->error());
@@ -176,7 +177,7 @@ class Instructor {
     protected function handleStreamRequest() : Iterable {
         try {
             /** @var StreamRequestHandler $requestHandler */
-            $requestHandler = $this->config->get(CanHandleStreamRequest::class);
+            $requestHandler = $this->config()->get(CanHandleStreamRequest::class);
             yield from $requestHandler->respondTo($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);

@@ -39,7 +39,6 @@ class GroqClient extends ApiClient implements CanCallChatCompletion, CanCallJson
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 

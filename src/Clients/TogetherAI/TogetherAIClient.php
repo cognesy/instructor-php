@@ -38,7 +38,6 @@ class TogetherAIClient extends ApiClient implements CanCallChatCompletion, CanCa
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 

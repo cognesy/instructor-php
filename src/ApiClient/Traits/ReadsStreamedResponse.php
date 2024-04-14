@@ -1,12 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient\Mixins;
+namespace Cognesy\Instructor\ApiClient\Traits;
 
 // Credit: https://github.com/openai-php/client/blob/main/src/Responses/StreamResponse.php
 use Generator;
 use Psr\Http\Message\StreamInterface;
 
-trait HandlesStreamedResponses
+trait ReadsStreamedResponse
 {
     protected function getStreamIterator(
         StreamInterface $stream,

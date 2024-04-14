@@ -73,7 +73,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -86,7 +85,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -102,7 +100,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -115,7 +112,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -128,7 +124,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -141,7 +136,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -155,7 +149,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -168,7 +161,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -181,7 +173,6 @@ function autowire(Configuration $config) : Configuration
             'requestTimeout' => 30,
             'metadata' => [],
             'senderClass' => '',
-            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 

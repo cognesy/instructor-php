@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\TokenAuthenticator;
 
@@ -19,9 +18,8 @@ class OpenAIConnector extends ApiConnector
         int    $requestTimeout = 30,
         array  $metadata = [],
         string $senderClass = '',
-        EventDispatcher $events = null,
     ) {
-        parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata, $senderClass, $events);
+        parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata, $senderClass);
         $this->organization = $organization;
     }
 

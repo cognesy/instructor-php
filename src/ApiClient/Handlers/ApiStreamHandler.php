@@ -5,19 +5,19 @@ namespace Cognesy\Instructor\ApiClient\Handlers;
 use Closure;
 use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
-use Cognesy\Instructor\ApiClient\Mixins\HandlesStreamedResponses;
-use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\ApiClient\Traits\ReadsStreamedResponse;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
 use Generator;
 use Saloon\Exceptions\Request\RequestException;
 
 class ApiStreamHandler
 {
-    use HandlesStreamedResponses;
+    use ReadsStreamedResponse;
 
     public function __construct(
         protected ApiConnector $connector,

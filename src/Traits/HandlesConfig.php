@@ -9,6 +9,14 @@ trait HandlesConfig
 {
     protected Configuration $config;
 
+    protected function setConfig(Configuration $config) : void {
+        $this->config = $config;
+    }
+
+    protected function overrideConfig(array $config) : void {
+        $this->config->override($config);
+    }
+
     /**
      * Returns the current configuration
      */

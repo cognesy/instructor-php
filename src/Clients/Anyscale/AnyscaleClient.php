@@ -38,7 +38,6 @@ class AnyscaleClient extends ApiClient implements CanCallChatCompletion, CanCall
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 

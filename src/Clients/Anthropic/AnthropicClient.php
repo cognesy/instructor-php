@@ -39,7 +39,6 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
             requestTimeout: $requestTimeout,
             metadata: $metadata,
             senderClass: '',
-            events: $events,
         );
     }
 
