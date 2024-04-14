@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Data\ValidationResult;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 trait ValidationMixin
 {

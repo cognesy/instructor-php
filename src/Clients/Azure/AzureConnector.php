@@ -2,14 +2,15 @@
 namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\HeaderAuthenticator;
 
 class AzureConnector extends ApiConnector
 {
-    private string $defaultBaseUrl = 'openai.azure.com';
-    private string $resourceName;
-    private string $deploymentId;
+    protected string $baseUrl = 'openai.azure.com';
+    protected string $resourceName;
+    protected string $deploymentId;
 
     public function __construct(
         string $apiKey,
@@ -19,9 +20,10 @@ class AzureConnector extends ApiConnector
         int    $connectTimeout = 3,
         int    $requestTimeout = 30,
         array  $metadata = [],
+        string $senderClass = '',
+        EventDispatcher $events = null,
     ) {
-        $baseUrl = $baseUrl ?: $this->defaultBaseUrl;
-        parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata);
+        parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata, $senderClass, $events);
         $this->resourceName = $resourceName;
         $this->deploymentId = $deploymentId;
     }
@@ -32,13 +34,5 @@ class AzureConnector extends ApiConnector
 
     protected function defaultAuth() : Authenticator {
         return new HeaderAuthenticator($this->apiKey, 'api-key');
-    }
-
-    protected function defaultHeaders(): array {
-        $headers = [
-            'content-type' => 'application/json',
-            'accept' => 'application/json',
-        ];
-        return $headers;
     }
 }

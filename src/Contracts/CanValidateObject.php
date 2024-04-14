@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Data\ValidationResult;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 /**
  * Class can validate other objects - used by validator classes

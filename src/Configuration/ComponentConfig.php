@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Configuration;
 
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Exception;
+use Throwable;
 
 /**
  * Class ComponentConfig
@@ -28,14 +29,18 @@ class ComponentConfig {
      * Get the component instance
      */
     public function get() : object {
-        $context = $this->buildContext();
-        $instance = match(true) {
-            $this->getInstance !== null => ($this->getInstance)($context),
-            $this->class !== null => new $this->class(...$context),
-            default => throw new Exception("Component $this->name has no class or factory defined"),
-        };
-        if (!empty($context) && ($this->injectContext === true)) {
-            $instance = $this->injectContext($instance, $context);
+        try {
+            $context = $this->buildContext();
+            $instance = match (true) {
+                $this->getInstance !== null => ($this->getInstance)($context),
+                $this->class !== null => new $this->class(...$context),
+                default => throw new Exception("Component $this->name has no class or factory defined"),
+            };
+            if (!empty($context) && ($this->injectContext === true)) {
+                $instance = $this->injectContext($instance, $context);
+            }
+        } catch (Throwable $e) {
+            throw new Exception("Failed to create component $this->name: " . $e->getMessage());
         }
         if ($instance == null) {
             throw new Exception($this->name . " instance is null");

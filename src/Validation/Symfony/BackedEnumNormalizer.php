@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Validators\Symfony;
+namespace Cognesy\Instructor\Validation\Symfony;
 
 use Symfony\Component\PropertyInfo\Type;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;

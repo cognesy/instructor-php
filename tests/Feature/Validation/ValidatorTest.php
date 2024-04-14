@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Validators\Symfony\Validator;
+use Cognesy\Instructor\Validation\Symfony\Validator;
 use Symfony\Component\Validator\Constraints as Assert;
 
 test('it validates an object and returns errors', function () {

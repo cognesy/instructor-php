@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
@@ -21,25 +22,28 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
     public string $defaultModel = 'gpt-4-turbo-preview';
 
     public function __construct(
-        protected string $apiKey,
-        protected string $resourceName,
-        protected string $deploymentId,
-        protected string $apiVersion,
+        protected string $apiKey = '',
+        protected string $resourceName = '',
+        protected string $deploymentId = '',
+        protected string $apiVersion = '',
         protected string $baseUri = '',
         protected int $connectTimeout = 3,
         protected int $requestTimeout = 30,
         protected array $metadata = [],
         EventDispatcher $events = null,
+        ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = new AzureConnector(
-            $apiKey,
-            $resourceName,
-            $deploymentId,
-            $baseUri,
-            $connectTimeout,
-            $requestTimeout,
-            $metadata,
+        $this->connector = $connector ?? new AzureConnector(
+            apiKey: $apiKey,
+            resourceName: $resourceName,
+            deploymentId: $deploymentId,
+            baseUrl: $baseUri,
+            connectTimeout: $connectTimeout,
+            requestTimeout: $requestTimeout,
+            metadata: $metadata,
+            senderClass: '',
+            events: $events,
         );
         $this->queryParams = ['api-version' => $apiVersion];
     }

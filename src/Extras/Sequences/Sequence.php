@@ -16,10 +16,10 @@ use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Validators\Symfony\Validator;
+use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Instructor\Validation\Symfony\Validator;
 use IteratorAggregate;
 use Traversable;
-use Cognesy\Instructor\Data\ValidationResult;
 
 class Sequence
     implements Sequenceable, IteratorAggregate, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, ArrayAccess

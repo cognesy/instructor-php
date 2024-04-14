@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Validators\Symfony\Validator;
+use Cognesy\Instructor\Validation\Symfony\Validator;
 use Tests\Examples\Extraction\Person;
 use Tests\Examples\Extraction\PersonWithValidationMixin;
 

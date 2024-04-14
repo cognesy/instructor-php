@@ -11,6 +11,13 @@ class ToolsCallResponse extends ApiResponse
         $decoded = Json::parse($response);
         $content = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
         $functionName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
-        return new self($content, $decoded, $functionName);
+        $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
+        return new self(
+            content: $content,
+            responseData: $decoded,
+            functionName: $functionName,
+            finishReason: $finishReason,
+            toolCalls: null
+        );
     }
 }

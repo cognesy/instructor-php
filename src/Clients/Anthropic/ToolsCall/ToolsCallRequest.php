@@ -12,7 +12,7 @@ class ToolsCallRequest extends ApiToolsCallRequest
 
     protected function defaultBody(): array {
         $system = $this->getSystemInstruction();
-        $body = array_filter(array_merge($this->payload, [
+        $body = array_filter(array_merge([
             'system' => $system,
             'messages' => $this->appendInstructions($this->messages),
             'model' => $this->model,

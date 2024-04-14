@@ -10,6 +10,13 @@ class JsonCompletionResponse extends ApiResponse
     public static function fromResponse(Response $response): self {
         $decoded = Json::parse($response->body());
         $content = $decoded['choices'][0]['message']['content'] ?? '';
-        return new self($content, $decoded, '');
+        $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
+        return new self(
+            content: $content,
+            responseData: $decoded,
+            functionName: '',
+            finishReason: $finishReason,
+            toolCalls: null
+        );
     }
 }

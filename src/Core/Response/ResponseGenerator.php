@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Core\Response;
 use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
@@ -12,6 +11,7 @@ use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Exception;
 
 class ResponseGenerator implements CanGenerateResponse

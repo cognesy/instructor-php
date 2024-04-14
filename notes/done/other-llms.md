@@ -16,3 +16,9 @@ Things missing currently:
 
 Next steps:
 - Implement custom LLM class - for Claude?
+
+## Solution
+
+New client API code (based on Saloon) helped to build support for multiple APIs / LLMs.
+
+Documentation and examples are added.

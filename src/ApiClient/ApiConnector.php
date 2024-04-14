@@ -11,7 +11,7 @@ class ApiConnector extends Connector
     use HasTimeout;
     use AlwaysThrowOnErrors;
 
-    protected string $baseUrl;
+    protected string $baseUrl = '';
     protected string $apiKey;
     protected array $metadata;
     protected int $connectTimeout = 3;
@@ -24,12 +24,16 @@ class ApiConnector extends Connector
         int    $connectTimeout = 3,
         int    $requestTimeout = 30,
         array  $metadata = [],
+        string $senderClass = '',
+        EventDispatcher $events = null,
     ) {
-        $this->baseUrl = $baseUrl;
         $this->apiKey = $apiKey;
-        $this->metadata = $metadata;
+        $this->baseUrl = $baseUrl ?: $this->baseUrl;
         $this->connectTimeout = $connectTimeout;
         $this->requestTimeout = $requestTimeout;
+        $this->metadata = $metadata;
+        $this->defaultSender = $senderClass;
+        $this->events = $events ?? new EventDispatcher();
     }
 
     public function withEventDispatcher(EventDispatcher $events): self {

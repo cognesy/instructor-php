@@ -11,11 +11,11 @@ class ApiChatCompletionRequest extends ApiRequest
         if (!is_array($messages)) {
             $this->messages = ['role' => 'user', 'content' => $messages];
         }
-        parent::__construct([], $this->getEndpoint());
+        parent::__construct();
     }
 
     protected function defaultBody(): array {
-        return array_filter(array_merge($this->payload, [
+        return array_filter(array_merge([
             'messages' => $this->getMessages(),
             'model' => $this->model,
         ], $this->options));

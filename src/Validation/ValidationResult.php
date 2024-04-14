@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Data;
+namespace Cognesy\Instructor\Validation;
 
 class ValidationResult
 {
@@ -17,7 +17,7 @@ class ValidationResult
         }
     }
 
-    /// CONVENIENCE FACTORY METHODS /////////////////////////////////////////////////////////////////////////////////
+    /// FACTORY METHODS //////////////////////////////////////////////////////////////////////
 
     static public function valid(): ValidationResult {
         return new ValidationResult();
@@ -38,7 +38,7 @@ class ValidationResult
         return new ValidationResult([new ValidationError($field, $value, $message)], "Incorrect field value");
     }
 
-    /// OTHER METHODS ///////////////////////////////////////////////////////////////////////////////////////////////
+    /// CONVENIENCE METHODS //////////////////////////////////////////////////////////////////
 
     public function isValid(): bool {
         return $this->isValid;
@@ -56,10 +56,7 @@ class ValidationResult
         if ($this->isValid) {
             return '';
         }
-        //
-        $output = [
-            $this->message,
-        ];
+        $output = [$this->message];
         foreach ($this->errors as $error) {
             $output[] = " - " . ((string) $error);
         }

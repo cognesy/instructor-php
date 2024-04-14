@@ -102,7 +102,7 @@ $instructor = (new Instructor)->withClient($client);
 echo "PROJECT EVENTS:\n\n";
 
 $events = $instructor
-    ->onEvent(ChunkReceived::class, fn($e)=>$e->print())
+    //->onEvent(ChunkReceived::class, fn($e)=>$e->print())
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
     ->request(
         messages: $report,

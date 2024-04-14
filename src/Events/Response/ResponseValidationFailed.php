@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Data\ValidationResult;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 class ResponseValidationFailed extends Event
 {

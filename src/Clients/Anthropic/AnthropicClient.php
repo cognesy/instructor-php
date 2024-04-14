@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
@@ -22,20 +23,23 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
     public int $defaultMaxTokens = 256;
 
     public function __construct(
-        protected $apiKey,
+        protected $apiKey = '',
         protected $baseUri = '',
         protected $connectTimeout = 3,
         protected $requestTimeout = 30,
         protected $metadata = [],
         EventDispatcher $events = null,
+        ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = new AnthropicConnector(
-            $apiKey,
-            $baseUri,
-            $connectTimeout,
-            $requestTimeout,
-            $metadata,
+        $this->connector = $connector ?? new AnthropicConnector(
+            apiKey: $apiKey,
+            baseUrl: $baseUri,
+            connectTimeout: $connectTimeout,
+            requestTimeout: $requestTimeout,
+            metadata: $metadata,
+            senderClass: '',
+            events: $events,
         );
     }
 

@@ -7,31 +7,9 @@ use Saloon\Http\Auth\TokenAuthenticator;
 
 class TogetherAIConnector extends ApiConnector
 {
-    private string $defaultBaseUrl = 'https://api.together.xyz/v1';
-
-    public function __construct(
-        string $apiKey,
-        string $baseUrl = '',
-        int    $connectTimeout = 3,
-        int    $requestTimeout = 30,
-        array  $metadata = [],
-    ) {
-        parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata);
-    }
-
-    public function resolveBaseUrl(): string {
-        return $this->baseUrl ?: $this->defaultBaseUrl;
-    }
+    protected string $baseUrl = 'https://api.together.xyz/v1';
 
     protected function defaultAuth() : Authenticator {
         return new TokenAuthenticator($this->apiKey);
-    }
-
-    protected function defaultHeaders(): array {
-        $headers = [
-            'content-type' => 'application/json',
-            'accept' => 'application/json',
-        ];
-        return $headers;
     }
 }

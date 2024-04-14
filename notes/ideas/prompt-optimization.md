@@ -2,7 +2,8 @@
 
 ## Optimization of instructions
 
-Quality is highly dependent on the . We need a better way to generate instructions and examples (e.g. similar to DSPy).
+Quality of inference is highly dependent on the prompts. We need a better way to generate
+instructions and examples (e.g. similar to DSPy).
 
 ## Stages of processing
 

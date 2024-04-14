@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Data;
+namespace Cognesy\Instructor\Validation;
 
 class ValidationError
 {

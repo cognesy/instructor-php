@@ -8,11 +8,7 @@ use Saloon\Http\Auth\HeaderAuthenticator;
 
 class AnthropicConnector extends ApiConnector
 {
-    private string $defaultBaseUrl = 'https://api.anthropic.com/v1';
-
-    public function resolveBaseUrl(): string {
-        return $this->baseUrl ?: $this->defaultBaseUrl;
-    }
+    protected string $baseUrl = 'https://api.anthropic.com/v1';
 
     protected function defaultAuth() : Authenticator {
         return new HeaderAuthenticator($this->apiKey, 'x-api-key');

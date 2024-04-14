@@ -35,6 +35,7 @@ abstract class ApiClient implements CanCallApi
 
     public function withEventDispatcher(EventDispatcher $events): self {
         $this->events = $events;
+        $this->connector->withEventDispatcher($events);
         return $this;
     }
 
@@ -75,6 +76,10 @@ abstract class ApiClient implements CanCallApi
     public function debug(bool $debug = true): self {
         $this->debug = $debug;
         return $this;
+    }
+
+    public function connector() : ApiConnector {
+        return $this->connector;
     }
 
     /// PUBLIC API - PROCESSED ////////////////////////////////////////////////////////////////

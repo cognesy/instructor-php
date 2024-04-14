@@ -158,7 +158,7 @@ class PartialsGenerator implements CanGeneratePartials
             content: $this->responseText,
             responseData: $this->lastPartialResponse->responseData ?? [],
             finishReason: $this->lastPartialResponse->finishReason ?? '',
-            toolCalls: $this->toolCalls->all(),
+            toolCalls: $this->toolCalls,
         );
     }
 

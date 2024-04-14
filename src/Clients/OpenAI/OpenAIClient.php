@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
@@ -21,22 +22,25 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
     public string $defaultModel = 'gpt-4-turbo-preview';
 
     public function __construct(
-        protected $apiKey,
+        protected $apiKey = '',
         protected $baseUri = '',
         protected $organization = '',
         protected $connectTimeout = 3,
         protected $requestTimeout = 30,
         protected $metadata = [],
         EventDispatcher $events = null,
+        ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->connector = new OpenAIConnector(
-            $apiKey,
-            $baseUri,
-            $organization,
-            $connectTimeout,
-            $requestTimeout,
-            $metadata,
+        $this->connector = $connector ?? new OpenAIConnector(
+            apiKey: $apiKey,
+            baseUrl: $baseUri,
+            organization: $organization,
+            connectTimeout: $connectTimeout,
+            requestTimeout: $requestTimeout,
+            metadata: $metadata,
+            senderClass: '',
+            events: $events,
         );
     }
 

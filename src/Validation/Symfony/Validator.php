@@ -1,11 +1,11 @@
 <?php
-namespace Cognesy\Instructor\Validators\Symfony;
+namespace Cognesy\Instructor\Validation\Symfony;
 
 use Cognesy\Instructor\Contracts\CanValidateObject;
-use Cognesy\Instructor\Data\ValidationError;
+use Cognesy\Instructor\Validation\ValidationError;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Validator\Validation;
-use Cognesy\Instructor\Data\ValidationResult;
 
 class Validator implements CanValidateObject
 {

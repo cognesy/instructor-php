@@ -12,8 +12,15 @@ class ToolCalls
         return count($this->toolCalls);
     }
 
-    public function last() : ToolCall {
-        return $this->toolCalls[$this->count() - 1];
+    public function first() : ?ToolCall {
+        return $this->toolCalls[0] ?? null;
+    }
+
+    public function last() : ?ToolCall {
+        if (empty($this->toolCalls)) {
+            return null;
+        }
+        return $this->toolCalls[count($this->toolCalls) - 1];
     }
 
     public function empty() : bool {

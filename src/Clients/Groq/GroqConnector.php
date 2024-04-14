@@ -7,20 +7,9 @@ use Saloon\Http\Auth\TokenAuthenticator;
 
 class GroqConnector extends ApiConnector
 {
-    private string $defaultBaseUrl = 'https://api.groq.com/openai/v1';
-
-    public function resolveBaseUrl(): string {
-        return $this->baseUrl ?: $this->defaultBaseUrl;
-    }
+    protected string $baseUrl = 'https://api.groq.com/openai/v1';
 
     protected function defaultAuth() : Authenticator {
         return new TokenAuthenticator($this->apiKey);
-    }
-
-    protected function defaultHeaders(): array {
-        return [
-            'content-type' => 'application/json',
-            'accept' => 'application/json',
-        ];
     }
 }

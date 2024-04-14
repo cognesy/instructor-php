@@ -25,11 +25,6 @@ Currently not supported, needs to be supported to allow better interaction with 
  - Symfony DTO
  - Laravel DTO
 
-### Instructor::response()/request() default params
-
-Default values are duplicated across method declarations and Request class.
-Clean it up.
-
 ### Usage data for streamed responses
 
 Usage for streamed responses is available via events, but not via rawResponse().
@@ -48,10 +43,10 @@ To manually process text of response.
 
 To work with raw response object.
 
-### Non empty constructors
+### Non-empty constructors
 
-Infer constructor arguments from the provided data. This is non trivial,
-as params may be objects (hard to handle, may require another constructor
+Infer constructor arguments from the provided data. This is not trivial,
+as params may be objects - hard to handle, may require another constructor
 call to instantiate the object, or callables which I don't know yet how
 to handle.
 
@@ -68,9 +63,22 @@ models.
 Use moderation endpoint to automatically verify request prior to sending
 it to the model.
 
-### SaloonPHP debug
+
+
+
+
+## Leveraging SaloonPHP
+
+### SaloonPHP cache and debug
 
 Make it available to Instructor users.
+
+### Consistent way to turn on/off caching and debugging
+
+There is no way to turn on caching from developer's code - needs to be implemented.
+
+
+
 
 
 ## Design decisions to revisit
@@ -89,10 +97,6 @@ This might be also a cleaner way to handle Sequenceables and Scalars.
 ### More consistent way to let user configure Instructor
 
 Currently, there are multiple ways to configure Instructor, which might be confusing.
-
-### Consistent way to turn on/off caching and debugging
-
-There is no way to turn on caching from developer's code - needs to be implemented.
 
 
 

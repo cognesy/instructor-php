@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Deserializers\Symfony;
 
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Exceptions\DeserializationException;
-use Cognesy\Instructor\Validators\Symfony\BackedEnumNormalizer;
+use Cognesy\Instructor\Validation\Symfony\BackedEnumNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;

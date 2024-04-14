@@ -13,17 +13,15 @@ use Saloon\Http\PendingRequest;
 use Saloon\Http\Request;
 use Saloon\Traits\Body\HasJsonBody;
 
-class ApiRequest extends Request implements HasBody, Cacheable
+abstract class ApiRequest extends Request implements HasBody, Cacheable
 {
     use HasJsonBody, HasCaching;
 
+    protected string $endpoint;
     protected Method $method = Method::POST;
     protected CacheConfig $cacheConfig;
 
-    public function __construct(
-        protected array $payload,
-        protected string $endpoint,
-    ) {
+    public function __construct() {
         $this->disableCaching();
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
     }
@@ -39,20 +37,12 @@ class ApiRequest extends Request implements HasBody, Cacheable
         return $this;
     }
 
-    public function getEndpoint(): string {
-        return $this->endpoint;
-    }
-
     public function isStreamed(): bool {
         return $this->options['stream'] ?? false;
     }
 
     public function resolveEndpoint() : string {
         return $this->endpoint;
-    }
-
-    protected function defaultBody(): array {
-        return $this->payload;
     }
 
     public function resolveCacheDriver(): Driver {
@@ -81,4 +71,6 @@ class ApiRequest extends Request implements HasBody, Cacheable
         ]);
         return md5($keyBase);
     }
+
+    abstract protected function defaultBody(): array;
 }
