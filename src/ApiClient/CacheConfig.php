@@ -16,8 +16,8 @@ class CacheConfig
         private int $expiryInSeconds,
         private string $cachePath,
     ) {
-        $this->makeCacheDir($cachePath);
-        $adapter = new LocalFilesystemAdapter($cachePath);
+        $this->makeCacheDir($this->cachePath);
+        $adapter = new LocalFilesystemAdapter($this->cachePath);
         $this->filesystem = new Filesystem($adapter);
     }
 

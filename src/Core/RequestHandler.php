@@ -15,7 +15,6 @@ use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Utils\Result;
 use Exception;
 
 class RequestHandler implements CanHandleRequest
@@ -33,7 +32,7 @@ class RequestHandler implements CanHandleRequest
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
-    public function respondTo(Request $request) : Result {
+    public function respondTo(Request $request) : mixed {
         $responseModel = $this->responseModelFactory->fromRequest($request);
         $this->events->dispatch(new ResponseModelBuilt($responseModel));
         // try to respond to the request until success or max retries reached
@@ -48,7 +47,7 @@ class RequestHandler implements CanHandleRequest
             $processingResult = $this->responseGenerator->makeResponse($apiResponse, $responseModel);
             if ($processingResult->isSuccess()) {
                 // we're done here - no need to retry
-                return $processingResult;
+                return $processingResult->unwrap();
             }
 
             // (3) retry - we have not managed to deserialize, validate or transform the response

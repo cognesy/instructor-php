@@ -191,6 +191,7 @@ nav:
 ###HUB-INDEX-START###
     - Arbitrary properties: 'hub/arbitrary_properties.md'
     - Consistent values of arbitrary properties: 'hub/arbitrary_properties_consistency.md'
+    - Caching: 'hub/caching.md'
     - Chain of Thought: 'hub/chain_of_thought.md'
     - Single label classification: 'hub/classification.md'
     - Multiclass classification: 'hub/classification_multiclass.md'

@@ -26,10 +26,10 @@ use Throwable;
  */
 class Instructor {
     use Events\Traits\HandlesEvents;
+    use Events\Traits\HandlesEventListeners;
     use Traits\HandlesConfig;
     use Traits\HandlesQueuedEvents;
     use Traits\HandlesErrors;
-    use Events\Traits\HandlesEventListeners;
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesDebug;
@@ -40,8 +40,8 @@ class Instructor {
         $this->queueEvent(new InstructorStarted($config));
         // try loading .env (if paths are set)
         Env::load();
-        $config = Configuration::fresh($config);
-        $this->setConfig($config);
+        $configuration = Configuration::fresh($config);
+        $this->setConfig($configuration);
         $this->withEventDispatcher($this->config()->get(EventDispatcher::class));
         $this->queueEvent(new InstructorReady($this->config()));
     }
@@ -164,12 +164,9 @@ class Instructor {
         try {
             /** @var RequestHandler $requestHandler */
             $requestHandler = $this->config()->get(CanHandleRequest::class);
-            $responseResult = $requestHandler->respondTo($this->request);
-            if ($responseResult->isFailure()) {
-                throw new Exception($responseResult->error());
-            }
-            $this->events->dispatch(new ResponseGenerated($responseResult->unwrap()));
-            return $responseResult->unwrap();
+            $response = $requestHandler->respondTo($this->request);
+            $this->events->dispatch(new ResponseGenerated($response));
+            return $response->unwrap();
         } catch (Throwable $error) {
             return $this->handleError($error);
         }

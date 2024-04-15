@@ -54,6 +54,12 @@ class SchemaFactory
         return $this->schemaMap->get($anyType);
     }
 
+    /**
+     * Extracts the schema from a property of a class
+     *
+     * @param string $class
+     * @param string $property
+     */
     public function property(string $class, string $property) : Schema
     {
         if (!$this->propertyMap->has($class, $property)) {
