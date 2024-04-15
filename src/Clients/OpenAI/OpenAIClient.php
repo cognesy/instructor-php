@@ -22,7 +22,7 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
     public string $defaultModel = 'gpt-4-turbo-preview';
 
     public function __construct(
-        protected $apiKey = '',
+        protected $apiKey,
         protected $baseUri = '',
         protected $organization = '',
         protected $connectTimeout = 3,

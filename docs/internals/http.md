@@ -1,0 +1,41 @@
+# HTTP Connectivity
+
+Instructor uses [SaloonPHP](https://saloon.dev) as its HTTP connectivity layer.
+
+SaloonPHP is a lightweight HTTP client library that provides a simple API for
+making HTTP API requests and handling responses. It is designed to be easy to use
+and flexible, with a focus on performance and reliability.
+
+SaloonPHP is built on top of the popular [Guzzle](https://docs.guzzlephp.org/)
+
+
+## Accessing SaloonPHP connector
+
+You can directly access Saloon connector instance via `connector()` method
+on the client instance, and call Saloon debugging methods on it - see SaloonPHP
+debugging documentation for more details:
+https://docs.saloon.dev/the-basics/debugging
+
+
+## Request and response middleware
+
+Additionally, `connector()` method on the client instance allows you to access
+other capabilities of Saloon connector, such as adding middleware via `onRequest()`
+or `onResponse()` methods on the Connector instance returned by `connector()`.
+See SaloonPHP documentation for more details:
+https://docs.saloon.dev/digging-deeper/middleware
+
+
+## Custom connectors
+
+Instructor allows you to provide custom connector to the client instance via
+`withConnector()` method on the API client instance. Provided connector must
+inherit from `Cognesy\Instructor\ApiClient\ApiConnector`.
+
+
+## Customizing HTTP client used by SaloonPHP
+
+SaloonPHP uses Guzzle as its HTTP client by default. You can customize HTTP
+sender used by SaloonPHP by providing custom `senderClass` parameter to your connector
+constructor, which should be a class name implementing Saloon's `Sender` contract:
+https://github.com/saloonphp/saloon/blob/v3/src/Contracts/Sender.php

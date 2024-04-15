@@ -9,3 +9,4 @@ allow you better understand how it is designed and how it works.
 - [Response Models](response_models.md)
 - [Contracts](contracts.md)
 - [Events](events.md)
+- [HTTP client](http.md)

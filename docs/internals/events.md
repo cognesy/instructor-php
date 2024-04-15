@@ -4,14 +4,24 @@
 
 Instructor dispatches multiple classes of events (all inheriting from `Event` class) during its execution. You can listen to these events and react to them in your application, for example to log information or to monitor the execution process.
 
+Check the list of available event classes in the `Cognesy\Instructor\Events` namespace.
+
+## Event methods
+
+Each Instructor event offers following methods, which make interacting with them more convenient:
+
+ * `print()` - prints a string representation of the event to console output
+ * `asConsole()` - returns the event in a format suitable for console output
+ * `asLog()` - returns the event in a format suitable for logging
+
 
 ## Receiving notification on internal events
 
 Instructor allows you to receive detailed information at every stage of request and response processing via events.
 
-* `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
-* `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
-* `(new Instructor)->onError(callable $callback)` method - receive callback on any uncaught error, so you can customize handling it, for example logging the error or using some fallback mechanism in an attempt to recover
+ * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
+ * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
+ * `(new Instructor)->onError(callable $callback)` method - receive callback on any uncaught error, so you can customize handling it, for example logging the error or using some fallback mechanism in an attempt to recover
 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
@@ -22,9 +32,11 @@ $instructor = (new Instructor)
     // see responses from LLM
     ->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
     // see all events in console-friendly format
-    ->wiretap(fn($event) => dump($event->toConsole()))
+    ->wiretap(fn($event) => $event->print())
+    // log all events in log-friendly format
+    ->wiretap(fn($event) => YourLogger::log($event->asLog()))
     // log errors via your custom logger
-    ->onError(fn($request, $error) => $logger->log($error));
+    ->onError(fn($request, $error) => YourLogger::log($error)));
 
 $instructor->respond(
     messages: "What is the population of Paris?",
@@ -32,6 +44,7 @@ $instructor->respond(
 );
 // check your console for the details on the Instructor execution
 ```
+
 
 ## Convenience methods for get streamed model updates
 

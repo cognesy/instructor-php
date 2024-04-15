@@ -193,6 +193,7 @@ nav:
     - Extraction of complex objects (Anthropic): 'hub/complex_object_extraction_anthropic.md'
     - Customize parameters of OpenAI client: 'hub/custom_client_parameters.md'
     - Custom validation using Symfony Validator: 'hub/custom_validator.md'
+    - Debugging: 'hub/debugging.md'
     - Entity Relationship Extraction: 'hub/entity_relationships.md'
     - Handling errors: 'hub/handling_errors.md'
     - Support for Anthropic API: 'hub/l_l_m_support_anthropic.md'
