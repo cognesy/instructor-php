@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Scalars;
 
+use BackedEnum;
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
@@ -118,6 +119,9 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
      * Transform response model into scalar value
      */
     public function transform() : mixed {
+        if (self::isEnum($this->enumType)) {
+            return ($this->enumType)::from($this->value);
+        }
         // try to match it to supported type
         return match ($this->type) {
             ValueType::STRING => (string) $this->value,
@@ -209,7 +213,7 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
         bool   $required = true,
         mixed  $defaultValue = null,
     ) : self {
-        if (!class_exists($enumType) || !is_subclass_of($enumType, \BackedEnum::class)) {
+        if (!self::isEnum($enumType)) {
             throw new \Exception("Enum class does not exist or is not BackedEnum: {$enumType}");
         }
         return new self(
@@ -252,5 +256,11 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
             $values[] = $case->getValue()->value;
         }
         return $values;
+    }
+
+    static private function isEnum(string $enumType) : bool {
+        return !empty($enumType)
+            && class_exists($enumType)
+            && is_subclass_of($enumType, BackedEnum::class);
     }
 }
