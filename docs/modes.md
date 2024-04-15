@@ -37,11 +37,23 @@ $response = $instructor->withRequest($request)->get();
 
 ### `Mode::Tools`
 
-This mode is the default one. It uses OpenAI tools to extract data from the response. It is the most reliable mode, but currently only available for OpenAI and Azure OpenAI LLMs.
+This mode is the default one. It uses OpenAI tools to extract data from the
+response.
+
+It is the most reliable mode, but not all models and API providers support it -
+check their documentation for more information.
+
 
 ### `Mode::Json`
 
-This mode uses OpenAI JSON mode. See `response_mode` in (OpenAI API Reference)[https://platform.openai.com/docs/api-reference/chat/create]
+In this mode Instructor provides response format as JSONSchema and asks LLM
+to respond with JSON object following provided schema.
+
+It is supported by many open source models and API providers - check their
+documentation.
+
+See `response_mode` in (OpenAI API Reference)[https://platform.openai.com/docs/api-reference/chat/create]
+
 
 ### `Mode::MdJson`
 
