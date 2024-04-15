@@ -5,8 +5,8 @@ the response model, especially if we're trying to get a straight, simple
 answer in a form of string, integer, boolean or float. Instructor provides
 a simplified API for such cases.
 
+```php
 <?php
-
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 
@@ -29,3 +29,6 @@ dump($value);
 
 assert($value instanceof CitizenshipGroup);
 expect($value == CitizenshipGroup::Other);
+?>
+```
+
