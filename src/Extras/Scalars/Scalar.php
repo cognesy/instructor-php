@@ -258,7 +258,10 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
         return $values;
     }
 
-    static private function isEnum(string $enumType) : bool {
+    static private function isEnum(?string $enumType) : bool {
+        if (empty($enumType)) {
+            return false;
+        }
         return !empty($enumType)
             && class_exists($enumType)
             && is_subclass_of($enumType, BackedEnum::class);

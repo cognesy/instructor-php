@@ -68,7 +68,7 @@ it('extracts bool type', function () {
 
 
 it('extracts enum type', function () {
-    $mockLLM = MockLLM::get(['{"citizenshipGroup":"other"}']);
+    $mockLLM = MockLLM::get(['{"citizenship":"other"}']);
 
     $text = "His name is Jason, he is 28 years old and he lives in Germany.";
     $value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
@@ -76,8 +76,8 @@ it('extracts enum type', function () {
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],
         ],
-        responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
+        responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenship'),
     );
-    expect($value)->toBeEnum();
-    expect($value)->toBe(CitizenshipGroup::Other->value);
+    expect($value)->toBeInstanceOf(CitizenshipGroup::class);
+    expect($value)->toBe(CitizenshipGroup::Other);
 });
