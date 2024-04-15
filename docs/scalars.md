@@ -69,7 +69,7 @@ $value = (new Instructor)->respond(
 // expect($value)->toBe(11.6);
 ```
 
-### Select one of the options
+### Enum result / select one of the options
 
 ```php
 <?php
