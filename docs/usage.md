@@ -90,8 +90,11 @@ $instructor = (new Instructor)->withRequest(new Request(
 ))->get();
 ```
 
+## Scalar responses
+
+See [Scalar responses](scalars.md) for more information on how to generate scalar responses with `Scalar` adapter class.
 
 
 ## Partial responses and streaming
 
-See: [Streaming and partial updates](partials.md) for more information on how to work with partial updates and streaming.
+See [Streaming and partial updates](partials.md) for more information on how to work with partial updates and streaming.
