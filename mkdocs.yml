@@ -129,7 +129,7 @@ nav:
     - Validation: 'validation.md'
     - Extraction modes: 'modes.md'
     - LLM model and options: 'model_options.md'
-    - LLM providers: 'model_options.md'
+    - LLM providers: 'llm_providers.md'
     - Contributing: 'contributing.md'
     - Help with Instructor: 'help.md'
 #    - Installation: 'installation.md'
