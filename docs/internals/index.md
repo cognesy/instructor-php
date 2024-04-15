@@ -10,3 +10,4 @@ allow you better understand how it is designed and how it works.
 - [Contracts](contracts.md)
 - [Events](events.md)
 - [HTTP client](http.md)
+- [Debugging](debugging.md)
