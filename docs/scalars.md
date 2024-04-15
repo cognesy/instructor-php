@@ -16,21 +16,71 @@ var_dump($value);
 
 In this example, we're extracting a single integer value from the text. You can also use `Scalar::string()`, `Scalar::boolean()` and `Scalar::float()` to extract other types of values.
 
-Additionally, you can use Scalar adapter to extract one of the provided options.
+Additionally, you can use Scalar adapter to extract enums via `Scalar::enum()`.
+
+
+## Examples
+
+### String result
 
 ```php
-use Cognesy\Instructor;
-
+<?php
 $value = (new Instructor)->respond(
-    messages: "His name is Jason, he currently plays Doom Eternal.",
-    responseModel: Scalar::select(
-        name: 'activityType',
-        options: ['work', 'entertainment', 'sport', 'other']
-    ),
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::string(name: 'firstName'),
 );
-
-var_dump($value);
-// string(4) "entertainment"
+// expect($value)->toBeString();
+// expect($value)->toBe("Jason");
 ```
 
-NOTE: Currently Scalar::select() always returns strings and its ```options``` parameter only accepts string values.
+### Integer result
+
+```php
+<?php
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::integer('age'),
+);
+// expect($value)->toBeInt();
+// expect($value)->toBe(28);
+```
+
+### Boolean result
+
+```php
+<?php
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Scalar::boolean(name: 'isAdult'),
+);
+// expect($value)->toBeBool();
+// expect($value)->toBe(true);
+```
+
+### Float result
+
+```php
+<?php
+$value = (new Instructor)->respond(
+    messages: "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.",
+    responseModel: Scalar::float(name: 'recordTime'),
+);
+// expect($value)->toBeFloat();
+// expect($value)->toBe(11.6);
+```
+
+### Select one of the options
+
+```php
+<?php
+$text = "His name is Jason, he is 28 years old and he lives in Germany.";
+$value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
+    messages: [
+        ['role' => 'system', 'content' => $text],
+        ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],
+    ],
+    responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
+);
+// expect($value)->toBeString();
+// expect($value)->toBe('other');
+```

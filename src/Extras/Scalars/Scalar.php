@@ -221,6 +221,8 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
         );
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////
+
     private function getEnumValueType() : ValueType {
         if (empty($this->options)) {
             throw new \Exception("Enum options are not set");

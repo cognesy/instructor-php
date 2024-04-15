@@ -55,15 +55,15 @@ it('extracts bool type', function () {
     $mockLLM = MockLLM::get(['{"isAdult":true}']);
 
     $text = "His name is Jason, he is 28 years old.";
-    $age = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'Is he adult?'],
         ],
         responseModel: Scalar::boolean(name: 'isAdult'),
     );
-    expect($age)->toBeBool();
-    expect($age)->toBe(true);
+    expect($$value)->toBeBool();
+    expect($$value)->toBe(true);
 });
 
 
@@ -71,13 +71,13 @@ it('extracts enum type', function () {
     $mockLLM = MockLLM::get(['{"citizenshipGroup":"other"}']);
 
     $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-    $age = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
+    $value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
         messages: [
             ['role' => 'system', 'content' => $text],
             ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],
         ],
         responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
     );
-    expect($age)->toBeString();
-    expect($age)->toBe('other');
+    expect($value)->toBeString();
+    expect($value)->toBe('other');
 });
