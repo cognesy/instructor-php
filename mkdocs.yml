@@ -217,6 +217,7 @@ nav:
     - Private vs public object field: 'hub/private_vs_public_fields.md'
     - Restating instructions: 'hub/restating_instructions.md'
     - Ask LLM to rewrite instructions: 'hub/rewriting_instructions.md'
+    - Extracting Scalar Values: 'hub/scalars.md'
     - Expanding Search Queries: 'hub/search_criteria.md'
     - Automatic correction based on validation results: 'hub/self_correction.md'
     - Extracting sequences of objects: 'hub/sequences.md'
