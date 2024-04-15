@@ -62,8 +62,8 @@ it('extracts bool type', function () {
         ],
         responseModel: Scalar::boolean(name: 'isAdult'),
     );
-    expect($$value)->toBeBool();
-    expect($$value)->toBe(true);
+    expect($value)->toBeBool();
+    expect($value)->toBe(true);
 });
 
 
@@ -78,6 +78,6 @@ it('extracts enum type', function () {
         ],
         responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
     );
-    expect($value)->toBeString();
-    expect($value)->toBe('other');
+    expect($value)->toBeEnum();
+    expect($value)->toBe(CitizenshipGroup::Other->value);
 });
