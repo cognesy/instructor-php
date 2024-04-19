@@ -60,7 +60,7 @@ class SchemaFactory
      * @param string $class
      * @param string $property
      */
-    public function property(string $class, string $property) : Schema
+    protected function property(string $class, string $property) : Schema
     {
         if (!$this->propertyMap->has($class, $property)) {
             $this->propertyMap->register($class, $property, $this->getPropertySchema($class, $property));

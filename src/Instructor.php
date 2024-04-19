@@ -166,7 +166,7 @@ class Instructor {
             $requestHandler = $this->config()->get(CanHandleRequest::class);
             $response = $requestHandler->respondTo($this->request);
             $this->events->dispatch(new ResponseGenerated($response));
-            return $response->unwrap();
+            return $response;
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
