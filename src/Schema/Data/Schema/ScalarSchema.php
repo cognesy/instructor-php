@@ -4,6 +4,9 @@ namespace Cognesy\Instructor\Schema\Data\Schema;
 
 class ScalarSchema extends Schema
 {
+    /**
+     * Renders scalar schema
+     */
     public function toArray(callable $refCallback = null) : array
     {
         return array_filter([

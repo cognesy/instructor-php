@@ -4,6 +4,9 @@ namespace Cognesy\Instructor\Schema\Data\Schema;
 
 class EnumSchema extends Schema
 {
+    /**
+     * Renders enum schema
+     */
     public function toArray(callable $refCallback = null) : array
     {
         return array_filter([

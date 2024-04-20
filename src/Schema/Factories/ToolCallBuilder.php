@@ -41,7 +41,7 @@ class ToolCallBuilder {
     }
 
     /**
-     * Recursive extraction of the schema definitions from the references
+     * Recursively extract the schema definitions from the references
      */
     protected function definitions() : array {
         $definitions = [];
@@ -50,13 +50,15 @@ class ToolCallBuilder {
             if ($reference == null) {
                 break;
             }
-            $definitions[$reference->classShort] = $this->schemaFactory->schema($reference->class)->toArray($this->onObjectRef(...));
+            $definitions[$reference->classShort] = $this->schemaFactory
+                ->schema($reference->class)
+                ->toArray($this->onObjectRef(...));
         }
         return array_reverse($definitions);
     }
 
     /**
-     * Callback called when an object reference is found
+     * Called when an object reference is found
      */
     public function onObjectRef(Reference $reference) {
         $this->references->queue($reference);

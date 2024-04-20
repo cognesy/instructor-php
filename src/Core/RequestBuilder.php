@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
@@ -14,19 +15,21 @@ class RequestBuilder
     private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
     public function __construct(
-        private ApiClient $client,
         private ToolCallBuilder $toolCallBuilder,
     ) {}
 
     public function clientWithRequest(
         array $messages,
         ResponseModel $responseModel,
-        string $model,
-        array $options,
-        Mode $mode,
+        Request $request,
     ) : ApiClient {
+        $mode = $request->mode;
+        $model = $request->model;
+        $options = $request->options;
+        $client = $request->client();
+
         return match($mode) {
-            Mode::Json => $this->client->jsonCompletion(
+            Mode::Json => $client->jsonCompletion(
                 messages: $messages,
                 responseFormat: [
                     'type' => 'json_object',
@@ -35,7 +38,7 @@ class RequestBuilder
                 model: $model,
                 options: $options
             ),
-            Mode::Tools => $this->client->toolsCall(
+            Mode::Tools => $client->toolsCall(
                 messages: $messages,
                 tools: [$this->toolCallBuilder->render(
                     $responseModel->jsonSchema,
@@ -49,7 +52,7 @@ class RequestBuilder
                 model: $model,
                 options: $options
             ),
-            Mode::MdJson => $this->client->chatCompletion(
+            Mode::MdJson => $client->chatCompletion(
                 messages: $this->appendInstructions($messages, $responseModel->jsonSchema),
                 model: $model,
                 options: $options

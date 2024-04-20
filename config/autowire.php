@@ -2,7 +2,6 @@
 namespace Cognesy\config;
 
 use Cognesy\Instructor\ApiClient\CacheConfig;
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicConnector;
 use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
@@ -64,192 +63,191 @@ function autowire(Configuration $config) : Configuration
 
     /// API CONNECTORS ///////////////////////////////////////////////////////////////////////
 
-    $config->declare(
-        class: AnthropicConnector::class,
-        context: [
-            'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class: AnyscaleConnector::class,
-        context: [
-            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class: AzureConnector::class,
-        context: [
-            'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
-            'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
-            'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
-            'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
-            'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class:FireworksAIConnector::class,
-        context: [
-            'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class: GroqConnector::class,
-        context: [
-            'apiKey' => $_ENV['GROQ_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['GROQ_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class: MistralConnector::class,
-        context: [
-            'apiKey' => $_ENV['MISTRAL_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['MISTRAL_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class: OpenAIConnector::class,
-        context: [
-            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
-            'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class: OpenRouterConnector::class,
-        context: [
-            'apiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['OPENROUTER_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
-
-    $config->declare(
-        class:TogetherAIConnector::class,
-        context: [
-            'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
-            'baseUrl' => $_ENV['TOGETHERAI_BASE_URI'] ?? '',
-            'connectTimeout' => 3,
-            'requestTimeout' => 30,
-            'metadata' => [],
-            'senderClass' => '',
-        ],
-    );
+//    $config->declare(
+//        class: AnthropicConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: AnyscaleConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: AzureConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
+//            'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
+//            'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
+//            'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
+//            'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class:FireworksAIConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: GroqConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['GROQ_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['GROQ_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: MistralConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['MISTRAL_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['MISTRAL_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: OpenAIConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
+//            'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: OpenRouterConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['OPENROUTER_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
+//
+//    $config->declare(
+//        class:TogetherAIConnector::class,
+//        context: [
+//            'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
+//            'baseUrl' => $_ENV['TOGETHERAI_BASE_URI'] ?? '',
+//            'connectTimeout' => 3,
+//            'requestTimeout' => 30,
+//            'metadata' => [],
+//            'senderClass' => '',
+//        ],
+//    );
 
     /// LLM CLIENTS //////////////////////////////////////////////////////////////////////////
 
-    $config->declare(
-        class: AnthropicClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(AnthropicConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class: AnyscaleClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(AnyscaleConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class: AzureClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(AzureConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class:FireworksAIClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(FireworksAIConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class: GroqClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(GroqConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class: MistralClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(MistralConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class: OpenAIClient::class,
-        name: CanCallApi::class, // default client
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(OpenAIConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class: OpenRouterClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(OpenRouterConnector::class),
-        ],
-    );
-
-    $config->declare(
-        class:TogetherAIClient::class,
-        context: [
-            'events' => $config->reference(EventDispatcher::class),
-            'connector' => $config->reference(TogetherAIConnector::class),
-        ],
-    );
+//    $config->declare(
+//        class: AnthropicClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(AnthropicConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: AnyscaleClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(AnyscaleConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: AzureClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(AzureConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class:FireworksAIClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(FireworksAIConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: GroqClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(GroqConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: MistralClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(MistralConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: OpenAIClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(OpenAIConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: OpenRouterClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(OpenRouterConnector::class),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class:TogetherAIClient::class,
+//        context: [
+//            'events' => $config->reference(EventDispatcher::class),
+//            'connector' => $config->reference(TogetherAIConnector::class),
+//        ],
+//    );
 
     /// SCHEMA MODEL HANDLING ////////////////////////////////////////////////////////////////
 
@@ -285,7 +283,6 @@ function autowire(Configuration $config) : Configuration
     $config->declare(
         class: RequestBuilder::class,
         context: [
-            'client' => $config->reference(CanCallApi::class),
             'toolCallBuilder' => $config->reference(ToolCallBuilder::class),
         ]
     );

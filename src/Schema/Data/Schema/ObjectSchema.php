@@ -23,6 +23,9 @@ class ObjectSchema extends Schema
         $this->required = $required;
     }
 
+    /**
+     * Renders object schema
+     */
     public function toArray(callable $refCallback = null) : array
     {
         $propertyDefs = [];

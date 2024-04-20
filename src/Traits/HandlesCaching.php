@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-class HandlesCaching
+trait HandlesCaching
 {
     protected bool $cache = false;
 

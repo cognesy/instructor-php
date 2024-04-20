@@ -9,7 +9,6 @@ class ResponseModel
     public ?string $class;
     public Schema $schema;
     public array $jsonSchema;
-    public ?array $toolCall;
 
     public string $functionName = 'extract_data';
     public string $functionDescription = 'Extract correct data in strict JSON format from provided content';
@@ -20,11 +19,9 @@ class ResponseModel
         mixed  $instance = null,
         Schema $schema = null,
         array  $jsonSchema = null,
-        array  $toolCall = null,
     ) {
         $this->class = $class;
         $this->instance = $instance;
-        $this->toolCall = $toolCall;
         $this->schema = $schema;
         $this->jsonSchema = $jsonSchema;
     }

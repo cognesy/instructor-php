@@ -17,6 +17,9 @@ class ArraySchema extends Schema
         $this->nestedItemSchema = $nestedItemSchema;
     }
 
+    /**
+     * Renders array schema
+     */
     public function toArray(callable $refCallback = null) : array
     {
         return array_filter([

@@ -8,6 +8,9 @@ class ObjectRefSchema extends Schema
 {
     private string $defsLabel = '$defs';
 
+    /**
+     * Renders object reference
+     */
     public function toArray(callable $refCallback = null) : array
     {
         $class = $this->className($this->type->class);

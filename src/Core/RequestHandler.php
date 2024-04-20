@@ -64,7 +64,7 @@ class RequestHandler implements CanHandleRequest
 
     protected function getResponse(array $messages, Request $request, ResponseModel $responseModel) : ApiResponse {
         $apiClient = $this->requestBuilder->clientWithRequest(
-            $messages, $responseModel, $request->model, $request->options, $request->mode
+            $messages, $responseModel, $request
         );
         try {
             $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));

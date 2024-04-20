@@ -73,7 +73,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
 
     protected function getStreamedResponses(array $messages, ResponseModel $responseModel, Request $request) : Generator {
         $apiClient = $this->requestBuilder->clientWithRequest(
-            $messages, $responseModel, $request->model, $request->options, $request->mode
+            $messages, $responseModel, $request
         );
         try {
             $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));

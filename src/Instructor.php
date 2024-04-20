@@ -32,6 +32,7 @@ class Instructor {
     use Traits\HandlesErrors;
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
+    use Traits\HandlesApiClient;
     use Traits\HandlesDebug;
 
     protected Request $request;
@@ -48,15 +49,15 @@ class Instructor {
 
     /// INITIALIZATION ENDPOINTS //////////////////////////////////////////////
 
+    /**
+     * Sets the environment variables configuration file paths and names
+     *
+     * @param string|array $paths
+     * @param string|array $names
+     * @return $this
+     */
     public function withEnv(string|array $paths, string|array $names = '') : self {
         Env::set($paths, $names);
-        return $this;
-    }
-
-    public function withClient(CanCallApi $client) : self {
-        $this->withConfig([
-            CanCallApi::class => $client->withEventDispatcher($this->events())
-        ]);
         return $this;
     }
 
@@ -65,40 +66,14 @@ class Instructor {
      */
     public function withRequest(Request $request) : self {
         $this->dispatchQueuedEvents();
-        $this->request = $request;
+        $this->request = $request->withClient(
+            $this->client()->withDebug($this->debug())
+        );
         $this->events->dispatch(new RequestReceived($request));
         return $this;
     }
 
     /// EXTRACTION EXECUTION ENDPOINTS ////////////////////////////////////////
-
-    /**
-     * Creates the request to be executed
-     */
-    public function request(
-        string|array $messages,
-        string|object|array $responseModel,
-        string $model = '',
-        int $maxRetries = 0,
-        array $options = [],
-        string $functionName = 'extract_data',
-        string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors",
-        Mode $mode = Mode::Tools
-    ) : self {
-        $request = new Request(
-            $messages,
-            $responseModel,
-            $model,
-            $maxRetries,
-            $options,
-            $functionName,
-            $functionDescription,
-            $retryPrompt,
-            $mode
-        );
-        return $this->withRequest($request);
-    }
 
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
@@ -112,7 +87,7 @@ class Instructor {
         string $functionName = 'extract_data',
         string $functionDescription = 'Extract data from provided content',
         string $retryPrompt = "Recall function correctly, fix following errors",
-        Mode $mode = Mode::Tools,
+        Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
             $messages,
@@ -123,9 +98,37 @@ class Instructor {
             $functionName,
             $functionDescription,
             $retryPrompt,
-            $mode
+            $mode,
         );
         return $this->get();
+    }
+
+    /**
+     * Creates the request to be executed
+     */
+    public function request(
+        string|array $messages,
+        string|object|array $responseModel,
+        string $model = '',
+        int $maxRetries = 0,
+        array $options = [],
+        string $functionName = 'extract_data',
+        string $functionDescription = 'Extract data from provided content',
+        string $retryPrompt = "Recall function correctly, fix following errors",
+        Mode $mode = Mode::Tools,
+    ) : self {
+        $request = new Request(
+            $messages,
+            $responseModel,
+            $model,
+            $maxRetries,
+            $options,
+            $functionName,
+            $functionDescription,
+            $retryPrompt,
+            $mode,
+        );
+        return $this->withRequest($request);
     }
 
     /**
