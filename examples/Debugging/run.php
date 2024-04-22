@@ -1,21 +1,11 @@
 # Debugging
 
-Instructor gives you access to SaloonPHP debugging mode via Instructor class or
-API client class `withDebug()` methods.
+Instructor gives you access to SaloonPHP debugging mode by setting `options` array
+key `debug` to `true` when creating a client instance.
 
-Calling `withDebug()` causes underlying SaloonPHP library to output HTTP request
-and response details to the console, so you can see what is being sent to LLM API
-and what is being received.
-
-You can also directly access Saloon connector instance via `connector()` method
-on the client instance, and call Saloon debugging methods on it - see SaloonPHP
-debugging documentation for more details:
-https://docs.saloon.dev/the-basics/debugging
-
-Additionally, `connector()` method on the client instance allows you to access
-other capabilities of Saloon connector, such as setting or modifying middleware.
-See SaloonPHP documentation for more details:
-https://docs.saloon.dev/digging-deeper/middleware
+Setting `debug` option to true causes underlying SaloonPHP library to output
+HTTP request and response details to the console, so you can see what is being
+sent to LLM API and what is being received.
 
 ```php
 <?php
@@ -29,14 +19,15 @@ class User {
     public string $name;
 }
 
-/// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withDebug();
-
-$user = $instructor->respond(
+$user = (new Instructor)->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
+    options: [
+        'debug' => true
+    ],
 );
 
+echo "\nResult:\n";
 dump($user);
 
 assert(isset($user->name));

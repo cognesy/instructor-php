@@ -14,6 +14,7 @@ use Saloon\Http\Response;
 trait HandlesResponse
 {
     use HandlesApiConnector;
+    use HandlesRequest;
     use HandlesResponseClass;
 
     public function respond(ApiRequest $request) : ApiResponse {
@@ -24,7 +25,6 @@ trait HandlesResponse
         if ($this->isStreamedRequest()) {
             throw new Exception('You need to use stream() when option stream is set to true');
         }
-
         $request = $this->getRequest();
         $response = $this->respondRaw($request);
         return $this->makeResponse($response);
@@ -33,7 +33,7 @@ trait HandlesResponse
     protected function respondRaw(ApiRequest $request): Response {
         $this?->events->dispatch(new ApiRequestInitiated($request));
         try {
-            $response = $this->connector()->send($request);
+            $response = $this->connector($request->isDebug())->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;

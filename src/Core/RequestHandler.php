@@ -59,7 +59,7 @@ class RequestHandler implements CanHandleRequest
             }
         }
         $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $errors));
-        throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: $errors");
+        throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: ".implode(", ", $errors));
     }
 
     protected function getResponse(array $messages, Request $request, ResponseModel $responseModel) : ApiResponse {

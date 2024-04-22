@@ -7,6 +7,9 @@ a simplified API for such cases.
 
 ```php
 <?php
+$loader = require 'vendor/autoload.php';
+$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 

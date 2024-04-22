@@ -15,7 +15,7 @@ $mockLLM = MockLLM::get([
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($mockLLM, $text) {
-    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
+    $instructor = (new Instructor)->withClient($mockLLM);
     $person = $instructor->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -27,7 +27,7 @@ it('handles direct call', function () use ($mockLLM, $text) {
 
 it('handles onEvent()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
+    $instructor = (new Instructor)->withClient($mockLLM);
     $person = $instructor->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -40,7 +40,7 @@ it('handles onEvent()', function () use ($mockLLM, $text) {
 
 it('handles wiretap()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
+    $instructor = (new Instructor)->withClient($mockLLM);
     $person = $instructor->wiretap(fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -53,7 +53,7 @@ it('handles wiretap()', function () use ($mockLLM, $text) {
 
 it('handles onError()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
+    $instructor = (new Instructor)->withClient($mockLLM);
     $person = $instructor->onError(fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: '',
@@ -64,7 +64,7 @@ it('handles onError()', function () use ($mockLLM, $text) {
 it('throws exception if no onError() provided', function () use ($mockLLM, $text) {
     $thrownException = false;
     try {
-        $instructor = (new Instructor)->withConfig([CanCallApi::class => $mockLLM]);
+        $instructor = (new Instructor)->withClient($mockLLM);
         $person = $instructor->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: '',

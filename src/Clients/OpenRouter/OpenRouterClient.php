@@ -44,34 +44,23 @@ class OpenRouterClient extends ApiClient implements CanCallChatCompletion, CanCa
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
     public function chatCompletion(array $messages, string $model = '', array $options = []): static {
-        $model = $model ?: $this->defaultModel;
-        $this->request = new ChatCompletionRequest($messages, $this->getModel($model), $options);
-        if ($this->request->isStreamed()) {
-            $this->responseClass = PartialChatCompletionResponse::class;
-        } else {
-            $this->responseClass = ChatCompletionResponse::class;
-        }
+        $this->withRequest(new ChatCompletionRequest($messages, $this->getModel($model), $options));
+        $this->partialResponseClass = PartialChatCompletionResponse::class;
+        $this->responseClass = ChatCompletionResponse::class;
         return $this;
     }
 
     public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static {
-        $model = $model ?: $this->defaultModel;
-        $this->request = new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options);
-        if ($this->request->isStreamed()) {
-            $this->responseClass = PartialJsonCompletionResponse::class;
-        } else {
-            $this->responseClass = JsonCompletionResponse::class;
-        }
+        $this->withRequest(new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options));
+        $this->partialResponseClass = PartialJsonCompletionResponse::class;
+        $this->responseClass = JsonCompletionResponse::class;
         return $this;
     }
 
     public function toolsCall(array $messages, array $tools, array $toolChoice = [], string $model = '', array $options = []): static {
-        $this->request = new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options);
-        if ($this->request->isStreamed()) {
-            $this->responseClass = PartialToolsCallResponse::class;
-        } else {
-            $this->responseClass = ToolsCallResponse::class;
-        }
+        $this->withRequest(new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options));
+        $this->partialResponseClass = PartialToolsCallResponse::class;
+        $this->responseClass = ToolsCallResponse::class;
         return $this;
     }
 

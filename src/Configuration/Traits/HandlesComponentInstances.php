@@ -9,9 +9,9 @@ use Cognesy\Instructor\Events\Configuration\ReferenceResolutionRequested;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
 use Exception;
 
-trait HandlesInstances
+trait HandlesComponentInstances
 {
-    use HasInstance;
+    use HasConfigurationInstance;
     use HandlesConfig;
     use PreventsCycles;
     use HandlesEvents;

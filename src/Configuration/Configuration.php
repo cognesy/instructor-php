@@ -10,9 +10,9 @@ use Cognesy\Instructor\Events\Traits\HandlesEvents;
  */
 class Configuration
 {
-    use Traits\HasInstance;
+    use Traits\HasConfigurationInstance;
     use Traits\HandlesConfig;
-    use Traits\HandlesInstances;
+    use Traits\HandlesComponentInstances;
     use HandlesEvents;
     use HandlesEventListeners;
 

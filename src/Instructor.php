@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
@@ -33,7 +32,7 @@ class Instructor {
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesApiClient;
-    use Traits\HandlesDebug;
+    use Traits\HandlesTimer;
 
     protected Request $request;
 
@@ -66,9 +65,7 @@ class Instructor {
      */
     public function withRequest(Request $request) : self {
         $this->dispatchQueuedEvents();
-        $this->request = $request->withClient(
-            $this->client()->withDebug($this->debug())
-        );
+        $this->request = $request;
         $this->events->dispatch(new RequestReceived($request));
         return $this;
     }
@@ -167,7 +164,9 @@ class Instructor {
         try {
             /** @var RequestHandler $requestHandler */
             $requestHandler = $this->config()->get(CanHandleRequest::class);
-            $response = $requestHandler->respondTo($this->request);
+            $this->startTimer();
+            $response = $requestHandler->respondTo($this->getRequest());
+            $this->stopTimer();
             $this->events->dispatch(new ResponseGenerated($response));
             return $response;
         } catch (Throwable $error) {
@@ -179,9 +178,15 @@ class Instructor {
         try {
             /** @var StreamRequestHandler $requestHandler */
             $requestHandler = $this->config()->get(CanHandleStreamRequest::class);
-            yield from $requestHandler->respondTo($this->request);
+            $this->startTimer();
+            yield from $requestHandler->respondTo($this->getRequest());
+            $this->stopTimer();
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
+    }
+
+    protected function getRequest() : Request {
+        return $this->request->withClient($this->client());
     }
 }

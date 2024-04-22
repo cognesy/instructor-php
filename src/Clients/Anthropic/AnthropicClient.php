@@ -48,12 +48,9 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = new ChatCompletionRequest($messages, $this->getModel($model), $options);
-        if ($this->request->isStreamed()) {
-            $this->responseClass = PartialChatCompletionResponse::class;
-        } else {
-            $this->responseClass = ChatCompletionResponse::class;
-        }
+        $this->withRequest(new ChatCompletionRequest($messages, $this->getModel($model), $options));
+        $this->partialResponseClass = PartialChatCompletionResponse::class;
+        $this->responseClass = ChatCompletionResponse::class;
         return $this;
     }
 
@@ -61,12 +58,9 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options);
-        if ($this->request->isStreamed()) {
-            $this->responseClass = PartialJsonCompletionResponse::class;
-        } else {
-            $this->responseClass = JsonCompletionResponse::class;
-        }
+        $this->withRequest(new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options));
+        $this->partialResponseClass = PartialJsonCompletionResponse::class;
+        $this->responseClass = JsonCompletionResponse::class;
         return $this;
     }
 
@@ -74,12 +68,9 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options);
-        if ($this->request->isStreamed()) {
-            $this->responseClass = PartialToolsCallResponse::class;
-        } else {
-            $this->responseClass = ToolsCallResponse::class;
-        }
+        $this->withRequest(new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options));
+        $this->partialResponseClass = PartialToolsCallResponse::class;
+        $this->responseClass = ToolsCallResponse::class;
         return $this;
     }
 

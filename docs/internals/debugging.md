@@ -11,10 +11,22 @@ For more details see the [Events](events.md) section.
 
 ## HTTP Debugging
 
-Instructor gives you access to SaloonPHP debugging mode via API client class
-`withDebug()` method. Calling it on a client instance causes underlying SaloonPHP
-library to output HTTP request and response details to the console, so you can
-see what is being sent to LLM API and what is being received.
+Instructor gives you access to SaloonPHP debugging mode by setting `options` array
+key `debug` to `true` when creating a client instance. For example:
+
+```php
+$result = (new Instructor)->respond(
+    messages: "Jason is 25 years old",
+    responseModel: User:class,
+    options: [
+        'debug' => true
+    ]
+);
+```
+
+Setting `debug` option to true causes underlying SaloonPHP library to output
+HTTP request and response details to the console, so you can see what is being
+sent to LLM API and what is being received.
 
 You can also directly access Saloon connector instance via `connector()` method
 on the client instance, and call Saloon debugging methods on it - see SaloonPHP

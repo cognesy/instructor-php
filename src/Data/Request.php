@@ -4,13 +4,9 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Traits\HandlesApiClient;
-use Cognesy\Instructor\Traits\HandlesCaching;
-use Cognesy\Instructor\Traits\HandlesDebug;
 
 class Request
 {
-    use HandlesDebug;
-    use HandlesCaching;
     use HandlesApiClient;
 
     public function __construct(

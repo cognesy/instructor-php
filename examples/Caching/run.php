@@ -27,11 +27,37 @@ $instructor = (new Instructor)->withClient($client);
 $user = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-)->withCache()->get();
+)->get();
 
 dump($user);
+echo "Time elapsed (no cache, default): ".$instructor->elapsedTime()." seconds\n\n";
 
-assert(isset($user->name));
-assert(isset($user->age));
+$user2 = $instructor->request(
+    messages: "Jason is 25 years old.",
+    responseModel: User::class,
+    options: ['cache' => true],
+)->get();
+
+dump($user2);
+echo "Time elapsed (cache on, 1st call): ".$instructor->elapsedTime()." seconds\n\n";
+
+$user3 = $instructor->request(
+    messages: "Jason is 25 years old.",
+    responseModel: User::class,
+    options: ['cache' => true],
+)->get();
+
+dump($user3);
+echo "Time elapsed (cache on, 2nd call): ".$instructor->elapsedTime()." seconds\n\n";
+
+$user4 = $instructor->request(
+    messages: "Jason is 25 years old.",
+    responseModel: User::class,
+    options: ['cache' => false],
+)->get();
+
+dump($user4);
+echo "Time elapsed (cache turned off again): ".$instructor->elapsedTime()." seconds\n\n";
+
 ?>
 ```

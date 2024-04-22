@@ -16,6 +16,7 @@ class MockLLM
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);
         }
+        $mockLLM->shouldReceive('withDebug')->andReturn($mockLLM);
         $mockLLM->shouldReceive('toolsCall')->andReturn($mockLLM);
         $mockLLM->shouldReceive('getRequest')->andReturnUsing(fn() => new ApiToolsCallRequest());
         $mockLLM->shouldReceive('get')->andReturnUsing(...$list);

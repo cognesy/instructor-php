@@ -10,12 +10,14 @@ trait HandlesResponseClass
 {
     /** @var class-string */
     protected string $responseClass;
+    /** @var class-string */
+    protected string $partialResponseClass;
 
     protected function makeResponse(Response $response) : ApiResponse {
         return ($this->responseClass)::fromResponse($response);
     }
 
     protected function makePartialResponse(string $partialData) : PartialApiResponse {
-        return ($this->responseClass)::fromPartialResponse($partialData);
+        return ($this->partialResponseClass)::fromPartialResponse($partialData);
     }
 }

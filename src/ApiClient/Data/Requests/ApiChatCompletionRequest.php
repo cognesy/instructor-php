@@ -11,7 +11,7 @@ class ApiChatCompletionRequest extends ApiRequest
         if (!is_array($messages)) {
             $this->messages = ['role' => 'user', 'content' => $messages];
         }
-        parent::__construct();
+        parent::__construct($options);
     }
 
     protected function defaultBody(): array {

@@ -8,7 +8,7 @@ use Tests\Examples\Extraction\Person;
 it('accepts string as input', function () {
     $mockLLM = MockLLM::get(['{"name":"Jason","age":28}']);
 
-    $person = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
+    $person = (new Instructor)->withClient($mockLLM)->respond(
         messages: "His name is Jason, he is 28 years old.",
         responseModel: Person::class,
     );
@@ -26,7 +26,7 @@ it('self-corrects values extracted by LLM based on validation results', function
     ]);
 
     $text = "His name is JX, aka Jason, is -28 years old.";
-    $person = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
+    $person = (new Instructor)->withClient($mockLLM)->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
         maxRetries: 2,

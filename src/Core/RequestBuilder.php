@@ -28,7 +28,7 @@ class RequestBuilder
         $options = $request->options;
         $client = $request->client();
 
-        return match($mode) {
+        $clientWithRequest = match($mode) {
             Mode::Json => $client->jsonCompletion(
                 messages: $messages,
                 responseFormat: [
@@ -59,6 +59,8 @@ class RequestBuilder
             ),
             default => throw new Exception('Unknown mode')
         };
+
+        return $clientWithRequest;
     }
 
     private function appendInstructions(array $messages, array $jsonSchema) : array {

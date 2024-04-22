@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Configuration\Traits;
 use Cognesy\Instructor\Configuration\Configuration;
 use function Cognesy\config\autowire;
 
-trait HasInstance
+trait HasConfigurationInstance
 {
     private static ?Configuration $instance = null;
 

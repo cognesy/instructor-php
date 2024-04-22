@@ -12,7 +12,7 @@ it('supports simple properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new Instructor)->withConfig([ApiClientApiCaller::class => $mockLLM])->respond(
+    $person = (new Instructor)->withClient($mockLLM)->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     );

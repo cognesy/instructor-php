@@ -6,8 +6,7 @@ use Cognesy\Instructor\Data\ResponseModel;
 
 class BuildFromClass extends AbstractBuilder
 {
-    public function build(mixed $requestedModel) : ResponseModel
-    {
+    public function build(mixed $requestedModel) : ResponseModel {
         return $this->makeStringResponseModel($requestedModel);
     }
 

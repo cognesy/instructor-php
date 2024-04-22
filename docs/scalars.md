@@ -74,7 +74,7 @@ $value = (new Instructor)->respond(
 ```php
 <?php
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$value = (new Instructor)->withConfig([CanCallApi::class => $mockLLM])->respond(
+$value = (new Instructor)->respond(
     messages: [
         ['role' => 'system', 'content' => $text],
         ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],
