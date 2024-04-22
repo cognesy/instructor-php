@@ -19,6 +19,8 @@ class User {
     public string $name;
 }
 
+echo "Debugging request and response:\n\n";
+
 $user = (new Instructor)->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,

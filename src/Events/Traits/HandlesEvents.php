@@ -14,11 +14,11 @@ trait HandlesEvents
         return $this;
     }
 
-    protected function events() : EventDispatcher {
+    public function events() : EventDispatcher {
         return $this->events;
     }
 
-    protected function emit(Event $event) : void {
+    public function emit(Event $event) : void {
         $this->events->dispatch($event);
     }
 }

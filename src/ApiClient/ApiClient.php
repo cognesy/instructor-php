@@ -20,8 +20,4 @@ abstract class ApiClient implements CanCallApi
     ) {
         $this->withEventDispatcher($events ?? new EventDispatcher());
     }
-
-    abstract protected function isDone(string $data): bool;
-
-    abstract protected function getData(string $data): string;
 }

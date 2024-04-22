@@ -8,9 +8,7 @@ class ApiChatCompletionRequest extends ApiRequest
         public string $model = '',
         public array $options = [],
     ) {
-        if (!is_array($messages)) {
-            $this->messages = ['role' => 'user', 'content' => $messages];
-        }
+        $this->messages = $this->normalizeMessages($messages);
         parent::__construct($options);
     }
 

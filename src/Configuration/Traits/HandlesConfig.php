@@ -76,12 +76,25 @@ trait HandlesConfig
         callable $getInstance = null,
         bool     $injectContext = true,
     ) : self {
-        if (is_null($name)) {
-            $name = $class;
-        }
+        $name = $name ?? $class;
         $this->register((new ComponentConfig(
             $name, $class, $context, $getInstance, $injectContext
         ))->withEventDispatcher($this->events));
+        return $this;
+    }
+
+    public function external(
+        string $class,
+        string $name = null,
+        object $reference = null
+    ) : self {
+        $name = $name ?? $class;
+        $componentConfig = new ComponentConfig(
+            class: $class,
+            name: $name,
+            getInstance: fn() => $reference
+        );
+        $this->register($componentConfig);
         return $this;
     }
 

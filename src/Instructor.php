@@ -187,6 +187,8 @@ class Instructor {
     }
 
     protected function getRequest() : Request {
-        return $this->request->withClient($this->client());
+        return $this->request->withClient(
+            $this->client()->withEventDispatcher($this->events())
+        );
     }
 }

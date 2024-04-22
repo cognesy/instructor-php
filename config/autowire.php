@@ -30,7 +30,9 @@ function autowire(Configuration $config) : Configuration
 {
     /// CORE /////////////////////////////////////////////////////////////////////////////////
 
-    $config->declare(class: EventDispatcher::class);
+    $config->declare(
+        class: EventDispatcher::class,
+    );
 
     /// API CLIENT CACHE /////////////////////////////////////////////////////////////////////
 

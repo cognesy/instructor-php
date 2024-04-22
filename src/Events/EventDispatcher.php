@@ -2,36 +2,33 @@
 
 namespace Cognesy\Instructor\Events;
 
+use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
+
 class EventDispatcher
 {
     private array $listeners = [];
     private array $wiretaps = [];
 
-    public function addListener(string $eventClass, callable $listener): self
-    {
+    public function addListener(string $eventClass, callable $listener): self {
         $this->listeners[$eventClass][] = $listener;
         return $this;
     }
 
-    public function dispatch(Event $event): void
-    {
+    public function dispatch(Event $event): void {
         $eventClass = get_class($event);
-        if (isset($this->listeners[$eventClass])) {
-            foreach ($this->listeners[$eventClass] as $listener) {
-                $listener($event);
-            }
+        $listeners = $this->listeners[$eventClass] ?? [];
+        foreach ($listeners as $listener) {
+            $listener($event);
         }
         $this->wiretapDispatch($event);
     }
 
-    public function wiretap(callable $listener): self
-    {
+    public function wiretap(callable $listener): self {
         $this->wiretaps[] = $listener;
         return $this;
     }
 
-    private function wiretapDispatch(Event $event): void
-    {
+    private function wiretapDispatch(Event $event): void {
         foreach ($this->wiretaps as $wiretap) {
             $wiretap($event);
         }

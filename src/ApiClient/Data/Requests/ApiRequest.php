@@ -23,14 +23,10 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     public function __construct(
         public array $options = []
     ) {
-        if (isset($this->options['debug'])) {
-            $this->debug = $this->options['debug'];
-            unset($this->options['debug']);
-        }
-        if (isset($this->options['cache'])) {
-            $this->useCache = $this->options['cache'];
-            unset($this->options['cache']);
-        }
+        $this->debug = $this->options['debug'] ?? false;
+        unset($this->options['debug']);
+        $this->useCache = $this->options['cache'] ?? false;
+        unset($this->options['cache']);
         if ($this->useCache) {
             $this->withCacheConfig(new CacheConfig(enabled: $this->useCache));
             $this->enableCaching();
@@ -50,6 +46,13 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     public function resolveEndpoint() : string {
         return $this->endpoint;
+    }
+
+    protected function normalizeMessages(string|array $messages): array {
+        if (!is_array($messages)) {
+            return [['role' => 'user', 'content' => $messages]];
+        }
+        return $messages;
     }
 
     abstract protected function defaultBody(): array;
