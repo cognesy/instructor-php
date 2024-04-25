@@ -15,7 +15,7 @@ trait HandlesApiConnector
 
     public function connector(bool $debug = false) : ApiConnector {
         if ($debug) {
-            $this->connector->debug();
+            $this->connector->debug(die: true);
         }
         return $this->connector;
     }

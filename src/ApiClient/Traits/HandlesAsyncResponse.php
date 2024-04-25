@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Events\ApiClient\ApiAsyncRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiAsyncResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;

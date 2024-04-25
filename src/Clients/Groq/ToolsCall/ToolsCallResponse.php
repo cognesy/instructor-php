@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\Groq\ToolsCall;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Utils\Json;
 use Saloon\Http\Response;
 

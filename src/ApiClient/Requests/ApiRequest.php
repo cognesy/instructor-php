@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient\Data\Requests;
+namespace Cognesy\Instructor\ApiClient\Requests;
 
-use Cognesy\Instructor\ApiClient\CacheConfig;
+use Cognesy\Instructor\ApiClient\Traits\HandlesApiRequestContext;
 use Cognesy\Instructor\Traits\HandlesApiCaching;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
@@ -14,24 +14,25 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 {
     use HasJsonBody;
     use HandlesApiCaching;
+    use HandlesApiRequestContext;
 
     protected string $endpoint;
     protected Method $method = Method::POST;
     protected bool $debug = false;
-    protected bool $useCache = false;
 
     public function __construct(
         public array $options = []
     ) {
         $this->debug = $this->options['debug'] ?? false;
         unset($this->options['debug']);
-        $this->useCache = $this->options['cache'] ?? false;
+
+        $this->cachingEnabled = $this->options['cache'] ?? false;
         unset($this->options['cache']);
-        if ($this->useCache) {
-            $this->withCacheConfig(new CacheConfig(enabled: $this->useCache));
-            $this->enableCaching();
-        } else {
-            $this->disableCaching();
+
+        if ($this->cachingEnabled) {
+            if ($this->isStreamed()) {
+                throw new \Exception('Cannot use cache with streamed requests');
+            }
         }
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
     }

@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Utils;
 
+use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Exception;
 use JsonException;
 
@@ -54,7 +55,7 @@ class JsonParser
                 }
                 return $data;
             } catch (Exception $e) {
-                throw new Exception('Unexpected error: ' . $e->getMessage());
+                throw new JsonParsingException('Unexpected error: ' . $e->getMessage());
             }
         } else {
             return json_decode('{}', $associative);

@@ -25,12 +25,18 @@ class BuildFromJsonSchemaProvider extends AbstractBuilder
     ) : ResponseModel {
         $jsonSchema = $instance->toJsonSchema();
         $schema = $this->schemaBuilder->fromArray($jsonSchema);
+        $toolCallSchema = $this->toolCallBuilder->render(
+            $jsonSchema,
+            $this->functionName,
+            $this->functionDescription
+        );
         // make model object
         return new ResponseModel(
             $class,
             $instance,
             $schema,
             $jsonSchema,
+            $toolCallSchema
         );
     }
 }

@@ -6,7 +6,7 @@ namespace Cognesy\Instructor\ApiClient\Traits;
 use Generator;
 use Psr\Http\Message\StreamInterface;
 
-trait ReadsStreamedResponse
+trait ReadsStreamResponse
 {
     protected function getStreamIterator(
         StreamInterface $stream,

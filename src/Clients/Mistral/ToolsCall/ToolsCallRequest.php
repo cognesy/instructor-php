@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\Mistral\ToolsCall;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiToolsCallRequest;
+use Cognesy\Instructor\ApiClient\Requests\ApiToolsCallRequest;
 
 class ToolsCallRequest extends ApiToolsCallRequest
 {

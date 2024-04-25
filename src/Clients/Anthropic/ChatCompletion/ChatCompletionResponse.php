@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Clients\Anthropic\ChatCompletion;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Utils\Json;
 use Saloon\Http\Response;
 

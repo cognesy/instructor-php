@@ -18,12 +18,18 @@ class BuildFromSchema extends AbstractBuilder
         $instance = new $class;
         $schema = $requestedModel;
         $jsonSchema = $schema->toArray($this->toolCallBuilder->onObjectRef(...));
+        $toolCallSchema = $this->toolCallBuilder->render(
+            $jsonSchema,
+            $this->functionName,
+            $this->functionDescription
+        );
         // make model object
         return new ResponseModel(
             $class,
             $instance,
             $schema,
             $jsonSchema,
+            $toolCallSchema
         );
     }
 }

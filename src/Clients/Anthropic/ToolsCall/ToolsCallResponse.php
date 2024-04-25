@@ -1,10 +1,11 @@
 <?php
 namespace Cognesy\Instructor\Clients\Anthropic\ToolsCall;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Utils\Json;
-//use Cognesy\Instructor\Utils\XmlExtractor;
 use Saloon\Http\Response;
+
+//use Cognesy\Instructor\Utils\XmlExtractor;
 
 class ToolsCallResponse extends ApiResponse
 {

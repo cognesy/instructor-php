@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\Groq\ChatCompletion;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
 
 class PartialChatCompletionResponse extends PartialApiResponse

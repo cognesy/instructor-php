@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\Data\Requests;
+namespace Cognesy\Instructor\ApiClient\Requests;
 
 use Cognesy\Instructor\Utils\Json;
 

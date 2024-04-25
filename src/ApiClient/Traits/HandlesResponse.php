@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;

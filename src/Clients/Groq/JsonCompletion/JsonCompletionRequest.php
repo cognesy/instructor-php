@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\Groq\JsonCompletion;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiJsonCompletionRequest;
+use Cognesy\Instructor\ApiClient\Requests\ApiJsonCompletionRequest;
 
 class JsonCompletionRequest extends ApiJsonCompletionRequest
 {

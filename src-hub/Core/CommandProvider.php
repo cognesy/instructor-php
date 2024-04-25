@@ -4,7 +4,7 @@ namespace Cognesy\InstructorHub\Core;
 
 use Cognesy\Instructor\Configuration\Configuration;
 
-class CommandRegistry
+class CommandProvider
 {
     private Configuration $config;
     private array $commands;

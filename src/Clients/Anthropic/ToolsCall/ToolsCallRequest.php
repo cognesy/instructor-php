@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\Anthropic\ToolsCall;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiToolsCallRequest;
+use Cognesy\Instructor\ApiClient\Requests\ApiToolsCallRequest;
 use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 
 class ToolsCallRequest extends ApiToolsCallRequest

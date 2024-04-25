@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\TogetherAI\ToolsCall;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
 
 class PartialToolsCallResponse extends PartialApiResponse

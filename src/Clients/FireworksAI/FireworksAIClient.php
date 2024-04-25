@@ -20,6 +20,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class FireworksAIClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'accounts/fireworks/models/mixtral-8x7b-instruct';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected $apiKey = '',

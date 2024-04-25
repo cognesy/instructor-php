@@ -24,7 +24,7 @@ trait HasConfigurationInstance
      */
     static public function auto(array $overrides = []) : Configuration {
         if (is_null(self::$instance)) {
-            self::$instance = autowire(new Configuration())->override($overrides);
+            self::$instance = autowire(new Configuration)->override($overrides);
         }
         return self::$instance;
     }

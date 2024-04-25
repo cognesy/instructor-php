@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Configuration\Traits;
 
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
 use function Cognesy\config\autowire;
 
@@ -16,15 +17,17 @@ trait HandlesConfig
     /**
      * Always new, autowired configuration; useful mostly for tests
      */
-    static public function fresh(array $overrides = []) : Configuration {
-        return autowire(new Configuration)->override($overrides);
+    static public function fresh(array $overrides = [], EventDispatcher $events = null) : Configuration {
+        $events = $events ?? new EventDispatcher();
+        $config = (new Configuration)->withEventDispatcher($events);
+        return autowire($config, $events)->override($overrides);
     }
 
     /**
      * Does component exist
      */
-    public function has(string $componentName) : mixed {
-        return !is_null($this->getConfig($componentName));
+    public function has(string $id) : bool {
+        return !is_null($this->getConfig($id));
     }
 
     /**
@@ -88,13 +91,11 @@ trait HandlesConfig
         string $name = null,
         object $reference = null
     ) : self {
-        $name = $name ?? $class;
-        $componentConfig = new ComponentConfig(
+        $this->register((new ComponentConfig(
+            name: $name ?? $class,
             class: $class,
-            name: $name,
             getInstance: fn() => $reference
-        );
-        $this->register($componentConfig);
+        ))->withEventDispatcher($this->events));
         return $this;
     }
 

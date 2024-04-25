@@ -1,35 +1,33 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\ApiClient\Traits;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Utils\Json;
 use Exception;
 
-class RequestBuilder
+trait HandlesRequestClass
 {
     private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
-    public function __construct(
-        private ToolCallBuilder $toolCallBuilder,
-    ) {}
-
-    public function clientWithRequest(
+    public function addRequest(
         array $messages,
         ResponseModel $responseModel,
         Request $request,
-    ) : ApiClient {
+    ) : static {
         $mode = $request->mode;
         $model = $request->model;
         $options = $request->options;
-        $client = $request->client();
 
-        $clientWithRequest = match($mode) {
-            Mode::Json => $client->jsonCompletion(
+        return match($mode) {
+            Mode::MdJson => $this->chatCompletion(
+                messages: $this->appendInstructions($messages, $responseModel->jsonSchema),
+                model: $model,
+                options: $options
+            ),
+            Mode::Json => $this->jsonCompletion(
                 messages: $messages,
                 responseFormat: [
                     'type' => 'json_object',
@@ -38,13 +36,9 @@ class RequestBuilder
                 model: $model,
                 options: $options
             ),
-            Mode::Tools => $client->toolsCall(
+            Mode::Tools => $this->toolsCall(
                 messages: $messages,
-                tools: [$this->toolCallBuilder->render(
-                    $responseModel->jsonSchema,
-                    $responseModel->functionName,
-                    $responseModel->functionDescription
-                )],
+                tools: [$responseModel->toolCallSchema],
                 toolChoice: [
                     'type' => 'function',
                     'function' => ['name' => $responseModel->functionName]
@@ -52,15 +46,8 @@ class RequestBuilder
                 model: $model,
                 options: $options
             ),
-            Mode::MdJson => $client->chatCompletion(
-                messages: $this->appendInstructions($messages, $responseModel->jsonSchema),
-                model: $model,
-                options: $options
-            ),
             default => throw new Exception('Unknown mode')
         };
-
-        return $clientWithRequest;
     }
 
     private function appendInstructions(array $messages, array $jsonSchema) : array {

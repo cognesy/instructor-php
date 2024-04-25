@@ -21,6 +21,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class MistralClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'mistral-small-latest';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected $apiKey = '',

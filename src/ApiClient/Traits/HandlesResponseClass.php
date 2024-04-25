@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Saloon\Http\Response;
 
 trait HandlesResponseClass

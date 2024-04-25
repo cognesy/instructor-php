@@ -20,6 +20,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'gpt-4-turbo-preview';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected string $apiKey = '',

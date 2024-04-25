@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Configuration\Traits;
 
-use Exception;
+use Cognesy\Instructor\Configuration\Exceptions\InvalidDependencyException;
 
 trait PreventsCycles
 {
@@ -20,7 +20,7 @@ trait PreventsCycles
                 "CONFIG:",
                 print_r($this->config, true),
             ];
-            throw new Exception(implode('\n', $messages));
+            throw new InvalidDependencyException(implode('\n', $messages));
         }
     }
 }

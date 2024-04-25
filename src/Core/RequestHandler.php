@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
@@ -26,7 +26,6 @@ class RequestHandler implements CanHandleRequest
         private ResponseModelFactory $responseModelFactory,
         private EventDispatcher      $events,
         private CanGenerateResponse  $responseGenerator,
-        private RequestBuilder       $requestBuilder,
     ) {}
 
     /**
@@ -63,9 +62,7 @@ class RequestHandler implements CanHandleRequest
     }
 
     protected function getResponse(array $messages, Request $request, ResponseModel $responseModel) : ApiResponse {
-        $apiClient = $this->requestBuilder->clientWithRequest(
-            $messages, $responseModel, $request
-        );
+        $apiClient = $request->client->addRequest($messages, $responseModel, $request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));
             $apiResponse = $apiClient->get();

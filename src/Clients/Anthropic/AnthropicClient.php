@@ -6,6 +6,7 @@ use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\ChatCompletionRequest;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\ChatCompletionResponse;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\PartialChatCompletionResponse;
@@ -30,8 +31,9 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         protected $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
+        ApiRequestFactory $apiRequestFactory = null,
     ) {
-        parent::__construct($events);
+        parent::__construct($events, $apiRequestFactory);
         $this->withConnector($connector ?? new AnthropicConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,

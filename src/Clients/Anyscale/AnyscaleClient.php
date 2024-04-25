@@ -20,6 +20,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class AnyscaleClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'mistralai/Mixtral-8x7B-Instruct-v0.1';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected $apiKey = '',

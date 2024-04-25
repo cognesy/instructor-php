@@ -18,6 +18,10 @@ class Event
         $this->data = $data;
     }
 
+    public function name() : string {
+        return (new \ReflectionClass($this))->getShortName();
+    }
+
     public function asLog(): string {
         return $this->logFormat((string) $this);
     }

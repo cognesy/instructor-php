@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Configuration\Traits;
 
+use Cognesy\Instructor\Configuration\Exceptions\NotFoundException;
 use Cognesy\Instructor\Events\Configuration\ExistingInstanceReturned;
 use Cognesy\Instructor\Events\Configuration\FreshInstanceForced;
 use Cognesy\Instructor\Events\Configuration\NewInstanceReturned;
 use Cognesy\Instructor\Events\Configuration\ReferenceResolutionRequested;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
-use Exception;
 
 trait HandlesComponentInstances
 {
@@ -28,9 +28,11 @@ trait HandlesComponentInstances
 
     /**
      * Get a component instance
+     *
+     * @throws NotFoundException
      */
-    public function get(string $componentName) : mixed {
-        return $this->resolveReference($componentName);
+    public function get(string $id) : mixed {
+        return $this->resolveReference($id);
     }
 
     /**
@@ -49,7 +51,7 @@ trait HandlesComponentInstances
     {
         $this->emit(new ReferenceResolutionRequested($componentName, $fresh));
         if (!$this->has($componentName)) {
-            throw new Exception('Component ' . $componentName . ' is not defined');
+            throw new NotFoundException('Component ' . $componentName . ' is not defined');
         }
         // if asked for fresh, return new component instance
         if ($fresh) {

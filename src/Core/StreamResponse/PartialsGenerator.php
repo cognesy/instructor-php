@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Core\StreamResponse;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
@@ -54,7 +54,7 @@ class PartialsGenerator implements CanGeneratePartials
 
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel, array $messages = []) : Iterable {
         // receive data
-        /** @var PartialApiResponse $partialResponse */
+        /** @var \Cognesy\Instructor\ApiClient\Responses\PartialApiResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store for finalization when we leave the loop

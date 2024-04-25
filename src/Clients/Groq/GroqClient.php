@@ -21,6 +21,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class GroqClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'llama3-8b-8192';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected $apiKey = '',

@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\Data\Requests;
+namespace Cognesy\Instructor\ApiClient\Requests;
 
 class ApiChatCompletionRequest extends ApiRequest
 {
@@ -10,6 +10,14 @@ class ApiChatCompletionRequest extends ApiRequest
     ) {
         $this->messages = $this->normalizeMessages($messages);
         parent::__construct($options);
+    }
+
+    public static function create(
+        string|array $messages,
+        string $model = '',
+        array $options = []
+    ): static {
+        return new static($messages, $model, $options);
     }
 
     protected function defaultBody(): array {

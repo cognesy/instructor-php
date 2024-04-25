@@ -1,11 +1,11 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\Data\Requests;
+namespace Cognesy\Instructor\ApiClient\Requests;
 
 class ApiToolsCallRequest extends ApiRequest
 {
     public function __construct(
         public string|array  $messages = [],
-        public array  $tools = [],
+        public array $tools = [],
         public string|array  $toolChoice = [],
         public string $model = '',
         public array  $options = [],

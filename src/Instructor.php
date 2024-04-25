@@ -1,11 +1,15 @@
 <?php
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
+use Cognesy\Instructor\Core\RequestFactory;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
+use Cognesy\Instructor\Data\AppContext;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -25,25 +29,31 @@ use Throwable;
  */
 class Instructor {
     use Events\Traits\HandlesEvents;
+    use Traits\HandlesQueuedEvents;
     use Events\Traits\HandlesEventListeners;
     use Traits\HandlesConfig;
     use Traits\HandlesQueuedEvents;
     use Traits\HandlesErrors;
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
-    use Traits\HandlesApiClient;
     use Traits\HandlesTimer;
 
     protected Request $request;
+    protected RequestFactory $requestFactory;
+    protected ApiClientFactory $clientFactory;
+    protected AppContext $context;
 
     public function __construct(array $config = []) {
         $this->queueEvent(new InstructorStarted($config));
         // try loading .env (if paths are set)
         Env::load();
-        $configuration = Configuration::fresh($config);
-        $this->setConfig($configuration);
-        $this->withEventDispatcher($this->config()->get(EventDispatcher::class));
-        $this->queueEvent(new InstructorReady($this->config()));
+        $this->config = Configuration::fresh($config);
+        $this->events = $this->config->get(EventDispatcher::class);
+        $this->context = new AppContext();
+        $this->clientFactory = $this->config->get(ApiClientFactory::class);
+        $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
+        $this->requestFactory = $this->config->get(RequestFactory::class);
+        $this->queueEvent(new InstructorReady($this->config));
     }
 
     /// INITIALIZATION ENDPOINTS //////////////////////////////////////////////
@@ -67,6 +77,11 @@ class Instructor {
         $this->dispatchQueuedEvents();
         $this->request = $request;
         $this->events->dispatch(new RequestReceived($request));
+        return $this;
+    }
+
+    public function withClient(CanCallApi $client) : self {
+        $this->clientFactory->setDefault($client);
         return $this;
     }
 
@@ -114,7 +129,7 @@ class Instructor {
         string $retryPrompt = "Recall function correctly, fix following errors",
         Mode $mode = Mode::Tools,
     ) : self {
-        $request = new Request(
+        $request = $this->requestFactory->create(
             $messages,
             $responseModel,
             $model,
@@ -176,10 +191,10 @@ class Instructor {
 
     protected function handleStreamRequest() : Iterable {
         try {
-            /** @var StreamRequestHandler $requestHandler */
-            $requestHandler = $this->config()->get(CanHandleStreamRequest::class);
+            /** @var StreamRequestHandler $streamHandler */
+            $streamHandler = $this->config()->get(CanHandleStreamRequest::class);
             $this->startTimer();
-            yield from $requestHandler->respondTo($this->getRequest());
+            yield from $streamHandler->respondTo($this->getRequest());
             $this->stopTimer();
         } catch (Throwable $error) {
             return $this->handleError($error);
@@ -187,8 +202,6 @@ class Instructor {
     }
 
     protected function getRequest() : Request {
-        return $this->request->withClient(
-            $this->client()->withEventDispatcher($this->events())
-        );
+        return $this->requestFactory->fromRequest($this->request);
     }
 }

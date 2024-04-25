@@ -20,6 +20,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class OpenRouterClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
 {
     public string $defaultModel = 'gpt-3.5-turbo';
+    public int $defaultMaxTokens = 256;
 
     public function __construct(
         protected $apiKey = '',

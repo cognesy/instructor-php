@@ -2,13 +2,11 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Traits\HandlesApiClient;
 
 class Request
 {
-    use HandlesApiClient;
-
     public function __construct(
         public string|array $messages,
         public string|object|array $responseModel,
@@ -19,6 +17,7 @@ class Request
         public string $functionDescription = 'Extract data from provided content',
         public string $retryPrompt = "Recall function correctly, fix following errors",
         public Mode $mode = Mode::Tools,
+        public ?CanCallApi $client = null,
     ) {}
 
     public function messages() : array {

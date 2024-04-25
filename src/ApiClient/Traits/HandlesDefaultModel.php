@@ -11,6 +11,6 @@ trait HandlesDefaultModel
     }
 
     protected function getModel(string $model) : string {
-        return $model ?: $this->defaultModel;
+        return $model ?: $this->getDefaultModel();
     }
 }

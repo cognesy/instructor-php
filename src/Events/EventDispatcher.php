@@ -2,8 +2,6 @@
 
 namespace Cognesy\Instructor\Events;
 
-use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
-
 class EventDispatcher
 {
     private array $listeners = [];

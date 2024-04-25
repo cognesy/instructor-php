@@ -5,12 +5,12 @@ use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\InstructorHub\Utils\Color;
 
 abstract class CliApp {
-    private CommandRegistry $commandRegistry;
+    private CommandProvider $commandProvider;
     public string $name = "<app name>";
     public string $description = "<app description>";
 
     public function __construct(Configuration $config) {
-        $this->commandRegistry = $config->get(CommandRegistry::class);
+        $this->commandProvider = $config->get(CommandProvider::class);
     }
 
     public function run(int $argc, array $argv) : void {
@@ -19,7 +19,7 @@ abstract class CliApp {
         Cli::outln($this->description, Color::DARK_GRAY);
         Cli::outln();
         if ($argc < 2) {
-            $this->commandNotProvided();
+            $this->commandNotSpecified();
             return;
         }
         list($command, $args) = $this->parseArgs($argv);
@@ -41,13 +41,13 @@ abstract class CliApp {
         }
 
         // check if the command exists
-        if (!$this->commandRegistry->commandExists($command)) {
+        if (!$this->commandProvider->commandExists($command)) {
             $this->commandUnknown($command);
             return;
         }
 
         // execute the command
-        $commandInstance = $this->commandRegistry->getCommand($command);
+        $commandInstance = $this->commandProvider->getCommand($command);
         $commandInstance->execute($args);
     }
 
@@ -56,14 +56,14 @@ abstract class CliApp {
         Cli::outln("Use `help` to list available commands.");
     }
 
-    private function commandNotProvided() : void {
+    private function commandNotSpecified() : void {
         Cli::outln("No command provided.");
         Cli::outln("Use `help` to list available commands.");
     }
 
     public function showHelp() {
         Cli::outln("Available commands:", Color::YELLOW);
-        foreach ($this->commandRegistry->listCommands() as $command) {
+        foreach ($this->commandProvider->listCommands() as $command) {
             Cli::grid([
                 [2, ">", STR_PAD_LEFT, Color::DARK_YELLOW],
                 [3, "hub", STR_PAD_LEFT, Color::DARK_GRAY],

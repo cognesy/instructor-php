@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
 

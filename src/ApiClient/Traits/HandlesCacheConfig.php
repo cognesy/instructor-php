@@ -13,4 +13,8 @@ trait HandlesCacheConfig
         $this->cacheConfig = $cacheConfig;
         return $this;
     }
+
+    public function cacheConfig(): CacheConfig {
+        return $this->cacheConfig;
+    }
 }

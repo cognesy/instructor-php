@@ -1,5 +1,14 @@
 # Caching
 
+> This feature is experimental.
+
+You can set `cache` option to `true` to enable caching for your requests.
+Instructor will store the response in cache and return it on subsequent requests
+with the same parameters (for given API client).
+
+This option is available for all clients. By default, caching is turned off.
+
+NOTE: Currently, Instructor does not support caching for streamed responses.
 
 ```php
 <?php

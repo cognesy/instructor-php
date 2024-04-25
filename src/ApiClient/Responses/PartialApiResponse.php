@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient\Data\Responses;
+namespace Cognesy\Instructor\ApiClient\Responses;
 
 class PartialApiResponse
 {

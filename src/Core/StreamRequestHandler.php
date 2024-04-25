@@ -28,7 +28,6 @@ class StreamRequestHandler implements CanHandleStreamRequest
         private EventDispatcher      $events,
         private CanGenerateResponse  $responseGenerator,
         private PartialsGenerator    $partialsGenerator,
-        private RequestBuilder       $requestBuilder,
     ) {}
 
     /**
@@ -72,9 +71,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
     }
 
     protected function getStreamedResponses(array $messages, ResponseModel $responseModel, Request $request) : Generator {
-        $apiClient = $this->requestBuilder->clientWithRequest(
-            $messages, $responseModel, $request
-        );
+        $apiClient = $request->client->addRequest($messages, $responseModel, $request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));
             $stream = $apiClient->stream();

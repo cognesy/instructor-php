@@ -1,8 +1,6 @@
 <?php
 
 use Cognesy\Instructor\Configuration\Configuration;
-use Tests\Examples\Configuration\CircularDependencyA;
-use Tests\Examples\Configuration\CircularDependencyB;
 use Tests\Examples\Configuration\TestComponentA;
 use Tests\Examples\Configuration\TestComponentB;
 

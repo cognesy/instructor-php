@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
 

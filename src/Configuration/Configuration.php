@@ -4,11 +4,12 @@ namespace Cognesy\Instructor\Configuration;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
+use Psr\Container\ContainerInterface;
 
 /**
  * Manages configuration and wiring of the components
  */
-class Configuration
+class Configuration implements ContainerInterface
 {
     use Traits\HasConfigurationInstance;
     use Traits\HandlesConfig;

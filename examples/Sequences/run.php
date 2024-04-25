@@ -31,7 +31,7 @@ $list = (new Instructor)
     ->request(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Sequence::of(Person::class),
-        options: ['stream' => true]
+        options: ['stream' => true, 'debug' => true],
     )
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->get();

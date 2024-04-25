@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
-use Cognesy\Instructor\ApiClient\Data\Requests\ApiRequest;
-use Cognesy\Instructor\ApiClient\Data\Responses\PartialApiResponse;
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
@@ -17,7 +17,7 @@ trait HandlesStreamResponse
     use HandlesApiConnector;
     use HandlesResponseClass;
     use HandlesRequest;
-    use ReadsStreamedResponse;
+    use ReadsStreamResponse;
 
     /**
      * @return Generator<PartialApiResponse>
@@ -50,7 +50,7 @@ trait HandlesStreamResponse
     protected function getStream(ApiRequest $request): Generator {
         $this?->events->dispatch(new ApiStreamRequestInitiated($request));
         try {
-            $response = $this->connector()->send($request);
+            $response = $this->connector($request->isDebug())->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
