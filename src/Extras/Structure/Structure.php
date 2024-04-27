@@ -1,15 +1,15 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Structure;
 
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
-class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
+class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {
     use Traits\HandlesValidation;
     use Traits\ProvidesSchema;
@@ -37,5 +37,9 @@ class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
             $structure->fields = $fields($structure);
         }
         return $structure;
+    }
+
+    public function transform(): mixed {
+        return $this->toArray();
     }
 }
