@@ -28,8 +28,7 @@ class TypeDetails
         }
     }
 
-    public function __toString() : string
-    {
+    public function __toString() : string {
         return match ($this->type) {
             'object' => $this->class,
             'enum' => $this->class,
@@ -38,8 +37,7 @@ class TypeDetails
         };
     }
 
-    public function jsonType() : string
-    {
+    public function jsonType() : string {
         return match ($this->type) {
             'object' => 'object',
             'enum' => ($this->enumType === 'int' ? 'integer' : 'string'),

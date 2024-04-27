@@ -2,22 +2,34 @@
 
 namespace Cognesy\Instructor\Schema;
 
+use Cognesy\Instructor\Schema\Data\Schema\Schema;
+
+/**
+ * SchemaMap contains mapping of type names to their respective schemas
+ */
 class SchemaMap
 {
+    /** @var Schema[] schema mapping for types */
     private $schemas = [];
 
-    public function register(string $typeName, Data\Schema\Schema $schema)
-    {
+    /**
+     * Register a schema for a type
+     */
+    public function register(string $typeName, Schema $schema) : void {
         $this->schemas[$typeName] = $schema;
     }
 
-    public function get(string $typeName) : Data\Schema\Schema
-    {
+    /**
+     * Get the schema for a type
+     */
+    public function get(string $typeName) : Schema {
         return $this->schemas[$typeName];
     }
 
-    public function has(string $typeName) : bool
-    {
+    /**
+     * Check if a type has a schema mapping
+     */
+    public function has(string $typeName) : bool {
         return isset($this->schemas[$typeName]);
     }
 }

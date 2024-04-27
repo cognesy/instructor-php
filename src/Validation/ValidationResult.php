@@ -38,6 +38,23 @@ class ValidationResult
         return new ValidationResult([new ValidationError($field, $value, $message)], "Incorrect field value");
     }
 
+    static public function merge(array $validationResults, string $message = ''): ValidationResult {
+        $errors = [];
+        $hasErrors = false;
+        foreach ($validationResults as $result) {
+            if ($result->isValid) {
+                continue;
+            } else {
+                $hasErrors = true;
+            }
+            $errors[] = $result->errors;
+        }
+        return match ($hasErrors) {
+            true => self::invalid(array_merge(...$errors), $message ?: "Data validation failed"),
+            false => self::valid(),
+        };
+    }
+
     /// CONVENIENCE METHODS //////////////////////////////////////////////////////////////////
 
     public function isValid(): bool {

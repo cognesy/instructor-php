@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Schema\Utils;
 use ReflectionClass;
 use ReflectionEnum;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
+use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\PropertyInfo\Type;
@@ -16,7 +17,7 @@ class ClassInfo {
         $reflectionExtractor = new ReflectionExtractor();
         return new PropertyInfoExtractor(
             [$reflectionExtractor],
-            [$phpDocExtractor, $reflectionExtractor],
+            [new PhpStanExtractor(), $phpDocExtractor, $reflectionExtractor],
             [$phpDocExtractor],
             [$reflectionExtractor],
             [$reflectionExtractor]

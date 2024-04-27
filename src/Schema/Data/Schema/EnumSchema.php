@@ -10,9 +10,9 @@ class EnumSchema extends Schema
     public function toArray(callable $refCallback = null) : array
     {
         return array_filter([
+            'description' => $this->description ?? '',
             'type' => $this->type->enumType ?? 'string',
             'enum' => $this->type->enumValues ?? [],
-            'description' => $this->description ?? '',
             '$comment' => $this->type->class ?? '',
         ]);
     }

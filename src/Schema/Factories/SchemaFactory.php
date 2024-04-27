@@ -16,12 +16,13 @@ use Cognesy\Instructor\Schema\Utils\ClassInfo;
 /**
  * Factory for creating schema objects from class names
  *
- * NOTE: Currently, OpenAI API does not work well with object references,
- * so we return the full object schema with all properties inlined.
+ * NOTE: Currently, OpenAI API does not comprehend well object references for
+ * complex structures, so it's safer to return the full object schema with all
+ * properties inlined.
  */
 class SchemaFactory
 {
-    /** @var bool allows to render schema with object properties inlined or referenced */
+    /** @var bool switches schema rendering between inlined or referenced object properties */
     protected bool $useObjectReferences;
     //
     protected SchemaMap $schemaMap;
@@ -41,15 +42,16 @@ class SchemaFactory
     /**
      * Extracts the schema from a class and constructs a function call
      *
-     * @param string $anyType - class name, enum name or type name
+     * @param string $anyType - class name, enum name or type name string OR TypeDetails object
      */
-    public function schema(string $anyType) : Schema
-    {
-        if (!$this->schemaMap->has($anyType)) {
-            $this->schemaMap->register(
-                $anyType,
-                $this->makeSchema($this->typeDetailsFactory->fromTypeName($anyType))
-            );
+    public function schema(string|TypeDetails $anyType) : Schema {
+        $type = match(true) {
+            is_string($anyType) => $this->typeDetailsFactory->fromTypeName($anyType),
+            $anyType instanceof TypeDetails => $anyType,
+        };
+        $typeString = (string) $type;
+        if (!$this->schemaMap->has($type)) {
+            $this->schemaMap->register($typeString, $this->makeSchema($type));
         }
         return $this->schemaMap->get($anyType);
     }
@@ -60,8 +62,7 @@ class SchemaFactory
      * @param string $class
      * @param string $property
      */
-    protected function property(string $class, string $property) : Schema
-    {
+    protected function property(string $class, string $property) : Schema {
         if (!$this->propertyMap->has($class, $property)) {
             $this->propertyMap->register($class, $property, $this->getPropertySchema($class, $property));
         }
@@ -97,7 +98,15 @@ class SchemaFactory
         return $this->makePropertySchema($type, $property, $description);
     }
 
-    protected function getPropertyDescription(TypeDetails $type, string $class, string $property) : string{
+    /**
+     * Gets full property description
+     *
+     * @param TypeDetails $type
+     * @param string $class
+     * @param string $property
+     * @return string
+     */
+    protected function getPropertyDescription(TypeDetails $type, string $class, string $property) : string {
         if (in_array($type->type, ['object', 'enum'])) {
             $classDescription = (new ClassInfo)->getClassDescription($type->class);
         } else {
@@ -117,8 +126,7 @@ class SchemaFactory
      * @param string $description
      * @return Schema
      */
-    protected function makeSchema(TypeDetails $type) : Schema
-    {
+    protected function makeSchema(TypeDetails $type) : Schema {
         return match ($type->type) {
             'object' => new ObjectSchema(
                 $type,
@@ -151,8 +159,7 @@ class SchemaFactory
      * @param string $description
      * @return \Cognesy\Instructor\Schema\Data\Schema\Schema
      */
-    protected function makePropertySchema(TypeDetails $type, string $name, string $description): Schema
-    {
+    public function makePropertySchema(TypeDetails $type, string $name, string $description): Schema {
         $match = match ($type->type) {
             'object' => $this->makePropertyObject($type, $name, $description),
             'enum' => new EnumSchema($type, $name, $description),
@@ -176,8 +183,7 @@ class SchemaFactory
      * @param string $description
      * @return Schema
      */
-    protected function makePropertyObject(TypeDetails $type, string $name, string $description): Schema
-    {
+    protected function makePropertyObject(TypeDetails $type, string $name, string $description): Schema {
         if ($this->useObjectReferences) {
             return new ObjectRefSchema($type, $name, $description);
         }
