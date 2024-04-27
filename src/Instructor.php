@@ -9,7 +9,6 @@ use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\RequestFactory;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
-use Cognesy\Instructor\Data\AppContext;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -41,7 +40,6 @@ class Instructor {
     protected Request $request;
     protected RequestFactory $requestFactory;
     protected ApiClientFactory $clientFactory;
-    protected AppContext $context;
 
     public function __construct(array $config = []) {
         $this->queueEvent(new InstructorStarted($config));
@@ -49,7 +47,6 @@ class Instructor {
         Env::load();
         $this->config = Configuration::fresh($config);
         $this->events = $this->config->get(EventDispatcher::class);
-        $this->context = new AppContext();
         $this->clientFactory = $this->config->get(ApiClientFactory::class);
         $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
         $this->requestFactory = $this->config->get(RequestFactory::class);

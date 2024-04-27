@@ -1,25 +1,26 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Tuple;
+namespace Cognesy\Instructor\Extras\Structure;
 
 use Closure;
 use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
+use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Validation\ValidationResult;
 
-class Tuple implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
+class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
 {
     protected string $name = '';
     protected string $description = '';
+    /** @var Field[] */
     protected array $fields = [];
-    private array $fieldTypes = [];
     private TypeDetailsFactory $typeDetailsFactory;
     private SchemaFactory $schemaFactory;
     private Deserializer $deserializer;
@@ -33,7 +34,7 @@ class Tuple implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
     }
 
     public function define(Closure $fieldDefs) : self {
-        $this->fieldTypes = $fieldDefs($this);
+        $this->fields = $fieldDefs($this);
         return $this;
     }
 
@@ -42,24 +43,26 @@ class Tuple implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
     }
 
     public function get(string $field) {
-        return $this->fields[$field] ?? null;
+        return $this->fields[$field]->get() ?? null;
     }
 
     public function set(string $field, mixed $value) {
-        $this->fields[$field] = $value;
+        $this->fields[$field]->set($value);
     }
 
     public function fromJson(string $jsonData): static {
-        $data = json_decode($jsonData, true);
-        foreach ($data as $field => $jsonValue) {
-            $type = $this->fieldTypes[$field];
-            $class = $type->class;
-            if ($class === null) {
-                $value = $this->deserializer->fromJson($jsonValue, $class);
-            } else {
-                $value = $jsonValue;
+        $data = Json::parse($jsonData);
+        foreach ($data as $name => $jsonValue) {
+            $type = $this->fields[$name]->typeDetails() ?? null;
+            if ($type === null) {
+                throw new \Exception("Undefined field `$name` found in JSON data.");
             }
-            $this->set($field, $value);
+            if ($type->class === null) {
+                $value = $jsonValue;
+            } else {
+                $value = $this->deserializer->fromJson($jsonValue, $type->class);
+            }
+            $this->set($name, $value);
         }
         return $this;
     }
@@ -82,7 +85,7 @@ class Tuple implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
         );
         $schema = new ObjectSchema(
             type: $typeDetails,
-            name: 'Tuple',
+            name: 'Structure',
             description: 'Extract data from provided content',
             properties: $properties,
             required: $required,

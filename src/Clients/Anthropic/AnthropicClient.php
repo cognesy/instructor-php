@@ -6,7 +6,6 @@ use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
-use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\ChatCompletionRequest;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\ChatCompletionResponse;
 use Cognesy\Instructor\Clients\Anthropic\ChatCompletion\PartialChatCompletionResponse;
@@ -31,9 +30,8 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
         protected $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
-        ApiRequestFactory $apiRequestFactory = null,
     ) {
-        parent::__construct($events, $apiRequestFactory);
+        parent::__construct($events);
         $this->withConnector($connector ?? new AnthropicConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
@@ -46,31 +44,40 @@ class AnthropicClient extends ApiClient implements CanCallChatCompletion, CanCal
 
     /// PUBLIC API ////////////////////////////////////////////////////////////////////////////////
 
-    public function chatCompletion(string|array $messages, string $model = '', array $options = []): static {
+    public function chatCompletion(array $messages, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->withRequest(new ChatCompletionRequest($messages, $this->getModel($model), $options));
-        $this->partialResponseClass = PartialChatCompletionResponse::class;
-        $this->responseClass = ChatCompletionResponse::class;
+        $this->request = $this->makeRequest(
+            ChatCompletionRequest::class,
+            [$messages, $this->getModel($model), $options]
+        );
+        $this->partialResponseClass = ChatCompletionResponse::class;
+        $this->responseClass = PartialChatCompletionResponse::class;
         return $this;
     }
 
-    public function jsonCompletion(string|array $messages, array $responseFormat, string $model = '', array $options = []): static {
+    public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->withRequest(new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options));
+        $this->request = $this->makeRequest(
+            JsonCompletionRequest::class,
+            [$messages, $responseFormat, $this->getModel($model), $options]
+        );
         $this->partialResponseClass = PartialJsonCompletionResponse::class;
         $this->responseClass = JsonCompletionResponse::class;
         return $this;
     }
 
-    public function toolsCall(string|array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
+    public function toolsCall(array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->withRequest(new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options));
+        $this->request = $this->makeRequest(
+            ToolsCallRequest::class,
+            [$messages, $tools, $toolChoice, $this->getModel($model), $options]
+        );
         $this->partialResponseClass = PartialToolsCallResponse::class;
         $this->responseClass = ToolsCallResponse::class;
         return $this;

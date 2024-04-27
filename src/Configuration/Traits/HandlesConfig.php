@@ -10,6 +10,8 @@ use function Cognesy\config\autowire;
 
 trait HandlesConfig
 {
+    use HandlesConfigInclude;
+
     /** @var ComponentConfig[] array of component configurations */
     private array $config = [];
     private bool $allowOverride = true; // does configuration allow override

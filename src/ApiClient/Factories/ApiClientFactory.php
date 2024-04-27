@@ -8,12 +8,11 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class ApiClientFactory
 {
-    protected CanCallApi $defaultClient;
-
     public function __construct(
         public EventDispatcher $events,
         public ApiRequestFactory $apiRequestFactory,
-        public array $clients = [],
+        protected CanCallApi $defaultClient,
+        protected array $clients = [],
     ) {}
 
     public function fromName(string $clientName) : CanCallApi {

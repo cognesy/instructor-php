@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Schema\Data\Schema;
 
+use Exception;
+
 class ScalarSchema extends Schema
 {
     /**

@@ -1,8 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Deserializers\Symfony\Deserializer;
+use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Exceptions\DeserializationException;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Tests\Examples\Deserialization\Person;
 use Tests\Examples\Deserialization\PersonWithArray;
 use Tests\Examples\Deserialization\PersonWithNestedObject;

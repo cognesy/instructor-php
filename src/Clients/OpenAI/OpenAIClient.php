@@ -61,7 +61,6 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             JsonCompletionRequest::class,
             [$messages, $responseFormat, $this->getModel($model), $options]
         );
-        //$this->withRequest(new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options));
         $this->partialResponseClass = PartialJsonCompletionResponse::class;
         $this->responseClass = JsonCompletionResponse::class;
         return $this;
@@ -72,7 +71,6 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             ToolsCallRequest::class,
             [$messages, $tools, $toolChoice, $this->getModel($model), $options]
         );
-        //$this->withRequest(new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options));
         $this->partialResponseClass = PartialToolsCallResponse::class;
         $this->responseClass = ToolsCallResponse::class;
         return $this;

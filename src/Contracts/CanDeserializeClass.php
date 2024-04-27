@@ -7,5 +7,5 @@ namespace Cognesy\Instructor\Contracts;
  */
 interface CanDeserializeClass
 {
-    public function fromJson(string $jsonData, string $dataClass) : object;
+    public function fromJson(string $jsonData, string $dataType) : mixed;
 }

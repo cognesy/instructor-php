@@ -50,22 +50,31 @@ class AzureClient extends ApiClient implements CanCallChatCompletion, CanCallJso
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
-    public function chatCompletion(string|array $messages, string $model = '', array $options = []): static {
-        $this->withRequest(new ChatCompletionRequest($messages, $this->getModel($model), $options));
-        $this->partialResponseClass = PartialChatCompletionResponse::class;
-        $this->responseClass = ChatCompletionResponse::class;
+    public function chatCompletion(array $messages, string $model = '', array $options = []): static {
+        $this->request = $this->makeRequest(
+            ChatCompletionRequest::class,
+            [$messages, $this->getModel($model), $options]
+        );
+        $this->partialResponseClass = ChatCompletionResponse::class;
+        $this->responseClass = PartialChatCompletionResponse::class;
         return $this;
     }
 
-    public function jsonCompletion(string|array $messages, array $responseFormat, string $model = '', array $options = []): static {
-        $this->withRequest(new JsonCompletionRequest($messages, $responseFormat, $this->getModel($model), $options));
+    public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static {
+        $this->request = $this->makeRequest(
+            JsonCompletionRequest::class,
+            [$messages, $responseFormat, $this->getModel($model), $options]
+        );
         $this->partialResponseClass = PartialJsonCompletionResponse::class;
         $this->responseClass = JsonCompletionResponse::class;
         return $this;
     }
 
-    public function toolsCall(string|array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
-        $this->withRequest(new ToolsCallRequest($messages, $tools, $toolChoice, $this->getModel($model), $options));
+    public function toolsCall(array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
+        $this->request = $this->makeRequest(
+            ToolsCallRequest::class,
+            [$messages, $tools, $toolChoice, $this->getModel($model), $options]
+        );
         $this->partialResponseClass = PartialToolsCallResponse::class;
         $this->responseClass = ToolsCallResponse::class;
         return $this;
