@@ -33,6 +33,6 @@ class GenerateDocs extends Command
     }
 
     private function isRefresh(string $arg) : bool {
-        return $arg === 'all';
+        return $arg === 'fresh';
     }
 }

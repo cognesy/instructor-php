@@ -23,7 +23,9 @@ class ListAllExamples extends Command
                 [1, '(', STR_PAD_LEFT, Color::DARK_GRAY],
                 [2, $example->index, STR_PAD_LEFT, Color::WHITE],
                 [1, ')', STR_PAD_LEFT, Color::DARK_GRAY],
-                [32, $example->name, STR_PAD_RIGHT, Color::GREEN],
+                [16, $example->group, STR_PAD_LEFT, Color::DARK_YELLOW],
+                [1, '/', STR_PAD_LEFT, Color::DARK_GRAY],
+                [24, $example->name, STR_PAD_RIGHT, Color::GREEN],
                 [2, '-', STR_PAD_LEFT, Color::WHITE],
                 [50, $example->title, STR_PAD_RIGHT, Color::DARK_GRAY]
             ]);

@@ -11,6 +11,12 @@ use Symfony\Component\PropertyInfo\Type;
  */
 class TypeDetailsFactory
 {
+    private ClassInfo $classInfo;
+
+    public function __construct() {
+        $this->classInfo = new ClassInfo;
+    }
+
     /**
      * Create TypeDetails from type string
      *
@@ -98,7 +104,7 @@ class TypeDetailsFactory
      * @return TypeDetails
      */
     protected function objectType(string $typeName) : TypeDetails {
-        if ((new ClassInfo)->isEnum($typeName)) {
+        if ($this->classInfo->isEnum($typeName)) {
             return $this->enumType($typeName);
         }
         $instance = new TypeDetails('object', $typeName, null, null, null);
@@ -114,10 +120,10 @@ class TypeDetailsFactory
      */
     protected function enumType(string $typeName) : TypeDetails {
         // enum specific
-        if (!(new ClassInfo)->isBackedEnum($typeName)) {
+        if (!$this->classInfo->isBackedEnum($typeName)) {
             throw new \Exception('Enum must be backed by a string or int');
         }
-        $backingType = (new ClassInfo)->enumBackingType($typeName);
+        $backingType = $this->classInfo->enumBackingType($typeName);
         if (!in_array($backingType, ['int', 'string'])) {
             throw new \Exception('Enum must be backed by a string or int');
         }
@@ -126,7 +132,7 @@ class TypeDetailsFactory
             class: $typeName,
             nestedType: null,
             enumType: $backingType,
-            enumValues: (new ClassInfo)->enumValues($typeName)
+            enumValues: $this->classInfo->enumValues($typeName)
         );
     }
 

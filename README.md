@@ -518,7 +518,7 @@ class Skill {
 You can use ValidationMixin trait to add ability of easy, custom data object validation.
 
 ```php
-use Cognesy\Instructor\Traits\ValidationMixin
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
 class User {
     use ValidationMixin;

@@ -6,6 +6,7 @@ class Example
 {
     public function __construct(
         public int    $index,
+        public string $group,
         public string $name,
         public bool   $hasTitle,
         public string $title,

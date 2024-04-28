@@ -10,7 +10,7 @@ class ExampleRepository {
         $this->baseDir = $baseDir ?: ($this->guessBaseDir() . '/');
     }
 
-    public function forEachExample(callable $callback) : array {
+    public function forEachExample(callable $callback, string $path = '') : array {
         $directories = $this->getExampleDirectories();
         // loop through the files and select only directories
         $index = 1;
@@ -48,27 +48,30 @@ class ExampleRepository {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private function getExample(string $file, int $index = 0) : Example {
-        $content = $this->getContent($file);
+    private function getExample(string $path, int $index = 0) : Example {
+        [$group, $name] = explode('/', $path, 2);
+
+        $content = $this->getContent($path);
         return new Example(
             index: $index,
-            name: $file,
+            group: $group,
+            name: $name,
             hasTitle: $this->hasTitle($content),
             title: $this->getTitle($content),
             content: $content,
-            directory: $this->baseDir . $file,
-            relativePath: './examples/' . $file . '/run.php',
-            runPath: $this->getRunPath($file),
+            directory: $this->baseDir . $path,
+            relativePath: './examples/' . $path . '/run.php',
+            runPath: $this->getRunPath($path),
         );
     }
 
-    private function getRunPath(string $file) : string {
-        return $this->baseDir . $file . '/run.php';
+    private function getRunPath(string $path) : string {
+        return $this->baseDir . $path . '/run.php';
     }
 
-    private function getContent(string $file) : string {
-        $path = $this->getRunPath($file);
-        return file_get_contents($path);
+    private function getContent(string $path) : string {
+        $runPath = $this->getRunPath($path);
+        return file_get_contents($runPath);
     }
 
     private function getTitle(string $content) : string {
@@ -81,9 +84,9 @@ class ExampleRepository {
         return ($title !== '');
     }
 
-    private function exampleExists(string $file) : bool {
-        $path = $this->getRunPath($file);
-        return file_exists($path);
+    private function exampleExists(string $path) : bool {
+        $runPath = $this->getRunPath($path);
+        return file_exists($runPath);
     }
 
     private function guessBaseDir() : string {
@@ -92,19 +95,38 @@ class ExampleRepository {
     }
 
     private function getExampleDirectories() : array {
-        // get all files in the directory
-        $files = scandir($this->baseDir);
-        // remove . and .. from the list
-        $files = array_diff($files, array('.', '..'));
+        $files = $this->getSubdirectories('');
         $directories = [];
         foreach ($files as $key => $file) {
             // check if the file is a directory
             if (!is_dir($this->baseDir . '/' . $file)) {
                 continue;
             }
-            $directories[] = $file;
+            $directories[] = $this->getSubdirectories($file);
         }
-        return $directories;
+        return array_merge([], ...$directories);
+    }
+
+    private function getSubdirectories(string $path) : array {
+        $fullPath = $this->baseDir . $path;
+        $files = scandir($fullPath);
+        $files = array_diff($files, array('.', '..'));
+        $directories = [];
+        foreach ($files as $fileName) {
+            if (is_dir($fullPath . '/' . $fileName)) {
+                $directories[] = empty($path) ? $fileName : implode('/', [$path, $fileName]);
+            }
+        }
+        return array_merge([], $directories);
+    }
+
+    private function hasSubdirectories(string $path) : bool {
+        $runPath = $this->baseDir . $path;
+        if (!is_dir($runPath)) {
+            return false;
+        }
+        $directories = $this->getSubdirectories($path);
+        return count($directories) > 0;
     }
 
     private function cleanStr(string $input, int $limit) : string {

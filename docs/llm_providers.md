@@ -14,7 +14,7 @@ Supported extraction modes:
 Mode::Tools is not supported yet.
 
 Example:
-- `./examples/LLMSupportAnthropic/run.php`
+- `./examples/05_APISupport/LLMSupportAnthropic/run.php`
 
 
 
@@ -27,7 +27,7 @@ Supported extraction modes:
 - Mode::Tools (for selected models)
 
 Example:
-- `./examples/LLMSupportAnyscale/run.php`
+- `./examples/05_APISupport/LLMSupportAnyscale/run.php`
 
 
 
@@ -38,12 +38,13 @@ Azure is an alternative provider of OpenAI models. You can consider using it as
 a backup provider in case OpenAI is not available.
 
 Supported extraction modes:
+
 - Mode::Tools (recommended)
 - Mode::Json
 - Mode::MdJson
 
 Example:
-- `./examples/LLMSupportAzureOAI/run.php`
+- `./examples/05_APISupport/LLMSupportAzureOAI/run.php`
 
 
 
@@ -56,7 +57,7 @@ Supported extraction modes:
 - Mode::Tools (for selected models)
 
 Example:
-- `./examples/LLMSupportFireworksAI/run.php`
+- `./examples/05_APISupport/LLMSupportFireworksAI/run.php`
 
 
 
@@ -70,7 +71,7 @@ Supported extraction modes:
 - Mode::Tools (experimental - not stable)
 
 Example:
-- `./examples/LLMSupportGroq/run.php`
+- `./examples/05_APISupport/LLMSupportGroq/run.php`
 
 
 
@@ -84,7 +85,7 @@ Supported extraction modes:
 - Mode::Tools (for selected models)
 
 Example:
-- `./examples/LLMSupportMistral/run.php`
+- `./examples/05_APISupport/LLMSupportMistral/run.php`
 
 
 
@@ -96,7 +97,7 @@ Supported extraction modes:
 - Mode::Json (for selected models)
 
 Example:
-- `./examples/LLMSupportOllama/run.php`
+- `./examples/05_APISupport/LLMSupportOllama/run.php`
 
 
 
@@ -112,6 +113,8 @@ Supported extraction modes:
 
 Majority of examples use OpenAI provider.
 
+- `./examples/05_APISupport/LLMSupportOpenAI/run.php`
+
 
 
 ## OpenRouter
@@ -126,7 +129,7 @@ Supported extraction modes:
  - Mode::Tools (for selected models)
 
 Example:
- - `./examples/LLMSupportOpenRouter/run.php`
+ - `./examples/05_APISupport/LLMSupportOpenRouter/run.php`
 
 
 
@@ -139,4 +142,4 @@ Supported extraction modes:
 - Mode::Tools (for selected models)
 
 Example:
-- `./examples/LLMSupportTogetherAI/run.php`
+- `./examples/05_APISupport/LLMSupportTogetherAI/run.php`

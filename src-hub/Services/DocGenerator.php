@@ -7,35 +7,39 @@ use Cognesy\InstructorHub\Views\DocGenView;
 
 class DocGenerator
 {
+    private DocGenView $view;
+
     public function __construct(
         private ExampleRepository $examples,
         private string $hubDocsDir,
         private string $mkDocsFile,
         private string $sectionStartMarker,
         private string $sectionEndMarker,
-    ) {}
+    ) {
+        $this->view = new DocGenView;
+    }
 
     public function makeDocs(bool $refresh = false) : void {
         // check if hub docs directory exists
         if (!is_dir($this->hubDocsDir)) {
             throw new \Exception("Hub docs directory '$this->hubDocsDir' does not exist");
         }
-        (new DocGenView)->renderHeader();
+        $this->view->renderHeader();
         $list = $this->examples->forEachExample(function(Example $example) use ($refresh) {
-            (new DocGenView)->renderFile($example);
+            $this->view->renderFile($example);
             if ($refresh) {
                 $success = $this->replaceAll($example);
             } else {
                 $success = $this->replaceNew($example);
             }
-            (new DocGenView)->renderResult($success);
+            $this->view->renderResult($success);
             if (!$success) {
                 throw new \Exception("Failed to copy or replace example: {$example->name}");
             }
             return true;
         });
         $success = $this->updateIndex($list);
-        (new DocGenView)->renderUpdate($success);
+        $this->view->renderUpdate($success);
         if (!$success) {
             throw new \Exception('Failed to update hub docs index');
         }
@@ -44,19 +48,21 @@ class DocGenerator
     private function replaceAll(Example $example) : bool {
         // make target md filename - replace .php with .md,
         $newFileName = Str::snake($example->name).'.md';
-        $targetPath = $this->hubDocsDir . '/' . $newFileName;
+        $subdir = Str::snake(substr($example->group, 3));
+        $targetPath = $this->hubDocsDir . '/' . $subdir . '/' .$newFileName;
         // copy example file to docs
         if (file_exists($targetPath)) {
             unlink($targetPath);
         }
-        (new DocGenView)->renderNew();
-        return copy($example->runPath, $targetPath);
+        $this->view->renderNew();
+        return $this->copy($example->runPath, $targetPath);
     }
 
     private function replaceNew(Example $example) : bool {
         // make target md filename - replace .php with .md,
+        $subdir = Str::snake(substr($example->group, 3));
         $newFileName = Str::snake($example->name).'.md';
-        $targetPath = $this->hubDocsDir . '/' . $newFileName;
+        $targetPath = $this->hubDocsDir . '/' . $subdir . '/' .$newFileName;
         // copy example file to docs
         if (file_exists($targetPath)) {
             // compare update dates of $targetPath and $example->runPath
@@ -66,25 +72,43 @@ class DocGenerator
                 // if the file already exists, replace it
                 unlink($targetPath);
             }
-            (new DocGenView)->renderExists($exampleDate > $targetDate);
+            $this->view->renderExists($exampleDate > $targetDate);
             return true;
         }
-        (new DocGenView)->renderNew();
-        return copy($example->runPath, $targetPath);
+        $this->view->renderNew();
+        return $this->copy($example->runPath, $targetPath);
     }
 
     private function updateIndex(array $list) : bool {
         $yamlLines = [];
+        $subgroup = '';
         foreach ($list as $example) {
+            $groupTitle = Str::title(substr($example->group, 3));
+            $subdir = Str::snake(substr($example->group, 3));
+            if ($subgroup !== $subdir) {
+                $yamlLines[] = "    - $groupTitle:";
+                $subgroup = $subdir;
+            }
             $fileName = Str::snake($example->name).'.md';
             $title = $example->hasTitle ? $example->title : Str::title($example->name);
-            $yamlLines[] = "    - $title: 'hub/$fileName'";
+            $yamlLines[] = "      - $title: 'hub/$subdir/$fileName'";
         }
         if (empty($yamlLines)) {
             throw new \Exception('No examples found');
         }
         $this->modifyHubIndex($yamlLines);
         return true;
+    }
+
+    private function copy(string $source, string $destination) : bool {
+        // if destination does not exist, create it
+        $destDir = dirname($destination);
+        if (!is_dir($destDir)) {
+            if (!mkdir($destDir, 0777, true) && !is_dir($destDir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $destDir));
+            }
+        }
+        return copy($source, $destination);
     }
 
     private function modifyHubIndex(array $indexLines) : bool {

@@ -70,11 +70,6 @@ assert($prediction->classLabel == Label::SPAM);
 
 ## Multi-Label Classification
 
-!!! example
-
-    Run example from CLI: `php examples/ClassificationMulticlass/run.php`
-
-
 ### Defining the Structures
 
 For multi-label classification, we introduce a new enum class and a different PHP class to handle multiple labels.

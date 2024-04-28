@@ -2,10 +2,10 @@
 
 namespace Tests\Examples\Complex;
 
-use Cognesy\Instructor\Traits\ExtractableMixin;
+use Cognesy\Instructor\Extras\Mixin\HandlesExtraction;
 
 class ProjectEvents {
-    use ExtractableMixin;
+    use HandlesExtraction;
 
     /**
      * List of events extracted from the text

@@ -2,6 +2,8 @@
 
 namespace Cognesy\InstructorHub\Utils;
 
+use Cognesy\Instructor\Utils\Pipeline;
+
 class Str
 {
     static public function pascal(string $input) : string {
@@ -38,11 +40,27 @@ class Str
     }
 
     static private function spaceSeparated(string $input) : string {
-        // turn camel, snake, or kebab case into a normalized form - space separated
-        $decamelized = preg_replace('/(?<!^)[A-Z]/', ' $0', $input);
-        $dekebabed = str_replace('-', ' ', $decamelized);
-        $desnaked = str_replace('_', ' ', $dekebabed);
-        return $desnaked;
+        return (new Pipeline)->through([
+            // separate groups of capitalized words
+            //fn ($data) => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data),
+            // de-camel
+            fn ($data) => preg_replace('/([A-Z]{2,})([A-Z])([a-z])/', '$1 $2$3', $data),
+            fn ($data) => preg_replace('/([a-z])([A-Z])([a-z])/', '$1 $2$3', $data),
+            // separate groups of capitalized words of 2+ characters with spaces
+            fn ($data) => preg_replace('/([A-Z]{2,})/', ' $1 ', $data),
+            // de-kebab
+            fn ($data) => str_replace('-', ' ', $data),
+            // de-snake
+            fn ($data) => str_replace('_', ' ', $data),
+            // remove double spaces
+            fn ($data) => preg_replace('/\s+/', ' ', $data),
+            // remove leading _
+            fn ($data) => ltrim($data, '_'),
+            // remove leading -
+            fn ($data) => ltrim($data, '-'),
+            // trim space
+            fn ($data) => trim($data),
+        ])->process($input);
     }
 
     static public function contains(string $haystack, string $needle) : bool {

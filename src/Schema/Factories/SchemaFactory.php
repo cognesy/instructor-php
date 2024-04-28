@@ -28,6 +28,7 @@ class SchemaFactory
     protected SchemaMap $schemaMap;
     protected PropertyMap $propertyMap;
     protected TypeDetailsFactory $typeDetailsFactory;
+    private ClassInfo $classInfo;
 
     public function __construct(
         bool $useObjectReferences,
@@ -37,6 +38,7 @@ class SchemaFactory
         $this->schemaMap = new SchemaMap;
         $this->propertyMap = new PropertyMap;
         $this->typeDetailsFactory = new TypeDetailsFactory;
+        $this->classInfo = new ClassInfo;
     }
 
     /**
@@ -48,6 +50,7 @@ class SchemaFactory
         $type = match(true) {
             is_string($anyType) => $this->typeDetailsFactory->fromTypeName($anyType),
             $anyType instanceof TypeDetails => $anyType,
+            default => throw new \Exception('Unknown input type: '.gettype($anyType)),
         };
         $typeString = (string) $type;
         if (!$this->schemaMap->has($type)) {
@@ -76,9 +79,12 @@ class SchemaFactory
      * @return Schema[]
      */
     protected function getPropertySchemas(string $class) : array {
-        $properties = (new ClassInfo)->getProperties($class);
+        $properties = $this->classInfo->getProperties($class);
         $propertySchemas = [];
         foreach ($properties as $property) {
+            if (!$this->classInfo->isPublic($class, $property)) {
+                continue;
+            }
             $propertySchemas[$property] = $this->property($class, $property);
         }
         return $propertySchemas;
@@ -92,7 +98,7 @@ class SchemaFactory
      * @return Schema
      */
     protected function getPropertySchema(string $class, string $property) : Schema {
-        $propertyInfoType = (new ClassInfo)->getType($class, $property);
+        $propertyInfoType = $this->classInfo->getType($class, $property);
         $type = $this->typeDetailsFactory->fromPropertyInfo($propertyInfoType);
         $description = $this->getPropertyDescription($type, $class, $property);
         return $this->makePropertySchema($type, $property, $description);
@@ -108,12 +114,12 @@ class SchemaFactory
      */
     protected function getPropertyDescription(TypeDetails $type, string $class, string $property) : string {
         if (in_array($type->type, ['object', 'enum'])) {
-            $classDescription = (new ClassInfo)->getClassDescription($type->class);
+            $classDescription = $this->classInfo->getClassDescription($type->class);
         } else {
             $classDescription = '';
         }
         return implode("\n", array_filter([
-            (new ClassInfo)->getPropertyDescription($class, $property),
+            $this->classInfo->getPropertyDescription($class, $property),
             $classDescription,
         ]));
     }
@@ -131,14 +137,14 @@ class SchemaFactory
             'object' => new ObjectSchema(
                 $type,
                 $type->classOnly(),
-                (new ClassInfo)->getClassDescription($type->class),
+                $this->classInfo->getClassDescription($type->class),
                 $this->getPropertySchemas($type->class),
-                (new ClassInfo)->getRequiredProperties($type->class),
+                $this->classInfo->getRequiredProperties($type->class),
             ),
             'enum' => new EnumSchema(
                 $type,
                 $type->class,
-                (new ClassInfo)->getClassDescription($type->class),
+                $this->classInfo->getClassDescription($type->class),
             ),
             'array' => new ArraySchema(
                 $type,
@@ -192,7 +198,7 @@ class SchemaFactory
             $name,
             $description,
             $this->getPropertySchemas($type->class),
-            (new ClassInfo)->getRequiredProperties($type->class),
+            $this->classInfo->getRequiredProperties($type->class),
         );
     }
 }

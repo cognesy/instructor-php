@@ -2,7 +2,7 @@
 
 namespace Tests\Examples\Extraction;
 
-use Cognesy\Instructor\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationError;
 use Cognesy\Instructor\Validation\ValidationResult;
 
