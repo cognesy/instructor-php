@@ -59,10 +59,6 @@ $structure = Structure::define([
         'zip' => Field::string('Zip code')->optional(),
     ]), 'Address of the person'),
     'role' => Field::enum(Role::class, 'Role of the person'),
-    //    'properties' => Field::array(Structure::define([
-    //        'name' => Field::string('Name of the property'),
-    //        'value' => Field::string('Value of the property'),
-    //    ]), 'Additional properties of the person'),
 ], 'Person', 'A person object');
 
 $text = "Jane Doe lives in Springfield. She is 25 years old and works as a line worker. McDonald's in Ney York is located at 456 Elm St, NYC, 12345.";
