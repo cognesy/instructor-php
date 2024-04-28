@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Deserialization\Symfony;
 
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
-use Cognesy\Instructor\Exceptions\DeserializationException;
+use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Instructor\Validation\Symfony\BackedEnumNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;

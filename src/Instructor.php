@@ -93,9 +93,9 @@ class Instructor {
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        string $functionName = 'extract_data',
-        string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors",
+        string $functionName = '',
+        string $functionDescription = '',
+        string $retryPrompt = '',
         Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
@@ -121,9 +121,9 @@ class Instructor {
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        string $functionName = 'extract_data',
-        string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors",
+        string $functionName = '',
+        string $functionDescription = '',
+        string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : self {
         $request = $this->requestFactory->create(

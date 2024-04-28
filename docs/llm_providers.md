@@ -8,10 +8,9 @@ Only tested providers with examples are listed here.
 
 Supported extraction modes:
 
+- Mode::Tools
+- Mode::Json (recommended)
 - Mode::MdJson
-- Mode::Json (for selected models)
-
-Mode::Tools is not supported yet.
 
 Example:
 - `./examples/05_APISupport/LLMSupportAnthropic/run.php`
@@ -23,7 +22,7 @@ Example:
 Supported extraction modes:
 
 - Mode::MdJson
-- Mode::Json (for selected models)
+- Mode::Json (for selected models, recommended)
 - Mode::Tools (for selected models)
 
 Example:
@@ -67,7 +66,7 @@ Example:
 Supported extraction modes:
 
 - Mode::MdJson
-- Mode::Json
+- Mode::Json (recommended)
 - Mode::Tools (experimental - not stable)
 
 Example:
@@ -94,7 +93,8 @@ Example:
 Supported extraction modes:
 
 - Mode::MdJson
-- Mode::Json (for selected models)
+- Mode::Json (for selected models, recommended)
+- Mode::Tools (for selected models)
 
 Example:
 - `./examples/05_APISupport/LLMSupportOllama/run.php`

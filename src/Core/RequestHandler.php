@@ -5,7 +5,6 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
-use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -51,7 +50,7 @@ class RequestHandler implements CanHandleRequest
 
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
-            $this->messages = $this->makeRetryMessages($this->messages, $responseModel, $apiResponse->content, $errors);
+            $this->messages = $this->makeRetryMessages($this->messages, $request, $apiResponse->content, $errors);
             $this->retries++;
             if ($this->retries <= $request->maxRetries) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
@@ -62,7 +61,7 @@ class RequestHandler implements CanHandleRequest
     }
 
     protected function getResponse(array $messages, Request $request, ResponseModel $responseModel) : ApiResponse {
-        $apiClient = $request->client->addRequest($messages, $responseModel, $request);
+        $apiClient = $request->client()->addRequest($messages, $responseModel, $request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));
             $apiResponse = $apiClient->get();
@@ -74,10 +73,10 @@ class RequestHandler implements CanHandleRequest
     }
 
     protected function makeRetryMessages(
-        array $messages, ResponseModel $responseModel, string $jsonData, array $errors
+        array $messages, Request $request, string $jsonData, array $errors
     ) : array {
         $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $responseModel->retryPrompt . ': ' . implode(", ", $errors)];
+        $messages[] = ['role' => 'user', 'content' => $request->retryPrompt . ': ' . implode(", ", $errors)];
         return $messages;
     }
 }

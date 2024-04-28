@@ -75,7 +75,7 @@ To provide an essential functionality we needed here Instructor for PHP leverage
  - [PHP DocBlock](https://docs.phpdoc.org/2.9/references/phpdoc/index.html) type hinting conventions,
  - [Symfony](https://symfony.com/doc/current/index.html) serialization and validation capabilities
 
-Currently, Instructor for PHP works with [OpenAI API](https://platform.openai.com/docs/), but support for other models capable of function calling may be added in the future.
+Instructor for PHP works with OpenAI, Anthropic, local Ollama and many other providers. Check out the [LLM Providers](llm_providers.md) section for more information.
 
 
 

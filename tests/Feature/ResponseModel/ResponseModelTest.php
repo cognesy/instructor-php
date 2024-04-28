@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Tests\Examples\ResponseModel\User;
 use Tests\Examples\ResponseModel\UserWithProvider;

@@ -38,7 +38,7 @@ trait HandlesRequestClass
             ),
             Mode::Tools => $this->toolsCall(
                 messages: $messages,
-                tools: [$responseModel->toolCallSchema],
+                tools: [$responseModel->toolCallSchema()],
                 toolChoice: [
                     'type' => 'function',
                     'function' => ['name' => $responseModel->functionName]

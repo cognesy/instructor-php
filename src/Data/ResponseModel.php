@@ -2,31 +2,40 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 
 class ResponseModel
 {
+    private ToolCallBuilder $toolCallBuilder;
+
     public mixed $instance;
     public ?string $class;
     public Schema $schema;
     public array $jsonSchema;
-    public array $toolCallSchema;
 
-    public string $functionName = 'extract_data';
-    public string $functionDescription = 'Extract correct data in strict JSON format from provided content';
-    public string $retryPrompt = "JSON generated incorrectly, fix following errors";
+    public string $functionName = '';
+    public string $functionDescription = '';
 
     public function __construct(
         string $class = null,
         mixed  $instance = null,
         Schema $schema = null,
         array  $jsonSchema = null,
-        array  $toolCallSchema = null,
+        ToolCallBuilder $toolCallBuilder = null,
     ) {
         $this->class = $class;
         $this->instance = $instance;
         $this->schema = $schema;
         $this->jsonSchema = $jsonSchema;
-        $this->toolCallSchema = $toolCallSchema;
+        $this->toolCallBuilder = $toolCallBuilder;
+    }
+
+    public function toolCallSchema() : array {
+        return $this->toolCallBuilder->render(
+            $this->jsonSchema,
+            $requestedModel['name'] ?? $this->functionName,
+            $requestedModel['description'] ?? $this->functionDescription
+        );
     }
 
     public function toXml() : string {

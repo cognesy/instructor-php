@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Schema;
+namespace Cognesy\Instructor\Services;
 
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;

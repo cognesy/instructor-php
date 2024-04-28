@@ -1,15 +1,14 @@
 <?php
-
-namespace Cognesy\Instructor\Exceptions;
+namespace Cognesy\Instructor\Validation\Exceptions;
 
 use Cognesy\Instructor\Utils\Json;
+use Exception;
 
-class DeserializationException extends \Exception
+class ValidationException extends Exception
 {
     public function __construct(
         public $message,
-        public string $modelClass,
-        public string $data,
+        public array $errors
     ) {
         parent::__construct($message);
     }
@@ -17,8 +16,7 @@ class DeserializationException extends \Exception
     public function __toString() : string {
         return Json::encode([
             'message' => $this->message,
-            'class' => $this->modelClass,
-            'data' => $this->data,
+            'errors' => $this->errors
         ]);
     }
 }

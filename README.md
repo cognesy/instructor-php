@@ -100,7 +100,7 @@ var_dump($person);
 //     age: 28
 // }    
 ```
-> **NOTE:** Instructor only supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values.
+> **NOTE:** Instructor only supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values. If you want to define the shape of data during runtime, you can use structures (see [Structures](docs/structures.md) section).
 
 
 ### Validation
@@ -154,6 +154,7 @@ $person = (new Instructor)->respond(
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```
 
+
 ### Alternative ways to call Instructor
 
 You can call `request()` method to set the parameters of the request and then call `get()` to get the response.
@@ -179,6 +180,7 @@ $instructor = (new Instructor)->withRequest(new Request(
     responseModel: Person::class,
 ))->get();
 ```
+
 
 ### Partial results
 
@@ -261,7 +263,7 @@ Additionally, you can use Scalar adapter to extract one of the provided options 
 use Cognesy\Instructor\Extras\Scalars\Scalar;
 use Cognesy\Instructor\Instructor;
 
-enum ActivityType {
+enum ActivityType : string {
     case Work = 'work';
     case Entertainment = 'entertainment';
     case Sport = 'sport';

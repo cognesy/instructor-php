@@ -18,9 +18,9 @@ class RequestFactory
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        string $functionName = 'extract_data',
-        string $functionDescription = 'Extract data from provided content',
-        string $retryPrompt = "Recall function correctly, fix following errors",
+        string $functionName = '',
+        string $functionDescription = '',
+        string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : Request {
         return new Request(
@@ -37,10 +37,8 @@ class RequestFactory
         );
     }
 
-    public function fromRequest(
-        Request $request,
-    ) : Request {
-        $request->client = $this->clientFactory->getDefault();
+    public function fromRequest(Request $request) : Request {
+        $request->withClient($this->clientFactory->getDefault());
         return $request;
     }
 }

@@ -7,7 +7,7 @@ use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Exceptions\DeserializationException;
+use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Validation\ValidationError;
 use Cognesy\Instructor\Validation\ValidationResult;

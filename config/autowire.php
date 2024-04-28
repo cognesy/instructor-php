@@ -18,7 +18,7 @@ use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Core\Response\ResponseValidator;
-use Cognesy\Instructor\Core\ResponseModel\ResponseModelFactory;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
