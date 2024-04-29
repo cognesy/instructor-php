@@ -152,7 +152,7 @@ class Instructor {
             return $this->stream()->final();
         }
         $result = $this->handleRequest();
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['result' => $result]));
         return $result;
     }
 

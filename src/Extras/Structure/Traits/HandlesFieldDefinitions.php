@@ -9,50 +9,36 @@ use ReflectionEnum;
 
 trait HandlesFieldDefinitions
 {
-    static public function int(string $description = '') : self {
-        $result = new Field();
-        $result->typeDetails = new TypeDetails('int');
-        return $result;
+    static public function int(string $name, string $description = '') : self {
+        return new Field($name, $description, new TypeDetails('int'));
     }
 
-    static public function string(string $description = '') : self {
-        $result = new Field();
-        $result->typeDetails = new TypeDetails('string');
-        return $result;
+    static public function string(string $name, string $description = '') : self {
+        return new Field($name, $description, new TypeDetails('string'));
     }
 
-    static public function float(string $description = '') : self {
-        $result = new Field();
-        $result->typeDetails = new TypeDetails('float');
-        return $result;
+    static public function float(string $name, string $description = '') : self {
+        return new Field($name, $description, new TypeDetails('float'));
     }
 
-    static public function bool(string $description = '') : self {
-        $result = new Field();
-        $result->typeDetails = new TypeDetails('bool');
-        return $result;
+    static public function bool(string $name, string $description = '') : self {
+        return new Field($name, $description, new TypeDetails('bool'));
     }
 
-    static public function enum(string $enumClass, string $description = '') : self {
-        $result = new Field();
+    static public function enum(string $name, string $enumClass, string $description = '') : self {
         $reflection = new ReflectionEnum($enumClass);
         $backingType = $reflection->getBackingType()?->getName();
         $enumValues = array_values($reflection->getConstants());
-        $result->typeDetails = new TypeDetails('enum', $enumClass, null, $backingType, $enumValues);
-        return $result;
+        return new Field($name, $description, new TypeDetails('enum', $enumClass, null, $backingType, $enumValues));
     }
 
-    static public function object(string $class, string $description = '') : self {
-        $result = new Field();
-        $result->typeDetails = new TypeDetails('object', $class);
-        return $result;
+    static public function object(string $name, string $class, string $description = '') : self {
+        return new Field($name, $description, new TypeDetails('object', $class));
     }
 
-    static public function structure(Structure $structure, string $description = '') : self {
-        $result = new Field();
-        $result->typeDetails = new TypeDetails('object', Structure::class);
-        $result->value = $structure;
-        $result->description = $description;
+    static public function structure(string $name, array|callable $fields, string $description = '') : self {
+        $result = new Field($name, $description, new TypeDetails('object', Structure::class));
+        $result->value = Structure::define($name, $fields, $description);
         return $result;
     }
 

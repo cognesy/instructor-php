@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Deserialization\Symfony;
 
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Validation\Symfony\BackedEnumNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
@@ -90,7 +91,7 @@ class Deserializer implements CanDeserializeClass
         try {
             return $serializer->denormalize($data, $dataClass);
         } catch (\Exception $e) {
-            throw new DeserializationException($e->getMessage(), $dataClass, $data);
+            throw new DeserializationException($e->getMessage(), $dataClass, Json::encode($data));
         }
     }
 }

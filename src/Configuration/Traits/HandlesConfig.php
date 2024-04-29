@@ -21,7 +21,8 @@ trait HandlesConfig
      */
     static public function fresh(array $overrides = [], EventDispatcher $events = null) : Configuration {
         $events = $events ?? new EventDispatcher();
-        $config = (new Configuration)->withEventDispatcher($events);
+        //$config = (new Configuration)->withEventDispatcher($events);
+        $config = new Configuration;
         return autowire($config, $events)->override($overrides);
     }
 

@@ -20,6 +20,9 @@ trait HandlesFieldDescription
 
     public function withDescription(string $description) : self {
         $this->description = $description;
+        if ($this->typeDetails->class === Structure::class) {
+            $this->value->withDescription($description);
+        }
         return $this;
     }
 

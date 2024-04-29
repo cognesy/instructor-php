@@ -24,11 +24,10 @@ class ResponseDeserializer
             $responseModel->instance instanceof CanDeserializeSelf => $this->deserializeSelf($json, $responseModel->instance),
             default => $this->deserializeAny($json, $responseModel)
         };
-        if ($result->isFailure()) {
-            $this->events->dispatch(new ResponseDeserializationFailed($result->errorMessage()));
-            return $result;
-        }
-        $this->events->dispatch(new ResponseDeserialized($result->unwrap()));
+        $this->events->dispatch(match(true) {
+            $result->isFailure() => new ResponseDeserializationFailed($result->errorMessage()),
+            default => new ResponseDeserialized($result->unwrap())
+        });
         return $result;
     }
 

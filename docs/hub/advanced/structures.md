@@ -31,32 +31,29 @@ enum Role : string {
     case Line = 'line';
 }
 
-$structure = Structure::define('person', [
-    Field::string('name','Name of the person'),
-    Field::int('age', 'Age of the person')->validIf(
+$structure = Structure::define([
+    'name' => Field::string('Name of the person'),
+    'age' => Field::int('Age of the person')->validIf(
         fn($value) => $value > 0, "Age has to be positive number"
     ),
-    Field::structure('address', [
-        Field::string('street', 'Street name')->optional(),
-        Field::string('city', 'City name'),
-        Field::string('zip', 'Zip code')->optional(),
-    ], 'Address of the person'),
-    Field::enum('role', Role::class, 'Role of the person'),
-], 'A person object');
+    'address' => Field::structure(Structure::define([
+        'street' => Field::string('Street name')->optional(),
+        'city' => Field::string('City name'),
+        'zip' => Field::string('Zip code')->optional(),
+    ]), 'Address of the person'),
+    'role' => Field::enum(Role::class, 'Role of the person'),
+], 'Person', 'A person object');
 
 $text = <<<TEXT
     Jane Doe lives in Springfield. She is 25 years old and works as a line worker.
     McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
     TEXT;
 
-print("INPUT:\n$text\n\n");
-
 $person = (new Instructor)->respond(
     messages: $text,
     responseModel: $structure,
 );
 
-print("OUTPUT:\n");
 dump($person);
 ?>
 ```

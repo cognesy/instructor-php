@@ -12,6 +12,10 @@ until results meet the requirements or maxRetries is reached.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Events\Request\RequestSentToLLM;
+use Cognesy\Instructor\Events\Response\ResponseValidated;
+use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
+use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Instructor;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -21,13 +25,23 @@ class UserDetails
     #[Assert\Email]
     public string $email;
 }
+$text = "you can reply to me via jason@gmailcom -- Jason";
 
-$user = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => "you can reply to me via jason@gmailcom -- Jason"]],
-    responseModel: UserDetails::class,
-    maxRetries: 2
-);
+print("INPUT:\n$text\n\n");
 
+print("RESULTS:\n");
+$user = (new Instructor)
+    ->onEvent(RequestSentToLLM::class, fn($event) => print("[ ] Requesting LLM response...\n"))
+    ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".json_encode($event->response)."\n"))
+    ->onEvent(ResponseValidationFailed::class, fn($event) => print("[!] Validation failed:\n    $event\n"))
+    ->onEvent(ResponseValidated::class, fn($event) => print("[ ] Validation succeeded.\n"))
+    ->respond(
+        messages: $text,
+        responseModel: UserDetails::class,
+        maxRetries: 3
+    );
+
+print("\nOUTPUT:\n");
 dump($user);
 
 assert($user->email === "jason@gmail.com");

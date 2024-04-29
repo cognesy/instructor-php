@@ -27,11 +27,14 @@ $text = <<<TEXT
     Jason is 25 years old. Jane is 18 yo. John is 30 years old. Anna is 2 years younger than him.
     TEXT;
 
+print("INPUT:\n$text\n\n");
+
+print("OUTPUT:\n");
 $list = (new Instructor)
     ->request(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Sequence::of(Person::class),
-        options: ['stream' => true, 'debug' => true],
+        options: ['stream' => true],
     )
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->get();

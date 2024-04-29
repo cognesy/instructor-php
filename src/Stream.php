@@ -41,7 +41,7 @@ class Stream
             yield $update;
         }
         $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['result' => $this->lastUpdate]));
     }
 
     /**
@@ -54,7 +54,7 @@ class Stream
             $result = $update;
         }
         $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['result' => $result]));
         return $result;
     }
 
@@ -77,7 +77,7 @@ class Stream
         }
         yield $lastSequence;
         $this->events->dispatch(new ResponseGenerated($lastSequence));
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['result' => $lastSequence]));
     }
 
     /**
@@ -89,7 +89,7 @@ class Stream
             $callback($update);
         }
         $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['result' => $this->lastUpdate]));
     }
 
     /**
@@ -102,7 +102,7 @@ class Stream
             $result[] = $callback($update);
         }
         $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['result' => $result]));
         return $result;
     }
 

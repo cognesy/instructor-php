@@ -31,14 +31,14 @@ trait HandlesResponse
     }
 
     protected function respondRaw(ApiRequest $request): Response {
-        $this?->events->dispatch(new ApiRequestInitiated($request));
+        $this->events->dispatch(new ApiRequestInitiated($request));
         try {
             $response = $this->connector($request->isDebug())->send($request);
         } catch (RequestException $exception) {
-            $this?->events->dispatch(new ApiRequestErrorRaised($exception));
+            $this->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
         }
-        $this?->events->dispatch(new ApiResponseReceived($response));
+        $this->events->dispatch(new ApiResponseReceived($response));
         return $response;
     }
 }

@@ -33,13 +33,14 @@ class ResponseGenerator implements CanGenerateResponse
             ->through(fn($object) => $this->responseValidator->validate($object))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject($object)))
+            ->onFailure(fn($result) => $this->events->dispatch(new ResponseGenerationFailed([$result->error()])))
             ->then(fn($result) => match(true) {
                 $result->isSuccess() => $result,
                 default => Result::failure($this->extractErrors($result))
             });
-        if ($result->isFailure()) {
-            $this->events->dispatch(new ResponseGenerationFailed($result->error()));
-        }
+//        if ($result->isFailure()) {
+//            $this->events->dispatch(new ResponseGenerationFailed($result->error()));
+//        }
         return $result;
     }
 

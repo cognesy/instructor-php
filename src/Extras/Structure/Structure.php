@@ -8,6 +8,7 @@ use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Exception;
 
 class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {
@@ -24,17 +25,22 @@ class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
         $this->deserializer = new Deserializer();
     }
 
-    static public function define(array|callable $fields, string $name = '', string $description = '') : self {
+    static public function define(string $name, array|callable $fields, string $description = '') : self {
         $structure = new Structure();
         $structure->name = $name;
         $structure->description = $description;
-        if (is_array($fields)) {
-            /** @var Field[] $fields */
-            foreach ($fields as $fieldName => $fieldType) {
-                $structure->fields[$fieldName] = $fieldType->withName($fieldName);
+
+        if (is_callable($fields)) {
+            $fields = $fields($structure);
+        }
+
+        /** @var Field[] $fields */
+        foreach ($fields as $field) {
+            $fieldName = $field->name();
+            if ($structure->has($fieldName)) {
+                throw new Exception("Duplicate field `$fieldName` definition in structure `$name`");
             }
-        } else {
-            $structure->fields = $fields($structure);
+            $structure->fields[$fieldName] = $field;
         }
         return $structure;
     }

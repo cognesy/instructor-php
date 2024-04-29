@@ -26,7 +26,7 @@ trait HandlesErrors
             // final attempt to recover from the error (e.g. give fallback response)
             return ($this->onError)($event);
         }
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone(['error' => $error->getMessage()]));
         throw $error;
     }
 }

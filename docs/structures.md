@@ -20,18 +20,8 @@ returns an array in the shape you defined.
 
 `Structure::define()` accepts array of `Field` objects.
 
-Following types of fields are currently supported:
-- Field::bool() - bool value
-- Field::int() - int value
-- Field::string() - string value
-- Field::float() - float value
-- Field::enum() - enum value
-- Field::structure() - for nesting structures
-
-Fields can be marked as optional with `$field->optional(bool $isOptional = true)`.
-By default, all defined fields are required.
-
-Let's first define the structure, which is a shape of the data we want to extract from the message.
+Let's first define the structure, which is a shape of the data we want to
+extract from the message.
 
 ```php
 <?php
@@ -44,33 +34,99 @@ enum Role : string {
 }
 
 $structure = Structure::define([
+    'name' => Field::string(),
+    'age' => Field::int(),
+    'role' => Field::enum(Role::class),
+], 'Person');
+?>
+```
+
+Following types of fields are currently supported:
+
+- `Field::bool()` - boolean value
+- `Field::int()` - int value
+- `Field::string()` - string value
+- `Field::float()` - float value
+- `Field::enum()` - enum value
+- `Field::structure()` - for nesting structures
+
+
+## Optional fields
+
+Fields can be marked as optional with `$field->optional()`.  By default, all
+defined fields are required.
+
+```php
+<?php
+$structure = Structure::define([
+    //...
+    'age' => Field::int()->optional(),
+    //...
+], 'Person');
+?>
+```
+
+
+## Additional LLM inference instructions
+
+Instructor includes field descriptions in the content of instructions for LLM, so you
+can use them to provide detailed specifications or requirements for each field.
+
+You can also provide extra inference instructions for LLM at the structure level with `$structure->description(string $description)`
+
+```php
+<?php
+$structure = Structure::define([
     'name' => Field::string('Name of the person'),
-    'age' => Field::int('Age of the person')->validIf(fn($value) => $value > 0, "Age has to be positive number"),
-    'address' => Field::structure(Structure::define([
-        'street' => Field::string('Street name')->optional(),
-        'city' => Field::string('City name'),
-        'zip' => Field::string('Zip code')->optional(),
-    ]), 'Address of the person'),
+    'age' => Field::int('Age of the person')->optional(),
     'role' => Field::enum(Role::class, 'Role of the person'),
 ], 'Person', 'A person object');
 ?>
 ```
 
-> NOTE: You can provide extra inference instructions for LLM with the following methods:
->
-> - structure level instructions: `$structure->description(string $description)`
-> - field level instructions: `$field->description(string $description)`
+## Nesting structures
 
+You can use `Field::structure()` to nest structures in case you want to define
+more complex data shapes.
+
+```php
+<?php
+$structure = Structure::define([
+    'name' => Field::string('Name of the person'),
+    'age' => Field::int('Age of the person')->optional(),
+    'address' => Field::structure(Structure::define([
+        'street' => Field::string('Street name')->optional(),
+        'city' => Field::string('City name'),
+        'zip' => Field::string('Zip code')->optional(),
+    ]), 'Address', 'Address of the person'),
+    'role' => Field::enum(Role::class, 'Role of the person'),
+], 'Person', 'A person object');
+?>
+```
 
 ## Validation of structure data
 
-As demonstrated in the definition above, Instructor supports validation of structures.
+Instructor supports validation of structures.
 
 You can define field validator with:
 - `$field->validator(callable $validator)` - $validator has to return an instance of `ValidationResult`
 - `$field->validIf(callable $condition, string $message)` - $condition has to return false if validation has not succeeded, $message with be provided to LLM as explanation for self-correction of the next extraction attempt
 
-Here we're using a simple field validation.
+Let's add a simple field validation to the example above: 
+
+```php
+<?php
+$structure = Structure::define([
+    // ...
+    'age' => Field::int('Age of the person')->validIf(
+        fn($value) => $value > 0, "Age has to be positive number"
+    ),
+    // ...
+], 'Person', 'A person object');
+?>
+```
+
+## Extracting data
 
 Now, let's extract the data from the message.
 

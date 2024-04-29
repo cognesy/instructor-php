@@ -27,12 +27,14 @@ class ResponseValidator
             $response instanceof CanValidateSelf => $this->validateSelf($response),
             default => $this->validateObject($response)
         };
-        if ($validation->isInvalid()) {
-            $this->events->dispatch(new ResponseValidationFailed($validation));
-            return Result::failure($validation->getErrorMessage());
-        }
-        $this->events->dispatch(new ResponseValidated($validation));
-        return Result::success($response);
+        $this->events->dispatch(match(true) {
+            $validation->isInvalid() => new ResponseValidationFailed($validation),
+            default => new ResponseValidated($validation)
+        });
+        return match(true) {
+            $validation->isInvalid() => Result::failure($validation->getErrorMessage()),
+            default => Result::success($response)
+        };
     }
 
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {

@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\ApiClient\Traits;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
+use Cognesy\Instructor\Events\ApiClient\ApiStreamConnected;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
@@ -55,7 +56,7 @@ trait HandlesStreamResponse
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
         }
-        $this?->events->dispatch(new ApiStreamResponseReceived($response));
+        $this?->events->dispatch(new ApiStreamConnected($response));
 
         $iterator = $this->getStreamIterator(
             stream: $response->stream(),
@@ -69,6 +70,7 @@ trait HandlesStreamResponse
             $this?->events->dispatch(new ApiStreamUpdateReceived($streamedData));
             yield $streamedData;
         }
+        $this?->events->dispatch(new ApiStreamResponseReceived($response));
     }
 
     abstract protected function isDone(string $data): bool;
