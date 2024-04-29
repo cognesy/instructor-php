@@ -10,13 +10,12 @@ class CustomResponseDeserializationAttempt extends Event
 {
     public function __construct(
         public CanDeserializeSelf $instance,
-        public string             $json)
-    {
+        public string $json,
+    ) {
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
+    public function __toString(): string {
         return Json::encode([
             'object' => $this->instance,
             'json' => $this->json

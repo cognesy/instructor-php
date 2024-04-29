@@ -8,13 +8,11 @@ class ResponseDeserializationFailed extends Event
 {
     public function __construct(
         public string $errors
-    )
-    {
+    ) {
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
+    public function __toString(): string {
         return $this->errors;
     }
 }

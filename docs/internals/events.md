@@ -46,6 +46,24 @@ $instructor->respond(
 ```
 
 
+## onError handler
+
+`Instructor->onError(callable $callback)` method allows you to receive callback
+on any uncaught error, so you can customize handling it, for example logging the
+error or using some fallback mechanism in an attempt to recover.
+
+In case Instructor encounters any error that it cannot handle, your callable (if
+defined) will be called with an instance of `ErrorRaised` event, which contains
+information about the error and request that caused it (among some other properties).
+
+In most cases, after you process the error (e.g. store it in a log via some logger)
+the best way to proceed is to rethrow the error.
+
+If you do not rethrow the error and just return some value, Instructor will return
+it as a result of response processing. This way you can provide a fallback response,
+e.g. with an object with default values.
+
+
 ## Convenience methods for get streamed model updates
 
 `Instructor` class provides convenience methods allowing client code to receive

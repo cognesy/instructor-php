@@ -20,13 +20,10 @@ class User {
 }
 
 echo "Debugging request and response:\n\n";
-
 $user = (new Instructor)->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-    options: [
-        'debug' => true
-    ],
+    options: [ 'debug' => true ],
 );
 
 echo "\nResult:\n";

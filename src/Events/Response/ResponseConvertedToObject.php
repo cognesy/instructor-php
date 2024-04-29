@@ -13,8 +13,7 @@ class ResponseConvertedToObject extends Event
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
+    public function __toString(): string {
         return Json::encode($this->object);
     }
 }

@@ -14,8 +14,7 @@ class ResponseValidationFailed extends Event
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
+    public function __toString(): string {
         return Json::encode([
             'valid' => $this->validationResult->isValid(),
             'errors' => $this->validationResult->getErrorMessage(),

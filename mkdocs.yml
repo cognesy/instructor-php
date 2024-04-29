@@ -224,7 +224,9 @@ nav:
       - Using CoT to improve interpretation of component data: 'hub/techniques/time_range_with_cot.md'
     - Troubleshooting:
       - Debugging: 'hub/troubleshooting/debugging.md'
-      - Receive and process Instructor's internal events: 'hub/troubleshooting/wiretap.md'
+      - Handle processing errors: 'hub/troubleshooting/on_error.md'
+      - Receive specific internal events: 'hub/troubleshooting/on_event.md'
+      - Receive all internal events with wiretap(): 'hub/troubleshooting/wiretap.md'
     - API Support:
       - Support for Anthropic API: 'hub/api_support/llm_support_anthropic.md'
       - Support for Anyscale API: 'hub/api_support/llm_support_anyscale.md'

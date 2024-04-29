@@ -10,8 +10,7 @@ class CustomResponseValidationAttempt extends Event
 {
     public function __construct(
         public CanValidateSelf $response
-    )
-    {
+    ) {
         parent::__construct();
     }
 

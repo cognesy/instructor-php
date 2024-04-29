@@ -33,11 +33,11 @@ enum Role : string {
     case Line = 'line';
 }
 
-$structure = Structure::define([
-    'name' => Field::string(),
-    'age' => Field::int(),
-    'role' => Field::enum(Role::class),
-], 'Person');
+$structure = Structure::define('person', [
+    Field::string('name'),
+    Field::int('age'),
+    Field::enum('role', Role::class),
+]);
 ?>
 ```
 
@@ -58,29 +58,29 @@ defined fields are required.
 
 ```php
 <?php
-$structure = Structure::define([
+$structure = Structure::define('person', [
     //...
-    'age' => Field::int()->optional(),
+    Field::int('age')->optional(),
     //...
-], 'Person');
+]);
 ?>
 ```
 
 
-## Additional LLM inference instructions
+## Descriptions for guiding LLM inference
 
 Instructor includes field descriptions in the content of instructions for LLM, so you
-can use them to provide detailed specifications or requirements for each field.
+can use them to provide explanations, detailed specifications or requirements for each field.
 
 You can also provide extra inference instructions for LLM at the structure level with `$structure->description(string $description)`
 
 ```php
 <?php
-$structure = Structure::define([
-    'name' => Field::string('Name of the person'),
-    'age' => Field::int('Age of the person')->optional(),
-    'role' => Field::enum(Role::class, 'Role of the person'),
-], 'Person', 'A person object');
+$structure = Structure::define('person', [
+    Field::string('name', 'Name of the person'),
+    Field::int('age', 'Age of the person')->optional(),
+    Field::enum('role', Role::class, 'Role of the person'),
+], 'A person object');
 ?>
 ```
 
@@ -90,18 +90,18 @@ You can use `Field::structure()` to nest structures in case you want to define
 more complex data shapes.
 
 ```php
-<?php
-$structure = Structure::define([
-    'name' => Field::string('Name of the person'),
-    'age' => Field::int('Age of the person')->optional(),
-    'address' => Field::structure(Structure::define([
-        'street' => Field::string('Street name')->optional(),
-        'city' => Field::string('City name'),
-        'zip' => Field::string('Zip code')->optional(),
-    ]), 'Address', 'Address of the person'),
-    'role' => Field::enum(Role::class, 'Role of the person'),
-], 'Person', 'A person object');
-?>
+$structure = Structure::define('person', [
+    Field::string('name','Name of the person'),
+    Field::int('age', 'Age of the person')->validIf(
+        fn($value) => $value > 0, "Age has to be positive number"
+    ),
+    Field::structure('address', [
+        Field::string('street', 'Street name')->optional(),
+        Field::string('city', 'City name'),
+        Field::string('zip', 'Zip code')->optional(),
+    ], 'Address of the person'),
+    Field::enum('role', Role::class, 'Role of the person'),
+], 'A person object');
 ```
 
 ## Validation of structure data
@@ -109,20 +109,21 @@ $structure = Structure::define([
 Instructor supports validation of structures.
 
 You can define field validator with:
-- `$field->validator(callable $validator)` - $validator has to return an instance of `ValidationResult`
-- `$field->validIf(callable $condition, string $message)` - $condition has to return false if validation has not succeeded, $message with be provided to LLM as explanation for self-correction of the next extraction attempt
+
+ - `$field->validator(callable $validator)` - $validator has to return an instance of `ValidationResult`
+ - `$field->validIf(callable $condition, string $message)` - $condition has to return false if validation has not succeeded, $message with be provided to LLM as explanation for self-correction of the next extraction attempt
 
 Let's add a simple field validation to the example above: 
 
 ```php
 <?php
-$structure = Structure::define([
+$structure = Structure::define('person', [
     // ...
-    'age' => Field::int('Age of the person')->validIf(
+    Field::int('age', 'Age of the person')->validIf(
         fn($value) => $value > 0, "Age has to be positive number"
     ),
     // ...
-], 'Person', 'A person object');
+], 'A person object');
 ?>
 ```
 
