@@ -1,7 +1,5 @@
 # Structures
 
-> NOTE: Structure API is still in development and may change.
-
 Structures allow dynamically define the shape of data to be extracted
 by LLM, e.g. during runtime.
 

@@ -11,8 +11,13 @@ use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Validation\Symfony\Validator;
 use IteratorAggregate;
 
-class Sequence
-    implements Sequenceable, IteratorAggregate, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, ArrayAccess
+class Sequence implements
+    Sequenceable,
+    IteratorAggregate,
+    CanProvideSchema,
+    CanDeserializeSelf,
+    CanValidateSelf,
+    ArrayAccess
 {
     use Traits\HandlesArrayAccess;
     use Traits\HandlesDeserialization;

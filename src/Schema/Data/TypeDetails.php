@@ -9,6 +9,7 @@ class TypeDetails
         public ?TypeDetails $nestedType = null, // for arrays OR null
         public ?string      $enumType = null, // for enums OR null
         public ?array       $enumValues = null, // for enums OR null
+
     ) {
         // ...check enum
         if ($type === 'enum') {

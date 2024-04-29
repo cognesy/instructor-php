@@ -42,17 +42,17 @@ trait HandlesFieldDefinitions
         return $result;
     }
 
+//    static public function datetime(string $name, string $format, string $description = '') : self {
+//        $result = new Field();
+//        $result->typeDetails = new TypeDetails('object', DateTime::class, $format);
+//        return $result;
+//    }
+
 //    static public function array(Structure $structure, string $description = '') : self {
 //        $result = new Field();
 //        $result->typeDetails = new TypeDetails('array', null, new TypeDetails('object', Structure::class));
 //        $result->value = $structure;
 //        $result->description = $description;
-//        return $result;
-//    }
-
-//    static public function datetime(string $format, string $description = '') : self {
-//        $result = new Field();
-//        $result->typeDetails = new TypeDetails('object', 'DateTime', $format);
 //        return $result;
 //    }
 

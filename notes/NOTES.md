@@ -17,7 +17,7 @@ Currently not supported, needs to be supported to allow better interaction with 
 ### Handling of some usual data types
 
  - date/time - via Carbon?
- - currency
+ - currency??
 
 ### Integrations with DTO libraries
 
