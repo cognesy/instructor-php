@@ -10,6 +10,8 @@ trait HandlesSequenceUpdates
 
     /**
      * Listens to sequence updates
+     *
+     * @param-later-invoked-callable $listener
      */
     public function onSequenceUpdate(callable $listener) : self {
         $this->onSequenceUpdate = $listener;

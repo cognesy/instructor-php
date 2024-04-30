@@ -9,6 +9,8 @@ abstract class Schema
     public TypeDetails $type;
     public string $name = '';
     public string $description = '';
+    public mixed $example = null;
+
     protected string $xmlLineSeparator = "";
 
     public function __construct(

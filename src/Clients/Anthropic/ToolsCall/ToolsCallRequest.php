@@ -11,9 +11,8 @@ class ToolsCallRequest extends ApiToolsCallRequest
     protected string $xmlLineSeparator = "";
 
     protected function defaultBody(): array {
-        $system = $this->getSystemInstruction();
         $body = array_filter(array_merge([
-            'system' => $system,
+            'system' => $this->getSystemInstruction(),
             'messages' => $this->appendInstructions($this->messages),
             'model' => $this->model,
         ], $this->options));

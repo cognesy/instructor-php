@@ -6,7 +6,6 @@ use Cognesy\Instructor\Extras\Sequences\Sequence;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
@@ -15,29 +14,19 @@ trait ProvidesSchema
     public function toSchema(): Schema {
         $schemaFactory = new SchemaFactory(false);
         $typeDetailsFactory = new TypeDetailsFactory();
+
         $nestedSchema = $schemaFactory->schema($this->class);
         $nestedTypeDetails = $typeDetailsFactory->fromTypeName($this->class);
-        $arrayTypeDetails = new TypeDetails(
-            type: 'array',
-            class: null,
-            nestedType: $nestedTypeDetails,
-            enumType: null,
-            enumValues: null,
-        );
+        $arrayTypeDetails = $typeDetailsFactory->arrayType($nestedTypeDetails->toString());
         $arraySchema = new ArraySchema(
             type: $arrayTypeDetails,
             name: 'list',
             description: '',
             nestedItemSchema: $nestedSchema,
         );
+        $objectType = $typeDetailsFactory->objectType(Sequence::class);
         $objectSchema = new ObjectSchema(
-            type: new TypeDetails(
-                type: 'object',
-                class: Sequence::class,
-                nestedType: null,
-                enumType: null,
-                enumValues: null,
-            ),
+            type: $objectType,
             name: $this->name ?: ('sequenceOf' . $nestedTypeDetails->classOnly()),
             description: $this->description ?: ('A sequence of ' . $this->class),
         );

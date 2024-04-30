@@ -7,7 +7,6 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
@@ -26,13 +25,7 @@ trait ProvidesSchema
                 $required[] = $fieldName;
             }
         }
-        $typeDetails = new TypeDetails(
-            type: 'object',
-            class: static::class,
-            nestedType: null,
-            enumType: null,
-            enumValues: null,
-        );
+        $typeDetails = $this->typeDetailsFactory->objectType(static::class);
         $schema = new ObjectSchema(
             type: $typeDetails,
             name: $this->name,

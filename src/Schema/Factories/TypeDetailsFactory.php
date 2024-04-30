@@ -24,11 +24,12 @@ class TypeDetailsFactory
      * @return \Cognesy\Instructor\Schema\Data\TypeDetails
      */
     public function fromTypeName(string $anyType) : TypeDetails {
-        return match ($this->normalizeIfArray($anyType)) {
-            'object' => throw new \Exception('Object type must have a class name'),
-            'enum' => throw new \Exception('Enum type must have a class'),
-            'array' => $this->arrayType($anyType),
-            'int', 'string', 'bool', 'float' => $this->scalarType($anyType),
+        $normalized = $this->normalizeIfArray($anyType);
+        return match (true) {
+            ($normalized == TypeDetails::PHP_OBJECT) => throw new \Exception('Object type must have a class name'),
+            ($normalized == TypeDetails::PHP_ENUM) => throw new \Exception('Enum type must have a class'),
+            ($normalized == TypeDetails::PHP_ARRAY) => $this->arrayType($anyType),
+            (in_array($normalized, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($anyType),
             default => $this->objectType($anyType),
         };
     }
@@ -42,10 +43,12 @@ class TypeDetailsFactory
     public function fromPropertyInfo(Type $propertyInfo) : TypeDetails {
         $class = $propertyInfo->getClassName();
         $type = $propertyInfo->getBuiltinType();
-        return match($type) {
-            'object', 'enum' => $this->fromTypeName($class),
-            'array' => $this->fromTypeName($this->arrayTypeString($propertyInfo)), // express array type as <type>[]
-            default => new TypeDetails($type),
+        return match(true) {
+            (in_array($type, TypeDetails::PHP_OBJECT_TYPES)) => $this->fromTypeName($class),
+            (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($type),
+            ($type === TypeDetails::PHP_ARRAY) => $this->arrayType($this->arrayTypeString($propertyInfo)),
+            ($class !== null) => $this->objectType($class),
+            default => throw new \Exception('Unsupported type: '.$type),
         };
     }
 
@@ -56,11 +59,11 @@ class TypeDetailsFactory
      * @return \Cognesy\Instructor\Schema\Data\TypeDetails
      */
     public function fromValue(mixed $anyVar) : TypeDetails {
-        $type = gettype($anyVar);
-        return match ($type) {
-            'object' => $this->objectType(get_class($anyVar)),
-            'array' => $this->arrayType($this->arrayTypeStringFromValues($anyVar)),
-            'integer', 'string', 'boolean', 'double' => $this->scalarType($type),
+        $type = TypeDetails::getType($anyVar);
+        return match (true) {
+            ($type == TypeDetails::PHP_OBJECT) => $this->objectType(get_class($anyVar)),
+            ($type == TypeDetails::PHP_ARRAY) => $this->arrayType($this->arrayTypeStringFromValues($anyVar)),
+            (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($type),
             default => throw new \Exception('Unsupported type: '.$type),
         };
     }
@@ -71,8 +74,11 @@ class TypeDetailsFactory
      * @param string $type
      * @return TypeDetails
      */
-    protected function scalarType(string $type) : TypeDetails {
-        return new TypeDetails($type, null, null, null, null);
+    public function scalarType(string $type) : TypeDetails {
+        if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
+            throw new \Exception('Unsupported scalar type: '.$type);
+        }
+        return new TypeDetails($type);
     }
 
     /**
@@ -81,20 +87,18 @@ class TypeDetailsFactory
      * @param string $typeSpec
      * @return \Cognesy\Instructor\Schema\Data\TypeDetails
      */
-    protected function arrayType(string $typeSpec) : TypeDetails {
+    public function arrayType(string $typeSpec) : TypeDetails {
         $typeName = $this->getArrayType($typeSpec);
-        $nestedType = match ($typeName) {
-            'mixed' => throw new \Exception('Mixed type not supported'),
-            'array' => throw new \Exception('Nested arrays not supported'),
-            'int', 'string', 'bool', 'float' => $this->scalarType($typeName),
+        $nestedType = match (true) {
+            ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed type not supported'),
+            ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('Nested arrays not supported'),
+            (in_array($typeName, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($typeName),
             default => $this->objectType($typeName),
         };
         return new TypeDetails(
-            type: 'array',
-            class: null,
-            nestedType: $nestedType,
-            enumType: null,
-            enumValues: null);
+            type: TypeDetails::PHP_ARRAY,
+            nestedType: $nestedType
+        );
     }
 
     /**
@@ -103,11 +107,14 @@ class TypeDetailsFactory
      * @param string $typeName
      * @return TypeDetails
      */
-    protected function objectType(string $typeName) : TypeDetails {
+    public function objectType(string $typeName) : TypeDetails {
         if ($this->classInfo->isEnum($typeName)) {
             return $this->enumType($typeName);
         }
-        $instance = new TypeDetails('object', $typeName, null, null, null);
+        $instance = new TypeDetails(
+            type: TypeDetails::PHP_OBJECT,
+            class: $typeName
+        );
         $instance->class = $typeName;
         return $instance;
     }
@@ -118,30 +125,31 @@ class TypeDetailsFactory
      * @param string $typeName
      * @return TypeDetails
      */
-    protected function enumType(string $typeName) : TypeDetails {
+    public function enumType(string $typeName, string $enumType = null, array $enumValues = null) : TypeDetails {
         // enum specific
         if (!$this->classInfo->isBackedEnum($typeName)) {
             throw new \Exception('Enum must be backed by a string or int');
         }
-        $backingType = $this->classInfo->enumBackingType($typeName);
-        if (!in_array($backingType, ['int', 'string'])) {
+        $backingType = $enumType ?? $this->classInfo->enumBackingType($typeName);
+        if (!in_array($backingType, TypeDetails::PHP_ENUM_TYPES)) {
             throw new \Exception('Enum must be backed by a string or int');
         }
         return new TypeDetails(
-            type: 'enum',
+            type: TypeDetails::PHP_ENUM,
             class: $typeName,
-            nestedType: null,
             enumType: $backingType,
-            enumValues: $this->classInfo->enumValues($typeName)
+            enumValues: $enumValues ?? $this->classInfo->enumValues($typeName)
         );
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Extract array type from type string
      */
     private function getArrayType(string $typeSpec) : string {
         if (substr($typeSpec, -2) !== '[]') {
-            throw new \Exception('Array type must end with []');
+            return $typeSpec;
         }
         return substr($typeSpec, 0, -2);
     }
@@ -151,7 +159,7 @@ class TypeDetailsFactory
      */
     private function normalizeIfArray(string $type) : string {
         if (substr($type, -2) === '[]') {
-            return 'array';
+            return TypeDetails::PHP_ARRAY;
         }
         return $type;
     }
@@ -177,11 +185,11 @@ class TypeDetailsFactory
         if (empty($array)) {
             throw new \Exception('Array is empty, cannot determine type of elements');
         }
-        $nestedType = gettype($array[0]);
-        if (in_array($nestedType, ['int', 'string', 'bool', 'float'])) {
+        $nestedType = TypeDetails::getType($array[0]);
+        if (in_array($nestedType, TypeDetails::PHP_SCALAR_TYPES)) {
             return "{$nestedType}[]";
         }
-        if ($nestedType === 'object') {
+        if ($nestedType === TypeDetails::PHP_OBJECT) {
             $nestedClass = get_class($array[0]);
             return "{$nestedClass}[]";
         }

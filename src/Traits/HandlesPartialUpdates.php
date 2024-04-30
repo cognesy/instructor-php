@@ -10,6 +10,8 @@ trait HandlesPartialUpdates
 
     /**
      * Listens to partial responses
+     *
+     * @param-later-invoked-callable $listener
      */
     public function onPartialUpdate(callable $listener) : self {
         $this->onPartialResponse = $listener;

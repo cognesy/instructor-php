@@ -12,6 +12,8 @@ trait HandlesErrors
 
     /**
      * Listens to Instructor execution error
+     *
+     * @param-later-invoked-callable $listener
      */
     public function onError(callable $listener) : self {
         $this->onError = $listener;

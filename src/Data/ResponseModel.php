@@ -37,15 +37,4 @@ class ResponseModel
             $requestedModel['description'] ?? $this->functionDescription
         );
     }
-
-    public function toXml() : string {
-        $lines = [
-            '<tools>',
-            '<tool_name>'.$this->functionName.'</tool_name>',
-            '<description>'.$this->functionDescription.'</description>',
-            '<parameters>'.$this->schema->toXml().'</parameters>',
-            '</tools>',
-        ];
-        return implode("\n", $lines);
-    }
 }

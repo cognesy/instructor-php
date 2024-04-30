@@ -3,6 +3,9 @@
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Events\EventDispatcher;
+
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicConnector;
 use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
@@ -15,14 +18,14 @@ use Cognesy\Instructor\Clients\Groq\GroqClient;
 use Cognesy\Instructor\Clients\Groq\GroqConnector;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Clients\Mistral\MistralConnector;
+use Cognesy\Instructor\Clients\Ollama\OllamaClient;
+use Cognesy\Instructor\Clients\Ollama\OllamaConnector;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIConnector;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterConnector;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIConnector;
-use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Events\EventDispatcher;
 
 return function(Configuration $config) : Configuration
 {
@@ -41,6 +44,7 @@ return function(Configuration $config) : Configuration
                 'fireworks' => $config->reference(FireworksAIClient::class),
                 'groq' => $config->reference(GroqClient::class),
                 'mistral' => $config->reference(MistralClient::class),
+                'ollama' => $config->reference(OllamaClient::class),
                 'openai' => $config->reference(OpenAIClient::class),
                 'openrouter' => $config->reference(OpenRouterClient::class),
                 'together' => $config->reference(TogetherAIClient::class),
@@ -166,6 +170,27 @@ return function(Configuration $config) : Configuration
         ],
         getInstance: function($context) {
             $object = new MistralClient(
+                events: $context['events'],
+                connector: $context['connector'],
+            );
+            $object->withApiRequestFactory($context['apiRequestFactory']);
+            $object->defaultModel = $context['defaultModel'];
+            $object->defaultMaxTokens = $context['defaultMaxTokens'];
+            return $object;
+        },
+    );
+
+    $config->declare(
+        class: OllamaClient::class,
+        context: [
+            'events' => $config->reference(EventDispatcher::class),
+            'connector' => $config->reference(OllamaConnector::class),
+            'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
+            'defaultModel' => 'llama2',
+            'defaultMaxTokens' => 256,
+        ],
+        getInstance: function($context) {
+            $object = new OllamaClient(
                 events: $context['events'],
                 connector: $context['connector'],
             );
@@ -325,6 +350,18 @@ return function(Configuration $config) : Configuration
             'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
+            'metadata' => [],
+            'senderClass' => '',
+        ],
+    );
+
+    $config->declare(
+        class: OllamaConnector::class,
+        context: [
+            'apiKey' => $_ENV['OLLAMA_API_KEY'] ?? 'ollama',
+            'baseUrl' => $_ENV['OLLAMA_BASE_URI'] ?? '',
+            'connectTimeout' => 3,
+            'requestTimeout' => 90,
             'metadata' => [],
             'senderClass' => '',
         ],

@@ -30,7 +30,7 @@ test('returns correct JSON type', function () {
     $this->assertSame('array', $arrayType->jsonType());
 
     $this->expectException(Exception::class);
-    $this->expectExceptionMessage('Type not supported: unknown');
+    $this->expectExceptionMessage('Unsupported type: unknown');
     $unknownType = new TypeDetails('unknown');
     $unknownType->jsonType();
 });

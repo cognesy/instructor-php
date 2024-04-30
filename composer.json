@@ -55,6 +55,7 @@
         "saloonphp/saloon": "^3.8",
         "saloonphp/cache-plugin": "^3.0",
         "league/flysystem": "^3.0",
-        "psr/container": "^2.0"
+        "psr/container": "^2.0",
+        "symfony/yaml": "^7.0"
     }
 }
