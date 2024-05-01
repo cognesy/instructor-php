@@ -694,15 +694,17 @@ Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal depen
  - [ ] Documentation
 
 
+## Contributing
+
+If you want to help, check out some of the issues. All contributions are welcome - code improvements, documentation, bug reports, blog posts / articles, or new cookbooks and application examples.
+
+
 ## License
 
 This project is licensed under the terms of the MIT License.
 
 
 ## Contributors
-
-If you want to help, check out some of the issues. All contributions are welcome - code improvements, documentation, bug reports, blog posts / articles, or new cookbooks and application examples.
-
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -716,3 +718,4 @@ If you want to help, check out some of the issues. All contributions are welcome
 <a href="https://github.com/cognesy/instructor-php/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=cognesy/instructor-php" />
 </a>
+
