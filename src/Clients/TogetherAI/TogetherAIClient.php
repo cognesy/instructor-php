@@ -6,15 +6,6 @@ use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
-use Cognesy\Instructor\Clients\TogetherAI\ChatCompletion\ChatCompletionRequest;
-use Cognesy\Instructor\Clients\TogetherAI\ChatCompletion\ChatCompletionResponse;
-use Cognesy\Instructor\Clients\TogetherAI\ChatCompletion\PartialChatCompletionResponse;
-use Cognesy\Instructor\Clients\TogetherAI\JsonCompletion\JsonCompletionRequest;
-use Cognesy\Instructor\Clients\TogetherAI\JsonCompletion\JsonCompletionResponse;
-use Cognesy\Instructor\Clients\TogetherAI\JsonCompletion\PartialJsonCompletionResponse;
-use Cognesy\Instructor\Clients\TogetherAI\ToolsCall\PartialToolsCallResponse;
-use Cognesy\Instructor\Clients\TogetherAI\ToolsCall\ToolsCallRequest;
-use Cognesy\Instructor\Clients\TogetherAI\ToolsCall\ToolsCallResponse;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 class TogetherAIClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
@@ -49,8 +40,6 @@ class TogetherAIClient extends ApiClient implements CanCallChatCompletion, CanCa
             ChatCompletionRequest::class,
             [$messages, $this->getModel($model), $options]
         );
-        $this->partialResponseClass = ChatCompletionResponse::class;
-        $this->responseClass = PartialChatCompletionResponse::class;
         return $this;
     }
 
@@ -59,8 +48,6 @@ class TogetherAIClient extends ApiClient implements CanCallChatCompletion, CanCa
             JsonCompletionRequest::class,
             [$messages, $responseFormat, $this->getModel($model), $options]
         );
-        $this->partialResponseClass = PartialJsonCompletionResponse::class;
-        $this->responseClass = JsonCompletionResponse::class;
         return $this;
     }
 
@@ -69,8 +56,6 @@ class TogetherAIClient extends ApiClient implements CanCallChatCompletion, CanCa
             ToolsCallRequest::class,
             [$messages, $tools, $toolChoice, $this->getModel($model), $options]
         );
-        $this->partialResponseClass = PartialToolsCallResponse::class;
-        $this->responseClass = ToolsCallResponse::class;
         return $this;
     }
 

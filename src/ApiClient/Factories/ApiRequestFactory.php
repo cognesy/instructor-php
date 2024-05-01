@@ -11,11 +11,7 @@ class ApiRequestFactory
         private ApiRequestContext $context,
     ) {}
 
-    public function fromClass(
-        string $requestClass,
-        array $args
-    ) : ApiRequest {
-        return (new $requestClass(...$args))
-            ->withContext($this->context);
+    public function fromClass(string $requestClass, array $args) : ApiRequest {
+        return (new $requestClass(...$args))->withContext($this->context);
     }
 }

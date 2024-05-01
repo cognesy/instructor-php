@@ -3,9 +3,9 @@
 namespace Tests;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
-use Cognesy\Instructor\ApiClient\Requests\ApiToolsCallRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenAI\ToolsCallRequest;
 use Mockery;
 
 class MockLLM
@@ -21,7 +21,7 @@ class MockLLM
         $mockLLM->shouldReceive('withApiRequestFactory')->andReturn($mockLLM);
         $mockLLM->shouldReceive('withRequest')->andReturn($mockLLM);
         $mockLLM->shouldReceive('toolsCall')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('getApiRequest')->andReturnUsing(fn() => new ApiToolsCallRequest());
+        $mockLLM->shouldReceive('getApiRequest')->andReturnUsing(fn() => new ToolsCallRequest());
         $mockLLM->shouldReceive('get')->andReturnUsing(...$list);
         return $mockLLM;
     }

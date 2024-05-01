@@ -6,15 +6,6 @@ use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
-use Cognesy\Instructor\Clients\OpenAI\ChatCompletion\ChatCompletionRequest;
-use Cognesy\Instructor\Clients\OpenAI\ChatCompletion\ChatCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\ChatCompletion\PartialChatCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\JsonCompletion\JsonCompletionRequest;
-use Cognesy\Instructor\Clients\OpenAI\JsonCompletion\JsonCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\JsonCompletion\PartialJsonCompletionResponse;
-use Cognesy\Instructor\Clients\OpenAI\ToolsCall\PartialToolsCallResponse;
-use Cognesy\Instructor\Clients\OpenAI\ToolsCall\ToolsCallRequest;
-use Cognesy\Instructor\Clients\OpenAI\ToolsCall\ToolsCallResponse;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
@@ -51,8 +42,6 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             ChatCompletionRequest::class,
             [$messages, $this->getModel($model), $options]
         );
-        $this->partialResponseClass = ChatCompletionResponse::class;
-        $this->responseClass = PartialChatCompletionResponse::class;
         return $this;
     }
 
@@ -61,8 +50,6 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             JsonCompletionRequest::class,
             [$messages, $responseFormat, $this->getModel($model), $options]
         );
-        $this->partialResponseClass = PartialJsonCompletionResponse::class;
-        $this->responseClass = JsonCompletionResponse::class;
         return $this;
     }
 
@@ -71,8 +58,6 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
             ToolsCallRequest::class,
             [$messages, $tools, $toolChoice, $this->getModel($model), $options]
         );
-        $this->partialResponseClass = PartialToolsCallResponse::class;
-        $this->responseClass = ToolsCallResponse::class;
         return $this;
     }
 

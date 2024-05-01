@@ -2,12 +2,15 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests;
 
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\ApiClient\Traits\HandlesApiRequestContext;
 use Cognesy\Instructor\Traits\HandlesApiCaching;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 abstract class ApiRequest extends Request implements HasBody, Cacheable
@@ -57,4 +60,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     abstract protected function defaultBody(): array;
+    abstract public function toApiResponse(Response $response) : ApiResponse;
+    abstract public function toPartialApiResponse(string $partialData) : PartialApiResponse;
 }

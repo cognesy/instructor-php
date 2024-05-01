@@ -16,7 +16,6 @@ use Saloon\Exceptions\Request\RequestException;
 trait HandlesStreamResponse
 {
     use HandlesApiConnector;
-    use HandlesResponseClass;
     use HandlesRequest;
     use ReadsStreamResponse;
 
@@ -29,7 +28,7 @@ trait HandlesStreamResponse
             if (empty($response) || $this->isDone($response)) {
                 continue;
             }
-            yield $this->makePartialResponse($response);
+            yield $this->request->toPartialApiResponse($response);
         }
     }
 

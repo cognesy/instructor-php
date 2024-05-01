@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Requests;
 
-class ApiChatCompletionRequest extends ApiRequest
+abstract class ApiChatCompletionRequest extends ApiRequest
 {
     public function __construct(
         public string|array $messages = [],

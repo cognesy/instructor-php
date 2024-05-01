@@ -3,8 +3,10 @@ namespace Cognesy\Instructor\Clients\OpenRouter\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 use Saloon\Http\Response;
 
+#[Deprecated]
 class JsonCompletionResponse extends ApiResponse
 {
     public static function fromResponse(Response $response): self {

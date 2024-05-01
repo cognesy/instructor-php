@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Requests;
 
-class ApiToolsCallRequest extends ApiRequest
+abstract class ApiToolsCallRequest extends ApiRequest
 {
     public function __construct(
         public string|array  $messages = [],

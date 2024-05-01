@@ -15,7 +15,6 @@ trait HandlesResponse
 {
     use HandlesApiConnector;
     use HandlesRequest;
-    use HandlesResponseClass;
 
     public function respond(ApiRequest $request) : ApiResponse {
         return $this->withApiRequest($request)->get();
@@ -27,7 +26,8 @@ trait HandlesResponse
         }
         $request = $this->getApiRequest();
         $response = $this->respondRaw($request);
-        return $this->makeResponse($response);
+        return $this->request->toApiResponse($response);
+
     }
 
     protected function respondRaw(ApiRequest $request): Response {

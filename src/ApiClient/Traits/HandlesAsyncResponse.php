@@ -15,7 +15,6 @@ trait HandlesAsyncResponse
 {
     use HandlesRequest;
     use HandlesApiConnector;
-    use HandlesResponseClass;
 
     public function async() : PromiseInterface {
         if ($this->isStreamedRequest()) {
@@ -25,7 +24,7 @@ trait HandlesAsyncResponse
         $request = $this->getApiRequest();
         return $this->asyncRaw(
             request: $request,
-            onSuccess: fn(Response $response) => $this->makeResponse($response),
+            onSuccess: fn(Response $response) => $this->request->toApiResponse($response),
             onError: fn(Exception $exception) => throw $exception
         );
     }

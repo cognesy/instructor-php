@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Clients\TogetherAI\ChatCompletion;
 
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class PartialChatCompletionResponse extends PartialApiResponse
 {
     static public function fromPartialResponse(string $partialData) : self {

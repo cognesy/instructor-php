@@ -3,7 +3,9 @@ namespace Cognesy\Instructor\Clients\Anthropic\JsonCompletion;
 
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class PartialJsonCompletionResponse extends PartialApiResponse
 {
     static public function fromPartialResponse(string $partialData) : self {

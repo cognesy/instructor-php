@@ -1,8 +1,12 @@
 <?php
-namespace Cognesy\Instructor\Clients\Anthropic\ToolsCall;
+namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiToolsCallRequest;
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
+use Cognesy\Instructor\Utils\Json;
+use Saloon\Http\Response;
 
 class ToolsCallRequest extends ApiToolsCallRequest
 {
@@ -68,5 +72,26 @@ class ToolsCallRequest extends ApiToolsCallRequest
             '</tools>',
         ];
         return implode($this->xmlLineSeparator, $lines);
+    }
+
+    public function toApiResponse(Response $response): ApiResponse {
+        $decoded = Json::parse($response);
+        $content = $decoded['content'][0]['text'] ?? '';
+        //[$functionName, $args] = (new XmlExtractor)->extractToolCalls($content);
+        //return new self($args, $decoded, $functionName);
+        $finishReason = $decoded['stop_reason'] ?? '';
+        return new ApiResponse(
+            content: $content,
+            responseData: $decoded,
+            functionName: '',
+            finishReason: $finishReason,
+            toolCalls: null
+        );
+    }
+
+    public function toPartialApiResponse(string $partialData) : PartialApiResponse {
+        $decoded = Json::parse($partialData, default: []);
+        $argumentsJson = $decoded['delta']['text'] ?? '';
+        return new PartialApiResponse($argumentsJson, $decoded);
     }
 }

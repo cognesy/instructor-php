@@ -3,7 +3,9 @@ namespace Cognesy\Instructor\Clients\OpenAI\ToolsCall;
 
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class PartialToolsCallResponse extends PartialApiResponse
 {
     static public function fromPartialResponse(string $partialData) : self {

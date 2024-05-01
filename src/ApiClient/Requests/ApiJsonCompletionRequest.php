@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\ApiClient\Requests;
 
 use Cognesy\Instructor\Utils\Json;
 
-class ApiJsonCompletionRequest extends ApiRequest
+abstract class ApiJsonCompletionRequest extends ApiRequest
 {
     protected string $prompt = "\nRespond correctly with JSON object. Response must follow provided JSONSchema.\n";
 
