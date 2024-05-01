@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
@@ -12,7 +13,7 @@ trait HandlesRequestClass
 {
     private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
-    public function addRequest(
+    public function withRequest(
         array $messages,
         ResponseModel $responseModel,
         Request $request,
@@ -48,6 +49,10 @@ trait HandlesRequestClass
             ),
             default => throw new Exception('Unknown mode')
         };
+    }
+
+    protected function makeRequest(string $requestClass, array $args): ApiRequest {
+        return $this->apiRequestFactory->fromClass($requestClass, $args);
     }
 
     private function appendInstructions(array $messages, array $jsonSchema) : array {

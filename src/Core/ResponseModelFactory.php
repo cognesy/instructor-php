@@ -7,13 +7,13 @@ use Cognesy\Instructor\Contracts\CanReceiveEvents;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
-use Exception;
 use InvalidArgumentException;
 
 class ResponseModelFactory
@@ -53,6 +53,28 @@ class ResponseModelFactory
         return $responseModel;
     }
 
+    private function getSignature(mixed $requestedModel) : string {
+        $type = match(true) {
+            $requestedModel instanceof ObjectSchema => 'schema',
+            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => 'json-schema-provider',
+            is_subclass_of($requestedModel, CanProvideSchema::class) => 'schema-provider',
+            is_string($requestedModel) => 'class-string',
+            is_array($requestedModel) => 'json-schema',
+            is_object($requestedModel) => 'instance',
+            default => null,
+        };
+        $keyType = match($type) {
+            'schema' => $requestedModel->type->class,
+            'json-schema-provider' => get_class($requestedModel),
+            'schema-provider' => get_class($requestedModel),
+            'class-string' => $requestedModel,
+            'json-schema' => $requestedModel['$comment'] ?? Structure::class,
+            'instance' => get_class($requestedModel),
+            default => null,
+        };
+        return $type;
+    }
+
     private function fromClassString(string $requestedModel) : ResponseModel {
         $class = $requestedModel;
         $instance = new $class;
@@ -62,10 +84,7 @@ class ResponseModelFactory
     }
 
     private function fromArray(array $requestedModel) : ResponseModel {
-        $class = $requestedModel['$comment'] ?? null;
-        if (empty($class)) {
-            throw new Exception('Provided JSON schema must contain $comment field with fully qualified class name');
-        }
+        $class = $requestedModel['$comment'] ?? Structure::class;
         $instance = new $class;
         $schema = $this->schemaBuilder->fromArray($requestedModel);
         $jsonSchema = $requestedModel;

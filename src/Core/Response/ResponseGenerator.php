@@ -37,10 +37,8 @@ class ResponseGenerator implements CanGenerateResponse
             ->then(fn($result) => match(true) {
                 $result->isSuccess() => $result,
                 default => Result::failure($this->extractErrors($result))
-            });
-//        if ($result->isFailure()) {
-//            $this->events->dispatch(new ResponseGenerationFailed($result->error()));
-//        }
+            })
+            ->result();
         return $result;
     }
 

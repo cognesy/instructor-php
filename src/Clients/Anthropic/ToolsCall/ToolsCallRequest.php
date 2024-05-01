@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Clients\Anthropic\ToolsCall;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiToolsCallRequest;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
+use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 
 class ToolsCallRequest extends ApiToolsCallRequest
 {

@@ -37,7 +37,7 @@ trait HandlesStreamResponse
         if (!$this->isStreamedRequest()) {
             throw new Exception('You need to use respond() when option stream is set to false');
         }
-        $request = $this->getRequest();
+        $request = $this->getApiRequest();
         $this->withStreaming(true);
         $stream = $this->getStream($request);
         foreach($stream as $response) {

@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Schema\Utils;
+namespace Cognesy\Instructor\Schema\Factories;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
@@ -8,7 +8,6 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
 /**
  * Builds Schema object from JSON Schema array

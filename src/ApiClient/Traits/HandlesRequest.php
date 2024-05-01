@@ -11,12 +11,12 @@ trait HandlesRequest
 
     protected ApiRequest $request;
 
-    public function withRequest(ApiRequest $request) : static {
+    public function withApiRequest(ApiRequest $request) : static {
         $this->request = $request;
         return $this;
     }
 
-    public function getRequest() : ApiRequest {
+    public function getApiRequest() : ApiRequest {
         if (empty($this->request)) {
             throw new Exception('Request is not set');
         }

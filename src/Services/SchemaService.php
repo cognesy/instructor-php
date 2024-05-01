@@ -4,9 +4,9 @@ namespace Cognesy\Instructor\Services;
 
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
 use Cognesy\Instructor\Utils\Json;
 
 class SchemaService
@@ -31,9 +31,5 @@ class SchemaService
 
     public function toToolCall(Schema $schema) : array {
         return $this->toolCallBuilder->render($schema->toArray(), $schema->name, $schema->description);
-    }
-
-    static public function __callStatic(string $method, array $args) {
-        return self::instance()->$method(...$args);
     }
 }

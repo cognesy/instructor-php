@@ -49,7 +49,15 @@ test('creates TypeDetails for scalar type', function () {
 test('creates TypeDetails for array type', function () {
     $factory = new TypeDetailsFactory();
 
+    // Test with array brackets
     $arrayType = $factory->arrayType('int[]');
+    $this->assertInstanceOf(TypeDetails::class, $arrayType);
+    $this->assertSame('array', $arrayType->type);
+    $this->assertInstanceOf(TypeDetails::class, $arrayType->nestedType);
+    $this->assertSame('int', $arrayType->nestedType->type);
+
+    // Test without array brackets
+    $arrayType = $factory->arrayType('int');
     $this->assertInstanceOf(TypeDetails::class, $arrayType);
     $this->assertSame('array', $arrayType->type);
     $this->assertInstanceOf(TypeDetails::class, $arrayType->nestedType);

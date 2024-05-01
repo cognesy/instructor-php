@@ -21,9 +21,9 @@ trait HandlesFieldSchemas
 
     private function makeSchema() : Schema {
         return match($this->typeDetails->type) {
-            'object' => $this->objectSchema(),
-            'enum' => $this->enumSchema(),
-            'array' => $this->arraySchema(),
+            TypeDetails::PHP_OBJECT => $this->objectSchema(),
+            TypeDetails::PHP_ENUM => $this->enumSchema(),
+            TypeDetails::PHP_ARRAY => $this->arraySchema(),
             default => $this->scalarSchema(),
         };
     }

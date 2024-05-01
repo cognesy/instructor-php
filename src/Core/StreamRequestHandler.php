@@ -70,13 +70,13 @@ class StreamRequestHandler implements CanHandleStreamRequest
     }
 
     protected function getStreamedResponses(array $messages, ResponseModel $responseModel, Request $request) : Generator {
-        $apiClient = $request->client()->addRequest($messages, $responseModel, $request);
+        $apiClient = $request->client()->withRequest($messages, $responseModel, $request);
         try {
-            $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));
+            $this->events->dispatch(new RequestSentToLLM($apiClient->getApiRequest()));
             $stream = $apiClient->stream();
             yield from $this->partialsGenerator->getPartialResponses($stream, $responseModel, $this->messages);
         } catch(Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($apiClient->getRequest(), $e->getMessage()));
+            $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
             throw $e;
         }
     }

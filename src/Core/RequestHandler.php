@@ -61,12 +61,12 @@ class RequestHandler implements CanHandleRequest
     }
 
     protected function getResponse(array $messages, Request $request, ResponseModel $responseModel) : ApiResponse {
-        $apiClient = $request->client()->addRequest($messages, $responseModel, $request);
+        $apiClient = $request->client()->withRequest($messages, $responseModel, $request);
         try {
-            $this->events->dispatch(new RequestSentToLLM($apiClient->getRequest()));
+            $this->events->dispatch(new RequestSentToLLM($apiClient->getApiRequest()));
             $apiResponse = $apiClient->get();
         } catch (Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($apiClient->getRequest(), $e->getMessage()));
+            $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
             throw $e;
         }
         return $apiResponse;

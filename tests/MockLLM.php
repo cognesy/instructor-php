@@ -19,9 +19,9 @@ class MockLLM
         $mockLLM->shouldReceive('withDebug')->andReturn($mockLLM);
         $mockLLM->shouldReceive('withEventDispatcher')->andReturn($mockLLM);
         $mockLLM->shouldReceive('withApiRequestFactory')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('addRequest')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('withRequest')->andReturn($mockLLM);
         $mockLLM->shouldReceive('toolsCall')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('getRequest')->andReturnUsing(fn() => new ApiToolsCallRequest());
+        $mockLLM->shouldReceive('getApiRequest')->andReturnUsing(fn() => new ApiToolsCallRequest());
         $mockLLM->shouldReceive('get')->andReturnUsing(...$list);
         return $mockLLM;
     }

@@ -108,7 +108,10 @@ class PartialsGenerator implements CanGeneratePartials
         $this->sequenceableHandler->finalize();
     }
 
-    protected function handleDelta(string $partialJson, ResponseModel $responseModel) : Result {
+    protected function handleDelta(
+        string $partialJson,
+        ResponseModel $responseModel
+    ) : Result {
         return Chain::make()
             ->through(fn() => $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
             ->tap(fn() => $this->events->dispatch(new PartialJsonReceived($partialJson)))
@@ -117,7 +120,8 @@ class PartialsGenerator implements CanGeneratePartials
             ->onFailure(fn($result) => $this->events->dispatch(
                 new PartialResponseGenerationFailed(Arrays::toArray($result->error()))
             ))
-            ->then(fn($result) => $this->getChangedOnly($result));
+            ->then(fn($result) => $this->getChangedOnly($result))
+            ->result();
     }
 
     protected function tryGetPartialObject(

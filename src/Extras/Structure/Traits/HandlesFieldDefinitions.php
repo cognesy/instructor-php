@@ -54,4 +54,10 @@ trait HandlesFieldDefinitions
         $result->value = Structure::define($name, $fields, $description);
         return $result;
     }
+
+    static public function array(string $name, string $itemType, string $description = '') : self {
+        $factory = new TypeDetailsFactory();
+        $type = $factory->arrayType($itemType);
+        return new Field($name, $description, $type);
+    }
 }

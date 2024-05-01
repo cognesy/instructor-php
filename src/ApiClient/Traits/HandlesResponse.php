@@ -18,14 +18,14 @@ trait HandlesResponse
     use HandlesResponseClass;
 
     public function respond(ApiRequest $request) : ApiResponse {
-        return $this->withRequest($request)->get();
+        return $this->withApiRequest($request)->get();
     }
 
     public function get() : ApiResponse {
         if ($this->isStreamedRequest()) {
             throw new Exception('You need to use stream() when option stream is set to true');
         }
-        $request = $this->getRequest();
+        $request = $this->getApiRequest();
         $response = $this->respondRaw($request);
         return $this->makeResponse($response);
     }

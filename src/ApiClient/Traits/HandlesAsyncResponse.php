@@ -22,7 +22,7 @@ trait HandlesAsyncResponse
             throw new Exception('Async does not support streaming');
         }
 
-        $request = $this->getRequest();
+        $request = $this->getApiRequest();
         return $this->asyncRaw(
             request: $request,
             onSuccess: fn(Response $response) => $this->makeResponse($response),

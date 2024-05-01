@@ -2,7 +2,7 @@
 namespace Tests;
 
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Utils\SchemaBuilder;
+use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 
 it('creates Schema object from JSON Schema array - scalar props', function ($jsonSchema) {
     $schema = (new SchemaBuilder)->fromArray($jsonSchema);
