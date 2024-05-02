@@ -7,6 +7,8 @@ use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\Response;
 use Cognesy\Instructor\Stream;
 
+// TODO: this is part of refactoring in progress - currently not used
+
 class InstructorService
 {
     public function __construct(

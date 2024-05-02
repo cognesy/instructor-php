@@ -44,9 +44,9 @@ $user = $instructor
     ->respond(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
-        model: 'mixtral-8x7b-32768',
+        model: 'llama3-8b-8192',
         mode: Mode::Json,
-        options: ['stream' => false, 'max_tokens' => 2048 ]
+        options: ['stream' => false]
     );
 
 print("Completed response model:\n\n");

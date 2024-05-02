@@ -17,27 +17,26 @@ class ToolsCallRequest extends ApiToolsCallRequest
     protected function defaultBody(): array {
         $body = array_filter(array_merge([
             'system' => $this->getSystemInstruction(),
-            'messages' => $this->appendInstructions($this->messages),
+            'messages' => $this->getMessages(),
             'model' => $this->model,
         ], $this->options));
         return $body;
     }
 
     protected function getSystemInstruction() {
-        $tool = $this->tools[0]['function']['parameters'];
+        $tool = $this->getToolSchema();
         $schema = (new SchemaBuilder)->fromArray($tool);
         $xmlSchema = $schema->toXml();
         $system = $this->instructions()."\nHere are the tools available:\n".$this->toolSchema($xmlSchema);
         return $system;
     }
 
-    protected function appendInstructions(array $messages) : array {
-        $lastIndex = count($messages) - 1;
-        if (!isset($messages[$lastIndex]['content'])) {
-            $messages[$lastIndex]['content'] = '';
-        }
-        $messages[$lastIndex]['content'] .= $this->prompt;
-        return $messages;
+    protected function getMessages(): array {
+        return $this->appendInstructions($this->messages, $this->prompt, $this->getToolSchema());
+    }
+
+    protected function getToolSchema(): array {
+        return $this->tools[0]['function']['parameters'];
     }
 
     public function instructions() : string {

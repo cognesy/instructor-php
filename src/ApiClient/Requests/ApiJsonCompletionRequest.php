@@ -1,11 +1,9 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Requests;
 
-use Cognesy\Instructor\Utils\Json;
-
 abstract class ApiJsonCompletionRequest extends ApiRequest
 {
-    protected string $prompt = "\nRespond correctly with JSON object. Response must follow provided JSONSchema.\n";
+    protected string $prompt = "\nRespond correctly with JSON object. Response must follow JSONSchema:\n";
 
     public function __construct(
         public string|array $messages = [],
@@ -26,7 +24,7 @@ abstract class ApiJsonCompletionRequest extends ApiRequest
     }
 
     protected function getMessages(): array {
-        return $this->appendInstructions($this->messages, $this->getResponseSchema());
+        return $this->appendInstructions($this->messages, $this->prompt, $this->getResponseSchema());
     }
 
     protected function getResponseFormat(): array {
@@ -35,14 +33,5 @@ abstract class ApiJsonCompletionRequest extends ApiRequest
 
     private function getResponseSchema() : array {
         return $this->responseFormat['schema'] ?? [];
-    }
-
-    protected function appendInstructions(array $messages, array $jsonSchema) : array {
-        $lastIndex = count($messages) - 1;
-        if (!isset($messages[$lastIndex]['content'])) {
-            $messages[$lastIndex]['content'] = '';
-        }
-        $messages[$lastIndex]['content'] .= $this->prompt . ($jsonSchema ? "Expected JSONSchema of response:\n".Json::encode($jsonSchema) : '');
-        return $messages;
     }
 }

@@ -16,13 +16,14 @@ class MockLLM
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);
         }
-        $mockLLM->shouldReceive('withDebug')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('withEventDispatcher')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('withApiRequestFactory')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('withRequest')->andReturn($mockLLM);
-        $mockLLM->shouldReceive('toolsCall')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('createApiRequest')->andReturnUsing(fn() => new ToolsCallRequest());
         $mockLLM->shouldReceive('getApiRequest')->andReturnUsing(fn() => new ToolsCallRequest());
         $mockLLM->shouldReceive('get')->andReturnUsing(...$list);
+        $mockLLM->shouldReceive('toolsCall')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('withApiRequest')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('withApiRequestFactory')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('withDebug')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('withEventDispatcher')->andReturn($mockLLM);
         return $mockLLM;
     }
 

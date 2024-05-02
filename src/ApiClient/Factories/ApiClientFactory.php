@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\ApiClient\Factories;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 class ApiClientFactory
@@ -15,7 +16,8 @@ class ApiClientFactory
         protected array $clients = [],
     ) {}
 
-    public function fromName(string $clientName) : CanCallApi {
+    public function client(ClientType $type) : CanCallApi {
+        $clientName = $type->value;
         if (!isset($this->clients[$clientName])) {
             throw new \InvalidArgumentException("Client '$clientName' does not exist");
         }
@@ -26,12 +28,6 @@ class ApiClientFactory
         }
 
         return $client->withApiRequestFactory($this->apiRequestFactory);
-    }
-
-    public function fromClient(CanCallApi $client) : ApiClient {
-        return $client
-            ->withEventDispatcher($this->events)
-            ->withApiRequestFactory($this->apiRequestFactory);
     }
 
     public function getDefault() : CanCallApi {

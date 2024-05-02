@@ -13,10 +13,10 @@ use Exception;
 use Generator;
 use Saloon\Exceptions\Request\RequestException;
 
-trait HandlesStreamResponse
+trait HandlesStreamApiResponse
 {
     use HandlesApiConnector;
-    use HandlesRequest;
+    use HandlesApiRequest;
     use ReadsStreamResponse;
 
     /**

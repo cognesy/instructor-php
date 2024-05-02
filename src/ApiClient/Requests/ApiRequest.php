@@ -6,6 +6,7 @@ use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\ApiClient\Traits\HandlesApiRequestContext;
 use Cognesy\Instructor\Traits\HandlesApiCaching;
+use Cognesy\Instructor\Utils\Json;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -56,6 +57,15 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         if (!is_array($messages)) {
             return [['role' => 'user', 'content' => $messages]];
         }
+        return $messages;
+    }
+
+    protected function appendInstructions(array $messages, string $prompt, array $jsonSchema) : array {
+        $lastIndex = count($messages) - 1;
+        if (!isset($messages[$lastIndex]['content'])) {
+            $messages[$lastIndex]['content'] = '';
+        }
+        $messages[$lastIndex]['content'] .= $prompt . Json::encode($jsonSchema);
         return $messages;
     }
 

@@ -3,12 +3,11 @@ namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\ApiClient\Contracts\CanCallChatCompletion;
-use Cognesy\Instructor\ApiClient\Contracts\CanCallJsonCompletion;
-use Cognesy\Instructor\ApiClient\Contracts\CanCallTools;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Exception;
 
-class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJsonCompletion, CanCallTools
+class OpenAIClient extends ApiClient
 {
     public string $defaultModel = 'gpt-4-turbo';
     public int $defaultMaxTokens = 256;
@@ -35,33 +34,16 @@ class OpenAIClient extends ApiClient implements CanCallChatCompletion, CanCallJs
         ));
     }
 
-    /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
-
-    public function chatCompletion(array $messages, string $model = '', array $options = []): static {
-        $this->request = $this->makeRequest(
-            ChatCompletionRequest::class,
-            [$messages, $this->getModel($model), $options]
-        );
-        return $this;
-    }
-
-    public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static {
-        $this->request = $this->makeRequest(
-            JsonCompletionRequest::class,
-            [$messages, $responseFormat, $this->getModel($model), $options]
-        );
-        return $this;
-    }
-
-    public function toolsCall(array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
-        $this->request = $this->makeRequest(
-            ToolsCallRequest::class,
-            [$messages, $tools, $toolChoice, $this->getModel($model), $options]
-        );
-        return $this;
-    }
-
     /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
+
+    protected function getModeRequestClass(Mode $mode) : string {
+        return match($mode) {
+            Mode::MdJson => ChatCompletionRequest::class,
+            Mode::Json => JsonCompletionRequest::class,
+            Mode::Tools => ToolsCallRequest::class,
+            default => throw new Exception('Unknown mode')
+        };
+    }
 
     protected function isDone(string $data): bool {
         return $data === '[DONE]';

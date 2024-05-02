@@ -9,6 +9,8 @@ use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Utils\Json;
 
+// TODO: this is part of refactoring in progress - currently not used
+
 class SchemaService
 {
     public function __construct(

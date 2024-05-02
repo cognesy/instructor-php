@@ -12,14 +12,6 @@ abstract class ApiChatCompletionRequest extends ApiRequest
         parent::__construct($options);
     }
 
-    public static function create(
-        string|array $messages,
-        string $model = '',
-        array $options = []
-    ): static {
-        return new static($messages, $model, $options);
-    }
-
     protected function defaultBody(): array {
         return array_filter(array_merge([
             'messages' => $this->getMessages(),

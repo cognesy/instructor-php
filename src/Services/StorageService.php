@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Services;
 
+// TODO: this is part of refactoring in progress - currently not used
+
 class StorageService
 {
     public function storeText(string $objectId, string $data) : void {

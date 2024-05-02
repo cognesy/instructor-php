@@ -9,6 +9,8 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Generator;
 use GuzzleHttp\Promise\PromiseInterface;
 
+// TODO: this is part of refactoring in progress - currently not used
+
 class LanguageModelService
 {
     public function respond(

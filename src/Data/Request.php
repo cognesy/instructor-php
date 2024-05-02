@@ -4,12 +4,14 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Utils\Json;
 
 class Request
 {
     private string $defaultFunctionName = 'extract_data';
     private string $defaultFunctionDescription = 'Extract data from provided content';
     private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors";
+    private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
     public function __construct(
         public string|array $messages,
@@ -35,6 +37,11 @@ class Request
         return $this->messages;
     }
 
+    public function withMessages(array $messages) : self {
+        $this->messages = $messages;
+        return $this;
+    }
+
     public function client() : CanCallApi {
         return $this->client;
     }
@@ -42,5 +49,18 @@ class Request
     public function withClient(CanCallApi $client) : self {
         $this->client = $client;
         return $this;
+    }
+
+    public function appendInstructions(array $messages, array $jsonSchema) : array {
+        $lastIndex = count($messages) - 1;
+        if (!isset($messages[$lastIndex]['content'])) {
+            $messages[$lastIndex]['content'] = '';
+        }
+        $messages[$lastIndex]['content'] .= $this->prompt . Json::encode($jsonSchema);
+        return $messages;
+    }
+
+    public function copy(array $messages) : self {
+        return (clone $this)->withMessages($messages);
     }
 }

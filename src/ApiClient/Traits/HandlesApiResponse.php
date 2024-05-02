@@ -11,10 +11,10 @@ use Exception;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
 
-trait HandlesResponse
+trait HandlesApiResponse
 {
     use HandlesApiConnector;
-    use HandlesRequest;
+    use HandlesApiRequest;
 
     public function respond(ApiRequest $request) : ApiResponse {
         return $this->withApiRequest($request)->get();
@@ -22,7 +22,7 @@ trait HandlesResponse
 
     public function get() : ApiResponse {
         if ($this->isStreamedRequest()) {
-            throw new Exception('You need to use stream() when option stream is set to true');
+            throw new Exception('Use stream() to get response when option stream is set to true');
         }
         $request = $this->getApiRequest();
         $response = $this->respondRaw($request);

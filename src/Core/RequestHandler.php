@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
@@ -23,8 +24,8 @@ class RequestHandler implements CanHandleRequest
 
     public function __construct(
         private ResponseModelFactory $responseModelFactory,
-        private EventDispatcher      $events,
-        private CanGenerateResponse  $responseGenerator,
+        private EventDispatcher $events,
+        private CanGenerateResponse $responseGenerator,
     ) {}
 
     /**
@@ -38,7 +39,7 @@ class RequestHandler implements CanHandleRequest
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
             // (1) get the API client response
-            $apiResponse = $this->getResponse($this->messages, $request, $responseModel);
+            $apiResponse = $this->getResponse($request->copy($this->messages), $responseModel);
             $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
 
             // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
@@ -60,11 +61,12 @@ class RequestHandler implements CanHandleRequest
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: ".implode(", ", $errors));
     }
 
-    protected function getResponse(array $messages, Request $request, ResponseModel $responseModel) : ApiResponse {
-        $apiClient = $request->client()->withRequest($messages, $responseModel, $request);
+    protected function getResponse(Request $request, ResponseModel $responseModel) : ApiResponse {
+        $apiClient = $request->client();
+        $apiRequest = $apiClient->createApiRequest($request, $responseModel);
         try {
-            $this->events->dispatch(new RequestSentToLLM($apiClient->getApiRequest()));
-            $apiResponse = $apiClient->get();
+            $this->events->dispatch(new RequestSentToLLM($apiRequest));
+            $apiResponse = $apiClient->withApiRequest($apiRequest)->get();
         } catch (Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
             throw $e;

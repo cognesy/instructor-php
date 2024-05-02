@@ -10,6 +10,7 @@ enum ClientType : string
     case Fireworks = 'fireworks';
     case Groq = 'groq';
     case Mistral = 'mistral';
+    case Ollama = 'ollama';
     case OpenAI = 'openai';
     case OpenRouter = 'openrouter';
     case Together = 'together';

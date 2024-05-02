@@ -11,9 +11,9 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
 
-trait HandlesAsyncResponse
+trait HandlesAsyncApiResponse
 {
-    use HandlesRequest;
+    use HandlesApiRequest;
     use HandlesApiConnector;
 
     public function async() : PromiseInterface {

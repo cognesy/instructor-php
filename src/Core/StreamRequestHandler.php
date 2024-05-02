@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
@@ -24,9 +25,9 @@ class StreamRequestHandler implements CanHandleStreamRequest
 
     public function __construct(
         private ResponseModelFactory $responseModelFactory,
-        private EventDispatcher      $events,
-        private CanGenerateResponse  $responseGenerator,
-        private PartialsGenerator    $partialsGenerator,
+        private EventDispatcher $events,
+        private CanGenerateResponse $responseGenerator,
+        private PartialsGenerator $partialsGenerator,
     ) {}
 
     /**
@@ -40,7 +41,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
             // (0) process stream and return partial results...
-            yield from $this->getStreamedResponses($this->messages, $responseModel, $request);
+            yield from $this->getStreamedResponses($request->copy($this->messages), $responseModel);
 
             // (1) ...then get API client response
             $apiResponse = $this->partialsGenerator->getCompleteResponse();
@@ -69,11 +70,12 @@ class StreamRequestHandler implements CanHandleStreamRequest
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: ".implode(", ", $errors));
     }
 
-    protected function getStreamedResponses(array $messages, ResponseModel $responseModel, Request $request) : Generator {
-        $apiClient = $request->client()->withRequest($messages, $responseModel, $request);
+    protected function getStreamedResponses(Request $request, ResponseModel $responseModel) : Generator {
+        $apiClient = $request->client();
+        $apiRequest = $apiClient->createApiRequest($request, $responseModel);
         try {
-            $this->events->dispatch(new RequestSentToLLM($apiClient->getApiRequest()));
-            $stream = $apiClient->stream();
+            $this->events->dispatch(new RequestSentToLLM($apiRequest));
+            $stream = $apiClient->withApiRequest($apiRequest)->stream();
             yield from $this->partialsGenerator->getPartialResponses($stream, $responseModel, $this->messages);
         } catch(Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
