@@ -11,7 +11,7 @@ use Saloon\Http\Response;
 class ToolsCallRequest extends ApiToolsCallRequest
 {
     protected string $prompt = "\nExtract correct and accurate data from the messages using provided tools. Response must be JSON object following provided schema.\n";
-    protected string $endpoint = '/messages';
+    protected string $defaultEndpoint = '/messages';
     protected string $xmlLineSeparator = "";
 
     protected function defaultBody(): array {

@@ -10,6 +10,7 @@ class RequestFactory
 {
     public function __construct(
         protected ApiClientFactory $clientFactory,
+        protected ResponseModelFactory $responseModelFactory,
     ) {}
 
     public function create(
@@ -23,7 +24,7 @@ class RequestFactory
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : Request {
-        return new Request(
+        $request = new Request(
             $messages,
             $responseModel,
             $model,
@@ -35,10 +36,26 @@ class RequestFactory
             $mode,
             $this->clientFactory->getDefault(),
         );
+        return $request;
     }
 
     public function fromRequest(Request $request) : Request {
-        $request->withClient($this->clientFactory->getDefault());
+        // make sure the request has a client
+        if ($request->client() === null) {
+            $request->withClient(
+                $this->clientFactory->getDefault()
+            );
+        }
+        // make sure the request has a response model
+        if ($request->responseModel() === null) {
+            $request->withResponseModel(
+                $this->responseModelFactory->fromAny(
+                    $request->requestedModel,
+                    $request->functionName,
+                    $request->functionDescription
+                )
+            );
+        }
         return $request;
     }
 }

@@ -5,7 +5,6 @@ namespace Cognesy\Instructor\ApiClient\Factories;
 use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Exception;
 
@@ -15,11 +14,11 @@ class ApiRequestFactory
         private ApiRequestContext $context,
     ) {}
 
-    public function fromRequest(string $requestClass, Request $request, ResponseModel $responseModel) : ApiRequest {
+    public function fromRequest(string $requestClass, Request $request) : ApiRequest {
         return match($request->mode) {
-            Mode::MdJson => $this->toChatCompletionRequest($requestClass, $request, $responseModel),
-            Mode::Json => $this->toJsonCompletionRequest($requestClass, $request, $responseModel),
-            Mode::Tools => $this->toToolsCallRequest($requestClass, $request, $responseModel),
+            Mode::MdJson => $this->toChatCompletionRequest($requestClass, $request),
+            Mode::Json => $this->toJsonCompletionRequest($requestClass, $request),
+            Mode::Tools => $this->toToolsCallRequest($requestClass, $request),
             default => throw new Exception('Unknown mode')
         };
     }
@@ -48,38 +47,39 @@ class ApiRequestFactory
     /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
     protected function fromClass(string $requestClass, array $args) : ApiRequest {
-        return (new $requestClass(...$args))->withContext($this->context);
+        return (new $requestClass(...$args))
+            ->withContext($this->context);
     }
 
-    protected function toChatCompletionRequest(string $requestClass, Request $request, ResponseModel $responseModel) : ApiRequest {
+    protected function toChatCompletionRequest(string $requestClass, Request $request) : ApiRequest {
         return $this->makeChatCompletionRequest($requestClass,
-            $request->appendInstructions($request->messages, $responseModel->jsonSchema),
+            $request->appendInstructions($request->messages, $request->jsonSchema()),
             $request->model,
             $request->options,
         );
     }
 
-    protected function toJsonCompletionRequest(string $requestClass, Request $request, ResponseModel $responseModel) : ApiRequest {
+    protected function toJsonCompletionRequest(string $requestClass, Request $request) : ApiRequest {
         return $this->makeJsonCompletionRequest(
             $requestClass,
             $request->messages,
             [
                 'type' => 'json_object',
-                'schema' => $responseModel->jsonSchema
+                'schema' => $request->jsonSchema()
             ],
             $request->model,
             $request->options,
         );
     }
 
-    protected function toToolsCallRequest(string $requestClass, Request $request, ResponseModel $responseModel) : ApiRequest {
+    protected function toToolsCallRequest(string $requestClass, Request $request) : ApiRequest {
         return $this->makeToolsCallRequest(
             $requestClass,
             $request->messages,
-            [$responseModel->toolCallSchema()],
+            [$request->toolCallSchema()],
             [
                 'type' => 'function',
-                'function' => ['name' => $responseModel->functionName]
+                'function' => ['name' => $request->functionName()]
             ],
             $request->model,
             $request->options,

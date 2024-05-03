@@ -37,7 +37,7 @@ class Instructor {
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesTimer;
 
-    protected Request $request;
+    protected ?Request $request = null;
     protected RequestFactory $requestFactory;
     protected ApiClientFactory $clientFactory;
 

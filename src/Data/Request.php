@@ -13,21 +13,74 @@ class Request
     private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors";
     private string $prompt = "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n";
 
+    public ?CanCallApi $client = null;
+    public Mode $mode = Mode::Tools;
+
+    public string|array $messages;
+    public string $model = '';
+    public array $options = [];
+
+    public int $maxRetries = 0;
+    public string $retryPrompt = '';
+
+    public string|object|array $requestedModel;
+    public string $functionName = '';
+    public string $functionDescription = '';
+
+    private ?ResponseModel $responseModel = null;
+
     public function __construct(
-        public string|array $messages,
-        public string|object|array $responseModel,
-        public string $model = '',
-        public int $maxRetries = 0,
-        public array $options = [],
-        public string $functionName = '',
-        public string $functionDescription = '',
-        public string $retryPrompt = '',
-        public Mode $mode = Mode::Tools,
-        public ?CanCallApi $client = null,
+        string|array $messages,
+        string|object|array $responseModel,
+        string $model = '',
+        int $maxRetries = 0,
+        array $options = [],
+        string $functionName = '',
+        string $functionDescription = '',
+        string $retryPrompt = '',
+        Mode $mode = Mode::Tools,
+        CanCallApi $client = null,
     ) {
-        $this->functionName = $this->functionName ?: $this->defaultFunctionName;
-        $this->functionDescription = $this->functionDescription ?: $this->defaultFunctionDescription;
-        $this->retryPrompt = $this->retryPrompt ?: $this->defaultRetryPrompt;
+        $this->messages = $messages;
+        $this->requestedModel = $responseModel;
+        $this->model = $model;
+        $this->maxRetries = $maxRetries;
+        $this->options = $options;
+        $this->functionName = $functionName ?: $this->defaultFunctionName;
+        $this->functionDescription = $functionDescription ?: $this->defaultFunctionDescription;
+        $this->mode = $mode;
+        $this->client = $client;
+        $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
+    }
+
+    public function client() : ?CanCallApi {
+        return $this->client;
+    }
+
+    public function withClient(CanCallApi $client) : self {
+        $this->client = $client;
+        return $this;
+    }
+
+    public function responseModel() : ?ResponseModel {
+        return $this->responseModel;
+    }
+
+    public function withResponseModel(ResponseModel $responseModel) : self {
+        $this->responseModel = $responseModel;
+        return $this;
+    }
+
+    public function functionName() : string {
+        return $this->responseModel->functionName();
+    }
+
+    public function jsonSchema() : array {
+        return $this->responseModel->jsonSchema();
+    }
+
+    public function toolCallSchema() : array {
+        return $this->responseModel->toolCallSchema();
     }
 
     public function messages() : array {
@@ -39,15 +92,6 @@ class Request
 
     public function withMessages(array $messages) : self {
         $this->messages = $messages;
-        return $this;
-    }
-
-    public function client() : CanCallApi {
-        return $this->client;
-    }
-
-    public function withClient(CanCallApi $client) : self {
-        $this->client = $client;
         return $this;
     }
 

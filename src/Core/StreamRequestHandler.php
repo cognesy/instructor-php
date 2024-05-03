@@ -24,7 +24,6 @@ class StreamRequestHandler implements CanHandleStreamRequest
     private array $messages = [];
 
     public function __construct(
-        private ResponseModelFactory $responseModelFactory,
         private EventDispatcher $events,
         private CanGenerateResponse $responseGenerator,
         private PartialsGenerator $partialsGenerator,
@@ -34,14 +33,16 @@ class StreamRequestHandler implements CanHandleStreamRequest
      * Returns response object or generator wrapped in Result monad
      */
     public function respondTo(Request $request) : Generator {
-        $responseModel = $this->responseModelFactory->fromRequest($request);
-        $this->events->dispatch(new ResponseModelBuilt($responseModel));
+        $responseModel = $request->responseModel();
+        if ($responseModel === null) {
+            throw new Exception("Request does not have a response model");
+        }
         // try to respond to the request until success or max retries reached
         $this->retries = 0;
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
             // (0) process stream and return partial results...
-            yield from $this->getStreamedResponses($request->copy($this->messages), $responseModel);
+            yield from $this->getStreamedResponses($request->copy($this->messages));
 
             // (1) ...then get API client response
             $apiResponse = $this->partialsGenerator->getCompleteResponse();
@@ -70,13 +71,13 @@ class StreamRequestHandler implements CanHandleStreamRequest
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: ".implode(", ", $errors));
     }
 
-    protected function getStreamedResponses(Request $request, ResponseModel $responseModel) : Generator {
+    protected function getStreamedResponses(Request $request) : Generator {
         $apiClient = $request->client();
-        $apiRequest = $apiClient->createApiRequest($request, $responseModel);
+        $apiRequest = $apiClient->createApiRequest($request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));
             $stream = $apiClient->withApiRequest($apiRequest)->stream();
-            yield from $this->partialsGenerator->getPartialResponses($stream, $responseModel, $this->messages);
+            yield from $this->partialsGenerator->getPartialResponses($stream, $request->responseModel());
         } catch(Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
             throw $e;

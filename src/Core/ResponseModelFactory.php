@@ -7,6 +7,8 @@ use Cognesy\Instructor\Contracts\CanReceiveEvents;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
+use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
@@ -31,13 +33,17 @@ class ResponseModelFactory
     }
 
     public function fromRequest(Request $request) : ResponseModel {
-        $responseModel = $this->fromAny($request->responseModel);
-        $responseModel->functionName = $request->functionName;
-        $responseModel->functionDescription = $request->functionDescription;
-        return $responseModel;
+        return $this->fromAny($request->requestedModel, $request->functionName, $request->functionDescription);
     }
 
-    public function fromAny(mixed $requestedModel) : ResponseModel {
+    public function fromAny(
+        string|array|object $requestedModel,
+        string $functionName = '',
+        string $functionDescription = '',
+    ) : ResponseModel {
+        $this->events->dispatch(new ResponseModelRequested($requestedModel));
+
+        // determine the type of the requested model and build it
         $responseModel = match(true) {
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel),
@@ -47,10 +53,31 @@ class ResponseModelFactory
             is_object($requestedModel) => $this->fromInstance($requestedModel),
             default => throw new InvalidArgumentException('Unsupported response model type: ' . gettype($requestedModel))
         };
+
+        // connect response model to event dispatcher - if it can receive events
         if ($responseModel instanceof CanReceiveEvents) {
             $this->events->wiretap(fn($event) => $responseModel->onEvent($event));
         }
+
+        $responseModel->functionName = $functionName;
+        $responseModel->functionDescription = $functionDescription;
+        $this->events->dispatch(new ResponseModelBuilt($responseModel));
         return $responseModel;
+    }
+
+    private function makeResponseModel(
+        string $class,
+        object $instance,
+        Schema $schema,
+        array $jsonSchema,
+    ) : ResponseModel {
+        return new ResponseModel(
+            $class,
+            $instance,
+            $schema,
+            $jsonSchema,
+            $this->toolCallBuilder,
+        );
     }
 
     private function getSignature(mixed $requestedModel) : string {
@@ -112,16 +139,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
-    private function fromSchema(Schema $requestedModel) : ResponseModel {
-        $schema = $requestedModel;
-        $class = $schema->type->class;
-        $instance = new $class;
-        $schema = $requestedModel;
-        $jsonSchema = $schema->toArray($this->toolCallBuilder->onObjectRef(...));
-        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
-    }
-
-    public function fromSchemaProvider(mixed $requestedModel) : ResponseModel {
+    private function fromSchemaProvider(mixed $requestedModel) : ResponseModel {
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;
@@ -134,18 +152,12 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
-    private function makeResponseModel(
-        string $class,
-        object $instance,
-        Schema $schema,
-        array $jsonSchema,
-    ) : ResponseModel {
-        return new ResponseModel(
-            $class,
-            $instance,
-            $schema,
-            $jsonSchema,
-            $this->toolCallBuilder,
-        );
+    private function fromSchema(Schema $requestedModel) : ResponseModel {
+        $schema = $requestedModel;
+        $class = $schema->type->class;
+        $instance = new $class;
+        $schema = $requestedModel;
+        $jsonSchema = $schema->toArray($this->toolCallBuilder->onObjectRef(...));
+        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 }

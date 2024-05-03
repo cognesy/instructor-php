@@ -43,7 +43,6 @@ class OllamaClient extends ApiClient
         };
     }
 
-
     protected function isDone(string $data): bool {
         return $data === '[DONE]';
     }

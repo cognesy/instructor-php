@@ -7,5 +7,5 @@ use Generator;
 
 interface CanGeneratePartials
 {
-    public function getPartialResponses(Generator $stream, ResponseModel $responseModel, array $messages = []) : Iterable;
+    public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable;
 }

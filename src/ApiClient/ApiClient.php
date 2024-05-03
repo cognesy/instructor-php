@@ -28,7 +28,7 @@ abstract class ApiClient implements CanCallApi
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
-    public function createApiRequest(Request $request, ResponseModel $responseModel) : ApiRequest {
+    public function createApiRequest(Request $request) : ApiRequest {
         $tryRequest = clone $request;
         if (empty($tryRequest->model)) {
             $tryRequest->model = $this->getDefaultModel();
@@ -37,7 +37,7 @@ abstract class ApiClient implements CanCallApi
             $tryRequest->options['max_tokens'] = $this->defaultMaxTokens;
         }
         $requestClass = $this->getModeRequestClass($tryRequest->mode);
-        return $this->apiRequestFactory->fromRequest($requestClass, $tryRequest, $responseModel);
+        return $this->apiRequestFactory->fromRequest($requestClass, $tryRequest);
     }
 
     public function chatCompletion(array $messages, string $model = '', array $options = []): static {

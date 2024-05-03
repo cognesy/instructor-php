@@ -21,12 +21,10 @@ class ApiClientFactory
         if (!isset($this->clients[$clientName])) {
             throw new \InvalidArgumentException("Client '$clientName' does not exist");
         }
-
         $client = $this->clients[$clientName];
         if (!$client instanceof ApiClient) {
             throw new \InvalidArgumentException("Client '$clientName' is not an instance of ApiClient");
         }
-
         return $client->withApiRequestFactory($this->apiRequestFactory);
     }
 

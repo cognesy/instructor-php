@@ -20,12 +20,12 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     use HandlesApiCaching;
     use HandlesApiRequestContext;
 
-    protected string $endpoint;
     protected Method $method = Method::POST;
     protected bool $debug = false;
 
     public function __construct(
-        public array $options = []
+        public array $options = [],
+        public string $endpoint = '',
     ) {
         $this->debug = $this->options['debug'] ?? false;
         unset($this->options['debug']);
@@ -50,7 +50,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     public function resolveEndpoint() : string {
-        return $this->endpoint;
+        return $this->endpoint ?: $this->defaultEndpoint;
     }
 
     protected function normalizeMessages(string|array $messages): array {

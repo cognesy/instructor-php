@@ -30,6 +30,14 @@ class ResponseModel
         $this->toolCallBuilder = $toolCallBuilder;
     }
 
+    public function functionName() : string {
+        return $this->functionName;
+    }
+
+    public function jsonSchema() : array {
+        return $this->jsonSchema;
+    }
+
     public function toolCallSchema() : array {
         return $this->toolCallBuilder->render(
             $this->jsonSchema,

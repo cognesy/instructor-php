@@ -9,7 +9,7 @@ use Saloon\Http\Response;
 
 class ChatCompletionRequest extends ApiChatCompletionRequest
 {
-    protected string $endpoint = '/chat/completions';
+    protected string $defaultEndpoint = '/chat/completions';
 
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response->body());

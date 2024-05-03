@@ -2,10 +2,8 @@
 
 namespace Cognesy\Instructor\Services;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\Response;
-use Cognesy\Instructor\Data\ResponseModel;
 use Generator;
 use GuzzleHttp\Promise\PromiseInterface;
 
@@ -13,27 +11,15 @@ use GuzzleHttp\Promise\PromiseInterface;
 
 class LanguageModelService
 {
-    public function respond(
-        Request $request,
-        ResponseModel $responseModel,
-        CanCallApi $client
-    ) : Response {
+    public function respond(Request $request) : Response {
         return new Response;
     }
 
-    public function stream(
-        Request $request,
-        ResponseModel $responseModel,
-        CanCallApi $client
-    ) : Generator {
+    public function stream(Request $request) : Generator {
         yield null;
     }
 
-    public function async(
-        Request $request,
-        ResponseModel $responseModel,
-        CanCallApi $client
-    ) : PromiseInterface {
+    public function async(Request $request) : ?PromiseInterface {
         return null;
     }
 }

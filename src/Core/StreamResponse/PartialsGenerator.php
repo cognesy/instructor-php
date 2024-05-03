@@ -52,7 +52,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->sequenceableHandler = new SequenceableHandler($events);
     }
 
-    public function getPartialResponses(Generator $stream, ResponseModel $responseModel, array $messages = []) : Iterable {
+    public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable {
         // receive data
         /** @var \Cognesy\Instructor\ApiClient\Responses\PartialApiResponse $partialResponse */
         foreach($stream as $partialResponse) {

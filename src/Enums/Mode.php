@@ -5,9 +5,9 @@ namespace Cognesy\Instructor\Enums;
 enum Mode : string
 {
     case Tools = 'tool_call';
-    case Json = 'json_mode';
-    case MdJson = 'markdown_json_mode';
-    case Grammar = 'grammar_mode';
+    case Json = 'json';
+    case MdJson = 'markdown_json';
+    //case Grammar = 'grammar_mode';
     // modes below are not implemented yet
     //case ParallelTools = 'parallel_tool_call';
     //case JsonSchema = 'json_schema_mode';

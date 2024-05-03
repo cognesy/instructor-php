@@ -9,7 +9,7 @@ use Saloon\Http\Response;
 
 class ToolsCallRequest extends ApiToolsCallRequest
 {
-    protected string $endpoint = '/chat/completions';
+    protected string $defaultEndpoint = '/chat/completions';
 
     protected function getToolChoice(): string|array {
         return $this->toolChoice ?: 'auto';

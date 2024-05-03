@@ -68,6 +68,7 @@ function autowire(
         class: RequestFactory::class,
         context: [
             'clientFactory' => $config->reference(ApiClientFactory::class),
+            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
         ],
     );
 
@@ -113,7 +114,6 @@ function autowire(
         class: RequestHandler::class,
         name: CanHandleRequest::class,
         context: [
-            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'events' => $config->reference(EventDispatcher::class),
             'responseGenerator' => $config->reference(CanGenerateResponse::class),
         ]
@@ -123,7 +123,6 @@ function autowire(
         class: StreamRequestHandler::class,
         name: CanHandleStreamRequest::class,
         context: [
-            'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'events' => $config->reference(EventDispatcher::class),
             'responseGenerator' => $config->reference(CanGenerateResponse::class),
             'partialsGenerator' => $config->reference(CanGeneratePartials::class),

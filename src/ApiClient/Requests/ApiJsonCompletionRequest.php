@@ -10,9 +10,10 @@ abstract class ApiJsonCompletionRequest extends ApiRequest
         public array $responseFormat = [],
         public string $model = '',
         public array $options = [],
+        public string $endpoint = '',
     ) {
         $this->messages = $this->normalizeMessages($messages);
-        parent::__construct($options);
+        parent::__construct($options, $endpoint);
     }
 
     protected function defaultBody(): array {

@@ -9,7 +9,7 @@ use Saloon\Http\Response;
 
 class ToolsCallRequest extends ApiToolsCallRequest
 {
-    protected string $endpoint = '/chat/completions';
+    protected string $defaultEndpoint = '/chat/completions';
 
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response);

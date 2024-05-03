@@ -9,7 +9,7 @@ use Saloon\Http\Response;
 
 class JsonCompletionRequest extends ApiJsonCompletionRequest
 {
-    protected string $endpoint = '/messages';
+    protected string $defaultEndpoint = '/messages';
 
     protected function getResponseFormat(): array {
         return [];

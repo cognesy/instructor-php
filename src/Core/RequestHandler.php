@@ -12,7 +12,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
-use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Exception;
@@ -23,7 +22,6 @@ class RequestHandler implements CanHandleRequest
     private array $messages = [];
 
     public function __construct(
-        private ResponseModelFactory $responseModelFactory,
         private EventDispatcher $events,
         private CanGenerateResponse $responseGenerator,
     ) {}
@@ -32,14 +30,16 @@ class RequestHandler implements CanHandleRequest
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
     public function respondTo(Request $request) : mixed {
-        $responseModel = $this->responseModelFactory->fromRequest($request);
-        $this->events->dispatch(new ResponseModelBuilt($responseModel));
+        $responseModel = $request->responseModel();
+        if ($responseModel === null) {
+            throw new Exception("Request does not have a response model");
+        }
         // try to respond to the request until success or max retries reached
         $this->retries = 0;
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
             // (1) get the API client response
-            $apiResponse = $this->getResponse($request->copy($this->messages), $responseModel);
+            $apiResponse = $this->getApiResponse($request->copy($this->messages), $responseModel);
             $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
 
             // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
@@ -61,9 +61,9 @@ class RequestHandler implements CanHandleRequest
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: ".implode(", ", $errors));
     }
 
-    protected function getResponse(Request $request, ResponseModel $responseModel) : ApiResponse {
+    protected function getApiResponse(Request $request) : ApiResponse {
         $apiClient = $request->client();
-        $apiRequest = $apiClient->createApiRequest($request, $responseModel);
+        $apiRequest = $apiClient->createApiRequest($request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));
             $apiResponse = $apiClient->withApiRequest($apiRequest)->get();
