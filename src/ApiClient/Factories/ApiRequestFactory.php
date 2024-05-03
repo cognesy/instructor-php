@@ -92,7 +92,7 @@ class ApiRequestFactory
         return $this->makeJsonCompletionRequest(
             $requestClass,
             $request->prompt(),
-            $request->messages,
+            $request->appendInstructions($request->messages, $request->jsonSchema()),
             [
                 'type' => 'json_object',
                 'schema' => $request->jsonSchema()

@@ -105,7 +105,7 @@ class Request
         if (!isset($messages[$lastIndex]['content'])) {
             $messages[$lastIndex]['content'] = '';
         }
-        $messages[$lastIndex]['content'] .= $this->prompt . Json::encode($jsonSchema);
+        $messages[$lastIndex]['content'] .= $this->prompt() . Json::encode($jsonSchema);
         return $messages;
     }
 
