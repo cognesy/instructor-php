@@ -10,7 +10,6 @@ use Saloon\Http\Response;
 
 class ToolsCallRequest extends ApiToolsCallRequest
 {
-    protected string $prompt = "\nExtract correct and accurate data from the messages using provided tools. Response must be JSON object following provided schema.\n";
     protected string $defaultEndpoint = '/messages';
     protected string $xmlLineSeparator = "";
 
@@ -32,7 +31,7 @@ class ToolsCallRequest extends ApiToolsCallRequest
     }
 
     protected function getMessages(): array {
-        return $this->appendInstructions($this->messages, $this->prompt, $this->getToolSchema());
+        return $this->appendInstructions($this->messages, $this->prompt(), $this->getToolSchema());
     }
 
     protected function getToolSchema(): array {
@@ -76,8 +75,6 @@ class ToolsCallRequest extends ApiToolsCallRequest
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response);
         $content = $decoded['content'][0]['text'] ?? '';
-        //[$functionName, $args] = (new XmlExtractor)->extractToolCalls($content);
-        //return new self($args, $decoded, $functionName);
         $finishReason = $decoded['stop_reason'] ?? '';
         return new ApiResponse(
             content: $content,

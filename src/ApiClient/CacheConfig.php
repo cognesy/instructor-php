@@ -57,6 +57,8 @@ class CacheConfig
         return $this->defaultCacheKey($pendingRequest);
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////////////////////////
+
     private function makeCacheDir(string $cachePath) : void {
         if (!is_dir($cachePath)) {
             if (!mkdir($cachePath, 0777, true) && !is_dir($cachePath)) {

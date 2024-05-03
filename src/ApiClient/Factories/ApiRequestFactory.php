@@ -23,36 +23,65 @@ class ApiRequestFactory
         };
     }
 
-    public function makeChatCompletionRequest(string $requestClass, array $messages, string $model = '', array $options = []): ApiRequest {
+    public function makeChatCompletionRequest(
+        string $requestClass,
+        string $prompt,
+        array $messages,
+        string $model = '',
+        array $options = []
+    ): ApiRequest {
         return $this->fromClass(
             $requestClass,
+            $prompt,
             [$messages, $model, $options]
         );
     }
 
-    public function makeJsonCompletionRequest(string $requestClass, array $messages, array $responseFormat, string $model = '', array $options = []): ApiRequest {
+    public function makeJsonCompletionRequest(
+        string $requestClass,
+        string $prompt,
+        array $messages,
+        array $responseFormat,
+        string $model = '',
+        array $options = []
+    ): ApiRequest {
         return $this->fromClass(
             $requestClass,
+            $prompt,
             [$messages, $responseFormat, $model, $options]
         );
     }
 
-    public function makeToolsCallRequest(string $requestClass, array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): ApiRequest {
+    public function makeToolsCallRequest(
+        string $requestClass,
+        string $prompt,
+        array $messages,
+        array $tools,
+        array $toolChoice,
+        string $model = '',
+        array $options = []
+    ): ApiRequest {
         return $this->fromClass(
             $requestClass,
+            $prompt,
             [$messages, $tools, $toolChoice, $model, $options]
         );
     }
 
     /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
-    protected function fromClass(string $requestClass, array $args) : ApiRequest {
-        return (new $requestClass(...$args))
-            ->withContext($this->context);
+    protected function fromClass(string $requestClass, string $prompt, array $args) : ApiRequest {
+        /** @var ApiRequest $apiRequest */
+        $apiRequest = new $requestClass(...$args);
+        $apiRequest->withPrompt($prompt);
+        $apiRequest->withContext($this->context);
+        return $apiRequest;
     }
 
     protected function toChatCompletionRequest(string $requestClass, Request $request) : ApiRequest {
-        return $this->makeChatCompletionRequest($requestClass,
+        return $this->makeChatCompletionRequest(
+            $requestClass,
+            $request->prompt(),
             $request->appendInstructions($request->messages, $request->jsonSchema()),
             $request->model,
             $request->options,
@@ -62,6 +91,7 @@ class ApiRequestFactory
     protected function toJsonCompletionRequest(string $requestClass, Request $request) : ApiRequest {
         return $this->makeJsonCompletionRequest(
             $requestClass,
+            $request->prompt(),
             $request->messages,
             [
                 'type' => 'json_object',
@@ -75,6 +105,7 @@ class ApiRequestFactory
     protected function toToolsCallRequest(string $requestClass, Request $request) : ApiRequest {
         return $this->makeToolsCallRequest(
             $requestClass,
+            $request->prompt(),
             $request->messages,
             [$request->toolCallSchema()],
             [

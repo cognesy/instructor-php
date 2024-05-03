@@ -22,6 +22,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     protected Method $method = Method::POST;
     protected bool $debug = false;
+    protected string $prompt = '';
 
     public function __construct(
         public array $options = [],
@@ -47,6 +48,15 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     public function isDebug(): bool {
         return $this->debug;
+    }
+
+    public function prompt() : string {
+        return $this->prompt;
+    }
+
+    public function withPrompt(string $prompt) : static {
+        $this->prompt = $prompt;
+        return $this;
     }
 
     public function resolveEndpoint() : string {

@@ -39,7 +39,7 @@ class RequestHandler implements CanHandleRequest
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries) {
             // (1) get the API client response
-            $apiResponse = $this->getApiResponse($request->copy($this->messages), $responseModel);
+            $apiResponse = $this->getApiResponse($request->copy($this->messages));
             $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
 
             // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
@@ -63,6 +63,9 @@ class RequestHandler implements CanHandleRequest
 
     protected function getApiResponse(Request $request) : ApiResponse {
         $apiClient = $request->client();
+        if ($apiClient === null) {
+            throw new Exception("Request does not have an API client");
+        }
         $apiRequest = $apiClient->createApiRequest($request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));

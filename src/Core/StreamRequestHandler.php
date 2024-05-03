@@ -2,17 +2,14 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
-use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Exception;
@@ -73,6 +70,9 @@ class StreamRequestHandler implements CanHandleStreamRequest
 
     protected function getStreamedResponses(Request $request) : Generator {
         $apiClient = $request->client();
+        if ($apiClient === null) {
+            throw new Exception("Request does not have an API client");
+        }
         $apiRequest = $apiClient->createApiRequest($request);
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));
