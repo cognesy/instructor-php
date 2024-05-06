@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\Configuration;
 return function(Configuration $config) : Configuration {
     $config->declare(
         class: ModelParams::class,
-        name: 'claude-3-haiku',
+        name: 'anthropic:claude-3-haiku',
         context: [
             'label' => 'Claude 3 Haiku',
             'type' => 'claude3',
@@ -25,7 +25,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'claude-3-sonnet',
+        name: 'anthropic:claude-3-sonnet',
         context: [
             'label' => 'Claude 3 Sonnet',
             'type' => 'claude3',
@@ -44,7 +44,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'claude-3-opus',
+        name: 'anthropic:claude-3-opus',
         context: [
             'label' => 'Claude 3 Opus',
             'type' => 'claude3',

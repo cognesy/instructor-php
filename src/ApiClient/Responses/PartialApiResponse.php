@@ -10,6 +10,8 @@ class PartialApiResponse
         public string $functionName = '',
         public string $finishReason = '',
         public string $id = '',
+        public int $inputTokens = 0,
+        public int $outputTokens = 0,
     ) {}
 
     public function toArray(): array {

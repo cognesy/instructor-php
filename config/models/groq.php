@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\Configuration;
 return function(Configuration $config) : Configuration {
     $config->declare(
         class: ModelParams::class,
-        name: 'groq-llama3-8b',
+        name: 'groq:llama3-8b',
         context: [
             'label' => 'GroQ LLaMA3 8B',
             'type' => 'llama3',
@@ -25,7 +25,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'groq-llama3-70b',
+        name: 'groq:llama3-70b',
         context: [
             'label' => 'GroQ LLaMA3 70B',
             'type' => 'llama3',
@@ -44,7 +44,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'groq-mixtral-8x7b',
+        name: 'groq:mixtral-8x7b',
         context: [
             'label' => 'GroQ Mixtral 8x7B',
             'type' => 'mixtral',
@@ -63,7 +63,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'groq-gemma-7b',
+        name: 'groq:gemma-7b',
         context: [
             'label' => 'GroQ Gemma 7B',
             'type' => 'gemma',

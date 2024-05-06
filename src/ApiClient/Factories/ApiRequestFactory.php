@@ -15,7 +15,7 @@ class ApiRequestFactory
     ) {}
 
     public function fromRequest(string $requestClass, Request $request) : ApiRequest {
-        return match($request->mode) {
+        return match($request->mode()) {
             Mode::MdJson => $this->toChatCompletionRequest($requestClass, $request),
             Mode::Json => $this->toJsonCompletionRequest($requestClass, $request),
             Mode::Tools => $this->toToolsCallRequest($requestClass, $request),
@@ -82,9 +82,9 @@ class ApiRequestFactory
         return $this->makeChatCompletionRequest(
             $requestClass,
             $request->prompt(),
-            $request->appendInstructions($request->messages, $request->jsonSchema()),
-            $request->model,
-            $request->options,
+            $request->appendInstructions($request->messages(), $request->jsonSchema()),
+            $request->modelName(),
+            $request->options(),
         );
     }
 
@@ -92,13 +92,13 @@ class ApiRequestFactory
         return $this->makeJsonCompletionRequest(
             $requestClass,
             $request->prompt(),
-            $request->appendInstructions($request->messages, $request->jsonSchema()),
+            $request->appendInstructions($request->messages(), $request->jsonSchema()),
             [
                 'type' => 'json_object',
                 'schema' => $request->jsonSchema()
             ],
-            $request->model,
-            $request->options,
+            $request->modelName(),
+            $request->options(),
         );
     }
 
@@ -106,14 +106,14 @@ class ApiRequestFactory
         return $this->makeToolsCallRequest(
             $requestClass,
             $request->prompt(),
-            $request->messages,
+            $request->messages(),
             [$request->toolCallSchema()],
             [
                 'type' => 'function',
                 'function' => ['name' => $request->functionName()]
             ],
-            $request->model,
-            $request->options,
+            $request->modelName(),
+            $request->options(),
         );
     }
 }

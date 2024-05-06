@@ -10,7 +10,7 @@ use Exception;
 
 class MistralClient extends ApiClient
 {
-    public string $defaultModel = 'mistral-small-latest';
+    public string $defaultModel = 'mistral:mistral-small';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

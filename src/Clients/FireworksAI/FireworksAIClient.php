@@ -9,7 +9,7 @@ use Exception;
 
 class FireworksAIClient extends ApiClient
 {
-    public string $defaultModel = 'accounts/fireworks/models/mixtral-8x7b-instruct';
+    public string $defaultModel = 'fireworks:mixtral-8x7b';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

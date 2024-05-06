@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\ApiClient;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
@@ -19,24 +18,27 @@ abstract class ApiClient implements CanCallApi
     use Traits\HandlesAsyncApiResponse;
     use Traits\HandlesStreamApiResponse;
     use Traits\HandlesApiRequestFactory;
+    use Traits\HandlesModelParams;
 
     public function __construct(
         EventDispatcher $events = null,
+        ModelFactory $modelFactory = null,
     ) {
         $this->withEventDispatcher($events ?? new EventDispatcher());
+        $this->withModelFactory($modelFactory ?? new ModelFactory());
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
     public function createApiRequest(Request $request) : ApiRequest {
         $tryRequest = clone $request;
-        if (empty($tryRequest->model)) {
-            $tryRequest->model = $this->getDefaultModel();
+        if (empty($tryRequest->model())) {
+            $tryRequest->withModel($this->getDefaultModel());
         }
-        if (!isset($tryRequest->options['max_tokens'])) {
-            $tryRequest->options['max_tokens'] = $this->defaultMaxTokens;
+        if (empty($tryRequest->option('max_tokens'))) {
+            $tryRequest->setOption('max_tokens', $this->defaultMaxTokens);
         }
-        $requestClass = $this->getModeRequestClass($tryRequest->mode);
+        $requestClass = $this->getModeRequestClass($tryRequest->mode());
         return $this->apiRequestFactory->fromRequest($requestClass, $tryRequest);
     }
 
@@ -45,8 +47,11 @@ abstract class ApiClient implements CanCallApi
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
         $this->request = $this->apiRequestFactory->makeChatCompletionRequest(
-            $this->getModeRequestClass(Mode::MdJson),
-            $messages, $this->getModel($model), $options
+            requestClass: $this->getModeRequestClass(Mode::MdJson),
+            prompt: '',
+            messages: $messages,
+            model: $this->getModel($model),
+            options: $options
         );
         return $this;
     }
@@ -56,8 +61,12 @@ abstract class ApiClient implements CanCallApi
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
         $this->request = $this->apiRequestFactory->makeJsonCompletionRequest(
-            $this->getModeRequestClass(Mode::Json),
-            $messages, $responseFormat, $this->getModel($model), $options
+            requestClass: $this->getModeRequestClass(Mode::Json),
+            prompt: '',
+            messages: $messages,
+            responseFormat: $responseFormat,
+            model: $this->getModel($model),
+            options: $options
         );
         return $this;
     }
@@ -67,8 +76,13 @@ abstract class ApiClient implements CanCallApi
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
         $this->request = $this->apiRequestFactory->makeToolsCallRequest(
-            $this->getModeRequestClass(Mode::Tools),
-            $messages, $tools, $toolChoice, $this->getModel($model), $options
+            requestClass: $this->getModeRequestClass(Mode::Tools),
+            prompt: '',
+            messages: $messages,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            model: $this->getModel($model),
+            options: $options
         );
         return $this;
     }

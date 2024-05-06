@@ -13,6 +13,8 @@ class ApiResponse
         public string $functionName = '',
         public string $finishReason = '',
         public ?ToolCalls $toolCalls = null,
+        public int $inputTokens = 0,
+        public int $outputTokens = 0,
     ) {}
 
     public function toArray(): array {

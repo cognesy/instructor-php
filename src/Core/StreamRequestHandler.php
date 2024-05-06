@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
@@ -37,7 +38,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
         // try to respond to the request until success or max retries reached
         $this->retries = 0;
         $this->messages = $request->messages();
-        while ($this->retries <= $request->maxRetries) {
+        while ($this->retries <= $request->maxRetries()) {
             // (0) process stream and return partial results...
             yield from $this->getStreamedResponses($request->copy($this->messages));
 
@@ -58,7 +59,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
             $errors = $processingResult->error();
             $this->messages = $this->makeRetryMessages($this->messages, $request, $apiResponse->content, [$errors]);
             $this->retries++;
-            if ($this->retries <= $request->maxRetries) {
+            if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
             }
             // (3.1) reset partials generator
@@ -69,6 +70,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
     }
 
     protected function getStreamedResponses(Request $request) : Generator {
+        /** @var ApiClient $apiClient */
         $apiClient = $request->client();
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");
@@ -86,7 +88,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
 
     protected function makeRetryMessages(array $messages, Request $request, string $jsonData, array $errors) : array {
         $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $request->retryPrompt . ': ' . implode(", ", $errors)];
+        $messages[] = ['role' => 'user', 'content' => $request->retryPrompt() . ': ' . implode(", ", $errors)];
         return $messages;
     }
 }

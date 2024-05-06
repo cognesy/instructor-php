@@ -16,6 +16,6 @@ class RequestReceived extends Event
 
     public function __toString(): string
     {
-        return Json::encode($this->request);
+        return Json::encode($this->dumpVar($this->request));
     }
 }

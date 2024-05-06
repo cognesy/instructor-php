@@ -5,6 +5,7 @@ use Cognesy\Instructor\ApiClient\CacheConfig;
 use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\ApiClient\ModelFactory;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
@@ -36,6 +37,16 @@ function autowire(
     /// INCLUDES /////////////////////////////////////////////////////////////////////////////
 
     $config->include('clients.php');
+    $config->include('models/anthropic.php');
+    $config->include('models/anyscale.php');
+    $config->include('models/azure.php');
+    $config->include('models/fireworks.php');
+    $config->include('models/groq.php');
+    $config->include('models/mistral.php');
+    $config->include('models/ollama.php');
+    $config->include('models/openai.php');
+    $config->include('models/openrouter.php');
+    $config->include('models/together.php');
 
     /// CORE /////////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +73,39 @@ function autowire(
         ]
     );
 
+    $config->declare(
+        class: ModelFactory::class,
+        context: [
+            'models' => [
+                'anthropic:claude-3-haiku' => $config->reference('anthropic:claude-3-haiku'),
+                'anthropic:claude-3-sonnet' => $config->reference('anthropic:claude-3-sonnet'),
+                'anthropic:claude-3-opus' => $config->reference('anthropic:claude-3-opus'),
+                'anyscale:mixtral-8x7b' => $config->reference('anyscale:mixtral-8x7b'),
+                'azure:gpt-3.5-turbo' => $config->reference('azure:gpt-3.5-turbo'),
+                'fireworks:mixtral-8x7b' => $config->reference('fireworks:mixtral-8x7b'),
+                'groq:llama3-8b' => $config->reference('groq:llama3-8b'),
+                'groq:llama3-70b' => $config->reference('groq:llama3-70b'),
+                'groq:mixtral-8x7b' => $config->reference('groq:mixtral-8x7b'),
+                'groq:gemma-7b' => $config->reference('groq:gemma-7b'),
+                'mistral:mistral-7b' => $config->reference('mistral:mistral-7b'),
+                'mistral:mixtral-8x7b' => $config->reference('mistral:mixtral-8x7b'),
+                'mistral:mixtral-8x22b' => $config->reference('mistral:mixtral-8x22b'),
+                'mistral:mistral-small' => $config->reference('mistral:mistral-small'),
+                'mistral:mistral-medium' => $config->reference('mistral:mistral-medium'),
+                'mistral:mistral-large' => $config->reference('mistral:mistral-large'),
+                'ollama:llama2' => $config->reference('ollama:llama2'),
+                'openai:gpt-4-turbo' => $config->reference('openai:gpt-4-turbo'),
+                'openai:gpt-4' => $config->reference('openai:gpt-4'),
+                'openai:gpt-4-32k' => $config->reference('openai:gpt-4-32k'),
+                'openai:gpt-3.5-turbo' => $config->reference('openai:gpt-3.5-turbo'),
+                'openrouter:llama3' => $config->reference('openrouter:llama3'),
+                'openrouter:mixtral-8x7b' => $config->reference('openrouter:mixtral-8x7b'),
+                'openrouter:mistral-7b' => $config->reference('openrouter:mistral-7b'),
+                'together:mixtral-8x7b' => $config->reference('together:mixtral-8x7b'),
+            ],
+        ],
+    );
+
     /// FACTORIES ////////////////////////////////////////////////////////////////////////////
 
     $config->declare(
@@ -69,6 +113,7 @@ function autowire(
         context: [
             'clientFactory' => $config->reference(ApiClientFactory::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
+            'modelFactory' => $config->reference(ModelFactory::class),
         ],
     );
 

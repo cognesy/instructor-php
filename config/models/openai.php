@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\Configuration;
 return function(Configuration $config) : Configuration {
     $config->declare(
         class: ModelParams::class,
-        name: 'gpt-4-turbo',
+        name: 'openai:gpt-4-turbo',
         context: [
             'label' => 'OpenAI GPT4 Turbo',
             'type' => 'gpt4',
@@ -25,7 +25,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'gpt-4',
+        name: 'openai:gpt-4',
         context: [
             'label' => 'OpenAI GPT 4',
             'type' => 'gpt4',
@@ -44,7 +44,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'gpt-4-32k',
+        name: 'openai:gpt-4-32k',
         context: [
             'label' => 'OpenAI GPT 4 32k',
             'type' => 'gpt4',
@@ -63,9 +63,9 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'gpt-3.5-turbo',
+        name: 'openai:gpt-3.5-turbo',
         context: [
-            'label' => 'OpenAI GPT 3.5 Turbo 32k',
+            'label' => 'OpenAI GPT 3.5 Turbo',
             'type' => 'gpt35',
             'name' => 'gpt-3.5-turbo',
             'maxTokens' => 4_096,

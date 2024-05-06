@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\Configuration;
 return function(Configuration $config) : Configuration {
     $config->declare(
         class: ModelParams::class,
-        name: 'mistral-mistral-7b',
+        name: 'mistral:mistral-7b',
         context: [
             'label' => 'Mistral Mistral 7B',
             'type' => 'mistral',
@@ -25,7 +25,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'mistral-mixtral-8x7b',
+        name: 'mistral:mixtral-8x7b',
         context: [
             'label' => 'Mistral Mixtral 8x7B',
             'type' => 'mixtral',
@@ -44,7 +44,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'mistral-mixtral-8x22b',
+        name: 'mistral:mixtral-8x22b',
         context: [
             'label' => 'Mistral Mixtral 8x22B',
             'type' => 'mixtral',
@@ -63,7 +63,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'mistral-small',
+        name: 'mistral:mistral-small',
         context: [
             'label' => 'Mistral Small',
             'type' => 'mistral',
@@ -82,7 +82,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'mistral-medium',
+        name: 'mistral:mistral-medium',
         context: [
             'label' => 'Mistral Medium',
             'type' => 'mistral',
@@ -101,7 +101,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'mistral-large',
+        name: 'mistral:mistral-large',
         context: [
             'label' => 'Mistral Large',
             'type' => 'mistral',

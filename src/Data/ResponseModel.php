@@ -8,13 +8,13 @@ class ResponseModel
 {
     private ToolCallBuilder $toolCallBuilder;
 
-    public mixed $instance;
-    public ?string $class;
-    public Schema $schema;
-    public array $jsonSchema;
+    private mixed $instance;
+    private ?string $class;
+    private Schema $schema;
+    private array $jsonSchema;
 
-    public string $functionName = '';
-    public string $functionDescription = '';
+    private string $functionName = '';
+    private string $functionDescription = '';
 
     public function __construct(
         string $class = null,
@@ -34,8 +34,39 @@ class ResponseModel
         return $this->functionName;
     }
 
+    public function withFunctionName(string $functionName) : static {
+        $this->functionName = $functionName;
+        return $this;
+    }
+
+    public function functionDescription() : string {
+        return $this->functionDescription;
+    }
+
+    public function withFunctionDescription(string $functionDescription) : static {
+        $this->functionDescription = $functionDescription;
+        return $this;
+    }
+
     public function jsonSchema() : array {
         return $this->jsonSchema;
+    }
+
+    public function instance() : mixed {
+        return $this->instance;
+    }
+
+    public function withInstance(mixed $instance) : static {
+        $this->instance = $instance;
+        return $this;
+    }
+
+    public function class() : ?string {
+        return $this->class;
+    }
+
+    public function propertyNames() : array {
+        return $this->schema->getPropertyNames();
     }
 
     public function toolCallSchema() : array {
@@ -44,5 +75,9 @@ class ResponseModel
             $requestedModel['name'] ?? $this->functionName,
             $requestedModel['description'] ?? $this->functionDescription
         );
+    }
+
+    public function schema() : Schema {
+        return $this->schema;
     }
 }

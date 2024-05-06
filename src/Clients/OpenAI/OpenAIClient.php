@@ -9,7 +9,7 @@ use Exception;
 
 class OpenAIClient extends ApiClient
 {
-    public string $defaultModel = 'gpt-4-turbo';
+    public string $defaultModel = 'openai:gpt-4-turbo';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

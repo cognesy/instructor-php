@@ -9,7 +9,7 @@ use Exception;
 
 class AnyscaleClient extends ApiClient
 {
-    public string $defaultModel = 'mistralai/Mixtral-8x7B-Instruct-v0.1';
+    public string $defaultModel = 'anyscale:mixtral-8x7b';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

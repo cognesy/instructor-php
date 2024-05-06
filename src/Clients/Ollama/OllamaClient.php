@@ -9,7 +9,7 @@ use Exception;
 
 class OllamaClient extends ApiClient
 {
-    public string $defaultModel = 'llama2';
+    public string $defaultModel = 'ollama:llama2';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

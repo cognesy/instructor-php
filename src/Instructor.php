@@ -95,6 +95,7 @@ class Instructor {
         array $options = [],
         string $functionName = '',
         string $functionDescription = '',
+        string $prompt = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools
     ) : mixed {
@@ -106,6 +107,7 @@ class Instructor {
             $options,
             $functionName,
             $functionDescription,
+            $prompt,
             $retryPrompt,
             $mode,
         );
@@ -123,6 +125,7 @@ class Instructor {
         array $options = [],
         string $functionName = '',
         string $functionDescription = '',
+        string $prompt = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : self {
@@ -134,6 +137,7 @@ class Instructor {
             $options,
             $functionName,
             $functionDescription,
+            $prompt,
             $retryPrompt,
             $mode,
         );
@@ -147,7 +151,7 @@ class Instructor {
         if ($this->request === null) {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
-        $isStream = $this->request->options['stream'] ?? false;
+        $isStream = $this->request->option('stream', false);
         if ($isStream) {
             return $this->stream()->final();
         }
@@ -163,7 +167,7 @@ class Instructor {
         if ($this->request === null) {
             throw new Exception('Request not defined, call withRequest() or request() first');
         }
-        $isStream = $this->request->options['stream'] ?? false;
+        $isStream = $this->request->option('stream', false);
         if (!$isStream) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }

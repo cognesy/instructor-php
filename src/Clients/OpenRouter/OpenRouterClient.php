@@ -9,7 +9,7 @@ use Exception;
 
 class OpenRouterClient extends ApiClient
 {
-    public string $defaultModel = 'gpt-3.5-turbo';
+    public string $defaultModel = 'openrouter:gpt-3.5-turbo';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

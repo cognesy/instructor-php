@@ -6,7 +6,7 @@ use Cognesy\Instructor\Configuration\Configuration;
 return function(Configuration $config) : Configuration {
     $config->declare(
         class: ModelParams::class,
-        name: 'fireworks-mixtral-8x7b',
+        name: 'fireworks:mixtral-8x7b',
         context: [
             'label' => 'Fireworks Mixtral 8x7B',
             'type' => 'mixtral',

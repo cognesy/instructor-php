@@ -9,7 +9,7 @@ use Exception;
 
 class AnthropicClient extends ApiClient
 {
-    public string $defaultModel = 'claude-3-haiku-20240307';
+    public string $defaultModel = 'anthropic:claude-3-haiku';
     public int $defaultMaxTokens = 256;
 
     public function __construct(

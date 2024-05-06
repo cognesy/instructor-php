@@ -63,4 +63,24 @@ class Event
     public function __toString(): string {
         return Json::encode($this->data, JSON_PRETTY_PRINT);
     }
+
+    protected function dumpVar(mixed $var) : array {
+        if (is_scalar($var)) {
+            return [$var];
+        }
+        if (is_array($var)) {
+            return $var;
+        }
+        $reflection = new \ReflectionObject($var);
+        $properties = array();
+        foreach($reflection->getProperties() as $property) {
+            $property->setAccessible(true);
+            if (!$property->isInitialized($var)) {
+                $properties[$property->getName()] = null;
+            } else {
+                $properties[$property->getName()] = $property->getValue($var);
+            }
+        }
+        return $properties;
+    }
 }

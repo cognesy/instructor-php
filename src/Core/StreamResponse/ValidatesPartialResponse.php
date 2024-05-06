@@ -75,7 +75,7 @@ trait ValidatesPartialResponse
         ResponseModel $responseModel
     ) : bool {
         // ...check for response model property names
-        $propertyNames = $responseModel->schema->getPropertyNames();
+        $propertyNames = $responseModel->propertyNames();
         if (empty($propertyNames)) {
             return true;
         }

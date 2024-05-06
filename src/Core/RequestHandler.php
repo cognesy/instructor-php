@@ -2,12 +2,11 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\RequestSentToLLM;
@@ -37,7 +36,7 @@ class RequestHandler implements CanHandleRequest
         // try to respond to the request until success or max retries reached
         $this->retries = 0;
         $this->messages = $request->messages();
-        while ($this->retries <= $request->maxRetries) {
+        while ($this->retries <= $request->maxRetries()) {
             // (1) get the API client response
             $apiResponse = $this->getApiResponse($request->copy($this->messages));
             $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
@@ -53,7 +52,7 @@ class RequestHandler implements CanHandleRequest
             $errors = $processingResult->error();
             $this->messages = $this->makeRetryMessages($this->messages, $request, $apiResponse->content, $errors);
             $this->retries++;
-            if ($this->retries <= $request->maxRetries) {
+            if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
             }
         }
@@ -62,6 +61,7 @@ class RequestHandler implements CanHandleRequest
     }
 
     protected function getApiResponse(Request $request) : ApiResponse {
+        /** @var ApiClient $apiClient */
         $apiClient = $request->client();
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");
@@ -81,7 +81,7 @@ class RequestHandler implements CanHandleRequest
         array $messages, Request $request, string $jsonData, array $errors
     ) : array {
         $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $request->retryPrompt . ': ' . implode(", ", $errors)];
+        $messages[] = ['role' => 'user', 'content' => $request->retryPrompt() . implode(", ", $errors)];
         return $messages;
     }
 }

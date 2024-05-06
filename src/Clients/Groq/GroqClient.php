@@ -10,7 +10,7 @@ use Exception;
 
 class GroqClient extends ApiClient
 {
-    public string $defaultModel = 'llama3-8b-8192';
+    public string $defaultModel = 'groq:llama3-8b';
     public int $defaultMaxTokens = 256;
 
     public function __construct(
