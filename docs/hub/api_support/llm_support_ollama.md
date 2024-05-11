@@ -36,7 +36,7 @@ $instructor = (new Instructor)->withClient($client);
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'llama2',
+    model: 'llama3:latest',
     mode: Mode::Json,
 );
 

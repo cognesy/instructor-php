@@ -204,6 +204,7 @@ nav:
     - Advanced:
       - Caching: 'hub/advanced/caching.md'
       - Customize parameters of OpenAI client: 'hub/advanced/custom_client_parameters.md'
+      - Custom prompts: 'hub/advanced/custom_prompts.md'
       - Custom validation using Symfony Validator: 'hub/advanced/custom_validator.md'
       - Streaming partial updates during inference: 'hub/advanced/partial_updates.md'
       - Extracting scalar values: 'hub/advanced/scalars.md'
