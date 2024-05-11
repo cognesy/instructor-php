@@ -7,25 +7,6 @@ to LLM for different modes, you can use the `prompt` parameter in the
 It will override the default Instructor prompts, allowing you to fully
 customize how LLM is instructed to process the input.
 
-Note that various models and API providers have specific requirements
-on the input format, e.g. for OpenAI JSON mode you are required to include
-`JSON` string in the prompt.
-
-Instructor takes care of automatically setting the `response_format`
-parameter, but this may not be sufficient for some models - they require
-specifying JSON response format as part of the prompt, rather than just
-as `response_format` parameter in the request (e.g. OpenAI).
-
-For this reason, when using Instructor's `Mode::Json` and `Mode::MdJson`
-consider including the expected JSON Schema in the prompt. Otherwise, the
-response is unlikely to match your target model, making it impossible for
-Instructor to deserialize it correctly.
-
-`Mode::Tools` makes use of `$toolName` and `$toolDescription`
-parameters to provide additional context to the LLM, describing the tool
-to be used for processing the input. `Mode::Json` and `Mode::MdJson` ignore
-these parameters, as tools are not used in these modes.
-
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
