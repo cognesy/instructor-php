@@ -22,16 +22,6 @@ $task = $instructor->request(
 
 $this->updateView($task);
 ```
-or
-
-```php
-$instructor = new Instructor();
-$task = $instructor->withRequest(new Request(
-    messages: "Jason is 35 years old",
-    responseModel: Task::class,
-    partials: true
-))->get();
-```
 
 Get partial updates of task.
 

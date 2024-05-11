@@ -2,7 +2,13 @@
 
 namespace Cognesy\Instructor\Data;
 
-// TODO: This is not used anywhere yet, it is part of upcoming core refactoring.
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 
 class Response {
+    private ApiResponse $apiResponse;
+    /** @var PartialApiResponse[] */
+    private array $partialApiResponses = [];
+
+    private mixed $returnedResponse;
 }

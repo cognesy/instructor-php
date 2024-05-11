@@ -18,11 +18,12 @@ class RequestFactory
     public function create(
         string|array $messages,
         string|object|array $responseModel,
+        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        string $functionName = '',
-        string $functionDescription = '',
+        string $toolName = '',
+        string $toolDescription = '',
         string $prompt = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
@@ -30,16 +31,18 @@ class RequestFactory
         $request = new Request(
             $messages,
             $responseModel,
+            $examples,
             $model,
             $maxRetries,
             $options,
-            $functionName,
-            $functionDescription,
+            $toolName,
+            $toolDescription,
             $prompt,
             $retryPrompt,
             $mode,
             $this->clientFactory->getDefault(),
-            $this->modelFactory
+            $this->modelFactory,
+            $this->responseModelFactory,
         );
         return $request;
     }
@@ -56,8 +59,8 @@ class RequestFactory
             $request->withResponseModel(
                 $this->responseModelFactory->fromAny(
                     $request->requestedSchema(),
-                    $request->functionName(),
-                    $request->functionDescription()
+                    $request->toolName(),
+                    $request->toolDescription()
                 )
             );
         }

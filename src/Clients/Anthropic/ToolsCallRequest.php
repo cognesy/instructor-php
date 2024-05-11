@@ -16,7 +16,7 @@ class ToolsCallRequest extends ApiToolsCallRequest
     protected function defaultBody(): array {
         $body = array_filter(array_merge([
             'system' => $this->getSystemInstruction(),
-            'messages' => $this->getMessages(),
+            'messages' => $this->messages(),
             'model' => $this->model,
         ], $this->options));
         return $body;
@@ -26,12 +26,12 @@ class ToolsCallRequest extends ApiToolsCallRequest
         $tool = $this->getToolSchema();
         $schema = (new SchemaBuilder)->fromArray($tool);
         $xmlSchema = $schema->toXml();
-        $system = $this->instructions()."\nHere are the tools available:\n".$this->toolSchema($xmlSchema);
+        $system = $this->instructions()."\nHere are the tools available:\n".$this->xmlToolSchema($xmlSchema);
         return $system;
     }
 
-    protected function getMessages(): array {
-        return $this->appendInstructions($this->messages, $this->prompt(), $this->getToolSchema());
+    protected function messages(): array {
+        return $this->messages;
     }
 
     protected function getToolSchema(): array {
@@ -55,7 +55,7 @@ class ToolsCallRequest extends ApiToolsCallRequest
         return implode($this->xmlLineSeparator, $lines);
     }
 
-    private function toolSchema(string $xmlSchema) : string {
+    private function xmlToolSchema(string $xmlSchema) : string {
         $lines = [
             '<tools>',
             '<tool_description>',
@@ -79,7 +79,7 @@ class ToolsCallRequest extends ApiToolsCallRequest
         return new ApiResponse(
             content: $content,
             responseData: $decoded,
-            functionName: '',
+            toolName: '',
             finishReason: $finishReason,
             toolCalls: null
         );

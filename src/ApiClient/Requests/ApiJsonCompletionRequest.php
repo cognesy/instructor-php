@@ -16,21 +16,21 @@ abstract class ApiJsonCompletionRequest extends ApiRequest
 
     protected function defaultBody(): array {
         return array_filter(array_merge([
-            'messages' => $this->getMessages(),
+            'messages' => $this->messages(),
             'model' => $this->model,
             'response_format' => $this->getResponseFormat(),
         ], $this->options));
     }
 
-    protected function getMessages(): array {
-        return $this->appendInstructions($this->messages, $this->prompt(), $this->getResponseSchema());
+    protected function messages(): array {
+        return $this->messages;
     }
 
     protected function getResponseFormat(): array {
         return $this->responseFormat;
     }
 
-    private function getResponseSchema() : array {
+    protected function getResponseSchema() : array {
         return $this->responseFormat['schema'] ?? [];
     }
 }

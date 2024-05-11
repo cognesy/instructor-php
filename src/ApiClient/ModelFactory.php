@@ -6,6 +6,7 @@ class ModelFactory
 {
     public function __construct(
         private array $models = [],
+        private bool $allowUnknownModels = true,
     ) {}
 
     public function has(string $name) : bool {
@@ -13,6 +14,12 @@ class ModelFactory
     }
 
     public function get(string $name) : ModelParams {
-        return ($this->models[$name])() ?? (new ModelParams(name: $name));
+        if ($this->has($name)) {
+            return ($this->models[$name])();
+        }
+        if (!$this->allowUnknownModels) {
+            throw new \Exception("Model not found: $name");
+        }
+        return new ModelParams(name: $name);
     }
 }

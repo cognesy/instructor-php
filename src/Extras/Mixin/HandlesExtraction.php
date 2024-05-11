@@ -14,6 +14,7 @@ trait HandlesExtraction {
         return ($instructor ?? new Instructor)->respond(
             $messages,
             static::class,
+            [],
             $model,
             $maxRetries,
             $options

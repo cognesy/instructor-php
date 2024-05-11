@@ -33,13 +33,13 @@ class ResponseModelFactory
     }
 
     public function fromRequest(Request $request) : ResponseModel {
-        return $this->fromAny($request->requestedSchema(), $request->functionName(), $request->functionDescription());
+        return $this->fromAny($request->requestedSchema(), $request->toolName(), $request->toolDescription());
     }
 
     public function fromAny(
         string|array|object $requestedModel,
-        string $functionName = '',
-        string $functionDescription = '',
+        string $toolName = '',
+        string $toolDescription = '',
     ) : ResponseModel {
         $this->events->dispatch(new ResponseModelRequested($requestedModel));
 
@@ -59,8 +59,8 @@ class ResponseModelFactory
             $this->events->wiretap(fn($event) => $responseModel->onEvent($event));
         }
 
-        $responseModel->withFunctionName($functionName);
-        $responseModel->withFunctionDescription($functionDescription);
+        $responseModel->withToolName($toolName);
+        $responseModel->withToolDescription($toolDescription);
         $this->events->dispatch(new ResponseModelBuilt($responseModel));
         return $responseModel;
     }

@@ -17,14 +17,14 @@ abstract class ApiToolsCallRequest extends ApiRequest
 
     protected function defaultBody(): array {
         return array_filter(array_merge([
-            'messages' => $this->getMessages(),
+            'messages' => $this->messages(),
             'model' => $this->model,
             'tools' => $this->tools,
             'tool_choice' => $this->getToolChoice(),
         ], $this->options));
     }
 
-    protected function getMessages(): array {
+    protected function messages(): array {
         return $this->messages;
     }
 

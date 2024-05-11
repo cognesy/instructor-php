@@ -27,7 +27,7 @@ class ModelParams
         ],
     ) {}
 
-    public function costWith(int $inputTokens, int $outputTokens) : float {
+    public function costFor(int $inputTokens, int $outputTokens) : float {
         return ($this->inputCost * $inputTokens + $this->outputCost * $outputTokens) / 1_000_000;
     }
 

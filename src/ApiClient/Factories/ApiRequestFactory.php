@@ -82,7 +82,7 @@ class ApiRequestFactory
         return $this->makeChatCompletionRequest(
             $requestClass,
             $request->prompt(),
-            $request->appendInstructions($request->messages(), $request->jsonSchema()),
+            $request->appendInstructions($request->messages(), $request->prompt(), $request->jsonSchema()),
             $request->modelName(),
             $request->options(),
         );
@@ -92,7 +92,7 @@ class ApiRequestFactory
         return $this->makeJsonCompletionRequest(
             $requestClass,
             $request->prompt(),
-            $request->appendInstructions($request->messages(), $request->jsonSchema()),
+            $request->appendInstructions($request->messages(), $request->prompt(), $request->jsonSchema()),
             [
                 'type' => 'json_object',
                 'schema' => $request->jsonSchema()
@@ -106,11 +106,11 @@ class ApiRequestFactory
         return $this->makeToolsCallRequest(
             $requestClass,
             $request->prompt(),
-            $request->messages(),
+            $request->appendInstructions($request->messages(), $request->prompt(), []),
             [$request->toolCallSchema()],
             [
                 'type' => 'function',
-                'function' => ['name' => $request->functionName()]
+                'function' => ['name' => $request->toolName()]
             ],
             $request->modelName(),
             $request->options(),

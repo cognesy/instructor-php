@@ -10,7 +10,7 @@ class ApiResponse
     public function __construct(
         public string $content = '',
         public array  $responseData = [],
-        public string $functionName = '',
+        public string $toolName = '',
         public string $finishReason = '',
         public ?ToolCalls $toolCalls = null,
         public int $inputTokens = 0,
@@ -20,7 +20,7 @@ class ApiResponse
     public function toArray(): array {
         return [
             'content' => $this->content,
-            'function_name' => $this->functionName,
+            'tool_name' => $this->toolName,
             'finish_reason' => $this->finishReason,
             'response_data' => $this->responseData,
             'tool_calls' => $this->toolCalls->all(),

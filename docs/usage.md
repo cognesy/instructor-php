@@ -67,7 +67,7 @@ $value = (new Instructor)->respond(
 
 ## Alternative ways to call Instructor
 
-You can call `request()` method to set the parameters of the request and then call `get()` to get the response.
+You can call `request()` method to create the request object and then call `get()` to get the response.
 
 ```php
 use Cognesy\Instructor;
@@ -78,17 +78,6 @@ $instructor = (new Instructor)->request(
 $person = $instructor->get();
 ```
 
-You can also initialize Instructor with a request object.
-
-```php
-use Cognesy\Instructor;
-use Cognesy\Instructor\Data\Request;
-
-$instructor = (new Instructor)->withRequest(new Request(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-))->get();
-```
 
 ## Scalar responses
 
@@ -98,3 +87,5 @@ See [Scalar responses](scalars.md) for more information on how to generate scala
 ## Partial responses and streaming
 
 See [Streaming and partial updates](partials.md) for more information on how to work with partial updates and streaming.
+
+

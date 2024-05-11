@@ -1,6 +1,6 @@
 # Extraction modes
 
-Instructor supports several ways to extract data from the response. The default mode is `Mode::Tools`, which leverages OpenAI tool calls.
+Instructor supports several ways to extract data from the response. The default mode is `Mode::Tools`, which leverages OpenAI-style tool calls.
 
 Mode can be set via parameter of `Instructor::response()` or `Instructor::request()`
 methods.
@@ -18,19 +18,16 @@ $response = $instructor->respond(
     mode: Mode::Json
 );
 ```
-Mode can be also set in `Request` object, if you are building it manually for 
-Instructor.
+Mode can be also set via `request()` method.
 
 ```php
 <?php
-$request = new Request(
+$response = $instructor->request(
     messages: "...",
     responseModel: ...,
     ...,
     mode: Mode::Json
-);
-
-$response = $instructor->withRequest($request)->get();
+)->get();
 ```
 
 ## Modes

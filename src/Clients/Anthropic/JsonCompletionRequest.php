@@ -22,7 +22,7 @@ class JsonCompletionRequest extends ApiJsonCompletionRequest
         return new ApiResponse(
             content: $content,
             responseData: $decoded,
-            functionName: '',
+            toolName: '',
             finishReason: $finishReason,
             toolCalls: null
         );

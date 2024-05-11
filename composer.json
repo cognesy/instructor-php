@@ -57,6 +57,7 @@
         "league/flysystem": "^3.0",
         "psr/container": "^2.0",
         "symfony/yaml": "^7.0",
-        "phpdocumentor/reflection-docblock": "^5.4"
+        "phpdocumentor/reflection-docblock": "^5.4",
+        "myclabs/deep-copy": "^1.11"
     }
 }

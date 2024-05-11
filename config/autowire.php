@@ -103,6 +103,7 @@ function autowire(
                 'openrouter:mistral-7b' => $config->reference('openrouter:mistral-7b'),
                 'together:mixtral-8x7b' => $config->reference('together:mixtral-8x7b'),
             ],
+            'allowUnknownModels' => false,
         ],
     );
 

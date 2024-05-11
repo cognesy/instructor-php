@@ -57,7 +57,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
 
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
-            $this->messages = $this->makeRetryMessages($this->messages, $request, $apiResponse->content, [$errors]);
+            $this->messages = $request->makeRetryMessages($this->messages, $request, $apiResponse->content, [$errors]);
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
@@ -66,7 +66,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
             $this->partialsGenerator->resetPartialResponse();
         }
         $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, [$errors]));
-        throw new Exception("Validation recovery attempts limit reached after {$this->retries} retries due to: ".implode(", ", $errors));
+        throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $errors));
     }
 
     protected function getStreamedResponses(Request $request) : Generator {
@@ -84,11 +84,5 @@ class StreamRequestHandler implements CanHandleStreamRequest
             $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
             throw $e;
         }
-    }
-
-    protected function makeRetryMessages(array $messages, Request $request, string $jsonData, array $errors) : array {
-        $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $request->retryPrompt() . ': ' . implode(", ", $errors)];
-        return $messages;
     }
 }

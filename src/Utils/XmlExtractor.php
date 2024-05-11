@@ -6,7 +6,7 @@ class XmlExtractor
 {
     public function extractToolCalls(string $content) : array {
         $xml = $this->tryExtractToolCall($content);
-        $name = $this->tryExtractFunctionName($xml);
+        $name = $this->tryExtractToolName($xml);
         $args = $this->tryExtractXmlArgs($content);
         if (empty($args)) {
             $args = $this->tryExtractJsonArgs($content);
@@ -21,7 +21,7 @@ class XmlExtractor
         return trim($xmlString);
     }
 
-    protected function tryExtractFunctionName(string $content) : string {
+    protected function tryExtractToolName(string $content) : string {
         $pattern = '/<tool_name>(.*?)<\/tool_name>/s';
         preg_match($pattern, $content, $matches);
         $toolName = $matches[1] ?? '';

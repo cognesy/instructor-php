@@ -21,4 +21,6 @@ interface CanCallApi
     public function stream() : Generator;
 
     public function async() : PromiseInterface;
+
+    public function defaultModel() : string;
 }

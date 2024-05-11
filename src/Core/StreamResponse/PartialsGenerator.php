@@ -61,13 +61,13 @@ class PartialsGenerator implements CanGeneratePartials
             $this->lastPartialResponse = $partialResponse;
 
             // situation 1: new function call
-            $maybeFunctionName = $partialResponse->functionName;
+            $maybeToolName = $partialResponse->toolName;
             // create next FC only if JSON buffer is not empty (which is the case for 1st iteration)
-            if ($maybeFunctionName) {
+            if ($maybeToolName) {
                 if (empty($this->responseJson)) {
-                    $this->newToolCall($response->functionName ?? $responseModel->functionName());
+                    $this->newToolCall($response->toolName ?? $responseModel->toolName());
                 } else {
-                    $this->finalizeToolCall($this->responseJson, $responseModel->functionName());
+                    $this->finalizeToolCall($this->responseJson, $responseModel->toolName());
                     $this->responseJson = ''; // reset json buffer
                 }
             }
@@ -84,7 +84,7 @@ class PartialsGenerator implements CanGeneratePartials
                 continue;
             }
             if ($this->toolCalls->empty()) {
-                $this->newToolCall($responseModel->functionName());
+                $this->newToolCall($responseModel->toolName());
             }
             $result = $this->handleDelta($this->responseJson, $responseModel);
             if ($result->isFailure()) {
@@ -102,7 +102,7 @@ class PartialsGenerator implements CanGeneratePartials
         }
         // finalize last function call
         if ($this->toolCalls->count() > 0) {
-            $this->finalizeToolCall(Json::find($this->responseText), $responseModel->functionName());
+            $this->finalizeToolCall(Json::find($this->responseText), $responseModel->toolName());
         }
         // finalize sequenceable
         $this->sequenceableHandler->finalize();
@@ -115,7 +115,7 @@ class PartialsGenerator implements CanGeneratePartials
         return Chain::make()
             ->through(fn() => $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
             ->tap(fn() => $this->events->dispatch(new PartialJsonReceived($partialJson)))
-            ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->functionName()))
+            ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->toolName()))
             ->through(fn() => $this->tryGetPartialObject($partialJson, $responseModel))
             ->onFailure(fn($result) => $this->events->dispatch(
                 new PartialResponseGenerationFailed(Arrays::toArray($result->error()))

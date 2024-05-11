@@ -31,15 +31,14 @@ abstract class ApiClient implements CanCallApi
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
     public function createApiRequest(Request $request) : ApiRequest {
-        $tryRequest = clone $request;
-        if (empty($tryRequest->model())) {
-            $tryRequest->withModel($this->getDefaultModel());
+        if (empty($request->model())) {
+            $request->withModel($this->defaultModel());
         }
-        if (empty($tryRequest->option('max_tokens'))) {
-            $tryRequest->setOption('max_tokens', $this->defaultMaxTokens);
+        if (empty($request->option('max_tokens'))) {
+            $request->setOption('max_tokens', $this->defaultMaxTokens);
         }
-        $requestClass = $this->getModeRequestClass($tryRequest->mode());
-        return $this->apiRequestFactory->fromRequest($requestClass, $tryRequest);
+        $requestClass = $this->getModeRequestClass($request->mode());
+        return $this->apiRequestFactory->fromRequest($requestClass, $request);
     }
 
     public function chatCompletion(array $messages, string $model = '', array $options = []): static {

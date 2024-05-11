@@ -125,6 +125,7 @@ nav:
     - Data model and types: 'data_model.md'
     - Validation: 'validation.md'
     - Extraction modes: 'modes.md'
+    - Customizing prompts: 'prompts.md'
     - Scalars: 'scalars.md'
     - Sequences: 'sequences.md'
     - Structures: 'structures.md'

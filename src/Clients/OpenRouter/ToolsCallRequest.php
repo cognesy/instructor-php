@@ -18,12 +18,12 @@ class ToolsCallRequest extends ApiToolsCallRequest
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response->body());
         $content = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
-        $functionName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
+        $toolName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
         $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
         return new ApiResponse(
             content: $content,
             responseData: $decoded,
-            functionName: $functionName,
+            toolName: $toolName,
             finishReason: $finishReason,
             toolCalls: null
         );
@@ -31,8 +31,8 @@ class ToolsCallRequest extends ApiToolsCallRequest
 
     public function toPartialApiResponse(string $partialData) : PartialApiResponse {
         $decoded = Json::parse($partialData, default: []);
-        $functionName = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
+        $toolName = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
         $argumentsJson = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
-        return new PartialApiResponse($argumentsJson, $decoded, $functionName);
+        return new PartialApiResponse($argumentsJson, $decoded, $toolName);
     }
 }

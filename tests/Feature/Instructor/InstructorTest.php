@@ -1,7 +1,6 @@
 <?php
 namespace Tests\Feature;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Instructor\EventSink;
@@ -53,21 +52,23 @@ it('handles wiretap()', function () use ($mockLLM, $text) {
 
 it('handles onError()', function () use ($mockLLM, $text) {
     $events = new EventSink();
+    $mockLLM = MockLLM::get(['']); // mock empty response - should cause deserialization error
     $instructor = (new Instructor)->withClient($mockLLM);
     $person = $instructor->onError(fn($e) => $events->onEvent($e))->respond(
-        messages: [['role' => 'user', 'content' => $text]],
-        responseModel: '',
+        messages: '',
+        responseModel: Person::class,
     );
     expect($events->count())->toBe(1);
 });
 
-it('throws exception if no onError() provided', function () use ($mockLLM, $text) {
+it('throws exception if no onError() provided', function () use ($mockLLM) {
     $thrownException = false;
+    $mockLLM = MockLLM::get(['']); // mock empty response - should cause deserialization error
     try {
         $instructor = (new Instructor)->withClient($mockLLM);
         $person = $instructor->respond(
-            messages: [['role' => 'user', 'content' => $text]],
-            responseModel: '',
+            messages: '',
+            responseModel: Person::class,
         );
     } catch (Throwable $e) {
         expect($e)->toBeInstanceOf(Throwable::class);

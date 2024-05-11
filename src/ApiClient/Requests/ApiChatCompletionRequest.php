@@ -15,12 +15,12 @@ abstract class ApiChatCompletionRequest extends ApiRequest
 
     protected function defaultBody(): array {
         return array_filter(array_merge([
-            'messages' => $this->getMessages(),
+            'messages' => $this->messages(),
             'model' => $this->model,
         ], $this->options));
     }
 
-    protected function getMessages(): array {
+    protected function messages(): array {
         return $this->messages;
     }
 }

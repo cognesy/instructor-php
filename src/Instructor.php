@@ -8,6 +8,7 @@ use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\RequestFactory;
 use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
@@ -40,6 +41,7 @@ class Instructor {
     protected ?Request $request = null;
     protected RequestFactory $requestFactory;
     protected ApiClientFactory $clientFactory;
+    protected ResponseModelFactory $responseModelFactory;
 
     public function __construct(array $config = []) {
         $this->queueEvent(new InstructorStarted($config));
@@ -50,6 +52,7 @@ class Instructor {
         $this->clientFactory = $this->config->get(ApiClientFactory::class);
         $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
         $this->requestFactory = $this->config->get(RequestFactory::class);
+        $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
         $this->queueEvent(new InstructorReady($this->config));
     }
 
@@ -67,16 +70,6 @@ class Instructor {
         return $this;
     }
 
-    /**
-     * Sets the request to be used for the next call
-     */
-    public function withRequest(Request $request) : self {
-        $this->dispatchQueuedEvents();
-        $this->request = $request;
-        $this->events->dispatch(new RequestReceived($request));
-        return $this;
-    }
-
     public function withClient(CanCallApi $client) : self {
         $this->clientFactory->setDefault($client);
         return $this;
@@ -90,11 +83,12 @@ class Instructor {
     public function respond(
         string|array $messages,
         string|object|array $responseModel,
+        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        string $functionName = '',
-        string $functionDescription = '',
+        string $toolName = '',
+        string $toolDescription = '',
         string $prompt = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools
@@ -102,11 +96,12 @@ class Instructor {
         $this->request(
             $messages,
             $responseModel,
+            $examples,
             $model,
             $maxRetries,
             $options,
-            $functionName,
-            $functionDescription,
+            $toolName,
+            $toolDescription,
             $prompt,
             $retryPrompt,
             $mode,
@@ -120,28 +115,36 @@ class Instructor {
     public function request(
         string|array $messages,
         string|object|array $responseModel,
+        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        string $functionName = '',
-        string $functionDescription = '',
+        string $toolName = '',
+        string $toolDescription = '',
         string $prompt = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
-    ) : self {
+    ) : ?self {
+        if (empty($responseModel)) {
+            throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
+        }
         $request = $this->requestFactory->create(
             $messages,
             $responseModel,
+            $examples,
             $model,
             $maxRetries,
             $options,
-            $functionName,
-            $functionDescription,
+            $toolName,
+            $toolDescription,
             $prompt,
             $retryPrompt,
             $mode,
         );
-        return $this->withRequest($request);
+        $this->request = $request;
+        $this->dispatchQueuedEvents();
+        $this->events->dispatch(new RequestReceived($request));
+        return $this;
     }
 
     /**
@@ -149,7 +152,7 @@ class Instructor {
      */
     public function get() : mixed {
         if ($this->request === null) {
-            throw new Exception('Request not defined, call withRequest() or request() first');
+            throw new Exception('Request not defined, call request() first');
         }
         $isStream = $this->request->option('stream', false);
         if ($isStream) {
@@ -165,13 +168,23 @@ class Instructor {
      */
     public function stream() : Stream {
         if ($this->request === null) {
-            throw new Exception('Request not defined, call withRequest() or request() first');
+            throw new Exception('Request not defined, call request() first');
         }
         $isStream = $this->request->option('stream', false);
         if (!$isStream) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
         return new Stream($this->handleStreamRequest(), $this->events());
+    }
+
+    /// HELPERS ///////////////////////////////////////////////////////////////
+
+    public function createJsonSchema(string|array|object $responseModel) : array {
+        return $this->responseModelFactory->fromAny($responseModel)->jsonSchema();
+    }
+
+    public function createJsonSchemaString(string|array|object $responseModel) : string {
+        return json_encode($this->createJsonSchema($responseModel));
     }
 
     /// INTERNAL //////////////////////////////////////////////////////////////
