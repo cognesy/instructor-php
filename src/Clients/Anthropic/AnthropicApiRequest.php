@@ -66,7 +66,7 @@ class AnthropicApiRequest extends ApiRequest
     }
 
     protected function getToolSchema(): array {
-        return $this->tools[0]['function']['parameters'] ?? $this->responseFormat['schema'] ?? [];
+        return $this->getResponseSchema() ?? $this->tools[0]['function']['parameters'] ?? [];
     }
 
     protected function getSystemInstruction() : string {

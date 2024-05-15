@@ -25,13 +25,4 @@ class OllamaConnector extends ApiConnector
     protected function defaultAuth() : Authenticator {
         return new TokenAuthenticator($this->apiKey);
     }
-
-    #[Override]
-    protected function defaultHeaders(): array {
-        $headers = [
-            'content-type' => 'application/json',
-            'accept' => 'application/json',
-        ];
-        return $headers;
-    }
 }

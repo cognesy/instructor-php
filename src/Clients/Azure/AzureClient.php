@@ -44,12 +44,7 @@ class AzureClient extends ApiClient
 
     #[Override]
     protected function getModeRequestClass(Mode $mode) : string {
-        return match($mode) {
-            Mode::MdJson => ApiRequest::class,
-            Mode::Json => ApiRequest::class,
-            Mode::Tools => ApiRequest::class,
-            default => throw new Exception('Unknown mode')
-        };
+        return AzureApiRequest::class;
     }
 
     #[Override]

@@ -17,16 +17,6 @@ class ApiResponse
         public int $outputTokens = 0,
     ) {}
 
-    public function toArray(): array {
-        return [
-            'content' => $this->content,
-            'tool_name' => $this->toolName,
-            'finish_reason' => $this->finishReason,
-            'response_data' => $this->responseData,
-            'tool_calls' => $this->toolCalls->all(),
-        ];
-    }
-
     public function getJson(): string {
         if (!empty($this->toolCalls) && !$this->toolCalls->empty()) {
             return $this->toolCalls->first()->args ?? '';

@@ -69,20 +69,6 @@ class ApiRequest extends Request implements HasBody, Cacheable
         return $messages;
     }
 
-    protected function appendInstructions(array $messages, string $prompt, array $jsonSchema) : array {
-        if (empty($messages)) {
-            throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
-        }
-        $lastIndex = count($messages) - 1;
-        if (!empty($prompt)) {
-            $messages[$lastIndex]['content'] .= $prompt;
-        }
-        if (!empty($jsonSchema)) {
-            $messages[$lastIndex]['content'] .= Json::encode($jsonSchema);
-        }
-        return $messages;
-    }
-
     protected function defaultBody(): array {
         return array_filter(array_merge([
             'messages' => $this->messages(),
