@@ -9,6 +9,8 @@ use Override;
 
 class AnthropicClient extends ApiClient
 {
+    use Traits\HandlesStreamData;
+
     public string $defaultModel = 'anthropic:claude-3-haiku';
     public int $defaultMaxTokens = 256;
 
@@ -37,25 +39,5 @@ class AnthropicClient extends ApiClient
     #[Override]
     protected function getModeRequestClass(Mode $mode) : string {
         return AnthropicApiRequest::class;
-//        return match($mode) {
-//            Mode::MdJson => ChatCompletionRequest::class,
-//            Mode::Json => JsonCompletionRequest::class,
-//            Mode::Tools => ToolsCallRequest::class,
-//            default => throw new Exception('Unknown mode')
-//        };
-    }
-
-    #[Override]
-    protected function isDone(string $data): bool {
-        return $data === 'event: message_stop';
-    }
-
-    #[Override]
-    protected function getData(string $data): string {
-        if (str_starts_with($data, 'data:')) {
-            return trim(substr($data, 5));
-        }
-        // ignore event lines
-        return '';
     }
 }

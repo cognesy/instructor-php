@@ -4,12 +4,15 @@ namespace Cognesy\Instructor\Clients\Mistral;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Override;
 
 class MistralClient extends ApiClient
 {
+    use HandlesStreamData;
+
     public string $defaultModel = 'mistral:mistral-small';
     public int $defaultMaxTokens = 256;
 
@@ -38,19 +41,5 @@ class MistralClient extends ApiClient
     #[Override]
     protected function getModeRequestClass(Mode $mode) : string {
         return MistralApiRequest::class;
-    }
-
-    #[Override]
-    protected function isDone(string $data): bool {
-        return $data === '[DONE]';
-    }
-
-    #[Override]
-    protected function getData(string $data): string {
-        if (str_starts_with($data, 'data:')) {
-            return trim(substr($data, 5));
-        }
-        // ignore event lines
-        return '';
     }
 }

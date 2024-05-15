@@ -3,9 +3,16 @@
 namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponseFormat;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesTools;
 
 class AzureApiRequest extends ApiRequest
 {
+    use HandlesTools;
+    use HandlesResponseFormat;
+    use HandlesResponse;
+
     public function __construct(
         public string|array $messages = [],
         public array $tools = [],

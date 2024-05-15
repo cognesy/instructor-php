@@ -9,6 +9,8 @@ use Override;
 
 class OpenAIClient extends ApiClient
 {
+    use Traits\HandlesStreamData;
+
     public string $defaultModel = 'openai:gpt-4-turbo';
     public int $defaultMaxTokens = 256;
 
@@ -39,19 +41,5 @@ class OpenAIClient extends ApiClient
     #[Override]
     protected function getModeRequestClass(Mode $mode) : string {
         return OpenAIApiRequest::class;
-    }
-
-    #[Override]
-    protected function isDone(string $data): bool {
-        return $data === '[DONE]';
-    }
-
-    #[Override]
-    protected function getData(string $data): string {
-        if (str_starts_with($data, 'data:')) {
-            return trim(substr($data, 5));
-        }
-        // ignore event lines
-        return '';
     }
 }

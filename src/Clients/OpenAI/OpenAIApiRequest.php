@@ -6,6 +6,10 @@ use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 
 class OpenAIApiRequest extends ApiRequest
 {
+    use Traits\HandlesTools;
+    use Traits\HandlesResponseFormat;
+    use Traits\HandlesResponse;
+
     public function __construct(
         public string|array $messages = [],
         public array $tools = [],

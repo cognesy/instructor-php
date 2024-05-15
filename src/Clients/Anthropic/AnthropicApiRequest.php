@@ -3,57 +3,19 @@
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
-use Cognesy\Instructor\Utils\Json;
 use Override;
-use Saloon\Http\Response;
 
 class AnthropicApiRequest extends ApiRequest
 {
+    use Traits\HandlesResponse;
+    use Traits\HandlesResponseFormat;
+    use Traits\HandlesTools;
+
     protected string $defaultEndpoint = '/messages';
     protected string $xmlLineSeparator = "";
 
-    public function toApiResponse(Response $response): ApiResponse {
-        $decoded = Json::parse($response->body());
-        $content = $decoded['content'][0]['text'] ?? '';
-        $finishReason = $decoded['stop_reason'] ?? '';
-        $inputTokens = $decoded['delta']['input_tokens'] ?? 0;
-        $outputTokens = $decoded['delta']['output_tokens'] ?? 0;
-        return new ApiResponse(
-            content: $content,
-            responseData: $decoded,
-            toolName: '',
-            finishReason: $finishReason,
-            toolCalls: null,
-            inputTokens: $inputTokens,
-            outputTokens: $outputTokens,
-        );
-    }
-
-    public function toPartialApiResponse(string $partialData) : PartialApiResponse {
-        $decoded = Json::parse($partialData, default: []);
-        $delta = $decoded['delta']['text'] ?? '';
-        $inputTokens = $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
-        $outputTokens = $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
-        $finishReason = $decoded['message']['stop_reason'] ?? $decoded['message']['stop_reason'] ?? '';
-        return new PartialApiResponse(
-            delta: $delta,
-            responseData: $decoded,
-            toolName: '',
-            finishReason: $finishReason,
-            inputTokens: $inputTokens,
-            outputTokens: $outputTokens,
-        );
-    }
-
     /////////////////////////////////////////////////////////////////////////////////////////////////
-
-    #[Override]
-    protected function getResponseFormat(): array {
-        return [];
-    }
 
     #[Override]
     protected function defaultBody(): array {
@@ -63,10 +25,6 @@ class AnthropicApiRequest extends ApiRequest
             'model' => $this->model,
         ], $this->options));
         return $body;
-    }
-
-    protected function getToolSchema(): array {
-        return $this->getResponseSchema() ?? $this->tools[0]['function']['parameters'] ?? [];
     }
 
     protected function getSystemInstruction() : string {

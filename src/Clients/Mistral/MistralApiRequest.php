@@ -3,17 +3,11 @@
 namespace Cognesy\Instructor\Clients\Mistral;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
 
 class MistralApiRequest extends ApiRequest
 {
-    protected function getResponseFormat(): array {
-        return ['type' => 'json_object'];
-    }
-
-    protected function getToolChoice(): string|array {
-        if (empty($this->tools)) {
-            return '';
-        }
-        return $this->toolChoice ?: 'any';
-    }
+    use Traits\HandlesTools;
+    use Traits\HandlesResponseFormat;
+    use HandlesResponse;
 }
