@@ -5,8 +5,10 @@ use Cognesy\Instructor\ApiClient\Requests\ApiChatCompletionRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 use Saloon\Http\Response;
 
+#[Deprecated]
 class ChatCompletionRequest extends ApiChatCompletionRequest
 {
     protected string $defaultEndpoint = '/messages';

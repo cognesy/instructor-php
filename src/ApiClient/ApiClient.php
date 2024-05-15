@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\ApiClient;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Factories\ModelFactory;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
@@ -41,11 +42,28 @@ abstract class ApiClient implements CanCallApi
         return $this->apiRequestFactory->fromRequest($requestClass, $request);
     }
 
+    public function request(array $messages, array $tools = [], array $toolChoice = [], array $responseFormat = [], string $model = '', array $options = []): static {
+        if (!isset($options['max_tokens'])) {
+            $options['max_tokens'] = $this->defaultMaxTokens;
+        }
+        $this->apiRequest = $this->apiRequestFactory->makeRequest(
+            requestClass: ApiRequest::class,
+            prompt: '',
+            messages: $messages,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            responseFormat: $responseFormat,
+            model: $this->getModel($model),
+            options: $options
+        );
+        return $this;
+    }
+
     public function chatCompletion(array $messages, string $model = '', array $options = []): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = $this->apiRequestFactory->makeChatCompletionRequest(
+        $this->apiRequest = $this->apiRequestFactory->makeChatCompletionRequest(
             requestClass: $this->getModeRequestClass(Mode::MdJson),
             prompt: '',
             messages: $messages,
@@ -59,7 +77,7 @@ abstract class ApiClient implements CanCallApi
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = $this->apiRequestFactory->makeJsonCompletionRequest(
+        $this->apiRequest = $this->apiRequestFactory->makeJsonCompletionRequest(
             requestClass: $this->getModeRequestClass(Mode::Json),
             prompt: '',
             messages: $messages,
@@ -74,7 +92,7 @@ abstract class ApiClient implements CanCallApi
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->request = $this->apiRequestFactory->makeToolsCallRequest(
+        $this->apiRequest = $this->apiRequestFactory->makeToolsCallRequest(
             requestClass: $this->getModeRequestClass(Mode::Tools),
             prompt: '',
             messages: $messages,

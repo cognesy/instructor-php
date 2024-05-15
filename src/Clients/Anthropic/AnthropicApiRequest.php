@@ -1,20 +1,61 @@
 <?php
+
 namespace Cognesy\Instructor\Clients\Anthropic;
 
-use Cognesy\Instructor\ApiClient\Requests\ApiToolsCallRequest;
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 use Cognesy\Instructor\Utils\Json;
-use JetBrains\PhpStorm\Deprecated;
+use Override;
 use Saloon\Http\Response;
 
-#[Deprecated]
-class ToolsCallRequest extends ApiToolsCallRequest
+class AnthropicApiRequest extends ApiRequest
 {
     protected string $defaultEndpoint = '/messages';
     protected string $xmlLineSeparator = "";
 
+    public function toApiResponse(Response $response): ApiResponse {
+        $decoded = Json::parse($response->body());
+        $content = $decoded['content'][0]['text'] ?? '';
+        $finishReason = $decoded['stop_reason'] ?? '';
+        $inputTokens = $decoded['delta']['input_tokens'] ?? 0;
+        $outputTokens = $decoded['delta']['output_tokens'] ?? 0;
+        return new ApiResponse(
+            content: $content,
+            responseData: $decoded,
+            toolName: '',
+            finishReason: $finishReason,
+            toolCalls: null,
+            inputTokens: $inputTokens,
+            outputTokens: $outputTokens,
+        );
+    }
+
+    public function toPartialApiResponse(string $partialData) : PartialApiResponse {
+        $decoded = Json::parse($partialData, default: []);
+        $delta = $decoded['delta']['text'] ?? '';
+        $inputTokens = $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
+        $outputTokens = $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
+        $finishReason = $decoded['message']['stop_reason'] ?? $decoded['message']['stop_reason'] ?? '';
+        return new PartialApiResponse(
+            delta: $delta,
+            responseData: $decoded,
+            toolName: '',
+            finishReason: $finishReason,
+            inputTokens: $inputTokens,
+            outputTokens: $outputTokens,
+        );
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    #[Override]
+    protected function getResponseFormat(): array {
+        return [];
+    }
+
+    #[Override]
     protected function defaultBody(): array {
         $body = array_filter(array_merge([
             'system' => $this->getSystemInstruction(),
@@ -24,7 +65,11 @@ class ToolsCallRequest extends ApiToolsCallRequest
         return $body;
     }
 
-    protected function getSystemInstruction() {
+    protected function getToolSchema(): array {
+        return $this->tools[0]['function']['parameters'] ?? $this->responseFormat['schema'] ?? [];
+    }
+
+    protected function getSystemInstruction() : string {
         $tool = $this->getToolSchema();
         $schema = (new SchemaBuilder)->fromArray($tool);
         $xmlSchema = $schema->toXml();
@@ -32,15 +77,7 @@ class ToolsCallRequest extends ApiToolsCallRequest
         return $system;
     }
 
-    protected function messages(): array {
-        return $this->messages;
-    }
-
-    protected function getToolSchema(): array {
-        return $this->tools[0]['function']['parameters'];
-    }
-
-    public function instructions() : string {
+    protected function instructions() : string {
         $lines = [
             "In this environment you have access to a set of tools you can use to answer the user's question.\n",
             "You may call them like this:\n",
@@ -72,24 +109,5 @@ class ToolsCallRequest extends ApiToolsCallRequest
             '</tools>',
         ];
         return implode($this->xmlLineSeparator, $lines);
-    }
-
-    public function toApiResponse(Response $response): ApiResponse {
-        $decoded = Json::parse($response);
-        $content = $decoded['content'][0]['text'] ?? '';
-        $finishReason = $decoded['stop_reason'] ?? '';
-        return new ApiResponse(
-            content: $content,
-            responseData: $decoded,
-            toolName: '',
-            finishReason: $finishReason,
-            toolCalls: null
-        );
-    }
-
-    public function toPartialApiResponse(string $partialData) : PartialApiResponse {
-        $decoded = Json::parse($partialData, default: []);
-        $argumentsJson = $decoded['delta']['text'] ?? '';
-        return new PartialApiResponse($argumentsJson, $decoded);
     }
 }

@@ -9,6 +9,8 @@ use GuzzleHttp\Promise\PromiseInterface;
 
 interface CanCallApi
 {
+    public function request(array $messages, array $tools = [], array $toolChoice = [], array $responseFormat = [], string $model = '', array $options = []): static;
+
     public function chatCompletion(array $messages, string $model = '', array $options = []): static;
 
     public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static;

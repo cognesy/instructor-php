@@ -1,6 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient;
+namespace Cognesy\Instructor\ApiClient\Factories;
+
+use Cognesy\Instructor\ApiClient\ModelParams;
 
 class ModelFactory
 {

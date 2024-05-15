@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient\Traits;
+namespace Cognesy\Instructor\ApiClient\Requests\Traits;
 
 use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 

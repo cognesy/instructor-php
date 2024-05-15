@@ -12,16 +12,22 @@ class Example
     public readonly string $exampleId;
     public readonly DateTimeImmutable $createdAt;
 
-    public string $headerTitle = "# Example:\n";
-    public string $headerInput = "## Input:\n";
-    public string $headerOutput = "## Output:\n";
+    public string $examplePrefix = "\n# Example:";
+    public string $inputPrefix = "## Input:";
+    public string $outputPrefix = "## Output:";
 
     public function __construct(
         private string $input,
         private array $output,
+        string $examplePrefix = "",
+        string $inputPrefix = "",
+        string $outputPrefix = ""
     ) {
         $this->exampleId = Uuid::uuid4();
         $this->createdAt = new DateTimeImmutable();
+        $this->examplePrefix = $examplePrefix ?: $this->examplePrefix;
+        $this->inputPrefix = $inputPrefix ?: $this->inputPrefix;
+        $this->outputPrefix = $outputPrefix ?: $this->outputPrefix;
     }
 
     static public function fromChat(array $messages, array $output) : self {
@@ -48,16 +54,18 @@ class Example
         return $this->output;
     }
 
+    public function outputString() : string {
+        return Json::encode($this->output);
+    }
+
     public function toString() : string {
         return <<<EXAMPLE
-            {$this->headerTitle}
-            {$this->headerInput}
-            ```
+            {$this->examplePrefix}
+            {$this->inputPrefix}
             {$this->input()}
-            ```
-            {$this->headerOutput}
-            ```
-            {$this->output()}
+            {$this->outputPrefix}
+            ```json
+            {$this->outputString()}
             ```
             EXAMPLE;
     }

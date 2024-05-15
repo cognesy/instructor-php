@@ -25,16 +25,7 @@ trait HandlesPrompts
         return $this;
     }
 
-//    public function appendInstructions(array $messages, array $jsonSchema) : array {
-//        $lastIndex = count($messages) - 1;
-//        if (!isset($messages[$lastIndex]['content'])) {
-//            $messages[$lastIndex]['content'] = '';
-//        }
-//        $messages[$lastIndex]['content'] .= $this->prompt() . Json::encode($jsonSchema);
-//        return $messages;
-//    }
-
-    public function appendInstructions(array $messages, string $prompt, array $jsonSchema) : array {
+    public function appendInstructions(array $messages, string $prompt, array $jsonSchema, array $examples) : array {
         if (empty($messages)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
@@ -45,6 +36,34 @@ trait HandlesPrompts
         if (!empty($jsonSchema)) {
             $messages[$lastIndex]['content'] .= Json::encode($jsonSchema);
         }
+        if (!empty($examples)) {
+            foreach ($examples as $example) {
+                $messages[$lastIndex]['content'] .= $example->toString() . "\n\n";
+            }
+        }
         return $messages;
+    }
+
+    public function prependInstructions(array $messages, string $prompt, array $jsonSchema, array $examples) : array {
+        if (empty($messages)) {
+            throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
+        }
+        $content = '';
+        if (!empty($this->prompt())) {
+            $content .= $prompt ?: $this->prompt();
+        }
+        if (!empty($jsonSchema)) {
+            $content .= Json::encode($jsonSchema);
+        }
+        if (!empty($examples)) {
+            foreach ($examples as $example) {
+                $content .= $example->toString() . "\n\n";
+            }
+        }
+        return array_merge(
+            [['role' => 'user', 'content' => $content]],
+            [['role' => 'assistant', 'content' => "Provide content for processing."]],
+            $messages
+        );
     }
 }

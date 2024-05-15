@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests;
 
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesApiRequestContext;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\ApiClient\Traits\HandlesApiRequestContext;
 use Cognesy\Instructor\Traits\HandlesApiCaching;
 use Cognesy\Instructor\Utils\Json;
 use Exception;
@@ -15,20 +15,27 @@ use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
-abstract class ApiRequest extends Request implements HasBody, Cacheable
+class ApiRequest extends Request implements HasBody, Cacheable
 {
     use HasJsonBody;
     use HandlesApiCaching;
     use HandlesApiRequestContext;
 
+    protected string $defaultEndpoint = '/chat/completions';
     protected Method $method = Method::POST;
     protected bool $debug = false;
-    protected string $prompt = '';
 
     public function __construct(
+        public string|array $messages = [],
+        public array $tools = [],
+        public string|array $toolChoice = [],
+        public string|array $responseFormat = [],
+        public string $model = '',
         public array $options = [],
         public string $endpoint = '',
     ) {
+        $this->messages = $this->normalizeMessages($messages);
+
         $this->debug = $this->options['debug'] ?? false;
         unset($this->options['debug']);
 
@@ -49,15 +56,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     public function isDebug(): bool {
         return $this->debug;
-    }
-
-    public function prompt() : string {
-        return $this->prompt;
-    }
-
-    public function withPrompt(string $prompt) : static {
-        $this->prompt = $prompt;
-        return $this;
     }
 
     public function resolveEndpoint() : string {
@@ -85,7 +83,79 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $messages;
     }
 
-    abstract protected function defaultBody(): array;
-    abstract public function toApiResponse(Response $response) : ApiResponse;
-    abstract public function toPartialApiResponse(string $partialData) : PartialApiResponse;
+    protected function defaultBody(): array {
+        return array_filter(array_merge([
+            'messages' => $this->messages(),
+            'model' => $this->model,
+            'tools' => $this->tools,
+            'tool_choice' => $this->getToolChoice(),
+            'response_format' => $this->getResponseFormat(),
+        ], $this->options));
+    }
+
+    protected function getToolChoice(): string|array {
+        if (empty($this->tools)) {
+            return '';
+        }
+        return $this->toolChoice ?: 'auto';
+    }
+
+    protected function getResponseSchema() : array {
+        return $this->responseFormat['schema'] ?? [];
+    }
+
+    protected function getResponseFormat(): array {
+        return $this->responseFormat['format'] ?? [];
+    }
+
+    protected function messages(): array {
+        return $this->messages;
+    }
+
+    public function toApiResponse(Response $response): ApiResponse {
+        $decoded = Json::parse($response->body());
+        $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
+        $toolName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
+        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
+        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
+        $contentMsg = $decoded['choices'][0]['message']['content'] ?? '';
+        $contentFnArgs = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
+        $content = match(true) {
+            !empty($contentMsg) => $contentMsg,
+            !empty($contentFnArgs) => $contentFnArgs,
+            default => ''
+        };
+        return new ApiResponse(
+            content: $content,
+            responseData: $decoded,
+            toolName: $toolName,
+            finishReason: $finishReason,
+            toolCalls: null,
+            inputTokens: $inputTokens,
+            outputTokens: $outputTokens,
+        );
+    }
+
+    public function toPartialApiResponse(string $partialData) : PartialApiResponse {
+        $decoded = Json::parse($partialData, default: []);
+        $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
+        $toolName = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
+        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
+        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
+        $deltaContent = $decoded['choices'][0]['delta']['content'] ?? '';
+        $deltaFnArgs = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
+        $delta = match(true) {
+            !empty($deltaContent) => $deltaContent,
+            !empty($deltaFnArgs) => $deltaFnArgs,
+            default => ''
+        };
+        return new PartialApiResponse(
+            delta: $delta,
+            responseData: $decoded,
+            toolName: $toolName,
+            finishReason: $finishReason,
+            inputTokens: $inputTokens,
+            outputTokens: $outputTokens,
+        );
+    }
 }

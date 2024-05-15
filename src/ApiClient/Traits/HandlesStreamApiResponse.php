@@ -28,7 +28,7 @@ trait HandlesStreamApiResponse
             if (empty($response) || $this->isDone($response)) {
                 continue;
             }
-            yield $this->request->toPartialApiResponse($response);
+            yield $this->apiRequest->toPartialApiResponse($response);
         }
     }
 

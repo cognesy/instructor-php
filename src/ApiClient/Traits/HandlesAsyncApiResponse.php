@@ -24,7 +24,7 @@ trait HandlesAsyncApiResponse
         $request = $this->getApiRequest();
         return $this->asyncRaw(
             request: $request,
-            onSuccess: fn(Response $response) => $this->request->toApiResponse($response),
+            onSuccess: fn(Response $response) => $this->apiRequest->toApiResponse($response),
             onError: fn(Exception $exception) => throw $exception
         );
     }

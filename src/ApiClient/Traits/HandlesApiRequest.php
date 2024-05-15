@@ -9,28 +9,28 @@ trait HandlesApiRequest
 {
     use HandlesQueryParams;
 
-    protected ApiRequest $request;
+    protected ApiRequest $apiRequest;
 
     public function withApiRequest(ApiRequest $request) : static {
-        $this->request = $request;
+        $this->apiRequest = $request;
         return $this;
     }
 
     public function getApiRequest() : ApiRequest {
-        if (empty($this->request)) {
+        if (empty($this->apiRequest)) {
             throw new Exception('Request is not set');
         }
         if (!empty($this->queryParams)) {
-            $this->request->query()->set($this->queryParams);
+            $this->apiRequest->query()->set($this->queryParams);
         }
-        return $this->request;
+        return $this->apiRequest;
     }
 
     protected function isStreamedRequest() : bool {
-        return $this->request->isStreamed();
+        return $this->apiRequest->isStreamed();
     }
 
     protected function withStreaming(bool $streaming) : void {
-        $this->request->config()->add('stream', $streaming);
+        $this->apiRequest->config()->add('stream', $streaming);
     }
 }

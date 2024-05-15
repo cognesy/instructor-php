@@ -26,7 +26,7 @@ trait HandlesApiResponse
         }
         $request = $this->getApiRequest();
         $response = $this->respondRaw($request);
-        return $this->request->toApiResponse($response);
+        return $this->apiRequest->toApiResponse($response);
 
     }
 

@@ -1,7 +1,10 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Requests;
 
-abstract class ApiChatCompletionRequest extends ApiRequest
+use JetBrains\PhpStorm\Deprecated;
+
+#[Deprecated]
+class ApiChatCompletionRequest extends ApiRequest
 {
     public function __construct(
         public string|array $messages = [],
@@ -9,18 +12,22 @@ abstract class ApiChatCompletionRequest extends ApiRequest
         public array $options = [],
         public string $endpoint = '',
     ) {
-        $this->messages = $this->normalizeMessages($messages);
-        parent::__construct($options, $endpoint);
+        parent::__construct(
+            messages: $messages,
+            model: $model,
+            options: $options,
+            endpoint: $endpoint
+        );
     }
 
-    protected function defaultBody(): array {
-        return array_filter(array_merge([
-            'messages' => $this->messages(),
-            'model' => $this->model,
-        ], $this->options));
-    }
-
-    protected function messages(): array {
-        return $this->messages;
-    }
+//    protected function defaultBody(): array {
+//        return array_filter(array_merge([
+//            'messages' => $this->messages(),
+//            'model' => $this->model,
+//        ], $this->options));
+//    }
+//
+//    protected function messages(): array {
+//        return $this->messages;
+//    }
 }

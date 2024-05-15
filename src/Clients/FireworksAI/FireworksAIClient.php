@@ -3,9 +3,11 @@ namespace Cognesy\Instructor\Clients\FireworksAI;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
+use Override;
 
 class FireworksAIClient extends ApiClient
 {
@@ -34,19 +36,23 @@ class FireworksAIClient extends ApiClient
 
     /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
+    #[Override]
     protected function getModeRequestClass(Mode $mode) : string {
-        return match($mode) {
-            Mode::MdJson => ChatCompletionRequest::class,
-            Mode::Json => JsonCompletionRequest::class,
-            Mode::Tools => ToolsCallRequest::class,
-            default => throw new Exception('Unknown mode')
-        };
+        return ApiRequest::class;
+//        return match($mode) {
+//            Mode::MdJson => ApiRequest::class,
+//            Mode::Json => ApiRequest::class,
+//            Mode::Tools => ApiRequest::class,
+//            default => throw new Exception('Unknown mode')
+//        };
     }
 
+    #[Override]
     protected function isDone(string $data): bool {
         return $data === '[DONE]';
     }
 
+    #[Override]
     protected function getData(string $data): string {
         if (str_starts_with($data, 'data:')) {
             return trim(substr($data, 5));

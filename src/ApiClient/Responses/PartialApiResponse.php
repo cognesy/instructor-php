@@ -9,7 +9,6 @@ class PartialApiResponse
         public array  $responseData,
         public string $toolName = '',
         public string $finishReason = '',
-        public string $id = '',
         public int $inputTokens = 0,
         public int $outputTokens = 0,
     ) {}

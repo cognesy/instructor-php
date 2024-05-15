@@ -7,6 +7,7 @@ to LLM for different modes, you can use the `prompt` parameter in the
 It will override the default Instructor prompts, allowing you to fully
 customize how LLM is instructed to process the input.
 
+
 ## Prompting models with tool calling support
 
 `Mode::Tools` is usually most reliable way to get structured outputs following

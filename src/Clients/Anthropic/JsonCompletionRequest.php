@@ -5,8 +5,10 @@ use Cognesy\Instructor\ApiClient\Requests\ApiJsonCompletionRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 use Saloon\Http\Response;
 
+#[Deprecated]
 class JsonCompletionRequest extends ApiJsonCompletionRequest
 {
     protected string $defaultEndpoint = '/messages';

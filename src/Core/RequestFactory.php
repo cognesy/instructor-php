@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
-use Cognesy\Instructor\ApiClient\ModelFactory;
+use Cognesy\Instructor\ApiClient\Factories\ModelFactory;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 

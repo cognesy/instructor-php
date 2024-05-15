@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
+use Override;
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\HeaderAuthenticator;
 
@@ -26,10 +27,12 @@ class AzureConnector extends ApiConnector
         $this->deploymentId = $deploymentId;
     }
 
+    #[Override]
     public function resolveBaseUrl(): string {
         return "https://{$this->resourceName}.{$this->baseUrl}/openai/deployments/{$this->deploymentId}";
     }
 
+    #[Override]
     protected function defaultAuth() : Authenticator {
         return new HeaderAuthenticator($this->apiKey, 'api-key');
     }
