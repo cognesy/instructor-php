@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits;
 
-use Cognesy\Instructor\Core\ResponseModelFactory;
+use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 
 trait HandlesSchema

@@ -1,11 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
-use Cognesy\Instructor\ApiClient\Factories\ModelFactory;
+use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\EventDispatcher;
 
 class RequestFactory
 {
@@ -13,6 +14,8 @@ class RequestFactory
         protected ApiClientFactory $clientFactory,
         protected ResponseModelFactory $responseModelFactory,
         protected ModelFactory $modelFactory,
+        protected ApiRequestFactory $apiRequestFactory,
+        protected EventDispatcher $events,
     ) {}
 
     public function create(
@@ -43,6 +46,7 @@ class RequestFactory
             $this->clientFactory->getDefault(),
             $this->modelFactory,
             $this->responseModelFactory,
+            $this->apiRequestFactory,
         );
         return $request;
     }
@@ -63,6 +67,10 @@ class RequestFactory
                     $request->toolDescription()
                 )
             );
+        }
+        // make sure the request has APIRequestFactory
+        if ($request->apiRequestFactory() === null) {
+            $request->withApiRequestFactory($this->apiRequestFactory);
         }
         return $request;
     }

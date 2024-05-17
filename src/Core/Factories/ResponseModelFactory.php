@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;

@@ -10,5 +10,5 @@ class Response {
     /** @var PartialApiResponse[] */
     private array $partialApiResponses = [];
 
-    private mixed $returnedResponse;
+    private mixed $returnedValue;
 }

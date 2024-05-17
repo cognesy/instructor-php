@@ -36,10 +36,8 @@ class MistralClient extends ApiClient
         ));
     }
 
-    /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
-
     #[Override]
-    protected function getModeRequestClass(Mode $mode) : string {
+    public function getModeRequestClass(Mode $mode) : string {
         return MistralApiRequest::class;
     }
 }

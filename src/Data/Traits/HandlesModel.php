@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Data\Traits;
 
-use Cognesy\Instructor\ApiClient\Factories\ModelFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
+use Cognesy\Instructor\Core\Factories\ModelFactory;
 
 trait HandlesModel
 {

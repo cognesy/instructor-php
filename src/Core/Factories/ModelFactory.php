@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\ApiClient\Factories;
+namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\ApiClient\ModelParams;
 

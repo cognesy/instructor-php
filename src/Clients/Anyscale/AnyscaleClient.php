@@ -35,10 +35,8 @@ class AnyscaleClient extends ApiClient
         ));
     }
 
-    /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
-
     #[Override]
-    protected function getModeRequestClass(Mode $mode) : string {
+    public function getModeRequestClass(Mode $mode) : string {
         return AnyscaleApiRequest::class;
     }
 }

@@ -208,7 +208,7 @@ return function(Configuration $config) : Configuration
             'events' => $config->reference(EventDispatcher::class),
             'connector' => $config->reference(OpenAIConnector::class),
             'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-            'defaultModel' => 'gpt-4-turbo',
+            'defaultModel' => 'gpt-4o',
             'defaultMaxTokens' => 256,
         ],
         getInstance: function($context) {

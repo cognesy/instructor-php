@@ -107,7 +107,7 @@ $events = $instructor
         responseModel: Sequence::of(ProjectEvent::class),
         mode: Mode::Json,
         options: [
-            'max_tokens' => 2048,
+            'max_tokens' => 4096,
             'stream' => true,
         ])
     ->get();

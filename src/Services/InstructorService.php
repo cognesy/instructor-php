@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Services;
 
-use Cognesy\Instructor\Core\StreamFactory;
+use Cognesy\Instructor\Core\Factories\StreamFactory;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\Response;
 use Cognesy\Instructor\Stream;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Stream;

@@ -66,7 +66,7 @@ class RequestHandler implements CanHandleRequest
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");
         }
-        $apiRequest = $apiClient->createApiRequest($request);
+        $apiRequest = $request->toApiRequest();
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));
             $apiResponse = $apiClient->withApiRequest($apiRequest)->get();

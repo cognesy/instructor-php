@@ -75,7 +75,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");
         }
-        $apiRequest = $apiClient->createApiRequest($request);
+        $apiRequest = $request->toApiRequest();
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));
             $stream = $apiClient->withApiRequest($apiRequest)->stream();

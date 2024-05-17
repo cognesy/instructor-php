@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits;
 
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Json;
 use Exception;
@@ -14,6 +15,8 @@ trait HandlesPrompts
         Mode::Tools->value => "\nExtract correct and accurate data from the messages using provided tools. Response must be JSON object following provided schema.\n",
     ];
 
+    private $instructionsCallback = null;
+
     private string $prompt;
 
     public function prompt() : string {
@@ -25,26 +28,23 @@ trait HandlesPrompts
         return $this;
     }
 
-    public function appendInstructions(array $messages, string $prompt, array $jsonSchema, array $examples) : array {
-        if (empty($messages)) {
-            throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
+    // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
+
+    protected function makeInstructions() : array {
+        if (!empty($this->instructionsCallback)) {
+            $instructions = ($this->instructionsCallback)($this);
+        } else {
+            $instructions = $this->prependInstructions(
+                $this->messages,
+                $this->prompt,
+                $this->responseModel,
+                $this->examples
+            );
         }
-        $lastIndex = count($messages) - 1;
-        if (!empty($this->prompt())) {
-            $messages[$lastIndex]['content'] .= $prompt ?: $this->prompt();
-        }
-        if (!empty($jsonSchema)) {
-            $messages[$lastIndex]['content'] .= Json::encode($jsonSchema);
-        }
-        if (!empty($examples)) {
-            foreach ($examples as $example) {
-                $messages[$lastIndex]['content'] .= $example->toString() . "\n\n";
-            }
-        }
-        return $messages;
+        return $instructions;
     }
 
-    public function prependInstructions(array $messages, string $prompt, array $jsonSchema, array $examples) : array {
+    protected function prependInstructions(array $messages, string $prompt, ?ResponseModel $responseModel, array $examples) : array {
         if (empty($messages)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
@@ -52,6 +52,7 @@ trait HandlesPrompts
         if (!empty($this->prompt())) {
             $content .= $prompt ?: $this->prompt();
         }
+        $jsonSchema = $responseModel?->jsonSchema();
         if (!empty($jsonSchema)) {
             $content .= Json::encode($jsonSchema);
         }

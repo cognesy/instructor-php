@@ -41,10 +41,8 @@ class AzureClient extends ApiClient
         $this->queryParams = ['api-version' => $apiVersion];
     }
 
-    /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
-
     #[Override]
-    protected function getModeRequestClass(Mode $mode) : string {
+    public function getModeRequestClass(Mode $mode) : string {
         return AzureApiRequest::class;
     }
 }

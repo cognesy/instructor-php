@@ -11,7 +11,7 @@ class OpenAIClient extends ApiClient
 {
     use Traits\HandlesStreamData;
 
-    public string $defaultModel = 'openai:gpt-4-turbo';
+    public string $defaultModel = 'openai:gpt-4o';
     public int $defaultMaxTokens = 256;
 
     public function __construct(
@@ -36,10 +36,8 @@ class OpenAIClient extends ApiClient
         ));
     }
 
-    /// INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
-
     #[Override]
-    protected function getModeRequestClass(Mode $mode) : string {
+    public function getModeRequestClass(Mode $mode) : string {
         return OpenAIApiRequest::class;
     }
 }

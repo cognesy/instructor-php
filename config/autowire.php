@@ -5,7 +5,6 @@ use Cognesy\Instructor\ApiClient\CacheConfig;
 use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
-use Cognesy\Instructor\ApiClient\Factories\ModelFactory;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
@@ -13,13 +12,14 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Contracts\CanValidateObject;
-use Cognesy\Instructor\Core\RequestFactory;
+use Cognesy\Instructor\Core\Factories\ModelFactory;
+use Cognesy\Instructor\Core\Factories\RequestFactory;
+use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
 use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Core\Response\ResponseValidator;
-use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
@@ -94,6 +94,7 @@ function autowire(
                 'mistral:mistral-medium' => $config->reference('mistral:mistral-medium'),
                 'mistral:mistral-large' => $config->reference('mistral:mistral-large'),
                 'ollama:llama2' => $config->reference('ollama:llama2'),
+                'openai:gpt-4o' => $config->reference('openai:gpt-4o'),
                 'openai:gpt-4-turbo' => $config->reference('openai:gpt-4-turbo'),
                 'openai:gpt-4' => $config->reference('openai:gpt-4'),
                 'openai:gpt-4-32k' => $config->reference('openai:gpt-4-32k'),
@@ -115,6 +116,8 @@ function autowire(
             'clientFactory' => $config->reference(ApiClientFactory::class),
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'modelFactory' => $config->reference(ModelFactory::class),
+            'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
+            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 

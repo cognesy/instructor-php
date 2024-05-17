@@ -3,9 +3,10 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
-use Cognesy\Instructor\ApiClient\Factories\ModelFactory;
+use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Core\ResponseModelFactory;
+use Cognesy\Instructor\Core\Factories\ModelFactory;
+use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
 
 class Request
@@ -18,6 +19,7 @@ class Request
     use Traits\HandlesPrompts;
     use Traits\HandlesMessages;
     use Traits\HandlesExamples;
+    use Traits\HandlesApiRequestFactory;
 
     private Mode $mode;
 
@@ -36,6 +38,7 @@ class Request
         CanCallApi $client = null,
         ModelFactory $modelFactory = null,
         ResponseModelFactory $responseModelFactory = null,
+        ApiRequestFactory $apiRequestFactory = null,
     ) {
         $this->messages = $messages;
         $this->requestedSchema = $responseModel;
@@ -45,11 +48,12 @@ class Request
         $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
         $this->mode = $mode;
         $this->client = $client;
-        $this->prompt = $prompt ?: $this->defaultPrompts[$this->mode->value];
+        $this->prompt = $prompt;
         $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
 
         $this->modelFactory = $modelFactory;
         $this->responseModelFactory = $responseModelFactory;
+        $this->apiRequestFactory = $apiRequestFactory;
 
         $this->withExamples($examples);
         $this->withModel($model);

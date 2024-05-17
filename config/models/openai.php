@@ -6,6 +6,25 @@ use Cognesy\Instructor\Configuration\Configuration;
 return function(Configuration $config) : Configuration {
     $config->declare(
         class: ModelParams::class,
+        name: 'openai:gpt-4o',
+        context: [
+            'label' => 'OpenAI GPT4 Turbo',
+            'type' => 'gpt4',
+            'name' => 'gpt-4o',
+            'maxTokens' => 128_000,
+            'contextSize' => 128_000,
+            'inputCost' => 1,
+            'outputCost' => 1,
+            'roleMap' => [
+                'user' => 'user',
+                'assistant' => 'assistant',
+                'system' => 'system'
+            ],
+        ],
+    );
+
+    $config->declare(
+        class: ModelParams::class,
         name: 'openai:gpt-4-turbo',
         context: [
             'label' => 'OpenAI GPT4 Turbo',
