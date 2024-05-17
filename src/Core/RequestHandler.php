@@ -38,19 +38,25 @@ class RequestHandler implements CanHandleRequest
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries()) {
             // (1) get the API client response
-            $apiResponse = $this->getApiResponse($request->copy($this->messages));
+            $apiResponse = $this->getApiResponse($request);
             $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
 
             // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
             $processingResult = $this->responseGenerator->makeResponse($apiResponse, $responseModel);
             if ($processingResult->isSuccess()) {
+                // get final value
+                $value = $processingResult->unwrap();
+                // store response
+                $request->addResponse($this->messages, $apiResponse, [], $value);
                 // we're done here - no need to retry
-                return $processingResult->unwrap();
+                return $value;
             }
 
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
-            $this->messages = $request->makeRetryMessages($this->messages, $request, $apiResponse->content, $errors);
+            // store failed response
+            $request->addFailedResponse($this->messages, $apiResponse, [], [$errors]);
+            $this->messages = $request->makeRetryMessages($this->messages, $apiResponse->content, $errors);
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));

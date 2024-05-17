@@ -17,4 +17,11 @@ trait HandlesMessages
         $this->messages = $messages;
         return $this;
     }
+
+    protected function normalizeMessages(string|array $messages): array {
+        if (!is_array($messages)) {
+            return [['role' => 'user', 'content' => $messages]];
+        }
+        return $messages;
+    }
 }

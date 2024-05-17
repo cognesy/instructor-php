@@ -36,7 +36,8 @@ class PartialsGenerator implements CanGeneratePartials
     private string $responseJson = '';
     private string $responseText = '';
     private string $previousHash = '';
-    private PartialApiResponse $lastPartialResponse;
+    private array $partialResponses = [];
+    // private PartialApiResponse $lastPartialResponse;
     private ToolCalls $toolCalls;
     private SequenceableHandler $sequenceableHandler;
     // options
@@ -57,8 +58,10 @@ class PartialsGenerator implements CanGeneratePartials
         /** @var \Cognesy\Instructor\ApiClient\Responses\PartialApiResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
+            // store partial response
+            $this->partialResponses[] = $partialResponse;
             // store for finalization when we leave the loop
-            $this->lastPartialResponse = $partialResponse;
+            // $this->lastPartialResponse = $partialResponse;
 
             // situation 1: new function call
             $maybeToolName = $partialResponse->toolName;
@@ -93,7 +96,7 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
             yield $result->unwrap();
         }
-        $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse));
+        $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse()));
 
         // finalize last function call
         // check if there are any toolCalls
@@ -158,12 +161,23 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     public function getCompleteResponse() : ApiResponse {
+        $lastPartialResponse = $this->lastPartialResponse();
         return new ApiResponse(
             content: $this->responseText,
-            responseData: $this->lastPartialResponse->responseData ?? [],
-            finishReason: $this->lastPartialResponse->finishReason ?? '',
+            responseData: [],
+            toolName: $lastPartialResponse->toolName ?? '',
+            finishReason: $lastPartialResponse->finishReason ?? '',
             toolCalls: $this->toolCalls,
         );
+    }
+
+    public function lastPartialResponse() : PartialApiResponse {
+        $index = count($this->partialResponses) - 1;
+        return $this->partialResponses[$index];
+    }
+
+    public function partialResponses() : array {
+        return $this->partialResponses;
     }
 
     protected function newToolCall(string $name) : ToolCall {

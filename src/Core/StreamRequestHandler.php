@@ -40,7 +40,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
         $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries()) {
             // (0) process stream and return partial results...
-            yield from $this->getStreamedResponses($request->copy($this->messages));
+            yield from $this->getStreamedResponses($request);
 
             // (1) ...then get API client response
             $apiResponse = $this->partialsGenerator->getCompleteResponse();
@@ -49,15 +49,21 @@ class StreamRequestHandler implements CanHandleStreamRequest
             // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
             $processingResult = $this->responseGenerator->makeResponse($apiResponse, $responseModel);
             if ($processingResult->isSuccess()) {
+                // get final value
+                $value = $processingResult->unwrap();
+                // store response
+                $request->addResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), $value);
                 // return final result
-                yield $processingResult->unwrap();
+                yield $value;
                 // we're done here - no need to retry
                 return;
             }
 
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
-            $this->messages = $request->makeRetryMessages($this->messages, $request, $apiResponse->content, [$errors]);
+            // store failed response
+            $request->addFailedResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), [$errors]);
+            $this->messages = $request->makeRetryMessages($this->messages, $apiResponse->content, [$errors]);
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));

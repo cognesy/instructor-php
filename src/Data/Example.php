@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 
 class Example
 {
-    public readonly string $exampleId;
+    public readonly string $uid;
     public readonly DateTimeImmutable $createdAt;
 
     public string $examplePrefix = "\n# Example:";
@@ -19,15 +19,11 @@ class Example
     public function __construct(
         private string $input,
         private array $output,
-        string $examplePrefix = "",
-        string $inputPrefix = "",
-        string $outputPrefix = ""
+        string $uid = null,
+        DateTimeImmutable $createdAt = null,
     ) {
-        $this->exampleId = Uuid::uuid4();
-        $this->createdAt = new DateTimeImmutable();
-        $this->examplePrefix = $examplePrefix ?: $this->examplePrefix;
-        $this->inputPrefix = $inputPrefix ?: $this->inputPrefix;
-        $this->outputPrefix = $outputPrefix ?: $this->outputPrefix;
+        $this->uid = $uid ?? Uuid::uuid4();
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
     }
 
     static public function fromChat(array $messages, array $output) : self {
@@ -44,6 +40,19 @@ class Example
 
     static public function fromData(mixed $data, array $output) : self {
         return new self(Json::encode($data), $output);
+    }
+
+    static public function fromJson(string $json) : self {
+        $data = Json::parse($json);
+        if (!isset($data['input']) || !isset($data['output'])) {
+            throw new Exception("Invalid JSON data for example - missing `input` or `output` fields");
+        }
+        return new self(
+            input: $data['input'],
+            output: $data['output'],
+            uid: $data['id'] ?? null,
+            createdAt: new DateTimeImmutable($data['created_at']) ?? null
+        );
     }
 
     public function input() : string {
@@ -70,26 +79,12 @@ class Example
             EXAMPLE;
     }
 
-    public function fromJson(string $json) : self {
-        $data = Json::parse($json);
-        return new self($data['input'], $data['output']);
-    }
-
     public function toJson() : string {
         return Json::encode([
-            'id' => $this->exampleId,
-            'createdAt' => $this->createdAt->format('Y-m-d H:i:s'),
+            'id' => $this->uid,
+            'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'input' => $this->input(),
             'output' => $this->output(),
         ], JSON_PRETTY_PRINT);
-    }
-
-    public function appendTo(array $messages) : array {
-        if (empty($messages)) {
-            throw new Exception("Cannot append example to empty messages array");
-        }
-        $count = count($messages);
-        $messages[$count-1]['content'] .= "\n" . $this->toString();
-        return $messages;
     }
 }

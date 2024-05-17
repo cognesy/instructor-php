@@ -40,7 +40,7 @@ class Request
         ResponseModelFactory $responseModelFactory = null,
         ApiRequestFactory $apiRequestFactory = null,
     ) {
-        $this->messages = $messages;
+        $this->messages = $this->normalizeMessages($messages);
         $this->requestedSchema = $responseModel;
         $this->maxRetries = $maxRetries;
         $this->options = $options;

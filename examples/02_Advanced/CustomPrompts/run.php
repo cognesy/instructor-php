@@ -24,36 +24,33 @@ class User {
 $instructor = (new Instructor)
     ->onEvent(RequestSentToLLM::class, fn($event)=>dump($event->request->body()));
 
-$jsonSchema = json_encode($instructor->createJsonSchema(User::class));
+$jsonSchema = json_encode($instructor->createJsonSchema(responseModel: User::class));
 
 print("\n# Request for Mode::Tools:\n\n");
 $user = $instructor
-    ->request(
+    ->respond(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
         toolName: 'extract',
         toolDescription: 'Extract information from provided content',
-        mode: Mode::Tools)
-    ->get();
+        mode: Mode::Tools);
 
 print("\n# Request for Mode::Json:\n\n");
 $user = $instructor
-    ->request(
+    ->respond(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n" . $jsonSchema,
-        mode: Mode::Json)
-    ->get();
+        mode: Mode::Json);
 
 print("\n# Request for Mode::MdJson:\n\n");
 $user = $instructor
-    ->request(
+    ->respond(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n" . $jsonSchema,
-        mode: Mode::MdJson)
-    ->get();
+        mode: Mode::MdJson);
 
 ?>
 ```

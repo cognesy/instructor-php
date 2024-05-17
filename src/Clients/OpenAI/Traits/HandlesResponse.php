@@ -13,8 +13,6 @@ trait HandlesResponse
         $decoded = Json::parse($response->body());
         $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
         $toolName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
-        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
-        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
         $contentMsg = $decoded['choices'][0]['message']['content'] ?? '';
         $contentFnArgs = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
         $content = match(true) {
@@ -22,6 +20,8 @@ trait HandlesResponse
             !empty($contentFnArgs) => $contentFnArgs,
             default => ''
         };
+        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
+        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
         return new ApiResponse(
             content: $content,
             responseData: $decoded,
@@ -37,8 +37,6 @@ trait HandlesResponse
         $decoded = Json::parse($partialData, default: []);
         $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
         $toolName = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
-        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
-        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
         $deltaContent = $decoded['choices'][0]['delta']['content'] ?? '';
         $deltaFnArgs = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
         $delta = match(true) {
@@ -46,6 +44,8 @@ trait HandlesResponse
             !empty($deltaFnArgs) => $deltaFnArgs,
             default => ''
         };
+        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
+        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
         return new PartialApiResponse(
             delta: $delta,
             responseData: $decoded,
