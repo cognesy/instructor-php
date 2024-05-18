@@ -59,8 +59,6 @@ class ChainOfSummaries {
     public array $summaries;
 }
 
-$schema = (new Instructor)->createJsonSchema(ChainOfSummaries::class);
-
 $summaries = (new Instructor)
     ->request(
         messages: $report,
@@ -77,3 +75,5 @@ foreach ($summaries->summaries as $summary) {
     print("Expanded summary - iteration #{$summary->iteration}:\n");
     print("{$summary->expandedSummary}\n\n");
 }
+?>
+```

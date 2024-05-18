@@ -58,8 +58,6 @@ class ChainOfSummaries {
     public array $summaries;
 }
 
-$schema = (new Instructor)->createJsonSchema(ChainOfSummaries::class);
-
 $summaries = (new Instructor)
     ->request(
         messages: $report,
