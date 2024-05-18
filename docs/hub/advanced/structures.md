@@ -43,18 +43,21 @@ $structure = Structure::define('person', [
 ], 'A person object');
 
 $text = <<<TEXT
-    Jane Doe lives in Springfield. She is 25 years old and works as a line worker.
+    Jane Doe lives in Springfield, 50210. She is 25 years old and works as manager at McDonald's.
     McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
     TEXT;
 
 print("INPUT:\n$text\n\n");
-
 $person = (new Instructor)->respond(
     messages: $text,
     responseModel: $structure,
 );
 
 print("OUTPUT:\n");
-dump($person);
+print("Name: " . $person->name . "\n");
+print("Age: " . $person->age . "\n");
+print("Address / city: " . $person->address->city . "\n");
+print("Address / ZIP: " . $person->address->zip . "\n");
+print("Role: " . $person->role . "\n");
 ?>
 ```

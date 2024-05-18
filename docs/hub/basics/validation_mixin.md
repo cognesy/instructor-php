@@ -16,6 +16,7 @@ is `1010` instead of `2010`) and respond with correct graduation year.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;

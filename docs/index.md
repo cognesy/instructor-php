@@ -56,9 +56,9 @@ Instructor will repeat requests in case of validation or deserialization error u
 
 ## Explore
 
- - [Philosophy of Instructor](./philosophy.md)
- - [Cookbook](./examples.md)
- - [Internals of Instructor](./internals.md)
+ - [Philosophy of Instructor](./concepts/philosophy.md)
+ - [Cookbook](./hub/index.md)
+ - [Internals of Instructor](./internals/index.md)
 
 Also, check examples in the `examples` directory of this repository for fully working, tested code examples that you can execute from the command line and see Instructor in action.
 

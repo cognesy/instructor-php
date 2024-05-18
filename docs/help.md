@@ -12,7 +12,7 @@ The [concepts](concepts/prompting.md) section explains the core concepts of Inst
 
 ## :material-chef-hat: Cookbooks
 
-The [cookbooks](examples/index.md) are a great place to start. They contain a variety of examples that demonstrate how to use Instructor in different scenarios.
+The [cookbooks](./hub/index.md) are a great place to start. They contain a variety of examples that demonstrate how to use Instructor in different scenarios.
 
 ## :material-book: Blog
 

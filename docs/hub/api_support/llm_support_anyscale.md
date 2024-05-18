@@ -20,6 +20,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
@@ -55,7 +56,7 @@ $user = $instructor
         responseModel: User::class,
         model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
         mode: Mode::Json,
-        //options: ['stream' => true ]
+        //options: ['stream' => true],
     );
 
 print("Completed response model:\n\n");
