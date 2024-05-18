@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\ApiClient\Contracts;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
+use Cognesy\Instructor\Enums\Mode;
 use Generator;
 use GuzzleHttp\Promise\PromiseInterface;
 
@@ -25,4 +26,6 @@ interface CanCallApi
     public function async() : PromiseInterface;
 
     public function defaultModel() : string;
+
+    public function getModeRequestClass(Mode $mode) : string;
 }

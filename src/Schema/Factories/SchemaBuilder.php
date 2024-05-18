@@ -64,9 +64,12 @@ class SchemaBuilder
      */
     private function makePropertySchema(string $name, array $jsonSchema) : Schema {
         return match ($jsonSchema['type']) {
-            'object' => $this->makeObjectProperty($name, $jsonSchema),
-            'array' => $this->makeArrayProperty($name, $jsonSchema),
-            'string', 'boolean', 'number', 'integer' => $this->makeEnumOrScalarProperty($name, $jsonSchema),
+            TypeDetails::JSON_OBJECT => $this->makeObjectProperty($name, $jsonSchema),
+            TypeDetails::JSON_ARRAY => $this->makeArrayProperty($name, $jsonSchema),
+            TypeDetails::JSON_STRING,
+            TypeDetails::JSON_BOOLEAN,
+            TypeDetails::JSON_NUMBER,
+            TypeDetails::JSON_INTEGER => $this->makeEnumOrScalarProperty($name, $jsonSchema),
             default => throw new \Exception('Unknown type: '.$jsonSchema['type']),
         };
     }
@@ -101,16 +104,15 @@ class SchemaBuilder
      * Create enum property schema
      */
     private function makeEnumProperty(string $name, array $jsonSchema) : EnumSchema {
-        if (!in_array($jsonSchema['type'], ['string', 'integer'])) {
+        if (!in_array($jsonSchema['type'], [TypeDetails::JSON_STRING, TypeDetails::JSON_INTEGER])) {
             throw new \Exception('Enum type must be either string or int');
         }
-        if (!($class = $jsonSchema['$comment']??null)) {
+        if (!($class = $jsonSchema['$comment'] ?? null)) {
             throw new \Exception('Enum must have $comment field with the target class name');
         }
         $factory = new TypeDetailsFactory();
         $type = $factory->enumType($class, TypeDetails::fromJsonType($jsonSchema['type']), $jsonSchema['enum']);
-        return new EnumSchema(name: $name, description: $jsonSchema['description']??'', type: $type,
-        );
+        return new EnumSchema(type: $type, name: $name, description: $jsonSchema['description'] ?? '');
     }
 
     /**
@@ -122,9 +124,9 @@ class SchemaBuilder
         }
         $factory = new TypeDetailsFactory();
         return new ArraySchema(
+            type: $factory->arrayType($this->makeNestedType($jsonSchema['items'])),
             name: $name,
             description: $jsonSchema['description'] ?? '',
-            type: $factory->arrayType($this->makeNestedType($jsonSchema['items'])),
             nestedItemSchema: $this->makePropertySchema('', $jsonSchema['items'] ?? []),
         );
     }
@@ -133,14 +135,14 @@ class SchemaBuilder
      * Create object property schema
      */
     private function makeObjectProperty(string $name, array $jsonSchema) : ObjectSchema {
-        if (!($class = $jsonSchema['$comment']??null)) {
+        if (!($class = $jsonSchema['$comment'] ?? null)) {
             throw new \Exception('Object must have $comment field with the target class name');
         }
         $factory = new TypeDetailsFactory();
         return new ObjectSchema(
+            type: $factory->objectType($class),
             name: $name,
             description: $jsonSchema['description'] ?? '',
-            type: $factory->objectType($class),
             properties: $this->makeProperties($jsonSchema['properties'] ?? []),
             required: $jsonSchema['required'] ?? [],
         );
@@ -150,7 +152,7 @@ class SchemaBuilder
      * Create nested type (for array property)
      */
     private function makeNestedType(array $jsonSchema) : TypeDetails {
-        if ($jsonSchema['type'] === 'array') {
+        if ($jsonSchema['type'] === TypeDetails::JSON_ARRAY) {
             throw new \Exception('Nested type cannot be array');
         }
 
@@ -168,7 +170,7 @@ class SchemaBuilder
                 throw new \Exception('Nested enum type must be either string or int');
             }
             if (!($class = $jsonSchema['$comment'] ?? null)) {
-                throw new \Exception('Nested enum type cannot have $comment field');
+                throw new \Exception('Nested enum type needs $comment field');
             }
             return $factory->enumType($class, TypeDetails::fromJsonType($jsonSchema['type']), $jsonSchema['enum']);
         }

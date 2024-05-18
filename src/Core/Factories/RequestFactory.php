@@ -21,10 +21,10 @@ class RequestFactory
     public function create(
         string|array $messages,
         string|object|array $responseModel,
-        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
+        array $examples = [],
         string $toolName = '',
         string $toolDescription = '',
         string $prompt = '',
@@ -32,21 +32,21 @@ class RequestFactory
         Mode $mode = Mode::Tools,
     ) : Request {
         $request = new Request(
-            $messages,
-            $responseModel,
-            $examples,
-            $model,
-            $maxRetries,
-            $options,
-            $toolName,
-            $toolDescription,
-            $prompt,
-            $retryPrompt,
-            $mode,
-            $this->clientFactory->getDefault(),
-            $this->modelFactory,
-            $this->responseModelFactory,
-            $this->apiRequestFactory,
+            messages: $messages,
+            responseModel: $responseModel,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            examples: $examples,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+            prompt: $prompt,
+            retryPrompt: $retryPrompt,
+            mode: $mode,
+            client: $this->clientFactory->getDefault(),
+            modelFactory: $this->modelFactory,
+            responseModelFactory: $this->responseModelFactory,
+            apiRequestFactory: $this->apiRequestFactory,
         );
         return $request;
     }
@@ -62,9 +62,9 @@ class RequestFactory
         if ($request->responseModel() === null) {
             $request->withResponseModel(
                 $this->responseModelFactory->fromAny(
-                    $request->requestedSchema(),
-                    $request->toolName(),
-                    $request->toolDescription()
+                    requestedModel: $request->requestedSchema(),
+                    toolName: $request->toolName(),
+                    toolDescription: $request->toolDescription()
                 )
             );
         }

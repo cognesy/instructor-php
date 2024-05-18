@@ -10,3 +10,12 @@ Another reason is that we need to handle custom types, such as Money, Date, etc.
 Need to document how to write and plug in custom field / object deserializer into Instructor.
 
 Custom deserialization strategy is also needed for partial updates, maybe for streaming too.
+
+### CanProcessResponseMessage
+
+To manually process text of response.
+
+### CanProcessRawResponse
+
+To work with raw response object.
+

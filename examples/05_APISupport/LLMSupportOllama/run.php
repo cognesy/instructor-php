@@ -31,12 +31,20 @@ class User {
 $client = new OllamaClient();
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient($client)
+    ->onEvent(\Cognesy\Instructor\Events\Request\RequestSentToLLM::class, function($event) {
+        print("Request sent to LLM:\n\n");
+        dump($event->request);
+    })
+    ->onEvent(\Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM::class, function($event) {
+    print("Received response from LLM:\n\n");
+    dump($event->response);
+});
 
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'llama3:latest',
+    model: 'llama2:latest',
     mode: Mode::Json,
 );
 

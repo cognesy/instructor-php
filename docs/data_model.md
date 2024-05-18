@@ -82,6 +82,37 @@ Using PHP DocBlocks instructions is not required, but sometimes you may want to 
 
 
 
+## Attributes for data model descriptions and instructions
+
+Instructor supports `#[Description]` and `#[Instructions]` attributes to provide more
+context to the language model or to provide additional instructions to the model.
+
+`#[Description]` attribute is used to describe a class or property in your data model.
+Instructor will use this text to provide more context to the language model.
+
+`#[Instructions]` attribute is used to provide additional instructions to the language
+model, such as how to process the data.
+
+You can add multiple attributes to a class or property - Instructor will merge
+them into a single block of text.
+
+Instructor will still include any PHPDoc comments provided in the class, but
+using attributes might be more convenient and easier to read.
+
+```php
+<?php
+#[Description("Information about user")]
+class User {
+    #[Description("User's age")]
+    public int $age;
+    #[Instructions("Make it ALL CAPS")]
+    public string $name;
+    #[Description("User's job")]
+    #[Instructions("Ignore hobbies, identify profession")]
+    public string $job;
+}
+```
+
 
 ## Typed Collections / Arrays
 

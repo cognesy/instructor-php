@@ -11,7 +11,7 @@ class RunnerView
 {
     public function runStart(Example $example) : void {
         // execute run.php and print the output to CLI
-        Cli::grid([[3, "[.]", STR_PAD_RIGHT, Color::DARK_GRAY]]);
+        Cli::grid([[4, "[".$example->index."]", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         Cli::grid([[30, $example->name, STR_PAD_RIGHT, Color::WHITE]]);
         Cli::grid([[13, "> running ...", STR_PAD_RIGHT, Color::DARK_GRAY]]);
     }

@@ -46,6 +46,6 @@ class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
     }
 
     public function transform(): mixed {
-        return $this->toArray();
+        return $this;
     }
 }

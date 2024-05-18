@@ -37,6 +37,7 @@ class Instructor {
     use Traits\HandlesSequenceUpdates;
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesTimer;
+    use Traits\HandlesSchema;
 
     protected ?Request $request = null;
     protected RequestFactory $requestFactory;
@@ -83,10 +84,10 @@ class Instructor {
     public function respond(
         string|array $messages,
         string|object|array $responseModel,
-        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
+        array $examples = [],
         string $toolName = '',
         string $toolDescription = '',
         string $prompt = '',
@@ -94,17 +95,17 @@ class Instructor {
         Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
-            $messages,
-            $responseModel,
-            $examples,
-            $model,
-            $maxRetries,
-            $options,
-            $toolName,
-            $toolDescription,
-            $prompt,
-            $retryPrompt,
-            $mode,
+            messages: $messages,
+            responseModel: $responseModel,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            examples: $examples,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+            prompt: $prompt,
+            retryPrompt: $retryPrompt,
+            mode: $mode,
         );
         return $this->get();
     }
@@ -115,10 +116,10 @@ class Instructor {
     public function request(
         string|array $messages,
         string|object|array $responseModel,
-        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
+        array $examples = [],
         string $toolName = '',
         string $toolDescription = '',
         string $prompt = '',
@@ -129,17 +130,17 @@ class Instructor {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
         $request = $this->requestFactory->create(
-            $messages,
-            $responseModel,
-            $examples,
-            $model,
-            $maxRetries,
-            $options,
-            $toolName,
-            $toolDescription,
-            $prompt,
-            $retryPrompt,
-            $mode,
+            messages: $messages,
+            responseModel: $responseModel,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            examples: $examples,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+            prompt: $prompt,
+            retryPrompt: $retryPrompt,
+            mode: $mode,
         );
         $this->request = $request;
         $this->dispatchQueuedEvents();
@@ -175,16 +176,6 @@ class Instructor {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
         return new Stream($this->handleStreamRequest(), $this->events());
-    }
-
-    /// HELPERS ///////////////////////////////////////////////////////////////
-
-    public function createJsonSchema(string|array|object $responseModel) : array {
-        return $this->responseModelFactory->fromAny($responseModel)->jsonSchema();
-    }
-
-    public function createJsonSchemaString(string|array|object $responseModel) : string {
-        return json_encode($this->createJsonSchema($responseModel));
     }
 
     /// INTERNAL //////////////////////////////////////////////////////////////

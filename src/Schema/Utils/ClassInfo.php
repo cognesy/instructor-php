@@ -2,8 +2,11 @@
 
 namespace Cognesy\Instructor\Schema\Utils;
 
+use Cognesy\Instructor\Schema\Attributes\Description;
+use Cognesy\Instructor\Schema\Attributes\Instructions;
 use ReflectionClass;
 use ReflectionEnum;
+use ReflectionProperty;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -48,17 +51,37 @@ class ClassInfo {
     }
 
     public function getClassDescription(string $class) : string {
-        // get class description from PHPDoc
         $reflection = new ReflectionClass($class);
-        return DocstringUtils::descriptionsOnly($reflection->getDocComment());
+
+        // get #[Description] attributes
+        $descriptions = array_merge(
+            AttributeUtils::getValues($reflection, Description::class, 'text'),
+            AttributeUtils::getValues($reflection, Instructions::class, 'text'),
+        );
+
+        // get class description from PHPDoc
+        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment());
+        if ($phpDocDescription) {
+            $descriptions[] = $phpDocDescription;
+        }
+
+        return trim(implode('\n', array_filter($descriptions)));
     }
 
     public function getPropertyDescription(string $class, string $property): string {
+        // get #[Description] attributes
+        $reflection = new ReflectionProperty($class, $property);
+        $descriptions = array_merge(
+            AttributeUtils::getValues($reflection, Description::class, 'text'),
+            AttributeUtils::getValues($reflection, Instructions::class, 'text'),
+        );
+
+        // get property description from PHPDoc
         $extractor = $this->extractor();
-        return trim(implode(' ', [
-            $extractor->getShortDescription($class, $property),
-            $extractor->getLongDescription($class, $property),
-        ]));
+        $descriptions[] = $extractor->getShortDescription($class, $property);
+        $descriptions[] = $extractor->getLongDescription($class, $property);
+
+        return trim(implode('\n', array_filter($descriptions)));
     }
 
     public function getRequiredProperties(string $class) : array {

@@ -57,6 +57,7 @@ class RequestHandler implements CanHandleRequest
             // store failed response
             $request->addFailedResponse($this->messages, $apiResponse, [], [$errors]);
             $this->messages = $request->makeRetryMessages($this->messages, $apiResponse->content, $errors);
+            $request->withMessages($this->messages);
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));

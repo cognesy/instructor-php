@@ -26,10 +26,10 @@ class Request
     public function __construct(
         string|array $messages,
         string|object|array $responseModel,
-        array $examples = [],
         string|ModelParams $model = '',
         int $maxRetries = 0,
         array $options = [],
+        array $examples = [],
         string $toolName = '',
         string $toolDescription = '',
         string $prompt = '',

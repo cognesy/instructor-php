@@ -42,23 +42,26 @@ $report = <<<'EOT'
 
 /** Executive level summary of the project */
 class Summary {
-    /** @var int current summary iteration, not bigger than 3 */
+    /** current summary iteration, not bigger than 3 */
     public int $iteration;
     /** @var string[] 1-3 facts most relevant from executive perspective and missing from the summary (avoid technical details) */
     public array $missingFacts;
-    /** @var string denser summary in 1-3 sentences, which covers every fact from the previous summary plus the missing ones */
+    /** denser summary in 1-3 sentences, which covers every fact from the previous summary plus the missing ones */
     public string $expandedSummary;
 }
 
 /** Increasingly denser, expanded summaries */
 class ChainOfSummaries {
-    /** @var string simplified, executive view with no details, just a single statement of overall situation */
+    /** simplified, executive view with no details, just a single statement of overall situation */
     public string $overview;
     /** @var Summary[] contains at least 3 gradually more expanded summaries of the content */
     public array $summaries;
 }
 
-$summaries = (new Instructor())
+$schema = (new Instructor)->createJsonSchema(ChainOfSummaries::class);
+dd($schema);
+
+$summaries = (new Instructor)
     ->request(
         messages: $report,
         responseModel: ChainOfSummaries::class,

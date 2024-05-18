@@ -113,7 +113,7 @@ class SchemaFactory
      * @return string
      */
     protected function getPropertyDescription(TypeDetails $type, string $class, string $property) : string {
-        if (in_array($type->type, ['object', 'enum'])) {
+        if (in_array($type->type, TypeDetails::PHP_OBJECT_TYPES)) {
             $classDescription = $this->classInfo->getClassDescription($type->class);
         } else {
             $classDescription = '';
@@ -133,26 +133,26 @@ class SchemaFactory
      * @return Schema
      */
     protected function makeSchema(TypeDetails $type) : Schema {
-        return match ($type->type) {
-            'object' => new ObjectSchema(
+        return match (true) {
+            ($type->type == TypeDetails::PHP_OBJECT) => new ObjectSchema(
                 $type,
                 $type->classOnly(),
                 $this->classInfo->getClassDescription($type->class),
                 $this->getPropertySchemas($type->class),
                 $this->classInfo->getRequiredProperties($type->class),
             ),
-            'enum' => new EnumSchema(
+            ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema(
                 $type,
                 $type->class,
                 $this->classInfo->getClassDescription($type->class),
             ),
-            'array' => new ArraySchema(
+            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
                 $type,
                 '',
                 '',
                 $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
             ),
-            'int', 'string', 'bool', 'float' => new ScalarSchema($type, 'value', 'Correctly extracted value'),
+            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, 'value', 'Correctly extracted value'),
             default => throw new \Exception('Unknown type: '.$type->type),
         };
     }
@@ -166,16 +166,16 @@ class SchemaFactory
      * @return \Cognesy\Instructor\Schema\Data\Schema\Schema
      */
     public function makePropertySchema(TypeDetails $type, string $name, string $description): Schema {
-        $match = match ($type->type) {
-            'object' => $this->makePropertyObject($type, $name, $description),
-            'enum' => new EnumSchema($type, $name, $description),
-            'array' => new ArraySchema(
+        $match = match (true) {
+            ($type->type == TypeDetails::PHP_OBJECT) => $this->makePropertyObject($type, $name, $description),
+            ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
+            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
                 $type,
                 $name,
                 $description,
                 $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
             ),
-            'int', 'string', 'bool', 'float' => new ScalarSchema($type, $name, $description),
+            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, $name, $description),
             default => throw new \Exception('Unknown type: ' . $type->type),
         };
         return $match;

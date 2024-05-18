@@ -31,4 +31,16 @@ trait HandlesFieldAccess
     public function set(string $field, mixed $value) {
         $this->field($field)->set($value);
     }
+
+    public function __get(string $field) : mixed {
+        return $this->get($field);
+    }
+
+    public function __set(string $field, mixed $value) {
+        $this->set($field, $value);
+    }
+
+    public function __isset(string $field) : bool {
+        return $this->has($field);
+    }
 }

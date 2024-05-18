@@ -14,7 +14,7 @@ trait HandlesPrompts
         Mode::Json->value => "\nRespond correctly with JSON object. Response must follow JSONSchema:\n",
         Mode::Tools->value => "\nExtract correct and accurate data from the messages using provided tools. Response must be JSON object following provided schema.\n",
     ];
-
+    private string $dataPrompt = "Provide content for processing.";
     private $instructionsCallback = null;
 
     private string $prompt;
@@ -34,7 +34,7 @@ trait HandlesPrompts
         if (!empty($this->instructionsCallback)) {
             $instructions = ($this->instructionsCallback)($this);
         } else {
-            $instructions = $this->prependInstructions(
+            $instructions = $this->addInstructions(
                 $this->messages,
                 $this->prompt,
                 $this->responseModel,
@@ -44,7 +44,7 @@ trait HandlesPrompts
         return $instructions;
     }
 
-    protected function prependInstructions(array $messages, string $prompt, ?ResponseModel $responseModel, array $examples) : array {
+    protected function addInstructions(array $messages, string $prompt, ?ResponseModel $responseModel, array $examples) : array {
         if (empty($messages)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
@@ -63,7 +63,7 @@ trait HandlesPrompts
         }
         return array_merge(
             [['role' => 'user', 'content' => $content]],
-            [['role' => 'assistant', 'content' => "Provide content for processing."]],
+            [['role' => 'assistant', 'content' => $this->dataPrompt]],
             $messages
         );
     }

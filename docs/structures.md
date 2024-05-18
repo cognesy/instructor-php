@@ -156,3 +156,45 @@ dump($person);
 // ]
 ?>
 ```
+
+## Working with `Structure` objects
+
+Structure object properties can be accessed using `get()` and `set()` methods,
+but also directly as properties.
+
+```php
+<?php
+$person = Structure::define('person', [
+    Field::string('name'),
+    Field::int('age'),
+    Field::structure('role', [
+        Field::string('name'),
+        Field::int('level'),
+    ])
+]);
+
+// Setting properties via set()
+$person->set('name', 'John Doe');
+$person->set('age', 30);
+$person->get('role')->set('name', 'Manager');
+$person->get('role')->set('level', 1);
+
+// Setting properties directly 
+$person->name = 'John Doe';
+$person->age = 30;
+$person->role->name = 'Manager';
+$person->role->level = 1;
+
+// Getting properties via get()
+$name = $person->get('name');
+$age = $person->get('age');
+$role = $person->get('role')->get('name');
+$level = $person->get('role')->get('level');
+
+// Getting properties directly
+$name = $person->name;
+$age = $person->age;
+$role = $person->role->name;
+$level = $person->role->level;
+?>
+```

@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data\Traits;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesApiRequestFactory

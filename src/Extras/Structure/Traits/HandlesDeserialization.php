@@ -15,9 +15,9 @@ trait HandlesDeserialization
         foreach ($data as $name => $fieldData) {
             $field = $this->field($name);
             if (empty($fieldData)) {
-//                if ($field->isRequired()) {
-//                    throw new \Exception("Required field `$name` of structure `$this->name` is empty.");
-//                }
+                if ($field->isRequired()) {
+                    throw new \Exception("Required field `$name` of structure `$this->name` is empty.");
+                }
                 continue;
             }
             $value = $this->deserializeField($this, $field, $name, $fieldData);
@@ -45,7 +45,6 @@ trait HandlesDeserialization
     }
 
     private function deserializeArray(Structure $structure, Field $field, mixed $fieldData) : mixed {
-return $fieldData;
         $values = [];
         foreach($fieldData as $index => $itemData) {
             $values[] = $this->deserializeField($structure, $field, $index, $itemData);

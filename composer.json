@@ -33,7 +33,9 @@
         "symfony/var-dumper": "^7.0",
         "mockery/mockery": "^1.6",
         "toolkit/cli-utils": "^2.0",
-        "cebe/markdown": "^1.2"
+        "cebe/markdown": "^1.2",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "config": {
         "allow-plugins": {
