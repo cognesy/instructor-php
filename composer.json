@@ -33,9 +33,7 @@
         "symfony/var-dumper": "^7.0",
         "mockery/mockery": "^1.6",
         "toolkit/cli-utils": "^2.0",
-        "cebe/markdown": "^1.2",
-        "ext-dom": "*",
-        "ext-libxml": "*"
+        "cebe/markdown": "^1.2"
     },
     "config": {
         "allow-plugins": {
@@ -59,7 +57,6 @@
         "league/flysystem": "^3.0",
         "psr/container": "^2.0",
         "symfony/yaml": "^7.0",
-        "phpdocumentor/reflection-docblock": "^5.4",
-        "myclabs/deep-copy": "^1.11"
+        "phpdocumentor/reflection-docblock": "^5.4"
     }
 }
