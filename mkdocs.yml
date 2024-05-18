@@ -204,6 +204,7 @@ nav:
       - Validation: 'hub/basics/validation.md'
       - Validation across multiple fields: 'hub/basics/validation_mixin.md'
     - Advanced:
+      - Caching: 'hub/advanced/caching.md'
       - Customize parameters of OpenAI client: 'hub/advanced/custom_client_parameters.md'
       - Custom prompts: 'hub/advanced/custom_prompts.md'
       - Custom validation using Symfony Validator: 'hub/advanced/custom_validator.md'
@@ -212,7 +213,6 @@ nav:
       - Extracting scalar values: 'hub/advanced/scalars.md'
       - Extracting sequences of objects: 'hub/advanced/sequences.md'
       - Structures: 'hub/advanced/structures.md'
-      - Caching: 'hub/advanced/caching.md'
     - Techniques:
       - Arbitrary properties: 'hub/techniques/arbitrary_properties.md'
       - Consistent values of arbitrary properties: 'hub/techniques/arbitrary_properties_consistency.md'

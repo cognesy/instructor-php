@@ -16,7 +16,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
 
-$report = <<<'EOT'
+$report = <<<EOT
     [2021-09-01]
     Acme Insurance project to implement SalesTech CRM solution is currently
     in RED status due to delayed delivery of document production system, led
@@ -59,7 +59,6 @@ class ChainOfSummaries {
 }
 
 $schema = (new Instructor)->createJsonSchema(ChainOfSummaries::class);
-dd($schema);
 
 $summaries = (new Instructor)
     ->request(
@@ -77,3 +76,5 @@ foreach ($summaries->summaries as $summary) {
     print("Expanded summary - iteration #{$summary->iteration}:\n");
     print("{$summary->expandedSummary}\n\n");
 }
+?>
+```

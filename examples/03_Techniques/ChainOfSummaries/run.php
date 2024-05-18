@@ -9,6 +9,7 @@ of increasingly detailed summaries. Each iteration should contain all the
 information from the previous summary, plus a few additional facts from the
 content which are most relevant and missing from the previous iteration.
 
+
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
@@ -16,7 +17,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
 
-$report = <<<'EOT'
+$report = <<<EOT
     [2021-09-01]
     Acme Insurance project to implement SalesTech CRM solution is currently
     in RED status due to delayed delivery of document production system, led
@@ -59,7 +60,6 @@ class ChainOfSummaries {
 }
 
 $schema = (new Instructor)->createJsonSchema(ChainOfSummaries::class);
-dd($schema);
 
 $summaries = (new Instructor)
     ->request(
