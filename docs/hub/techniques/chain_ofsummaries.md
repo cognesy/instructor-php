@@ -9,6 +9,7 @@ of increasingly detailed summaries. Each iteration should contain all the
 information from the previous summary, plus a few additional facts from the
 content which are most relevant and missing from the previous iteration.
 
+
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
