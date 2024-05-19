@@ -42,10 +42,10 @@ class Str
     static private function spaceSeparated(string $input) : string {
         return (new Pipeline)->through([
             // separate groups of capitalized words
-            //fn ($data) => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data),
+            fn ($data) => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data),
             // de-camel
-            fn ($data) => preg_replace('/([A-Z]{2,})([A-Z])([a-z])/', '$1 $2$3', $data),
-            fn ($data) => preg_replace('/([a-z])([A-Z])([a-z])/', '$1 $2$3', $data),
+            //fn ($data) => preg_replace('/([A-Z]{2,})([A-Z])([a-z])/', '$1 $2$3', $data),
+            //fn ($data) => preg_replace('/([a-z])([A-Z])([a-z])/', '$1 $2$3', $data),
             // separate groups of capitalized words of 2+ characters with spaces
             fn ($data) => preg_replace('/([A-Z]{2,})/', ' $1 ', $data),
             // de-kebab
