@@ -14,6 +14,9 @@ Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instru
 
 ![image](./img/concept.png)
 
+Here's recording of a simple CLI demo app using Instructor to extract structured data from text:
+
+![image](./img/extraction.gif)
 
 ## Instructor in Other Languages
 
