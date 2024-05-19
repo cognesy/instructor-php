@@ -34,7 +34,8 @@ $user = (new Instructor)
             ),
             new Example(
                 input: "We have recently hired Ian, who is 27 years old.",
-                output: ['name' => 'Ian', 'age' => 27]
+                output: ['name' => 'Ian', 'age' => 27],
+                template: "example input:\n{input}\noutput:\n```json\n{output}\n```\n",
             ),
         ],
         mode: Mode::Json)
