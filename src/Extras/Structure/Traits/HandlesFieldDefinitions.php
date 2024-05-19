@@ -6,58 +6,65 @@ use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use DateTime;
 
 trait HandlesFieldDefinitions
 {
     private TypeDetailsFactory $typeDetailsFactory;
 
-    static public function int(string $name, string $description = '') : self {
+    static public function int(string $name, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->scalarType(TypeDetails::PHP_INT);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 
-    static public function string(string $name, string $description = '') : self {
+    static public function string(string $name, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->scalarType(TypeDetails::PHP_STRING);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 
-    static public function float(string $name, string $description = '') : self {
+    static public function float(string $name, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->scalarType(TypeDetails::PHP_FLOAT);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 
-    static public function bool(string $name, string $description = '') : self {
+    static public function bool(string $name, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->scalarType(TypeDetails::PHP_BOOL);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 
-    static public function enum(string $name, string $enumClass, string $description = '') : self {
+    static public function enum(string $name, string $enumClass, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->enumType($enumClass);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 
-    static public function object(string $name, string $class, string $description = '') : self {
+    static public function object(string $name, string $class, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->objectType($class);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 
-    static public function structure(string $name, array|callable $fields, string $description = '') : self {
+    static public function datetime(string $name, string $description = '', string $instructions = '') : self {
+        $factory = new TypeDetailsFactory();
+        $type = $factory->objectType(DateTime::class);
+        return new Field($name, $description, $instructions, $type);
+    }
+
+    static public function structure(string $name, array|callable $fields, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->objectType(Structure::class);
-        $result = new Field($name, $description, $type);
-        $result->value = Structure::define($name, $fields, $description);
+        $result = new Field($name, $description, $instructions, $type);
+        $result->value = Structure::define($name, $fields, $description, $instructions);
         return $result;
     }
 
-    static public function array(string $name, string $itemType, string $description = '') : self {
+    static public function array(string $name, string $itemType, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->arrayType($itemType);
-        return new Field($name, $description, $type);
+        return new Field($name, $description, $instructions, $type);
     }
 }

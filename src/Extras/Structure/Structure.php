@@ -16,8 +16,9 @@ class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
     use Traits\ProvidesSchema;
     use Traits\HandlesDeserialization;
     use Traits\HandlesSerialization;
+    use Traits\HandlesTransformation;
     use Traits\HandlesFieldAccess;
-    use Traits\HandlesDescription;
+    use Traits\HandlesStructureInfo;
 
     public function __construct() {
         $this->schemaFactory = new SchemaFactory(false);
@@ -25,10 +26,16 @@ class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
         $this->deserializer = new Deserializer();
     }
 
-    static public function define(string $name, array|callable $fields, string $description = '') : self {
+    static public function define(
+        string $name,
+        array|callable $fields,
+        string $description = '',
+        string $instructions = '',
+    ) : self {
         $structure = new Structure();
         $structure->name = $name;
         $structure->description = $description;
+        $structure->instructions = $instructions;
 
         if (is_callable($fields)) {
             $fields = $fields($structure);
@@ -43,9 +50,5 @@ class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf
             $structure->fields[$fieldName] = $field;
         }
         return $structure;
-    }
-
-    public function transform(): mixed {
-        return $this;
     }
 }

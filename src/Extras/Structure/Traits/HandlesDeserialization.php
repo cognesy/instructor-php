@@ -7,6 +7,9 @@ use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Utils\Json;
+use DateTime;
+use DateTimeImmutable;
+use Exception;
 
 trait HandlesDeserialization
 {
@@ -40,19 +43,34 @@ trait HandlesDeserialization
         $type = $field->typeDetails();
         $value = match(true) {
             ($type === null) => throw new \Exception("Undefined field `$name` found in JSON data."),
-            ($type->type === TypeDetails::PHP_ENUM) => $fieldData,
-            ($type->type === TypeDetails::PHP_ARRAY) => $this->deserializeArray($structure->get($name), $field, $fieldData),
+            ($type->type === TypeDetails::PHP_ENUM) => ($type->class)::from($fieldData),
+            ($type->type === TypeDetails::PHP_ARRAY) => $this->deserializeArray($field, $fieldData),
             ($type->class === null) => $fieldData,
             ($type->class === Structure::class) => $structure->get($name)->fromArray($fieldData),
+            ($type->class === DateTime::class) => new DateTime($fieldData),
+            ($type->class === DateTimeImmutable::class) => new DateTimeImmutable($fieldData),
             default => $this->deserializer->fromArray($fieldData, $type->class),
         };
         return $value;
     }
 
-    private function deserializeArray(Structure $structure, Field $field, mixed $fieldData) : mixed {
+    private function deserializeArray(Field $field, mixed $fieldData) : mixed {
         $values = [];
-        foreach($fieldData as $index => $itemData) {
-            $values[] = $this->deserializeField($structure, $field, $index, $itemData);
+        $typeDetails = $field->nestedTypeDetails();
+        foreach($fieldData as $itemData) {
+            // if $type is scalar, just assign the value
+            // if $type is object, then deserialize each value as object
+            // if $type is enum, then deserialize each value as enum
+            // if $type is array, then deserialize each value as array
+            $values[] = match(true) {
+                ($typeDetails->type === TypeDetails::PHP_ENUM) => ($typeDetails->class)::from($itemData),
+                ($typeDetails->type === TypeDetails::PHP_ARRAY) => throw new Exception('Nested arrays are not supported.'),
+                ($typeDetails->class === null) => $itemData,
+                ($typeDetails->class === Structure::class) => $field->value->fromArray($itemData),
+                ($typeDetails->class === DateTime::class) => new DateTime($itemData),
+                ($typeDetails->class === DateTimeImmutable::class) => new DateTimeImmutable($itemData),
+                default => $this->deserializer->fromArray($itemData, $typeDetails->class),
+            };
         }
         return $values;
     }

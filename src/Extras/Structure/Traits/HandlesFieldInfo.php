@@ -4,11 +4,11 @@ namespace Cognesy\Instructor\Extras\Structure\Traits;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
 
-trait HandlesFieldDescription
+trait HandlesFieldInfo
 {
-    private string $name;
-    private string $description;
-    private bool $required = true;
+    private string $name = '';
+    private string $description = '';
+    private string $instructions = '';
 
     public function withName(string $name) : self {
         $this->name = $name;
@@ -16,6 +16,10 @@ trait HandlesFieldDescription
             $this->value->withName($name);
         }
         return $this;
+    }
+
+    public function name() : string {
+        return $this->name ?? '';
     }
 
     public function withDescription(string $description) : self {
@@ -26,21 +30,26 @@ trait HandlesFieldDescription
         return $this;
     }
 
-    public function name() : string {
-        return $this->name ?? '';
-    }
-
     public function description() : string {
         return $this->description ?? '';
     }
 
-    public function required(bool $isRequired = false) : self {
-        $this->required = $isRequired;
+    public function withInstructions(string $instructions) : self {
+        $this->instructions = $instructions;
+        if ($this->typeDetails->class === Structure::class) {
+            $this->value->withInstructions($instructions);
+        }
         return $this;
     }
 
-    public function optional(bool $isOptional = true) : self {
-        $this->required = !$isOptional;
-        return $this;
+    public function instructions() : string {
+        return $this->instructions ?? '';
+    }
+
+    public function info() : string {
+        return implode('; ', array_filter([
+            $this->description(),
+            $this->instructions(),
+        ]));
     }
 }

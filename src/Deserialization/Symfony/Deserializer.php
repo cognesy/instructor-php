@@ -42,7 +42,14 @@ class Deserializer implements CanDeserializeClass
     }
 
     public function toArray(object $object): array {
-        return $this->serializer->normalize($object, 'array');
+        $normalized = $this->serializer->normalize($object, 'array');
+        return match(true) {
+            ($normalized === null) => [],
+            is_array($normalized) => $normalized,
+            is_object($normalized) => (array) $normalized,
+            is_string($normalized) => dd($normalized),
+            default => $normalized
+        };
     }
 
     protected function defaultTypeExtractor() : PropertyInfoExtractor {

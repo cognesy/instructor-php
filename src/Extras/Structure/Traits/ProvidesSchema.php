@@ -29,7 +29,7 @@ trait ProvidesSchema
         $schema = new ObjectSchema(
             type: $typeDetails,
             name: $this->name,
-            description: $this->description,
+            description: $this->info(),
             properties: $properties,
             required: $required,
         );
@@ -41,13 +41,13 @@ trait ProvidesSchema
         $fieldSchema = match($fieldType->type) {
             'object' => match($fieldType->class) {
                 Structure::class => $field->get()->toSchema(),
-                default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->description()),
+                default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->info()),
             },
             'array' => match($fieldType->nestedType->class) {
                 Structure::class => $this->makeArraySchema($field),
-                default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->description()),
+                default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->info()),
             },
-            default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->description()),
+            default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->info()),
         };
         return $fieldSchema;
     }
@@ -57,7 +57,7 @@ trait ProvidesSchema
         return new ArraySchema(
             $field->typeDetails(),
             $field->name(),
-            $field->description(),
+            $field->info(),
             $nestedField->toSchema(),
         );
     }
