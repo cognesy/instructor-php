@@ -91,6 +91,30 @@ $user = $instructor
 ```
 
 
+## Prompt as template
+
+Instructor allows you to use a template string as a prompt. You can use
+`{variable}` placeholders in the template string, which will be replaced
+with the actual values during the execution.
+
+Currently, the following placeholders are supported:
+ - `{json_schema}` - replaced with the JSON Schema for current response model
+
+Example below demonstrates how to use a template string as a prompt:
+
+```php
+<?php
+$user = $instructor
+    ->request(
+        messages: "Our user Jason is 25 years old.",
+        responseModel: User::class,
+        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n{json_schema}\n",
+        mode: Mode::Json)
+    ->get();
+?>
+```
+
+
 ## Prompting the models with no support for tool calling or JSON output
 
 `Mode::MdJson` is the most basic (and least reliable) way to get structured
@@ -113,7 +137,7 @@ $user = $instructor
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
-        prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n" . $jsonSchema,
+        prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n{json_schema}\n",
         mode: Mode::MdJson)
     ->get();
 ?>

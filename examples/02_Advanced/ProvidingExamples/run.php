@@ -21,6 +21,7 @@ class User {
     public string $name;
 }
 
+echo "\nREQUEST:\n";
 $user = (new Instructor)
     ->onEvent(RequestSentToLLM::class, fn($event)=>dump($event->request->body()))
     ->request(
@@ -33,11 +34,14 @@ $user = (new Instructor)
             ),
             new Example(
                 input: "We have recently hired Ian, who is 27 years old.",
-                output: ['name' => 'Ian', 'age' => 27]
+                output: ['name' => 'Ian', 'age' => 27],
+                template: "example input:\n{input}\noutput:\n```json\n{output}\n```\n",
             ),
         ],
         mode: Mode::Json)
     ->get();
 
+echo "\nOUTPUT:\n";
+dump($user);
 ?>
 ```

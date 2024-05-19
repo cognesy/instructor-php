@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Template;
 use DateTimeImmutable;
 use Exception;
 use Ramsey\Uuid\Uuid;
@@ -11,19 +12,26 @@ class Example
 {
     public readonly string $uid;
     public readonly DateTimeImmutable $createdAt;
-
-    public string $examplePrefix = "\n# Example:";
-    public string $inputPrefix = "## Input:";
-    public string $outputPrefix = "## Output:";
+    public string $template = <<<TEMPLATE
+        ## EXAMPLE
+        ### INPUT
+        {input}
+        ### OUTPUT
+        ```json
+        {output}
+        ```
+        TEMPLATE;
 
     public function __construct(
         private string $input,
         private array $output,
+        string $template = '',
         string $uid = null,
         DateTimeImmutable $createdAt = null,
     ) {
         $this->uid = $uid ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
+        $this->template = $template ?: $this->template;
     }
 
     static public function fromChat(array $messages, array $output) : self {
@@ -68,15 +76,10 @@ class Example
     }
 
     public function toString() : string {
-        return <<<EXAMPLE
-            {$this->examplePrefix}
-            {$this->inputPrefix}
-            {$this->input()}
-            {$this->outputPrefix}
-            ```json
-            {$this->outputString()}
-            ```
-            EXAMPLE;
+        return Template::render($this->template, [
+            'input' => $this->input(),
+            'output' => $this->outputString(),
+        ]);
     }
 
     public function toJson() : string {

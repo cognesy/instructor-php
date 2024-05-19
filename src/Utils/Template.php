@@ -6,12 +6,14 @@ class Template
 {
     public static function render(string $template, array $data): string {
         $keys = array_map(fn($key) => '{'.$key.'}', array_keys($data));
+        $normalized = [];
         foreach ($data as $key => $value) {
-            if (is_array($value) || is_object($value)) {
-                $values[$key] = Json::encode($value);
-            }
+            $normalized[$key] = match (true) {
+                is_array($value) || is_object($value) => Json::encode($value),
+                default => $value,
+            };
         }
-        $values = array_values($data);
+        $values = array_values($normalized);
         return str_replace($keys, $values, $template);
     }
 }

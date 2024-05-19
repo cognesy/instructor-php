@@ -47,19 +47,74 @@ $user = (new Instructor)->respond(
 ?>
 ```
 
+## Modifying the example template
 
-## Helper methods
+You can use a template string as an input for the Example class. The template string
+may contain placeholders for the input data, which will be replaced with the actual
+values during the execution.
+
+Currently, the following placeholders are supported:
+ - `{input}` - replaced with the actual input message
+ - `{output}` - replaced with the actual output data
+
+In case input or output data is an array, Instructor will automatically convert it to
+a JSON string before replacing the placeholders.
+
+```php
+$user = (new Instructor)->respond(
+    messages: "Our user Jason is 25 years old.",
+    responseModel: User::class,
+    examples: [
+        new Example(
+            input: "John is 50 and works as a teacher.",
+            output: ['name' => 'John', 'age' => 50],
+            template: "EXAMPLE:\n{input} => {output}\n",
+        ),
+    ],
+    mode: Mode::Json
+);
+```
+
+
+## Convenience factory methods
 
 You can also create Example instances using the `fromText()`, `fromChat()`, `fromData()`
 helper static methods. All of them accept $output as an array of the expected output data
 and differ in the way the input data is provided.
 
+### Make example from text
+
 `Example::fromText()` method accepts a string as an input. It is equivalent to creating
 an instance of Example using the constructor.
+
+```php
+$example = Example::fromText(
+    input: 'Ian is 27 yo',
+    output: ['name' => 'Ian', 'age' => 27]
+);
+```
+
+### Make example from chat
 
 `Example::fromChat()` method accepts an array of messages, which may be useful when
 you want to use a chat or chat fragment as a demonstration of the input.
 
+```php
+$example = Example::fromChat(
+    input: [['role' => 'user', 'content' => 'Ian is 27 yo']],
+    output: ['name' => 'Ian', 'age' => 27]
+);
+```
+
+### Make example from data
+
 `Example::fromData()` method accepts any data type and uses the `Json::encode()` method to
 convert it to a string. It may be useful to provide a complex data structure as an example
 input.
+
+```php
+$example = Example::fromData(
+    input: ['firstName' => 'Ian', 'lastName' => 'Brown', 'birthData' => '1994-01-01'],
+    output: ['name' => 'Ian', 'age' => 27]
+);
+```

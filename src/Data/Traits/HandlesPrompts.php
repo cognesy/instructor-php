@@ -5,13 +5,14 @@ namespace Cognesy\Instructor\Data\Traits;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Template;
 use Exception;
 
 trait HandlesPrompts
 {
     private array $defaultPrompts = [
-        Mode::MdJson->value => "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n",
-        Mode::Json->value => "\nRespond correctly with JSON object. Response must follow JSONSchema:\n",
+        Mode::MdJson->value => "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n{json_schema}\n",
+        Mode::Json->value => "\nRespond correctly with JSON object. Response must follow JSONSchema:\n{json_schema}\n",
         Mode::Tools->value => "\nExtract correct and accurate data from the messages using provided tools. Response must be JSON object following provided schema.\n",
     ];
     private string $dataPrompt = "Provide content for processing.";
@@ -34,37 +35,28 @@ trait HandlesPrompts
         if (!empty($this->instructionsCallback)) {
             $instructions = ($this->instructionsCallback)($this);
         } else {
-            $instructions = $this->addInstructions(
-                $this->messages,
-                $this->prompt,
-                $this->responseModel,
-                $this->examples
-            );
+            $instructions = $this->addInstructions();
         }
         return $instructions;
     }
 
-    protected function addInstructions(array $messages, string $prompt, ?ResponseModel $responseModel, array $examples) : array {
-        if (empty($messages)) {
+    protected function addInstructions() : array {
+        if (empty($this->messages)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
         $content = '';
         if (!empty($this->prompt())) {
-            $content .= $prompt ?: $this->prompt();
+            $content .= Template::render($this->prompt(), ['json_schema' => $this->jsonSchema()]);
         }
-        $jsonSchema = $responseModel?->jsonSchema();
-        if (!empty($jsonSchema)) {
-            $content .= Json::encode($jsonSchema);
-        }
-        if (!empty($examples)) {
-            foreach ($examples as $example) {
+        if (!empty($this->examples)) {
+            foreach ($this->examples as $example) {
                 $content .= $example->toString() . "\n\n";
             }
         }
         return array_merge(
             [['role' => 'user', 'content' => $content]],
             [['role' => 'assistant', 'content' => $this->dataPrompt]],
-            $messages
+            $this->normalizeMessages($this->messages)
         );
     }
 }

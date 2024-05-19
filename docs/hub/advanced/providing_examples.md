@@ -21,6 +21,7 @@ class User {
     public string $name;
 }
 
+echo "\nREQUEST:\n";
 $user = (new Instructor)
     ->onEvent(RequestSentToLLM::class, fn($event)=>dump($event->request->body()))
     ->request(
@@ -39,5 +40,7 @@ $user = (new Instructor)
         mode: Mode::Json)
     ->get();
 
+echo "\nOUTPUT:\n";
+dump($user);
 ?>
 ```
