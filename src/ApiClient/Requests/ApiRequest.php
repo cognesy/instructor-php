@@ -2,10 +2,8 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests;
 
-use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesApiRequestContext;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Traits\HandlesApiCaching;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -16,12 +14,13 @@ use Saloon\Traits\Body\HasJsonBody;
 abstract class ApiRequest extends Request implements HasBody, Cacheable
 {
     use HasJsonBody;
-    use HandlesApiCaching;
-    use HandlesApiRequestContext;
+    use Traits\HandlesApiCaching;
+    use Traits\HandlesApiRequestContext;
+    use Traits\HandlesMessages;
+    use Traits\HandlesEndpoint;
+    use Traits\HandlesDebug;
 
-    protected string $defaultEndpoint = '/chat/completions';
     protected Method $method = Method::POST;
-    protected bool $debug = false;
 
     public function __construct(
         public string|array $messages = [],
@@ -52,14 +51,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $this->options['stream'] ?? false;
     }
 
-    public function isDebug(): bool {
-        return $this->debug;
-    }
-
-    public function resolveEndpoint() : string {
-        return $this->endpoint ?: $this->defaultEndpoint;
-    }
-
     protected function defaultBody(): array {
         return array_filter(array_merge([
             'messages' => $this->messages(),
@@ -68,17 +59,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
             'tool_choice' => $this->getToolChoice(),
             'response_format' => $this->getResponseFormat(),
         ], $this->options));
-    }
-
-    public function messages(): array {
-        return $this->messages;
-    }
-
-    protected function normalizeMessages(string|array $messages): array {
-        if (!is_array($messages)) {
-            return [['role' => 'user', 'content' => $messages]];
-        }
-        return $messages;
     }
 
     abstract public function toApiResponse(Response $response): ApiResponse;

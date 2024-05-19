@@ -58,10 +58,6 @@ trait HandlesDeserialization
         $values = [];
         $typeDetails = $field->nestedTypeDetails();
         foreach($fieldData as $itemData) {
-            // if $type is scalar, just assign the value
-            // if $type is object, then deserialize each value as object
-            // if $type is enum, then deserialize each value as enum
-            // if $type is array, then deserialize each value as array
             $values[] = match(true) {
                 ($typeDetails->type === TypeDetails::PHP_ENUM) => ($typeDetails->class)::from($itemData),
                 ($typeDetails->type === TypeDetails::PHP_ARRAY) => throw new Exception('Nested arrays are not supported.'),
