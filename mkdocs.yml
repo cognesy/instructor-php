@@ -197,6 +197,7 @@ nav:
       - Basic use with HandlesExtraction trait: 'hub/basics/basic_via_mixin.md'
       - Extraction of complex objects: 'hub/basics/complex_object_extraction.md'
       - Extraction of complex objects (Anthropic): 'hub/basics/complex_object_extraction_anthropic.md'
+      - Image to data: 'hub/basics/image_todata.md'
       - Handling errors with `Maybe` helper class: 'hub/basics/maybe.md'
       - Making some fields optional: 'hub/basics/optional_fields.md'
       - Private vs public object field: 'hub/basics/private_vspublic_fields.md'
