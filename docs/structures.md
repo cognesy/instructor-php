@@ -90,6 +90,7 @@ You can use `Field::structure()` to nest structures in case you want to define
 more complex data shapes.
 
 ```php
+<?php
 $structure = Structure::define('person', [
     Field::string('name','Name of the person'),
     Field::int('age', 'Age of the person')->validIf(
@@ -102,6 +103,7 @@ $structure = Structure::define('person', [
     ], 'Address of the person'),
     Field::enum('role', Role::class, 'Role of the person'),
 ], 'A person object');
+?>
 ```
 
 ## Validation of structure data
@@ -145,7 +147,7 @@ $person = (new Instructor)->respond(
     responseModel: $structure,
 );
 
-dump($person);
+dump($person->toArray());
 // array [
 //   "name" => "Jane Doe"
 //   "age" => 25
