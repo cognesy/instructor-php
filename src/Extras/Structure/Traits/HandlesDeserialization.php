@@ -5,14 +5,19 @@ namespace Cognesy\Instructor\Extras\Structure\Traits;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Utils\Json;
 
 trait HandlesDeserialization
 {
     private Deserializer $deserializer;
+    public bool $ignoreUnknownFields = false;
 
     public function fromArray(array $data): static {
         foreach ($data as $name => $fieldData) {
+            if (!$this->has($name) && $this->ignoreUnknownFields) {
+                continue;
+            }
             $field = $this->field($name);
             if (empty($fieldData)) {
                 if ($field->isRequired()) {
@@ -35,8 +40,8 @@ trait HandlesDeserialization
         $type = $field->typeDetails();
         $value = match(true) {
             ($type === null) => throw new \Exception("Undefined field `$name` found in JSON data."),
-            ($type->type === 'enum') => $fieldData,
-            ($type->type === 'array') => $this->deserializeArray($structure->get($name), $field, $fieldData),
+            ($type->type === TypeDetails::PHP_ENUM) => $fieldData,
+            ($type->type === TypeDetails::PHP_ARRAY) => $this->deserializeArray($structure->get($name), $field, $fieldData),
             ($type->class === null) => $fieldData,
             ($type->class === Structure::class) => $structure->get($name)->fromArray($fieldData),
             default => $this->deserializer->fromArray($fieldData, $type->class),
