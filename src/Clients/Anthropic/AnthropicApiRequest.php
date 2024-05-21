@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
+use JetBrains\PhpStorm\Deprecated;
 use Override;
 
 class AnthropicApiRequest extends ApiRequest
@@ -13,6 +14,8 @@ class AnthropicApiRequest extends ApiRequest
     use Traits\HandlesTools;
 
     protected string $defaultEndpoint = '/messages';
+
+    #[Deprecated]
     protected string $xmlLineSeparator = "";
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,21 +23,23 @@ class AnthropicApiRequest extends ApiRequest
     #[Override]
     protected function defaultBody(): array {
         $body = array_filter(array_merge([
-            'system' => $this->getSystemInstruction(),
+            //'system' => $this->getSystemInstruction(),
             'messages' => $this->messages(),
             'model' => $this->model,
         ], $this->options));
         return $body;
     }
 
+    #[Deprecated]
     protected function getSystemInstruction() : string {
         $tool = $this->getToolSchema();
-        $schema = (new SchemaBuilder)->fromArray($tool);
+        $schema = (new SchemaBuilder)->fromJsonSchema($tool, 'extract_data', 'Extract data from chat content');
         $xmlSchema = $schema->toXml();
         $system = $this->instructions()."\nHere are the tools available:\n".$this->xmlToolSchema($xmlSchema);
         return $system;
     }
 
+    #[Deprecated]
     protected function instructions() : string {
         $lines = [
             "In this environment you have access to a set of tools you can use to answer the user's question.\n",
@@ -52,6 +57,7 @@ class AnthropicApiRequest extends ApiRequest
         return implode($this->xmlLineSeparator, $lines);
     }
 
+    #[Deprecated]
     private function xmlToolSchema(string $xmlSchema) : string {
         $lines = [
             '<tools>',

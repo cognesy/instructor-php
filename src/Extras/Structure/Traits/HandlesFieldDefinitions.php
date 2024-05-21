@@ -7,10 +7,25 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use DateTime;
+use Exception;
 
 trait HandlesFieldDefinitions
 {
     private TypeDetailsFactory $typeDetailsFactory;
+
+    static public function fromType(string $name, TypeDetails $typeDetails, string $description = '', string $instructions = '') : self {
+        return match($typeDetails->type) {
+            TypeDetails::PHP_INT => self::int($name, $description, $instructions),
+            TypeDetails::PHP_STRING => self::string($name, $description, $instructions),
+            TypeDetails::PHP_FLOAT => self::float($name, $description, $instructions),
+            TypeDetails::PHP_BOOL => self::bool($name, $description, $instructions),
+            TypeDetails::PHP_ENUM => self::enum($name, $typeDetails->class, $description, $instructions),
+            TypeDetails::PHP_ARRAY => self::array($name, $typeDetails->nestedType, $description, $instructions),
+            TypeDetails::PHP_OBJECT => self::object($name, $typeDetails->class, $description, $instructions),
+            TypeDetails::PHP_MIXED => self::string($name, $description, $instructions),
+            default => throw new Exception('Unsupported type: '.$typeDetails->type),
+        };
+    }
 
     static public function int(string $name, string $description = '', string $instructions = '') : self {
         $factory = new TypeDetailsFactory();

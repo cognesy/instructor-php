@@ -14,7 +14,13 @@ use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\PropertyInfo\Type;
 
 class ClassInfo {
-    protected function extractor() : PropertyInfoExtractor {
+    private PropertyInfoExtractor $extractor;
+
+    public function __construct() {
+        $this->extractor = $this->makeExtractor();
+    }
+
+    protected function makeExtractor() : PropertyInfoExtractor {
         // initialize extractor instance
         $phpDocExtractor = new PhpDocExtractor();
         $reflectionExtractor = new ReflectionExtractor();
@@ -28,7 +34,7 @@ class ClassInfo {
     }
 
     public function getTypes(string $class, string $property) : array {
-        $types = $this->extractor()->getTypes($class, $property);
+        $types = $this->extractor->getTypes($class, $property);
         if (is_null($types)) {
             $types = [new Type(Type::BUILTIN_TYPE_STRING)];
         }
@@ -47,7 +53,7 @@ class ClassInfo {
     }
 
     public function getProperties(string $class) : array {
-        return $this->extractor()->getProperties($class) ?? [];
+        return $this->extractor->getProperties($class) ?? [];
     }
 
     public function getClassDescription(string $class) : string {
@@ -77,9 +83,8 @@ class ClassInfo {
         );
 
         // get property description from PHPDoc
-        $extractor = $this->extractor();
-        $descriptions[] = $extractor->getShortDescription($class, $property);
-        $descriptions[] = $extractor->getLongDescription($class, $property);
+        $descriptions[] = $this->extractor->getShortDescription($class, $property);
+        $descriptions[] = $this->extractor->getLongDescription($class, $property);
 
         return trim(implode('\n', array_filter($descriptions)));
     }
@@ -106,7 +111,7 @@ class ClassInfo {
     }
 
     public function isNullable(string $class, string $property) : bool {
-        $types = $this->extractor()->getTypes($class, $property);
+        $types = $this->extractor->getTypes($class, $property);
         if (is_null($types)) {
             return false;
         }
@@ -133,7 +138,7 @@ class ClassInfo {
     public function enumValues(string $class) : array {
         $enum = new ReflectionEnum($class);
         $values = [];
-        foreach ($enum->getReflectionConstants() as $item) {
+        foreach ($enum->getCases() as $item) {
             $values[] = $item->getValue()->value;
         }
         return $values;

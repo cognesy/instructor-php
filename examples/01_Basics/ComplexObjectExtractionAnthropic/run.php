@@ -115,7 +115,7 @@ $events = $instructor
     ->request(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-haiku-20240307',
         mode: Mode::Json,
         options: [
             'max_tokens' => 2048,

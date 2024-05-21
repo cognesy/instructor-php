@@ -20,18 +20,18 @@ use Cognesy\Instructor\Schema\Data\TypeDetails;
  */
 class SchemaBuilder
 {
+    private $defaultToolName = 'extract_object';
+    private $defaultToolDescription = 'Extract data from chat content';
+
     /**
      * Create Schema object from given JSON Schema array
      */
-    public function fromArray(
+    public function fromJsonSchema(
         array $jsonSchema,
-        string $customName = 'extracted_object',
-        string $customDescription = 'Data extracted from chat content'
+        string $customName = '',
+        string $customDescription = '',
     ) : ObjectSchema {
         $class = $jsonSchema['$comment'] ?? Structure::class;
-        if (!$class) {
-            throw new \Exception('JSON Schema must have $comment field with the target class name');
-        }
         $type = $jsonSchema['type'] ?? null;
         if ($type !== 'object') {
             throw new \Exception('JSON Schema must have type: object');
@@ -39,8 +39,8 @@ class SchemaBuilder
         $factory = new TypeDetailsFactory();
         return new ObjectSchema(
             type: $factory->objectType($class),
-            name: $customName ?? ($jsonSchema['title'] ?? 'extract_object'),
-            description: $customDescription ?? ($jsonSchema['description'] ?? 'Extract parameters from content'),
+            name: $customName ?? ($jsonSchema['title'] ?? $this->defaultToolName),
+            description: $customDescription ?? ($jsonSchema['description'] ?? $this->defaultToolDescription),
             properties: $this->makeProperties($jsonSchema['properties'] ?? []),
             required: $jsonSchema['required'] ?? [],
         );

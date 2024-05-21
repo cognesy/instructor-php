@@ -1,11 +1,10 @@
 <?php
-
 namespace Tests\Examples\Complex;
 
-use Cognesy\Instructor\Extras\Mixin\HandlesExtraction;
+use Cognesy\Instructor\Extras\Mixin\HandlesSelfExtraction;
 
 class ProjectEvents {
-    use HandlesExtraction;
+    use HandlesSelfExtraction;
 
     /**
      * List of events extracted from the text

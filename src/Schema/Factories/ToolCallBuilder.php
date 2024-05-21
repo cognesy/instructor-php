@@ -37,7 +37,7 @@ class ToolCallBuilder {
         foreach ($jsonSchema as $key => $value) {
             $toolCall['function']['parameters'][$key] = $value;
         }
-        return $toolCall;
+        return [$toolCall];
     }
 
     /**

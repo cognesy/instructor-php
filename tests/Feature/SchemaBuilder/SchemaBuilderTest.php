@@ -5,7 +5,7 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 
 it('creates Schema object from JSON Schema array - scalar props', function ($jsonSchema) {
-    $schema = (new SchemaBuilder)->fromArray($jsonSchema);
+    $schema = (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['stringProperty']->name)->toBe('stringProperty');
@@ -25,7 +25,7 @@ it('creates Schema object from JSON Schema array - scalar props', function ($jso
 })->with('schema_builder_json');
 
 it('creates Schema object from JSON Schema array - enum props', function ($jsonSchema) {
-    $schema = (new SchemaBuilder)->fromArray($jsonSchema);
+    $schema = (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['enumProperty']->name)->toBe('enumProperty');
@@ -40,7 +40,7 @@ it('creates Schema object from JSON Schema array - enum props', function ($jsonS
 
 
 it('creates Schema object from JSON Schema array - object props', function ($jsonSchema) {
-    $schema = (new SchemaBuilder)->fromArray($jsonSchema);
+    $schema = (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['objectProperty']->name)->toBe('objectProperty');
@@ -60,7 +60,7 @@ it('creates Schema object from JSON Schema array - object props', function ($jso
 
 
 it('creates Schema object from JSON Schema array - array props', function ($jsonSchema) {
-    $schema = (new SchemaBuilder)->fromArray($jsonSchema);
+    $schema = (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['arrayProperty']->name)->toBe('arrayProperty');

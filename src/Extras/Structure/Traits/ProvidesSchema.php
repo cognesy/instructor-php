@@ -36,6 +36,10 @@ trait ProvidesSchema
         return $schema;
     }
 
+    public function toJsonSchema() : array {
+        return $this->toSchema()->toArray();
+    }
+
     private function makeSchema(Field $field) : Schema {
         $fieldType = $field->typeDetails();
         $fieldSchema = match($fieldType->type) {

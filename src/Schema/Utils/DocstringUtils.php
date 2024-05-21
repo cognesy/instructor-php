@@ -14,7 +14,15 @@ class DocstringUtils
             ->process($code);
     }
 
-    public static function removeMarkers(string $code): string
+    public static function getParameterDescription(string $name, string $text): string {
+        $pattern = '/@param\s+' . $name . '\s+(.*)/';
+        if (preg_match($pattern, $text, $matches)) {
+            return $matches[1];
+        }
+        return '';
+    }
+
+    private static function removeMarkers(string $code): string
     {
         // Pattern to match comment markers
         $pattern = '/(\/\*\*|\*\/|\/\/|#)/';
@@ -28,7 +36,7 @@ class DocstringUtils
         return $cleanedString;
     }
 
-    public static function removeAnnotations(string $code): string
+    private static function removeAnnotations(string $code): string
     {
         $lines = explode("\n", $code);
         $cleanedLines = [];

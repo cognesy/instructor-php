@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Deserialization\Symfony;
 use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Validation\Symfony\BackedEnumNormalizer;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -47,7 +46,7 @@ class Deserializer implements CanDeserializeClass
             ($normalized === null) => [],
             is_array($normalized) => $normalized,
             is_object($normalized) => (array) $normalized,
-            is_string($normalized) => dd($normalized),
+            is_string($normalized) => ['value' => $normalized], // TODO: find better way
             default => $normalized
         };
     }

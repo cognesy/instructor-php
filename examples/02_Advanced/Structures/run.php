@@ -58,6 +58,6 @@ print("Name: " . $person->name . "\n");
 print("Age: " . $person->age . "\n");
 print("Address / city: " . $person->address->city . "\n");
 print("Address / ZIP: " . $person->address->zip . "\n");
-print("Role: " . $person->role . "\n");
+print("Role: " . $person->role->value . "\n");
 ?>
 ```

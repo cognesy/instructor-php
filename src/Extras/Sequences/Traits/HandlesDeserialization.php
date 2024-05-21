@@ -12,7 +12,12 @@ trait HandlesDeserialization
     public function fromJson(string $jsonData): static {
         $deserializer = $this->deserializer;
         $data = Json::parse($jsonData);
-        $returnedList = $data['list'] ?? [];
+
+        // $data['properties']['list'] is workaround for models
+        // which do not support JSON Schema tool calling natively
+        // but still can generate JSON following the schema
+        $returnedList = $data['list'] ?? $data['properties']['list'] ?? [];
+
         $list = [];
         foreach ($returnedList as $item) {
             $list[] = $deserializer->fromArray($item, $this->class);

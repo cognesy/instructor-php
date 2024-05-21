@@ -57,6 +57,8 @@
         "league/flysystem": "^3.0",
         "psr/container": "^2.0",
         "symfony/yaml": "^7.0",
-        "phpdocumentor/reflection-docblock": "^5.4"
+        "phpdocumentor/reflection-docblock": "^5.4",
+        "symfony/type-info": "7.1.x-dev",
+        "phpstan/phpdoc-parser": "^1.29"
     }
 }

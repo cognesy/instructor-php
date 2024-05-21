@@ -46,10 +46,10 @@ class ResponseModelFactory
         // determine the type of the requested model and build it
         $responseModel = match(true) {
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
-            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel),
+            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel, $toolName, $toolDescription),
             is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
             is_string($requestedModel) => $this->fromClassString($requestedModel),
-            is_array($requestedModel) => $this->fromArray($requestedModel),
+            is_array($requestedModel) => $this->fromJsonSchema($requestedModel, $toolName, $toolDescription),
             is_object($requestedModel) => $this->fromInstance($requestedModel),
             default => throw new InvalidArgumentException('Unsupported response model type: ' . gettype($requestedModel))
         };
@@ -65,22 +65,7 @@ class ResponseModelFactory
         return $responseModel;
     }
 
-    private function makeResponseModel(
-        string $class,
-        object $instance,
-        Schema $schema,
-        array $jsonSchema,
-    ) : ResponseModel {
-        return new ResponseModel(
-            $class,
-            $instance,
-            $schema,
-            $jsonSchema,
-            $this->toolCallBuilder,
-        );
-    }
-
-    private function getSignature(mixed $requestedModel) : string {
+    public function getSignature(mixed $requestedModel) : string {
         $type = match(true) {
             $requestedModel instanceof ObjectSchema => 'schema',
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => 'json-schema-provider',
@@ -102,6 +87,23 @@ class ResponseModelFactory
         return $type;
     }
 
+    // INTERNAL /////////////////////////////////////////////////////////////////////////////
+
+    private function makeResponseModel(
+        string $class,
+        object $instance,
+        Schema $schema,
+        array $jsonSchema,
+    ) : ResponseModel {
+        return new ResponseModel(
+            class: $class,
+            instance: $instance,
+            schema: $schema,
+            jsonSchema: $jsonSchema,
+            toolCallBuilder: $this->toolCallBuilder,
+        );
+    }
+
     private function fromClassString(string $requestedModel) : ResponseModel {
         $class = $requestedModel;
         $instance = new $class;
@@ -110,10 +112,10 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
-    private function fromArray(array $requestedModel) : ResponseModel {
+    private function fromJsonSchema(array $requestedModel, string $name = '', string $description = '') : ResponseModel {
         $class = $requestedModel['$comment'] ?? Structure::class;
         $instance = new $class;
-        $schema = $this->schemaBuilder->fromArray($requestedModel);
+        $schema = $this->schemaBuilder->fromJsonSchema($requestedModel, $name, $description);
         $jsonSchema = $requestedModel;
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
@@ -126,7 +128,7 @@ class ResponseModelFactory
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
-    private function fromJsonSchemaProvider(mixed $requestedModel) : ResponseModel {
+    private function fromJsonSchemaProvider(mixed $requestedModel, string $name = '', string $description = '') : ResponseModel {
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;
@@ -135,7 +137,7 @@ class ResponseModelFactory
             $instance = new $class;
         }
         $jsonSchema = $instance->toJsonSchema();
-        $schema = $this->schemaBuilder->fromArray($jsonSchema);
+        $schema = $this->schemaBuilder->fromJsonSchema($jsonSchema, $name, $description);
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 

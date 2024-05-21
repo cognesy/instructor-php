@@ -45,15 +45,9 @@ trait HandlesApiRequestFactory
         return $this->apiRequestFactory->makeRequest(
             requestClass: $requestClass,
             messages: $this->makeInstructions(),
-            tools: [$this->toolCallSchema()],
-            toolChoice: [
-                'type' => 'function',
-                'function' => ['name' => $this->toolName()]
-            ],
-            responseFormat: [
-                'type' => 'json_object',
-                'schema' => $this->jsonSchema()
-            ],
+            tools: $this->toolCallSchema(),
+            toolChoice: $this->toolChoice(),
+            responseFormat: $this->responseFormat(),
             model: $this->modelName(),
             options: $this->options(),
         );
@@ -72,10 +66,7 @@ trait HandlesApiRequestFactory
         return $this->apiRequestFactory->makeJsonCompletionRequest(
             requestClass: $requestClass,
             messages: $this->makeInstructions(),
-            responseFormat: [
-                'type' => 'json_object',
-                'schema' => $this->jsonSchema()
-            ],
+            responseFormat: $this->responseFormat(),
             model: $this->modelName(),
             options: $this->options(),
         );
@@ -85,11 +76,8 @@ trait HandlesApiRequestFactory
         return $this->apiRequestFactory->makeToolsCallRequest(
             requestClass: $requestClass,
             messages: $this->makeInstructions(),
-            tools: [$this->toolCallSchema()],
-            toolChoice: [
-                'type' => 'function',
-                'function' => ['name' => $this->toolName()]
-            ],
+            tools: $this->toolCallSchema(),
+            toolChoice: $this->toolChoice(),
             model: $this->modelName(),
             options: $this->options(),
         );

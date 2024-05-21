@@ -34,7 +34,7 @@ class RunOneExample extends Command
     }
 
     public function run(Example $example) : void {
-        Cli::outln("Executing all examples...", [Color::BOLD, Color::YELLOW]);
+        Cli::outln("Executing example: {$example->group}/{$example->name}", [Color::BOLD, Color::YELLOW]);
         $timeStart = microtime(true);
         $this->runner->runSingle($example);
         $timeEnd = microtime(true);

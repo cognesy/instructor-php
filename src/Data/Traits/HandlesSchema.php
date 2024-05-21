@@ -45,4 +45,18 @@ trait HandlesSchema
     public function toolCallSchema() : array {
         return $this->responseModel->toolCallSchema();
     }
+
+    public function toolChoice() : string|array {
+        return [
+            'type' => 'function',
+            'function' => ['name' => $this->toolName()]
+        ];
+    }
+
+    public function responseFormat() : array {
+        return [
+            'type' => 'json_object',
+            'schema' => $this->jsonSchema()
+        ];
+    }
 }

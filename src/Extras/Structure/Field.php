@@ -5,6 +5,7 @@ use Cognesy\Instructor\Schema\Data\TypeDetails;
 
 class Field {
     use Traits\HandlesFieldDefinitions;
+    use Traits\HandlesReflection;
     use Traits\HandlesFieldInfo;
     use Traits\HandlesFieldValidation;
     use Traits\HandlesFieldSchemas;

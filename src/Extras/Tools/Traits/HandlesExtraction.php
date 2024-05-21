@@ -1,11 +1,15 @@
 <?php
-namespace Cognesy\Instructor\Extras\Mixin;
+
+namespace Cognesy\Instructor\Extras\Tools\Traits;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
-trait HandlesExtraction {
-    public function extract(
+trait HandlesExtraction
+{
+    private Instructor $instructor;
+
+    public function extractArgs(
         string|array $messages,
         string $model = '',
         int $maxRetries = 2,
@@ -14,7 +18,7 @@ trait HandlesExtraction {
         string $prompt = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
-    ) : mixed {
+    ) : array {
         return $this->getInstructor()->respond(
             messages: $messages,
             responseModel: $this->getResponseModel(),
@@ -22,16 +26,15 @@ trait HandlesExtraction {
             maxRetries: $maxRetries,
             options: $options,
             examples: $examples,
-            toolName: $this->getToolName(),
-            toolDescription: $this->getToolDescription(),
+            toolName: $this->getName(),
+            toolDescription: $this->getDescription(),
             prompt: $prompt,
             retryPrompt: $retryPrompt,
             mode: $mode,
         );
     }
 
-    abstract protected function getInstructor() : Instructor;
-    abstract protected function getResponseModel() : string|array|object;
-    abstract protected function getToolName() : string;
-    abstract protected function getToolDescription() : string;
+    protected function getInstructor(): Instructor {
+        return $this->instructor ?? new Instructor();
+    }
 }

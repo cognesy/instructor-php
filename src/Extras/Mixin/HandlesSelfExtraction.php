@@ -4,8 +4,7 @@ namespace Cognesy\Instructor\Extras\Mixin;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
-interface CanHandleExtraction
-{
+trait HandlesSelfExtraction {
     static public function extract(
         string|array $messages,
         string $model = '',
@@ -18,5 +17,19 @@ interface CanHandleExtraction
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
         Instructor $instructor = null,
-    ) : static;
+    ) : static {
+        return ($instructor ?? new Instructor)->respond(
+            messages: $messages,
+            responseModel: self::class,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            examples: $examples,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+            prompt: $prompt,
+            retryPrompt: $retryPrompt,
+            mode: $mode,
+        );
+    }
 }
