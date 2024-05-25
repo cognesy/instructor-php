@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Schema\Data;
 
-use Symfony\Component\PropertyInfo\Type;
-
 class TypeDetails
 {
     public const JSON_OBJECT = 'object';
@@ -90,7 +88,6 @@ class TypeDetails
      * @param TypeDetails|null $nestedType for arrays OR null
      * @param string|null $enumType for enums OR null
      * @param array|null $enumValues for enums OR null
-     * @param Type|null $typeInfo
      */
     public function __construct(
         public string $type,
@@ -119,6 +116,10 @@ class TypeDetails
         if (($type === self::PHP_ARRAY) && ($nestedType === null)) {
             throw new \Exception('Array type must have a nested type');
         }
+    }
+
+    static public function undefined() : self {
+        return new self(self::PHP_UNSUPPORTED);
     }
 
     public function __toString() : string {

@@ -11,12 +11,6 @@ use Symfony\Component\PropertyInfo\Type;
  */
 class TypeDetailsFactory
 {
-    private ClassInfo $classInfo;
-
-    public function __construct() {
-        $this->classInfo = new ClassInfo;
-    }
-
     /**
      * Create TypeDetails from type string
      *
@@ -108,7 +102,7 @@ class TypeDetailsFactory
      * @return TypeDetails
      */
     public function objectType(string $typeName) : TypeDetails {
-        if ($this->classInfo->isEnum($typeName)) {
+        if ((new ClassInfo($typeName))->isEnum()) {
             return $this->enumType($typeName);
         }
         $instance = new TypeDetails(
@@ -126,11 +120,12 @@ class TypeDetailsFactory
      * @return TypeDetails
      */
     public function enumType(string $typeName, string $enumType = null, array $enumValues = null) : TypeDetails {
+        $classInfo = new ClassInfo($typeName);
         // enum specific
-        if (!$this->classInfo->isBackedEnum($typeName)) {
+        if (!$classInfo->isBackedEnum()) {
             throw new \Exception('Enum must be backed by a string or int');
         }
-        $backingType = $enumType ?? $this->classInfo->enumBackingType($typeName);
+        $backingType = $enumType ?? $classInfo->enumBackingType();
         if (!in_array($backingType, TypeDetails::PHP_ENUM_TYPES)) {
             throw new \Exception('Enum must be backed by a string or int');
         }
@@ -138,7 +133,7 @@ class TypeDetailsFactory
             type: TypeDetails::PHP_ENUM,
             class: $typeName,
             enumType: $backingType,
-            enumValues: $enumValues ?? $this->classInfo->enumValues($typeName)
+            enumValues: $enumValues ?? $classInfo->enumValues()
         );
     }
 

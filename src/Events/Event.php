@@ -2,9 +2,9 @@
 namespace Cognesy\Instructor\Events;
 use Cognesy\Instructor\Utils\Console;
 use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Uuid;
 use Cognesy\InstructorHub\Utils\Color;
 use DateTimeImmutable;
-use Ramsey\Uuid\Uuid;
 
 class Event
 {

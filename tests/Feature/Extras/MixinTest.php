@@ -1,8 +1,9 @@
 <?php
-namespace Tests;
+namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Mixin\PersonWithMixin;
+use Tests\MockLLM;
 
 it('supports HandlesExtraction mixin', function () {
     $mockLLM = MockLLM::get([

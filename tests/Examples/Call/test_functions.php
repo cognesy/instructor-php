@@ -14,3 +14,7 @@ namespace Tests\Examples\Call;
 function testFunction(int $intParam, string $stringParam, bool $boolParam, TestClass $objectParam): string {
     return 'test';
 }
+
+function variadicFunction(TestClass ...$objectParams): string {
+    return 'test';
+}

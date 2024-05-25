@@ -233,7 +233,7 @@ $value = (new Instructor)->respond(
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 
 $value = (new Instructor)->respond(
@@ -253,7 +253,7 @@ In this example, we're extracting a single integer value from the text. You can 
 Additionally, you can use Scalar adapter to extract one of the provided options by using `Scalar::enum()`.
 
 ```php
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 
 enum ActivityType : string {

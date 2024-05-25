@@ -14,7 +14,7 @@ completed item in a sequence, rather than on any property update.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Extras\Sequences\Sequence;
+use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
 
 class Person

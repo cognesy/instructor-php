@@ -1,19 +1,16 @@
 <?php
 
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Schema\Utils\PropertyInfo;
 use Symfony\Component\PropertyInfo\Type;
 use Tests\Examples\ClassInfo\EnumType;
 use Tests\Examples\ClassInfo\IntEnumType;
 use Tests\Examples\ClassInfo\StringEnumType;
 use Tests\Examples\ClassInfo\TestClassA;
 
-beforeEach(function () {
-    $this->classInfo = new ClassInfo();
-});
-
 it('can get property types', function () {
     // Assuming TestClass has properties with defined types
-    $types = $this->classInfo->getTypes(TestClassA::class, 'testProperty');
+    $types = (new ClassInfo(TestClassA::class))->getTypes('testProperty');
     expect($types)->toBeArray();
     expect($types[0])->toBeInstanceOf(Type::class);
 });
@@ -23,28 +20,36 @@ it('can get property types', function () {
 //    $this->classInfo->getType(TestClassA::class, 'undefinedProperty');
 //})->throws(Exception::class, 'No type found for property');
 
-it('can get class properties', function () {
-    $properties = $this->classInfo->getProperties(TestClassA::class);
+it('can get class property names', function () {
+    $properties = (new ClassInfo(TestClassA::class))->getPropertyNames();
     expect($properties)->toBeArray();
     expect($properties)->toContain('testProperty');
 });
 
+it('can get class properties', function () {
+    $properties = (new ClassInfo(TestClassA::class))->getProperties();
+    expect($properties)->toBeArray();
+    expect($properties)->toHaveKey('testProperty');
+    $property = $properties['testProperty'];
+    expect($property)->toBeInstanceOf(PropertyInfo::class);
+});
+
 it('can get class description', function () {
     // Assuming TestClass has a PHPDoc description
-    $description = $this->classInfo->getClassDescription(TestClassA::class);
+    $description = (new ClassInfo(TestClassA::class))->getClassDescription();
     expect($description)->toBeString();
     expect($description)->toEqual('Class description');
 });
 
 it('can get property description', function () {
     // Assuming TestClass has properties with PHPDoc descriptions
-    $description = $this->classInfo->getPropertyDescription(TestClassA::class, 'testProperty');
+    $description = (new ClassInfo(TestClassA::class))->getPropertyDescription('testProperty');
     expect($description)->toBeString();
 });
 
 it('can determine required properties', function () {
     // Assuming TestClass has at least one non-nullable property
-    $requiredProperties = $this->classInfo->getRequiredProperties(TestClassA::class);
+    $requiredProperties = (new ClassInfo(TestClassA::class))->getRequiredProperties();
     expect($requiredProperties)->toBeArray();
     expect($requiredProperties)->toContain('nonNullableProperty');
     expect($requiredProperties)->not()->toContain('nullableProperty');
@@ -52,42 +57,42 @@ it('can determine required properties', function () {
 
 it('can check if property is public', function () {
     // Assuming TestClass has a public property
-    $isPublic = $this->classInfo->isPublic(TestClassA::class, 'publicProperty');
+    $isPublic = (new ClassInfo(TestClassA::class))->isPublic('publicProperty');
     expect($isPublic)->toBeTrue();
 });
 
 it('can check if property is nullable', function () {
     // Assuming TestClass has a nullable property
-    $isNullable = $this->classInfo->isNullable(TestClassA::class, 'nullableProperty');
+    $isNullable = (new ClassInfo(TestClassA::class))->isNullable('nullableProperty');
     expect($isNullable)->toBeTrue();
 });
 
 it('can check if a class is an enum', function () {
     // Assuming EnumClass is an enum
-    $isEnum = $this->classInfo->isEnum(EnumType::class);
+    $isEnum = (new ClassInfo(EnumType::class))->isEnum();
     expect($isEnum)->toBeTrue();
 
     // Assuming TestClass is not an enum
-    $isEnum = $this->classInfo->isEnum(TestClassA::class);
+    $isEnum = (new ClassInfo(TestClassA::class))->isEnum();
     expect($isEnum)->toBeFalse();
 });
 
 
 it('can check if an enum is backed', function () {
     // Assuming BackedEnumClass is a backed enum
-    $isBackedEnum = $this->classInfo->isBackedEnum(StringEnumType::class);
+    $isBackedEnum = (new ClassInfo(StringEnumType::class))->isBackedEnum();
     expect($isBackedEnum)->toBeTrue();
 
     // Assuming EnumClass is not a backed enum
-    $isBackedEnum = $this->classInfo->isBackedEnum(EnumType::class);
+    $isBackedEnum = (new ClassInfo(EnumType::class))->isBackedEnum();
     expect($isBackedEnum)->toBeFalse();
 });
 
 it('can get the backing type of an enum', function () {
     // Assuming BackedEnumClass is a backed enum with a string backing type
-    $backingType = $this->classInfo->enumBackingType(StringEnumType::class);
+    $backingType = (new ClassInfo(StringEnumType::class))->enumBackingType();
     expect($backingType)->toEqual('string');
-    $backingType = $this->classInfo->enumBackingType(IntEnumType::class);
+    $backingType = (new ClassInfo(IntEnumType::class))->enumBackingType();
     expect($backingType)->toEqual('int');
 });
 

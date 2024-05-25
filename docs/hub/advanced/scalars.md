@@ -10,7 +10,7 @@ a simplified API for such cases.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 
 enum CitizenshipGroup : string {

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Schema\Data\Schema;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
-abstract class Schema
+class Schema
 {
     public TypeDetails $type;
     public string $name = '';
@@ -21,6 +21,10 @@ abstract class Schema
         $this->type = $type;
         $this->name = $name;
         $this->description = $description;
+    }
+
+    static public function undefined() : self {
+        return new self(TypeDetails::undefined());
     }
 
     public function toArray(callable $refCallback = null) : array

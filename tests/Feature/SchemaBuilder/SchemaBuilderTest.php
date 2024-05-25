@@ -85,3 +85,86 @@ it('creates Schema object from JSON Schema array - array props', function ($json
 
     expect($schema->required)->toBe(['stringProperty', 'integerProperty', 'boolProperty', 'floatProperty', 'enumProperty', 'objectProperty', 'arrayProperty', 'arrayObjectProperty', 'arrayEnumProperty']);
 })->with('schema_builder_json');
+
+it('throws exception when object schema has empty properties array', function () {
+    $jsonSchema = [
+        'type' => 'object',
+        'properties' => [],
+    ];
+    (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
+})->throws(\Exception::class, 'Object must have at least one property');
+
+it('throws exception when array schema is missing items field', function () {
+    $jsonSchema = [
+        'type' => 'object',
+        'properties' => [
+            'arrayProperty' => [
+                'type' => 'array',
+            ],
+        ],
+    ];
+    (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
+})->throws(\Exception::class, 'Array must have items field defining the nested type');
+
+it('throws exception for invalid enum type', function () {
+    $jsonSchema = [
+        'type' => 'object',
+        'properties' => [
+            'arrayProperty' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'enum',
+                    'enum' => ['one', 'two', 'three'],
+                    '$comment' => 'Tests\Examples\SchemaBuilder\TestEnum',
+                ],
+            ],
+        ],
+    ];
+    (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
+})->throws(\Exception::class, 'Nested enum type must be either string or int');
+
+it('throws exception when $comment is missing for enum', function () {
+    $jsonSchema = [
+        'type' => 'object',
+        'properties' => [
+            'arrayProperty' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                    'enum' => ['one', 'two', 'three'],
+                ],
+            ],
+        ],
+    ];
+    (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
+})->throws(\Exception::class, 'Nested enum type needs $comment field');
+
+it('throws exception when $comment is missing for object', function () {
+    $jsonSchema = [
+        'type' => 'object',
+        'properties' => [
+            'objectProperty' => [
+                'type' => 'object',
+                'properties' => [
+                    'nestedProperty' => ['type' => 'string'],
+                ]
+            ],
+        ],
+    ];
+    (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
+})->throws(\Exception::class, 'Object must have $comment field with the target class name');
+
+it('throws exception for invalid type in nested schema', function () {
+    $jsonSchema = [
+        'type' => 'object',
+        'properties' => [
+            'arrayProperty' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'invalidType',
+                ],
+            ],
+        ],
+    ];
+    (new SchemaBuilder)->fromJsonSchema($jsonSchema, '', '');
+})->throws(\Exception::class, 'Unknown type: invalidType');

@@ -5,7 +5,7 @@ use Cognesy\Instructor\Extras\Call\Call;
 use Tests\Examples\Call\TestClass;
 require_once __DIR__.'/../../Examples/Call/test_functions.php';
 use function Tests\Examples\Call\testFunction;
-
+use function Tests\Examples\Call\variadicFunction;
 
 it('can process function by name', function () {
     $call = Call::fromFunctionName('Tests\Examples\Call\testFunction');
@@ -52,6 +52,15 @@ it('can get arguments from method', function () {
         'boolParam',
         'objectParam',
     ]);
+});
+
+it('it can handle variadic args', function () {
+    $call = Call::fromCallable(variadicFunction(...));
+    $arguments = $call->getArgumentNames();
+    expect($arguments)->toBe(['objectParams']);
+    expect($call->getField('objectParams')->typeDetails()->type)->toBe('array');
+    expect($call->getField('objectParams')->typeDetails()->nestedType->type)->toBe('object');
+    expect($call->getField('objectParams')->typeDetails()->nestedType->class)->toBe('Tests\Examples\Call\TestClass');
 });
 
 it('can deserialize from JSON', function () {

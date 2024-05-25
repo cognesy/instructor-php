@@ -20,7 +20,7 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Instructor;
 

@@ -10,7 +10,7 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 class SchemaMap
 {
     /** @var Schema[] schema mapping for types */
-    private $schemas = [];
+    private array $schemas = [];
 
     /**
      * Register a schema for a type

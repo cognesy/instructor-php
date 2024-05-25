@@ -5,7 +5,7 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\Extras\Sequences\Sequence;
+use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Exception;
 
 class Stream

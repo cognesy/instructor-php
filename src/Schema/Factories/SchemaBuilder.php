@@ -8,6 +8,7 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Exception;
 
 /**
  * Builds Schema object from JSON Schema array
@@ -22,6 +23,7 @@ class SchemaBuilder
 {
     private $defaultToolName = 'extract_object';
     private $defaultToolDescription = 'Extract data from chat content';
+    private $defaultClass = Structure::class;
 
     /**
      * Create Schema object from given JSON Schema array
@@ -31,10 +33,10 @@ class SchemaBuilder
         string $customName = '',
         string $customDescription = '',
     ) : ObjectSchema {
-        $class = $jsonSchema['$comment'] ?? Structure::class;
+        $class = $jsonSchema['$comment'] ?? $this->defaultClass;
         $type = $jsonSchema['type'] ?? null;
         if ($type !== 'object') {
-            throw new \Exception('JSON Schema must have type: object');
+            throw new Exception('JSON Schema must have type: object');
         }
         $factory = new TypeDetailsFactory();
         return new ObjectSchema(

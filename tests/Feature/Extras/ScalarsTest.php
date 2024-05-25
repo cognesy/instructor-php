@@ -1,10 +1,10 @@
 <?php
-namespace Tests;
+namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Scalars\CitizenshipGroup;
+use Tests\MockLLM;
 
 it('extracts int type', function () {
     $mockLLM = MockLLM::get(['{"age":28}']);

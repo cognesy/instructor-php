@@ -25,6 +25,8 @@ class ObjectSchema extends Schema
 
     /**
      * Renders object schema
+     * @param callable|null $refCallback - callback for object references
+     * @return array<array<string, string|bool|array|int>>
      */
     public function toArray(callable $refCallback = null) : array
     {
@@ -42,6 +44,7 @@ class ObjectSchema extends Schema
         ]);
     }
 
+    /** @return string[] */
     public function getPropertyNames() : array {
         return array_keys($this->properties);
     }

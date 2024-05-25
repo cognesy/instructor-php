@@ -20,7 +20,7 @@ interface CanCallApi
 
     public function get() : ApiResponse;
 
-    /** @returns Generator<PartialApiResponse>  */
+    /** @return Generator<PartialApiResponse>  */
     public function stream() : Generator;
 
     public function async() : PromiseInterface;

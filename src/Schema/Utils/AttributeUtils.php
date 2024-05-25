@@ -10,6 +10,13 @@ use ReflectionProperty;
 
 class AttributeUtils
 {
+    static public function hasAttribute(
+        ReflectionClass|ReflectionMethod|ReflectionProperty|ReflectionParameter|ReflectionFunction $element,
+        string $attributeClass
+    ) : bool {
+        return count($element->getAttributes($attributeClass)) > 0;
+    }
+
     static public function getValues(
         ReflectionClass|ReflectionMethod|ReflectionProperty|ReflectionParameter|ReflectionFunction $element,
         string $attributeClass,

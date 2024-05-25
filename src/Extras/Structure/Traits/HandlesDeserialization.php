@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
-use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Utils\Json;
@@ -34,7 +34,7 @@ trait HandlesDeserialization
         return $this;
     }
 
-    public function fromJson(string $jsonData): static {
+    public function fromJson(string $jsonData, string $toolName = null): static {
         $data = Json::parse($jsonData);
         return $this->fromArray($data);
     }

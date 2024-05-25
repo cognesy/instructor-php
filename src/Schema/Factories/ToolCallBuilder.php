@@ -19,7 +19,7 @@ class ToolCallBuilder {
     /**
      * Extract the schema model from a function and constructs a function call JSON schema array
      */
-    public function render(
+    public function renderToolCall(
         array $jsonSchema,
         string $name,
         string $description

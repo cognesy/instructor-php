@@ -25,8 +25,6 @@ use Throwable;
 class ComponentConfig {
     use HandlesEvents;
 
-    private ClassInfo $classInfo;
-
     public function __construct(
         public string  $name,
         public ?string $class = null,
@@ -34,9 +32,7 @@ class ComponentConfig {
         /** @var callable */
         public         $getInstance = null,
         public bool    $injectContext = false,
-    ) {
-        $this->classInfo = new ClassInfo;
-    }
+    ) {}
 
     /**
      * Get the component instance
@@ -97,7 +93,9 @@ class ComponentConfig {
             if (!property_exists($instance, $property)) {
                 continue;
             }
-            if (!($this->classInfo->isPublic(get_class($instance), $property))) {
+            $class = get_class($instance);
+            $classInfo = new ClassInfo($class);
+            if (!($classInfo->isPublic($property))) {
                 continue;
             }
             $instance->$property = $value;

@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Core\Factories;
 
+use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanReceiveEvents;
@@ -46,6 +47,7 @@ class ResponseModelFactory
         // determine the type of the requested model and build it
         $responseModel = match(true) {
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
+            is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel, $toolName, $toolDescription),
             is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
             is_string($requestedModel) => $this->fromClassString($requestedModel),
@@ -158,8 +160,15 @@ class ResponseModelFactory
         $schema = $requestedModel;
         $class = $schema->type->class;
         $instance = new $class;
-        $schema = $requestedModel;
         $jsonSchema = $schema->toArray($this->toolCallBuilder->onObjectRef(...));
+        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
+    }
+
+    private function fromToolSelectionProvider(CanHandleToolSelection $requestedModel) {
+        $class = get_class($requestedModel);
+        $instance = $requestedModel;
+        $jsonSchema = $instance->toJsonSchema();
+        $schema = $instance->toSchema();
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 }

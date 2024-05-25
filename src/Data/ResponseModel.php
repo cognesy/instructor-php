@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 
@@ -9,10 +10,7 @@ class ResponseModel
     private ToolCallBuilder $toolCallBuilder;
 
     private mixed $instance;
-    private ?string $class;
-    private Schema $schema;
-    private array $jsonSchema;
-
+    private DataModel $dataModel;
     private string $toolName = '';
     private string $toolDescription = '';
 
@@ -23,11 +21,18 @@ class ResponseModel
         array  $jsonSchema = null,
         ToolCallBuilder $toolCallBuilder = null,
     ) {
-        $this->class = $class;
         $this->instance = $instance;
-        $this->schema = $schema;
-        $this->jsonSchema = $jsonSchema;
         $this->toolCallBuilder = $toolCallBuilder;
+        $this->dataModel = new DataModel($class, $schema, $jsonSchema);
+    }
+
+    public function instance() : mixed {
+        return $this->instance;
+    }
+
+    public function withInstance(mixed $instance) : static {
+        $this->instance = $instance;
+        return $this;
     }
 
     public function toolName() : string {
@@ -48,36 +53,30 @@ class ResponseModel
         return $this;
     }
 
-    public function jsonSchema() : array {
-        return $this->jsonSchema;
-    }
-
-    public function instance() : mixed {
-        return $this->instance;
-    }
-
-    public function withInstance(mixed $instance) : static {
-        $this->instance = $instance;
-        return $this;
+    public function toolCallSchema() : array {
+        return match(true) {
+            $this->instance() instanceof CanHandleToolSelection => $this->instance()->toToolCallsJson(),
+            default => $this->toolCallBuilder->renderToolCall(
+                $this->toJsonSchema(),
+                $this->toolName,
+                $this->toolDescription
+            ),
+        };
     }
 
     public function class() : ?string {
-        return $this->class;
+        return $this->dataModel->class();
     }
 
     public function propertyNames() : array {
-        return $this->schema->getPropertyNames();
-    }
-
-    public function toolCallSchema() : array {
-        return $this->toolCallBuilder->render(
-            $this->jsonSchema,
-            $requestedModel['name'] ?? $this->toolName,
-            $requestedModel['description'] ?? $this->toolDescription
-        );
+        return $this->dataModel->schema()->getPropertyNames();
     }
 
     public function schema() : Schema {
-        return $this->schema;
+        return $this->dataModel->schema();
+    }
+
+    public function toJsonSchema() : array {
+        return $this->dataModel->toJsonSchema();
     }
 }

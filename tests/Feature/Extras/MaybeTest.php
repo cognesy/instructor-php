@@ -1,10 +1,9 @@
 <?php
+namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\LLMs\ApiClient\ToolsMode\ApiClientApiCaller;
 use Tests\Examples\Extraction\Person;
 use Tests\MockLLM;
-
 
 it('supports simple properties', function () {
     $mockLLM = MockLLM::get([

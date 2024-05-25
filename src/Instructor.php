@@ -71,6 +71,10 @@ class Instructor {
         return $this;
     }
 
+    public function client() : CanCallApi {
+        return $this->clientFactory->getDefault();
+    }
+
     public function withClient(CanCallApi $client) : self {
         $this->clientFactory->setDefault($client);
         return $this;

@@ -1,7 +1,6 @@
 <?php
 namespace Tests\Feature;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
@@ -16,7 +15,7 @@ use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
-use Cognesy\Instructor\Extras\Scalars\Scalar;
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Extraction\Person;
 use Tests\Examples\Instructor\EventSink;

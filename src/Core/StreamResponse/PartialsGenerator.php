@@ -60,8 +60,6 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response
             $this->partialResponses[] = $partialResponse;
-            // store for finalization when we leave the loop
-            // $this->lastPartialResponse = $partialResponse;
 
             // situation 1: new function call
             $maybeToolName = $partialResponse->toolName;
@@ -132,7 +130,7 @@ class PartialsGenerator implements CanGeneratePartials
         ResponseModel $responseModel,
     ) : Result {
         return Chain::from(fn() => Json::fix($partialJsonData))
-            ->through(fn($jsonData) => $this->responseDeserializer->deserialize($jsonData, $responseModel))
+            ->through(fn($jsonData) => $this->responseDeserializer->deserialize($jsonData, $responseModel, $this?->toolCalls->last()->name))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->result();
     }

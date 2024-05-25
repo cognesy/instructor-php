@@ -24,21 +24,19 @@ class SchemaFactory
 {
     /** @var bool switches schema rendering between inlined or referenced object properties */
     protected bool $useObjectReferences;
-    //
+
     protected SchemaMap $schemaMap;
     protected PropertyMap $propertyMap;
     protected TypeDetailsFactory $typeDetailsFactory;
-    private ClassInfo $classInfo;
 
     public function __construct(
-        bool $useObjectReferences,
+        bool $useObjectReferences = false,
     ) {
         $this->useObjectReferences = $useObjectReferences;
         //
         $this->schemaMap = new SchemaMap;
         $this->propertyMap = new PropertyMap;
         $this->typeDetailsFactory = new TypeDetailsFactory;
-        $this->classInfo = new ClassInfo;
     }
 
     /**
@@ -57,104 +55,6 @@ class SchemaFactory
             $this->schemaMap->register($typeString, $this->makeSchema($type));
         }
         return $this->schemaMap->get($anyType);
-    }
-
-    /**
-     * Extracts the schema from a property of a class
-     *
-     * @param string $class
-     * @param string $property
-     */
-    protected function property(string $class, string $property) : Schema {
-        if (!$this->propertyMap->has($class, $property)) {
-            $this->propertyMap->register($class, $property, $this->getPropertySchema($class, $property));
-        }
-        return $this->propertyMap->get($class, $property);
-    }
-
-    /**
-     * Gets all the property schemas of a class
-     *
-     * @param string $class
-     * @return Schema[]
-     */
-    protected function getPropertySchemas(string $class) : array {
-        $properties = $this->classInfo->getProperties($class);
-        $propertySchemas = [];
-        foreach ($properties as $property) {
-            if (!$this->classInfo->isPublic($class, $property)) {
-                continue;
-            }
-            $propertySchemas[$property] = $this->property($class, $property);
-        }
-        return $propertySchemas;
-    }
-
-    /**
-     * Gets the schema of a property
-     *
-     * @param string $class
-     * @param string $property
-     * @return Schema
-     */
-    protected function getPropertySchema(string $class, string $property) : Schema {
-        $propertyInfoType = $this->classInfo->getType($class, $property);
-        $type = $this->typeDetailsFactory->fromPropertyInfo($propertyInfoType);
-        $description = $this->getPropertyDescription($type, $class, $property);
-        return $this->makePropertySchema($type, $property, $description);
-    }
-
-    /**
-     * Gets full property description
-     *
-     * @param TypeDetails $type
-     * @param string $class
-     * @param string $property
-     * @return string
-     */
-    protected function getPropertyDescription(TypeDetails $type, string $class, string $property) : string {
-        if (in_array($type->type, TypeDetails::PHP_OBJECT_TYPES)) {
-            $classDescription = $this->classInfo->getClassDescription($type->class);
-        } else {
-            $classDescription = '';
-        }
-        return implode("\n", array_filter([
-            $this->classInfo->getPropertyDescription($class, $property),
-            $classDescription,
-        ]));
-    }
-
-    /**
-     * Makes schema for top level item (depending on the type)
-     *
-     * @param TypeDetails $type
-     * @param string $name
-     * @param string $description
-     * @return Schema
-     */
-    protected function makeSchema(TypeDetails $type) : Schema {
-        return match (true) {
-            ($type->type == TypeDetails::PHP_OBJECT) => new ObjectSchema(
-                $type,
-                $type->classOnly(),
-                $this->classInfo->getClassDescription($type->class),
-                $this->getPropertySchemas($type->class),
-                $this->classInfo->getRequiredProperties($type->class),
-            ),
-            ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema(
-                $type,
-                $type->class,
-                $this->classInfo->getClassDescription($type->class),
-            ),
-            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
-                $type,
-                '',
-                '',
-                $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
-            ),
-            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, 'value', 'Correctly extracted value'),
-            default => throw new \Exception('Unknown type: '.$type->type),
-        };
     }
 
     /**
@@ -181,6 +81,108 @@ class SchemaFactory
         return $match;
     }
 
+    // INTERNAL //////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Extracts the schema from a property of a class
+     *
+     * @param string $class
+     * @param string $property
+     */
+    protected function property(string $class, string $property) : Schema {
+        if (!$this->propertyMap->has($class, $property)) {
+            $this->propertyMap->register($class, $property, $this->getPropertySchema($class, $property));
+        }
+        return $this->propertyMap->get($class, $property);
+    }
+
+    /**
+     * Gets all the property schemas of a class
+     *
+     * @param string $class
+     * @return Schema[]
+     */
+    protected function getPropertySchemas(string $class) : array {
+        $classInfo = new ClassInfo($class);
+        $properties = $classInfo->getProperties();
+        $propertySchemas = [];
+        foreach ($properties as $propertyName => $propertyInfo) {
+            if (!$propertyInfo->isPublic()) {
+                continue;
+            }
+            $propertySchemas[$propertyName] = $this->property($class, $propertyName);
+        }
+        return $propertySchemas;
+    }
+
+    /**
+     * Gets the schema of a property
+     *
+     * @param string $class
+     * @param string $property
+     * @return Schema
+     */
+    protected function getPropertySchema(string $class, string $property) : Schema {
+        $propertyInfoType = (new ClassInfo($class))->getType($property);
+        $type = $this->typeDetailsFactory->fromPropertyInfo($propertyInfoType);
+        $description = $this->getPropertyDescription($type, $class, $property);
+        return $this->makePropertySchema($type, $property, $description);
+    }
+
+    /**
+     * Gets full property description
+     *
+     * @param TypeDetails $type
+     * @param string $class
+     * @param string $property
+     * @return string
+     */
+    protected function getPropertyDescription(TypeDetails $type, string $class, string $property) : string {
+        if (in_array($type->type, TypeDetails::PHP_OBJECT_TYPES)) {
+            $classDescription = (new ClassInfo($type->class))->getClassDescription();
+        } else {
+            $classDescription = '';
+        }
+        return implode("\n", array_filter([
+            (new ClassInfo($class))->getPropertyDescription($property),
+            $classDescription,
+        ]));
+    }
+
+    /**
+     * Makes schema for top level item (depending on the type)
+     *
+     * @param TypeDetails $type
+     * @param string $name
+     * @param string $description
+     * @return Schema
+     */
+    protected function makeSchema(TypeDetails $type) : Schema {
+        $classInfo = new ClassInfo($type->class);
+        return match (true) {
+            ($type->type == TypeDetails::PHP_OBJECT) => new ObjectSchema(
+                $type,
+                $type->classOnly(),
+                $classInfo->getClassDescription(),
+                $this->getPropertySchemas($type->class),
+                $classInfo->getRequiredProperties(),
+            ),
+            ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema(
+                $type,
+                $type->class,
+                $classInfo->getClassDescription(),
+            ),
+            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+                $type,
+                '',
+                '',
+                $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
+            ),
+            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, 'value', 'Correctly extracted value'),
+            default => throw new \Exception('Unknown type: '.$type->type),
+        };
+    }
+
     /**
      * Makes schema for object properties
      *
@@ -198,7 +200,7 @@ class SchemaFactory
             $name,
             $description,
             $this->getPropertySchemas($type->class),
-            $this->classInfo->getRequiredProperties($type->class),
+            (new ClassInfo($type->class))->getRequiredProperties(),
         );
     }
 }

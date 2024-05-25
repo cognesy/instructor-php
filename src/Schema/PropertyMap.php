@@ -9,7 +9,7 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 class PropertyMap
 {
     /** @var Schema[][] schema mapping for class properties - first index is class name, second is property name */
-    private $map = [];
+    private array $map = [];
 
     /**
      * Register a schema for a class property

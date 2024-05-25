@@ -19,9 +19,9 @@ class ResponseDeserializer
         private CanDeserializeClass $deserializer,
     ) {}
 
-    public function deserialize(string $json, ResponseModel $responseModel) : Result {
+    public function deserialize(string $json, ResponseModel $responseModel, string $toolName = null) : Result {
         $result = match(true) {
-            $responseModel->instance() instanceof CanDeserializeSelf => $this->deserializeSelf($json, $responseModel->instance()),
+            $responseModel->instance() instanceof CanDeserializeSelf => $this->deserializeSelf($json, $responseModel->instance(), $toolName),
             default => $this->deserializeAny($json, $responseModel)
         };
         $this->events->dispatch(match(true) {
@@ -31,9 +31,9 @@ class ResponseDeserializer
         return $result;
     }
 
-    protected function deserializeSelf(string $json, CanDeserializeSelf $response) : Result {
+    protected function deserializeSelf(string $json, CanDeserializeSelf $response, string $toolName = null) : Result {
         $this->events->dispatch(new CustomResponseDeserializationAttempt($response, $json));
-        return Result::try(fn() => $response->fromJson($json));
+        return Result::try(fn() => $response->fromJson($json, $toolName));
     }
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {

@@ -21,27 +21,22 @@ class Deserializer implements CanDeserializeClass
     public function __construct(
         protected ?PropertyInfoExtractor $typeExtractor = null,
         protected ?Serializer $serializer = null,
-    ) {
-        // Create a PropertyInfoExtractor for type extraction
-        $this->typeExtractor = $typeExtractor ?? $this->defaultTypeExtractor();
-        // Initialize the Serializer with normalizers configured to use the type extractor
-        $this->serializer = $serializer ?? $this->defaultSerializer($this->typeExtractor);
-    }
+    ) {}
 
     public function fromJson(string $jsonData, string $dataType): mixed {
         return match($dataType) {
-            default => $this->deserializeObject($this->serializer, $jsonData, $dataType)
+            default => $this->deserializeObject($this->serializer(), $jsonData, $dataType)
         };
     }
 
     public function fromArray(array $data, string $dataType): mixed {
         return match($dataType) {
-            default => $this->denormalizeObject($this->serializer, $data, $dataType)
+            default => $this->denormalizeObject($this->serializer(), $data, $dataType)
         };
     }
 
     public function toArray(object $object): array {
-        $normalized = $this->serializer->normalize($object, 'array');
+        $normalized = $this->serializer()->normalize($object, 'array');
         return match(true) {
             ($normalized === null) => [],
             is_array($normalized) => $normalized,
@@ -49,6 +44,13 @@ class Deserializer implements CanDeserializeClass
             is_string($normalized) => ['value' => $normalized], // TODO: find better way
             default => $normalized
         };
+    }
+
+    protected function typeExtractor(): PropertyInfoExtractor {
+        if (!isset($this->typeExtractor)) {
+            $this->typeExtractor = $this->defaultTypeExtractor();
+        }
+        return $this->typeExtractor;
     }
 
     protected function defaultTypeExtractor() : PropertyInfoExtractor {
@@ -61,6 +63,13 @@ class Deserializer implements CanDeserializeClass
             accessExtractors: [$reflectionExtractor],
             initializableExtractors: [$reflectionExtractor],
         );
+    }
+
+    protected function serializer(): Serializer {
+        if (!isset($this->serializer)) {
+            $this->serializer = $this->defaultSerializer($this->typeExtractor());
+        }
+        return $this->serializer;
     }
 
     protected function defaultSerializer(PropertyInfoExtractor $typeExtractor) : Serializer {

@@ -1,8 +1,7 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
-use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Field\Field;
 
 trait HandlesFieldAccess
 {
@@ -20,16 +19,40 @@ trait HandlesFieldAccess
         return $this->fields[$name];
     }
 
+    /** @return Field[] */
     public function fields() : array {
         return $this->fields;
+    }
+
+    /** @return string[] */
+    public function fieldNames() : array {
+        return array_keys($this->fields);
+    }
+
+    /** @return mixed[] */
+    public function asValues() : array {
+        return $this->asArgs();
+    }
+
+    /** @return mixed[] */
+    public function asArgs() : array {
+        $args = [];
+        foreach ($this->fields as $field) {
+            $args[$field->name()] = $field->get();
+        }
+        return $args;
     }
 
     public function get(string $field) : mixed {
         return $this->field($field)->get();
     }
 
-    public function set(string $field, mixed $value) {
+    public function set(string $field, mixed $value) : void {
         $this->field($field)->set($value);
+    }
+
+    public function count() : int {
+        return count($this->fields);
     }
 
     public function __get(string $field) : mixed {

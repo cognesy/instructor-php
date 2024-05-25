@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Configuration\Traits;
 
 use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Events\EventDispatcher;
 use function Cognesy\config\autowire;
 
 trait HasConfigurationInstance
@@ -22,9 +23,10 @@ trait HasConfigurationInstance
     /**
      * Get singleton of autowired configuration
      */
-    static public function auto(array $overrides = []) : Configuration {
+    static public function auto(array $overrides = [], EventDispatcher $events = null) : Configuration {
         if (is_null(self::$instance)) {
-            self::$instance = autowire(new Configuration)->override($overrides);
+            $events = $events ?? new EventDispatcher();
+            self::$instance = autowire(new Configuration, $events)->override($overrides);
         }
         return self::$instance;
     }

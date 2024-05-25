@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use JetBrains\PhpStorm\Deprecated;
 use Override;
 
@@ -33,7 +33,7 @@ class AnthropicApiRequest extends ApiRequest
     #[Deprecated]
     protected function getSystemInstruction() : string {
         $tool = $this->getToolSchema();
-        $schema = (new SchemaBuilder)->fromJsonSchema($tool, 'extract_data', 'Extract data from chat content');
+        $schema = (new SchemaFactory)->fromJsonSchema($tool, 'extract_data', 'Extract data from chat content');
         $xmlSchema = $schema->toXml();
         $system = $this->instructions()."\nHere are the tools available:\n".$this->xmlToolSchema($xmlSchema);
         return $system;

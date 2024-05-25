@@ -37,6 +37,26 @@ class FunctionInfo
         return array_key_exists($name, $this->parameters);
     }
 
+    public function isNullable(string $name) : bool {
+        return $this->parameters[$name]->allowsNull();
+    }
+
+    public function isOptional(string $name) : bool {
+        return $this->parameters[$name]->isOptional();
+    }
+
+    public function isVariadic(string $name) : bool {
+        return $this->parameters[$name]->isVariadic();
+    }
+
+    public function hasDefaultValue(string $name) : bool {
+        return $this->parameters[$name]->isDefaultValueAvailable();
+    }
+
+    public function getDefaultValue(string $name) : mixed {
+        return $this->parameters[$name]->getDefaultValue();
+    }
+
     public function getParameters() : array {
         return $this->parameters;
     }

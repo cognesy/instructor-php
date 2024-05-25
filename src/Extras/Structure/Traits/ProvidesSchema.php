@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
-use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;

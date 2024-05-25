@@ -22,7 +22,7 @@ When implementing custom response handling strategy, avoid doing all transformat
 
 For a practical example of using those contracts to customize Instructor processing flow see:
 
- - src/Extras/Scalars/
+ - src/Extras/Scalar/
  - src/Extras/Sequence/
 
 Examples contain an implementation of custom $responseModel wrappers, e.g. providing scalar value response support with a wrapper class implementing custom schema provider, deserialization, validation and transformation into requested value type.

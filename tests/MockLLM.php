@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;

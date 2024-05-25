@@ -6,7 +6,6 @@ use Cognesy\Instructor\Schema\Attributes\Description;
 use Cognesy\Instructor\Schema\Attributes\Instructions;
 use ReflectionClass;
 use ReflectionEnum;
-use ReflectionProperty;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -15,49 +14,79 @@ use Symfony\Component\PropertyInfo\Type;
 
 class ClassInfo {
     private PropertyInfoExtractor $extractor;
+    private string $class;
+    private ReflectionClass $reflectionClass;
+    private ReflectionEnum $reflectionEnum;
+    private array $propertyInfos = [];
 
-    public function __construct() {
-        $this->extractor = $this->makeExtractor();
-    }
-
-    protected function makeExtractor() : PropertyInfoExtractor {
-        // initialize extractor instance
-        $phpDocExtractor = new PhpDocExtractor();
-        $reflectionExtractor = new ReflectionExtractor();
-        return new PropertyInfoExtractor(
-            [$reflectionExtractor],
-            [new PhpStanExtractor(), $phpDocExtractor, $reflectionExtractor],
-            [$phpDocExtractor],
-            [$reflectionExtractor],
-            [$reflectionExtractor]
-        );
-    }
-
-    public function getTypes(string $class, string $property) : array {
-        $types = $this->extractor->getTypes($class, $property);
-        if (is_null($types)) {
-            $types = [new Type(Type::BUILTIN_TYPE_STRING)];
+    public function __construct(string $class) {
+        $this->class = $class;
+        $this->reflectionClass = new ReflectionClass($class);
+        if ($this->isEnum()) {
+            $this->reflectionEnum = new ReflectionEnum($class);
         }
-        return $types;
     }
 
-    public function getType(string $class, string $property): Type {
-        $propertyTypes = $this->getTypes($class, $property);
-        if (!count($propertyTypes)) {
-            throw new \Exception("No type found for property: $class::$property");
+    public function getShortName() : string {
+        return $this->reflectionClass->getShortName();
+    }
+
+    /** @return Type[] */
+    public function getTypes(string $property) : array {
+        return $this->getProperty($property)->getTypes();
+    }
+
+    public function getType(string $property): Type {
+        return $this->getProperty($property)->getType();
+    }
+
+    /** @return string[] */
+    public function getPropertyNames() : array {
+        return array_keys($this->getProperties());
+    }
+
+    /** @return PropertyInfo[] */
+    public function getProperties() : array {
+        if (empty($this->propertyInfos)) {
+            $this->propertyInfos = $this->makePropertyInfos();
         }
-        if (count($propertyTypes) > 1) {
-            throw new \Exception("Unsupported union type found for property: $class::$property");
+        return $this->propertyInfos;
+    }
+
+    public function getProperty(string $name) : PropertyInfo {
+        $properties = $this->getProperties();
+        if (!isset($properties[$name])) {
+            throw new \Exception("Property `$name` not found in class `$this->class`.");
         }
-        return $propertyTypes[0];
+        return $properties[$name];
     }
 
-    public function getProperties(string $class) : array {
-        return $this->extractor->getProperties($class) ?? [];
+    public function getPropertyDescription(string $property): string {
+        return $this->getProperty($property)->getDescription();
     }
 
-    public function getClassDescription(string $class) : string {
-        $reflection = new ReflectionClass($class);
+    public function hasProperty(string $property) : bool {
+        $properties = $this->getProperties();
+        return isset($properties[$property]);
+    }
+
+    public function isPublic(string $property) : bool {
+        if (!$this->hasProperty($property)) {
+            return false;
+        }
+        return $this->getProperty($property)->isPublic();
+    }
+
+    public function isNullable(string $property) : bool {
+        return $this->getProperty($property)->isNullable();
+    }
+
+    public function isReadOnly(string $property) : bool {
+        return $this->getProperty($property)->isReadOnly();
+    }
+
+    public function getClassDescription() : string {
+        $reflection = $this->reflectionClass;
 
         // get #[Description] attributes
         $descriptions = array_merge(
@@ -74,69 +103,45 @@ class ClassInfo {
         return trim(implode('\n', array_filter($descriptions)));
     }
 
-    public function getPropertyDescription(string $class, string $property): string {
-        // get #[Description] attributes
-        $reflection = new ReflectionProperty($class, $property);
-        $descriptions = array_merge(
-            AttributeUtils::getValues($reflection, Description::class, 'text'),
-            AttributeUtils::getValues($reflection, Instructions::class, 'text'),
-        );
-
-        // get property description from PHPDoc
-        $descriptions[] = $this->extractor->getShortDescription($class, $property);
-        $descriptions[] = $this->extractor->getLongDescription($class, $property);
-
-        return trim(implode('\n', array_filter($descriptions)));
-    }
-
-    public function getRequiredProperties(string $class) : array {
-        $properties = $this->getProperties($class);
+    /** @return string[] */
+    public function getRequiredProperties() : array {
+        $properties = $this->getProperties();
         if (empty($properties)) {
             return [];
         }
         $required = [];
         foreach ($properties as $property) {
-            if (!$this->isPublic($class, $property)) {
+            if (!$property->isPublic()) {
                 continue;
             }
-            if (!$this->isNullable($class, $property)) {
-                $required[] = $property;
+            if (!$property->isNullable()) {
+                $required[] = $property->getName();
             }
         }
         return $required;
     }
 
-    public function isPublic(string $class, string $property) : bool {
-        return (new ReflectionClass($class))->getProperty($property)?->isPublic();
+    public function isEnum() : bool {
+        return $this->reflectionClass->isEnum();
     }
 
-    public function isNullable(string $class, string $property) : bool {
-        $types = $this->extractor->getTypes($class, $property);
-        if (is_null($types)) {
-            return false;
-        }
-        foreach ($types as $type) {
-            if ($type->isNullable()) {
-                return true;
-            }
-        }
-        return false;
+    public function isBackedEnum() : bool {
+        return !isset($this->reflectionEnum)
+            ? false
+            : $this->reflectionEnum->isBacked();
     }
 
-    public function isEnum(string $class) : bool {
-        return (new ReflectionClass($class))->isEnum();
+    public function enumBackingType() : string {
+        return !isset($this->reflectionEnum)
+            ? throw new \Exception("Not an enum")
+            : $this->reflectionEnum->getBackingType()?->getName();
     }
 
-    public function isBackedEnum(string $class) : bool {
-        return (new ReflectionEnum($class))->isBacked();
-    }
-
-    public function enumBackingType(string $class) : string {
-        return (new ReflectionEnum($class))->getBackingType()?->getName();
-    }
-
-    public function enumValues(string $class) : array {
-        $enum = new ReflectionEnum($class);
+    /** @return string[]|int[] */
+    public function enumValues() : array {
+        $enum = !isset($this->reflectionEnum)
+            ? throw new \Exception("Not an enum")
+            : $this->reflectionEnum;
         $values = [];
         foreach ($enum->getCases() as $item) {
             $values[] = $item->getValue()->value;
@@ -144,10 +149,42 @@ class ClassInfo {
         return $values;
     }
 
-    public function implementsInterface(string $anyType, string $interface) : bool {
-        if (!class_exists($anyType)) {
+    public function implementsInterface(string $interface) : bool {
+        if (!class_exists($this->class)) {
             return false;
         }
-        return in_array($interface, class_implements($anyType));
+        return in_array($interface, class_implements($this->class));
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////
+
+    /** @return PropertyInfo[] */
+    protected function makePropertyInfos() : array {
+        $properties = $this->reflectionClass->getProperties() ?? [];
+        $info = [];
+        foreach ($properties as $property) {
+            $info[$property->name] = new PropertyInfo($property);
+        }
+        return $info;
+    }
+
+    protected function extractor() : PropertyInfoExtractor {
+        if (!isset($this->extractor)) {
+            $this->extractor = $this->makeExtractor();
+        }
+        return $this->extractor;
+    }
+
+    protected function makeExtractor() : PropertyInfoExtractor {
+        // initialize extractor instance
+        $phpDocExtractor = new PhpDocExtractor();
+        $reflectionExtractor = new ReflectionExtractor();
+        return new PropertyInfoExtractor(
+            [$reflectionExtractor],
+            [new PhpStanExtractor(), $phpDocExtractor, $reflectionExtractor],
+            [$phpDocExtractor],
+            [$reflectionExtractor],
+            [$reflectionExtractor]
+        );
     }
 }

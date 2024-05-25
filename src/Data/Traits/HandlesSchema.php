@@ -39,7 +39,7 @@ trait HandlesSchema
     }
 
     public function jsonSchema() : array {
-        return $this->responseModel->jsonSchema();
+        return $this->responseModel->toJsonSchema();
     }
 
     public function toolCallSchema() : array {

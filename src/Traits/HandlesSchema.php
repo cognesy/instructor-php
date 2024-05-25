@@ -11,7 +11,7 @@ trait HandlesSchema
     }
 
     public function createJsonSchema(string|array|object $responseModel) : array {
-        return $this->responseModelFactory->fromAny($responseModel)->jsonSchema();
+        return $this->responseModelFactory->fromAny($responseModel)->toJsonSchema();
     }
 
     public function createJsonSchemaString(string|array|object $responseModel) : string {

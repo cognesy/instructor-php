@@ -13,10 +13,12 @@ class Example
     public readonly string $uid;
     public readonly DateTimeImmutable $createdAt;
     public string $template = <<<TEMPLATE
-        ## EXAMPLE
-        ### INPUT
+        # EXAMPLE
+        
+        INPUT:
         {input}
-        ### OUTPUT
+        
+        OUTPUT:
         ```json
         {output}
         ```
