@@ -14,9 +14,9 @@ use Exception;
 //    function performOperation(): Result {
 //        // Some operation...
 //        if ($success) {
-//            return Result::success(42); // Assuming success with an integer value
+//            return Result::success(42); // Success with an integer value
 //        } else {
-//            return Result::failure("An error occurred"); // Assuming failure with a string error message
+//            return Result::failure("An error occurred"); // Failure with a string error message
 //        }
 //    }
 //

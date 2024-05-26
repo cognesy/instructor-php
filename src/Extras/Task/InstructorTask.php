@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Task;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Instructor;
 
 class InstructorTask extends ExecutableTask

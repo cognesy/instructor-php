@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Task\Contracts;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 
 interface CanHandleTaskData
 {

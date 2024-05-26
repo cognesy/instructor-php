@@ -66,7 +66,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         ];
     }
 
-    public function fromJson(string $jsonData, string $toolName = '') : static {
+    public function fromJson(string $jsonData, ?string $toolName = '') : static {
         $data = json_decode($jsonData, true);
         $this->hasValue = $data['hasValue'] ?? false;
         $this->error = $data['error'] ?? '';

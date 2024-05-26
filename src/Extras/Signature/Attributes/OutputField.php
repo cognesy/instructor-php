@@ -8,5 +8,6 @@ use Attribute;
 class OutputField
 {
     public function __construct(
+        public string $description = '',
     ) {}
 }

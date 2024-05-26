@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Data\Traits;
 
 trait HandlesOptions

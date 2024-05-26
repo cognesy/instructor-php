@@ -36,6 +36,10 @@ class Event
         echo $this->asConsole($quote)."\n";
     }
 
+    public function printLog(): void {
+        echo $this->asLog()."\n";
+    }
+
     /// PRIVATE ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private function logFormat(string $message): string {

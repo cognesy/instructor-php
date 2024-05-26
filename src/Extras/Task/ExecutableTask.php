@@ -2,21 +2,25 @@
 
 namespace Cognesy\Instructor\Extras\Task;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Task\Enums\TaskStatus;
+use Exception;
 use Throwable;
 
 abstract class ExecutableTask extends Task
 {
     protected Throwable $error;
-    protected array $inputs;
 
     public function __construct(string|Signature $signature) {
         parent::__construct($signature);
     }
 
-    public function with(array $inputs) : static {
-        $this->inputs = $inputs;
+    public function with(array|Signature $inputs) : static {
+        $this->setInputs(match(true) {
+            is_array($inputs) => $inputs,
+            ($inputs instanceof Signature) => $inputs->asInputArgs(),
+            default => throw new Exception('Invalid inputs'),
+        });
         return $this;
     }
 
@@ -40,7 +44,7 @@ abstract class ExecutableTask extends Task
     }
 
     public function get() : mixed {
-        return $this->execute($this->inputs);
+        return $this->execute($this->inputs());
     }
 
     public function error() : Throwable {

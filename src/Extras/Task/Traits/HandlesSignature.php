@@ -2,7 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Task\Traits;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Signature\SignatureFactory;
 
 trait HandlesSignature
 {
@@ -14,7 +15,8 @@ trait HandlesSignature
 
     private function setSignature(string|Signature $signature): static {
         $this->signature = match(true) {
-            is_string($signature) => Signature::fromString($signature),
+            is_string($signature) && str_contains($signature, Signature::ARROW) => SignatureFactory::fromString($signature),
+            is_string($signature) => SignatureFactory::fromClassMetadata($signature),
             $signature instanceof Signature => $signature,
             default => throw new \InvalidArgumentException('Invalid signature')
         };

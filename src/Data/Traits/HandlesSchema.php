@@ -9,8 +9,8 @@ trait HandlesSchema
 {
     private ResponseModelFactory $responseModelFactory;
 
-    private string $defaultToolName = 'extract_data';
-    private string $defaultToolDescription = 'Extract data from provided content';
+    private string $defaultToolName = 'extracted_data';
+    private string $defaultToolDescription = 'Function call based on the data extracted from provided content';
     private string $toolName;
     private string $toolDescription;
 

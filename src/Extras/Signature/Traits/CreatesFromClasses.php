@@ -1,7 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Signature\StructureSignature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 
 trait CreatesFromClasses
@@ -9,8 +10,8 @@ trait CreatesFromClasses
     static public function fromClasses(
         string|object $input,
         string|object $output
-    ): static {
-        $signature = new Signature(
+    ): Signature {
+        $signature = new StructureSignature(
             inputs: self::makeSignatureFromClass($input),
             outputs: self::makeSignatureFromClass($output),
         );

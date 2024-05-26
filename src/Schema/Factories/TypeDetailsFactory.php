@@ -85,7 +85,7 @@ class TypeDetailsFactory
         $typeName = $this->getArrayType($typeSpec);
         $nestedType = match (true) {
             ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed type not supported'),
-            ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('Nested arrays not supported'),
+            ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('You have not specified array element type'),
             (in_array($typeName, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($typeName),
             default => $this->objectType($typeName),
         };

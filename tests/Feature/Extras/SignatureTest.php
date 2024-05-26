@@ -4,13 +4,14 @@ namespace Tests\Feature\Extras;
 use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Attributes\Description;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 it('creates signature from string', function () {
-    $signature = Signature::fromString('name:string (description) -> age:int (description)');
+    $signature = SignatureFactory::fromString('name:string (description) -> age:int (description)');
     expect($signature->toString())->toBe('name:string (description) -> age:int (description)');
 });
 
@@ -23,7 +24,7 @@ it('creates signature from structure', function () {
             Field::int('age', 'age description'),
         ]),
     ]);
-    $signature = Signature::fromStructure($structure);
+    $signature = SignatureFactory::fromStructure($structure);
     expect($signature->toString())->toBe('name:string (name description) -> age:int (age description)');
 });
 
@@ -34,7 +35,7 @@ it('creates signature from separate structures', function () {
     $structure2 = Structure::define('outputs', [
         Field::int('age', 'age description'),
     ]);
-    $signature = Signature::fromStructures($structure1, $structure2);
+    $signature = SignatureFactory::fromStructures($structure1, $structure2);
     expect($signature->toString())->toBe('name:string (name description) -> age:int (age description)');
 });
 
@@ -45,7 +46,7 @@ it('creates signature from classes', function () {
     class Output {
         public int $age;
     }
-    $signature = Signature::fromClasses(Input::class, Output::class);
+    $signature = SignatureFactory::fromClasses(Input::class, Output::class);
     expect($signature->toString())->toBe('name:string -> age:int');
 });
 
@@ -54,11 +55,18 @@ it('creates signature from class metadata', function () {
     class TestSignature {
         #[InputField]
         public string $stringProperty;
+        #[InputField('bool description')]
+        public bool $boolProperty;
         #[OutputField]
         public int $intProperty;
         #[Ignore]
         public bool $ignoredProperty;
+        protected string $protectedProperty;
+        private string $privateProperty;
+        static public string $staticProperty;
+        #[OutputField]
+        public $mixedProperty;
     }
-    $signature = Signature::fromClassMetadata(TestSignature::class);
-    expect($signature->toString())->toBe('stringProperty:string -> intProperty:int');
+    $signature = SignatureFactory::fromClassMetadata(TestSignature::class);
+    expect($signature->toString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
 });

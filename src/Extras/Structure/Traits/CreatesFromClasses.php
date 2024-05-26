@@ -5,6 +5,7 @@ use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 trait CreatesFromClasses
 {
@@ -32,10 +33,18 @@ trait CreatesFromClasses
         $arguments = [];
         $typeDetailsFactory = new TypeDetailsFactory;
         foreach ($classInfo->getProperties() as $propertyName => $propertyInfo) {
-            $propertyDescription = $propertyInfo->getDescription();
-            $isOptional = $propertyInfo->isNullable();
-            $typeDetails = $typeDetailsFactory->fromTypeName($propertyInfo->getTypeName());
-            $arguments[] = Field::fromTypeDetails($propertyName, $typeDetails, $propertyDescription)->optional($isOptional);
+            switch (true) {
+                case $propertyInfo->isStatic():
+                case !$propertyInfo->isPublic():
+                case $propertyInfo->isReadOnly():
+                case $propertyInfo->hasAttribute(Ignore::class):
+                    continue 2;
+            }
+            $arguments[] = Field::fromTypeDetails(
+                $propertyName,
+                $typeDetailsFactory->fromTypeName($propertyInfo->getTypeName()),
+                $propertyInfo->getDescription()
+            )->optional($propertyInfo->isNullable());
         }
         return $arguments;
     }

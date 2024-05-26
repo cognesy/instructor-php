@@ -2,7 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Signature\StructureSignature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 
 trait CreatesFromStructure
@@ -11,7 +12,7 @@ trait CreatesFromStructure
         Structure $inputs,
         Structure $outputs,
     ) : Signature {
-        return new Signature(
+        return new StructureSignature(
             inputs: $inputs,
             outputs: $outputs,
         );
@@ -21,7 +22,7 @@ trait CreatesFromStructure
         if (!$structure->has('inputs') || !$structure->has('outputs')) {
             throw new \InvalidArgumentException('Invalid structure, missing "inputs" or "outputs" fields');
         }
-        $signature = new Signature(
+        $signature = new StructureSignature(
             inputs: Structure::define('inputs', $structure->inputs->fields()),
             outputs: Structure::define('outputs', $structure->outputs->fields()),
         );

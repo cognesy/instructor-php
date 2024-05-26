@@ -11,7 +11,7 @@ trait HandlesFieldSchemas
         return $this->typeDetails;
     }
 
-    public function nestedTypeDetails() : TypeDetails {
+    public function nestedType() : TypeDetails {
         return $this->typeDetails()->nestedType;
     }
 

@@ -54,6 +54,7 @@ class RequestHandler implements CanHandleRequest
 
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
+dump(['errors' => $errors]);
             // store failed response
             $request->addFailedResponse($this->messages, $apiResponse, [], [$errors]);
             $this->messages = $request->makeRetryMessages($this->messages, $apiResponse->content, $errors);

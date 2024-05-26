@@ -38,6 +38,7 @@ class Instructor {
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesTimer;
     use Traits\HandlesSchema;
+    use Traits\HandlesDebug;
 
     protected ?Request $request = null;
     protected RequestFactory $requestFactory;
@@ -211,6 +212,9 @@ class Instructor {
     }
 
     protected function getRequest() : Request {
+        if ($this->debug()) {
+            $this->request->setOption('debug', true);
+        }
         return $this->requestFactory->fromRequest($this->request);
     }
 }

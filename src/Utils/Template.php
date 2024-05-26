@@ -14,6 +14,6 @@ class Template
             };
         }
         $values = array_values($normalized);
-        return str_replace($keys, $values, $template);
+        return trim(str_replace($keys, $values, $template));
     }
 }

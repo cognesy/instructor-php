@@ -1,7 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Signature\StructureSignature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Utils\Pipeline;
 use InvalidArgumentException;
@@ -19,7 +20,7 @@ trait CreatesFromString
             ->process($signatureString);
         // split inputs and outputs
         [$inputs, $outputs] = explode('>', $signatureString);
-        $signature = new Signature(
+        $signature = new StructureSignature(
             inputs: Structure::fromString('inputs', $inputs),
             outputs: Structure::fromString('outputs', $outputs)
         );

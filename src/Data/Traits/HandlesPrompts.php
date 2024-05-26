@@ -2,9 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits;
 
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
@@ -13,9 +11,9 @@ trait HandlesPrompts
     private array $defaultPrompts = [
         Mode::MdJson->value => "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n{json_schema}\n",
         Mode::Json->value => "\nRespond correctly with JSON object. Response must follow JSONSchema:\n{json_schema}\n",
-        Mode::Tools->value => "\nExtract correct and accurate data from the messages using provided tools. Response must be JSON object following provided schema.\n",
+        Mode::Tools->value => "\nExtract correct and accurate data from the input using provided tools. Response must be JSON object following provided schema.\n",
     ];
-    private string $dataPrompt = "Provide content for processing.";
+    private string $dataPrompt = "Input acknowledged.";
     private $instructionsCallback = null;
 
     private string $prompt;
@@ -54,9 +52,9 @@ trait HandlesPrompts
             }
         }
         return array_merge(
-            [['role' => 'user', 'content' => $content]],
+            $this->normalizeMessages($this->messages),
             [['role' => 'assistant', 'content' => $this->dataPrompt]],
-            $this->normalizeMessages($this->messages)
+            [['role' => 'user', 'content' => $content]],
         );
     }
 }

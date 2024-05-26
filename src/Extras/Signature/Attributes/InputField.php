@@ -7,5 +7,6 @@ use Attribute;
 class InputField
 {
     public function __construct(
+        public string $description = '',
     ) {}
 }

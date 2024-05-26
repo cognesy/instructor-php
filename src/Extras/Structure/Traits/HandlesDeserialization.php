@@ -14,7 +14,7 @@ use Exception;
 trait HandlesDeserialization
 {
     private Deserializer $deserializer;
-    public bool $ignoreUnknownFields = false;
+    protected bool $ignoreUnknownFields = true;
 
     public function fromArray(array $data): static {
         foreach ($data as $name => $fieldData) {
@@ -56,7 +56,7 @@ trait HandlesDeserialization
 
     private function deserializeArray(Field $field, mixed $fieldData) : mixed {
         $values = [];
-        $typeDetails = $field->nestedTypeDetails();
+        $typeDetails = $field->nestedType();
         foreach($fieldData as $itemData) {
             $values[] = match(true) {
                 ($typeDetails->type === TypeDetails::PHP_ENUM) => ($typeDetails->class)::from($itemData),

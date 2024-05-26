@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Task\Data;
 
 use Cognesy\Instructor\Extras\Field\Field;
-use Cognesy\Instructor\Extras\Signature\Signature;
+use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Task\Contracts\CanHandleTaskData;
 
 class ArrayTaskData implements CanHandleTaskData
