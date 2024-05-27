@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Signature\Contracts;
 
+use Cognesy\Instructor\Contracts\DataModel\CanHandleStructure;
 use Cognesy\Instructor\Extras\Field\Field;
-use Cognesy\Instructor\Extras\Structure\Structure;
 
 interface Signature
 {
@@ -11,12 +11,12 @@ interface Signature
 
     public function getDescription() : string;
 
-    public function getInputs(): Structure;
+    public function getInputs(): CanHandleStructure;
     public function getInputFields(): array;
     public function asInputArgs(): array;
     /** @return Field[] */
 
-    public function getOutputs(): Structure;
+    public function getOutputs(): \Cognesy\Instructor\Contracts\DataModel\CanHandleStructure;
     /** @return Field[] */
     public function getOutputFields(): array;
     public function asOutputValues(): array;

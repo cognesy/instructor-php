@@ -11,7 +11,7 @@ trait HandlesFieldValue
      * @param mixed $value
      * @return $this
      */
-    public function set(mixed $value) : self {
+    public function set(mixed $value) : static {
         $this->value = $value;
         return $this;
     }

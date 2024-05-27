@@ -1,7 +1,6 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Instructor;
 use Tests\Examples\Extraction\Person;
 

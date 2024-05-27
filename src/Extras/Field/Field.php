@@ -1,9 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Extras\Field;
 
+use Cognesy\Instructor\Contracts\DataModel\CanHandleField;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
-class Field {
+class Field implements CanHandleField {
     use Traits\HandlesFieldDefinitions;
     use Traits\HandlesFieldInfo;
     use Traits\HandlesFieldSchemas;

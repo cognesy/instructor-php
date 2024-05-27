@@ -46,7 +46,7 @@ class StructureSignature implements Signature
     }
 
     public function asInputArgs(): array {
-        return $this->inputs->asArgs();
+        return $this->inputs->fieldValues();
     }
 
     /** @return Field[] */
@@ -64,10 +64,25 @@ class StructureSignature implements Signature
     }
 
     public function asOutputValues(): array {
-        return $this->inputs->asValues();
+        return $this->inputs->fieldValues();
     }
 
     public function getDescription(): string {
         return $this->description;
+    }
+
+    public function withInputClass(string|object $input): static {
+        $this->inputs = $this->makeStructureFromClass($input);
+        return $this;
+    }
+
+    public function withOutputClass(string|object $output): static {
+        $this->outputs = $this->makeStructureFromClass($output);
+        return $this;
+    }
+
+    protected function makeStructureFromClass(string|object $class): Structure {
+        $class = is_string($class) ? $class : get_class($class);
+        return Structure::fromClass($class);
     }
 }

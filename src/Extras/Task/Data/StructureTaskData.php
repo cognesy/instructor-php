@@ -31,7 +31,7 @@ class StructureTaskData implements CanHandleTaskData
     }
 
     public function inputs(): array {
-        return $this->inputs->asArgs();
+        return $this->inputs->fieldValues();
     }
 
     public function getInput(string $key): mixed {
@@ -46,7 +46,7 @@ class StructureTaskData implements CanHandleTaskData
     }
 
     public function outputs(): array {
-        return $this->outputs->asValues();
+        return $this->outputs->fieldValues();
     }
 
     public function getOutput(string $key): mixed {

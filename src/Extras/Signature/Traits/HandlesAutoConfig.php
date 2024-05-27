@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
+use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 
@@ -23,6 +24,7 @@ trait HandlesAutoConfig
         return $this;
     }
 
+    /** @return Field[] */
     protected function copyValuesFromInstance(array $fields): static {
         foreach($fields['inputs'] as $field) {
             $name = $field->name();

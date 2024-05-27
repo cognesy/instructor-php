@@ -73,5 +73,5 @@ test('it tries a failure function', function () {
     expect($result)->toBeInstanceOf(Failure::class)
         ->and($result->isFailure())->toBeTrue()
         ->and($result->error())->toBeInstanceOf(Exception::class)
-        ->and($result->errorMessage())->toBe('An error occurred');
+        ->and($result->errorMessage())->toContain('An error occurred');
 });

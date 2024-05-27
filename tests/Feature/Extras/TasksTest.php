@@ -3,7 +3,7 @@ namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Extras\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Signature\ClassSignature;
+use Cognesy\Instructor\Extras\Signature\AutoSignature;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Task\ExecutableTask;
@@ -44,7 +44,7 @@ it('can process predict task with multiple outputs', function() {
     ]);
     $instructor = (new Instructor)->withClient($mockLLM);
 
-    class EmailAnalysis extends ClassSignature {
+    class EmailAnalysis extends AutoSignature {
         #[InputField('email content')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other')]
@@ -82,7 +82,7 @@ it('can process composite language program', function() {
         }
     }
 
-    class EmailAnalysis2 extends ClassSignature {
+    class EmailAnalysis2 extends AutoSignature {
         #[InputField('content of email')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other, spam')]
@@ -100,7 +100,7 @@ it('can process composite language program', function() {
         ) {}
     }
 
-    class EmailStats extends ClassSignature {
+    class EmailStats extends AutoSignature {
         #[InputField('directory containing emails')]
         public string $directory;
         #[OutputField('number of emails')]
@@ -180,7 +180,7 @@ it('can process composite language program', function() {
     $instructor = (new Instructor)->withClient($mockLLM);
     $task = new GetStats($instructor, $directoryContents);
     $result = $task->with(['directory' => 'inbox'])->get();
-    dump($result);
+
     expect($result)->toEqual([
         'emails' => 5,
         'spam' => 1,

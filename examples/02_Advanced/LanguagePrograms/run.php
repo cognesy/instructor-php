@@ -5,7 +5,7 @@
 
 use Cognesy\Instructor\Extras\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Signature\ClassSignature;
+use Cognesy\Instructor\Extras\Signature\AutoSignature;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Task\ExecutableTask;
@@ -39,7 +39,7 @@ class ParseEmail extends ExecutableTask {
     }
 }
 
-class EmailAnalysis extends ClassSignature {
+class EmailAnalysis extends AutoSignature {
     #[InputField('content of email')]
     public string $text = '';
 
@@ -59,7 +59,7 @@ class CategoryCount {
     ) {}
 }
 
-class EmailStats extends ClassSignature {
+class EmailStats extends AutoSignature {
     #[InputField('directory containing emails')]
     public string $directory;
     #[OutputField('number of emails')]

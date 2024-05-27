@@ -2,20 +2,20 @@
 
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Contracts\DataModel\CanHandleField;
 use Cognesy\Instructor\Utils\Template;
 
 trait ConvertsToString
 {
     public function toString() : string {
-        $inputs = array_map(fn(Field $field) => $this->fieldSignature($field), $this->getInputFields());
-        $outputs = array_map(fn(Field $field) => $this->fieldSignature($field), $this->getOutputFields());
+        $inputs = array_map(fn(CanHandleField $field) => $this->fieldSignature($field), $this->getInputFields());
+        $outputs = array_map(fn(CanHandleField $field) => $this->fieldSignature($field), $this->getOutputFields());
         return implode(', ', $inputs)
             . ' ' . self::ARROW . ' '
             . implode(', ', $outputs);
     }
 
-    private function fieldSignature(Field $field) : string {
+    private function fieldSignature(CanHandleField $field) : string {
         $description = '';
         if (!empty($field->description())) {
             $description = ' (' . $field->description() . ')';
