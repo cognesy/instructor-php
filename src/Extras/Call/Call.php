@@ -10,7 +10,7 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 
 class Call implements CanDeserializeSelf, CanTransformSelf, CanProvideSchema, CanValidateSelf
 {
-    use Traits\HandlesConstruction;
+    use Traits\HandlesSignatureConstruction;
     use Traits\HandlesCallInfo;
     use Traits\HandlesTransformation;
     use Traits\HandlesDeserialization;

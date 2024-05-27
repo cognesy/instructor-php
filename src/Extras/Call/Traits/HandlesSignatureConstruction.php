@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Utils\FunctionInfo;
 use ReflectionFunction;
 
-trait HandlesConstruction
+trait HandlesSignatureConstruction
 {
     static public function fromFunctionName(string $function) : static {
         $functionInfo = FunctionInfo::fromFunctionName($function);
