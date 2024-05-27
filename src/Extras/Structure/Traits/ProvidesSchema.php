@@ -9,6 +9,7 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Schema\Visitors\SchemaToArray;
 
 trait ProvidesSchema
 {
@@ -37,7 +38,7 @@ trait ProvidesSchema
     }
 
     public function toJsonSchema() : array {
-        return $this->toSchema()->toArray();
+        return (new SchemaToArray)->toArray($this->toSchema());
     }
 
     private function makeSchema(Field $field) : Schema {

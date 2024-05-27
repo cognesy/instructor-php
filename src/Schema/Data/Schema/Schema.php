@@ -2,14 +2,16 @@
 
 namespace Cognesy\Instructor\Schema\Data\Schema;
 
+use Cognesy\Instructor\Schema\Contracts\CanAcceptSchemaVisitor;
+use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
+use JetBrains\PhpStorm\Deprecated;
 
-class Schema
+class Schema implements CanAcceptSchemaVisitor
 {
     public TypeDetails $type;
     public string $name = '';
     public string $description = '';
-    public mixed $example = null;
 
     protected string $xmlLineSeparator = "";
 
@@ -23,23 +25,15 @@ class Schema
         $this->description = $description;
     }
 
+    public function accept(CanVisitSchema $visitor): void {
+        $visitor->visitSchema($this);
+    }
+
     static public function undefined() : self {
         return new self(TypeDetails::undefined());
     }
 
-    public function toArray(callable $refCallback = null) : array
-    {
-        return array_filter([
-            'type' => $this->type->type,
-            'description' => $this->description,
-        ]);
-    }
-
     public function getPropertyNames() : array {
         return [];
-    }
-
-    public function toXml(bool $asArrayItem = false) : string {
-        return '';
     }
 }
