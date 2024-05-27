@@ -36,7 +36,6 @@ it('creates structure', function () {
         Field::array('arrayObjectProperty', TestNestedObject::class, 'Array object property'),
         Field::array('arrayEnumProperty', TestEnum::class, 'Array enum property'),
     ]);
-
     expect($structure->fields())->toHaveCount(10);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');

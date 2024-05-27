@@ -89,21 +89,21 @@ class SchemaToXml implements CanVisitSchema
         if (!$this->asArrayItem) {
             $xml[] = '<parameter>';
             $xml[] = '<name>'.$schema->name.'</name>';
-            $xml[] = '<type>'.$schema->type->enumType.'</type>';
+            $xml[] = '<type>'.$schema->typeDetails->enumType.'</type>';
             if ($schema->description) {
                 $xml[] = '<description>'.trim($schema->description).'</description>';
             }
             $xml[] = '<enum>';
-            $xml[] = implode($this->xmlLineSeparator, array_map(fn($v) => '<value>'.$v.'</value>', $schema->type->enumValues));
+            $xml[] = implode($this->xmlLineSeparator, array_map(fn($v) => '<value>'.$v.'</value>', $schema->typeDetails->enumValues));
             $xml[] = '</enum>';
             $xml[] = '</parameter>';
         } else {
-            $xml[] = '<type>'.$schema->type->enumType.'</type>';
+            $xml[] = '<type>'.$schema->typeDetails->enumType.'</type>';
             if ($schema->description) {
                 $xml[] = '<description>'.trim($schema->description).'</description>';
             }
             $xml[] = '<enum>';
-            $xml[] = implode($this->xmlLineSeparator, array_map(fn($v) => '<value>'.$v.'</value>', $schema->type->enumValues));
+            $xml[] = implode($this->xmlLineSeparator, array_map(fn($v) => '<value>'.$v.'</value>', $schema->typeDetails->enumValues));
             $xml[] = '</enum>';
         }
         $this->xml[] = implode($this->xmlLineSeparator, $xml);
@@ -114,13 +114,13 @@ class SchemaToXml implements CanVisitSchema
         if (!$this->asArrayItem) {
             $xml[] = '<parameter>';
             $xml[] = '<name>'.$schema->name.'</name>';
-            $xml[] = '<type>'.$schema->type->jsonType().'</type>';
+            $xml[] = '<type>'.$schema->typeDetails->jsonType().'</type>';
             if ($schema->description) {
                 $xml[] = '<description>'.trim($schema->description).'</description>';
             }
             $xml[] = '</parameter>';
         } else {
-            $xml[] = '<type>'.$schema->type->jsonType().'</type>';
+            $xml[] = '<type>'.$schema->typeDetails->jsonType().'</type>';
             if ($schema->description) {
                 $xml[] = '<description>'.trim($schema->description).'</description>';
             }

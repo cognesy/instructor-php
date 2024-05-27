@@ -10,14 +10,14 @@ class Schema implements CanAcceptSchemaVisitor
 {
     public string $name = '';
     public string $description = '';
-    public TypeDetails $type;
+    public TypeDetails $typeDetails;
 
     public function __construct(
         TypeDetails $type,
         string $name = '',
         string $description = '',
     ) {
-        $this->type = $type;
+        $this->typeDetails = $type;
         $this->name = $name;
         $this->description = $description;
     }
@@ -31,7 +31,7 @@ class Schema implements CanAcceptSchemaVisitor
     }
 
     public function typeDetails(): TypeDetails {
-        return $this->type;
+        return $this->typeDetails;
     }
 
     public function getPropertyNames() : array {

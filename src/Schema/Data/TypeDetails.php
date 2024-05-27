@@ -28,6 +28,26 @@ class TypeDetails
         $this->validate($type, $class, $nestedType, $enumType, $enumValues);
     }
 
+    public function type() : string {
+        return $this->type;
+    }
+
+    public function class() : ?string {
+        return $this->class;
+    }
+
+    public function nestedType() : ?TypeDetails {
+        return $this->nestedType;
+    }
+
+    public function enumType() : ?string {
+        return $this->enumType;
+    }
+
+    public function enumValues() : ?array {
+        return $this->enumValues;
+    }
+
     public function __toString() : string {
         return $this->toString();
     }

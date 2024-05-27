@@ -34,7 +34,7 @@ class AutoSignature implements Signature
         return $this->inputs->fieldValues();
     }
 
-    /** @return \Cognesy\Instructor\Contracts\DataModel\CanHandleField[] */
+    /** @return \Cognesy\Instructor\Contracts\DataModel\CanHandleDataField[] */
     public function getInputFields(): array {
         return $this->inputs->fields();
     }
@@ -43,7 +43,7 @@ class AutoSignature implements Signature
         return $this->outputs;
     }
 
-    /** @return \Cognesy\Instructor\Contracts\DataModel\CanHandleField[] */
+    /** @return \Cognesy\Instructor\Contracts\DataModel\CanHandleDataField[] */
     public function getOutputFields(): array {
         return $this->outputs->fields();
     }

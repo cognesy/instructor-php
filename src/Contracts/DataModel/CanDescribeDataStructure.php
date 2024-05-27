@@ -9,7 +9,7 @@ interface CanDescribeDataStructure
     public function name(): string;
     public function description(): string;
 
-    /** @return CanDescribeField[] */
+    /** @return CanDescribeDataField[] */
     public function fields(): array;
 
     /** @return string[] */
@@ -19,5 +19,5 @@ interface CanDescribeDataStructure
 
     public function typeDetails(string $name): TypeDetails;
 
-    public function field(string $name): CanHandleField;
+    public function field(string $name): CanHandleDataField;
 }

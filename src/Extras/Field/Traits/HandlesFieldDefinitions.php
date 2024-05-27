@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Extras\Field\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
-use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;

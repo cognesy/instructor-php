@@ -11,11 +11,12 @@ trait ProvidesJsonSchema
      * by manually creating the array representing JSON Schema of our desired structure.
      */
     public function toJsonSchema() : array {
+        $name = $this->name;
         $array = [
             '$comment' => Scalar::class,
             'type' => 'object',
             'properties' => [
-                $this->name => [
+                $name => [
                     '$comment' => $this->enumType ?? '',
                     'description' => $this->description,
                     'type' => $this->type->toJsonType(),
@@ -23,10 +24,10 @@ trait ProvidesJsonSchema
             ],
         ];
         if (!empty($this->options)) {
-            $array['properties'][$this->name]['enum'] = $this->options;
+            $array['properties'][$name]['enum'] = $this->options;
         }
         if ($this->required) {
-            $array['required'] = [$this->name];
+            $array['required'] = [$name];
         }
         return $array;
     }

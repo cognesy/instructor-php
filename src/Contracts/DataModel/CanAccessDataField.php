@@ -1,11 +1,8 @@
 <?php
-
 namespace Cognesy\Instructor\Contracts\DataModel;
 
-interface CanAccessField
+interface CanAccessDataField
 {
-    public function name(): string;
-
     public function get(): mixed;
     public function set(mixed $value): static;
 }

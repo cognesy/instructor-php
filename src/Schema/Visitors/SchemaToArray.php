@@ -24,7 +24,7 @@ class SchemaToArray implements CanVisitSchema
 
     public function visitSchema(Schema $schema): void {
         $this->result = array_filter([
-            'type' => $schema->type->type,
+            'type' => $schema->typeDetails->type,
             'description' => $schema->description,
         ]);
     }
@@ -48,40 +48,40 @@ class SchemaToArray implements CanVisitSchema
             'description' => $schema->description,
             'properties' => $propertyDefs,
             'required' => $schema->required,
-            '$comment' => $schema->type->class,
+            '$comment' => $schema->typeDetails->class,
         ]);
     }
 
     public function visitEnumSchema(EnumSchema $schema): void {
         $this->result = array_filter([
             'description' => $schema->description ?? '',
-            'type' => $schema->type->enumType ?? 'string',
-            'enum' => $schema->type->enumValues ?? [],
-            '$comment' => $schema->type->class ?? '',
+            'type' => $schema->typeDetails->enumType ?? 'string',
+            'enum' => $schema->typeDetails->enumValues ?? [],
+            '$comment' => $schema->typeDetails->class ?? '',
         ]);
     }
 
     public function visitScalarSchema(ScalarSchema $schema): void {
         $this->result = array_filter([
-            'type' => $schema->type->jsonType(),
+            'type' => $schema->typeDetails->jsonType(),
             'description' => $schema->description,
         ]);
     }
 
     public function visitObjectRefSchema(ObjectRefSchema $schema): void {
-        $class = $this->className($schema->type->class);
+        $class = $this->className($schema->typeDetails->class);
         $id = "#/{$this->defsLabel}/{$class}";
         if ($this->refCallback) {
             ($this->refCallback)(new Reference(
                 id: $id,
-                class: $schema->type->class,
+                class: $schema->typeDetails->class,
                 classShort: $class
             ));
         }
         $this->result = array_filter([
             '$ref' => $id,
             'description' => $schema->description,
-            '$comment' => $schema->type->class,
+            '$comment' => $schema->typeDetails->class,
         ]);
     }
 

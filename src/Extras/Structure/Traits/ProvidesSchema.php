@@ -16,11 +16,23 @@ trait ProvidesSchema
     private TypeDetailsFactory $typeDetailsFactory;
     private SchemaFactory $schemaFactory;
 
+    public function schema() : Schema {
+        return $this->makeSchema();
+    }
+
+    public function toJsonSchema() : array {
+        return (new SchemaToArray)->toArray($this->toSchema());
+    }
+
     public function toSchema(): Schema {
+        return $this->makeSchema();
+    }
+
+    private function makeSchema() : Schema {
         $properties = [];
         $required = [];
         foreach ($this->fields as $fieldName => $field) {
-            $fieldSchema = $this->makeSchema($field);
+            $fieldSchema = $field->schema();
             $properties[$fieldName] = $fieldSchema;
             if ($field->isRequired()) {
                 $required[] = $fieldName;
@@ -29,41 +41,11 @@ trait ProvidesSchema
         $typeDetails = $this->typeDetailsFactory->objectType(static::class);
         $schema = new ObjectSchema(
             type: $typeDetails,
-            name: $this->name,
+            name: $this->name(),
             description: $this->description(),
             properties: $properties,
             required: $required,
         );
         return $schema;
-    }
-
-    public function toJsonSchema() : array {
-        return (new SchemaToArray)->toArray($this->toSchema());
-    }
-
-    private function makeSchema(Field $field) : Schema {
-        $fieldType = $field->typeDetails();
-        $fieldSchema = match($fieldType->type) {
-            'object' => match($fieldType->class) {
-                Structure::class => $field->get()->toSchema(),
-                default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->description()),
-            },
-            'array' => match($fieldType->nestedType->class) {
-                Structure::class => $this->makeArraySchema($field),
-                default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->description()),
-            },
-            default => $this->schemaFactory->makePropertySchema($fieldType, $field->name(), $field->description()),
-        };
-        return $fieldSchema;
-    }
-
-    private function makeArraySchema(Field $field) : Schema {
-        $nestedField = $field->get()->withName('items');
-        return new ArraySchema(
-            $field->typeDetails(),
-            $field->name(),
-            $field->description(),
-            $nestedField->toSchema(),
-        );
     }
 }

@@ -79,7 +79,7 @@ class ResponseModelFactory
             default => null,
         };
         $keyType = match($type) {
-            'schema' => $requestedModel->type->class,
+            'schema' => $requestedModel->typeDetails->class,
             'json-schema-provider' => get_class($requestedModel),
             'schema-provider' => get_class($requestedModel),
             'class-string' => $requestedModel,
@@ -159,7 +159,7 @@ class ResponseModelFactory
 
     private function fromSchema(Schema $requestedModel) : ResponseModel {
         $schema = $requestedModel;
-        $class = $schema->type->class;
+        $class = $schema->typeDetails->class;
         $instance = new $class;
         $jsonSchema = (new SchemaToArray)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
