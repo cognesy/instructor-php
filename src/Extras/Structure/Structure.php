@@ -5,18 +5,13 @@ use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Contracts\DataModel\CanHandleStructure;
+use Cognesy\Instructor\Contracts\DataModel\CanHandleDataStructure;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
-class Structure implements CanHandleStructure, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
+class Structure implements CanHandleDataStructure, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {
-    use Traits\CreatesFromArray;
-    use Traits\CreatesFromCallables;
-    use Traits\CreatesFromClasses;
-    use Traits\CreatesFromJsonSchema;
-    use Traits\CreatesFromString;
     use Traits\HandlesDefinition;
     use Traits\HandlesDeserialization;
     use Traits\HandlesFieldAccess;

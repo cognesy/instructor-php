@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\Signature\Traits;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Signature\StructureSignature;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 
 trait CreatesFromClasses
 {
@@ -20,6 +21,6 @@ trait CreatesFromClasses
 
     static protected function makeStructureFromClass(string|object $class): Structure {
         $class = is_string($class) ? $class : get_class($class);
-        return Structure::fromClass($class);
+        return StructureFactory::fromClass($class);
     }
 }

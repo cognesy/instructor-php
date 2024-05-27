@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\Call\Traits;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Schema\Utils\FunctionInfo;
 use ReflectionFunction;
 
@@ -10,19 +11,19 @@ trait HandlesSignatureConstruction
 {
     static public function fromFunctionName(string $function) : static {
         $functionInfo = FunctionInfo::fromFunctionName($function);
-        $structure = Structure::fromFunctionName($function, '', '');
+        $structure = StructureFactory::fromFunctionName($function, '', '');
         return self::fromFunctionInfo($functionInfo, $structure);
     }
 
     static public function fromMethodName(string $class, string $method) : static {
         $functionInfo = FunctionInfo::fromMethodName($class, $method);
-        $structure = Structure::fromMethodName($class, $method, '', '');
+        $structure = StructureFactory::fromMethodName($class, $method, '', '');
         return self::fromFunctionInfo($functionInfo, $structure);
     }
 
     static public function fromCallable(callable $callable) : static {
         $functionInfo = new FunctionInfo(new ReflectionFunction($callable));
-        $structure = Structure::fromCallable($callable, '', '');
+        $structure = StructureFactory::fromCallable($callable, '', '');
         return self::fromFunctionInfo($functionInfo, $structure);
     }
 

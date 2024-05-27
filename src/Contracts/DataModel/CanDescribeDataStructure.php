@@ -4,8 +4,11 @@ namespace Cognesy\Instructor\Contracts\DataModel;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
-interface CanDescribeStructure
+interface CanDescribeDataStructure
 {
+    public function name(): string;
+    public function description(): string;
+
     /** @return CanDescribeField[] */
     public function fields(): array;
 

@@ -3,11 +3,11 @@ namespace Cognesy\Instructor\Extras\Signature\Traits;
 
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Signature\StructureSignature;
-use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Utils\Pipeline;
 use InvalidArgumentException;
 
-trait CreatesFromString
+trait CreatesSignatureFromString
 {
     static public function fromString(string $signatureString): Signature {
         if (!str_contains($signatureString, Signature::ARROW)) {
@@ -21,8 +21,8 @@ trait CreatesFromString
         // split inputs and outputs
         [$inputs, $outputs] = explode('>', $signatureString);
         $signature = new StructureSignature(
-            inputs: Structure::fromString('inputs', $inputs),
-            outputs: Structure::fromString('outputs', $outputs)
+            inputs: StructureFactory::fromString('inputs', $inputs),
+            outputs: StructureFactory::fromString('outputs', $outputs)
         );
         return $signature;
     }

@@ -2,8 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Signature;
 
-use Cognesy\Instructor\Contracts\DataModel\CanHandleField;
-use Cognesy\Instructor\Contracts\DataModel\CanHandleStructure;
+use Cognesy\Instructor\Contracts\DataModel\CanHandleDataStructure;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 
 class AutoSignature implements Signature
@@ -13,8 +12,8 @@ class AutoSignature implements Signature
 
     public const ARROW = '->';
 
-    protected CanHandleStructure $inputs;
-    protected CanHandleStructure $outputs;
+    protected CanHandleDataStructure $inputs;
+    protected CanHandleDataStructure $outputs;
     protected string $description = '';
     protected string $prompt = 'Your task is to find output arguments in input data based on specification: {signature} {description}';
 
@@ -27,7 +26,7 @@ class AutoSignature implements Signature
         $this->autoConfigure();
     }
 
-    public function getInputs(): CanHandleStructure {
+    public function getInputs(): CanHandleDataStructure {
         return $this->inputs;
     }
 
@@ -40,7 +39,7 @@ class AutoSignature implements Signature
         return $this->inputs->fields();
     }
 
-    public function getOutputs(): CanHandleStructure {
+    public function getOutputs(): CanHandleDataStructure {
         return $this->outputs;
     }
 

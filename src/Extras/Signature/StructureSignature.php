@@ -6,6 +6,7 @@ use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Signature\Traits\ConvertsToString;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 
 class StructureSignature implements Signature
 {
@@ -83,6 +84,6 @@ class StructureSignature implements Signature
 
     protected function makeStructureFromClass(string|object $class): Structure {
         $class = is_string($class) ? $class : get_class($class);
-        return Structure::fromClass($class);
+        return StructureFactory::fromClass($class);
     }
 }

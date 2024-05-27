@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Signature;
 
-use Cognesy\Instructor\Contracts\DataModel\CanHandleStructure;
+use Cognesy\Instructor\Contracts\DataModel\CanHandleDataStructure;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use JetBrains\PhpStorm\Deprecated;
 
@@ -11,14 +11,14 @@ class ResponseModelSignature implements Signature
 {
     protected string $signatureString;
     protected string $description;
-    protected CanHandleStructure $inputs;
-    protected CanHandleStructure $outputs;
+    protected CanHandleDataStructure $inputs;
+    protected CanHandleDataStructure $outputs;
 
     public function getDescription(): string {
         return $this->description;
     }
 
-    public function getInputs(): CanHandleStructure {
+    public function getInputs(): CanHandleDataStructure {
         return $this->inputs;
     }
 
@@ -29,7 +29,7 @@ class ResponseModelSignature implements Signature
         // TODO: Implement asInputArgs() method.
     }
 
-    public function getOutputs(): CanHandleStructure
+    public function getOutputs(): CanHandleDataStructure
     {
         // TODO: Implement getOutputs() method.
     }

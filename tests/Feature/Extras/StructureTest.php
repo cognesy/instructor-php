@@ -3,6 +3,7 @@ namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Extras\Field\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use DateTime;
 
@@ -164,7 +165,7 @@ it('deserializes structure', function() {
 });
 
 it('creates structure from class', function() {
-    $structure = Structure::fromClass(TestNestedObject::class);
+    $structure = StructureFactory::fromClass(TestNestedObject::class);
 
     expect($structure->fields())->toHaveCount(7);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
@@ -204,7 +205,7 @@ it('creates structure from JSON Schema', function() {
         ],
     ];
 
-    $structure = Structure::fromJsonSchema($jsonSchema);
+    $structure = StructureFactory::fromJsonSchema($jsonSchema);
 
     expect($structure->fields())->toHaveCount(5);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
@@ -220,7 +221,7 @@ it('creates structure from JSON Schema', function() {
 });
 
 it('creates structure from array', function() {
-    $structure = Structure::fromArrayKeyValues('TestStructure', [
+    $structure = StructureFactory::fromArrayKeyValues('TestStructure', [
         'stringProperty' => 'string',
         'integerProperty' => 1,
         'boolProperty' => true,

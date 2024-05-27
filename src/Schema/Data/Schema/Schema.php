@@ -5,15 +5,12 @@ namespace Cognesy\Instructor\Schema\Data\Schema;
 use Cognesy\Instructor\Schema\Contracts\CanAcceptSchemaVisitor;
 use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
-use JetBrains\PhpStorm\Deprecated;
 
 class Schema implements CanAcceptSchemaVisitor
 {
-    public TypeDetails $type;
     public string $name = '';
     public string $description = '';
-
-    protected string $xmlLineSeparator = "";
+    public TypeDetails $type;
 
     public function __construct(
         TypeDetails $type,
@@ -25,15 +22,27 @@ class Schema implements CanAcceptSchemaVisitor
         $this->description = $description;
     }
 
+    public function name(): string {
+        return $this->name;
+    }
+
+    public function description(): string {
+        return $this->description;
+    }
+
+    public function typeDetails(): TypeDetails {
+        return $this->type;
+    }
+
+    public function getPropertyNames() : array {
+        return [];
+    }
+
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitSchema($this);
     }
 
     static public function undefined() : self {
         return new self(TypeDetails::undefined());
-    }
-
-    public function getPropertyNames() : array {
-        return [];
     }
 }

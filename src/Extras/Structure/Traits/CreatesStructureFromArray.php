@@ -3,12 +3,13 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
-trait CreatesFromArray
+trait CreatesStructureFromArray
 {
-    static public function fromArrayKeyValues(string $name, array $data, string $description = '') : self {
+    static public function fromArrayKeyValues(string $name, array $data, string $description = '') : Structure {
         $fields = self::makeArrayFields($data);
         return Structure::define($name, $fields, $description);
     }
@@ -18,7 +19,7 @@ trait CreatesFromArray
         $typeDetailsFactory = new TypeDetailsFactory;
         foreach ($data as $name => $value) {
             $typeDetails = $typeDetailsFactory->fromValue($value);
-            $fields[] = Field::fromTypeDetails($name, $typeDetails, '')->optional();
+            $fields[] = FieldFactory::fromTypeDetails($name, $typeDetails, '')->optional();
         }
         return $fields;
     }

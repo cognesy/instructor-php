@@ -32,23 +32,4 @@ trait HandlesFieldInfo
     public function description() : string {
         return $this->description ?? '';
     }
-
-    public function withInstructions(string $instructions) : self {
-        $this->instructions = $instructions;
-        if ($this->typeDetails->class === Structure::class) {
-            $this->value->withInstructions($instructions);
-        }
-        return $this;
-    }
-
-    public function instructions() : string {
-        return $this->instructions ?? '';
-    }
-
-    public function info() : string {
-        return implode('; ', array_filter([
-            $this->description(),
-            $this->instructions(),
-        ]));
-    }
 }

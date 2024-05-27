@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Contracts\DataModel;
 
-interface CanAccessStructure
+interface CanAccessDataStructure
 {
     /** @return array<string, mixed> */
     public function fieldValues(): array;

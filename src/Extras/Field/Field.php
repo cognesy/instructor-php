@@ -15,12 +15,10 @@ class Field implements CanHandleField {
     public function __construct(
         string $name = '',
         string $description = '',
-        string $instructions = '',
         TypeDetails $typeDetails = null,
     ) {
         $this->name = $name;
         $this->description = $description;
-        $this->instructions = $instructions;
         $this->typeDetails = $typeDetails;
     }
 }

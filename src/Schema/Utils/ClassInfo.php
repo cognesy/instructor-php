@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Schema\Utils;
 
 use Cognesy\Instructor\Schema\Attributes\Description;

@@ -2,18 +2,19 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
-trait CreatesFromClasses
+trait CreatesStructureFromClasses
 {
     static public function fromClass(
         string $class,
         string $name = null,
         string $description = null
-    ) : static {
+    ) : Structure {
         $classInfo = new ClassInfo($class);
         return self::fromClassInfo($classInfo, $name, $description);
     }
@@ -22,13 +23,16 @@ trait CreatesFromClasses
         ClassInfo $classInfo,
         string $name = null,
         string $description = null
-    ) : static {
+    ) : Structure {
         $className = $name ?? $classInfo->getShortName();
         $classDescription = $description ?? $classInfo->getClassDescription();
         $arguments = self::makePropertyFields($classInfo);
         return Structure::define($className, $arguments, $classDescription);
     }
 
+    /**
+     * @return Field[]
+     */
     static private function makePropertyFields(ClassInfo $classInfo) : array {
         $arguments = [];
         $typeDetailsFactory = new TypeDetailsFactory;
@@ -40,7 +44,7 @@ trait CreatesFromClasses
                 case $propertyInfo->hasAttribute(Ignore::class):
                     continue 2;
             }
-            $arguments[] = Field::fromTypeDetails(
+            $arguments[] = FieldFactory::fromTypeDetails(
                 $propertyName,
                 $typeDetailsFactory->fromTypeName($propertyInfo->getTypeName()),
                 $propertyInfo->getDescription()

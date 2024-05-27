@@ -3,9 +3,10 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 
-trait CreatesFromString
+trait CreatesStructureFromString
 {
     static public function fromString(string $name, string $typeString, string $description = '') : Structure {
         // Input format is:
@@ -30,7 +31,7 @@ trait CreatesFromString
             $description = self::extractDescription($item);
             $item = self::removeDescription($item);
             [$name, $typeName] = self::parseStringParam($item);
-            $fields[] = Field::fromTypeName($name, $typeName, $description);
+            $fields[] = FieldFactory::fromTypeName($name, $typeName, $description);
         }
         return $fields;
     }

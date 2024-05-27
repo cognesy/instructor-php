@@ -12,12 +12,10 @@ trait HandlesDefinition
         string $name,
         array|callable $fields,
         string $description = '',
-        string $instructions = '',
     ) : self {
         $structure = new Structure();
         $structure->name = $name;
         $structure->description = $description;
-        $structure->instructions = $instructions;
 
         if (is_callable($fields)) {
             $fields = $fields($structure);

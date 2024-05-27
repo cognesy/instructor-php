@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
@@ -49,7 +50,7 @@ trait GetsFieldsFromClass
                 $property->getAttributeValues(OutputField::class, 'description'),
             ])));
             $isOptional = $property->isNullable();
-            $fields[$group][] = Field::fromPropertyInfoType($name, $type, $description)->optional($isOptional);
+            $fields[$group][] = FieldFactory::fromPropertyInfoType($name, $type, $description)->optional($isOptional);
         }
         return $fields;
     }

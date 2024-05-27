@@ -3,9 +3,11 @@
 namespace Cognesy\Instructor\Extras\Signature\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Signature\StructureSignature;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use ReflectionFunction;
 
 trait CreatesFromCallable
@@ -13,7 +15,7 @@ trait CreatesFromCallable
     public const DEFAULT_OUTPUT = 'result';
 
     static public function fromCallable(callable $callable): Signature {
-        $inputSignature = Structure::fromCallable($callable, 'inputs');
+        $inputSignature = StructureFactory::fromCallable($callable, 'inputs');
         $reflection = new ReflectionFunction($callable);
         $description = $reflection->getDocComment();
         $returnType = $reflection->getReturnType();
@@ -24,7 +26,7 @@ trait CreatesFromCallable
         // $name = $reflection->getName();
         $name = self::DEFAULT_OUTPUT;
         $outputSignature = Structure::define('outputs', [
-            Field::fromTypeName($name, $typeName)
+            FieldFactory::fromTypeName($name, $typeName)
         ]);
         return new StructureSignature(
             inputs: $inputSignature,

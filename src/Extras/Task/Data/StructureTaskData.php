@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\Task\Data;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Task\Contracts\CanHandleTaskData;
@@ -73,7 +74,7 @@ class StructureTaskData implements CanHandleTaskData
     static private function makeFields(array $args): array {
         $fields = [];
         foreach ($args as $arg) {
-            $fields[] = Field::fromTypeName($arg->name(), $arg->typeDetails()->type);
+            $fields[] = FieldFactory::fromTypeName($arg->name(), $arg->typeDetails()->type);
         }
         return $fields;
     }

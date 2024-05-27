@@ -3,29 +3,30 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits;
 
 use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Field\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Utils\FunctionInfo;
 use ReflectionFunction;
 
-trait CreatesFromCallables
+trait CreatesStructureFromCallables
 {
-    static public function fromFunctionName(string $function, string $name = null, string $description = null) : static {
+    static public function fromFunctionName(string $function, string $name = null, string $description = null) : Structure {
         return self::fromFunctionInfo(FunctionInfo::fromFunctionName($function), $name, $description);
     }
 
-    static public function fromMethodName(string $class, string $method, string $name = null, string $description = null) : static {
+    static public function fromMethodName(string $class, string $method, string $name = null, string $description = null) : Structure {
         return self::fromFunctionInfo(FunctionInfo::fromMethodName($class, $method), $name, $description);
     }
 
-    static public function fromCallable(callable $callable, string $name = null, string $description = null) : static {
+    static public function fromCallable(callable $callable, string $name = null, string $description = null) : Structure {
         $functionInfo = new FunctionInfo(new ReflectionFunction($callable));
         return self::fromFunctionInfo($functionInfo, $name, $description);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////
 
-    static private function fromFunctionInfo(FunctionInfo $functionInfo, string $name = null, string $description = null) : static {
+    static private function fromFunctionInfo(FunctionInfo $functionInfo, string $name = null, string $description = null) : Structure {
         $functionName = $name ?? $functionInfo->getShortName();
         $functionDescription = $description ?? $functionInfo->getDescription();
         $arguments = self::makeArgumentFields($functionInfo);
@@ -44,7 +45,7 @@ trait CreatesFromCallables
                 true => $typeDetailsFactory->arrayType($parameter->getType()),
                 default => $typeDetailsFactory->fromTypeName($parameter->getType())
             };
-            $arguments[] = Field::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)->optional($isOptional);
+            $arguments[] = FieldFactory::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)->optional($isOptional);
         }
         return $arguments;
     }
