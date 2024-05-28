@@ -11,6 +11,7 @@ It is usually more convenient not create a dedicated class with a single array
 property just to handle a list of objects of a given class.
 
 ```php
+<?php
 class Person
 {
     public string $name;
@@ -47,6 +48,7 @@ only when the sequence is fully extracted, the objects are validated and a full
 sequence is returned (see example below).
 
 ```php
+<?php
 class Person
 {
     public string $name;
@@ -86,6 +88,7 @@ Sequences offer array access (via ArrayAccess) and convenience methods
 to work with the list of extracted objects.
 
 ```php
+<?php
 $sequence->count();   // returns the number of extracted items
 $sequence->first();   // returns the first extracted item
 $sequence->last();    // returns the last extracted item

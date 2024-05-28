@@ -122,7 +122,6 @@ Use PHP DocBlock style comments to specify the type of array elements.
 
 ```php
 <?php
-
 class Person {
     // ...
 }
@@ -145,8 +144,7 @@ Instructor can retrieve complex data structures from text. Your response model c
 
 ```php
 <?php
-
-use Cognesy/Instructor;
+use Cognesy/Instructor/Instructor;
 
 // define a data structures to extract data into
 class Person {
@@ -162,7 +160,7 @@ class Skill {
     public SkillType $type;
 }
 
-enum SkillType {
+enum SkillType : string {
     case Technical = 'technical';
     case Other = 'other';
 }

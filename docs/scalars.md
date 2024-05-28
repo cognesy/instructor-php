@@ -3,7 +3,8 @@
 Sometimes we just want to get quick results without defining a class for the response model, especially if we're trying to get a straight, simple answer in a form of string, integer, boolean or float. Instructor provides a simplified API for such cases.
 
 ```php
-use Cognesy\Instructor;
+<?php
+use Cognesy\Instructor\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",

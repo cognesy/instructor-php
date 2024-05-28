@@ -8,7 +8,6 @@ Instructor validates results of LLM response against validation rules specified 
 
 ```php
 <?php
-
 use Symfony\Component\Validator\Constraints as Assert;
 
 class Person {
@@ -18,8 +17,9 @@ class Person {
 }
 
 $text = "His name is Jason, he is -28 years old.";
+
 $person = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => $text]],
+    messages: $text,
     responseModel: Person::class,
 );
 
@@ -29,17 +29,12 @@ $person = (new Instructor)->respond(
 
 ### Max Retries
 
-!!! example
-
-    Run example via CLI: ```php ./examples/SelfCorrection/run.php```
-
 In case maxRetries parameter is provided and LLM response does not meet validation criteria, Instructor will make subsequent inference attempts until results meet the requirements or maxRetries is reached.
 
 Instructor uses validation errors to inform LLM on the problems identified in the response, so that LLM can try self-correcting in the next attempt.
 
 ```php
 <?php
-
 use Symfony\Component\Validator\Constraints as Assert;
 
 class Person {
@@ -50,8 +45,9 @@ class Person {
 }
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
+
 $person = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => $text]],
+    messages: $text,
     responseModel: Person::class,
     maxRetries: 3,
 );
@@ -61,16 +57,11 @@ $person = (new Instructor)->respond(
 
 ## Custom Validation
 
-!!! example
-
-    Run example via CLI: ```php ./examples/ValidationMixin/run.php```
-
 You can easily add custom validation code to your response model by using ```ValidationTrait```
 and defining validation logic in ```validate()``` method.
 
 ```php
 <?php
-
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
 class UserDetails
@@ -121,18 +112,12 @@ $violations = [
 
 ## Custom Validation via Symfony #[Assert/Callback]
 
-!!! example
-
-    Run example via CLI: ```php ./examples/CustomValidator/run.php```
-
-
 Instructor uses Symfony validation component to validate extracted data.
 
 You can use ```#[Assert/Callback]``` annotation to build fully customized validation logic.
 
 ```php
 <?php
-
 use Cognesy\Instructor\Instructor;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -165,4 +150,3 @@ assert($user->name === "JASON");
 !!! note
 
     See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
-

@@ -20,7 +20,7 @@ as tools are not used in these modes.
 
 ```php
 <?php
-$user = $instructor
+$user = (new Instructor)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
@@ -29,7 +29,6 @@ $user = $instructor
         toolDescription: 'Extract information from provided content',
         mode: Mode::Tools)
     ->get();
-?>
 ```
 
 
@@ -43,13 +42,12 @@ respond in JSON format rather than plain text.
 
 ```php
 <?php
-$user = $instructor->respond(
+$user = (new Instructor)->respond(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     prompt: "\nYour task is to respond correctly with JSON object.",
     mode: Mode::Json
 );
-?>
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
@@ -78,7 +76,7 @@ that returns a JSON string directly.
 
 ```php
 <?php
-$jsonSchema = $instructor->createJsonSchemaString(User::class);
+$jsonSchema = (new Instructor)->createJsonSchemaString(User::class);
 
 $user = $instructor
     ->request(
@@ -87,7 +85,6 @@ $user = $instructor
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n" . $jsonSchema,
         mode: Mode::Json)
     ->get();
-?>
 ```
 
 
@@ -104,14 +101,13 @@ Example below demonstrates how to use a template string as a prompt:
 
 ```php
 <?php
-$user = $instructor
+$user = (new Instructor)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n{json_schema}\n",
         mode: Mode::Json)
     ->get();
-?>
 ```
 
 
@@ -133,12 +129,11 @@ is correctly structured and contains the expected data.
 
 ```php
 <?php
-$user = $instructor
+$user = (new Instructor)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n{json_schema}\n",
         mode: Mode::MdJson)
     ->get();
-?>
 ```

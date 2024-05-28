@@ -25,7 +25,8 @@ extract from the message.
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\Structure\Field;use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Structure\Structure;
 
 enum Role : string {
     case Manager = 'manager';

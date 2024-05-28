@@ -4,7 +4,6 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 
 ```php
 <?php
-
 $person = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,

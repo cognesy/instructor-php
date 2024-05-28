@@ -17,7 +17,8 @@ received, but only when any property of the object is updated.
 
  
 ```php
-use Cognesy\Instructor;
+<?php
+use Cognesy\Instructor\Instructor;
 
 function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
@@ -60,7 +61,8 @@ One more method available on `Stream` is `final()`. It returns only the final re
 ### Example: streaming partial responses
 
 ```php
-use Cognesy\Instructor;
+<?php
+use Cognesy\Instructor\Instructor;
 
 $stream = (new Instructor)->request(
     messages: "His name is Jason, he is 28 years old.",
@@ -83,7 +85,8 @@ $db->savePerson($person);
 ### Example: streaming sequence items
 
 ```php
-use Cognesy\Instructor;
+<?php
+use Cognesy\Instructor\Instructor;
 
 $stream = (new Instructor)->request(
     messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
