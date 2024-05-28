@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Deserialization\Symfony;
 
-use Cognesy\Instructor\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Instructor\Utils\Json;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Contracts;
+namespace Cognesy\Instructor\Validation\Contracts;
 
 use Cognesy\Instructor\Validation\ValidationResult;
 

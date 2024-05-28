@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
 

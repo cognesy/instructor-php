@@ -6,12 +6,10 @@ use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
-use Cognesy\Instructor\Contracts\CanValidateObject;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
@@ -22,11 +20,13 @@ use Cognesy\Instructor\Core\Response\ResponseTransformer;
 use Cognesy\Instructor\Core\Response\ResponseValidator;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
+use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Symfony\Validator;
 
 function autowire(

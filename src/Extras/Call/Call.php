@@ -2,11 +2,11 @@
 
 namespace Cognesy\Instructor\Extras\Call;
 
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 
 class Call implements CanDeserializeSelf, CanTransformSelf, CanProvideSchema, CanValidateSelf
 {

@@ -2,19 +2,21 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
-use Cognesy\Instructor\Contracts\DataModel\CanHandleDataStructure;
-use Cognesy\Instructor\Extras\Signature\Schema;
+use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Traits\ConvertsToString;
+use Cognesy\Instructor\Extras\Tasks\Signature\Traits\HandlesAutoConfig;
 
 class AutoSignature implements Signature
 {
-    use \Cognesy\Instructor\Extras\Tasks\Signature\Traits\HandlesAutoConfig;
-    use \Cognesy\Instructor\Extras\Tasks\Signature\Traits\ConvertsToString;
+    use HandlesAutoConfig;
+    use ConvertsToString;
 
     public const ARROW = '->';
 
-    protected CanHandleDataStructure $inputs;
-    protected CanHandleDataStructure $outputs;
+    protected Structure $inputs;
+    protected Structure $outputs;
     protected string $description = '';
     protected string $prompt = 'Your task is to find output arguments in input data based on specification: {signature} {description}';
 
@@ -31,12 +33,12 @@ class AutoSignature implements Signature
         return $this->inputs->fieldValues();
     }
 
-    /** @return \Cognesy\Instructor\Contracts\DataModel\CanHandleDataField[] */
+    /** @return Field[] */
     public function getInputFields(): array {
         return $this->inputs->fields();
     }
 
-    /** @return \Cognesy\Instructor\Contracts\DataModel\CanHandleDataField[] */
+    /** @return Field[] */
     public function getOutputFields(): array {
         return $this->outputs->fields();
     }

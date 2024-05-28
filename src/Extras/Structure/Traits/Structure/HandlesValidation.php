@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
-use Cognesy\Instructor\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesValidation

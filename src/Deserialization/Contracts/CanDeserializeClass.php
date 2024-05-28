@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Contracts;
+namespace Cognesy\Instructor\Deserialization\Contracts;
 
 /**
  * Can deserialize a JSON string into an object of given class.

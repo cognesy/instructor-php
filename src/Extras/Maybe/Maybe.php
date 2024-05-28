@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Maybe;
 
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;

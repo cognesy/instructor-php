@@ -3,11 +3,11 @@
 namespace Cognesy\Instructor\Extras\Sequence;
 
 use ArrayAccess;
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
-use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Contracts\Sequenceable;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\Symfony\Validator;
 use IteratorAggregate;
 

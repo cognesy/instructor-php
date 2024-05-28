@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Core\Response;
 
-use Cognesy\Instructor\Contracts\CanDeserializeClass;
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;

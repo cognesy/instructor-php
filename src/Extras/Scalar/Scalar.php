@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Extras\Scalar;
 
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 
 /**
  * Scalar value adapter.

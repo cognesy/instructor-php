@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Contracts;
+namespace Cognesy\Instructor\Deserialization\Contracts;
 
 /**
  * Response model can deserialize self from JSON data

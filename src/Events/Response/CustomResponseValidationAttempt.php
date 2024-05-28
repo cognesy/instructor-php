@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 
 class CustomResponseValidationAttempt extends Event
 {

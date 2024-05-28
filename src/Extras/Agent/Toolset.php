@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Agent;
 
-use Cognesy\Instructor\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Extras\Call\Call;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 
 class Toolset implements CanDeserializeSelf, CanTransformSelf, CanProvideJsonSchema, CanValidateSelf, CanHandleToolSelection
 {

@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Validation\Symfony;
 
-use Cognesy\Instructor\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\ValidationError;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
