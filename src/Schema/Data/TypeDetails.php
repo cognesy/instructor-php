@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Schema\Data;
 
-use Cognesy\Instructor\Schema\Traits\HandlesJsonTypes;
-use Cognesy\Instructor\Schema\Traits\HandlesPhpTypes;
-use Cognesy\Instructor\Schema\Traits\HandlesTypeDetailsConstruction;
+use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesJsonTypes;
+use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesPhpTypes;
+use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesTypeDetailsConstruction;
 
 class TypeDetails
 {

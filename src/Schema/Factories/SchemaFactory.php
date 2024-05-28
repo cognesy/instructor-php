@@ -16,7 +16,7 @@ use Cognesy\Instructor\Schema\Utils\ClassInfo;
 /**
  * Factory for creating schema objects from class names
  *
- * NOTE: Currently, OpenAI API does not comprehend well object references for
+ * NOTE: Currently, OpenAI models do not comprehend well object references for
  * complex structures, so it's safer to return the full object schema with all
  * properties inlined.
  */

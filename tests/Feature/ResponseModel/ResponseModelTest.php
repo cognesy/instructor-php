@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
@@ -19,7 +18,7 @@ it('can handle string class name', function() {
         new EventDispatcher(),
     );
     $responseModel = $responseModelFactory->fromAny(User::class);
-    expect($responseModel->class())->toBe(User::class);
+    expect($responseModel->instanceClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
@@ -45,7 +44,7 @@ it('can handle array schema', function($user) {
         new EventDispatcher(),
     );
     $responseModel = $responseModelFactory->fromAny($user);
-    expect($responseModel->class())->toBe(User::class);
+    expect($responseModel->instanceClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
@@ -71,7 +70,8 @@ it('can handle schema provider - via instance', function() {
         new EventDispatcher(),
     );
     $responseModel = $responseModelFactory->fromAny(new UserWithProvider());
-    expect($responseModel->class())->toBe(UserWithProvider::class);
+    expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
+    expect($responseModel->returnedClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(UserWithProvider::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
@@ -97,7 +97,8 @@ it('can handle schema provider - via class name', function() {
         new EventDispatcher(),
     );
     $responseModel = $responseModelFactory->fromAny(UserWithProvider::class);
-    expect($responseModel->class())->toBe(UserWithProvider::class);
+    expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
+    expect($responseModel->returnedClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(UserWithProvider::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
@@ -125,7 +126,7 @@ it('can handle ObjectSchema instance', function() {
     $schemaFactory = new SchemaFactory();
     $schema = $schemaFactory->schema(User::class);
     $responseModel = $responseModelFactory->fromAny($schema);
-    expect($responseModel->class())->toBe(User::class);
+    expect($responseModel->instanceClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');
@@ -151,7 +152,7 @@ it('can handle raw object', function() {
         new EventDispatcher(),
     );
     $responseModel = $responseModelFactory->fromAny(new User());
-    expect($responseModel->class())->toBe(User::class);
+    expect($responseModel->instanceClass())->toBe(User::class);
     expect($responseModel->instance())->toBeInstanceOf(User::class);
     expect($responseModel->toJsonSchema())->toBeArray();
     //expect($responseModel->jsonSchema['type'])->toBe('function');

@@ -17,7 +17,7 @@ use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Visitors\SchemaToArray;
+use Cognesy\Instructor\Schema\Visitors\SchemaToJson;
 use InvalidArgumentException;
 
 class ResponseModelFactory
@@ -111,7 +111,7 @@ class ResponseModelFactory
         $class = $requestedModel;
         $instance = new $class;
         $schema = $this->schemaFactory->schema($class);
-        $jsonSchema = (new SchemaToArray)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $jsonSchema = (new SchemaToJson)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
@@ -127,7 +127,7 @@ class ResponseModelFactory
         $class = get_class($requestedModel);
         $instance = $requestedModel;
         $schema = $this->schemaFactory->schema($class);
-        $jsonSchema = (new SchemaToArray)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $jsonSchema = (new SchemaToJson)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
@@ -153,7 +153,7 @@ class ResponseModelFactory
             $instance = new $class;
         }
         $schema = $instance->toSchema();
-        $jsonSchema = (new SchemaToArray)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $jsonSchema = (new SchemaToJson)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
@@ -161,7 +161,7 @@ class ResponseModelFactory
         $schema = $requestedModel;
         $class = $schema->typeDetails->class;
         $instance = new $class;
-        $jsonSchema = (new SchemaToArray)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
+        $jsonSchema = (new SchemaToJson)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Call\Traits;
 
-use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Structure\Field;
 
 trait HandlesCallInfo
 {

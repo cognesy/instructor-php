@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Agent\Contracts;
 
-use Cognesy\Instructor\Extras\Task\Task;
+use Cognesy\Instructor\Extras\Tasks\Task\Task;
 
 interface CanProcessTasks
 {

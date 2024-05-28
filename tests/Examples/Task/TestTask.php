@@ -2,10 +2,9 @@
 
 namespace Tests\Examples\Task;
 
-use Cognesy\Instructor\Extras\Signature\SignatureFactory;
-use Cognesy\Instructor\Extras\Task\ExecutableTask;
+use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
 
-class TestTask extends ExecutableTask
+class TestTask extends \Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask
 {
     public function __construct() {
         // parent::__construct('numberA:int, numberB:int -> sum:int');

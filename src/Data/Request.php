@@ -11,15 +11,15 @@ use Cognesy\Instructor\Enums\Mode;
 
 class Request
 {
-    use Traits\HandlesOptions;
-    use Traits\HandlesModel;
-    use Traits\HandlesSchema;
-    use Traits\HandlesApiClient;
-    use Traits\HandlesRetries;
-    use Traits\HandlesPrompts;
-    use Traits\HandlesMessages;
-    use Traits\HandlesExamples;
-    use Traits\HandlesApiRequestFactory;
+    use Traits\Request\HandlesApiClient;
+    use Traits\Request\HandlesApiRequestFactory;
+    use Traits\Request\HandlesExamples;
+    use Traits\Request\HandlesMessages;
+    use Traits\Request\HandlesModel;
+    use Traits\Request\HandlesOptions;
+    use Traits\Request\HandlesPrompts;
+    use Traits\Request\HandlesRequestedModel;
+    use Traits\Request\HandlesRetries;
 
     private Mode $mode;
 

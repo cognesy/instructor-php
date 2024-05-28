@@ -11,6 +11,7 @@ class ObjectSchema extends Schema
     public array $properties = []; // for objects OR empty
     /** @var string[] */
     public array $required = []; // for objects OR empty
+    public array $attributes = [];
 
     public function __construct(
         TypeDetails $type,
@@ -31,5 +32,10 @@ class ObjectSchema extends Schema
     /** @return string[] */
     public function getPropertyNames() : array {
         return array_keys($this->properties);
+    }
+
+    public function removeProperty(string $name): void {
+        unset($this->properties[$name]);
+        unset($this->required[$name]);
     }
 }

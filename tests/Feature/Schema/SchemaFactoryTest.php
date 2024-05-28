@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Visitors\SchemaToArray;
+use Cognesy\Instructor\Schema\Visitors\SchemaToJson;
 use Tests\Examples\ClassInfo\TestClassA;
 
 it('creates a schema from a class name', function () {
@@ -19,8 +19,8 @@ it('creates a schema from a class name with object references', function () {
     $factory = new SchemaFactory(true);
     /** @var ObjectSchema $schema */
     $schema = $factory->schema(TestClassA::class);
-    $array = (new SchemaToArray)->toArray($schema);
-    expect($array)->toBeArray();
+    $json = (new SchemaToJson)->toArray($schema);
+    expect($json)->toBeArray();
     $expected = [
         'type' => 'object',
         'title' => 'TestClassA',
@@ -56,5 +56,5 @@ it('creates a schema from a class name with object references', function () {
         ],
         '$comment' => 'Tests\Examples\ClassInfo\TestClassA',
     ];
-    expect($array)->toBe($expected);
+    expect($json)->toBe($expected);
 });

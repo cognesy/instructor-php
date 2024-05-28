@@ -29,16 +29,15 @@ use Throwable;
  */
 class Instructor {
     use Events\Traits\HandlesEvents;
-    use Traits\HandlesQueuedEvents;
     use Events\Traits\HandlesEventListeners;
     use Traits\HandlesConfig;
-    use Traits\HandlesQueuedEvents;
-    use Traits\HandlesErrors;
-    use Traits\HandlesSequenceUpdates;
-    use Traits\HandlesPartialUpdates;
-    use Traits\HandlesTimer;
-    use Traits\HandlesSchema;
     use Traits\HandlesDebug;
+    use Traits\HandlesErrors;
+    use Traits\HandlesPartialUpdates;
+    use Traits\HandlesQueuedEvents;
+    use Traits\HandlesSchema;
+    use Traits\HandlesSequenceUpdates;
+    use Traits\HandlesTimer;
 
     protected ?Request $request = null;
     protected RequestFactory $requestFactory;

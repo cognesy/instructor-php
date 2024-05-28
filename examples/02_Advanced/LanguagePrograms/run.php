@@ -3,13 +3,13 @@
 ```php
 <?php
 
-use Cognesy\Instructor\Extras\Signature\Attributes\InputField;
-use Cognesy\Instructor\Extras\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Signature\AutoSignature;
-use Cognesy\Instructor\Extras\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Signature\SignatureFactory;
-use Cognesy\Instructor\Extras\Task\ExecutableTask;
-use Cognesy\Instructor\Extras\Task\PredictTask;
+use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
+use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
+use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
+use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
+use Cognesy\Instructor\Extras\Tasks\Task\PredictTask;
 use Cognesy\Instructor\Instructor;
 use Symfony\Component\Validator\Constraints as Assert;
 use Tests\MockLLM;
@@ -62,6 +62,7 @@ class CategoryCount {
 class EmailStats extends AutoSignature {
     #[InputField('directory containing emails')]
     public string $directory;
+
     #[OutputField('number of emails')]
     public int $emails;
     #[OutputField('number of spam emails')]
@@ -136,8 +137,8 @@ $directoryContents['inbox'] = [
     'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
 ];
 
-$instructor = (new Instructor)->wiretap(fn($e)=>$e->printLog());//->withDebug();//->withClient($mockLLM);
-$task = new GetStats($instructor, $directoryContents);
+$instructor = (new Instructor)->wiretap(fn($e)=>$e->printLog());
+$getStats = new GetStats($instructor, $directoryContents);
 
-$result = $task->with(['directory' => 'inbox'])->get();
+$result = $getStats->with(['directory' => 'inbox'])->get();
 dump($result);

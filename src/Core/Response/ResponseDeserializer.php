@@ -38,6 +38,6 @@ class ResponseDeserializer
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {
         $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
-        return Result::try(fn() => $this->deserializer->fromJson($json, $responseModel->class()));
+        return Result::try(fn() => $this->deserializer->fromJson($json, $responseModel->returnedClass()));
     }
 }

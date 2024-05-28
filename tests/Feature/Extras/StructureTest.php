@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Extras\Field\Field;
+use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Schema\Data\TypeDetails;

@@ -12,14 +12,14 @@ use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
 class Structure implements CanHandleDataStructure, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {
-    use Traits\HandlesDefinition;
-    use Traits\HandlesDeserialization;
-    use Traits\HandlesFieldAccess;
-    use Traits\HandlesSerialization;
-    use Traits\HandlesStructureInfo;
-    use Traits\HandlesTransformation;
-    use Traits\HandlesValidation;
-    use Traits\ProvidesSchema;
+    use Traits\Structure\HandlesDefinition;
+    use Traits\Structure\HandlesDeserialization;
+    use Traits\Structure\HandlesFieldAccess;
+    use Traits\Structure\HandlesSerialization;
+    use Traits\Structure\HandlesStructureInfo;
+    use Traits\Structure\HandlesTransformation;
+    use Traits\Structure\HandlesValidation;
+    use Traits\Structure\ProvidesSchema;
 
     public function __construct() {
         $this->schemaFactory = new SchemaFactory(false);
