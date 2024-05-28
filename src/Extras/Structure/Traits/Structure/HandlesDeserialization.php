@@ -39,6 +39,8 @@ trait HandlesDeserialization
         return $this->fromArray($data);
     }
 
+    // INTERNAL //////////////////////////////////////////////////////////////////////
+
     private function deserializeField(Structure $structure, Field $field, string $name, mixed $fieldData) : mixed {
         $type = $field->typeDetails();
         $value = match(true) {

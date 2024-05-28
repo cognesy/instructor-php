@@ -14,7 +14,7 @@ trait CreatesFromCallable
     public const DEFAULT_OUTPUT = 'result';
 
     static public function fromCallable(callable $callable): Signature {
-        $inputSignature = StructureFactory::fromCallable($callable, 'inputs');
+        $inputStructure = StructureFactory::fromCallable($callable, 'inputs');
         $reflection = new ReflectionFunction($callable);
         $description = $reflection->getDocComment();
         $returnType = $reflection->getReturnType();
@@ -24,12 +24,12 @@ trait CreatesFromCallable
         $typeName = $returnType->getName();
         // $name = $reflection->getName();
         $name = self::DEFAULT_OUTPUT;
-        $outputSignature = Structure::define('outputs', [
+        $outputStructure = Structure::define('outputs', [
             FieldFactory::fromTypeName($name, $typeName)
         ]);
         return new StructureSignature(
-            inputs: $inputSignature,
-            outputs: $outputSignature,
+            inputs: $inputStructure,
+            outputs: $outputStructure,
             description: $description,
         );
     }

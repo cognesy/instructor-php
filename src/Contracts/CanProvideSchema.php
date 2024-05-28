@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Schema\Data\Schema\Schema;

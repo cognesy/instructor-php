@@ -11,8 +11,8 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 
 it('creates signature from string', function () {
     $signature = SignatureFactory::fromString('name:string (description) -> age:int (description)');
-    expect($signature->toString())->toBe('name:string (description) -> age:int (description)');
-})->skip();
+    expect($signature->toSignatureString())->toBe('name:string (description) -> age:int (description)');
+});
 
 it('creates signature from structure', function () {
     $structure = Structure::define('test', [
@@ -24,8 +24,8 @@ it('creates signature from structure', function () {
         ]),
     ]);
     $signature = SignatureFactory::fromStructure($structure);
-    expect($signature->toString())->toBe('name:string (name description) -> age:int (age description)');
-})->skip();
+    expect($signature->toSignatureString())->toBe('name:string (name description) -> age:int (age description)');
+});
 
 it('creates signature from separate structures', function () {
     $structure1 = Structure::define('inputs', [
@@ -35,8 +35,8 @@ it('creates signature from separate structures', function () {
         Field::int('age', 'age description'),
     ]);
     $signature = SignatureFactory::fromStructures($structure1, $structure2);
-    expect($signature->toString())->toBe('name:string (name description) -> age:int (age description)');
-})->skip();
+    expect($signature->toSignatureString())->toBe('name:string (name description) -> age:int (age description)');
+});
 
 it('creates signature from classes', function () {
     class Input {
@@ -46,8 +46,8 @@ it('creates signature from classes', function () {
         public int $age;
     }
     $signature = SignatureFactory::fromClasses(Input::class, Output::class);
-    expect($signature->toString())->toBe('name:string -> age:int');
-})->skip();
+    expect($signature->toSignatureString())->toBe('name:string -> age:int');
+});
 
 it('creates signature from class metadata', function () {
     #[Description('Test description')]
@@ -67,5 +67,5 @@ it('creates signature from class metadata', function () {
         public $mixedProperty;
     }
     $signature = SignatureFactory::fromClassMetadata(TestSignature::class);
-    expect($signature->toString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
-})->skip();
+    expect($signature->toSignatureString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
+});

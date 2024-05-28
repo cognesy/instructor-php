@@ -1,39 +1,39 @@
 <?php
 namespace Cognesy\Instructor\Extras\Tasks\Task\Traits;
 
-use Cognesy\Instructor\Extras\Tasks\Task\Contracts\CanHandleTaskData;
+use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\TaskData;
 
 trait HandlesTaskData
 {
-    protected CanHandleTaskData $data;
+    private TaskData $data;
 
     public function inputs(): array {
-        return $this->data->inputs();
+        return $this->data->getInputValues();
     }
 
     public function input(string $name) : mixed {
-        return $this->data->getInput($name);
+        return $this->data->getInputValue($name);
     }
 
     public function outputs(): array {
-        return $this->data->outputs();
+        return $this->data->getOutputValues();
     }
 
     public function output(string $name) : mixed {
-        return $this->data->getOutput($name);
+        return $this->data->getOutputValue($name);
     }
 
     protected function setInputs(array $inputs): void {
-        $this->data->setInputs($inputs);
+        $this->data->setInputValues($inputs);
     }
 
     protected function setOutputs(array $outputs): void {
-        $this->data->setOutputs($outputs);
+        $this->data->setOutputValues($outputs);
     }
 
     protected function scalarOutput(mixed $value): array {
-        $fields = $this->signature->getOutputFields();
-        $name = array_keys($fields)[0];
+        $fields = $this->data->getOutputNames();
+        $name = $fields[0] ?? 'result';
         return [$name => $value];
     }
 }

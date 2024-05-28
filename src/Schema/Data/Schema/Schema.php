@@ -39,6 +39,10 @@ class Schema implements CanAcceptSchemaVisitor
         return [];
     }
 
+    public function getProperties() : array {
+        return [];
+    }
+
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitSchema($this);
     }

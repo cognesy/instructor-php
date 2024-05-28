@@ -6,6 +6,8 @@ use BackedEnum;
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Template;
+use Exception;
 
 class PredictTask extends ExecutableTask
 {
@@ -25,7 +27,11 @@ class PredictTask extends ExecutableTask
         $input = match(true) {
             count($args) === 0 => throw new \Exception('Empty input'),
             count($args) === 1 => reset($args),
-            default => $args,
+            default => match(true) {
+                is_array($args[0]) => $args[0],
+                is_string($args[0]) => $args[0],
+                default => throw new Exception('Invalid input - should be string or messages array'),
+            }
         };
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
@@ -38,7 +44,7 @@ class PredictTask extends ExecutableTask
 
     public function prompt() : string {
         if (empty($this->prompt)) {
-            $this->prompt = $this->signature->toDefaultPrompt();
+            $this->prompt = $this->toDefaultPrompt();
         }
         return $this->prompt;
     }
@@ -62,5 +68,12 @@ class PredictTask extends ExecutableTask
             ['role' => 'assistant', 'content' => 'Provide input data.'],
             ['role' => 'user', 'content' => $content]
         ];
+    }
+
+    public function toDefaultPrompt(): string {
+        return Template::render($this->prompt, [
+            'signature' => $this->signature->toSignatureString(),
+            'description' => $this->signature->description()
+        ]);
     }
 }

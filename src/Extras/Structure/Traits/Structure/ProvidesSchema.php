@@ -25,6 +25,8 @@ trait ProvidesSchema
         return $this->makeSchema();
     }
 
+    // INTERNAL //////////////////////////////////////////////////////////////////////
+
     private function makeSchema() : Schema {
         $properties = [];
         $required = [];

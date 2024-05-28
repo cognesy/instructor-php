@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Extras\Tasks\Task;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated(reason: 'Needs revision')]
 class PromptTask extends ExecutableTask
 {
     private Instructor $instructor;

@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 trait HandlesAutoConfig
 {
     use GetsFieldsFromClass;

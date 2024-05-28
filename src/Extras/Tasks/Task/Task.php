@@ -2,19 +2,18 @@
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\Task\Data\ArrayTaskData;
 use Cognesy\Instructor\Extras\Tasks\Task\Enums\TaskStatus;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
 use DateTimeImmutable;
 
-class Task implements \Cognesy\Instructor\Extras\Tasks\Task\Contracts\CanProcessInput
+class Task implements Contracts\CanProcessInput
 {
-    use \Cognesy\Instructor\Extras\Tasks\Task\Traits\HandlesTaskInfo;
-    use \Cognesy\Instructor\Extras\Tasks\Task\Traits\HandlesTaskStatus;
-    use \Cognesy\Instructor\Extras\Tasks\Task\Traits\HandlesTaskData;
-    use \Cognesy\Instructor\Extras\Tasks\Task\Traits\HandlesSignature;
-    use \Cognesy\Instructor\Extras\Tasks\Task\Traits\HandlesContext;
+    use Traits\HandlesTaskInfo;
+    use Traits\HandlesTaskStatus;
+    use Traits\HandlesTaskData;
+    use Traits\HandlesSignature;
+    use Traits\HandlesContext;
 
     public function __construct(string|Signature $signature) {
         $this->id = Uuid::uuid4();
@@ -22,7 +21,7 @@ class Task implements \Cognesy\Instructor\Extras\Tasks\Task\Contracts\CanProcess
         $this->updatedAt = new DateTime();
         $this->status = TaskStatus::Created;
         $this->context = [];
-        $this->setSignature($signature);
-        $this->data = ArrayTaskData::fromSignature($this->signature);
+        $this->signature = $this->initSignature($signature);
+        $this->data = $this->signature->data();
     }
 }

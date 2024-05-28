@@ -2,10 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
-use Cognesy\Instructor\Contracts\DataModel\CanHandleDataStructure;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Extras\Structure\Contracts\CanHandleDataStructure;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class ResponseModelSignature implements Signature
 {
     protected string $signatureString;
@@ -13,7 +15,7 @@ class ResponseModelSignature implements Signature
     protected ResponseModel $inputModel;
     protected ResponseModel $outputModel;
 
-    public function getDescription(): string {
+    public function description(): string {
         return $this->description;
     }
 
@@ -46,10 +48,5 @@ class ResponseModelSignature implements Signature
     public function toString(): string
     {
         // TODO: Implement toString() method.
-    }
-
-    public function toDefaultPrompt(): string
-    {
-        // TODO: Implement toDefaultPrompt() method.
     }
 }

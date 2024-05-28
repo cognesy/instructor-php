@@ -29,6 +29,8 @@ trait HandlesSerialization
         return $data;
     }
 
+    // INTERNAL //////////////////////////////////////////////////////////////////////
+
     private function serializeObjectField(object $object) : mixed {
         return match(true) {
             (method_exists($object, 'toArray')) => $object->toArray(),

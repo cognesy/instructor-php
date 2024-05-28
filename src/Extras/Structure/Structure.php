@@ -3,14 +3,13 @@ namespace Cognesy\Instructor\Extras\Structure;
 
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Contracts\DataModel\CanHandleDataStructure;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 
-class Structure implements CanHandleDataStructure, CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
+class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {
     use Traits\Structure\HandlesDefinition;
     use Traits\Structure\HandlesDeserialization;

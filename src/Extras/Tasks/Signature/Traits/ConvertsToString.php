@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Utils\Template;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 trait ConvertsToString
 {
     public function toString() : string {
@@ -26,7 +28,7 @@ trait ConvertsToString
     public function toDefaultPrompt(): string {
         return Template::render($this->prompt, [
             'signature' => $this->toString(),
-            'description' => $this->getDescription()
+            'description' => $this->description()
         ]);
     }
 }

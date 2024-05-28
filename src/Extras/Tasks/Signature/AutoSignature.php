@@ -5,13 +5,14 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\Signature\Traits\ConvertsToString;
 use Cognesy\Instructor\Extras\Tasks\Signature\Traits\HandlesAutoConfig;
+use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class AutoSignature implements Signature
 {
     use HandlesAutoConfig;
-    use ConvertsToString;
 
     public const ARROW = '->';
 
@@ -43,7 +44,7 @@ class AutoSignature implements Signature
         return $this->outputs->fields();
     }
 
-    public function getDescription(): string {
+    public function description(): string {
         return $this->description;
     }
 

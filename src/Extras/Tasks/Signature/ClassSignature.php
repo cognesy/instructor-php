@@ -14,7 +14,7 @@ class ClassSignature implements Signature
     protected ResponseModel $inputs;
     protected ResponseModel $outputs;
 
-    public function getDescription(): string {
+    public function description(): string {
         return $this->description;
     }
 }

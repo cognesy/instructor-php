@@ -25,8 +25,8 @@ it('can process a simple task', function() {
     expect($task->output('result'))->toBe(3);
 
     // calculate time taken
-    Profiler::dump();
-})->skip();
+    Profiler::summary();
+});
 
 it('can process predict task', function() {
     $mockLLM = MockLLM::get([

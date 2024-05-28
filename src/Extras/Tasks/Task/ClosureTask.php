@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Extras\Tasks\Task;
 
 use Closure;
 use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated(reason: 'Needs revision')]
 class ClosureTask extends ExecutableTask
 {
     private Closure $callable;

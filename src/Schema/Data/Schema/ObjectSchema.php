@@ -29,6 +29,11 @@ class ObjectSchema extends Schema
         $visitor->visitObjectSchema($this);
     }
 
+    /** @return Schema[] */
+    public function getProperties() : array {
+        return $this->properties;
+    }
+
     /** @return string[] */
     public function getPropertyNames() : array {
         return array_keys($this->properties);

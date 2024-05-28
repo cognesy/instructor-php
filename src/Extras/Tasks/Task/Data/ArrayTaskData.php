@@ -5,7 +5,9 @@ namespace Cognesy\Instructor\Extras\Tasks\Task\Data;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Tasks\Task\Contracts\CanHandleTaskData;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated(reason: 'Needs revision')]
 class ArrayTaskData implements CanHandleTaskData
 {
     private array $inputs = [];

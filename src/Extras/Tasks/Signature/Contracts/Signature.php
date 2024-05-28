@@ -1,23 +1,15 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Tasks\Signature\Contracts;
 
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\TaskData;
 
 interface Signature
 {
     public const ARROW = '->';
 
-    public function getDescription() : string;
-    public function toString() : string;
-    public function toDefaultPrompt(): string; // TODO: this does not belong here
+    public function data() : TaskData;
 
-    public function getInputFields(): array;
-    public function getInputSchema(): Schema;
+    public function description() : string;
 
-    /** @return array<string, mixed> */
-    public function getInputValues(): array;
-
-    public function getOutputSchema(): Schema;
-    public function getOutputFields(): array;
+    public function toSignatureString() : string;
 }

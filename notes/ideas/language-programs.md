@@ -28,6 +28,18 @@ JSON Schema.
  -> LLM response
  -> output data
 
+## How is signature used?
+
+ - define the module input and output data
+ - validate input (???) and output (=response) formats
+
+## Who uses it?
+ - ExecutableTask
+   - to validate input and output data
+ - PredictTask
+   - to provide response model schema
+
+
 # Modules
 
  - Module = signature + setup() + forward()
