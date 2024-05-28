@@ -22,7 +22,6 @@ Use PHP's nullable types by prefixing type name with question mark (?) and set a
 
 ```php
 <?php
-
 class UserDetail
 {
     public int $age;
@@ -43,7 +42,6 @@ You can create a wrapper class to hold either the result of an operation or an e
 
 ```php
 <?php
-
 class UserDetail
 {
     public int $age;
@@ -76,7 +74,6 @@ To prevent data misalignment, use Enums for standardized fields. Always include 
 
 ```php
 <?php
-
 enum Role : string {
     case Principal = 'principal'
     case Teacher = 'teacher'
@@ -108,7 +105,6 @@ For complex attributes, it helps to reiterate the instructions in the field's de
 
 ```php
 <?php
-
 /** Extract the role based on the following rules: <your rules go here> */
 class Role
 {
@@ -137,7 +133,6 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 
 ```php
 <?php
-
 class Property
 {
     public string $key;
@@ -165,7 +160,6 @@ When dealing with lists of attributes, especially arbitrary properties, it's cru
 
 ```php
 <?php
-
 class Property
 {
     /**  Monotonically increasing ID */
@@ -198,7 +192,6 @@ For multiple records containing arbitrary properties, instruct LLM to use consis
 
 ```php
 <?php
-
 class Property {
     public int $id;
     public string $key;
@@ -225,7 +218,6 @@ Following example demonstrates how to define relationships between users by inco
 
 ```php
 <?php
-
 class UserDetail
 {
     /** Unique identifier for each user. */
@@ -258,7 +250,6 @@ This approach to "chain of thought" improves data quality but can have modular c
 
 ```php
 <?php
-
 class Role
 {
     /** Think step by step to determine the correct title. */
@@ -287,8 +278,6 @@ You can reuse the same component for different contexts within a model. In this 
 
 ```php
 <?php
-
-
 class TimeRange {
     /** The start time in hours. */
     public int $startTime;
@@ -319,7 +308,6 @@ Sometimes, a component like TimeRange may require some context or additional log
 
 ```php
 <?php
-
 class TimeRange
 {
     /** Step by step reasoning to get the correct time range */

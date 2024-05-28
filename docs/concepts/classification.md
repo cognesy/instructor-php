@@ -17,7 +17,6 @@ For single-label classification, we first define an **`enum`** for possible labe
 
 ```php
 <?php
-
 // Enumeration for single-label text classification. 
 enum Label : string {
     case SPAM = "spam";
@@ -37,7 +36,6 @@ The function **`classify`** will perform the single-label classification.
 
 ```php
 <?php
-
 use Cognesy\Instructor\Instructor;
 
 /**
@@ -76,7 +74,6 @@ For multi-label classification, we introduce a new enum class and a different PH
 
 ```php
 <?php
-
 /** Potential ticket labels */
 enum Label : string {
     case TECH_ISSUE = "tech_issue";
@@ -100,7 +97,6 @@ The function **`multi_classify`** executes multi-label classification using LLM.
 
 ```php
 <?php
-
 use Cognesy\Instructor\Instructor;
 
 // Perform single-label classification on the input text.
@@ -122,7 +118,6 @@ Finally, we test the multi-label classification function using a sample support 
 
 ```php
 <?php
-
 // Test single-label classification
 $ticket = "My account is locked and I can't access my billing info.";
 $prediction = multi_classify($ticket);
