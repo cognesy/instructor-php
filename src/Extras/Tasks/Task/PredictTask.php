@@ -43,7 +43,7 @@ class PredictTask extends ExecutableTask
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
             responseModel: $this->data()->getOutputRef(),
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4o',
             maxRetries: $this->maxRetries,
         );
         return $response;
