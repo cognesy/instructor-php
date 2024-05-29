@@ -6,7 +6,7 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Visitors\SchemaToJson;
+use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
 
 trait ProvidesSchema
 {
@@ -18,7 +18,7 @@ trait ProvidesSchema
     }
 
     public function toJsonSchema() : array {
-        return (new SchemaToJson)->toArray($this->toSchema());
+        return (new SchemaToJsonSchema)->toArray($this->toSchema());
     }
 
     public function toSchema(): Schema {

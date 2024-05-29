@@ -11,5 +11,7 @@ interface Signature
 
     public function description() : string;
 
+    public function withArgs(mixed ...$inputs) : static;
+
     public function toSignatureString() : string;
 }

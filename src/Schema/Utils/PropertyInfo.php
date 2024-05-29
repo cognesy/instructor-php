@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Schema\Utils;
 
+use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
+use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Schema\Attributes\Description;
 use Cognesy\Instructor\Schema\Attributes\Instructions;
 use ReflectionProperty;
@@ -75,6 +77,8 @@ class PropertyInfo
         $descriptions = array_merge(
             AttributeUtils::getValues($this->reflection, Description::class, 'text'),
             AttributeUtils::getValues($this->reflection, Instructions::class, 'text'),
+            AttributeUtils::getValues($this->reflection, InputField::class, 'description'),
+            AttributeUtils::getValues($this->reflection, OutputField::class, 'description'),
         );
 
         // get property description from PHPDoc

@@ -7,6 +7,20 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 trait ConvertsToSignatureString
 {
+    public function toShortSignature() : string {
+        $inputs = array_map(
+            fn(Schema $propertySchema) => $this->shortPropertySignature($propertySchema),
+            $this->data()->getInputSchemas()
+        );
+        $outputs = array_map(
+            fn(Schema $propertySchema) => $this->shortPropertySignature($propertySchema),
+            $this->data()->getOutputSchemas()
+        );
+        return implode(', ', $inputs)
+            . ' ' . Signature::ARROW . ' '
+            . implode(', ', $outputs);
+    }
+
     public function toSignatureString() : string {
         $inputs = array_map(
             fn(Schema $propertySchema) => $this->propertySignature($propertySchema),
@@ -27,5 +41,9 @@ trait ConvertsToSignatureString
             $description = ' (' . $schema->description() . ')';
         }
         return $schema->name() . ':' . $schema->typeDetails()->toString() . $description;
+    }
+
+    private function shortPropertySignature(Schema $schema) : string {
+        return $schema->name();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Task\Traits;
 
+use Cognesy\Instructor\Extras\Tasks\Events\TaskCompleted;
 use Cognesy\Instructor\Extras\Tasks\Task\Enums\TaskStatus;
 use DateTime;
 

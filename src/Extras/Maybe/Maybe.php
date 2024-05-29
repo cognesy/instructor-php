@@ -6,7 +6,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Visitors\SchemaToJson;
+use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
 
 class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {
@@ -51,7 +51,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 
     public function toJsonSchema(): array {
         $schema = $this->schemaFactory->schema($this->class);
-        $schemaData = (new SchemaToJson)->toArray($schema);
+        $schemaData = (new SchemaToJsonSchema)->toArray($schema);
         $schemaData['title'] = $this->name ?: $this->typeDetailsFactory->fromTypeName($this->class)->classOnly();
         $schemaData['description'] = $this->description ?: "Correctly extracted values of ".$schemaData['title'];
         $schemaData['$comment'] = $this->class;

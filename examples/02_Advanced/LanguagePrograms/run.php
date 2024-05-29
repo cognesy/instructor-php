@@ -7,7 +7,6 @@ use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
 use Cognesy\Instructor\Extras\Tasks\Task\PredictTask;
 use Cognesy\Instructor\Instructor;
@@ -17,37 +16,17 @@ use Tests\MockLLM;
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-class ReadEmails extends ExecutableTask {
-    public function __construct(private array $directoryContents = []) {
-        parent::__construct(SignatureFactory::fromString('directory -> string[]'));
-    }
-    public function forward(string $directory) : array {
-        return $this->directoryContents[$directory];
-    }
-}
-
-class ParseEmail extends ExecutableTask {
-    public function __construct() {
-        parent::__construct(SignatureFactory::fromString('email -> sender, body'));
-    }
-    public function forward(string $email) : array {
-        $parts = explode(',', $email);
-        return [
-            'sender' => trim(explode(':', $parts[0])[1]),
-            'email_body' => trim(explode(':', $parts[1])[1])
-        ];
-    }
-}
-
 class EmailAnalysis extends AutoSignature {
     #[InputField('content of email')]
-    public string $text = '';
-
+    public string $text;
     #[OutputField('identify most relevant email topic: sales, support, other, spam')]
-    public string $topic = '';
+    public string $topic;
     #[OutputField('one word sentiment: positive, neutral, negative')]
-    #[Assert\Choice(choices: ['positive', 'neutral', 'negative'])]
-    public string $sentiment = '';
+    public string $sentiment;
+
+    public static function for(string $text) : static {
+        return self::make(text: $text);
+    }
 }
 
 class CategoryCount {
@@ -62,7 +41,6 @@ class CategoryCount {
 class EmailStats extends AutoSignature {
     #[InputField('directory containing emails')]
     public string $directory;
-
     #[OutputField('number of emails')]
     public int $emails;
     #[OutputField('number of spam emails')]
@@ -73,6 +51,37 @@ class EmailStats extends AutoSignature {
     public float $spamRatio;
     #[OutputField('category counts')]
     public CategoryCount $categories;
+
+    static public function for(string $directory) : static {
+        return self::make(directory: $directory);
+    }
+}
+
+class ReadEmails extends ExecutableTask {
+    public function __construct(private array $directoryContents = []) {
+        parent::__construct();
+    }
+    public function signature() : string|Signature {
+        return 'directory -> emails';
+    }
+    public function forward(string $directory) : array {
+        return $this->directoryContents[$directory];
+    }
+}
+
+class ParseEmail extends ExecutableTask {
+    public function signature() : string|Signature {
+        return 'email -> sender, body';
+    }
+    protected function forward(string $email) : array {
+        $parts = explode(',', $email);
+        $sender = trim(explode(':', $parts[0])[1]);
+        $body = trim(explode(':', $parts[1])[1]);
+        return [
+            'sender' => $sender,
+            'body' => $body,
+        ];
+    }
 }
 
 class GetStats extends ExecutableTask {
@@ -81,29 +90,30 @@ class GetStats extends ExecutableTask {
     private PredictTask $analyseEmail;
 
     public function __construct(Instructor $instructor, array $directoryContents = []) {
-        parent::__construct($this->signature());
+        parent::__construct();
+
         $this->readEmails = new ReadEmails($directoryContents);
         $this->parseEmail = new ParseEmail();
-        $this->analyseEmail = new PredictTask(EmailAnalysis::class, $instructor);
+        $this->analyseEmail = new PredictTask(signature: EmailAnalysis::class, instructor: $instructor);
     }
 
-    public function signature() : Signature {
-        return SignatureFactory::fromClassMetadata(EmailStats::class);
+    public function signature() : string|Signature {
+        return EmailStats::class;
     }
 
     public function forward(string $directory) : array {
-        $emails = $this->readEmails->with(['directory' => $directory])->get();
+        $emails = $this->readEmails->withArgs(directory: $directory);
         $aggregateSentiment = 0;
         $categories = new CategoryCount;
         foreach ($emails as $email) {
-            $parsedEmail = $this->parseEmail->with(['email' => $email])->get();
-            $result = $this->analyseEmail->with(['text' => $parsedEmail['email_body']])->get();
-            $topic = (in_array($result['topic'], ['sales', 'support', 'spam'])) ? $result['topic'] : 'other';
+            $parsedEmail = $this->parseEmail->withArgs(email: $email);
+            $result = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail['body']));
+            $topic = (in_array($result->topic, ['sales', 'support', 'spam'])) ? $result->topic : 'other';
             $categories->$topic++;
             if ($topic === 'spam') {
                 continue;
             }
-            $aggregateSentiment += match($result['sentiment']) {
+            $aggregateSentiment += match($result->sentiment) {
                 'positive' => 1,
                 'neutral' => 0,
                 'negative' => -1,
@@ -121,24 +131,16 @@ class GetStats extends ExecutableTask {
     }
 }
 
-$mockLLM = MockLLM::get([
-    '{"topic": "sales", "sentiment": "positive"}',
-    '{"topic": "support", "sentiment": "negative"}',
-    '{"topic": "spam", "sentiment": "neutral"}',
-    '{"topic": "sales", "sentiment": "negative"}',
-    '{"topic": "support", "sentiment": "negative"}',
-]);
-
 $directoryContents['inbox'] = [
     'sender: jl@gmail.com, body: I am happy about the discount you offered and accept contract renewal',
-    'sender: xxx, body: Get Ozempic for free',
+    'sender: xxx, body: FREE! Get Ozempic and Viagra for free',
     'sender: joe@wp.pl, body: My internet connection keeps failing',
     'sender: paul@x.io, body: How long do I have to wait for the pricing of custom support service?!?',
     'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
 ];
 
-$instructor = (new Instructor)->wiretap(fn($e)=>$e->printLog());
+$instructor = (new Instructor)->wiretap(fn($e)=>$e->printDump());
 $getStats = new GetStats($instructor, $directoryContents);
+$result = $getStats->with(EmailStats::for(directory: 'inbox'));
 
-$result = $getStats->with(['directory' => 'inbox'])->get();
 dump($result);

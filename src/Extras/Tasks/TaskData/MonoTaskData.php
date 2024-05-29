@@ -102,4 +102,20 @@ class MonoTaskData implements TaskData
     public function getOutputSchemas() : array {
         return $this->getPropertySchemas($this->data, $this->outputNames);
     }
+
+    public function setInputValues(array $values): void {
+        $this->setProperties($this->data, $this->inputNames, $values);
+    }
+
+    public function setOutputValues(array $values): void {
+        $this->setProperties($this->data, $this->outputNames, $values);
+    }
+
+    public function getInputRef() : object {
+        return $this->data;
+    }
+
+    public function getOutputRef() : object {
+        return $this->data;
+    }
 }

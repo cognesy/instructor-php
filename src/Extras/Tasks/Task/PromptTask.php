@@ -6,9 +6,10 @@ use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use JetBrains\PhpStorm\Deprecated;
 
-#[Deprecated(reason: 'Needs revision')]
+#[Deprecated]
 class PromptTask extends ExecutableTask
 {
+    private Signature|string $requestedSignature;
     private Instructor $instructor;
     private string $model;
     private array $options;
@@ -19,10 +20,15 @@ class PromptTask extends ExecutableTask
         string $model = '',
         array $options = [],
     ) {
-        parent::__construct($signature);
+        $this->requestedSignature = $signature;
         $this->instructor = $instructor;
         $this->model = $model;
         $this->options = $options;
+        parent::__construct();
+    }
+
+    public function signature(): string|Signature {
+        return $this->requestedSignature;
     }
 
     protected function forward(string $input, array $context = []): mixed {

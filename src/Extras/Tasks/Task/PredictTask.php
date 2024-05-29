@@ -12,15 +12,22 @@ use Exception;
 class PredictTask extends ExecutableTask
 {
     private Instructor $instructor;
-    public string $prompt;
-    public int $maxRetries = 3;
+    protected string $prompt;
+    protected string $defaultPrompt = 'Your task is to infer output argument values in input data based on specification: {signature} {description}';
+    protected int $maxRetries = 3;
+    protected string|Signature $defaultSignature;
 
     public function __construct(
         string|Signature $signature,
         Instructor $instructor,
     ) {
-        parent::__construct($signature);
+        parent::__construct();
+        $this->defaultSignature = $signature;
         $this->instructor = $instructor;
+    }
+
+    public function signature(): string|Signature {
+        return $this->defaultSignature;
     }
 
     public function forward(mixed ...$args): mixed {
@@ -35,8 +42,8 @@ class PredictTask extends ExecutableTask
         };
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
-            responseModel: $this->signature(),
-            model: 'gpt-4o',
+            responseModel: $this->data()->getOutputRef(),
+            model: 'gpt-3.5-turbo',
             maxRetries: $this->maxRetries,
         );
         return $response;
@@ -44,7 +51,7 @@ class PredictTask extends ExecutableTask
 
     public function prompt() : string {
         if (empty($this->prompt)) {
-            $this->prompt = $this->toDefaultPrompt();
+            $this->prompt = $this->renderPrompt($this->defaultPrompt);
         }
         return $this->prompt;
     }
@@ -70,10 +77,10 @@ class PredictTask extends ExecutableTask
         ];
     }
 
-    public function toDefaultPrompt(): string {
-        return Template::render($this->prompt, [
-            'signature' => $this->signature->toSignatureString(),
-            'description' => $this->signature->description()
+    public function renderPrompt(string $template): string {
+        return Template::render($template, [
+            'signature' => $this->getSignature()->toSignatureString(),
+            'description' => $this->getSignature()->description()
         ]);
     }
 }

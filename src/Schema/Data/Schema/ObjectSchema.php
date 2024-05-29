@@ -7,11 +7,10 @@ use Cognesy\Instructor\Schema\Data\TypeDetails;
 
 class ObjectSchema extends Schema
 {
-    /** @var Schema[] */
+    /** @var array<string, Schema> */
     public array $properties = []; // for objects OR empty
     /** @var string[] */
     public array $required = []; // for objects OR empty
-    public array $attributes = [];
 
     public function __construct(
         TypeDetails $type,

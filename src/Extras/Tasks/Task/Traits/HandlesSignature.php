@@ -10,11 +10,14 @@ trait HandlesSignature
 {
     protected Signature $signature;
 
-    public function signature(): Signature {
+    public function getSignature(): Signature {
+        if (!isset($this->signature)) {
+            $this->signature = $this->initSignature($this->signature());
+        }
         return $this->signature;
     }
 
-    private function initSignature(string|Signature $signature) : Signature {
+    protected function initSignature(string|Signature $signature) : Signature {
         $instance = match(true) {
             is_string($signature) && str_contains($signature, Signature::ARROW) => SignatureFactory::fromString($signature),
             is_string($signature) => SignatureFactory::fromClassMetadata($signature),

@@ -2,104 +2,76 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\Signature\Traits\HandlesAutoConfig;
+use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\TaskData;
+use Cognesy\Instructor\Extras\Tasks\TaskData\MonoTaskData;
+use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use JetBrains\PhpStorm\Deprecated;
+use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Schema\Utils\ClassInfo;
 
-#[Deprecated]
-class AutoSignature implements Signature
+
+class AutoSignature implements Signature, CanProvideSchema
 {
-    use HandlesAutoConfig;
+    use Traits\GetsPropertyNamesFromClass;
+    use Traits\GetsFieldsFromClass;
+    use Traits\ConvertsToSignatureString;
+    use Traits\InitializesSignatureInputs;
 
-    public const ARROW = '->';
+    private TaskData $data;
+    private string $description;
 
-    protected Structure $inputs;
-    protected Structure $outputs;
-    protected string $description = '';
-    protected string $prompt = 'Your task is to find output arguments in input data based on specification: {signature} {description}';
+    public function __construct() {
+        $classInfo = new ClassInfo(static::class);
+        $this->description = $classInfo->getClassDescription();
+        $fields = self::getPropertyNames($classInfo);
+        $this->data = new MonoTaskData($this, $fields['inputs'], $fields['outputs']);
+    }
 
-    public function __construct(
-        string $description = null,
-    ) {
-        if (!is_null($description)) {
-            $this->description = $description;
+    static public function make(mixed ...$inputs) : static {
+        if (empty($inputs)) {
+            return new static;
         }
-        $this->autoConfigure();
+        return (new static)->withArgs(...$inputs);
     }
 
-    public function getInputValues(): array {
-        return $this->inputs->fieldValues();
-    }
-
-    /** @return Field[] */
-    public function getInputFields(): array {
-        return $this->inputs->fields();
-    }
-
-    /** @return Field[] */
-    public function getOutputFields(): array {
-        return $this->outputs->fields();
+    public function data(): TaskData {
+        return $this->data;
     }
 
     public function description(): string {
         return $this->description;
     }
 
-    public function getInputSchema(): Schema {
+    public function toSchema(): Schema {
+        $classInfo = new ClassInfo(static::class);
+        $fields = self::getFields($classInfo);
+        $required = [];
+        $properties = [];
+        foreach($fields['outputs'] as $field) {
+            $properties[$field->name()] = $field->schema();
+            if ($field->isRequired()) {
+                $required[] = $field->name();
+            }
+        }
+        $typeDetails = (new TypeDetailsFactory)->objectType(static::class);
+        $objectSchema = new ObjectSchema(
+            $typeDetails,
+            static::class,
+            $classInfo->getClassDescription(),
+            $properties,
+            $required,
+        );
+        return $objectSchema;
     }
 
-    public function getOutputSchema(): Schema {
+    public function toArray(): array {
+        $toArray = function($x) use(&$toArray) {
+            return (is_scalar($x) || is_null($x))
+                ? $x
+                : array_map($toArray, (array) $x);
+        };
+        return $toArray($this->data()->getOutputValues());
     }
-
-//    public function getInputSchema(): Schema {
-//        $schema = (new SchemaFactory)->schema(static::class);
-//        $properties = array_map(function($property) {
-//            return $property->getName();
-//        }, array_filter(
-//            (new ClassInfo(static::class))->getProperties(), function($property) {
-//                return $property->isPublic() && !$property->isStatic() && $property->hasAttribute(InputField::class);
-//            })
-//        );
-//        foreach ($properties as $name) {
-//            if (!in_array($name, $properties)) {
-//                $schema->removeProperty($name);
-//            }
-//        }
-//        return $schema;
-//    }
-
-//    public function getOutputSchema(): Schema {
-//        $schema = (new SchemaFactory)->schema(static::class);
-//        $properties = array_map(function($property) {
-//            return $property->getName();
-//        }, array_filter(
-//                (new ClassInfo(static::class))->getProperties(), function($property) {
-//                return $property->isPublic() && !$property->isStatic() && $property->hasAttribute(OutputField::class);
-//            })
-//        );
-//        foreach ($properties as $name) {
-//            if (!in_array($name, $properties)) {
-//                $schema->removeProperty($name);
-//            }
-//        }
-//        return $schema;
-//    }
-
-//    public function toArray(): array {
-//        $properties = array_map(function($property) {
-//            return $property->getName();
-//        }, array_filter(
-//                (new ClassInfo(static::class))->getProperties(), function($property) {
-//                return $property->isPublic() && !$property->isStatic() && $property->hasAttribute(OutputField::class);
-//            })
-//        );
-//        $result = [];
-//        foreach ($properties as $name) {
-//            $result[$name] = $this->$name;
-//        }
-//        return $result;
-//    }
 }

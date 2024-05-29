@@ -10,7 +10,7 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
-class SchemaToJson implements CanVisitSchema
+class SchemaToJsonSchema implements CanVisitSchema
 {
     private array $result = [];
     private $refCallback;
@@ -32,7 +32,7 @@ class SchemaToJson implements CanVisitSchema
     public function visitArraySchema(ArraySchema $schema): void {
         $this->result = array_filter([
             'type' => 'array',
-            'items' => (new SchemaToJson)->toArray($schema->nestedItemSchema, $this->refCallback),
+            'items' => (new SchemaToJsonSchema)->toArray($schema->nestedItemSchema, $this->refCallback),
             'description' => $schema->description,
         ]);
     }
@@ -40,7 +40,7 @@ class SchemaToJson implements CanVisitSchema
     public function visitObjectSchema(ObjectSchema $schema): void {
         $propertyDefs = [];
         foreach ($schema->properties as $property) {
-            $propertyDefs[$property->name] = (new SchemaToJson)->toArray($property, $this->refCallback);
+            $propertyDefs[$property->name] = (new SchemaToJsonSchema)->toArray($property, $this->refCallback);
         }
         $this->result = array_filter([
             'type' => 'object',

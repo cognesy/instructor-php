@@ -42,12 +42,13 @@ class SchemaFactory
     /**
      * Extracts the schema from a class and constructs a function call
      *
-     * @param string $anyType - class name, enum name or type name string OR TypeDetails object
+     * @param string $anyType - class name, enum name or type name string OR TypeDetails object OR any object instance
      */
-    public function schema(string|TypeDetails $anyType) : Schema {
+    public function schema(string|object $anyType) : Schema {
         $type = match(true) {
-            is_string($anyType) => $this->typeDetailsFactory->fromTypeName($anyType),
             $anyType instanceof TypeDetails => $anyType,
+            is_string($anyType) => $this->typeDetailsFactory->fromTypeName($anyType),
+            is_object($anyType) => $this->typeDetailsFactory->fromTypeName(get_class($anyType)),
             default => throw new \Exception('Unknown input type: '.gettype($anyType)),
         };
         $typeString = (string) $type;

@@ -106,4 +106,12 @@ class DualTaskData implements TaskData
     public function getOutputSchemas() : array {
         return $this->getPropertySchemas($this->outputs, $this->outputNames);
     }
+
+    public function getInputRef() : object {
+        return $this->inputs;
+    }
+
+    public function getOutputRef() : object {
+        return $this->outputs;
+    }
 }

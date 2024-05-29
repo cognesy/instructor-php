@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Schema\Data\Schema;
 use Cognesy\Instructor\Schema\Contracts\CanAcceptSchemaVisitor;
 use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Schema\Visitors\SchemaToJson;
+use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
 
 class Schema implements CanAcceptSchemaVisitor
 {
@@ -52,6 +52,6 @@ class Schema implements CanAcceptSchemaVisitor
     }
 
     public function toJson() : array {
-        return (new SchemaToJson)->toArray($this);
+        return (new SchemaToJsonSchema)->toArray($this);
     }
 }

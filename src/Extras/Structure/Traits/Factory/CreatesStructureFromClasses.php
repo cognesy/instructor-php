@@ -30,6 +30,8 @@ trait CreatesStructureFromClasses
         return Structure::define($className, $arguments, $classDescription);
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////////
+
     /**
      * @return \Cognesy\Instructor\Extras\Structure\Field[]
      */

@@ -12,6 +12,8 @@ class Example
 {
     public readonly string $uid;
     public readonly DateTimeImmutable $createdAt;
+    private array $output;
+
     public string $template = <<<TEMPLATE
         # EXAMPLE
         
@@ -26,7 +28,7 @@ class Example
 
     public function __construct(
         private string $input,
-        private array $output,
+        array|object $output,
         string $template = '',
         string $uid = null,
         DateTimeImmutable $createdAt = null,
@@ -34,9 +36,10 @@ class Example
         $this->uid = $uid ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->template = $template ?: $this->template;
+        $this->output = is_array($output) ? $output : Json::parse($output);
     }
 
-    static public function fromChat(array $messages, array $output) : self {
+    static public function fromChat(array $messages, array|object $output) : self {
         $input = '';
         foreach ($messages as $message) {
             $input .= "{$message['role']}: {$message['content']}\n";
@@ -44,11 +47,11 @@ class Example
         return new self($input, $output);
     }
 
-    static public function fromText(string $text, array $output) : self {
+    static public function fromText(string $text, array|object $output) : self {
         return new self($text, $output);
     }
 
-    static public function fromData(mixed $data, array $output) : self {
+    static public function fromData(mixed $data, array|object $output) : self {
         return new self(Json::encode($data), $output);
     }
 

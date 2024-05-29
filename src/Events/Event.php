@@ -40,6 +40,11 @@ class Event
         echo $this->asLog()."\n";
     }
 
+    public function printDump(): void {
+        echo "\n".$this->asConsole()."\n";
+        dump(json_decode($this->__toString()));
+    }
+
     /// PRIVATE ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private function logFormat(string $message): string {

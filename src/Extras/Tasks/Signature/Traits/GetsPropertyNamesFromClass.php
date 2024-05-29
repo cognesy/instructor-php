@@ -1,15 +1,12 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
-trait GetsFieldsFromClass
+trait GetsPropertyNamesFromClass
 {
     static private array $internalProperties = [
         'inputs',
@@ -19,9 +16,9 @@ trait GetsFieldsFromClass
 
     /**
      * @param ClassInfo $classInfo
-     * @return array<string, Field[]>
+     * @return array<string, array<string>>
      */
-    static protected function getFields(ClassInfo $classInfo) : array {
+    static protected function getPropertyNames(ClassInfo $classInfo) : array {
         $fields = [
             'inputs' => [],
             'outputs' => [],
@@ -43,10 +40,7 @@ trait GetsFieldsFromClass
                 default => 'excluded',
             };
             // add field to group
-            $type = $property->getType();
-            $description = $property->getDescription();
-            $isOptional = $property->isNullable();
-            $fields[$group][] = FieldFactory::fromPropertyInfoType($name, $type, $description)->optional($isOptional);
+            $fields[$group][] = $name;
         }
         return $fields;
     }

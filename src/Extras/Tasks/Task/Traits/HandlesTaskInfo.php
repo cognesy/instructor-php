@@ -17,7 +17,7 @@ trait HandlesTaskInfo
 
     public function name(): string {
         $className = $this->className();
-        $signature = $this->signature()->toString();
+        $signature = $this->getSignature()->toShortSignature();
         return "{$className}({$signature})";
     }
 
