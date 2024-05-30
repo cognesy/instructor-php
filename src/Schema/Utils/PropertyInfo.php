@@ -173,4 +173,8 @@ class PropertyInfo
         }
         return $types;
     }
+
+    public function getClass() : string {
+        return $this->class;
+    }
 }

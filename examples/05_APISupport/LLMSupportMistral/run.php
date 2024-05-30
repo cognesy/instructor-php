@@ -56,7 +56,7 @@ $user = $instructor
         responseModel: User::class,
         model: 'open-mixtral-8x7b',
         mode: Mode::Json,
-        options: ['debug' => true ]
+        //options: ['debug' => true ]
     );
 
 print("Completed response model:\n\n");

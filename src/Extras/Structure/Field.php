@@ -16,6 +16,12 @@ class Field {
         string $description = '',
         TypeDetails $typeDetails = null,
     ) {
+        if (empty($name)) {
+            throw new \Exception('Field name cannot be empty');
+        }
+        if ($typeDetails === null) {
+            throw new \Exception('Field type details cannot be null');
+        }
         $this->schema = (new SchemaFactory)->makePropertySchema($typeDetails, $name, $description);
     }
 }
