@@ -1,12 +1,12 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
+use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
+use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Module\Task\ExecutableTask;
-use Cognesy\Instructor\Extras\Module\Task\Predict;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Profiler;
 use Tests\Examples\Module\TestTask;
@@ -114,7 +114,7 @@ it('can process composite language program', function() {
         }
     }
 
-    class ReadEmails extends ExecutableTask {
+    class ReadEmails extends Module {
         public function __construct(private array $directoryContents = []) {
             parent::__construct();
         }
@@ -126,7 +126,7 @@ it('can process composite language program', function() {
         }
     }
 
-    class ParseEmail extends ExecutableTask {
+    class ParseEmail extends Module {
         public function signature() : string|HasSignature {
             return 'email -> sender, body';
         }
@@ -139,7 +139,7 @@ it('can process composite language program', function() {
         }
     }
 
-    class GetStats extends ExecutableTask {
+    class GetStats extends Module {
         private ReadEmails $readEmails;
         private ParseEmail $parseEmail;
         private Predict $analyseEmail;

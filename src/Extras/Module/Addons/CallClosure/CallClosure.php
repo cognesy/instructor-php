@@ -1,12 +1,13 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task;
+namespace Cognesy\Instructor\Extras\Module\Addons\CallClosure;
 
 use Closure;
+use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
 
-class CallClosure extends ExecutableTask
+class CallClosure extends Module
 {
     private Closure $callable;
 

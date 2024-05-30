@@ -1,15 +1,16 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Core;
+namespace Cognesy\Instructor\Extras\Module\Addons\Predict;
 
 use BackedEnum;
 use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
-class Predict extends ExecutableTask
+class Predict extends Module
 {
     private Instructor $instructor;
     protected string $prompt;

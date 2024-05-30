@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task\Traits;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits;
 
 use Cognesy\Instructor\Extras\Module\Events\TaskCompleted;
-use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
+use Cognesy\Instructor\Extras\Module\Core\Enums\TaskStatus;
 use DateTime;
 
 trait HandlesTaskStatus

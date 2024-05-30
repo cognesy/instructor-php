@@ -1,8 +1,8 @@
 <?php
-namespace Cognesy\Instructor\Extras\Module\Task;
+namespace Cognesy\Instructor\Extras\Module\Core;
 
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
+use Cognesy\Instructor\Extras\Module\Core\Enums\TaskStatus;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;

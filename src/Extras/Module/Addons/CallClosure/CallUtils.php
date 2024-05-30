@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Extras\Module\Task\Utils;
+namespace Cognesy\Instructor\Extras\Module\Addons\CallClosure;
 
 use Cognesy\Instructor\Utils\Result;
 

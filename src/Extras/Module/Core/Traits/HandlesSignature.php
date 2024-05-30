@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task\Traits;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits;
 
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;

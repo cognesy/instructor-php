@@ -1,9 +1,9 @@
 <?php
 namespace Tests\Examples\Module;
 
-use Cognesy\Instructor\Extras\Module\Task\ExecutableTask;
+use Cognesy\Instructor\Extras\Module\Core\Module;
 
-class TestTask extends ExecutableTask
+class TestTask extends Module
 {
     public function signature(): string {
         return 'numberA:int, numberB:int -> sum:int';

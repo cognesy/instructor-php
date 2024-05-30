@@ -3,12 +3,12 @@
 ```php
 <?php
 
+use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
+use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Module\Task\ExecutableTask;
-use Cognesy\Instructor\Extras\Module\Task\Predict;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Instructor;
 
 $loader = require 'vendor/autoload.php';
@@ -59,7 +59,7 @@ class EmailStats extends Signature {
 
 // TASK DECLARATIONS ////////////////////////////////////////////////////////////////
 
-class ReadEmails extends ExecutableTask {
+class ReadEmails extends Module {
     public function __construct(private array $directoryContents = []) {
         parent::__construct();
     }
@@ -71,7 +71,7 @@ class ReadEmails extends ExecutableTask {
     }
 }
 
-class ParseEmail extends ExecutableTask {
+class ParseEmail extends Module {
     public function signature() : string|HasSignature {
         return 'email -> sender, body';
     }
@@ -86,7 +86,7 @@ class ParseEmail extends ExecutableTask {
     }
 }
 
-class GetStats extends ExecutableTask {
+class GetStats extends Module {
     private ReadEmails $readEmails;
     private ParseEmail $parseEmail;
     private Predict $analyseEmail;

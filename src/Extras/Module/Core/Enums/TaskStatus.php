@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task\Enums;
+namespace Cognesy\Instructor\Extras\Module\Core\Enums;
 
 enum TaskStatus : string
 {

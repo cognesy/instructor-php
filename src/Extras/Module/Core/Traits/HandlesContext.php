@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task\Traits;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits;
 
 trait HandlesContext
 {

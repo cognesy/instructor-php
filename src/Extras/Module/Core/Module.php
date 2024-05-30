@@ -1,13 +1,13 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task;
+namespace Cognesy\Instructor\Extras\Module\Core;
 
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
+use Cognesy\Instructor\Extras\Module\Core\Enums\TaskStatus;
 use Exception;
 use Throwable;
 
-abstract class ExecutableTask extends Task
+abstract class Module extends Task
 {
     protected Throwable $error;
 

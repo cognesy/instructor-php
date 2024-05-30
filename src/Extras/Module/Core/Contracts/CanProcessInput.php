@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task\Contracts;
+namespace Cognesy\Instructor\Extras\Module\Core\Contracts;
 
-use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
+use Cognesy\Instructor\Extras\Module\Core\Enums\TaskStatus;
 
 interface CanProcessInput
 {
