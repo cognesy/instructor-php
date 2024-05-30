@@ -1,18 +1,18 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\TaskData;
-use Cognesy\Instructor\Extras\Tasks\TaskData\DualTaskData;
+use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
+use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
 
 class StructureSignature implements Signature
 {
     use Traits\ConvertsToSignatureString;
     use Traits\InitializesSignatureInputs;
 
-    protected TaskData $data;
+    protected DataModel $input;
+    protected DataModel $output;
     protected string $description = '';
 
     public function __construct(
@@ -23,11 +23,16 @@ class StructureSignature implements Signature
         if (!is_null($description)) {
             $this->description = $description;
         }
-        $this->data = new DualTaskData($inputs, $outputs, $inputs->fieldNames(), $outputs->fieldNames());
+        $this->input = new ObjectDataModel($inputs, $inputs->fieldNames());
+        $this->output = new ObjectDataModel($outputs, $outputs->fieldNames());
     }
 
-    public function data(): TaskData {
-        return $this->data;
+    public function input(): DataModel {
+        return $this->input;
+    }
+
+    public function output(): DataModel {
+        return $this->output;
     }
 
     public function description(): string {

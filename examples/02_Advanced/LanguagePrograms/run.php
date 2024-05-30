@@ -8,13 +8,13 @@ use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
-use Cognesy\Instructor\Extras\Tasks\Task\PredictTask;
+use Cognesy\Instructor\Extras\Tasks\Task\Predict;
 use Cognesy\Instructor\Instructor;
-use Symfony\Component\Validator\Constraints as Assert;
-use Tests\MockLLM;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+
+// DATA MODEL DECLARATIONS ////////////////////////////////////////////////////////////////
 
 class EmailAnalysis extends AutoSignature {
     #[InputField('content of email')]
@@ -57,6 +57,8 @@ class EmailStats extends AutoSignature {
     }
 }
 
+// TASK DECLARATIONS ////////////////////////////////////////////////////////////////
+
 class ReadEmails extends ExecutableTask {
     public function __construct(private array $directoryContents = []) {
         parent::__construct();
@@ -87,14 +89,14 @@ class ParseEmail extends ExecutableTask {
 class GetStats extends ExecutableTask {
     private ReadEmails $readEmails;
     private ParseEmail $parseEmail;
-    private PredictTask $analyseEmail;
+    private Predict $analyseEmail;
 
     public function __construct(Instructor $instructor, array $directoryContents = []) {
         parent::__construct();
 
         $this->readEmails = new ReadEmails($directoryContents);
         $this->parseEmail = new ParseEmail();
-        $this->analyseEmail = new PredictTask(signature: EmailAnalysis::class, instructor: $instructor);
+        $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
     }
 
     public function signature() : string|Signature {
@@ -131,6 +133,8 @@ class GetStats extends ExecutableTask {
     }
 }
 
+// EXECUTION ////////////////////////////////////////////////////////////////
+
 $directoryContents['inbox'] = [
     'sender: jl@gmail.com, body: I am happy about the discount you offered and accept contract renewal',
     'sender: xxx, body: FREE! Get Ozempic and Viagra for free',
@@ -139,7 +143,7 @@ $directoryContents['inbox'] = [
     'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
 ];
 
-$instructor = (new Instructor)->wiretap(fn($e)=>$e->printDump());
+$instructor = (new Instructor)->wiretap(fn($e)=>$e->print());
 $getStats = new GetStats($instructor, $directoryContents);
 $result = $getStats->with(EmailStats::for(directory: 'inbox'));
 

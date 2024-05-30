@@ -4,12 +4,12 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\TaskData;
-use Cognesy\Instructor\Extras\Tasks\TaskData\MonoTaskData;
+use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
 
 
 class AutoSignature implements Signature, CanProvideSchema
@@ -19,14 +19,16 @@ class AutoSignature implements Signature, CanProvideSchema
     use Traits\ConvertsToSignatureString;
     use Traits\InitializesSignatureInputs;
 
-    private TaskData $data;
+    private DataModel $input;
+    private DataModel $output;
     private string $description;
 
     public function __construct() {
         $classInfo = new ClassInfo(static::class);
         $this->description = $classInfo->getClassDescription();
         $fields = self::getPropertyNames($classInfo);
-        $this->data = new MonoTaskData($this, $fields['inputs'], $fields['outputs']);
+        $this->input = new ObjectDataModel($this, $fields['inputs']);
+        $this->output = new ObjectDataModel($this, $fields['outputs']);
     }
 
     static public function make(mixed ...$inputs) : static {
@@ -36,8 +38,12 @@ class AutoSignature implements Signature, CanProvideSchema
         return (new static)->withArgs(...$inputs);
     }
 
-    public function data(): TaskData {
-        return $this->data;
+    public function input(): DataModel {
+        return $this->input;
+    }
+
+    public function output(): DataModel {
+        return $this->output;
     }
 
     public function description(): string {
@@ -72,6 +78,6 @@ class AutoSignature implements Signature, CanProvideSchema
                 ? $x
                 : array_map($toArray, (array) $x);
         };
-        return $toArray($this->data()->getOutputValues());
+        return $toArray($this->output()->getValues());
     }
 }

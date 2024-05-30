@@ -8,11 +8,11 @@ use Exception;
 trait InitializesSignatureInputs
 {
     public function withArgs(mixed ...$inputs) : static {
-        $result = CallUtils::argsMatch($inputs, $this->data->getInputNames());
+        $result = CallUtils::argsMatch($inputs, $this->input->getPropertyNames());
         if ($result->isFailure()) {
             throw new Exception($result->error());
         }
-        $this->data->setInputValues($inputs);
+        $this->input->setValues($inputs);
         return $this;
     }
 }

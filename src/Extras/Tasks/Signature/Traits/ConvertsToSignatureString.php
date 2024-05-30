@@ -10,11 +10,11 @@ trait ConvertsToSignatureString
     public function toShortSignature() : string {
         $inputs = array_map(
             fn(Schema $propertySchema) => $this->shortPropertySignature($propertySchema),
-            $this->data()->getInputSchemas()
+            $this->input()->getPropertySchemas()
         );
         $outputs = array_map(
             fn(Schema $propertySchema) => $this->shortPropertySignature($propertySchema),
-            $this->data()->getOutputSchemas()
+            $this->output()->getPropertySchemas()
         );
         return implode(', ', $inputs)
             . ' ' . Signature::ARROW . ' '
@@ -24,11 +24,11 @@ trait ConvertsToSignatureString
     public function toSignatureString() : string {
         $inputs = array_map(
             fn(Schema $propertySchema) => $this->propertySignature($propertySchema),
-            $this->data()->getInputSchemas()
+            $this->input()->getPropertySchemas()
         );
         $outputs = array_map(
             fn(Schema $propertySchema) => $this->propertySignature($propertySchema),
-            $this->data()->getOutputSchemas()
+            $this->output()->getPropertySchemas()
         );
         return implode(', ', $inputs)
             . ' ' . Signature::ARROW . ' '

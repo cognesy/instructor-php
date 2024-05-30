@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
 use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
-use Cognesy\Instructor\Extras\Tasks\Task\PredictTask;
+use Cognesy\Instructor\Extras\Tasks\Task\Predict;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Profiler;
 use Tests\Examples\Task\TestTask;
@@ -19,9 +19,9 @@ it('can process a simple task', function() {
     Profiler::mark('end');
 
     expect($result)->toBe(3);
-//    expect($add->input('numberA'))->toBe(1);
-//    expect($add->input('numberB'))->toBe(2);
-//    expect($add->output('sum'))->toBe(3);
+    expect($add->input('numberA'))->toBe(1);
+    expect($add->input('numberB'))->toBe(2);
+    expect($add->output('sum'))->toBe(3);
 
     // calculate time taken
     Profiler::summary();
@@ -29,18 +29,18 @@ it('can process a simple task', function() {
 
 it('can process predict task', function() {
     $mockLLM = MockLLM::get([
-        '{"user_name": "Jason", "user_age":28}',
+        '{"user_name": "Jason", "user_age": 28}',
     ]);
 
     $instructor = (new Instructor)->withClient($mockLLM);
-    $predict = new PredictTask('text (email containing user data) -> user_name, user_age:int', $instructor);
+    $predict = new Predict('text (email containing user data) -> user_name, user_age:int', $instructor);
     $result = $predict->withArgs(text: 'Jason is 28 years old');
 
     expect($result->toArray())->toBe(['user_name' => 'Jason', 'user_age' => 28]);
 
-//    expect($predict->input('text'))->toBe('Jason is 28 years old');
-//    expect($predict->output('user_name'))->toBe('Jason');
-//    expect($predict->output('user_age'))->toBe(28);
+    expect($predict->input('text'))->toBe('Jason is 28 years old');
+    expect($predict->output('user_name'))->toBe('Jason');
+    expect($predict->output('user_age'))->toBe(28);
 });
 
 it('can process predict task with multiple outputs', function() {
@@ -62,7 +62,7 @@ it('can process predict task with multiple outputs', function() {
     }
 
     $instructor = (new Instructor)->withClient($mockLLM);
-    $task = new PredictTask(EmailAnalysis2::class, $instructor);
+    $task = new Predict(EmailAnalysis2::class, $instructor);
     $result = $task->with(EmailAnalysis2::for(text: 'Can I get pricing for your business support plan?'));
 
     expect($result->toArray())->toBe(['topic' => 'sales', 'sentiment' => 'neutral']);
@@ -142,14 +142,14 @@ it('can process composite language program', function() {
     class GetStats extends ExecutableTask {
         private ReadEmails $readEmails;
         private ParseEmail $parseEmail;
-        private PredictTask $analyseEmail;
+        private Predict $analyseEmail;
 
         public function __construct(Instructor $instructor, array $directoryContents = []) {
             parent::__construct();
 
             $this->readEmails = new ReadEmails($directoryContents);
             $this->parseEmail = new ParseEmail();
-            $this->analyseEmail = new PredictTask(signature: EmailAnalysis::class, instructor: $instructor);
+            $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
         }
 
         public function signature() : string|Signature {

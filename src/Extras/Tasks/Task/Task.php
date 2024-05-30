@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Tasks\Task\Enums\TaskStatus;
 use Cognesy\Instructor\Utils\Uuid;

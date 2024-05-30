@@ -9,7 +9,7 @@ use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
-class PredictTask extends ExecutableTask
+class Predict extends ExecutableTask
 {
     private Instructor $instructor;
     protected string $prompt;
@@ -42,7 +42,7 @@ class PredictTask extends ExecutableTask
         };
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
-            responseModel: $this->data()->getOutputRef(),
+            responseModel: $this->outputRef(),
             model: 'gpt-4o',
             maxRetries: $this->maxRetries,
         );

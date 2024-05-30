@@ -21,7 +21,7 @@ trait HandlesObjectSchema
         return $schema;
     }
 
-    private function getPropertySchema(object $object, string $name) : Schema {
+    private function getObjectPropertySchema(object $object, string $name) : Schema {
         $schema = $this->getObjectSchema($object);
         if (!isset($schema->properties[$name])) {
             throw new Exception("Property '$name' not found");
@@ -30,7 +30,7 @@ trait HandlesObjectSchema
     }
 
     /** @return Schema[] */
-    private function getPropertySchemas(object $object, array $allowedNames) : array {
+    private function getObjectSchemas(object $object, array $allowedNames) : array {
         return array_filter(
             $this->getObjectSchema($object)->properties,
             fn(Schema $schema) => in_array($schema->name(), $allowedNames)

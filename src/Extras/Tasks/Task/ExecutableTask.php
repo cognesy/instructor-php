@@ -54,12 +54,11 @@ abstract class ExecutableTask extends Task
     }
 
     protected function mapFromInputs(mixed $inputs) : array {
-        $inputNames = $this->data()->getInputNames();
-        $isSingleParamOutput = count($inputNames) === 1;
+        $inputNames = $this->inputNames();
         $asArray = match(true) {
-            $isSingleParamOutput => [$inputNames[0] => $inputs],
+            ($inputs instanceof Signature) => $inputs->input()->getValues(),
             is_array($inputs) => $inputs,
-            ($inputs instanceof Signature) => $inputs->data()->getInputValues(),
+            //(count($inputNames) === 1) => [$inputNames[0] => $inputs],
             is_object($inputs) && method_exists($inputs, 'toArray') => $inputs->toArray(),
             is_object($inputs) => get_object_vars($inputs),
             default => throw new Exception('Invalid inputs'),
@@ -68,7 +67,7 @@ abstract class ExecutableTask extends Task
     }
 
     protected function mapToOutputs(mixed $result) : array {
-        $outputNames = $this->data()->getOutputNames();
+        $outputNames = $this->outputNames();
         $isSingleParamOutput = count($outputNames) === 1;
         $asArray = match(true) {
             $isSingleParamOutput => [$outputNames[0] => $result],
