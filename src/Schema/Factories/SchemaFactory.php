@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\PropertyMap;
@@ -35,7 +35,7 @@ class SchemaFactory
 
     private array $warnOnInstancesOf = [
         Structure::class,
-        Signature::class,
+        HasSignature::class,
         Sequence::class,
         Scalar::class,
         Maybe::class,

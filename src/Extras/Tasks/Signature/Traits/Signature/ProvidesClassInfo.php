@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
+namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits\Signature;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
@@ -8,7 +8,7 @@ use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Cognesy\Instructor\Schema\Utils\PropertyInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
-trait ProvidesClassData
+trait ProvidesClassInfo
 {
     static private array $internalProperties = [
         'inputs',
@@ -37,21 +37,8 @@ trait ProvidesClassData
     static protected function getProperties(ClassInfo $classInfo, array $filters) : array {
         return self::getFilteredPropertyData(
             classInfo: $classInfo,
-            filters: [], //array_merge([self::defaultExclusionsFilter(...)], $filters),
-            extractor: fn(PropertyInfo $property) => $property
-        );
-    }
-
-    /**
-     * @param ClassInfo $classInfo
-     * @param array<callable> $filters
-     * @return array<Field>
-     */
-    static protected function getFields(ClassInfo $classInfo, array $filters) : array {
-        return self::getFilteredPropertyData(
-            classInfo: $classInfo,
             filters: array_merge([self::defaultExclusionsFilter(...)], $filters),
-            extractor: self::fieldExtractor(...),
+            extractor: fn(PropertyInfo $property) => $property
         );
     }
 
@@ -73,6 +60,21 @@ trait ProvidesClassData
             $property->isStatic() => false,
             default => true,
         };
+    }
+
+    // DEPRECATED /////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param ClassInfo $classInfo
+     * @param array<callable> $filters
+     * @return array<Field>
+     */
+    static protected function getFields(ClassInfo $classInfo, array $filters) : array {
+        return self::getFilteredPropertyData(
+            classInfo: $classInfo,
+            filters: array_merge([self::defaultExclusionsFilter(...)], $filters),
+            extractor: self::fieldExtractor(...),
+        );
     }
 
     static private function fieldExtractor(PropertyInfo $property) : Field {

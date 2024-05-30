@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use JetBrains\PhpStorm\Deprecated;
@@ -9,16 +9,16 @@ use JetBrains\PhpStorm\Deprecated;
 #[Deprecated]
 class PromptTask extends ExecutableTask
 {
-    private Signature|string $requestedSignature;
+    private HasSignature|string $requestedSignature;
     private Instructor $instructor;
     private string $model;
     private array $options;
 
     public function __construct(
-        string|Signature $signature,
-        Instructor $instructor,
-        string $model = '',
-        array $options = [],
+        string|HasSignature $signature,
+        Instructor          $instructor,
+        string              $model = '',
+        array               $options = [],
     ) {
         $this->requestedSignature = $signature;
         $this->instructor = $instructor;
@@ -27,7 +27,7 @@ class PromptTask extends ExecutableTask
         parent::__construct();
     }
 
-    public function signature(): string|Signature {
+    public function signature(): string|HasSignature {
         return $this->requestedSignature;
     }
 

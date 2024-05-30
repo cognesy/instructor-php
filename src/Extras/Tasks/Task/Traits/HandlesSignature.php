@@ -2,26 +2,26 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Task\Traits;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
 use InvalidArgumentException;
 
 trait HandlesSignature
 {
-    protected Signature $signature;
+    protected HasSignature $signature;
 
-    public function getSignature(): Signature {
+    public function getSignature(): HasSignature {
         if (!isset($this->signature)) {
             $this->signature = $this->initSignature($this->signature());
         }
         return $this->signature;
     }
 
-    protected function initSignature(string|Signature $signature) : Signature {
+    protected function initSignature(string|HasSignature $signature) : HasSignature {
         $instance = match(true) {
-            is_string($signature) && str_contains($signature, Signature::ARROW) => SignatureFactory::fromString($signature),
+            is_string($signature) && str_contains($signature, HasSignature::ARROW) => SignatureFactory::fromString($signature),
             is_string($signature) => SignatureFactory::fromClassMetadata($signature),
-            $signature instanceof Signature => $signature,
+            $signature instanceof HasSignature => $signature,
             default => throw new InvalidArgumentException('Object is not instance of Signature: ' . get_class($signature))
         };
         return $instance;

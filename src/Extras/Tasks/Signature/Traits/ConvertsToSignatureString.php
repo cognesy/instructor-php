@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 trait ConvertsToSignatureString
@@ -20,7 +20,7 @@ trait ConvertsToSignatureString
         $outputs = $this->mapProperties($this->output()->getPropertySchemas(), $nameRenderer);
         return implode('', [
             implode(', ', $inputs),
-            (" ".Signature::ARROW." "),
+            (" ".HasSignature::ARROW." "),
             implode(', ', $outputs)
         ]);
     }

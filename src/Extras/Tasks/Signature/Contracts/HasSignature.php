@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature\Contracts;
 
 use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
 
-interface Signature extends HasInputSchema, HasOutputSchema
+interface HasSignature extends HasInputSchema, HasOutputSchema
 {
     public const ARROW = '->';
 

@@ -2,12 +2,12 @@
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
 use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
-class StructureSignature implements Signature
+class StructureSignature implements HasSignature
 {
     use Traits\ConvertsToSignatureString;
     use Traits\InitializesSignatureInputs;
@@ -48,10 +48,10 @@ class StructureSignature implements Signature
     }
 
     public function toInputSchema(): Schema {
-        $this->input->toSchema();
+        return $this->input->toSchema();
     }
 
     public function toOutputSchema(): Schema {
-        $this->output->toSchema();
+        return $this->output->toSchema();
     }
 }

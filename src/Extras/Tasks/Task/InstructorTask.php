@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Instructor;
 use JetBrains\PhpStorm\Deprecated;
 
@@ -13,9 +13,9 @@ class InstructorTask extends ExecutableTask
     private string|object|array $responseModel;
 
     public function __construct(
-        string|Signature $signature,
+        string|HasSignature $signature,
         string|object|array $responseModel,
-        Instructor $instructor,
+        Instructor          $instructor,
     ) {
         parent::__construct($signature);
         $this->instructor = $instructor;

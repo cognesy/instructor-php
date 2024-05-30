@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Tasks\Task;
 
 use BackedEnum;
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
@@ -15,18 +15,18 @@ class Predict extends ExecutableTask
     protected string $prompt;
     protected string $defaultPrompt = 'Your task is to infer output argument values in input data based on specification: {signature} {description}';
     protected int $maxRetries = 3;
-    protected string|Signature $defaultSignature;
+    protected string|HasSignature $defaultSignature;
 
     public function __construct(
-        string|Signature $signature,
-        Instructor $instructor,
+        string|HasSignature $signature,
+        Instructor          $instructor,
     ) {
         parent::__construct();
         $this->defaultSignature = $signature;
         $this->instructor = $instructor;
     }
 
-    public function signature(): string|Signature {
+    public function signature(): string|HasSignature {
         return $this->defaultSignature;
     }
 

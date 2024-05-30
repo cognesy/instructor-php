@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\StructureSignature;
 
 trait CreatesFromClasses
@@ -11,7 +11,7 @@ trait CreatesFromClasses
     static public function fromClasses(
         string|object $input,
         string|object $output
-    ): Signature {
+    ): HasSignature {
         $signature = new StructureSignature(
             inputs: self::makeStructureFromClass($input),
             outputs: self::makeStructureFromClass($output),

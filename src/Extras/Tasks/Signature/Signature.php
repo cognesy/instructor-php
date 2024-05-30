@@ -5,16 +5,16 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
 use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 
 
-class AutoSignature implements Signature, CanProvideSchema
+class Signature implements HasSignature, CanProvideSchema
 {
-    use Traits\ProvidesClassData;
-    use Traits\ProvidesSchema;
+    use Traits\Signature\ProvidesClassInfo;
+    use Traits\Signature\ProvidesSchema;
     use Traits\ConvertsToSignatureString;
     use Traits\InitializesSignatureInputs;
 
@@ -23,19 +23,21 @@ class AutoSignature implements Signature, CanProvideSchema
     private string $description;
 
     public function __construct() {
+        $instance = $this;
         $classInfo = new ClassInfo(static::class);
-        $this->description = $classInfo->getClassDescription();
+        $instance->description = $classInfo->getClassDescription();
         $inputProperties = self::getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(InputField::class)]);
         $outputProperties = self::getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(OutputField::class)]);
-        $this->input = new ObjectDataModel($this, $inputProperties);
-        $this->output = new ObjectDataModel($this, $outputProperties);
+        $instance->input = new ObjectDataModel($instance, $inputProperties);
+        $instance->output = new ObjectDataModel($instance, $outputProperties);
     }
 
     static public function make(mixed ...$inputs) : static {
+        $instance = new static;
         if (empty($inputs)) {
-            return new static;
+            return $instance;
         }
-        return (new static)->withArgs(...$inputs);
+        return $instance->withArgs(...$inputs);
     }
 
     public function input(): DataModel {
@@ -46,8 +48,20 @@ class AutoSignature implements Signature, CanProvideSchema
         return $this->output;
     }
 
+    public function setInput(DataModel $input): void {
+        $this->input = $input;
+    }
+
+    public function setOutput(DataModel $output): void {
+        $this->output = $output;
+    }
+
     public function description(): string {
         return $this->description;
+    }
+
+    public function setDescription(string $description): void {
+        $this->description = $description;
     }
 
     public function toArray(): array {

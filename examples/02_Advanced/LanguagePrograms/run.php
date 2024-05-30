@@ -5,8 +5,8 @@
 
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
 use Cognesy\Instructor\Extras\Tasks\Task\Predict;
 use Cognesy\Instructor\Instructor;
@@ -16,7 +16,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 // DATA MODEL DECLARATIONS ////////////////////////////////////////////////////////////////
 
-class EmailAnalysis extends AutoSignature {
+class EmailAnalysis extends Signature {
     #[InputField('content of email')]
     public string $text;
     #[OutputField('identify most relevant email topic: sales, support, other, spam')]
@@ -38,7 +38,7 @@ class CategoryCount {
     ) {}
 }
 
-class EmailStats extends AutoSignature {
+class EmailStats extends Signature {
     #[InputField('directory containing emails')]
     public string $directory;
     #[OutputField('number of emails')]
@@ -63,7 +63,7 @@ class ReadEmails extends ExecutableTask {
     public function __construct(private array $directoryContents = []) {
         parent::__construct();
     }
-    public function signature() : string|Signature {
+    public function signature() : string|HasSignature {
         return 'directory -> emails';
     }
     public function forward(string $directory) : array {
@@ -72,7 +72,7 @@ class ReadEmails extends ExecutableTask {
 }
 
 class ParseEmail extends ExecutableTask {
-    public function signature() : string|Signature {
+    public function signature() : string|HasSignature {
         return 'email -> sender, body';
     }
     protected function forward(string $email) : array {
@@ -99,7 +99,7 @@ class GetStats extends ExecutableTask {
         $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
     }
 
-    public function signature() : string|Signature {
+    public function signature() : string|HasSignature {
         return EmailStats::class;
     }
 

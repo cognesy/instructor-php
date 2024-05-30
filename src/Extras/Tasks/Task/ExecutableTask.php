@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Task\Enums\TaskStatus;
 use Exception;
 use Throwable;
@@ -11,7 +11,7 @@ abstract class ExecutableTask extends Task
 {
     protected Throwable $error;
 
-    public function with(Signature $data) : mixed {
+    public function with(HasSignature $data) : mixed {
         try {
             $this->signature = $data;
             return $this->execute(...$this->inputs());
@@ -56,7 +56,7 @@ abstract class ExecutableTask extends Task
     protected function mapFromInputs(mixed $inputs) : array {
         $inputNames = $this->inputNames();
         $asArray = match(true) {
-            ($inputs instanceof Signature) => $inputs->input()->getValues(),
+            ($inputs instanceof HasSignature) => $inputs->input()->getValues(),
             is_array($inputs) => $inputs,
             //(count($inputNames) === 1) => [$inputNames[0] => $inputs],
             is_object($inputs) && method_exists($inputs, 'toArray') => $inputs->toArray(),
@@ -70,7 +70,7 @@ abstract class ExecutableTask extends Task
         $outputNames = $this->outputNames();
         $isSingleParamOutput = count($outputNames) === 1;
         $asArray = match(true) {
-            ($result instanceof Signature) => $result->output()->getValues(),
+            ($result instanceof HasSignature) => $result->output()->getValues(),
             $isSingleParamOutput => [$outputNames[0] => $result],
             is_array($result) => $result, // returned multiple params as array
             is_object($result) && method_exists($result, 'toArray') => $result->toArray(),

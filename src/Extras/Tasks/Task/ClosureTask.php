@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
 use Closure;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
 
 class ClosureTask extends ExecutableTask
@@ -19,7 +19,7 @@ class ClosureTask extends ExecutableTask
         return ($this->callable)(...$args);
     }
 
-    public function signature(): string|Signature {
+    public function signature(): string|HasSignature {
         return SignatureFactory::fromCallable($this->callable);
     }
 }

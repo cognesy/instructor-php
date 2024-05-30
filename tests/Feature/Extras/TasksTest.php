@@ -1,10 +1,10 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Signature;
 use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
 use Cognesy\Instructor\Extras\Tasks\Task\Predict;
 use Cognesy\Instructor\Instructor;
@@ -48,7 +48,7 @@ it('can process predict task with multiple outputs', function() {
         '{"topic": "sales", "sentiment": "neutral"}',
     ]);
 
-    class EmailAnalysis2 extends AutoSignature {
+    class EmailAnalysis2 extends Signature {
         #[InputField('email content')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other')]
@@ -73,7 +73,7 @@ it('can process predict task with multiple outputs', function() {
 });
 
 it('can process composite language program', function() {
-    class EmailAnalysis extends AutoSignature {
+    class EmailAnalysis extends Signature {
         #[InputField('content of email')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other, spam')]
@@ -95,7 +95,7 @@ it('can process composite language program', function() {
         ) {}
     }
 
-    class EmailStats extends AutoSignature {
+    class EmailStats extends Signature {
         #[InputField('directory containing emails')]
         public string $directory;
         #[OutputField('number of emails')]
@@ -118,7 +118,7 @@ it('can process composite language program', function() {
         public function __construct(private array $directoryContents = []) {
             parent::__construct();
         }
-        public function signature() : string|Signature {
+        public function signature() : string|HasSignature {
             return 'directory -> emails';
         }
         public function forward(string $directory) : array {
@@ -127,7 +127,7 @@ it('can process composite language program', function() {
     }
 
     class ParseEmail extends ExecutableTask {
-        public function signature() : string|Signature {
+        public function signature() : string|HasSignature {
             return 'email -> sender, body';
         }
         protected function forward(string $email) : array {
@@ -152,7 +152,7 @@ it('can process composite language program', function() {
             $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
         }
 
-        public function signature() : string|Signature {
+        public function signature() : string|HasSignature {
             return EmailStats::class;
         }
 
@@ -205,7 +205,7 @@ it('can process composite language program', function() {
     $instructor = (new Instructor)->withClient($mockLLM);
     $task = new GetStats($instructor, $directoryContents);
     $result = $task->with(EmailStats::for('inbox'));
-dump($task->toArray());
+
     expect($result)->toEqual([
         'emails' => 5,
         'spam' => 1,

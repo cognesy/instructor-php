@@ -1,56 +1,62 @@
 <?php
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
-use Cognesy\Instructor\Contracts\CanProvideSchema;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
 use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use JetBrains\PhpStorm\Deprecated;
 
-#[Deprecated]
-class ObjectSignature implements Signature, CanProvideSchema
+abstract class ObjectSignature implements HasSignature
 {
-    protected object $input;
-    protected object $output;
+    use Traits\ConvertsToSignatureString;
+    use Traits\InitializesSignatureInputs;
+
+    protected DataModel $input;
+    protected DataModel $output;
     protected string $description = '';
 
-    public function __construct(object $input, object $output, string $description = null)
-    {
+    public function __construct(
+        object $inputs,
+        object $outputs,
+        string $description = null,
+    ) {
         if (!is_null($description)) {
             $this->description = $description;
         }
-        $this->input = $input;
-        $this->output = $output;
-        $this->input = new ObjectDataModel($input, $fields['inputs']);
-        $this->output = new ObjectDataModel($output, $fields['outputs']);
+        $this->input = new ObjectDataModel($inputs, $this->inputNames());
+        $this->output = new ObjectDataModel($outputs, $this->outputNames());
     }
 
-    public function toSchema(): Schema {
+    /** @return string[] */
+    abstract public function inputNames(): array;
 
-    }
-
-    public function toInputSchema(): Schema {
-    }
-
-    public function toOutputSchema(): Schema {
-    }
+    /** @return string[] */
+    abstract public function outputNames(): array;
 
     public function input(): DataModel {
+        return $this->input;
     }
 
     public function output(): DataModel {
+        return $this->output;
     }
 
     public function description(): string {
-    }
-
-    public function withArgs(...$inputs): static {
-    }
-
-    public function toSignatureString(): string {
+        return $this->description;
     }
 
     public function toArray(): array {
+        return [
+            'inputs' => $this->input->getValues(),
+            'outputs' => $this->output->getValues(),
+        ];
+    }
+
+    public function toInputSchema(): Schema {
+        return $this->input->toSchema();
+    }
+
+    public function toOutputSchema(): Schema {
+        return $this->output->toSchema();
     }
 }

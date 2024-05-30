@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Tasks\Task;
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Tasks\Task\Enums\TaskStatus;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Uuid;
@@ -24,7 +24,7 @@ abstract class Task implements Contracts\CanProcessInput
         $this->context = [];
     }
 
-    abstract public function signature() : string|Signature;
+    abstract public function signature() : string|HasSignature;
 
     public function toArray() : array {
         return [

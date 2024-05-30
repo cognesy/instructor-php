@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
+namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits\Signature;
 
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
