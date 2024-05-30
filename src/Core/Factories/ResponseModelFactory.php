@@ -11,7 +11,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasOutputSchema;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\SchemaConverter;

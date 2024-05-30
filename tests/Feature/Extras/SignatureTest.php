@@ -3,10 +3,10 @@ namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\Signature;
-use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
+use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
+use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
 use Cognesy\Instructor\Schema\Attributes\Description;
 use Symfony\Component\Serializer\Attribute\Ignore;
 

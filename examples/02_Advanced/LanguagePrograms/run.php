@@ -3,12 +3,12 @@
 ```php
 <?php
 
-use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Tasks\Signature\Signature;
-use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Tasks\Task\ExecutableTask;
-use Cognesy\Instructor\Extras\Tasks\Task\Predict;
+use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
+use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
+use Cognesy\Instructor\Extras\Module\Task\ExecutableTask;
+use Cognesy\Instructor\Extras\Module\Task\Predict;
 use Cognesy\Instructor\Instructor;
 
 $loader = require 'vendor/autoload.php';
