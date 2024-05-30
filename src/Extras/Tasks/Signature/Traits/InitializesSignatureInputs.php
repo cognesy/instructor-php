@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Tasks\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Tasks\Task\CallUtils;
+use Cognesy\Instructor\Extras\Tasks\Task\Utils\CallUtils;
 use Exception;
 
 trait InitializesSignatureInputs
@@ -12,7 +12,7 @@ trait InitializesSignatureInputs
         if ($result->isFailure()) {
             throw new Exception($result->error());
         }
-        $this->input->setValues($inputs);
+        $this->input()->setValues($inputs);
         return $this;
     }
 }

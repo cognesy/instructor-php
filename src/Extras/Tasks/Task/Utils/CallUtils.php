@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Extras\Tasks\Task;
+namespace Cognesy\Instructor\Extras\Tasks\Task\Utils;
 
 use Cognesy\Instructor\Utils\Result;
 

@@ -6,6 +6,8 @@ use Exception;
 
 trait ProvidesDataAccess
 {
+    use HandlesObjectValues;
+
     public function getPropertyValue(string $name): mixed {
         if (!in_array($name, $this->propertyNames)) {
             throw new Exception("No input field '$name'");

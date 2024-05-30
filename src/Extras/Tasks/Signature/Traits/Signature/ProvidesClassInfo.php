@@ -10,7 +10,7 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 
 trait ProvidesClassInfo
 {
-    static private array $internalProperties = [
+    private array $internalProperties = [
         'inputs',
         'outputs',
         'internal',
@@ -21,10 +21,10 @@ trait ProvidesClassInfo
      * @param array<callable> $filters
      * @return array<string>
      */
-    static protected function getPropertyNames(ClassInfo $classInfo, array $filters) : array {
-        return array_keys(self::getFilteredPropertyData(
+    protected function getPropertyNames(ClassInfo $classInfo, array $filters) : array {
+        return array_keys($this->getFilteredPropertyData(
             classInfo: $classInfo,
-            filters: array_merge([self::defaultExclusionsFilter(...)], $filters),
+            filters: array_merge([$this->defaultExclusionsFilter(...)], $filters),
             extractor: fn(PropertyInfo $property) => $property->getName()
         ));
     }
@@ -34,10 +34,10 @@ trait ProvidesClassInfo
      * @param array<callable> $filters
      * @return array<PropertyInfo>
      */
-    static protected function getProperties(ClassInfo $classInfo, array $filters) : array {
-        return self::getFilteredPropertyData(
+    private function getProperties(ClassInfo $classInfo, array $filters) : array {
+        return $this->getFilteredPropertyData(
             classInfo: $classInfo,
-            filters: array_merge([self::defaultExclusionsFilter(...)], $filters),
+            filters: array_merge([$this->defaultExclusionsFilter(...)], $filters),
             extractor: fn(PropertyInfo $property) => $property
         );
     }
@@ -46,42 +46,19 @@ trait ProvidesClassInfo
      * @param ClassInfo $classInfo
      * @return array<string, PropertyInfo>
      */
-    static private function getFilteredPropertyData(ClassInfo $classInfo, array $filters, callable $extractor) : array {
+    private function getFilteredPropertyData(ClassInfo $classInfo, array $filters, callable $extractor) : array {
         return array_map(
             callback: fn(PropertyInfo $property) => $extractor($property),
             array: $classInfo->filterProperties($filters),
         );
     }
 
-    static private function defaultExclusionsFilter(PropertyInfo $property) : bool {
+    private function defaultExclusionsFilter(PropertyInfo $property) : bool {
         return match(true) {
-            in_array($property->getName(), self::$internalProperties) => false,
+            in_array($property->getName(), $this->internalProperties) => false,
             $property->hasAttribute(Ignore::class) => false,
             $property->isStatic() => false,
             default => true,
         };
-    }
-
-    // DEPRECATED /////////////////////////////////////////////////////////////////////
-
-    /**
-     * @param ClassInfo $classInfo
-     * @param array<callable> $filters
-     * @return array<Field>
-     */
-    static protected function getFields(ClassInfo $classInfo, array $filters) : array {
-        return self::getFilteredPropertyData(
-            classInfo: $classInfo,
-            filters: array_merge([self::defaultExclusionsFilter(...)], $filters),
-            extractor: self::fieldExtractor(...),
-        );
-    }
-
-    static private function fieldExtractor(PropertyInfo $property) : Field {
-        $name = $property->getName();
-        $type = $property->getType();
-        $description = $property->getDescription();
-        $isOptional = $property->isNullable();
-        return FieldFactory::fromPropertyInfoType($name, $type, $description)->optional($isOptional);
     }
 }

@@ -3,9 +3,12 @@
 namespace Cognesy\Instructor\Extras\Tasks\TaskData\Traits;
 
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Exception;
 
 trait ProvidesSchemaAccess
 {
+    use HandlesObjectSchema;
+
     public function getPropertySchema(string $name): Schema {
         if (!in_array($name, $this->propertyNames)) {
             throw new Exception("No input field '$name'");

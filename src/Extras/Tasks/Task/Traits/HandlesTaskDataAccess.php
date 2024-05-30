@@ -44,6 +44,6 @@ trait HandlesTaskDataAccess
     }
 
     protected function outputRef() : mixed {
-        return $this->getSignature()->output()->getRef();
+        return $this->getSignature()->output()->getDataRef();
     }
 }

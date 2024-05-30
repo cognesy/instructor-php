@@ -26,8 +26,8 @@ class Signature implements HasSignature, CanProvideSchema
         $instance = $this;
         $classInfo = new ClassInfo(static::class);
         $instance->description = $classInfo->getClassDescription();
-        $inputProperties = self::getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(InputField::class)]);
-        $outputProperties = self::getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(OutputField::class)]);
+        $inputProperties = $this->getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(InputField::class)]);
+        $outputProperties = $this->getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(OutputField::class)]);
         $instance->input = new ObjectDataModel($instance, $inputProperties);
         $instance->output = new ObjectDataModel($instance, $outputProperties);
     }
@@ -48,26 +48,14 @@ class Signature implements HasSignature, CanProvideSchema
         return $this->output;
     }
 
-    public function setInput(DataModel $input): void {
-        $this->input = $input;
-    }
-
-    public function setOutput(DataModel $output): void {
-        $this->output = $output;
-    }
-
-    public function description(): string {
-        return $this->description;
-    }
-
-    public function setDescription(string $description): void {
-        $this->description = $description;
-    }
-
     public function toArray(): array {
         return array_merge(
             $this->input->getValues(),
             $this->output->getValues(),
         );
+    }
+
+    public function description(): string {
+        return $this->description;
     }
 }

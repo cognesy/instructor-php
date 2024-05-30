@@ -7,12 +7,16 @@ interface HasSignature extends HasInputSchema, HasOutputSchema
 {
     public const ARROW = '->';
 
+    // DATA ENTRY /////////////////////////////////////////////////////////
+
+    public function withArgs(mixed ...$inputs) : static;
+
+    // DATA MODEL ACCESS //////////////////////////////////////////////////
+
     public function input() : DataModel;
     public function output() : DataModel;
 
     public function description() : string;
-
-    public function withArgs(mixed ...$inputs) : static;
 
     public function toSignatureString() : string;
 

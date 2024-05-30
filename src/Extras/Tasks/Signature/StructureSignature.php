@@ -41,10 +41,10 @@ class StructureSignature implements HasSignature
     }
 
     public function toArray(): array {
-        return [
-            'inputs' => $this->input->getValues(),
-            'outputs' => $this->output->getValues(),
-        ];
+        return array_merge(
+            $this->input->getValues(),
+            $this->output->getValues(),
+        );
     }
 
     public function toInputSchema(): Schema {

@@ -30,7 +30,7 @@ trait ProvidesSchema
     }
 
     private function makeSchema(ClassInfo $classInfo, array $filters): Schema {
-        $properties = self::getProperties($classInfo, $filters);
+        $properties = $this->getProperties($classInfo, $filters);
         $propertySchemas = [];
         foreach ($properties as $property) {
             $propertySchemas[$property->getName()] = (new SchemaFactory)->fromPropertyInfo($property);
