@@ -1,7 +1,7 @@
 <?php
 
-dataset('schema_builder_json', [[[
-    '$comment' => 'Tests\Examples\SchemaBuilder\TestObject',
+dataset('schema_converter_json', [[[
+    '$comment' => 'Tests\Examples\SchemaConverter\TestObject',
     'type' => 'object',
     'properties' => [
         'stringProperty' => [
@@ -21,13 +21,13 @@ dataset('schema_builder_json', [[[
             'type' => 'number',
         ],
         'enumProperty' => [
-            '$comment' => 'Tests\Examples\SchemaBuilder\TestEnum',
+            '$comment' => 'Tests\Examples\SchemaConverter\TestEnum',
             'description' => 'Enum property',
             'type' => 'string',
             'enum' => ['one', 'two', 'three'],
         ],
         'objectProperty' => [
-            '$comment' => 'Tests\Examples\SchemaBuilder\TestNestedObject',
+            '$comment' => 'Tests\Examples\SchemaConverter\TestNestedObject',
             'description' => 'Object property',
             'type' => 'object',
             'properties' => [
@@ -35,7 +35,7 @@ dataset('schema_builder_json', [[[
                     'type' => 'string',
                 ],
                 'nestedObjectProperty' => [
-                    '$comment' => 'Tests\Examples\SchemaBuilder\TestDoubleNestedObject',
+                    '$comment' => 'Tests\Examples\SchemaConverter\TestDoubleNestedObject',
                     'type' => 'object',
                     'properties' => [
                         'nestedNestedStringProperty' => [
@@ -63,7 +63,7 @@ dataset('schema_builder_json', [[[
             'description' => 'Array of objects property',
             'type' => 'array',
             'items' => [
-                '$comment' => 'Tests\Examples\SchemaBuilder\TestNestedObject',
+                '$comment' => 'Tests\Examples\SchemaConverter\TestNestedObject',
                 'type' => 'object',
                 'properties' => [
                     'nestedStringProperty' => [
@@ -79,7 +79,7 @@ dataset('schema_builder_json', [[[
             'description' => 'Array of enum property',
             'type' => 'array',
             'items' => [
-                '$comment' => 'Tests\Examples\SchemaBuilder\TestEnum',
+                '$comment' => 'Tests\Examples\SchemaConverter\TestEnum',
                 'type' => 'string',
                 'enum' => ['one', 'two', 'three'],
             ],

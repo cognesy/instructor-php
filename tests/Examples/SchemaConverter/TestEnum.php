@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Examples\SchemaBuilder;
+namespace Tests\Examples\SchemaConverter;
 
 enum TestEnum : string {
     case One = 'one';

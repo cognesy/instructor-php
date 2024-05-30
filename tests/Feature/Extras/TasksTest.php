@@ -65,11 +65,11 @@ it('can process predict task with multiple outputs', function() {
     $task = new Predict(EmailAnalysis2::class, $instructor);
     $result = $task->with(EmailAnalysis2::for(text: 'Can I get pricing for your business support plan?'));
 
-    expect($result->toArray())->toBe(['topic' => 'sales', 'sentiment' => 'neutral']);
+    expect($result->toArray())->toMatchArray(['topic' => 'sales', 'sentiment' => 'neutral']);
 
-//    expect($task->input('text'))->toBe('Can I get pricing for your business support plan?');
-//    expect($task->output('topic'))->toBe('sales');
-//    expect($task->output('sentiment'))->toBe('neutral');
+    expect($task->input('text'))->toBe('Can I get pricing for your business support plan?');
+    expect($task->output('topic'))->toBe('sales');
+    expect($task->output('sentiment'))->toBe('neutral');
 });
 
 it('can process composite language program', function() {
@@ -205,7 +205,7 @@ it('can process composite language program', function() {
     $instructor = (new Instructor)->withClient($mockLLM);
     $task = new GetStats($instructor, $directoryContents);
     $result = $task->with(EmailStats::for('inbox'));
-
+dump($task->toArray());
     expect($result)->toEqual([
         'emails' => 5,
         'spam' => 1,

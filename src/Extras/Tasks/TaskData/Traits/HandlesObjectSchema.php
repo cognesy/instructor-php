@@ -10,17 +10,6 @@ use Exception;
 
 trait HandlesObjectSchema
 {
-    private function getObjectSchema(object $object) : ObjectSchema {
-        $schema = match(true) {
-            $object instanceof CanProvideSchema => $object->toSchema(),
-            default => (new SchemaFactory)->schema($object),
-        };
-        if (!$schema instanceof ObjectSchema) {
-            throw new Exception("Expected an object schema, got a " . get_class($schema));
-        }
-        return $schema;
-    }
-
     private function getObjectPropertySchema(object $object, string $name) : Schema {
         $schema = $this->getObjectSchema($object);
         if (!isset($schema->properties[$name])) {
@@ -35,5 +24,22 @@ trait HandlesObjectSchema
             $this->getObjectSchema($object)->properties,
             fn(Schema $schema) => in_array($schema->name(), $allowedNames)
         );
+    }
+
+    private function getObjectSchema(object $object) : ObjectSchema {
+        // Objects are we expecting here: Structure, AutoSignature, or
+        // any object generated for ResponseModel (e.g. Scalar, Sequence).
+        //
+        // We want to use CanProvideSchema if it's available, as it allows
+        // the object to shape its own schema (see: Structure, Sequence,
+        // Scalar, etc.).
+        $schema = match(true) {
+            $object instanceof CanProvideSchema => $object->toSchema(),
+            default => (new SchemaFactory)->schema($object),
+        };
+        if (!$schema instanceof ObjectSchema) {
+            throw new Exception("Expected an object schema, got a " . get_class($schema));
+        }
+        return $schema;
     }
 }

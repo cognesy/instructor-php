@@ -46,8 +46,4 @@ trait HandlesFieldValidation
         }
         return ($this->validator)($this->value);
     }
-
-    public function isRequired() : bool {
-        return $this->required;
-    }
 }

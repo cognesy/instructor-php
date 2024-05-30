@@ -3,19 +3,18 @@
 namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
 use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
+use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
-use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
-use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
+use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
+use Cognesy\Instructor\Schema\Utils\ClassInfo;
 
 
 class AutoSignature implements Signature, CanProvideSchema
 {
-    use Traits\GetsPropertyNamesFromClass;
-    use Traits\GetsFieldsFromClass;
+    use Traits\ProvidesClassData;
+    use Traits\ProvidesSchema;
     use Traits\ConvertsToSignatureString;
     use Traits\InitializesSignatureInputs;
 
@@ -26,9 +25,10 @@ class AutoSignature implements Signature, CanProvideSchema
     public function __construct() {
         $classInfo = new ClassInfo(static::class);
         $this->description = $classInfo->getClassDescription();
-        $fields = self::getPropertyNames($classInfo);
-        $this->input = new ObjectDataModel($this, $fields['inputs']);
-        $this->output = new ObjectDataModel($this, $fields['outputs']);
+        $inputProperties = self::getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(InputField::class)]);
+        $outputProperties = self::getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(OutputField::class)]);
+        $this->input = new ObjectDataModel($this, $inputProperties);
+        $this->output = new ObjectDataModel($this, $outputProperties);
     }
 
     static public function make(mixed ...$inputs) : static {
@@ -50,34 +50,10 @@ class AutoSignature implements Signature, CanProvideSchema
         return $this->description;
     }
 
-    public function toSchema(): Schema {
-        $classInfo = new ClassInfo(static::class);
-        $fields = self::getFields($classInfo);
-        $required = [];
-        $properties = [];
-        foreach($fields['outputs'] as $field) {
-            $properties[$field->name()] = $field->schema();
-            if ($field->isRequired()) {
-                $required[] = $field->name();
-            }
-        }
-        $typeDetails = (new TypeDetailsFactory)->objectType(static::class);
-        $objectSchema = new ObjectSchema(
-            $typeDetails,
-            static::class,
-            $classInfo->getClassDescription(),
-            $properties,
-            $required,
-        );
-        return $objectSchema;
-    }
-
     public function toArray(): array {
-        $toArray = function($x) use(&$toArray) {
-            return (is_scalar($x) || is_null($x))
-                ? $x
-                : array_map($toArray, (array) $x);
-        };
-        return $toArray($this->output()->getValues());
+        return array_merge(
+            $this->input->getValues(),
+            $this->output->getValues(),
+        );
     }
 }

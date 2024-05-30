@@ -8,31 +8,28 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 trait ConvertsToSignatureString
 {
     public function toShortSignature() : string {
-        $inputs = array_map(
-            fn(Schema $propertySchema) => $this->shortPropertySignature($propertySchema),
-            $this->input()->getPropertySchemas()
-        );
-        $outputs = array_map(
-            fn(Schema $propertySchema) => $this->shortPropertySignature($propertySchema),
-            $this->output()->getPropertySchemas()
-        );
-        return implode(', ', $inputs)
-            . ' ' . Signature::ARROW . ' '
-            . implode(', ', $outputs);
+        return $this->renderSignature($this->shortPropertySignature(...));
     }
 
     public function toSignatureString() : string {
-        $inputs = array_map(
-            fn(Schema $propertySchema) => $this->propertySignature($propertySchema),
-            $this->input()->getPropertySchemas()
+        return $this->renderSignature($this->propertySignature(...));
+    }
+
+    private function renderSignature(callable $nameRenderer) : string {
+        $inputs = $this->mapProperties($this->input()->getPropertySchemas(), $nameRenderer);
+        $outputs = $this->mapProperties($this->output()->getPropertySchemas(), $nameRenderer);
+        return implode('', [
+            implode(', ', $inputs),
+            (" ".Signature::ARROW." "),
+            implode(', ', $outputs)
+        ]);
+    }
+
+    private function mapProperties(array $properties, callable $nameRenderer) : array {
+        return array_map(
+            fn(Schema $propertySchema) => $nameRenderer($propertySchema),
+            $properties
         );
-        $outputs = array_map(
-            fn(Schema $propertySchema) => $this->propertySignature($propertySchema),
-            $this->output()->getPropertySchemas()
-        );
-        return implode(', ', $inputs)
-            . ' ' . Signature::ARROW . ' '
-            . implode(', ', $outputs);
     }
 
     private function propertySignature(Schema $schema) : string {

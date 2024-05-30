@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Examples\SchemaBuilder;
+namespace Tests\Examples\SchemaConverter;
 
 class TestObject {
     public string $stringProperty;

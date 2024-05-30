@@ -12,6 +12,8 @@ use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\PropertyMap;
 use Cognesy\Instructor\Schema\SchemaMap;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Schema\Utils\PropertyInfo;
+use Exception;
 
 /**
  * Factory for creating schema objects from class names
@@ -19,6 +21,8 @@ use Cognesy\Instructor\Schema\Utils\ClassInfo;
  * NOTE: Currently, OpenAI models do not comprehend well object references for
  * complex structures, so it's safer to return the full object schema with all
  * properties inlined.
+ *
+ * TODO: This needs substantial cleanup.
  */
 class SchemaFactory
 {
@@ -82,6 +86,22 @@ class SchemaFactory
         return $match;
     }
 
+    public function fromClassInfo(ClassInfo $classInfo) : ObjectSchema {
+        $class = $classInfo->getClass();
+        return new ObjectSchema(
+            $this->typeDetailsFactory->fromTypeName($class),
+            $class,
+            $classInfo->getClassDescription(),
+            $this->getPropertySchemas($class),
+            $classInfo->getRequiredProperties(),
+        );
+    }
+
+    public function fromPropertyInfo(PropertyInfo $propertyInfo) : Schema {
+        $type = $this->typeDetailsFactory->fromPropertyInfo($propertyInfo->getType());
+        return $this->makePropertySchema($type, $propertyInfo->getName(), $propertyInfo->getDescription());
+    }
+
     // INTERNAL //////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -90,7 +110,7 @@ class SchemaFactory
      * @param string $class
      * @param string $property
      */
-    protected function property(string $class, string $property) : Schema {
+    protected function fromPropertyMap(string $class, string $property) : Schema {
         if (!$this->propertyMap->has($class, $property)) {
             $this->propertyMap->register($class, $property, $this->getPropertySchema($class, $property));
         }
@@ -105,13 +125,22 @@ class SchemaFactory
      */
     protected function getPropertySchemas(string $class) : array {
         $classInfo = new ClassInfo($class);
+        return $this->getClassInfoPropertySchemas($classInfo);
+    }
+
+    /**
+     * Gets all the property schemas of a class
+     * @param ClassInfo $classInfo
+     * @return Schema[]
+     */
+    protected function getClassInfoPropertySchemas(ClassInfo $classInfo) : array {
         $properties = $classInfo->getProperties();
         $propertySchemas = [];
         foreach ($properties as $propertyName => $propertyInfo) {
             if (!$propertyInfo->isPublic()) {
                 continue;
             }
-            $propertySchemas[$propertyName] = $this->property($class, $propertyName);
+            $propertySchemas[$propertyName] = $this->fromPropertyMap($classInfo->getClass(), $propertyName);
         }
         return $propertySchemas;
     }
@@ -159,7 +188,11 @@ class SchemaFactory
      * @return Schema
      */
     protected function makeSchema(TypeDetails $type) : Schema {
-        $classInfo = new ClassInfo($type->class);
+        $classInfo = match(true) {
+            in_array($type->type, [TypeDetails::PHP_OBJECT, TypeDetails::PHP_ENUM], true) => new ClassInfo($type->class),
+            default => null,
+        };
+
         return match (true) {
             ($type->type == TypeDetails::PHP_OBJECT) => new ObjectSchema(
                 $type,

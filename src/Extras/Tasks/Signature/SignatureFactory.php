@@ -4,9 +4,9 @@ namespace Cognesy\Instructor\Extras\Tasks\Signature;
 
 class SignatureFactory
 {
-    use Traits\CreatesFromCallable;
-    use Traits\CreatesFromClasses;
-    use Traits\CreatesFromClassMetadata;
-    use Traits\CreatesSignatureFromString;
-    use Traits\CreatesFromStructure;
+    use Traits\Factory\CreatesFromCallable;
+    use Traits\Factory\CreatesFromClasses;
+    use Traits\Factory\CreatesFromClassMetadata;
+    use Traits\Factory\CreatesSignatureFromString;
+    use Traits\Factory\CreatesFromStructure;
 }

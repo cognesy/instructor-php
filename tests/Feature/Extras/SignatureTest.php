@@ -5,6 +5,7 @@ use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Tasks\Signature\Attributes\OutputField;
+use Cognesy\Instructor\Extras\Tasks\Signature\AutoSignature;
 use Cognesy\Instructor\Extras\Tasks\Signature\SignatureFactory;
 use Cognesy\Instructor\Schema\Attributes\Description;
 use Symfony\Component\Serializer\Attribute\Ignore;
@@ -67,5 +68,26 @@ it('creates signature from class metadata', function () {
         public $mixedProperty;
     }
     $signature = SignatureFactory::fromClassMetadata(TestSignature::class);
+    expect($signature->toSignatureString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
+});
+
+it('creates auto signature from class metadata', function () {
+    #[Description('Test description')]
+    class TestSignature2 extends AutoSignature {
+        #[InputField]
+        public string $stringProperty;
+        #[InputField('bool description')]
+        public bool $boolProperty;
+        #[OutputField]
+        public int $intProperty;
+        #[Ignore]
+        public bool $ignoredProperty;
+        protected string $protectedProperty;
+        private string $privateProperty;
+        static public string $staticProperty;
+        #[OutputField]
+        public $mixedProperty;
+    }
+    $signature = new TestSignature2;
     expect($signature->toSignatureString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
 });

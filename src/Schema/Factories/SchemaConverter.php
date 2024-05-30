@@ -19,7 +19,7 @@ use Exception;
  * Requires $comments field to contain the target class name for each
  * object and enum type.
  */
-class SchemaBuilder
+class SchemaConverter
 {
     private $defaultToolName = 'extract_object';
     private $defaultToolDescription = 'Extract data from chat content';

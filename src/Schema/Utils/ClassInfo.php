@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Schema\Utils;
 
 use Cognesy\Instructor\Schema\Attributes\Description;
 use Cognesy\Instructor\Schema\Attributes\Instructions;
+use Exception;
 use ReflectionClass;
 use ReflectionEnum;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -24,6 +25,10 @@ class ClassInfo {
         if ($this->isEnum()) {
             $this->reflectionEnum = new ReflectionEnum($class);
         }
+    }
+
+    public function getClass() : string {
+        return $this->class;
     }
 
     public function getShortName() : string {
@@ -50,6 +55,21 @@ class ClassInfo {
             $this->propertyInfos = $this->makePropertyInfos();
         }
         return $this->propertyInfos;
+    }
+
+    /**
+     * @param callable[] $filters
+     * @return PropertyInfo[]
+     */
+    public function filterProperties(array $filters) : array {
+        $propertyInfos = $this->getProperties();
+        foreach($filters as $filter) {
+            if (!is_callable($filter)) {
+                throw new Exception("Filter must be a callable.");
+            }
+            $propertyInfos = array_filter($propertyInfos, $filter);
+        }
+        return $propertyInfos;
     }
 
     public function getProperty(string $name) : PropertyInfo {

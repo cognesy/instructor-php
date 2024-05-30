@@ -5,6 +5,7 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\Signature;
 use Cognesy\Instructor\Extras\Tasks\TaskData\Contracts\DataModel;
 use Cognesy\Instructor\Extras\Tasks\TaskData\ObjectDataModel;
+use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 class StructureSignature implements Signature
 {
@@ -37,5 +38,20 @@ class StructureSignature implements Signature
 
     public function description(): string {
         return $this->description;
+    }
+
+    public function toArray(): array {
+        return [
+            'inputs' => $this->input->getValues(),
+            'outputs' => $this->output->getValues(),
+        ];
+    }
+
+    public function toInputSchema(): Schema {
+        $this->input->toSchema();
+    }
+
+    public function toOutputSchema(): Schema {
+        $this->output->toSchema();
     }
 }

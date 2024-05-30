@@ -17,4 +17,5 @@ interface DataModel
     /** @return Schema[] */
     public function getPropertySchemas(): array;
     public function getRef() : mixed;
+    public function toSchema() : Schema;
 }

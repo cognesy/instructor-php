@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Utils;
 
+use WeakMap;
+
 class Arrays
 {
     public static function unset(array $array, array|string $fields) : array {
@@ -55,5 +57,22 @@ class Arrays
             }
         }
         return rtrim($flat, $separator);
+    }
+
+    static public function fromAny(mixed $anyValue): array {
+        $visited = new WeakMap();
+        $toArray = function($x) use(&$toArray, &$visited) {
+            $markAndMap = function($x) use(&$toArray, &$visited) {
+                $visited[$x] = true; // mark as visited, so we handle circular references
+                return array_map($toArray, get_object_vars($x));
+            };
+            return match(true) {
+                is_scalar($x) || is_null($x) => $x,
+                is_object($x) && isset($visited[$x]) => 'ref-cycle: ' . get_class($x),
+                is_object($x) => $markAndMap($x),
+                default => array_map($toArray, $x),
+            };
+        };
+        return $toArray($anyValue);
     }
 }

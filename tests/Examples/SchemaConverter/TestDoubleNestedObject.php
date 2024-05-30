@@ -1,5 +1,5 @@
 <?php
-namespace Tests\Examples\SchemaBuilder;
+namespace Tests\Examples\SchemaConverter;
 
 class TestDoubleNestedObject {
     public string $nestedNestedStringProperty;

@@ -71,4 +71,8 @@ class ObjectDataModel implements DataModel
     public function getRef() : object {
         return $this->data;
     }
+
+    public function toSchema() : Schema {
+        return $this->getObjectSchema($this->data);
+    }
 }

@@ -11,9 +11,10 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Extras\Tasks\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Factories\SchemaBuilder;
+use Cognesy\Instructor\Schema\Factories\SchemaConverter;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
@@ -23,7 +24,7 @@ use InvalidArgumentException;
 class ResponseModelFactory
 {
     protected TypeDetailsFactory $typeDetailsFactory;
-    protected SchemaBuilder $schemaBuilder;
+    protected SchemaConverter $schemaConverter;
 
     public function __construct(
         private ToolCallBuilder $toolCallBuilder,
@@ -31,7 +32,7 @@ class ResponseModelFactory
         private EventDispatcher $events,
     ) {
         $this->typeDetailsFactory = new TypeDetailsFactory;
-        $this->schemaBuilder = new SchemaBuilder;
+        $this->schemaConverter = new SchemaConverter;
     }
 
     public function fromRequest(Request $request) : ResponseModel {
@@ -50,6 +51,7 @@ class ResponseModelFactory
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
             is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel, $toolName, $toolDescription),
+            is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
             is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
             is_string($requestedModel) => $this->fromClassString($requestedModel),
             is_array($requestedModel) => $this->fromJsonSchema($requestedModel, $toolName, $toolDescription),
@@ -118,7 +120,7 @@ class ResponseModelFactory
     private function fromJsonSchema(array $requestedModel, string $name = '', string $description = '') : ResponseModel {
         $class = $requestedModel['$comment'] ?? Structure::class;
         $instance = new $class;
-        $schema = $this->schemaBuilder->fromJsonSchema($requestedModel, $name, $description);
+        $schema = $this->schemaConverter->fromJsonSchema($requestedModel, $name, $description);
         $jsonSchema = $requestedModel;
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
@@ -140,7 +142,7 @@ class ResponseModelFactory
             $instance = new $class;
         }
         $jsonSchema = $instance->toJsonSchema();
-        $schema = $this->schemaBuilder->fromJsonSchema($jsonSchema, $name, $description);
+        $schema = $this->schemaConverter->fromJsonSchema($jsonSchema, $name, $description);
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 
@@ -170,6 +172,19 @@ class ResponseModelFactory
         $instance = $requestedModel;
         $jsonSchema = $instance->toJsonSchema();
         $schema = $instance->toSchema();
+        return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
+    }
+
+    private function fromOutputSchemaProvider(mixed $requestedModel) {
+        if (is_object($requestedModel)) {
+            $class = get_class($requestedModel);
+            $instance = $requestedModel;
+        } else {
+            $class = $requestedModel;
+            $instance = new $class;
+        }
+        $schema = $instance->toOutputSchema();
+        $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         return $this->makeResponseModel($class, $instance, $schema, $jsonSchema);
     }
 }

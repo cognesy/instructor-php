@@ -9,7 +9,7 @@ trait HandlesObjectValues
     private function getObjectPropertyValues(object $object, array $propertyNames) : array {
         $values = [];
         foreach ($propertyNames as $name) {
-            $values[$name] = $object->$name;
+            $values[$name] = $object->$name ?? null;
         }
         return $values;
     }

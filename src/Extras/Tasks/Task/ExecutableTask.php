@@ -70,6 +70,7 @@ abstract class ExecutableTask extends Task
         $outputNames = $this->outputNames();
         $isSingleParamOutput = count($outputNames) === 1;
         $asArray = match(true) {
+            ($result instanceof Signature) => $result->output()->getValues(),
             $isSingleParamOutput => [$outputNames[0] => $result],
             is_array($result) => $result, // returned multiple params as array
             is_object($result) && method_exists($result, 'toArray') => $result->toArray(),
