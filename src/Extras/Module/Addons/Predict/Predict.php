@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Task;
+namespace Cognesy\Instructor\Extras\Module\Core;
 
 use BackedEnum;
 use Cognesy\Instructor\Data\Example;
