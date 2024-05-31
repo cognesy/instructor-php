@@ -8,12 +8,16 @@ use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
 use DateTimeImmutable;
 
+/**
+ * Implement passive task
+ */
 abstract class Task implements Contracts\CanProcessInput
 {
     use Traits\HandlesTaskInfo;
     use Traits\HandlesTaskStatus;
     use Traits\HandlesTaskDataAccess;
     use Traits\HandlesSignature;
+    use Traits\HandlesArgMapping;
     use Traits\HandlesContext;
 
     public function __construct() {

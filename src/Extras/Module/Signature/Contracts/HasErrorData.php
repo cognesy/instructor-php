@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Contracts;
 
-interface CanHaveErrors
+interface HasErrorData
 {
     public function hasErrors() : bool;
 

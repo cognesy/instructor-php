@@ -1,8 +1,6 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Module\Core\Traits;
 
-use Cognesy\Instructor\Extras\Module\Events\TaskCompleted;
 use Cognesy\Instructor\Extras\Module\Core\Enums\TaskStatus;
 use DateTime;
 

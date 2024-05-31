@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Module\Addons\CallClosure\CallUtils;
+use Cognesy\Instructor\Extras\Module\Utils\CallUtils;
 use Exception;
 
 trait InitializesSignatureInputs
