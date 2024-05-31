@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Module\Signature\Contracts;
 
 use Cognesy\Instructor\Extras\Module\DataModel\Contracts\DataModel;
 
-interface HasSignature extends HasInputSchema, HasOutputSchema
+interface HasSignature extends HasInputSchema, HasOutputSchema, CanHaveErrors
 {
     public const ARROW = '->';
 
@@ -16,13 +16,9 @@ interface HasSignature extends HasInputSchema, HasOutputSchema
     public function input() : DataModel;
     public function output() : DataModel;
 
-    public function errors() : array;
-
-    public function addError(string $message, array $context) : void;
+    public function toArray() : array;
 
     public function description() : string;
 
     public function toSignatureString() : string;
-
-    public function toArray() : array;
 }
