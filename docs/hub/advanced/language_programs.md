@@ -1,5 +1,9 @@
 # Language programs
 
+Instructor provides an addon allowing to implement complex processing flows
+using LLM to process data with Module subclasses encapsulating processing logic and
+Signatures defining input and output data.
+
 ```php
 <?php
 
