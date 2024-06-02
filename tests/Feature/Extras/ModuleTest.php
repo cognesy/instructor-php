@@ -43,9 +43,9 @@ it('can return example', function() {
     $add = new TestModule;
     $addition = $add->withArgs(numberA: 1, numberB: 2);
 
-    expect($addition->asExample()->toJson())
-        ->toBe("{inputs:{numberA:1,numberB:2},outputs:{sum:3}}");
-})->only();
+    expect($addition->asExample()->input())->toBe('{"numberA":1,"numberB":2}');
+    expect($addition->asExample()->output())->toBe(['sum' => 3]);
+});
 
 it('can process a closure task', function() {
     $add = function(int $a, int $b) : int {
