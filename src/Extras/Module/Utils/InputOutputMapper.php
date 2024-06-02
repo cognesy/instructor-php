@@ -16,6 +16,7 @@ class InputOutputMapper
     }
 
     /**
+     * Maps input values to the expected input fields.
      * @param mixed $inputs
      * @param string[] $inputNames
      * @return array<string, mixed>
@@ -34,6 +35,7 @@ class InputOutputMapper
     }
 
     /**
+     * Maps result values to the expected output fields.
      * @param mixed $result
      * @param string[] $outputNames
      * @return array<string, mixed>
@@ -55,6 +57,7 @@ class InputOutputMapper
     // INTERNAL ////////////////////////////////////////////////////////////////////////
 
     /**
+     * Maps values to the expected fields.
      * @param string[] $expectedFields
      * @param mixed[] $values
      * @return array<string, mixed>

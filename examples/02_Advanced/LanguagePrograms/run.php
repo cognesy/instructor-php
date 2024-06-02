@@ -7,16 +7,17 @@ use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\TaskData\SignatureData;
 use Cognesy\Instructor\Instructor;
+use Tests\MockLLM;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 // DATA MODEL DECLARATIONS ////////////////////////////////////////////////////////////////
 
-class EmailAnalysis extends Signature {
+class EmailAnalysis extends SignatureData {
     #[InputField('content of email')]
     public string $text;
     #[OutputField('identify most relevant email topic: sales, support, other, spam')]
@@ -25,7 +26,7 @@ class EmailAnalysis extends Signature {
     public string $sentiment;
 
     public static function for(string $text) : static {
-        return self::make(text: $text);
+        return self::fromArgs(text: $text);
     }
 }
 
@@ -38,7 +39,7 @@ class CategoryCount {
     ) {}
 }
 
-class EmailStats extends Signature {
+class EmailStats extends SignatureData {
     #[InputField('directory containing emails')]
     public string $directory;
     #[OutputField('number of emails')]
@@ -53,16 +54,14 @@ class EmailStats extends Signature {
     public CategoryCount $categories;
 
     static public function for(string $directory) : static {
-        return self::make(directory: $directory);
+        return self::fromArgs(directory: $directory);
     }
 }
 
-// TASK DECLARATIONS ////////////////////////////////////////////////////////////////
-
 class ReadEmails extends Module {
-    public function __construct(private array $directoryContents = []) {
-        parent::__construct();
-    }
+    public function __construct(
+        private array $directoryContents = []
+    ) {}
     public function signature() : string|Signature {
         return 'directory -> emails';
     }
@@ -77,11 +76,9 @@ class ParseEmail extends Module {
     }
     protected function forward(string $email) : array {
         $parts = explode(',', $email);
-        $sender = trim(explode(':', $parts[0])[1]);
-        $body = trim(explode(':', $parts[1])[1]);
         return [
-            'sender' => $sender,
-            'body' => $body,
+            'sender' => trim(explode(':', $parts[0])[1]),
+            'body' => trim(explode(':', $parts[1])[1]),
         ];
     }
 }
@@ -92,8 +89,6 @@ class GetStats extends Module {
     private Predict $analyseEmail;
 
     public function __construct(Instructor $instructor, array $directoryContents = []) {
-        parent::__construct();
-
         $this->readEmails = new ReadEmails($directoryContents);
         $this->parseEmail = new ParseEmail();
         $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
@@ -103,19 +98,21 @@ class GetStats extends Module {
         return EmailStats::class;
     }
 
-    public function forward(string $directory) : array {
-        $emails = $this->readEmails->withArgs(directory: $directory);
+    public function forward(string $directory) : EmailStats {
+        $emails = $this->readEmails->withArgs(directory: $directory)->get('emails');
         $aggregateSentiment = 0;
         $categories = new CategoryCount;
         foreach ($emails as $email) {
             $parsedEmail = $this->parseEmail->withArgs(email: $email);
-            $result = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail['body']));
-            $topic = (in_array($result->topic, ['sales', 'support', 'spam'])) ? $result->topic : 'other';
+            $emailAnalysis = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail->get('body')));
+            $topic = $emailAnalysis->get('topic');
+            $sentiment = $emailAnalysis->get('sentiment');
+            $topic = (in_array($topic, ['sales', 'support', 'spam'])) ? $topic : 'other';
             $categories->$topic++;
             if ($topic === 'spam') {
                 continue;
             }
-            $aggregateSentiment += match($result->sentiment) {
+            $aggregateSentiment += match($sentiment) {
                 'positive' => 1,
                 'neutral' => 0,
                 'negative' => -1,
@@ -123,28 +120,36 @@ class GetStats extends Module {
         }
         $spamRatio = $categories->spam / count($emails);
         $sentimentRatio = $aggregateSentiment / (count($emails) - $categories->spam);
-        return [
-            'emails' => count($emails),
-            'spam' => $categories->spam,
-            'sentimentRatio' => $sentimentRatio,
-            'spamRatio' => $spamRatio,
-            'categories' => $categories,
-        ];
+
+        $result = new EmailStats;
+        $result->emails = count($emails);
+        $result->spam = $categories->spam;
+        $result->sentimentRatio = $sentimentRatio;
+        $result->spamRatio = $spamRatio;
+        $result->categories = $categories;
+        return $result;
     }
 }
 
-// EXECUTION ////////////////////////////////////////////////////////////////
+$mockLLM = MockLLM::get([
+    '{"topic": "sales", "sentiment": "positive"}',
+    '{"topic": "support", "sentiment": "negative"}',
+    '{"topic": "spam", "sentiment": "neutral"}',
+    '{"topic": "sales", "sentiment": "negative"}',
+    '{"topic": "support", "sentiment": "negative"}',
+]);
 
 $directoryContents['inbox'] = [
     'sender: jl@gmail.com, body: I am happy about the discount you offered and accept contract renewal',
-    'sender: xxx, body: FREE! Get Ozempic and Viagra for free',
+    'sender: xxx, body: Get Ozempic for free',
     'sender: joe@wp.pl, body: My internet connection keeps failing',
     'sender: paul@x.io, body: How long do I have to wait for the pricing of custom support service?!?',
     'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
 ];
 
-$instructor = (new Instructor)->wiretap(fn($e)=>$e->print());
+$instructor = (new Instructor)->withClient($mockLLM);
 $getStats = new GetStats($instructor, $directoryContents);
-$result = $getStats->with(EmailStats::for(directory: 'inbox'));
+$emailStats = $getStats->with(EmailStats::for('inbox'));
 
-dump($result);
+echo "Results:\n";
+dump($emailStats->get());
