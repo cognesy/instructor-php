@@ -105,7 +105,52 @@ var_dump($person);
 //     age: 28
 // }    
 ```
-> **NOTE:** Instructor only supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values. If you want to define the shape of data during runtime, you can use structures (see [Structures](docs/structures.md) section).
+> **NOTE:** Instructor supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values.
+> 
+
+### Support for dynamic schemas
+
+If you want to define the shape of data during runtime, you can use structures,
+
+Structures allow dynamically define the shape of data to be extracted
+by LLM. Classes may not be the best fit for this purpose, as declaring or modifying
+them at a runtime is not possible.
+
+With structures, you can define custom data shapes dynamically, for example based
+on the user input or context of the processing, to specify the information you need
+LLM to infer from the provided text or chat messages.
+
+Example below demonstrates how to define a structure and use it as a response model:
+
+```php
+<?php
+use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Structure\Structure;
+
+enum Role : string {
+    case Manager = 'manager';
+    case Line = 'line';
+}
+
+$structure = Structure::define('person', [
+    Field::string('name'),
+    Field::int('age'),
+    Field::enum('role', Role::class),
+]);
+
+$person = (new Instructor)->respond(
+    messages: 'Jason is 25 years old and is a manager.',
+    responseModel: $structure,
+);
+
+// you can access structure data via field API...
+assert($person->field('name') === 'Jason');
+// ...or as structure object properties
+assert($person->age === 25);
+?>
+```
+
+For more information see [Structures](docs/structures.md) section.
 
 
 ### Validation
@@ -165,7 +210,7 @@ $person = (new Instructor)->respond(
 You can call `request()` method to set the parameters of the request and then call `get()` to get the response.
 
 ```php
-use Cognesy\Instructor;
+use Cognesy\Instructor\Instructor;
 
 $instructor = (new Instructor)->request(
     messages: "His name is Jason, he is 28 years old.",
@@ -175,6 +220,36 @@ $person = $instructor->get();
 ```
 
 
+### Streaming support
+
+Instructor supports streaming of partial results, allowing you to start
+processing the data as soon as it is available.
+
+```php
+<?php
+use Cognesy\Instructor\Instructor;
+
+$stream = (new Instructor)->request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+    options: ['stream' => true]
+)->stream();
+
+foreach ($stream as $partialPerson) {
+    // process partial person data
+    echo $partialPerson->name;
+    echo $partialPerson->age;
+}
+
+// after streaming is done you can get the final, fully processed person object...
+$person = $stream->getLastUpdate()
+// ...to, for example, save it to the database
+$db->save($person);
+?>
+```
+
+
+
 ### Partial results
 
 You can define `onPartialUpdate()` callback to receive partial results that can be used to start updating UI before LLM completes the inference.
@@ -182,7 +257,7 @@ You can define `onPartialUpdate()` callback to receive partial results that can 
 > NOTE: Partial updates are not validated. The response is only validated after it is fully received.
 
 ```php
-use Cognesy\Instructor;
+use Cognesy\Instructor\Instructor;
 
 function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
@@ -199,9 +274,6 @@ $person = (new Instructor)->request(
 // Here you get completed and validated Person object
 $this->db->save($person); // ...for example: save to DB
 ```
-
-
-
 
 
 
@@ -271,6 +343,7 @@ $value = (new Instructor)->respond(
 var_dump($value);
 // enum(ActivityType:Entertainment)
 ```
+
 
 ### Extracting Sequences of Objects
 

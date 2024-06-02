@@ -1,12 +1,12 @@
 # Structures
 
 Structures allow dynamically define the shape of data to be extracted
-by LLM. Classes may not be the best fit for this purpose, as they declaring
-them at runtime is not possible.
+by LLM. Classes may not be the best fit for this purpose, as declaring
+or modifying them at a runtime is not possible.
 
-With structures, you can define custom data shapes dynamically, at runtime
-to specify the information you need LLM to infer from the provided text or
-chat messages.
+With structures, you can define custom data shapes dynamically, for example based
+on the user input or context of the processing, to specify the information you need
+LLM to infer from the provided text or chat messages.
 
 
 

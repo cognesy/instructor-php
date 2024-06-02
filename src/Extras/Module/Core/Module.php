@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core;
 
+use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\CanProcessCall;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\HasPendingExecution;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
@@ -70,6 +71,7 @@ abstract class Module implements CanProcessCall
     protected function makePendingExecution(CanBeProcessed $call) : HasPendingExecution {
         return new class($this, $call) implements HasPendingExecution {
             private CanProcessCall $module;
+            private array $sourceInputs;
             private CanBeProcessed $call;
             private bool $executed = false;
             private mixed $result;
@@ -77,6 +79,7 @@ abstract class Module implements CanProcessCall
             public function __construct(CanProcessCall $module, CanBeProcessed $call) {
                 $this->module = $module;
                 $this->call = $call;
+                $this->sourceInputs = $call->inputs();
             }
 
             private function execute() : mixed {
@@ -110,6 +113,14 @@ abstract class Module implements CanProcessCall
                     return $this->call->outputs();
                 }
                 return $this->call->data()->output()->getPropertyValue($name);
+            }
+
+            public function asExample() : Example {
+                $this->execute();
+                return Example::fromData(
+                    $this->sourceInputs,
+                    $this->call->outputs(),
+                );
             }
 
             public function hasErrors() : bool {

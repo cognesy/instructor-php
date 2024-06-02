@@ -194,7 +194,7 @@ nav:
 ###HUB-INDEX-START###
     - Basics:
       - Basic use: 'hub/basics/basic.md'
-      - Basic use with HandlesExtraction trait: 'hub/basics/basic_via_mixin.md'
+      - Basic use with HandlesSelfExtraction trait: 'hub/basics/basic_via_mixin.md'
       - Extraction of complex objects: 'hub/basics/complex_object_extraction.md'
       - Extraction of complex objects (Anthropic): 'hub/basics/complex_object_extraction_anthropic.md'
       - Handling errors with `Maybe` helper class: 'hub/basics/maybe.md'
@@ -209,6 +209,8 @@ nav:
       - Customize parameters of OpenAI client: 'hub/advanced/custom_client_parameters.md'
       - Custom prompts: 'hub/advanced/custom_prompts.md'
       - Custom validation using Symfony Validator: 'hub/advanced/custom_validator.md'
+      - Extracting arguments of function or method: 'hub/advanced/function_arguments.md'
+      - Language programs: 'hub/advanced/language_programs.md'
       - Streaming partial updates during inference: 'hub/advanced/partial_updates.md'
       - Providing example inputs and outputs: 'hub/advanced/providing_examples.md'
       - Extracting scalar values: 'hub/advanced/scalars.md'

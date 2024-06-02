@@ -39,6 +39,14 @@ it('can process a simple task', function() {
     Profiler::summary();
 });
 
+it('can return example', function() {
+    $add = new TestModule;
+    $addition = $add->withArgs(numberA: 1, numberB: 2);
+
+    expect($addition->asExample()->toJson())
+        ->toBe("{inputs:{numberA:1,numberB:2},outputs:{sum:3}}");
+})->only();
+
 it('can process a closure task', function() {
     $add = function(int $a, int $b) : int {
         return $a + $b;

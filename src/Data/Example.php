@@ -93,6 +93,6 @@ class Example
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'input' => $this->input(),
             'output' => $this->output(),
-        ], JSON_PRETTY_PRINT);
+        ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
 }

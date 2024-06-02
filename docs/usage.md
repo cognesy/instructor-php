@@ -65,9 +65,10 @@ $value = (new Instructor)->respond(
 ```
 
 
-## Alternative ways to call Instructor
+## Alternative way to get results
 
-You can call `request()` method to create the request object and then call `get()` to get the response.
+You can call `request()` method to initiate Instructor with request data
+and then call `get()` to get the response.
 
 ```php
 use Cognesy\Instructor\Instructor;
@@ -78,6 +79,36 @@ $instructor = (new Instructor)->request(
 );
 
 $person = $instructor->get();
+```
+
+
+
+## Streaming support
+
+Instructor supports streaming of partial results, allowing you to start
+processing the data as soon as it is available.
+
+```php
+<?php
+use Cognesy\Instructor\Instructor;
+
+$stream = (new Instructor)->request(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+    options: ['stream' => true]
+)->stream();
+
+foreach ($stream as $partialPerson) {
+    // process partial person data
+    echo $partialPerson->name;
+    echo $partialPerson->age;
+}
+
+// after streaming is done you can get the final, fully processed person object...
+$person = $stream->getLastUpdate()
+// ...to, for example, save it to the database
+$db->save($person);
+?>
 ```
 
 
