@@ -1,12 +1,13 @@
 <?php
 namespace Tests\Feature\Extras;
 
+use Cognesy\Instructor\Extras\Module\Addons\CallClosure\CallClosure;
 use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Module\TaskData\TaskDataClass;
+use Cognesy\Instructor\Extras\Module\TaskData\SignatureData;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Profiler;
 use Tests\Examples\Module\TestModule;
@@ -38,6 +39,17 @@ it('can process a simple task', function() {
     Profiler::summary();
 });
 
+it('can process a closure task', function() {
+    $add = function(int $a, int $b) : int {
+        return $a + $b;
+    };
+    $addition = new CallClosure($add);
+    $sum = $addition->withArgs(a: 1, b: 2);
+
+    expect($sum->result())->toBe(3);
+    expect($sum->get('result'))->toBe(3);
+});
+
 it('can process predict task', function() {
     $mockLLM = MockLLM::get([
         '{"user_name": "Jason", "user_age": 28}',
@@ -61,7 +73,7 @@ it('can process predict task with multiple outputs', function() {
         '{"topic": "sales", "sentiment": "neutral"}',
     ]);
 
-    class EmailAnalysis2 extends TaskDataClass {
+    class EmailAnalysis2 extends SignatureData {
         #[InputField('email content')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other')]
@@ -85,7 +97,7 @@ it('can process predict task with multiple outputs', function() {
 });
 
 it('can process composite language program', function() {
-    class EmailAnalysis extends TaskDataClass {
+    class EmailAnalysis extends SignatureData {
         #[InputField('content of email')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other, spam')]
@@ -107,7 +119,7 @@ it('can process composite language program', function() {
         ) {}
     }
 
-    class EmailStats extends TaskDataClass {
+    class EmailStats extends SignatureData {
         #[InputField('directory containing emails')]
         public string $directory;
         #[OutputField('number of emails')]

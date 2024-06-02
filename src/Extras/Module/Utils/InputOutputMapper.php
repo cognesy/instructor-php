@@ -63,7 +63,7 @@ class InputOutputMapper
         $mapped = [];
         foreach ($expectedFields as $name) {
             if (!array_key_exists($name, $values)) {
-                throw new Exception("Missing field: {$name} in " . json_encode($values));
+                throw new Exception("Missing field: {$name} in " . json_encode($values) . ". Make sure to use names arguments if you're calling the module via withArgs().");
             }
             $mapped[$name] = $values[$name];
         }

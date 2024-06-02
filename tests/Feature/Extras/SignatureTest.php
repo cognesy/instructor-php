@@ -4,7 +4,7 @@ namespace Tests\Feature\Extras;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
-use Cognesy\Instructor\Extras\Module\TaskData\TaskDataClass;
+use Cognesy\Instructor\Extras\Module\TaskData\SignatureData;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Attributes\Description;
@@ -39,7 +39,7 @@ it('creates signature from classes', function () {
 
 it('creates auto signature from class metadata - autowiring', function () {
     #[Description('Test description')]
-    class TestSignature2Task extends TaskDataClass {
+    class TestSignature2Task extends SignatureData {
         #[InputField]
         public string $stringProperty;
         #[InputField('bool description')]
