@@ -215,6 +215,7 @@ nav:
       - Providing example inputs and outputs: 'hub/advanced/providing_examples.md'
       - Extracting scalar values: 'hub/advanced/scalars.md'
       - Extracting sequences of objects: 'hub/advanced/sequences.md'
+      - Streaming: 'hub/advanced/streaming.md'
       - Structures: 'hub/advanced/structures.md'
     - Techniques:
       - Arbitrary properties: 'hub/techniques/arbitrary_properties.md'

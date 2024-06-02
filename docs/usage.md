@@ -98,10 +98,10 @@ $stream = (new Instructor)->request(
     options: ['stream' => true]
 )->stream();
 
-foreach ($stream as $partialPerson) {
+foreach ($stream->partials() as $partialPerson) {
     // process partial person data
-    echo $partialPerson->name;
-    echo $partialPerson->age;
+    echo "Name: " $partialPerson->name ?? '...';
+    echo "Age: " $partialPerson->age ?? '...';
 }
 
 // after streaming is done you can get the final, fully processed person object...
