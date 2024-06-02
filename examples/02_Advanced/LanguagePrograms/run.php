@@ -1,8 +1,23 @@
 # Language programs
 
 Instructor provides an addon allowing to implement complex processing flows
-using LLM to process data with Module subclasses encapsulating processing logic and
-Signatures defining input and output data.
+using LLM in a modular way. This addon to Instructor has been inspired by DSPy
+library for Python (https://github.com/stanfordnlp/dspy).
+
+Key components of language program:
+ - Module subclasses - encapsulate processing logic
+ - Signatures - define input and output for data processed by modules
+
+NOTE: Other concepts from DSPy (optimizer, compiler, evaluator) have not been implemented yet.
+
+Module consists of 3 key parts:
+ - __construct() - initialization of module, prepare dependencies, setup submodules
+ - signature() - define input and output for data processed by module
+ - forward() - processing logic, return output data
+
+`Predict` class is a special module, that uses Instructor's structured processing
+capabilities to execute inference on provided inputs and return output in a requested
+format.
 
 ```php
 <?php
@@ -14,7 +29,6 @@ use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Instructor;
-use Tests\MockLLM;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -24,8 +38,10 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 class EmailAnalysis extends SignatureData {
     #[InputField('content of email')]
     public string $text;
+
     #[OutputField('identify most relevant email topic: sales, support, other, spam')]
     public string $topic;
+
     #[OutputField('one word sentiment: positive, neutral, negative')]
     public string $sentiment;
 
@@ -46,14 +62,19 @@ class CategoryCount {
 class EmailStats extends SignatureData {
     #[InputField('directory containing emails')]
     public string $directory;
+
     #[OutputField('number of emails')]
     public int $emails;
+
     #[OutputField('number of spam emails')]
     public int $spam;
+
     #[OutputField('average sentiment ratio')]
     public float $sentimentRatio;
+
     #[OutputField('spam ratio')]
     public float $spamRatio;
+
     #[OutputField('category counts')]
     public CategoryCount $categories;
 
@@ -66,9 +87,11 @@ class ReadEmails extends Module {
     public function __construct(
         private array $directoryContents = []
     ) {}
+
     public function signature() : string|Signature {
         return 'directory -> emails';
     }
+
     public function forward(string $directory) : array {
         return $this->directoryContents[$directory];
     }
@@ -78,6 +101,7 @@ class ParseEmail extends Module {
     public function signature() : string|Signature {
         return 'email -> sender, body';
     }
+
     protected function forward(string $email) : array {
         $parts = explode(',', $email);
         return [
