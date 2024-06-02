@@ -1,47 +1,47 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core;
 
-use Cognesy\Instructor\Extras\Module\Core\Contracts\CanProcess;
+use Cognesy\Instructor\Extras\Module\Core\Contracts\CanProcessCall;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\HasPendingExecution;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Module\Task\Contracts\CanBeProcessed;
-use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
-use Cognesy\Instructor\Extras\Module\Task\Task;
-use Cognesy\Instructor\Extras\Module\TaskData\Contracts\HasInputOutputData;
-use Cognesy\Instructor\Extras\Module\TaskData\TaskDataFactory;
+use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
+use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
+use Cognesy\Instructor\Extras\Module\Call\Call;
+use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
+use Cognesy\Instructor\Extras\Module\CallData\CallDataFactory;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
 
-abstract class Module implements CanProcess
+abstract class Module implements CanProcessCall
 {
     use Traits\HandlesSignature;
 
     protected Signature $signature;
 
     public function with(HasInputOutputData $data) : HasPendingExecution {
-        $task = $this->makeTask($data);
-        $task->changeStatus(TaskStatus::Ready);
-        return $this->makePendingExecution($task);
+        $call = $this->makeCall($data);
+        $call->changeStatus(CallStatus::Ready);
+        return $this->makePendingExecution($call);
     }
 
     public function withArgs(mixed ...$inputs) : HasPendingExecution {
-        $task = $this->makeTaskFromArgs(...$inputs);
-        $task->changeStatus(TaskStatus::Ready);
-        return $this->makePendingExecution($task);
+        $call = $this->makeCallFromArgs(...$inputs);
+        $call->changeStatus(CallStatus::Ready);
+        return $this->makePendingExecution($call);
     }
 
-    public function process(CanBeProcessed $task) : mixed {
+    public function process(CanBeProcessed $call) : mixed {
         try {
-            $task->changeStatus(TaskStatus::InProgress);
-            $result = $this->forward(...$task->data()->input()->getValues());
+            $call->changeStatus(CallStatus::InProgress);
+            $result = $this->forward(...$call->data()->input()->getValues());
             $outputs = InputOutputMapper::toOutputs($result, $this->outputNames());
-            $task->setOutputs($outputs);
-            $task->changeStatus(TaskStatus::Completed);
+            $call->setOutputs($outputs);
+            $call->changeStatus(CallStatus::Completed);
         } catch (Exception $e) {
-            $task->addError($e->getMessage(), ['exception' => $e]);
-            $task->changeStatus(TaskStatus::Failed);
+            $call->addError($e->getMessage(), ['exception' => $e]);
+            $call->changeStatus(CallStatus::Failed);
             throw $e;
         }
         return $result;
@@ -49,14 +49,14 @@ abstract class Module implements CanProcess
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
-    protected function makeTask(HasInputOutputData $data) : CanBeProcessed {
-        return new Task($data);
+    protected function makeCall(HasInputOutputData $data) : CanBeProcessed {
+        return new Call($data);
     }
 
-    protected function makeTaskFromArgs(mixed ...$inputs) : CanBeProcessed {
-        $taskData = TaskDataFactory::fromSignature($this->getSignature());
-        $taskData->withArgs(...$inputs);
-        return $this->makeTask($taskData);
+    protected function makeCallFromArgs(mixed ...$inputs) : CanBeProcessed {
+        $callData = CallDataFactory::fromSignature($this->getSignature());
+        $callData->withArgs(...$inputs);
+        return $this->makeCall($callData);
     }
 
     protected function inputNames() : array {
@@ -67,23 +67,23 @@ abstract class Module implements CanProcess
         return $this->getSignature()->outputNames();
     }
 
-    protected function makePendingExecution(CanBeProcessed $task) : HasPendingExecution {
-        return new class($this, $task) implements HasPendingExecution {
-            private CanProcess $module;
-            private CanBeProcessed $task;
+    protected function makePendingExecution(CanBeProcessed $call) : HasPendingExecution {
+        return new class($this, $call) implements HasPendingExecution {
+            private CanProcessCall $module;
+            private CanBeProcessed $call;
             private bool $executed = false;
             private mixed $result;
 
-            public function __construct(CanProcess $module, CanBeProcessed $task) {
+            public function __construct(CanProcessCall $module, CanBeProcessed $call) {
                 $this->module = $module;
-                $this->task = $task;
+                $this->call = $call;
             }
 
             private function execute() : mixed {
                 if ($this->executed) {
                     return $this->result;
                 }
-                $this->result = $this->module->process($this->task);
+                $this->result = $this->module->process($this->call);
                 $this->executed = true;
                 return $this->result;
             }
@@ -95,8 +95,8 @@ abstract class Module implements CanProcess
             public function try() : Result {
                 try {
                     $data = $this->execute();
-                    if ($this->task->hasErrors()) {
-                        return Result::failure($this->task->errors());
+                    if ($this->call->hasErrors()) {
+                        return Result::failure($this->call->errors());
                     }
                     return Result::success($data);
                 } catch (Exception $e) {
@@ -107,17 +107,17 @@ abstract class Module implements CanProcess
             public function get(string $name = null) : mixed {
                 $this->execute();
                 if (empty($name)) {
-                    return $this->task->outputs();
+                    return $this->call->outputs();
                 }
-                return $this->task->data()->output()->getPropertyValue($name);
+                return $this->call->data()->output()->getPropertyValue($name);
             }
 
             public function hasErrors() : bool {
-                return $this->task->hasErrors();
+                return $this->call->hasErrors();
             }
 
             public function errors() : array {
-                return $this->task->errors();
+                return $this->call->errors();
             }
         };
     }

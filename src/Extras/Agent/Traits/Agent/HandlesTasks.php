@@ -3,14 +3,14 @@
 namespace Cognesy\Instructor\Extras\Agent\Traits\Agent;
 
 use Cognesy\Instructor\Extras\Agent\Contracts\CanProcessTasks;
-use Cognesy\Instructor\Extras\Module\Task\Task;
+use Cognesy\Instructor\Extras\Module\Call\Call;
 use Cognesy\Instructor\Utils\Pipeline;
 
 trait HandlesTasks
 {
     private CanProcessTasks $taskProcessor;
 
-    public function processTask(Task $task) : Task {
+    public function processTask(Call $task) : Call {
         return (new Pipeline)
             ->process($task)
             ->through([
@@ -21,11 +21,11 @@ trait HandlesTasks
             ->thenReturn();
     }
 
-    protected function preprocessTask(Task $task) : Task {
+    protected function preprocessTask(Call $task) : Call {
         return $task;
     }
 
-    protected function postprocessTask(Task $task) : Task {
+    protected function postprocessTask(Call $task) : Call {
         return $task;
     }
 }

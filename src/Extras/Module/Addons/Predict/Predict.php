@@ -7,8 +7,8 @@ use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Module\Task\Contracts\CanBeProcessed;
-use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
+use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
+use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
@@ -18,7 +18,7 @@ class Predict extends Module
 {
     private Instructor $instructor;
     protected string $prompt;
-    protected string $defaultPrompt = 'Your task is to infer output argument values in input data based on specification: {signature} {description}';
+    protected string $defaultPrompt = 'Your job is to infer output argument values in input data based on specification: {signature} {description}';
     protected int $maxRetries = 3;
 
     protected string|Signature|HasSignature $defaultSignature;
@@ -44,18 +44,18 @@ class Predict extends Module
         return $this->defaultSignature;
     }
 
-    public function process(CanBeProcessed $task) : mixed {
+    public function process(CanBeProcessed $call) : mixed {
         try {
-            $task->changeStatus(TaskStatus::InProgress);
-            $values = $task->data()->input()->getValues();
-            $targetObject = $this->signatureCarrier ?? $task->outputRef();
+            $call->changeStatus(CallStatus::InProgress);
+            $values = $call->data()->input()->getValues();
+            $targetObject = $this->signatureCarrier ?? $call->outputRef();
             $result = $this->forward($values, $targetObject);
             $outputs = InputOutputMapper::toOutputs($result, $this->outputNames());
-            $task->setOutputs($outputs);
-            $task->changeStatus(TaskStatus::Completed);
+            $call->setOutputs($outputs);
+            $call->changeStatus(CallStatus::Completed);
         } catch (Exception $e) {
-            $task->addError($e->getMessage(), ['exception' => $e]);
-            $task->changeStatus(TaskStatus::Failed);
+            $call->addError($e->getMessage(), ['exception' => $e]);
+            $call->changeStatus(CallStatus::Failed);
             throw $e;
         }
         return $result;

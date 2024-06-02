@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Utils;
 
-use Cognesy\Instructor\Extras\Module\Task\Contracts\CanBeProcessed;
-use Cognesy\Instructor\Extras\Module\TaskData\Contracts\HasInputOutputData;
+use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
+use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
 use Exception;
 
 class InputOutputMapper

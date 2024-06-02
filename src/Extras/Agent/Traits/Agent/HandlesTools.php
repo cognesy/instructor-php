@@ -4,15 +4,15 @@ namespace Cognesy\Instructor\Extras\Agent\Traits\Agent;
 
 use Cognesy\Instructor\Extras\Agent\Contracts\CanUseTools;
 use Cognesy\Instructor\Extras\Agent\Tool;
-use Cognesy\Instructor\Extras\Module\Task\Task;
+use Cognesy\Instructor\Extras\Module\Call\Call;
 
 trait HandlesTools
 {
     private CanUseTools $tools;
 
-    public function selectTool(Task $task) : Tool {
+    public function selectTool(Call $task) : Tool {
     }
 
-    public function useTool(Task $task, Tool $tool) : Task {
+    public function useTool(Call $task, Tool $tool) : Call {
     }
 }

@@ -6,25 +6,25 @@ use Cognesy\Instructor\Utils\Json;
 use DateTime;
 use DateTimeImmutable;
 
-class TaskFailed extends Event
+class CallFailed extends Event
 {
     public function __construct(
-        public string $taskId,
-        public string $taskName,
-        public DateTimeImmutable $taskCreatedAt,
-        public DateTime $taskUpdatedAt,
-        public array $taskDetails,
+        public string $callId,
+        public string $callName,
+        public DateTimeImmutable $callCreatedAt,
+        public DateTime $callUpdatedAt,
+        public array $callDetails,
     ) {
         parent::__construct();
     }
 
     public function __toString(): string {
         return Json::encode([
-            'taskId' => $this->taskId,
-            'taskName' => $this->taskName,
-            'taskCreatedAt' => $this->taskCreatedAt->format('Y-m-d H:i:s'),
-            'taskUpdatedAt' => $this->taskUpdatedAt->format('Y-m-d H:i:s'),
-            'taskDetails' => $this->taskDetails,
+            'callId' => $this->callId,
+            'callName' => $this->callName,
+            'callCreatedAt' => $this->callCreatedAt->format('Y-m-d H:i:s'),
+            'callUpdatedAt' => $this->callUpdatedAt->format('Y-m-d H:i:s'),
+            'callDetails' => $this->callDetails,
         ]);
     }
 }

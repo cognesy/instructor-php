@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Module\TaskData\SignatureData;
+use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Instructor;
 use Tests\MockLLM;
 
