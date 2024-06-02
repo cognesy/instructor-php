@@ -131,14 +131,6 @@ class GetStats extends Module {
     }
 }
 
-$mockLLM = MockLLM::get([
-    '{"topic": "sales", "sentiment": "positive"}',
-    '{"topic": "support", "sentiment": "negative"}',
-    '{"topic": "spam", "sentiment": "neutral"}',
-    '{"topic": "sales", "sentiment": "negative"}',
-    '{"topic": "support", "sentiment": "negative"}',
-]);
-
 $directoryContents['inbox'] = [
     'sender: jl@gmail.com, body: I am happy about the discount you offered and accept contract renewal',
     'sender: xxx, body: Get Ozempic for free',
@@ -147,7 +139,7 @@ $directoryContents['inbox'] = [
     'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
 ];
 
-$instructor = (new Instructor)->withClient($mockLLM);
+$instructor = (new Instructor);
 $getStats = new GetStats($instructor, $directoryContents);
 $emailStats = $getStats->with(EmailStats::for('inbox'));
 
