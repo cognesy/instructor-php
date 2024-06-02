@@ -1,29 +1,28 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Factory;
 
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Module\Signature\StructureSignature;
 use Cognesy\Instructor\Utils\Pipeline;
 use InvalidArgumentException;
 
 trait CreatesSignatureFromString
 {
-    static public function fromString(string $signatureString): HasSignature {
-        if (!str_contains($signatureString, HasSignature::ARROW)) {
+    static public function fromString(string $signatureString): Signature {
+        if (!str_contains($signatureString, Signature::ARROW)) {
             throw new InvalidArgumentException('Invalid signature string, missing arrow -> marker separating inputs and outputs');
         }
         $signatureString = (new Pipeline)
             ->through(fn(string $str) => trim($str))
             ->through(fn(string $str) => str_replace("\n", ' ', $str))
-            ->through(fn(string $str) => str_replace(HasSignature::ARROW, '>', $str))
+            ->through(fn(string $str) => str_replace(Signature::ARROW, '>', $str))
             ->process($signatureString);
         // split inputs and outputs
         [$inputs, $outputs] = explode('>', $signatureString);
-        $signature = new StructureSignature(
-            inputs: StructureFactory::fromString('inputs', $inputs),
-            outputs: StructureFactory::fromString('outputs', $outputs)
+
+        return new Signature(
+            input: StructureFactory::fromString('inputs', $inputs)->schema(),
+            output: StructureFactory::fromString('outputs', $outputs)->schema(),
         );
-        return $signature;
     }
 }

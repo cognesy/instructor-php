@@ -6,6 +6,10 @@ use BackedEnum;
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\Task\Contracts\CanBeProcessed;
+use Cognesy\Instructor\Extras\Module\Task\Enums\TaskStatus;
+use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
@@ -16,22 +20,48 @@ class Predict extends Module
     protected string $prompt;
     protected string $defaultPrompt = 'Your task is to infer output argument values in input data based on specification: {signature} {description}';
     protected int $maxRetries = 3;
-    protected string|HasSignature $defaultSignature;
+
+    protected string|Signature|HasSignature $defaultSignature;
+
+    protected ?object $signatureCarrier;
+    protected object $responseObject;
 
     public function __construct(
-        string|HasSignature $signature,
-        Instructor          $instructor,
+        string|Signature|HasSignature $signature,
+        Instructor $instructor,
     ) {
-        parent::__construct();
-        $this->defaultSignature = $signature;
+        if ($signature instanceof HasSignature) {
+            $this->signatureCarrier = $signature;
+        }
+        $this->defaultSignature = match(true) {
+            $signature instanceof HasSignature => $signature->signature(),
+            default => $signature,
+        };
         $this->instructor = $instructor;
     }
 
-    public function signature(): string|HasSignature {
+    public function signature(): string|Signature {
         return $this->defaultSignature;
     }
 
-    public function forward(mixed ...$args): mixed {
+    public function process(CanBeProcessed $task) : mixed {
+        try {
+            $task->changeStatus(TaskStatus::InProgress);
+            $values = $task->data()->input()->getValues();
+            $targetObject = $this->signatureCarrier ?? $task->outputRef();
+            $result = $this->forward($values, $targetObject);
+            $outputs = InputOutputMapper::toOutputs($result, $this->outputNames());
+            $task->setOutputs($outputs);
+            $task->changeStatus(TaskStatus::Completed);
+        } catch (Exception $e) {
+            $task->addError($e->getMessage(), ['exception' => $e]);
+            $task->changeStatus(TaskStatus::Failed);
+            throw $e;
+        }
+        return $result;
+    }
+
+    public function forward(array $args, object $targetObject): mixed {
         $input = match(true) {
             count($args) === 0 => throw new \Exception('Empty input'),
             count($args) === 1 => reset($args),
@@ -41,12 +71,14 @@ class Predict extends Module
                 default => throw new Exception('Invalid input - should be string or messages array'),
             }
         };
+
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
-            responseModel: $this->outputRef(),
-            model: 'gpt-4o',
+            responseModel: $targetObject,
+            model: 'gpt-4o', // TODO: needs to be configurable
             maxRetries: $this->maxRetries,
         );
+
         return $response;
     }
 
@@ -81,7 +113,7 @@ class Predict extends Module
     public function renderPrompt(string $template): string {
         return Template::render($template, [
             'signature' => $this->getSignature()->toSignatureString(),
-            'description' => $this->getSignature()->description()
+            'description' => $this->getSignature()->toOutputSchema()->description(),
         ]);
     }
 }

@@ -9,7 +9,9 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 trait ProvidesSchema
 {
     public function toSchema(): Schema {

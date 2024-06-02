@@ -2,47 +2,63 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature;
 
-use Cognesy\Instructor\Contracts\CanProvideSchema;
-use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
-use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Module\DataModel\Contracts\DataModel;
-use Cognesy\Instructor\Extras\Module\DataModel\ObjectDataModel;
-use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Extras\Module\Signature\Traits\ConvertsToSignatureString;
+use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 
-class Signature implements HasSignature, CanProvideSchema
+class Signature
 {
-    use Traits\Signature\ProvidesClassInfo;
-    use Traits\Signature\ProvidesSchema;
-    use Traits\ConvertsToSignatureString;
-    use Traits\InitializesSignatureInputs;
-    use Traits\HandlesErrors;
-    use Traits\HandlesTaskData;
+    use ConvertsToSignatureString;
 
-    private DataModel $input;
-    private DataModel $output;
+    public const ARROW = '->';
+
+    private Schema $input;
+    private Schema $output;
     private string $description;
+    private string $shortSignature;
+    private string $fullSignature;
 
-    public function __construct() {
-        $instance = $this;
-        $classInfo = new ClassInfo(static::class);
-        $instance->description = $classInfo->getClassDescription();
-        $inputProperties = $this->getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(InputField::class)]);
-        $outputProperties = $this->getPropertyNames($classInfo, [fn($property) => $property->hasAttribute(OutputField::class)]);
-        $instance->input = new ObjectDataModel($instance, $inputProperties);
-        $instance->output = new ObjectDataModel($instance, $outputProperties);
+    public function __construct(
+        Schema $input,
+        Schema $output,
+        string $description = ''
+    ) {
+        $this->input = $input;
+        $this->output = $output;
+        $this->description = $description;
+        $this->shortSignature = $this->makeShortSignatureString();
+        $this->fullSignature = $this->makeSignatureString();
     }
 
-    static public function make(mixed ...$inputs) : static {
-        $instance = new static;
-        if (empty($inputs)) {
-            return $instance;
-        }
-        return $instance->withArgs(...$inputs);
-    }
-
-    public function description(): string {
+    public function getDescription(): string {
         return $this->description;
+    }
+
+    public function toInputSchema(): Schema {
+        return $this->input;
+    }
+
+    public function toOutputSchema(): Schema {
+        return $this->output;
+    }
+
+    public function toSchema(): Schema {
+        return $this->output;
+    }
+
+    public function toShortSignature(): string {
+        return $this->shortSignature;
+    }
+
+    public function toSignatureString(): string {
+        return $this->fullSignature;
+    }
+
+    public function inputNames(): array {
+        return $this->toInputSchema()->getPropertyNames();
+    }
+
+    public function outputNames(): array {
+        return $this->toOutputSchema()->getPropertyNames();
     }
 }

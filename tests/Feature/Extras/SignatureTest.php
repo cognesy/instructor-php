@@ -1,31 +1,18 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
+use Cognesy\Instructor\Extras\Module\TaskData\TaskDataClass;
+use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Attributes\Description;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 it('creates signature from string', function () {
     $signature = SignatureFactory::fromString('name:string (description) -> age:int (description)');
     expect($signature->toSignatureString())->toBe('name:string (description) -> age:int (description)');
-});
-
-it('creates signature from structure', function () {
-    $structure = Structure::define('test', [
-        Field::structure('inputs', [
-            Field::string('name', 'name description'),
-        ]),
-        Field::structure('outputs', [
-            Field::int('age', 'age description'),
-        ]),
-    ]);
-    $signature = SignatureFactory::fromStructure($structure);
-    expect($signature->toSignatureString())->toBe('name:string (name description) -> age:int (age description)');
 });
 
 it('creates signature from separate structures', function () {
@@ -52,7 +39,7 @@ it('creates signature from classes', function () {
 
 it('creates auto signature from class metadata - autowiring', function () {
     #[Description('Test description')]
-    class TestSignature2 extends Signature {
+    class TestSignature2Task extends TaskDataClass {
         #[InputField]
         public string $stringProperty;
         #[InputField('bool description')]
@@ -67,6 +54,6 @@ it('creates auto signature from class metadata - autowiring', function () {
         #[OutputField]
         public $mixedProperty;
     }
-    $signature = new TestSignature2;
+    $signature = (new TestSignature2Task)->signature();
     expect($signature->toSignatureString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
 });

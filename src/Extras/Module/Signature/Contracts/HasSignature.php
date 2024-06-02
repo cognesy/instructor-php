@@ -1,7 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Signature\Contracts;
 
-interface HasSignature extends HasInputOutputSchema, HasInputOutputData
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
+
+interface HasSignature
 {
-    public const ARROW = '->';
+    public function signature() : Signature;
 }

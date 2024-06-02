@@ -2,14 +2,14 @@
 
 namespace Cognesy\Instructor\Extras\Agent\Traits\Tool;
 
-use Cognesy\Instructor\Extras\Call\Call;
+use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 trait HandlesSchemas
 {
-    private Call $call;
+    private FunctionCall $call;
 
-    public function getCall(): Call {
+    public function getCall(): FunctionCall {
         return $this->call;
     }
 

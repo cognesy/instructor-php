@@ -8,4 +8,5 @@ class SignatureFactory
     use Traits\Factory\CreatesFromClasses;
     use Traits\Factory\CreatesSignatureFromString;
     use Traits\Factory\CreatesFromStructure;
+    use Traits\Factory\CreatesFromClassMetadata;
 }

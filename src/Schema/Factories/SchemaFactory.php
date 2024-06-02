@@ -35,7 +35,6 @@ class SchemaFactory
 
     private array $warnOnInstancesOf = [
         Structure::class,
-        HasSignature::class,
         Sequence::class,
         Scalar::class,
         Maybe::class,

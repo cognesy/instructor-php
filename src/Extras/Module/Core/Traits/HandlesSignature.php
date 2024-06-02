@@ -3,27 +3,25 @@
 namespace Cognesy\Instructor\Extras\Module\Core\Traits;
 
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
-use InvalidArgumentException;
+use Exception;
 
 trait HandlesSignature
 {
-    protected HasSignature $signature;
+    abstract public function signature() : string|Signature;
 
-    public function getSignature(): HasSignature {
+    protected function getSignature() : Signature {
         if (!isset($this->signature)) {
-            $this->signature = $this->initSignature($this->signature());
+            $signature = $this->signature();
+            $this->signature = match(true) {
+                is_string($signature) && str_contains($signature, Signature::ARROW) => SignatureFactory::fromString($signature),
+                is_string($signature) && (is_subclass_of($signature, HasSignature::class)) => (new $signature)->signature(),
+                $signature instanceof HasSignature => $signature->signature(),
+                $signature instanceof Signature => $signature,
+                default => throw new Exception('Invalid signature type: ' . gettype($signature))
+            };
         }
         return $this->signature;
-    }
-
-    protected function initSignature(string|HasSignature $signature) : HasSignature {
-        $instance = match(true) {
-            is_string($signature) && str_contains($signature, HasSignature::ARROW) => SignatureFactory::fromString($signature),
-            // is_string($signature) => SignatureFactory::fromClassMetadata($signature),
-            $signature instanceof HasSignature => $signature,
-            default => throw new InvalidArgumentException('Object is not instance of Signature: ' . get_class($signature))
-        };
-        return $instance;
     }
 }

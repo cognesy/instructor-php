@@ -2,25 +2,27 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits;
 
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 trait ConvertsToSignatureString
 {
-    public function toShortSignature() : string {
+    protected function makeShortSignatureString() : string {
         return $this->renderSignature($this->shortPropertySignature(...));
     }
 
-    public function toSignatureString() : string {
+    protected function makeSignatureString() : string {
         return $this->renderSignature($this->propertySignature(...));
     }
 
+    // INTERNAL /////////////////////////////////////////////////////////////////////////
+
     private function renderSignature(callable $nameRenderer) : string {
-        $inputs = $this->mapProperties($this->input()->getPropertySchemas(), $nameRenderer);
-        $outputs = $this->mapProperties($this->output()->getPropertySchemas(), $nameRenderer);
+        $inputs = $this->mapProperties($this->input->getPropertySchemas(), $nameRenderer);
+        $outputs = $this->mapProperties($this->output->getPropertySchemas(), $nameRenderer);
         return implode('', [
             implode(', ', $inputs),
-            (" ".HasSignature::ARROW." "),
+            (" " . Signature::ARROW . " "),
             implode(', ', $outputs)
         ]);
     }

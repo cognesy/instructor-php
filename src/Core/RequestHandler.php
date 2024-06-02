@@ -30,6 +30,7 @@ class RequestHandler implements CanHandleRequest
      */
     public function respondTo(Request $request) : mixed {
         $responseModel = $request->responseModel();
+
         if ($responseModel === null) {
             throw new Exception("Request does not have a response model");
         }

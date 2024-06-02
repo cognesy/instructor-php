@@ -63,7 +63,7 @@ class ReadEmails extends Module {
     public function __construct(private array $directoryContents = []) {
         parent::__construct();
     }
-    public function signature() : string|HasSignature {
+    public function signature() : string|Signature {
         return 'directory -> emails';
     }
     public function forward(string $directory) : array {
@@ -72,7 +72,7 @@ class ReadEmails extends Module {
 }
 
 class ParseEmail extends Module {
-    public function signature() : string|HasSignature {
+    public function signature() : string|Signature {
         return 'email -> sender, body';
     }
     protected function forward(string $email) : array {
@@ -99,7 +99,7 @@ class GetStats extends Module {
         $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
     }
 
-    public function signature() : string|HasSignature {
+    public function signature() : string|Signature {
         return EmailStats::class;
     }
 

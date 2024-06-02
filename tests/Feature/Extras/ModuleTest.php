@@ -5,23 +5,34 @@ use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\TaskData\TaskDataClass;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Profiler;
-use Tests\Examples\Module\TestTask;
+use Tests\Examples\Module\TestModule;
 use Tests\MockLLM;
 
 it('can process a simple task', function() {
     Profiler::mark('start');
-    $add = new TestTask;
-    $result = $add->withArgs(numberA: 1, numberB: 2);
-    Profiler::mark('end');
 
-    expect($result)->toBe(3);
-    expect($add->input('numberA'))->toBe(1);
-    expect($add->input('numberB'))->toBe(2);
-    expect($add->output('sum'))->toBe(3);
+    $add = new TestModule;
+    $addition = $add->withArgs(numberA: 1, numberB: 2);
+    Profiler::mark('fresh - requires loading classes');
+    $add = new TestModule;
+    $addition = $add->withArgs(numberA: 9991, numberB: 8762);
+    Profiler::mark('subsequent call - classes loaded');
+    $add = new TestModule;
+    $addition = $add->withArgs(numberA: 13, numberB: 342);
+    Profiler::mark('subsequent call - classes loaded');
+    $add = new TestModule;
+    $addition = $add->withArgs(numberA: 12, numberB: 22);
+    Profiler::mark('subsequent call - classes loaded');
+    $add = new TestModule;
+    $addition = $add->withArgs(numberA: 1, numberB: 2);
+    Profiler::mark('subsequent call - classes loaded');
+
+    expect($addition->result())->toBe(3);
+    expect($addition->get('sum'))->toBe(3);
 
     // calculate time taken
     Profiler::summary();
@@ -33,14 +44,16 @@ it('can process predict task', function() {
     ]);
 
     $instructor = (new Instructor)->withClient($mockLLM);
-    $predict = new Predict('text (email containing user data) -> user_name, user_age:int', $instructor);
-    $result = $predict->withArgs(text: 'Jason is 28 years old');
+    $predict = new Predict(
+        signature: 'text (email containing user data) -> user_name, user_age:int',
+        instructor: $instructor
+    );
+    $prediction = $predict->withArgs(text: 'Jason is 28 years old');
 
-    expect($result->toArray())->toBe(['user_name' => 'Jason', 'user_age' => 28]);
+    expect($prediction->get())->toBe(['user_name' => 'Jason', 'user_age' => 28]);
 
-    expect($predict->input('text'))->toBe('Jason is 28 years old');
-    expect($predict->output('user_name'))->toBe('Jason');
-    expect($predict->output('user_age'))->toBe(28);
+    expect($prediction->get('user_name'))->toBe('Jason');
+    expect($prediction->get('user_age'))->toBe(28);
 });
 
 it('can process predict task with multiple outputs', function() {
@@ -48,7 +61,7 @@ it('can process predict task with multiple outputs', function() {
         '{"topic": "sales", "sentiment": "neutral"}',
     ]);
 
-    class EmailAnalysis2 extends Signature {
+    class EmailAnalysis2 extends TaskDataClass {
         #[InputField('email content')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other')]
@@ -57,23 +70,22 @@ it('can process predict task with multiple outputs', function() {
         public string $sentiment;
 
         public static function for(string $text) : static {
-            return self::make(text: $text);
+            return self::fromArgs(text: $text);
         }
     }
 
     $instructor = (new Instructor)->withClient($mockLLM);
-    $task = new Predict(EmailAnalysis2::class, $instructor);
-    $result = $task->with(EmailAnalysis2::for(text: 'Can I get pricing for your business support plan?'));
+    $predict = new Predict(EmailAnalysis2::class, $instructor);
+    $analysis = $predict->with(EmailAnalysis2::for(text: 'Can I get pricing for your business support plan?'));
 
-    expect($result->toArray())->toMatchArray(['topic' => 'sales', 'sentiment' => 'neutral']);
+    expect($analysis->get())->toMatchArray(['topic' => 'sales', 'sentiment' => 'neutral']);
 
-    expect($task->input('text'))->toBe('Can I get pricing for your business support plan?');
-    expect($task->output('topic'))->toBe('sales');
-    expect($task->output('sentiment'))->toBe('neutral');
+    expect($analysis->get('topic'))->toBe('sales');
+    expect($analysis->get('sentiment'))->toBe('neutral');
 });
 
 it('can process composite language program', function() {
-    class EmailAnalysis extends Signature {
+    class EmailAnalysis extends TaskDataClass {
         #[InputField('content of email')]
         public string $text;
         #[OutputField('identify most relevant email topic: sales, support, other, spam')]
@@ -82,7 +94,7 @@ it('can process composite language program', function() {
         public string $sentiment;
 
         public static function for(string $text) : static {
-            return self::make(text: $text);
+            return self::fromArgs(text: $text);
         }
     }
 
@@ -95,7 +107,7 @@ it('can process composite language program', function() {
         ) {}
     }
 
-    class EmailStats extends Signature {
+    class EmailStats extends TaskDataClass {
         #[InputField('directory containing emails')]
         public string $directory;
         #[OutputField('number of emails')]
@@ -110,15 +122,15 @@ it('can process composite language program', function() {
         public CategoryCount $categories;
 
         static public function for(string $directory) : static {
-            return self::make(directory: $directory);
+            return self::fromArgs(directory: $directory);
         }
     }
 
     class ReadEmails extends Module {
-        public function __construct(private array $directoryContents = []) {
-            parent::__construct();
-        }
-        public function signature() : string|HasSignature {
+        public function __construct(
+            private array $directoryContents = []
+        ) {}
+        public function signature() : string|Signature {
             return 'directory -> emails';
         }
         public function forward(string $directory) : array {
@@ -127,7 +139,7 @@ it('can process composite language program', function() {
     }
 
     class ParseEmail extends Module {
-        public function signature() : string|HasSignature {
+        public function signature() : string|Signature {
             return 'email -> sender, body';
         }
         protected function forward(string $email) : array {
@@ -145,30 +157,30 @@ it('can process composite language program', function() {
         private Predict $analyseEmail;
 
         public function __construct(Instructor $instructor, array $directoryContents = []) {
-            parent::__construct();
-
             $this->readEmails = new ReadEmails($directoryContents);
             $this->parseEmail = new ParseEmail();
             $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
         }
 
-        public function signature() : string|HasSignature {
+        public function signature() : string|Signature {
             return EmailStats::class;
         }
 
-        public function forward(string $directory) : array {
-            $emails = $this->readEmails->withArgs(directory: $directory);
+        public function forward(string $directory) : EmailStats {
+            $emails = $this->readEmails->withArgs(directory: $directory)->get('emails');
             $aggregateSentiment = 0;
             $categories = new CategoryCount;
             foreach ($emails as $email) {
                 $parsedEmail = $this->parseEmail->withArgs(email: $email);
-                $result = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail['body']));
-                $topic = (in_array($result->topic, ['sales', 'support', 'spam'])) ? $result->topic : 'other';
+                $emailAnalysis = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail->get('body')));
+                $topic = $emailAnalysis->get('topic');
+                $sentiment = $emailAnalysis->get('sentiment');
+                $topic = (in_array($topic, ['sales', 'support', 'spam'])) ? $topic : 'other';
                 $categories->$topic++;
                 if ($topic === 'spam') {
                     continue;
                 }
-                $aggregateSentiment += match($result->sentiment) {
+                $aggregateSentiment += match($sentiment) {
                     'positive' => 1,
                     'neutral' => 0,
                     'negative' => -1,
@@ -176,13 +188,14 @@ it('can process composite language program', function() {
             }
             $spamRatio = $categories->spam / count($emails);
             $sentimentRatio = $aggregateSentiment / (count($emails) - $categories->spam);
-            return [
-                'emails' => count($emails),
-                'spam' => $categories->spam,
-                'sentimentRatio' => $sentimentRatio,
-                'spamRatio' => $spamRatio,
-                'categories' => $categories,
-            ];
+
+            $result = new EmailStats;
+            $result->emails = count($emails);
+            $result->spam = $categories->spam;
+            $result->sentimentRatio = $sentimentRatio;
+            $result->spamRatio = $spamRatio;
+            $result->categories = $categories;
+            return $result;
         }
     }
 
@@ -203,10 +216,10 @@ it('can process composite language program', function() {
     ];
 
     $instructor = (new Instructor)->withClient($mockLLM);
-    $task = new GetStats($instructor, $directoryContents);
-    $result = $task->with(EmailStats::for('inbox'));
+    $getStats = new GetStats($instructor, $directoryContents);
+    $emailStats = $getStats->with(EmailStats::for('inbox'));
 
-    expect($result)->toEqual([
+    expect($emailStats->get())->toEqual([
         'emails' => 5,
         'spam' => 1,
         'sentimentRatio' => -0.5,

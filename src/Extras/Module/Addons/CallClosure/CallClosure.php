@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Module\Addons\CallClosure;
 
 use Closure;
@@ -16,7 +15,10 @@ class CallClosure extends Module
         parent::__construct();
     }
 
-    public function signature(): string|HasSignature {
+    static protected function boot(): void {
+    }
+
+    public function signature(): string|Signature {
         return SignatureFactory::fromCallable($this->callable);
     }
 

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Agent\Traits\Agent;
 
 use Cognesy\Instructor\Extras\Agent\Contracts\CanUseTools;
 use Cognesy\Instructor\Extras\Agent\Tool;
-use Cognesy\Instructor\Extras\Module\Core\Task;
+use Cognesy\Instructor\Extras\Module\Task\Task;
 
 trait HandlesTools
 {

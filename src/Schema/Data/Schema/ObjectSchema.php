@@ -3,10 +3,13 @@
 namespace Cognesy\Instructor\Schema\Data\Schema;
 
 use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
+use Cognesy\Instructor\Schema\Data\Traits\Schema\ProvidesPropertyAccess;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
 class ObjectSchema extends Schema
 {
+    use ProvidesPropertyAccess;
+
     /** @var array<string, Schema> */
     public array $properties = []; // for objects OR empty
     /** @var string[] */
@@ -26,20 +29,5 @@ class ObjectSchema extends Schema
 
     public function accept(CanVisitSchema $visitor): void {
         $visitor->visitObjectSchema($this);
-    }
-
-    /** @return Schema[] */
-    public function getProperties() : array {
-        return $this->properties;
-    }
-
-    /** @return string[] */
-    public function getPropertyNames() : array {
-        return array_keys($this->properties);
-    }
-
-    public function removeProperty(string $name): void {
-        unset($this->properties[$name]);
-        unset($this->required[$name]);
     }
 }

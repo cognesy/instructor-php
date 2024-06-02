@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Agent\Traits\Agent;
 
 use Cognesy\Instructor\Extras\Agent\Contracts\CanProcessTasks;
-use Cognesy\Instructor\Extras\Module\Core\Task;
+use Cognesy\Instructor\Extras\Module\Task\Task;
 use Cognesy\Instructor\Utils\Pipeline;
 
 trait HandlesTasks

@@ -57,21 +57,6 @@ class ClassInfo {
         return $this->propertyInfos;
     }
 
-    /**
-     * @param callable[] $filters
-     * @return PropertyInfo[]
-     */
-    public function filterProperties(array $filters) : array {
-        $propertyInfos = $this->getProperties();
-        foreach($filters as $filter) {
-            if (!is_callable($filter)) {
-                throw new Exception("Filter must be a callable.");
-            }
-            $propertyInfos = array_filter($propertyInfos, $filter);
-        }
-        return $propertyInfos;
-    }
-
     public function getProperty(string $name) : PropertyInfo {
         $properties = $this->getProperties();
         if (!isset($properties[$name])) {
@@ -175,7 +160,56 @@ class ClassInfo {
         return in_array($interface, class_implements($this->class));
     }
 
+    // FILTERING /////////////////////////////////////////////////////////////////
+
+    /**
+     * @param ClassInfo $classInfo
+     * @param array<callable> $filters
+     * @return array<string>
+     */
+    public function getFilteredPropertyNames(array $filters) : array {
+        return array_keys($this->getFilteredPropertyData(
+            filters: $filters,
+            extractor: fn(PropertyInfo $property) => $property->getName()
+        ));
+    }
+
+    /**
+     * @param ClassInfo $classInfo
+     * @param array<callable> $filters
+     * @return array<PropertyInfo>
+     */
+    public function getFilteredProperties(array $filters) : array {
+        return $this->filterProperties($filters);
+    }
+
+    /**
+     * @param ClassInfo $classInfo
+     * @return array<string, PropertyInfo>
+     */
+    private function getFilteredPropertyData(array $filters, callable $extractor) : array {
+        return array_map(
+            callback: fn(PropertyInfo $property) => $extractor($property),
+            array: $this->filterProperties($filters),
+        );
+    }
+
     // INTERNAL /////////////////////////////////////////////////////////////////
+
+    /**
+     * @param callable[] $filters
+     * @return PropertyInfo[]
+     */
+    protected function filterProperties(array $filters) : array {
+        $propertyInfos = $this->getProperties();
+        foreach($filters as $filter) {
+            if (!is_callable($filter)) {
+                throw new Exception("Filter must be a callable.");
+            }
+            $propertyInfos = array_filter($propertyInfos, $filter);
+        }
+        return $propertyInfos;
+    }
 
     /** @return PropertyInfo[] */
     protected function makePropertyInfos() : array {

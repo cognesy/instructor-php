@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Extras\Agent;
 
 use Closure;
-use Cognesy\Instructor\Extras\Call\Call;
+use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
 use Cognesy\Instructor\Instructor;
 
 class Tool
@@ -20,7 +20,7 @@ class Tool
     ) {
         $this->name = $name;
         $this->description = $description;
-        $this->call = Call::fromCallable($function);
+        $this->call = FunctionCall::fromCallable($function);
         $this->function = Closure::fromCallable($function);
         $this->instructor = $instructor ?? new Instructor();
     }

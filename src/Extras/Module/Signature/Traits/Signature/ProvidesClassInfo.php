@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Signature;
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
 use Cognesy\Instructor\Schema\Utils\PropertyInfo;
+use JetBrains\PhpStorm\Deprecated;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
+#[Deprecated]
 trait ProvidesClassInfo
 {
     private array $internalProperties = [

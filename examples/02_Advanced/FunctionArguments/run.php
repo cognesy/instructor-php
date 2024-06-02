@@ -8,7 +8,7 @@ This is useful when you want to build tool usage capability, e.g. for AI chatbot
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Call\Call;
+use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
 use Cognesy\Instructor\Instructor;
 
 /** Save user data to storage */
@@ -20,7 +20,7 @@ function saveUser(string $name, int $age, string $country) {
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
 $args = (new Instructor)->respond(
     messages: $text,
-    responseModel: Call::fromCallable(saveUser(...)),
+    responseModel: FunctionCall::fromCallable(saveUser(...)),
 );
 
 echo "\nCalling the function with the extracted arguments:\n";
