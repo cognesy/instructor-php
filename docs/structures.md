@@ -1,8 +1,10 @@
 # Structures
 
-Structures allow dynamically define the shape of data to be extracted
-by LLM. Classes may not be the best fit for this purpose, as declaring
-or modifying them at a runtime is not possible.
+If you want to define the shape of data during runtime, you can use `Structure` class.
+
+Structures allow you to define and modify arbitrary shape of data to be extracted by
+LLM. Classes may not be the best fit for this purpose, as declaring or changing them
+during execution is not possible.
 
 With structures, you can define custom data shapes dynamically, for example based
 on the user input or context of the processing, to specify the information you need
@@ -158,6 +160,7 @@ dump($person->toArray());
 // ]
 ?>
 ```
+
 
 ## Working with `Structure` objects
 

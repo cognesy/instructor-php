@@ -204,3 +204,8 @@ var_dump($person);
 //     ]
 // }
 ```
+
+
+## Dynamic data schemas with `Structure` class
+
+See [Structures](structures.md) for more details on how to work with dynamic data schemas.
