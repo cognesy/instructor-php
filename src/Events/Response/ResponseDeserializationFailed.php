@@ -3,9 +3,12 @@
 namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\Event;
+use Psr\Log\LogLevel;
 
 class ResponseDeserializationFailed extends Event
 {
+    public $logLevel = LogLevel::WARNING;
+
     public function __construct(
         public string $errors
     ) {

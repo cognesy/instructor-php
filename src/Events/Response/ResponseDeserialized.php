@@ -4,9 +4,12 @@ namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 
 class ResponseDeserialized extends Event
 {
+    public $logLevel = LogLevel::INFO;
+
     public function __construct(
         public mixed $object
     ) {

@@ -4,9 +4,12 @@ namespace Cognesy\Instructor\Events\Request;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 
 class ValidationRecoveryLimitReached extends Event
 {
+    public $logLevel = LogLevel::ERROR;
+
     public function __construct(
         public int $retries,
         public array $errors,

@@ -15,7 +15,7 @@ it('can handle string class name', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        new EventDispatcher(),
+        new EventDispatcher('test'),
     );
     $responseModel = $responseModelFactory->fromAny(User::class);
     expect($responseModel->instanceClass())->toBe(User::class);
@@ -41,7 +41,7 @@ it('can handle array schema', function($user) {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        new EventDispatcher(),
+        new EventDispatcher('test'),
     );
     $responseModel = $responseModelFactory->fromAny($user);
     expect($responseModel->instanceClass())->toBe(User::class);
@@ -67,7 +67,7 @@ it('can handle schema provider - via instance', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        new EventDispatcher(),
+        new EventDispatcher('test'),
     );
     $responseModel = $responseModelFactory->fromAny(new UserWithProvider());
     expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
@@ -94,7 +94,7 @@ it('can handle schema provider - via class name', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        new EventDispatcher(),
+        new EventDispatcher('test'),
     );
     $responseModel = $responseModelFactory->fromAny(UserWithProvider::class);
     expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
@@ -121,7 +121,7 @@ it('can handle ObjectSchema instance', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        new EventDispatcher(),
+        new EventDispatcher('test'),
     );
     $schemaFactory = new SchemaFactory();
     $schema = $schemaFactory->schema(User::class);
@@ -149,7 +149,7 @@ it('can handle raw object', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        new EventDispatcher(),
+        new EventDispatcher('test'),
     );
     $responseModel = $responseModelFactory->fromAny(new User());
     expect($responseModel->instanceClass())->toBe(User::class);

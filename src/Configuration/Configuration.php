@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Configuration;
 
+use Cognesy\Instructor\Events\Configuration\ConfigurationInitiated;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
@@ -11,13 +12,16 @@ use Psr\Container\ContainerInterface;
  */
 class Configuration implements ContainerInterface
 {
-    use Traits\HasConfigurationInstance;
-    use Traits\HandlesConfig;
-    use Traits\HandlesComponentInstances;
     use HandlesEvents;
     use HandlesEventListeners;
 
-    public function __construct() {
-        $this->events = new EventDispatcher();
+    use Traits\HandlesComponentInstances;
+    use Traits\HandlesConfig;
+    use Traits\HandlesConfigInclude;
+    use Traits\HasConfigurationInstance;
+
+    public function __construct(EventDispatcher $events = null) {
+        $this->events = $events ?? new EventDispatcher('configuration');
+        $this->events->dispatch(new ConfigurationInitiated());
     }
 }

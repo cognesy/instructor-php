@@ -44,7 +44,7 @@ return function(Configuration $config) : Configuration {
 
     $config->declare(
         class: ModelParams::class,
-        name: 'cohere:cohere',
+        name: 'cohere:command',
         context: [
             'label' => 'Cohere Command',
             'type' => 'cohere',

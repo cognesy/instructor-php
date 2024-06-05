@@ -242,6 +242,7 @@ nav:
       - Support for Anthropic API: 'hub/api_support/llm_support_anthropic.md'
       - Support for Anyscale API: 'hub/api_support/llm_support_anyscale.md'
       - Support for Azure OpenAI API: 'hub/api_support/llm_support_azure_oai.md'
+      - Support for Cohere API: 'hub/api_support/llm_support_cohere.md'
       - Support for Fireworks.ai API: 'hub/api_support/llm_support_fireworks_ai.md'
       - Support for Groq API: 'hub/api_support/llm_support_groq.md'
       - Support for Mistral API: 'hub/api_support/llm_support_mistral.md'

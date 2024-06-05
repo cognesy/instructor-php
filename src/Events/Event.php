@@ -5,12 +5,16 @@ use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Uuid;
 use Cognesy\InstructorHub\Utils\Color;
 use DateTimeImmutable;
+use Psr\Log\LogLevel;
 
 class Event
 {
     public readonly string $eventId;
     public readonly DateTimeImmutable $createdAt;
     public mixed $data;
+
+    public $logLevel = LogLevel::DEBUG;
+    public bool $isForwarded = false;
 
     public function __construct(mixed $data = []) {
         $this->eventId = Uuid::uuid4();

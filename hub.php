@@ -9,6 +9,6 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\InstructorHub\\', __DIR__ . '../src-hub/');
 
-$config = hub(new Configuration());
+$config = hub(Configuration::instance());
 $app = new Cognesy\InstructorHub\Hub($config);
 $app->run($argc, $argv);

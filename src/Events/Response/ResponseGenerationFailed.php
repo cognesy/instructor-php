@@ -4,9 +4,12 @@ namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 
 class ResponseGenerationFailed extends Event
 {
+    public $logLevel = LogLevel::WARNING;
+
     public function __construct(
         public array $errors,
     ) {

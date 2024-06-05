@@ -5,9 +5,12 @@ namespace Cognesy\Instructor\Events\ApiClient;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 
 class ApiRequestInitiated extends Event
 {
+    public $logLevel = LogLevel::INFO;
+
     public function __construct(
         public ApiRequest $request,
     ) {

@@ -12,14 +12,17 @@ use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Logging\EventLogger;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -43,6 +46,8 @@ class Instructor {
     protected RequestFactory $requestFactory;
     protected ApiClientFactory $clientFactory;
     protected ResponseModelFactory $responseModelFactory;
+    private LoggerInterface $logger;
+    private EventLogger $eventLogger;
 
     public function __construct(array $config = []) {
         $this->queueEvent(new InstructorStarted($config));
@@ -54,6 +59,9 @@ class Instructor {
         $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
         $this->requestFactory = $this->config->get(RequestFactory::class);
         $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
+        //$this->logger = $this->config->get(LoggerInterface::class);
+        //$this->eventLogger = $this->config->get(EventLogger::class);
+        //$this->events->wiretap($this->eventLogger->eventListener(...));
         $this->queueEvent(new InstructorReady($this->config));
     }
 

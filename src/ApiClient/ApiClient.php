@@ -25,7 +25,7 @@ abstract class ApiClient implements CanCallApi
     public function __construct(
         EventDispatcher $events = null,
     ) {
-        $this->withEventDispatcher($events ?? new EventDispatcher());
+        $this->withEventDispatcher($events ?? new EventDispatcher('api-client'));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

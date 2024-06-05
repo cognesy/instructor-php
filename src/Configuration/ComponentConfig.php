@@ -22,7 +22,8 @@ use Throwable;
  * @property callable $getInstance Callback to create the instance (overrides provided class name), receives $context values
  * @property bool $injectContext Force attempt to set provided context values into the instance public properties (if they exist)
  */
-class ComponentConfig {
+class ComponentConfig
+{
     use HandlesEvents;
 
     public function __construct(

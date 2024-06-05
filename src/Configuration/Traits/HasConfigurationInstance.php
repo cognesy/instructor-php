@@ -13,9 +13,9 @@ trait HasConfigurationInstance
     /**
      * Get the singleton of empty configuration
      */
-    static public function instance() : Configuration {
+    static public function instance(EventDispatcher $events = null) : Configuration {
         if (is_null(self::$instance)) {
-            self::$instance = new Configuration();
+            self::$instance = new Configuration($events);
         }
         return self::$instance;
     }
@@ -25,8 +25,8 @@ trait HasConfigurationInstance
      */
     static public function auto(array $overrides = [], EventDispatcher $events = null) : Configuration {
         if (is_null(self::$instance)) {
-            $events = $events ?? new EventDispatcher();
-            self::$instance = autowire(new Configuration, $events)->override($overrides);
+            $config = new Configuration($events);
+            self::$instance = autowire($config, $config->events())->override($overrides);
         }
         return self::$instance;
     }

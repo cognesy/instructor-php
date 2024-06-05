@@ -4,10 +4,13 @@ namespace Cognesy\Instructor\Events\Configuration;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 use Throwable;
 
 class ComponentCreationFailed extends Event
 {
+    public $logLevel = LogLevel::CRITICAL;
+
     public function __construct(
         public string $name,
         public Throwable $error,

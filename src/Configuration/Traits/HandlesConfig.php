@@ -4,14 +4,13 @@ namespace Cognesy\Instructor\Configuration\Traits;
 
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Events\Configuration\ConfigurationReady;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
 use function Cognesy\config\autowire;
 
 trait HandlesConfig
 {
-    use HandlesConfigInclude;
-
     /** @var ComponentConfig[] array of component configurations */
     private array $config = [];
     private bool $allowOverride = true; // does configuration allow override
@@ -20,10 +19,8 @@ trait HandlesConfig
      * Always new, autowired configuration; useful mostly for tests
      */
     static public function fresh(array $overrides = [], EventDispatcher $events = null) : Configuration {
-        $events = $events ?? new EventDispatcher();
-        //$config = (new Configuration)->withEventDispatcher($events);
-        $config = new Configuration;
-        return autowire($config, $events)->override($overrides);
+        $config = new Configuration($events);
+        return autowire($config, $config->events())->override($overrides);
     }
 
     /**
@@ -59,6 +56,7 @@ trait HandlesConfig
         foreach ($configOverrides as $name => $value) {
             $this->declare($name, getInstance: fn() => $value);
         }
+        $this->events()->dispatch(new ConfigurationReady($configOverrides));
         return $this;
     }
 
@@ -92,12 +90,14 @@ trait HandlesConfig
     public function external(
         string $class,
         string $name = null,
-        object $reference = null
+        object $reference = null,
+        array $context = [],
     ) : self {
         $this->register((new ComponentConfig(
             name: $name ?? $class,
             class: $class,
-            getInstance: fn() => $reference
+            context: $context,
+            getInstance: fn() => $reference,
         ))->withEventDispatcher($this->events));
         return $this;
     }

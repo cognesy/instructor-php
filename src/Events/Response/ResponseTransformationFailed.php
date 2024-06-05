@@ -5,9 +5,12 @@ namespace Cognesy\Instructor\Events\Response;
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 
 class ResponseTransformationFailed extends Event
 {
+    public $logLevel = LogLevel::WARNING;
+
     public function __construct(
         public CanTransformSelf $object,
         private string $message
