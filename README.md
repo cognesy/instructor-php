@@ -791,6 +791,12 @@ If you want to help, check out some of the issues. All contributions are welcome
 This project is licensed under the terms of the MIT License.
 
 
+## Support
+
+If you have any questions or need help, please reach out to me on [Twitter](https://twitter.com/ddebowczyk) or [GitHub](https://github.com/cognesy/instructor-php/issues).
+
+
+
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->

@@ -38,10 +38,8 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 class EmailAnalysis extends SignatureData {
     #[InputField('content of email')]
     public string $text;
-
     #[OutputField('identify most relevant email topic: sales, support, other, spam')]
     public string $topic;
-
     #[OutputField('one word sentiment: positive, neutral, negative')]
     public string $sentiment;
 
@@ -62,19 +60,14 @@ class CategoryCount {
 class EmailStats extends SignatureData {
     #[InputField('directory containing emails')]
     public string $directory;
-
     #[OutputField('number of emails')]
     public int $emails;
-
     #[OutputField('number of spam emails')]
     public int $spam;
-
     #[OutputField('average sentiment ratio')]
     public float $sentimentRatio;
-
     #[OutputField('spam ratio')]
     public float $spamRatio;
-
     #[OutputField('category counts')]
     public CategoryCount $categories;
 
@@ -83,56 +76,56 @@ class EmailStats extends SignatureData {
     }
 }
 
+// MODULE DECLARATIONS ////////////////////////////////////////////////////////////////////
+
 class ReadEmails extends Module {
     public function __construct(
         private array $directoryContents = []
     ) {}
 
     public function signature() : string|Signature {
-        return 'directory -> emails';
+        return 'directory -> emails : string[]';
     }
 
-    public function forward(string $directory) : array {
+    protected function forward(string $directory) : array {
         return $this->directoryContents[$directory];
     }
 }
 
 class ParseEmail extends Module {
     public function signature() : string|Signature {
-        return 'email -> sender, body';
+        return 'email -> sender, subject, body';
     }
 
     protected function forward(string $email) : array {
         $parts = explode(',', $email);
         return [
             'sender' => trim(explode(':', $parts[0])[1]),
-            'body' => trim(explode(':', $parts[1])[1]),
+            'subject' => trim(explode(':', $parts[1])[1]),
+            'body' => trim(explode(':', $parts[2])[1]),
         ];
     }
 }
 
 class GetStats extends Module {
-    private ReadEmails $readEmails;
-    private ParseEmail $parseEmail;
-    private Predict $analyseEmail;
-
-    public function __construct(Instructor $instructor, array $directoryContents = []) {
-        $this->readEmails = new ReadEmails($directoryContents);
-        $this->parseEmail = new ParseEmail();
-        $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
-    }
+    public function __construct(
+        private ReadEmails $readEmails,
+        private ParseEmail $parseEmail,
+        private Predict $analyseEmail,
+    ) {}
 
     public function signature() : string|Signature {
         return EmailStats::class;
     }
 
-    public function forward(string $directory) : EmailStats {
+    protected function forward(string $directory) : EmailStats {
         $emails = $this->readEmails->withArgs(directory: $directory)->get('emails');
         $aggregateSentiment = 0;
         $categories = new CategoryCount;
         foreach ($emails as $email) {
             $parsedEmail = $this->parseEmail->withArgs(email: $email);
-            $emailAnalysis = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail->get('body')));
+            $emailData = EmailAnalysis::for(text: $parsedEmail->get('body'));
+            $emailAnalysis = $this->analyseEmail->with($emailData);
             $topic = $emailAnalysis->get('topic');
             $sentiment = $emailAnalysis->get('sentiment');
             $topic = (in_array($topic, ['sales', 'support', 'spam'])) ? $topic : 'other';
@@ -160,19 +153,26 @@ class GetStats extends Module {
 }
 
 $directoryContents['inbox'] = [
-    'sender: jl@gmail.com, body: I am happy about the discount you offered and accept contract renewal',
-    'sender: xxx, body: Get Viagra and Ozempic for free',
-    'sender: joe@wp.pl, body: My internet connection keeps failing',
-    'sender: paul@x.io, body: How long do I have to wait for the pricing of custom support service?!?',
-    'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
+    'sender: jl@gmail.com, subject: Offer, body: I am happy about the discount you offered and accept contract renewal',
+    'sender: xxx, subject: Free!!!, body: Get Ozempic for free',
+    'sender: joe@wp.pl, subject: Problem, body: My internet connection keeps failing',
+    'sender: paul@x.io, subject: Still no pricing, body: How long do I have to wait for the pricing of custom support service?!?',
+    'sender: joe@wp.pl, subject: Slow connection, body: 2 weeks of waiting and still no improvement of my connection',
 ];
 
+// PREPARE DEPENDENCIES
+
 $instructor = (new Instructor);
-$getStats = new GetStats($instructor, $directoryContents);
+$readEmails = new ReadEmails($directoryContents);
+$parseEmail = new ParseEmail();
+$analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
+$getStats = new GetStats($readEmails, $parseEmail, $analyseEmail);
+
+// EXECUTE LANGUAGE PROGRAM
+
 $emailStats = $getStats->with(EmailStats::for('inbox'));
 
 echo "Results:\n";
 dump($emailStats->get());
 ?>
 ```
-

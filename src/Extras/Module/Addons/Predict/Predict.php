@@ -65,6 +65,7 @@ class Predict extends DynamicModule
             count($args) === 0 => throw new \Exception('Empty input'),
             count($args) === 1 => reset($args),
             default => match(true) {
+                is_array($args) => $args,
                 is_array($args[0]) => $args[0],
                 is_string($args[0]) => $args[0],
                 default => throw new Exception('Invalid input - should be string or messages array'),
