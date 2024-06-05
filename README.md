@@ -31,6 +31,8 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
  - Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Anyscale, Fireworks AI, Ollama, OpenRouter, Together AI)
  - Use local models with Ollama
  - Get detailed insight into internal processing via events
+ - Learn more from growing documentation and 50+ cookbooks
+
 
 
 ## Instructor in Other Languages
