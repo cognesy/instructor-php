@@ -7,6 +7,8 @@ use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Exception;
+use InvalidArgumentException;
 use ReflectionFunction;
 
 trait CreatesFromCallable
@@ -38,8 +40,14 @@ trait CreatesFromCallable
         }
         $typeName = $returnType->getName();
         $name = self::DEFAULT_OUTPUT;
-        return Structure::define('outputs', [
-            FieldFactory::fromTypeName($name, $typeName)
-        ])->schema();
+        try {
+            $schema = Structure::define('outputs', [
+                FieldFactory::fromTypeName($name, $typeName)
+            ])->schema();
+        } catch (Exception $e) {
+            $functionName = $reflection->getName() .'($'. implode(',$', array_map(fn($p)=>$p->getName(), $reflection->getParameters())) .')';
+            throw new InvalidArgumentException('Cannot build signature from callable `'.$functionName.'` with invalid return type `' . $typeName . '`: ' . $e->getMessage());
+        }
+        return $schema;
     }
 }

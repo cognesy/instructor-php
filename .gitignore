@@ -4,6 +4,7 @@
 .vscode/
 experimental/
 .env
-vendor
+archived/
+vendor/
 php_errors.log
 composer.lock

@@ -5,6 +5,8 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
+use Cognesy\Instructor\Compilation\Contracts\CompilerInput;
+use Cognesy\Instructor\Compilation\Input;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
@@ -72,5 +74,24 @@ class Request
 
     public function copy(array $messages) : self {
         return (clone $this)->withMessages($messages);
+    }
+
+    public function toCompilerInput() : CompilerInput {
+        return new Input(
+            mode: $this->mode,
+            model: $this->model,
+            messages: $this->messages,
+            responseModel: $this->responseModel,
+            options: $this->options,
+            examples: $this->examples,
+            feedback: $this->feedback,
+            tools: $this->tools,
+            toolChoice: $this->toolChoice,
+            prompt: $this->prompt,
+            retryPrompt: $this->retryPrompt,
+            signature: $this->signature,
+            inputSchema: $this->inputSchema,
+            inputData: $this->inputData,
+        );
     }
 }

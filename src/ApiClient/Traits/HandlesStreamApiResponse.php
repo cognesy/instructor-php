@@ -15,10 +15,6 @@ use Saloon\Exceptions\Request\RequestException;
 
 trait HandlesStreamApiResponse
 {
-    use HandlesApiConnector;
-    use HandlesApiRequest;
-    use ReadsStreamResponse;
-
     /**
      * @return Generator<PartialApiResponse>
      */

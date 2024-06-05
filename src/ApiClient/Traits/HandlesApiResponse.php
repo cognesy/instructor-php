@@ -13,9 +13,6 @@ use Saloon\Http\Response;
 
 trait HandlesApiResponse
 {
-    use HandlesApiConnector;
-    use HandlesApiRequest;
-
     public function respond(ApiRequest $request) : ApiResponse {
         return $this->withApiRequest($request)->get();
     }
@@ -27,7 +24,6 @@ trait HandlesApiResponse
         $request = $this->getApiRequest();
         $response = $this->respondRaw($request);
         return $this->apiRequest->toApiResponse($response);
-
     }
 
     protected function respondRaw(ApiRequest $request): Response {

@@ -1,14 +1,17 @@
 <?php
 
-namespace Cognesy\Instructor\Clients\OpenAI;
+namespace Cognesy\Instructor\Clients\Cohere;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Override;
 
-class OpenAIApiRequest extends ApiRequest
+class CohereApiRequest extends ApiRequest
 {
+    use Traits\HandlesResponse;
     use Traits\HandlesTools;
     use Traits\HandlesResponseFormat;
-    use Traits\HandlesResponse;
+
+    protected string $defaultEndpoint = '/chat';
 
     public function __construct(
         public array $messages = [],
@@ -19,9 +22,6 @@ class OpenAIApiRequest extends ApiRequest
         public array $options = [],
         public string $endpoint = '',
     ) {
-        if ($this->isStreamed()) {
-            $options['stream_options']['include_usage'] = true;
-        }
         parent::__construct(
             messages: $messages,
             tools: $tools,
@@ -30,6 +30,19 @@ class OpenAIApiRequest extends ApiRequest
             model: $model,
             options: $options,
             endpoint: $endpoint
+        );
+    }
+
+    #[Override]
+    protected function defaultBody(): array {
+        return array_filter(
+            array_merge(
+                [
+                    'model' => $this->model,
+                    'tools' => $this->tools()
+                ],
+                $this->options,
+            )
         );
     }
 }

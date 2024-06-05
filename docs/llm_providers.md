@@ -46,6 +46,29 @@ Example:
 - `./examples/05_APISupport/LLMSupportAzureOAI/run.php`
 
 
+## Cohere
+
+
+Cohere API is a commercial provider of Command models with their own API, which
+is significantly different from OpenAI. Instructor uses only a limited set of
+Cohere API capabilities, specifically - chat completions.
+
+You can find the details on how to configure the client in the example below.
+Cohere does not support JSON mode.
+
+Mode compatibility:
+- Mode::MdJson - supported, recommended
+- Mode::Tools - partially supported, not recommended (at the moment)
+
+Reasons Mode::Tools is not recommended:
+
+- Cohere does not support JSON Schema, which only allows to extract very simple data schemas.
+- Performance of the currently available versions of Cohere models in tools mode for Instructor use case (data extraction) is extremely poor.
+
+Example:
+- `./examples/05_APISupport/LLMSupportCohere/run.php`
+
+
 
 ## FireworksAI
 
@@ -105,6 +128,9 @@ Example:
 
 OpenAI is the default provider that is called by Instructor unless user
 configures different one.
+
+OpenAI models (esp. GPT-4 and newer) perform very well across all 3 extraction
+modes.  
 
 Supported extraction modes:
  - Mode::Tools (recommended)

@@ -543,6 +543,7 @@ Instructor offers out of the box support for following API providers:
 - Anthropic
 - Anyscale
 - Azure OpenAI
+- Cohere
 - Fireworks AI
 - Groq
 - Mistral

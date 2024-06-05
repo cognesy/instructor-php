@@ -22,14 +22,22 @@ class Call implements CanBeProcessed, HasErrorData
     use Traits\HandlesCallInfo;
     use Traits\HandlesCallStatus;
 
+    protected string $caller;
+    protected string $callerSignature;
     protected HasInputOutputData $data;
 
-    public function __construct(HasInputOutputData $data) {
+    public function __construct(
+        HasInputOutputData $data,
+        string $caller = '',
+        string $callerSignature = ''
+    ) {
         $this->id = Uuid::uuid4();
         $this->createdAt = new DateTimeImmutable();
         $this->updatedAt = new DateTime();
         $this->status = CallStatus::Created;
         $this->context = [];
+        $this->caller = $caller;
+        $this->callerSignature = $callerSignature;
         $this->data = $data;
     }
 

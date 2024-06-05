@@ -26,7 +26,8 @@ trait HandlesApiRequestFactory
         if (empty($this->option('max_tokens'))) {
             $this->setOption('max_tokens', $this->client->defaultMaxTokens);
         }
-        return $this->fromRequest();
+        $request = $this->fromRequest();
+        return $request;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,42 +45,42 @@ trait HandlesApiRequestFactory
     protected function makeApiRequest(string $requestClass) : ApiRequest {
         return $this->apiRequestFactory->makeRequest(
             requestClass: $requestClass,
-            messages: $this->makeInstructions(),
+            messages: $this->messages(),
             tools: $this->toolCallSchema(),
             toolChoice: $this->toolChoice(),
             responseFormat: $this->responseFormat(),
             model: $this->modelName(),
-            options: $this->options(),
+            options: $this->makeOptions(),
         );
     }
 
     protected function makeChatCompletionRequest(string $requestClass) : ApiRequest {
         return $this->apiRequestFactory->makeChatCompletionRequest(
             requestClass: $requestClass,
-            messages: $this->makeInstructions(),
+            messages: $this->messages(),
             model: $this->modelName(),
-            options: $this->options(),
+            options: $this->makeOptions(),
         );
     }
 
     protected function makeJsonCompletionRequest(string $requestClass) : ApiRequest {
         return $this->apiRequestFactory->makeJsonCompletionRequest(
             requestClass: $requestClass,
-            messages: $this->makeInstructions(),
+            messages: $this->messages(),
             responseFormat: $this->responseFormat(),
             model: $this->modelName(),
-            options: $this->options(),
+            options: $this->makeOptions(),
         );
     }
 
     protected function makeToolsCallRequest(string $requestClass) : ApiRequest {
         return $this->apiRequestFactory->makeToolsCallRequest(
             requestClass: $requestClass,
-            messages: $this->makeInstructions(),
+            messages: $this->messages(),
             tools: $this->toolCallSchema(),
             toolChoice: $this->toolChoice(),
             model: $this->modelName(),
-            options: $this->options(),
+            options: $this->makeOptions(),
         );
     }
 }

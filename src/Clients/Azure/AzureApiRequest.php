@@ -14,7 +14,7 @@ class AzureApiRequest extends ApiRequest
     use HandlesResponse;
 
     public function __construct(
-        public string|array $messages = [],
+        public array $messages = [],
         public array $tools = [],
         public string|array $toolChoice = [],
         public string|array $responseFormat = [],

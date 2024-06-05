@@ -1,20 +1,17 @@
 <?php
 
-namespace Cognesy\Instructor\Clients\Mistral;
+namespace Cognesy\Instructor\Clients\Cohere;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Override;
 
-class MistralClient extends ApiClient
+class CohereClient extends ApiClient
 {
-    use HandlesStreamData;
+    use Traits\HandlesStreamData;
 
-    public string $defaultModel = 'mistral:mistral-small';
+    public string $defaultModel = 'cohere:command-r';
     public int $defaultMaxTokens = 256;
 
     public function __construct(
@@ -27,7 +24,7 @@ class MistralClient extends ApiClient
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
-        $this->withConnector($connector ?? new MistralConnector(
+        $this->withConnector($connector ?? new CohereConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
             connectTimeout: $connectTimeout,
@@ -37,8 +34,7 @@ class MistralClient extends ApiClient
         ));
     }
 
-    #[Override]
-    public function getModeRequestClass(Mode $mode) : string {
-        return MistralApiRequest::class;
+    public function getModeRequestClass(Mode $mode): string {
+        return CohereApiRequest::class;
     }
 }

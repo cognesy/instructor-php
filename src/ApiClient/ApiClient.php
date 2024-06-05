@@ -11,11 +11,16 @@ abstract class ApiClient implements CanCallApi
 {
     use HandlesEvents;
     use HandlesEventListeners;
-    use Traits\HandlesDefaultModel;
+
+    use Traits\HandlesApiConnector;
+    use Traits\HandlesApiRequest;
+    use Traits\HandlesApiRequestFactory;
     use Traits\HandlesApiResponse;
     use Traits\HandlesAsyncApiResponse;
+    use Traits\HandlesDefaultModel;
+    use Traits\HandlesQueryParams;
     use Traits\HandlesStreamApiResponse;
-    use Traits\HandlesApiRequestFactory;
+    use Traits\ReadsStreamResponse;
 
     public function __construct(
         EventDispatcher $events = null,
@@ -25,7 +30,9 @@ abstract class ApiClient implements CanCallApi
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
-    public function request(array $messages, array $tools = [], array $toolChoice = [], array $responseFormat = [], string $model = '', array $options = []): static {
+    public function request(
+        array $messages, array $tools = [], array $toolChoice = [], array $responseFormat = [], string $model = '', array $options = []
+    ): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }

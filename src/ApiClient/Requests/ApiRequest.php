@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\ApiClient\Requests;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
+use Override;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -23,7 +24,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     protected Method $method = Method::POST;
 
     public function __construct(
-        public string|array $messages = [],
+        public array $messages = [],
         public array $tools = [],
         public string|array $toolChoice = [],
         public string|array $responseFormat = [],
@@ -31,8 +32,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         public array $options = [],
         public string $endpoint = '',
     ) {
-        $this->messages = $this->normalizeMessages($messages);
-
         $this->debug = $this->options['debug'] ?? false;
         unset($this->options['debug']);
 
@@ -44,6 +43,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
                 throw new \Exception('Cannot use cache with streamed requests');
             }
         }
+
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
     }
 
@@ -52,13 +52,15 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     protected function defaultBody(): array {
-        return array_filter(array_merge([
-            'messages' => $this->messages(),
-            'model' => $this->model,
-            'tools' => $this->tools(),
-            'tool_choice' => $this->getToolChoice(),
-            'response_format' => $this->getResponseFormat(),
-        ], $this->options));
+        return array_filter(
+            array_merge([
+                'messages' => $this->messages(),
+                'model' => $this->model,
+                'tools' => $this->tools(),
+                'tool_choice' => $this->getToolChoice(),
+                'response_format' => $this->getResponseFormat(),
+            ], $this->options)
+        );
     }
 
     abstract public function toApiResponse(Response $response): ApiResponse;

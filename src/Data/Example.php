@@ -15,8 +15,6 @@ class Example
     private array $output;
 
     public string $template = <<<TEMPLATE
-        # EXAMPLE
-        
         INPUT:
         {input}
         

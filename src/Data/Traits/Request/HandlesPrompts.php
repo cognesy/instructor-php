@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
+use Cognesy\Instructor\Core\MessageBuilder;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
@@ -10,16 +11,14 @@ trait HandlesPrompts
 {
     private array $defaultPrompts = [
         Mode::MdJson->value => "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n{json_schema}\n",
-        Mode::Json->value => "\nRespond correctly with JSON object. Response must follow JSONSchema:\n{json_schema}\n",
-        Mode::Tools->value => "\nExtract correct and accurate data from the input using provided tools. Response must be JSON object following provided schema.\n",
+        Mode::Json->value => "\nRespond correctly with strict JSON object. Response must follow JSONSchema:\n{json_schema}\n",
+        Mode::Tools->value => "\nExtract correct and accurate data from the input using provided tools. Response must be JSON object following provided tool schema.\n",
     ];
-    private string $dataPrompt = "Input acknowledged.";
-    private $instructionsCallback = null;
-
+    private string $dataAcknowledgedPrompt = "Input acknowledged.";
     private string $prompt;
 
     public function prompt() : string {
-        return $this->prompt ?: $this->defaultPrompts[$this->mode->value];
+        return $this->prompt ?: $this->defaultPrompts[$this->mode->value] ?? '';
     }
 
     public function withPrompt(string $prompt) : self {
@@ -29,32 +28,28 @@ trait HandlesPrompts
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
-    protected function makeInstructions() : array {
-        if (!empty($this->instructionsCallback)) {
-            $instructions = ($this->instructionsCallback)($this);
-        } else {
-            $instructions = $this->addInstructions();
-        }
-        return $instructions;
-    }
-
-    protected function addInstructions() : array {
+    protected function makeOptions() : array {
         if (empty($this->messages)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
-        $content = '';
-        if (!empty($this->prompt())) {
-            $content .= Template::render($this->prompt(), ['json_schema' => $this->jsonSchema()]);
+
+        if (empty($this->client())) {
+            throw new Exception('Client is required to render request body.');
         }
-        if (!empty($this->examples)) {
-            foreach ($this->examples as $example) {
-                $content .= $example->toString() . "\n\n";
-            }
-        }
+
+        $body = MessageBuilder::requestBody(
+            clientClass: get_class($this->client()),
+            mode: $this->mode(),
+            messages: $this->messages(),
+            responseModel: $this->responseModel(),
+            dataAcknowledgedPrompt: $this->dataAcknowledgedPrompt,
+            prompt: Template::render($this->prompt(), ['json_schema' => $this->jsonSchema()]),
+            examples: $this->examples(),
+        );
+
         return array_merge(
-            $this->normalizeMessages($this->messages),
-            [['role' => 'assistant', 'content' => $this->dataPrompt]],
-            [['role' => 'user', 'content' => $content]],
+            $this->options,
+            $body,
         );
     }
 }

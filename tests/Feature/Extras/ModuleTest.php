@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Feature\Extras;
 
+use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Extras\Module\Addons\CallClosure\CallClosure;
 use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
 use Cognesy\Instructor\Extras\Module\Core\Module;
@@ -33,7 +34,7 @@ it('can process a simple task', function() {
     Profiler::mark('subsequent call - classes loaded');
 
     expect($addition->result())->toBe(3);
-    expect($addition->get('sum'))->toBe(3);
+    expect($addition->get('result'))->toBe(3);
 
     // calculate time taken
     Profiler::summary();
@@ -44,7 +45,7 @@ it('can return example', function() {
     $addition = $add->withArgs(numberA: 1, numberB: 2);
 
     expect($addition->asExample()->input())->toBe('{"numberA":1,"numberB":2}');
-    expect($addition->asExample()->output())->toBe(['sum' => 3]);
+    expect($addition->asExample()->output())->toBe(['result' => 3]);
 });
 
 it('can process a closure task', function() {
@@ -150,10 +151,12 @@ it('can process composite language program', function() {
         public function __construct(
             private array $directoryContents = []
         ) {}
+
         public function signature() : string|Signature {
-            return 'directory -> emails';
+            return 'directory -> emails : string[]';
         }
-        public function forward(string $directory) : array {
+
+        protected function forward(string $directory) : array {
             return $this->directoryContents[$directory];
         }
     }
@@ -162,6 +165,7 @@ it('can process composite language program', function() {
         public function signature() : string|Signature {
             return 'email -> sender, body';
         }
+
         protected function forward(string $email) : array {
             $parts = explode(',', $email);
             return [
@@ -172,27 +176,24 @@ it('can process composite language program', function() {
     }
 
     class GetStats extends Module {
-        private ReadEmails $readEmails;
-        private ParseEmail $parseEmail;
-        private Predict $analyseEmail;
-
-        public function __construct(Instructor $instructor, array $directoryContents = []) {
-            $this->readEmails = new ReadEmails($directoryContents);
-            $this->parseEmail = new ParseEmail();
-            $this->analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
-        }
+        public function __construct(
+            private ReadEmails $readEmails,
+            private ParseEmail $parseEmail,
+            private Predict $analyseEmail,
+        ) {}
 
         public function signature() : string|Signature {
             return EmailStats::class;
         }
 
-        public function forward(string $directory) : EmailStats {
+        protected function forward(string $directory) : EmailStats {
             $emails = $this->readEmails->withArgs(directory: $directory)->get('emails');
             $aggregateSentiment = 0;
             $categories = new CategoryCount;
             foreach ($emails as $email) {
                 $parsedEmail = $this->parseEmail->withArgs(email: $email);
-                $emailAnalysis = $this->analyseEmail->with(EmailAnalysis::for($parsedEmail->get('body')));
+                $emailData = EmailAnalysis::for(text: $parsedEmail->get('body'));
+                $emailAnalysis = $this->analyseEmail->with($emailData);
                 $topic = $emailAnalysis->get('topic');
                 $sentiment = $emailAnalysis->get('sentiment');
                 $topic = (in_array($topic, ['sales', 'support', 'spam'])) ? $topic : 'other';
@@ -235,8 +236,39 @@ it('can process composite language program', function() {
         'sender: joe@wp.pl, body: 2 weeks of waiting and still no improvement of my connection',
     ];
 
+//    $configuration = new Configuration();
+//    $configuration->declare(
+//        class: Instructor::class,
+//        getInstance: fn() => (new Instructor)->withClient($mockLLM),
+//    );
+//    $configuration->declare(
+//        class: ReadEmails::class,
+//        context: ['directoryContents' => $directoryContents],
+//    );
+//    $configuration->declare(
+//        class: ParseEmail::class,
+//    );
+//    $configuration->declare(
+//        class: Predict::class,
+//        name: EmailAnalysis::class,
+//        getInstance: fn() => new Predict(signature: EmailAnalysis::class, instructor: $configuration->get(Instructor::class)),
+//    );
+//    $configuration->declare(
+//        class: GetStats::class,
+//        context: [
+//            'readEmails' => $configuration->reference(ReadEmails::class),
+//            'parseEmail' => $configuration->reference(ParseEmail::class),
+//            'analyseEmail' => $configuration->reference(EmailAnalysis::class),
+//        ],
+//    );
+//    $getStats = $configuration->get(GetStats::class);
+
     $instructor = (new Instructor)->withClient($mockLLM);
-    $getStats = new GetStats($instructor, $directoryContents);
+    $readEmails = new ReadEmails($directoryContents);
+    $parseEmail = new ParseEmail();
+    $analyseEmail = new Predict(signature: EmailAnalysis::class, instructor: $instructor);
+    $getStats = new GetStats($readEmails, $parseEmail, $analyseEmail);
+
     $emailStats = $getStats->with(EmailStats::for('inbox'));
 
     expect($emailStats->get())->toEqual([

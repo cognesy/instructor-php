@@ -7,8 +7,6 @@ use Exception;
 
 trait HandlesApiRequest
 {
-    use HandlesQueryParams;
-
     protected ApiRequest $apiRequest;
 
     public function withApiRequest(ApiRequest $request) : static {

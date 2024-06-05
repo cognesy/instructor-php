@@ -11,6 +11,9 @@ class ApiRequestFactory
         private ApiRequestContext $context,
     ) {}
 
+    /**
+     * @param class-string $requestClass
+    */
     public function makeRequest(
         string $requestClass,
         array $messages,
@@ -28,7 +31,6 @@ class ApiRequestFactory
             'responseFormat' => $responseFormat,
             'model' => $model,
             'options' => $options,
-            //'endpoint' => '/chat/completions'
         ]);
         $apiRequest->withContext($this->context);
         return $apiRequest;
@@ -49,7 +51,6 @@ class ApiRequestFactory
                 'responseFormat' => [],
                 'model' => $model,
                 'options' => $options,
-                //'endpoint' => '/chat/completions'
             ]
         );
     }
@@ -70,7 +71,6 @@ class ApiRequestFactory
                 'responseFormat' => $responseFormat,
                 'model' => $model,
                 'options' => $options,
-                //'endpoint' => '/chat/completions'
             ]
         );
     }
@@ -92,7 +92,6 @@ class ApiRequestFactory
                 'responseFormat' => [],
                 'model' => $model,
                 'options' => $options,
-                //'endpoint' => '/chat/completions'
             ]
         );
     }

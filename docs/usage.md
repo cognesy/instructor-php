@@ -120,3 +120,9 @@ See [Scalar responses](scalars.md) for more information on how to generate scala
 ## Partial responses and streaming
 
 See [Streaming and partial updates](partials.md) for more information on how to work with partial updates and streaming.
+
+
+## Extracting arguments for function call
+
+See [FunctionCall helper class](function-call.md) for more information on how to extract arguments for callable objects.
+```

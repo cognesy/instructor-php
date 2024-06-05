@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Module\Addons\Predict;
 
 use BackedEnum;
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Instructor\Extras\Module\Core\Module;
+use Cognesy\Instructor\Extras\Module\Core\DynamicModule;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
@@ -14,7 +14,7 @@ use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
-class Predict extends Module
+class Predict extends DynamicModule
 {
     private Instructor $instructor;
     protected string $prompt;
@@ -24,7 +24,6 @@ class Predict extends Module
     protected string|Signature|HasSignature $defaultSignature;
 
     protected ?object $signatureCarrier;
-    protected object $responseObject;
 
     public function __construct(
         string|Signature|HasSignature $signature,

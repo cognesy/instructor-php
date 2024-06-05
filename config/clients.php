@@ -3,6 +3,8 @@
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\Clients\Cohere\CohereClient;
+use Cognesy\Instructor\Clients\Cohere\CohereConnector;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
@@ -107,6 +109,27 @@ return function(Configuration $config) : Configuration
         ],
         getInstance: function($context) {
             $object = new AzureClient(
+                events: $context['events'],
+                connector: $context['connector'],
+            );
+            $object->withApiRequestFactory($context['apiRequestFactory']);
+            $object->defaultModel = $context['defaultModel'];
+            $object->defaultMaxTokens = $context['defaultMaxTokens'];
+            return $object;
+        },
+    );
+
+    $config->declare(
+        class: CohereClient::class,
+        context: [
+            'events' => $config->reference(EventDispatcher::class),
+            'connector' => $config->reference(CohereConnector::class),
+            'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
+            'defaultModel' => 'cohere-r-plus',
+            'defaultMaxTokens' => 256,
+        ],
+        getInstance: function($context) {
+            $object = new CohereClient(
                 events: $context['events'],
                 connector: $context['connector'],
             );
