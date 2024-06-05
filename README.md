@@ -16,6 +16,23 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 ![image](./docs/img/extraction.gif)
 
 
+## Feature highlights
+
+ - Get structured responses from LLM inference
+ - Customize prompts and retry prompts
+ - Process various types of input data: text, series of chat messages or images
+ - Receive synchronous or streaming responses
+ - Get partial updates & stream completed sequence items
+ - Automate validation & retries
+ - Define response data model the way to need: type-hinted classes, JSON Schema arrays, or dynamically define your data shapes with Structures
+ - Use attributes or PHP DocBlocks to provide additional instructions for LLM
+ - Customize response model processing by providing your own implementation of schema, deserialization, validation and transformation interfaces
+ - Demonstrate examples to improve the quality of inference
+ - Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Anyscale, Fireworks AI, Ollama, OpenRouter, Together AI)
+ - Use local models with Ollama
+ - Get detailed insight into internal processing via events
+
+
 ## Instructor in Other Languages
 
 Check out implementations in other languages below:
@@ -87,7 +104,7 @@ $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
 $person = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => $text]],
+    messages: $text,
     responseModel: Person::class,
 );
 
