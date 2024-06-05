@@ -173,3 +173,6 @@ $emailStats = $getStats->with(EmailStats::for('inbox'));
 
 echo "Results:\n";
 dump($emailStats->get());
+?>
+```
+
