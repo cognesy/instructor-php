@@ -4,20 +4,23 @@ Instructor provides an addon allowing to implement complex processing flows
 using LLM in a modular way. This addon to Instructor has been inspired by DSPy
 library for Python (https://github.com/stanfordnlp/dspy).
 
-Key components of language program:
-- Module subclasses - encapsulate processing logic
-- Signatures - define input and output for data processed by modules
+This example demonstrates multistep processing with LLMs:
+ - parse text to extract email data from text (sender, subject and content) -> result is an object containing parsed email data
+ - fix spelling mistakes in the subject and content fields -> result is an object containing fixed email subject and content
+ - translate subject into specified language -> result is an object containing translated data
 
-NOTE: Other concepts from DSPy (optimizer, compiler, evaluator) have not been implemented yet.
+All the steps are packaged into a single, reusable module, which is easy to call via:
 
-Module consists of 3 key parts:
-- __construct() - initialization of module, prepare dependencies, setup submodules
-- signature() - define input and output for data processed by module
-- forward() - processing logic, return output data
+```
+(new ProcessEmail)->withArgs(
+   text: $text,
+   language: $language,
+);
+```
 
-`Predict` class is a special module, that uses Instructor's structured processing
-capabilities to execute inference on provided inputs and return output in a requested
-format.
+`ProcessEmail` inherits from a `Module`, which is a base class for Instructor modules. It returns a predefined object containing, in this case, the data from all steps of processing.
+
+The outputs and flow can be arbitrarily shaped to the needs of specific use case (within the bounds of how Module & Predict components work).
 
 ```php
 <?php

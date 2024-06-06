@@ -2,11 +2,13 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature;
 
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasInputSchema;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Extras\Module\Signature\Traits\ConvertsToSignatureString;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 
-class Signature
+class Signature implements HasInputSchema, HasOutputSchema
 {
     use ConvertsToSignatureString;
 
