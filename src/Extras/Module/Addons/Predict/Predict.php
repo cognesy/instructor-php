@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\Module\Addons\Predict;
 
 use BackedEnum;
 use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Module\Core\DynamicModule;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
@@ -16,10 +17,16 @@ use Exception;
 
 class Predict extends DynamicModule
 {
-    private Instructor $instructor;
+    protected Instructor $instructor;
+
     protected string $prompt;
-    protected string $defaultPrompt = 'Your job is to infer output argument values in input data based on specification: {signature} {description}';
+    protected $options = [];
+    protected $model = 'gpt-4o';
+    protected $mode = Mode::Tools;
+    protected array $examples = [];
     protected int $maxRetries = 3;
+
+    protected string $defaultPrompt = 'Your job is to infer output argument values in input data based on specification: {signature} {description}';
 
     protected string|Signature|HasSignature $defaultSignature;
 
@@ -28,6 +35,12 @@ class Predict extends DynamicModule
     public function __construct(
         string|Signature|HasSignature $signature,
         Instructor $instructor,
+        string $model = 'gpt-4o',
+        int $maxRetries = 3,
+        array $options = [],
+        array $examples = [],
+        string $prompt = '',
+        Mode $mode = Mode::Tools,
     ) {
         if ($signature instanceof HasSignature) {
             $this->signatureCarrier = $signature;
@@ -37,6 +50,12 @@ class Predict extends DynamicModule
             default => $signature,
         };
         $this->instructor = $instructor;
+        $this->model = $model;
+        $this->maxRetries = $maxRetries;
+        $this->options = $options;
+        $this->examples = $examples;
+        $this->prompt = $prompt;
+        $this->mode = $mode;
     }
 
     public function signature(): string|Signature {
@@ -75,8 +94,12 @@ class Predict extends DynamicModule
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
             responseModel: $targetObject,
-            model: 'gpt-4o', // TODO: needs to be configurable
+            model: $this->model,
             maxRetries: $this->maxRetries,
+            options: $this->options,
+            examples: $this->examples,
+            prompt: $this->prompt(),
+            mode: $this->mode,
         );
 
         return $response;
@@ -87,10 +110,6 @@ class Predict extends DynamicModule
             $this->prompt = $this->renderPrompt($this->defaultPrompt);
         }
         return $this->prompt;
-    }
-
-    public function setPrompt(string $prompt) : void {
-        $this->prompt = $prompt;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////

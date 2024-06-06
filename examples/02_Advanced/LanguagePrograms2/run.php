@@ -25,13 +25,15 @@ The outputs and flow can be arbitrarily shaped to the needs of specific use case
 ```php
 <?php
 
+use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
+use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
+use Cognesy\Instructor\Extras\Module\CallData\Traits\AutoSignature;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -63,7 +65,10 @@ class FixedEmail extends SignatureData {
     public string $fixedBody;
 }
 
-class EmailTranslation extends SignatureData {
+// Alternative way to define the module signature data without extending a class
+class EmailTranslation implements HasInputOutputData, CanProvideSchema {
+    use AutoSignature;
+
     #[InputField('subject of email')]
     public string $subject;
     #[InputField('body of email')]

@@ -8,6 +8,11 @@ use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 
 trait HandlesInputOutputData
 {
+    use ProvidesSchema;
+
+    private DataAccess $input;
+    private DataAccess $output;
+
     static public function fromArgs(...$args): static {
         $instance = new static();
         $instance->withArgs(...$args);
@@ -40,15 +45,5 @@ trait HandlesInputOutputData
             $this->input()->getValues(),
             $this->output()->getValues(),
         );
-    }
-
-    // CONVENIENCE METHODS ////////////////////////////////////////////////////////////////
-
-    public function inputNames(): array {
-        return $this->signature()->toInputSchema()->getPropertyNames();
-    }
-
-    public function outputNames(): array {
-        return $this->signature()->toOutputSchema()->getPropertyNames();
     }
 }
