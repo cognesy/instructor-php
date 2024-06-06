@@ -93,14 +93,20 @@ class EmailProcessingResults {
 // MODULE DECLARATIONS ////////////////////////////////////////////////////////////////////
 
 class ProcessEmail extends Module {
-    public function __construct(
-        private Predict $parse,
-        private Predict $fix,
-        private Predict $translate
-    ) {}
+    private Predict $parse;
+    private Predict $fix;
+    private Predict $translate;
+
+    public function __construct() {
+        $instructor = new Instructor();
+
+        $this->parse = new Predict(signature: ParsedEmail::class, instructor: $instructor);
+        $this->fix = new Predict(signature: FixedEmail::class, instructor: $instructor);
+        $this->translate = new Predict(signature: EmailTranslation::class, instructor: $instructor);
+    }
 
     public function signature(): string {
-        return 'text: string, language: string -> EmailProcessingResults';
+        return 'text: string, language: string -> result: EmailProcessingResults';
     }
 
     public function forward(string $text, string $language): EmailProcessingResults {
@@ -145,22 +151,12 @@ class ProcessEmail extends Module {
     }
 }
 
-// PREPARE DEPENDENCIES ///////////////////////////////////////////////////////////////////
-
-$instructor = new Instructor();
-
-$extractEmail = new Predict(signature: ParsedEmail::class, instructor: $instructor);
-$fixEmail = new Predict(signature: FixedEmail::class, instructor: $instructor);
-$translateEmail = new Predict(signature: EmailTranslation::class, instructor: $instructor);
-
-
 // EXECUTE LANGUAGE PROGRAM ///////////////////////////////////////////////////////////////
 
-$text = 'sender: jl@gmail.com, subject: Ofer, body: Im hapy abut the discount you offered and accept contract renewal';
+$text = 'sender: jl@gmail.com, subject: Ofer, body: Im hapy abut the discount you offered and accept contrac renewal';
 $language = 'French';
 
-$parseAndTranslate = new ProcessEmail($extractEmail, $fixEmail, $translateEmail);
-$result = $parseAndTranslate->withArgs(text: $text, language: $language)->result();
+$result = (new ProcessEmail)->withArgs(text: $text, language: $language)->result();
 
 echo "Results:\n";
 dump($result);
