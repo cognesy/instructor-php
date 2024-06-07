@@ -11,8 +11,15 @@ permissions:
 
 jobs:
   build:
+    name: 'PHP ${{ matrix.php }} (Composer Flags: ${{ matrix.composer }})'
 
     runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3']
+        composer: ['--prefer-stable', '--prefer-lowest']
 
     steps:
     - uses: actions/checkout@v3
@@ -30,10 +37,7 @@ jobs:
           ${{ runner.os }}-php-
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
-
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
+      run: composer update --no-interaction --no-suggest ${{ matrix.composer }}
 
     - name: Run test suite
-      run: vendor/bin/pest
+      run: composer test
