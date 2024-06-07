@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Anyscale;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;

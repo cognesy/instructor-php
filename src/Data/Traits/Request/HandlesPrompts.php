@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
-use Cognesy\Instructor\Core\Messages\Utils\MessageBuilder;
 use Cognesy\Instructor\Enums\Mode;
 use Exception;
 
@@ -35,19 +34,5 @@ trait HandlesPrompts
         if (empty($this->client())) {
             throw new Exception('Client is required to render request body.');
         }
-
-        $body = MessageBuilder::requestBody(
-            clientClass: get_class($this->client()),
-            mode: $this->mode(),
-            messages: $this->messages(),
-            responseModel: $this->responseModel(),
-            dataAcknowledgedPrompt: $this->dataAcknowledgedPrompt,
-            prompt: $this->prompt(),
-            examples: $this->examples(),
-        );
-        return array_merge(
-            $this->options,
-            $body,
-        );
     }
 }

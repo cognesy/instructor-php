@@ -34,7 +34,7 @@ class CohereClient extends ApiClient
         ));
     }
 
-    public function getModeRequestClass(Mode $mode): string {
+    public function getModeRequestClass(Mode $mode = null) : string {
         return CohereApiRequest::class;
     }
 }

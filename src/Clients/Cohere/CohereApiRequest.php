@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Cohere;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
@@ -12,26 +11,6 @@ class CohereApiRequest extends ApiRequest
     use Traits\HandlesResponseFormat;
 
     protected string $defaultEndpoint = '/chat';
-
-    public function __construct(
-        public array $messages = [],
-        public array $tools = [],
-        public string|array $toolChoice = [],
-        public string|array $responseFormat = [],
-        public string $model = '',
-        public array $options = [],
-        public string $endpoint = '',
-    ) {
-        parent::__construct(
-            messages: $messages,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            responseFormat: $responseFormat,
-            model: $model,
-            options: $options,
-            endpoint: $endpoint
-        );
-    }
 
     #[Override]
     protected function defaultBody(): array {

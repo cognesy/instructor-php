@@ -36,7 +36,7 @@ class TogetherAIClient extends ApiClient
     }
 
     #[Override]
-    public function getModeRequestClass(Mode $mode) : string {
+    public function getModeRequestClass(Mode $mode = null) : string {
         return TogetherApiRequest::class;
     }
 }

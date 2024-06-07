@@ -2,9 +2,12 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
+use Cognesy\Instructor\Core\Messages\Script;
+
 trait HandlesMessages
 {
     private string|array $messages;
+    private Script $script;
 
     public function messages() : array {
         if (is_string($this->messages)) {

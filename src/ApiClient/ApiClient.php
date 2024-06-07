@@ -1,11 +1,13 @@
 <?php
 namespace Cognesy\Instructor\ApiClient;
 
+use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
+use Saloon\Enums\Method;
 
 abstract class ApiClient implements CanCallApi
 {
@@ -31,67 +33,24 @@ abstract class ApiClient implements CanCallApi
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
     public function request(
-        array $messages, array $tools = [], array $toolChoice = [], array $responseFormat = [], string $model = '', array $options = []
+        array $body,
+        string $endpoint = '',
+        Method $method = Method::POST,
+
+        ApiRequestContext $context = null,
+        array $options = [],
+        array $data = [],
     ): static {
         if (!isset($options['max_tokens'])) {
             $options['max_tokens'] = $this->defaultMaxTokens;
         }
-        $mode = match(true) {
-            !empty($tools) => Mode::Tools,
-            !empty($responseFormat) => Mode::Json,
-            default => Mode::MdJson,
-        };
-        $this->apiRequest = $this->apiRequestFactory->makeRequest(
-            requestClass: $this->getModeRequestClass($mode),
-            messages: $messages,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            responseFormat: $responseFormat,
-            model: $this->getModel($model),
-            options: $options
-        );
-        return $this;
-    }
-
-    public function chatCompletion(array $messages, string $model = '', array $options = []): static {
-        if (!isset($options['max_tokens'])) {
-            $options['max_tokens'] = $this->defaultMaxTokens;
+        if (!isset($body['max_tokens'])) {
+            $body['max_tokens'] = $this->defaultMaxTokens;
         }
-        $this->apiRequest = $this->apiRequestFactory->makeChatCompletionRequest(
-            requestClass: $this->getModeRequestClass(Mode::MdJson),
-            messages: $messages,
-            model: $this->getModel($model),
-            options: $options
-        );
-        return $this;
-    }
-
-    public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static {
-        if (!isset($options['max_tokens'])) {
-            $options['max_tokens'] = $this->defaultMaxTokens;
+        if (!isset($body['model'])) {
+            $body['model'] = $this->defaultModel();
         }
-        $this->apiRequest = $this->apiRequestFactory->makeJsonCompletionRequest(
-            requestClass: $this->getModeRequestClass(Mode::Json),
-            messages: $messages,
-            responseFormat: $responseFormat,
-            model: $this->getModel($model),
-            options: $options
-        );
-        return $this;
-    }
-
-    public function toolsCall(array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static {
-        if (!isset($options['max_tokens'])) {
-            $options['max_tokens'] = $this->defaultMaxTokens;
-        }
-        $this->apiRequest = $this->apiRequestFactory->makeToolsCallRequest(
-            requestClass: $this->getModeRequestClass(Mode::Tools),
-            messages: $messages,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            model: $this->getModel($model),
-            options: $options
-        );
+        $this->apiRequest = $this->apiRequestFactory->makeRequest($this->getModeRequestClass(), $body, $endpoint, $method, $options, $data);
         return $this;
     }
 

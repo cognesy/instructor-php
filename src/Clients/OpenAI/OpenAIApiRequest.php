@@ -1,8 +1,9 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\OpenAI;
 
+use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Saloon\Enums\Method;
 
 class OpenAIApiRequest extends ApiRequest
 {
@@ -11,25 +12,24 @@ class OpenAIApiRequest extends ApiRequest
     use Traits\HandlesResponse;
 
     public function __construct(
-        public array $messages = [],
-        public array $tools = [],
-        public string|array $toolChoice = [],
-        public string|array $responseFormat = [],
-        public string $model = '',
-        public array $options = [],
-        public string $endpoint = '',
+        array $body = [],
+        string $endpoint = '',
+        Method $method = Method::POST,
+        //
+        ApiRequestContext $context = null,
+        array $options = [], // to consolidate into $context?
+        array $data = [], // to consolidate into $context?
     ) {
         if ($this->isStreamed()) {
-            $options['stream_options']['include_usage'] = true;
+            $body['stream_options']['include_usage'] = true;
         }
         parent::__construct(
-            messages: $messages,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            responseFormat: $responseFormat,
-            model: $model,
+            body: $body,
+            endpoint: $endpoint,
+            method: $method,
+            context: $context,
             options: $options,
-            endpoint: $endpoint
+            data: $data,
         );
     }
 }

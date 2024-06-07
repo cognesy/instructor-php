@@ -5,8 +5,6 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Compilation\Contracts\CompilerInput;
-use Cognesy\Instructor\Compilation\Input;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
@@ -15,11 +13,15 @@ class Request
 {
     use Traits\Request\HandlesApiClient;
     use Traits\Request\HandlesApiRequestFactory;
+    use Traits\Request\HandlesData;
+    use Traits\Request\HandlesEndpoint;
     use Traits\Request\HandlesExamples;
     use Traits\Request\HandlesMessages;
+    use Traits\Request\HandlesMethod;
     use Traits\Request\HandlesModel;
     use Traits\Request\HandlesOptions;
     use Traits\Request\HandlesPrompts;
+    use Traits\Request\HandlesRequestBody;
     use Traits\Request\HandlesRequestedModel;
     use Traits\Request\HandlesRetries;
 

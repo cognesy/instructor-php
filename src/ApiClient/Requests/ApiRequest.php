@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests;
 
+use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Override;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -22,21 +22,29 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     use Traits\HandlesDebug;
 
     protected Method $method = Method::POST;
+    protected array $options = [];
+    protected array $requestBody = [];
+    protected array $data = [];
+
+    // TO BE DEPRECATED?
+    public array $messages = [];
+    public array $tools = [];
+    public string|array $toolChoice = [];
+    public string|array $responseFormat = [];
+    public string $model = '';
 
     public function __construct(
-        public array $messages = [],
-        public array $tools = [],
-        public string|array $toolChoice = [],
-        public string|array $responseFormat = [],
-        public string $model = '',
-        public array $options = [],
-        public string $endpoint = '',
+        array $body = [],
+        string $endpoint = '',
+        Method $method = Method::POST,
+        //
+        ApiRequestContext $context = null,
+        array $options = [], // to consolidate into $context?
+        array $data = [], // to consolidate into $context?
     ) {
+        $this->context = $context;
         $this->debug = $this->options['debug'] ?? false;
-        unset($this->options['debug']);
-
         $this->cachingEnabled = $this->options['cache'] ?? false;
-        unset($this->options['cache']);
 
         if ($this->cachingEnabled) {
             if ($this->isStreamed()) {
@@ -44,22 +52,38 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
             }
         }
 
+        $this->options = $options;
+        $this->endpoint = $endpoint;
+        $this->method = $method;
+        $this->requestBody = $body;
+        $this->data = $data;
+
+        // maybe replace them with $requestBody
+        $this->messages = $body['messages'] ?? [];
+        $this->tools = $body['tools'] ?? [];
+        $this->toolChoice = $body['tool_choice'] ?? [];
+        $this->responseFormat = $body['response_format'] ?? [];
+        $this->model = $body['model'] ?? '';
+
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
     }
 
     public function isStreamed(): bool {
-        return $this->options['stream'] ?? false;
+        return $this->requestBody['stream'] ?? false;
     }
 
     protected function defaultBody(): array {
         return array_filter(
-            array_merge([
-                'messages' => $this->messages(),
-                'model' => $this->model,
-                'tools' => $this->tools(),
-                'tool_choice' => $this->getToolChoice(),
-                'response_format' => $this->getResponseFormat(),
-            ], $this->options)
+            array_merge(
+                $this->requestBody,
+                [
+                    'messages' => $this->messages(),
+                    'model' => $this->model,
+                    'tools' => $this->tools(),
+                    'tool_choice' => $this->getToolChoice(),
+                    'response_format' => $this->getResponseFormat(),
+                ]
+            )
         );
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Mistral;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;

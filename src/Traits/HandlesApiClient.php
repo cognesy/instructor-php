@@ -3,17 +3,18 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 
 trait HandlesApiClient
 {
-    protected CanCallApi $client;
+    protected ApiClientFactory $clientFactory;
 
     public function client() : CanCallApi {
-        return $this->client;
+        return $this->clientFactory->getDefault();
     }
 
     public function withClient(CanCallApi $client) : self {
-        $this->client = $client->withEventDispatcher($this->events);
+        $this->clientFactory->setDefault($client);
         return $this;
     }
 }

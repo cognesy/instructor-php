@@ -20,6 +20,7 @@ class MockLLM
         $mockLLM->shouldReceive('defaultModel')->andReturn('openai:gpt-4o');
         $mockLLM->shouldReceive('getModeRequestClass')->andReturn(OpenAIApiRequest::class);
         $mockLLM->shouldReceive('get')->andReturnUsing(...$list);
+        $mockLLM->shouldReceive('request')->andReturn($mockLLM);
         $mockLLM->shouldReceive('toolsCall')->andReturn($mockLLM);
         $mockLLM->shouldReceive('withApiRequest')->andReturn($mockLLM);
         $mockLLM->shouldReceive('withApiRequestFactory')->andReturn($mockLLM);

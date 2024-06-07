@@ -17,11 +17,11 @@ it('creates messages from script', function () {
 
     $script->section('section-1')->add(['role' => 'user', 'content' => 'content-1']);
     $script->section('section-1')->add(['role' => 'assistant', 'content' => 'content-2']);
-    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 {key-1}']);
+    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
     $script->section('section-2')->add(['role' => 'user', 'content' => 'content-4']);
     $script->section('section-2')->add(['role' => 'assistant', 'content' => 'content-5']);
-    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 {key-2}']);
+    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
     $messages = $script->toArray();
 
@@ -53,7 +53,7 @@ it('selects sections from script', function () {
 
     $script->section('section-1')->add(['role' => 'user', 'content' => 'content-1']);
     $script->section('section-1')->add(['role' => 'assistant', 'content' => 'content-2']);
-    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 {key-1}']);
+    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
     $script->section('section-2')->add(['role' => 'user', 'content' => 'content-4']);
     $script->section('section-2')->add(['role' => 'assistant', 'content' => 'content-5']);
@@ -61,7 +61,7 @@ it('selects sections from script', function () {
 
     $script->section('section-3')->add(['role' => 'user', 'content' => 'content-7']);
     $script->section('section-3')->add(['role' => 'assistant', 'content' => 'content-8']);
-    $script->section('section-3')->add(['role' => 'user', 'content' => 'content-9 {key-2}']);
+    $script->section('section-3')->add(['role' => 'user', 'content' => 'content-9 <|key-2|>']);
 
     $messages = $script->select(['section-3', 'section-1'])->toArray();
 
@@ -92,11 +92,11 @@ it('translates messages to native format - Cohere', function () {
     ]);
     $script->section('section-1')->add(['role' => 'user', 'content' => 'content-1']);
     $script->section('section-1')->add(['role' => 'assistant', 'content' => 'content-2']);
-    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 {key-1}']);
+    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
     $script->section('section-2')->add(['role' => 'user', 'content' => 'content-4']);
     $script->section('section-2')->add(['role' => 'assistant', 'content' => 'content-5']);
-    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 {key-2}']);
+    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
     $messages = $script->select(['section-2', 'section-1'])->toNativeArray(ClientType::Cohere, ['section-2', 'section-1']);
 
@@ -126,11 +126,11 @@ it('translates messages to native format - Anthropic', function () {
     ]);
     $script->section('section-1')->add(['role' => 'user', 'content' => 'content-1']);
     $script->section('section-1')->add(['role' => 'assistant', 'content' => 'content-2']);
-    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 {key-1}']);
+    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
     $script->section('section-2')->add(['role' => 'user', 'content' => 'content-4']);
     $script->section('section-2')->add(['role' => 'assistant', 'content' => 'content-5']);
-    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 {key-2}']);
+    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
     $messages = $script->select(['section-2', 'section-1'])->toNativeArray(ClientType::Anthropic);
 
@@ -160,11 +160,11 @@ it('translates messages to string', function () {
     ]);
     $script->section('section-1')->add(['role' => 'user', 'content' => 'content-1']);
     $script->section('section-1')->add(['role' => 'assistant', 'content' => 'content-2']);
-    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 {key-1}']);
+    $script->section('section-1')->add(['role' => 'user', 'content' => 'content-3 <|key-1|>']);
 
     $script->section('section-2')->add(['role' => 'user', 'content' => 'content-4']);
     $script->section('section-2')->add(['role' => 'assistant', 'content' => 'content-5']);
-    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 {key-2}']);
+    $script->section('section-2')->add(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
     $text = $script->select(['section-2', 'section-1'])->toString();
     expect($text)->toBe("content-4\ncontent-5\ncontent-6 value-2\ncontent-1\ncontent-2\ncontent-3 value-1\n");
