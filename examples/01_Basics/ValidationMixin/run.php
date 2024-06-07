@@ -16,7 +16,6 @@ is `1010` instead of `2010`) and respond with correct graduation year.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
@@ -41,14 +40,15 @@ class UserDetails
     }
 }
 
-$user = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => 'Jason was born in 1990 and graduated in 1010.']],
+$user = (new Instructor)->wiretap(fn($e)=>$e->printDump())->respond(
+    messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 1923.']],
     responseModel: UserDetails::class,
+    model: 'gpt-3.5-turbo',
     maxRetries: 2
 );
 
 dump($user);
 
-assert($user->graduationYear === 2010);
+assert($user->graduationYear === 2023);
 ?>
 ```

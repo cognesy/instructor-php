@@ -2,16 +2,15 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
-use Cognesy\Instructor\Core\MessageBuilder;
+use Cognesy\Instructor\Core\Messages\Utils\MessageBuilder;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Utils\Template;
 use Exception;
 
 trait HandlesPrompts
 {
     private array $defaultPrompts = [
-        Mode::MdJson->value => "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n{json_schema}\n",
-        Mode::Json->value => "\nRespond correctly with strict JSON object. Response must follow JSONSchema:\n{json_schema}\n",
+        Mode::MdJson->value => "\nRespond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
+        Mode::Json->value => "\nRespond correctly with strict JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
         Mode::Tools->value => "\nExtract correct and accurate data from the input using provided tools. Response must be JSON object following provided tool schema.\n",
     ];
     private string $dataAcknowledgedPrompt = "Input acknowledged.";
@@ -29,7 +28,7 @@ trait HandlesPrompts
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
 
     protected function makeOptions() : array {
-        if (empty($this->messages)) {
+        if (empty($this->messages())) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
 
@@ -43,10 +42,9 @@ trait HandlesPrompts
             messages: $this->messages(),
             responseModel: $this->responseModel(),
             dataAcknowledgedPrompt: $this->dataAcknowledgedPrompt,
-            prompt: Template::render($this->prompt(), ['json_schema' => $this->jsonSchema()]),
+            prompt: $this->prompt(),
             examples: $this->examples(),
         );
-
         return array_merge(
             $this->options,
             $body,

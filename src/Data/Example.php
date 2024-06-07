@@ -58,11 +58,18 @@ class Example
         if (!isset($data['input']) || !isset($data['output'])) {
             throw new Exception("Invalid JSON data for example - missing `input` or `output` fields");
         }
+        return self::fromArray($data);
+    }
+
+    static public function fromArray(array $data) : self {
+        if (!isset($data['input']) || !isset($data['output'])) {
+            throw new Exception("Invalid JSON data for example - missing `input` or `output` fields");
+        }
         return new self(
             input: $data['input'],
             output: $data['output'],
-            uid: $data['id'] ?? null,
-            createdAt: new DateTimeImmutable($data['created_at']) ?? null
+            uid: $data['id'] ?? Uuid::uuid4(),
+            createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : new DateTimeImmutable(),
         );
     }
 
@@ -83,6 +90,13 @@ class Example
             'input' => $this->input(),
             'output' => $this->outputString(),
         ]);
+    }
+
+    public function toMessages() : array {
+        return [
+            ['role' => 'user', 'content' => $this->input()],
+            ['role' => 'assistant', 'content' => $this->outputString()],
+        ];
     }
 
     public function toJson() : string {

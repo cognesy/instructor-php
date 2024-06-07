@@ -75,23 +75,4 @@ class Request
     public function copy(array $messages) : self {
         return (clone $this)->withMessages($messages);
     }
-
-    public function toCompilerInput() : CompilerInput {
-        return new Input(
-            mode: $this->mode,
-            model: $this->model,
-            messages: $this->messages,
-            responseModel: $this->responseModel,
-            options: $this->options,
-            examples: $this->examples,
-            feedback: $this->feedback,
-            tools: $this->tools,
-            toolChoice: $this->toolChoice,
-            prompt: $this->prompt,
-            retryPrompt: $this->retryPrompt,
-            signature: $this->signature,
-            inputSchema: $this->inputSchema,
-            inputData: $this->inputData,
-        );
-    }
 }

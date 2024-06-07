@@ -19,14 +19,15 @@ class Predict extends DynamicModule
 {
     protected Instructor $instructor;
 
-    protected string $prompt;
+    protected string $predictionPrompt;
+    protected string $extractionPrompt;
     protected $options = [];
     protected $model = 'gpt-4o';
     protected $mode = Mode::Tools;
     protected array $examples = [];
     protected int $maxRetries = 3;
 
-    protected string $defaultPrompt = 'Your job is to infer output argument values in input data based on specification: {signature} {description}';
+    protected string $defaultPredictionPrompt = 'Your job is to infer output argument values in input data based on specification: {signature} {description}';
 
     protected string|Signature|HasSignature $defaultSignature;
 
@@ -35,12 +36,13 @@ class Predict extends DynamicModule
     public function __construct(
         string|Signature|HasSignature $signature,
         Instructor $instructor,
-        string $model = 'gpt-4o',
+        string $model = '',
         int $maxRetries = 3,
         array $options = [],
         array $examples = [],
-        string $prompt = '',
-        Mode $mode = Mode::Tools,
+        string $predictionPrompt = '',
+        string $extractionPrompt = '',
+        Mode $mode = Mode::Json,
     ) {
         if ($signature instanceof HasSignature) {
             $this->signatureCarrier = $signature;
@@ -54,7 +56,8 @@ class Predict extends DynamicModule
         $this->maxRetries = $maxRetries;
         $this->options = $options;
         $this->examples = $examples;
-        $this->prompt = $prompt;
+        $this->predictionPrompt = $predictionPrompt;
+        $this->extractionPrompt = $extractionPrompt;
         $this->mode = $mode;
     }
 
@@ -98,18 +101,18 @@ class Predict extends DynamicModule
             maxRetries: $this->maxRetries,
             options: $this->options,
             examples: $this->examples,
-            prompt: $this->prompt(),
+            prompt: $this->extractionPrompt,
             mode: $this->mode,
         );
 
         return $response;
     }
 
-    public function prompt() : string {
+    protected function predictionPrompt() : string {
         if (empty($this->prompt)) {
-            $this->prompt = $this->renderPrompt($this->defaultPrompt);
+            $this->predictionPrompt = $this->renderPrompt($this->defaultPredictionPrompt);
         }
-        return $this->prompt;
+        return $this->predictionPrompt;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +126,7 @@ class Predict extends DynamicModule
             default => json_encode($input), // wrap in json
         };
         return [
-            ['role' => 'user', 'content' => $this->prompt()],
+            ['role' => 'user', 'content' => $this->predictionPrompt()],
             ['role' => 'assistant', 'content' => 'Provide input data.'],
             ['role' => 'user', 'content' => $content]
         ];

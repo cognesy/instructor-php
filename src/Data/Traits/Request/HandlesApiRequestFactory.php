@@ -26,8 +26,7 @@ trait HandlesApiRequestFactory
         if (empty($this->option('max_tokens'))) {
             $this->setOption('max_tokens', $this->client->defaultMaxTokens);
         }
-        $request = $this->fromRequest();
-        return $request;
+        return $this->fromRequest();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
