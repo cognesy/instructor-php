@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Clients\Ollama;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Override;
+
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\TokenAuthenticator;
 
@@ -21,7 +21,7 @@ class OllamaConnector extends ApiConnector
         parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata, $senderClass);
     }
 
-    #[Override]
+
     protected function defaultAuth() : Authenticator {
         return new TokenAuthenticator($this->apiKey);
     }

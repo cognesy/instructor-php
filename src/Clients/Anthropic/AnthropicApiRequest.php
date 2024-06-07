@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Override;
+
 
 class AnthropicApiRequest extends ApiRequest
 {
@@ -14,7 +14,7 @@ class AnthropicApiRequest extends ApiRequest
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    #[Override]
+
     protected function defaultBody(): array {
         return array_filter(
             array_merge(

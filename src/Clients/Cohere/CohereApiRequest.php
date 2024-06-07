@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Clients\Cohere;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Override;
+
 
 class CohereApiRequest extends ApiRequest
 {
@@ -12,7 +12,7 @@ class CohereApiRequest extends ApiRequest
 
     protected string $defaultEndpoint = '/chat';
 
-    #[Override]
+
     protected function defaultBody(): array {
         return array_filter(
             array_merge(

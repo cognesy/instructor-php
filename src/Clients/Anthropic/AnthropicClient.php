@@ -5,7 +5,7 @@ use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Override;
+
 
 class AnthropicClient extends ApiClient
 {
@@ -34,7 +34,7 @@ class AnthropicClient extends ApiClient
         ));
     }
 
-    #[Override]
+
     public function getModeRequestClass(Mode $mode = null) : string {
         return AnthropicApiRequest::class;
     }

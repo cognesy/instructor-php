@@ -6,7 +6,7 @@ use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Override;
+
 
 class AzureClient extends ApiClient
 {
@@ -41,7 +41,7 @@ class AzureClient extends ApiClient
         $this->queryParams = ['api-version' => $apiVersion];
     }
 
-    #[Override]
+
     public function getModeRequestClass(Mode $mode = null) : string {
         return AzureApiRequest::class;
     }

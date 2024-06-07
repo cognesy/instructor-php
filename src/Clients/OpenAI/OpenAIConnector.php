@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Override;
+
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\TokenAuthenticator;
 
@@ -24,12 +24,12 @@ class OpenAIConnector extends ApiConnector
         $this->organization = $organization;
     }
 
-    #[Override]
+
     protected function defaultAuth() : Authenticator {
         return new TokenAuthenticator($this->apiKey);
     }
 
-    #[Override]
+
     protected function defaultHeaders(): array {
         $headers = [
             'content-type' => 'application/json',
