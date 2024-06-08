@@ -121,8 +121,15 @@ class Predict extends DynamicModule
     private function toMessages(string|array|object $input) : array {
         $content = match(true) {
             is_string($input) => $input,
+            is_array($input) => Json::encode($input),
             $input instanceof Example => $input->input(),
             $input instanceof BackedEnum => $input->value,
+            method_exists($input, 'toJson') => match(true) {
+                is_string($input->toJson()) => $input->toJson(),
+                default => Json::encode($input->toJson()),
+            },
+            method_exists($input, 'toArray') => Json::encode($input->toArray()),
+            method_exists($input, 'toString') => $input->toString(),
             // ...how do we handle chat messages input?
             default => Json::encode($input), // wrap in json
         };
