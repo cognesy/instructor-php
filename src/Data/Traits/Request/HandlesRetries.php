@@ -7,7 +7,7 @@ use Cognesy\Instructor\Data\Response;
 
 trait HandlesRetries
 {
-    private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors: ";
+    private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors:\n<|errors|>\n";
     private string $retryPrompt;
 
     private int $maxRetries;

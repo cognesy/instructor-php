@@ -30,7 +30,7 @@ trait HandlesModel
             $this->modelParams = $model;
             $this->model = $model->name;
         } else {
-            $this->model = $model;
+            $this->model = $model ?: $this->client->defaultModel();
         }
         return $this;
     }

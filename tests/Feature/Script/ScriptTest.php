@@ -2,15 +2,15 @@
 namespace Tests;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
-use Cognesy\Instructor\Core\Messages\Script;
-use Cognesy\Instructor\Core\Messages\Section;
+use Cognesy\Instructor\Data\Messages\Script;
+use Cognesy\Instructor\Data\Messages\Section;
 
 it('creates messages from script', function () {
     $script = new Script(
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->setContext([
+    $script->withContext([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -46,7 +46,7 @@ it('selects sections from script', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->setContext([
+    $script->withContext([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -86,7 +86,7 @@ it('translates messages to native format - Cohere', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->setContext([
+    $script->withContext([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -120,7 +120,7 @@ it('translates messages to native format - Anthropic', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->setContext([
+    $script->withContext([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -154,7 +154,7 @@ it('translates messages to string', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->setContext([
+    $script->withContext([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);

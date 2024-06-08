@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Events\Configuration\ComponentRequested;
 
 trait HandlesConfig
 {

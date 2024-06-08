@@ -14,12 +14,25 @@ class Profiler
         return self::$instance;
     }
 
-    static public function mark(string $name, array $context = []): void {
+    static public function mark(string $name, array $context = []): string {
+        $delta = self::get()->timeSinceLast();
         self::get()->addMark($name, $context);
+        return self::usec2str($delta);
+    }
+
+    static public function delta() : float {
+        return self::get()->timeSinceLast();
     }
 
     static public function summary() : void {
         self::get()->getSummary();
+    }
+
+    public function timeSinceLast() : float {
+        $checkpoints = $this->checkpoints;
+        $previous = count($checkpoints) - 1;
+        $delta = ($previous == -1) ? 0 : (microtime(true) - $checkpoints[$previous]['time']);
+        return $delta;
     }
 
     public function addMark(string $name, array $context = []) : void {
@@ -47,6 +60,10 @@ class Profiler
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////
+
+    static private function usec2str(float $time) : string {
+        return number_format($time * 1_000_000, 2);
+    }
 
     private function getTotalTime() : float {
         $checkpoints = $this->checkpoints;

@@ -22,7 +22,7 @@ trait HandlesErrors
 
     protected function handleError(Throwable $error) : mixed {
         // if anything goes wrong, we first dispatch an event (e.g. to log error)
-        $event = new ErrorRaised($error, $this->request);
+        $event = new ErrorRaised($error, $this->getRequest());
         $this->events->dispatch($event);
         if (isset($this->onError)) {
             // final attempt to recover from the error (e.g. give fallback response)

@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -15,12 +16,14 @@ class RequestFactory
         protected ResponseModelFactory $responseModelFactory,
         protected ModelFactory $modelFactory,
         protected ApiRequestFactory $apiRequestFactory,
+        protected ApiRequestConfig $requestConfig,
         protected EventDispatcher $events,
     ) {}
 
     public function create(
-        string|array $messages,
-        string|object|array $responseModel,
+        string|array|object $input = [],
+        string|array $messages = [],
+        string|object|array $responseModel = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
@@ -31,8 +34,9 @@ class RequestFactory
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : Request {
-        $request = new Request(
+        return new Request(
             messages: $messages,
+            input: $input,
             responseModel: $responseModel,
             model: $model,
             maxRetries: $maxRetries,
@@ -46,32 +50,9 @@ class RequestFactory
             client: $this->clientFactory->getDefault(),
             modelFactory: $this->modelFactory,
             responseModelFactory: $this->responseModelFactory,
+            clientFactory: $this->clientFactory,
             apiRequestFactory: $this->apiRequestFactory,
+            requestConfig: $this->requestConfig,
         );
-        return $request;
-    }
-
-    public function fromRequest(Request $request) : Request {
-        // make sure the request has a client
-        if ($request->client() === null) {
-            $request->withClient(
-                $this->clientFactory->getDefault()
-            );
-        }
-        // make sure the request has a response model
-        if ($request->responseModel() === null) {
-            $request->withResponseModel(
-                $this->responseModelFactory->fromAny(
-                    requestedModel: $request->requestedSchema(),
-                    toolName: $request->toolName(),
-                    toolDescription: $request->toolDescription()
-                )
-            );
-        }
-        // make sure the request has APIRequestFactory
-        if ($request->apiRequestFactory() === null) {
-            $request->withApiRequestFactory($this->apiRequestFactory);
-        }
-        return $request;
     }
 }

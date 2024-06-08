@@ -2,14 +2,14 @@
 
 namespace Cognesy\Instructor\ApiClient\Factories;
 
-use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Saloon\Enums\Method;
 
 class ApiRequestFactory
 {
     public function __construct(
-        private ApiRequestContext $context,
+        private ApiRequestConfig $requestConfig,
     ) {}
 
     /**
@@ -20,9 +20,8 @@ class ApiRequestFactory
         array $body,
         string $endpoint = '',
         Method $method = Method::POST,
-        array $options = [],
         array $data = [],
     ): ApiRequest {
-        return new $requestClass($body, $endpoint, $method, $this->context, $options, $data);
+        return new $requestClass($body, $endpoint, $method, $this->requestConfig, $data);
     }
 }

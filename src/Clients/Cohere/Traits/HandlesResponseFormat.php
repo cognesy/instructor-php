@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Cohere\Traits;
 
 trait HandlesResponseFormat

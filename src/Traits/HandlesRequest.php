@@ -13,16 +13,21 @@ use Throwable;
 
 trait HandlesRequest
 {
-    protected ?Request $request = null;
-    protected RequestFactory $requestFactory;
+    private ?Request $request = null;
+    private RequestFactory $requestFactory;
+
+    protected function getRequest() : Request {
+        if ($this->request && $this->debug()) {
+            $this->request->setOption('debug', true);
+        }
+        return $this->request;
+    }
 
     protected function handleRequest() : mixed {
         try {
             /** @var RequestHandler $requestHandler */
-            $requestHandler = $this->config()->get(CanHandleRequest::class);
-            $this->startTimer();
+            $requestHandler = $this->config->get(CanHandleRequest::class);
             $response = $requestHandler->respondTo($this->getRequest());
-            $this->stopTimer();
             $this->events->dispatch(new ResponseGenerated($response));
             return $response;
         } catch (Throwable $error) {
@@ -33,19 +38,10 @@ trait HandlesRequest
     protected function handleStreamRequest() : Iterable {
         try {
             /** @var StreamRequestHandler $streamHandler */
-            $streamHandler = $this->config()->get(CanHandleStreamRequest::class);
-            $this->startTimer();
+            $streamHandler = $this->config->get(CanHandleStreamRequest::class);
             yield from $streamHandler->respondTo($this->getRequest());
-            $this->stopTimer();
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
-    }
-
-    protected function getRequest() : Request {
-        if ($this->debug()) {
-            $this->request->setOption('debug', true);
-        }
-        return $this->requestFactory->fromRequest($this->request);
     }
 }

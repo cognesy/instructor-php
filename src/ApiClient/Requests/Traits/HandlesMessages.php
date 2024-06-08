@@ -1,17 +1,14 @@
 <?php
-
 namespace Cognesy\Instructor\ApiClient\Requests\Traits;
+
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 
 trait HandlesMessages
 {
     public function messages(): array {
-        return $this->messages;
-    }
-
-    protected function normalizeMessages(string|array $messages): array {
-        if (!is_array($messages)) {
-            return [['role' => 'user', 'content' => $messages]];
-        }
-        return $messages;
+        return $this->script
+            ->withContext($this->scriptContext)
+            ->select(['system', 'messages', 'data_ack', 'command', 'examples'])
+            ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 }

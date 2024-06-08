@@ -29,7 +29,7 @@ trait HandlesApiResponse
     protected function respondRaw(ApiRequest $request): Response {
         $this->events->dispatch(new ApiRequestInitiated($request));
         try {
-            $response = $this->connector($request->isDebug())->send($request);
+            $response = $this->connector($request->requestConfig()->debugConfig)->send($request);
         } catch (RequestException $exception) {
             $this->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;

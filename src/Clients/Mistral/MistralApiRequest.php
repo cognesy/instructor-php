@@ -6,7 +6,9 @@ use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
 
 class MistralApiRequest extends ApiRequest
 {
-    use Traits\HandlesTools;
-    use Traits\HandlesResponseFormat;
     use HandlesResponse;
+
+    use Traits\HandlesResponseFormat;
+    use Traits\HandlesScripts;
+    use Traits\HandlesTools;
 }

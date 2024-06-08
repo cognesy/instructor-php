@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\ApiClient\Traits;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\RequestConfig\DebugConfig;
 
 trait HandlesApiConnector
 {
@@ -13,9 +14,9 @@ trait HandlesApiConnector
         return $this;
     }
 
-    public function connector(bool $debug = false) : ApiConnector {
-        if ($debug) {
-            $this->connector->debug(die: true);
+    public function connector(DebugConfig $debugConfig = null) : ApiConnector {
+        if ($debugConfig && $debugConfig->debug()) {
+            $this->connector->debug(die: $debugConfig->stopOnDebug());
         }
         return $this->connector;
     }

@@ -9,6 +9,7 @@ class CohereApiRequest extends ApiRequest
     use Traits\HandlesResponse;
     use Traits\HandlesTools;
     use Traits\HandlesResponseFormat;
+    use Traits\HandlesScripts;
 
     protected string $defaultEndpoint = '/chat';
 
@@ -16,12 +17,38 @@ class CohereApiRequest extends ApiRequest
     protected function defaultBody(): array {
         return array_filter(
             array_merge(
+                $this->requestBody,
                 [
                     'model' => $this->model,
-                    'tools' => $this->tools()
+                    'preamble' => $this->preamble(),
+                    'chat_history' => $this->chatHistory(),
+                    'message' => $this->message(),
+                    'tools' => $this->tools(),
                 ],
-                $this->options,
             )
         );
+    }
+
+    public function preamble(): string {
+        return '';
+//        return $this->script
+//            ->withContext($this->scriptContext)
+//            ->select(['system'])
+//            ->toNativeArray(ClientType::fromRequestClass(static::class));
+    }
+
+    public function chatHistory(): array {
+        return [];
+//        return $this->script
+//            ->withContext($this->scriptContext)
+//            ->select(['messages', 'data_ack', 'command', 'examples'])
+//            ->toNativeArray(ClientType::fromRequestClass(static::class));
+    }
+
+    public function message(): string {
+        return $this->script
+            ->withContext($this->scriptContext)
+            ->select(['system', 'messages', 'data_ack', 'command', 'examples'])
+            ->toString();
     }
 }

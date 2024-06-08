@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient;
 
-use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -33,24 +33,20 @@ abstract class ApiClient implements CanCallApi
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////
 
     public function request(
-        array $body,
-        string $endpoint = '',
-        Method $method = Method::POST,
+        array            $body,
+        string           $endpoint = '',
+        Method           $method = Method::POST,
 
-        ApiRequestContext $context = null,
-        array $options = [],
-        array $data = [],
+        ApiRequestConfig $requestConfig = null,
+        array            $data = [],
     ): static {
-        if (!isset($options['max_tokens'])) {
-            $options['max_tokens'] = $this->defaultMaxTokens;
-        }
         if (!isset($body['max_tokens'])) {
             $body['max_tokens'] = $this->defaultMaxTokens;
         }
         if (!isset($body['model'])) {
             $body['model'] = $this->defaultModel();
         }
-        $this->apiRequest = $this->apiRequestFactory->makeRequest($this->getModeRequestClass(), $body, $endpoint, $method, $options, $data);
+        $this->apiRequest = $this->apiRequestFactory->makeRequest($this->getModeRequestClass(), $body, $endpoint, $method, $data);
         return $this;
     }
 

@@ -49,7 +49,7 @@ class Instructor {
         $this->events = $this->config->get(EventDispatcher::class);
         $this->clientFactory = $this->config->get(ApiClientFactory::class);
         $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
-        $this->requestFactory = $this->config->get(RequestFactory::class);
+        $this->requestFactory = /** @var RequestFactory */ $this->config->get(RequestFactory::class);
         $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
         //$this->logger = $this->config->get(LoggerInterface::class);
         //$this->eventLogger = $this->config->get(EventLogger::class);
@@ -63,8 +63,9 @@ class Instructor {
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
     public function respond(
-        string|array $messages,
         string|object|array $responseModel,
+        string|array|object $input = [],
+        string|array $messages = '',
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
@@ -77,6 +78,7 @@ class Instructor {
     ) : mixed {
         $this->request(
             messages: $messages,
+            input: $input,
             responseModel: $responseModel,
             model: $model,
             maxRetries: $maxRetries,
@@ -95,8 +97,9 @@ class Instructor {
      * Creates the request to be executed
      */
     public function request(
-        string|array $messages,
-        string|object|array $responseModel,
+        string|array $messages = '',
+        string|array|object $input = [],
+        string|object|array $responseModel = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
@@ -110,7 +113,8 @@ class Instructor {
         if (empty($responseModel)) {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
-        $request = $this->requestFactory->create(
+        $this->request = $this->requestFactory->create(
+            input: $input,
             messages: $messages,
             responseModel: $responseModel,
             model: $model,
@@ -123,9 +127,8 @@ class Instructor {
             retryPrompt: $retryPrompt,
             mode: $mode,
         );
-        $this->request = $request;
         $this->dispatchQueuedEvents();
-        $this->events->dispatch(new RequestReceived($request));
+        $this->events->dispatch(new RequestReceived($this->getRequest()));
         return $this;
     }
 
@@ -133,13 +136,15 @@ class Instructor {
      * Executes the request and returns the response
      */
     public function get() : mixed {
-        if ($this->request === null) {
+        if ($this->getRequest() === null) {
             throw new Exception('Request not defined, call request() first');
         }
-        $isStream = $this->request->option('stream', false);
+
+        $isStream = $this->getRequest()->option(key: 'stream', defaultValue: false);
         if ($isStream) {
             return $this->stream()->final();
         }
+
         $result = $this->handleRequest();
         $this->events->dispatch(new InstructorDone(['result' => $result]));
         return $result;
@@ -149,13 +154,16 @@ class Instructor {
      * Executes the request and returns the response stream
      */
     public function stream() : Stream {
-        if ($this->request === null) {
+        if ($this->getRequest() === null) {
             throw new Exception('Request not defined, call request() first');
         }
-        $isStream = $this->request->option('stream', false);
+
+        // TODO: do we need this? cannot we just turn streaming on?
+        $isStream = $this->getRequest()->option('stream', false);
         if (!$isStream) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
+
         return new Stream($this->handleStreamRequest(), $this->events());
     }
 }

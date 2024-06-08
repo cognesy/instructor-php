@@ -18,6 +18,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
+use Cognesy\Instructor\Utils\Profiler;
 
 class User {
     public int $age;
@@ -27,19 +28,22 @@ class User {
 // OpenAI auth params
 $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
-// Create instance of OpenAI client in debug mode
+// Create instance of OpenAI client
 $client = (new OpenAIClient($yourApiKey));
 
 /// Get Instructor with the default client component overridden with your own
 $instructor = (new Instructor)->withClient($client);
+
+Profiler::mark('start');
 
 $user = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
 )->get();
 
+$delta = Profiler::mark('no cache');
 dump($user);
-echo "Time elapsed (no cache, default): ".$instructor->elapsedTime()." seconds\n\n";
+echo "Time elapsed (no cache, default): $delta seconds\n\n";
 
 $user2 = $instructor->request(
     messages: "Jason is 25 years old.",
@@ -47,8 +51,9 @@ $user2 = $instructor->request(
     options: ['cache' => true],
 )->get();
 
+$delta = Profiler::mark('cache 1st call');
 dump($user2);
-echo "Time elapsed (cache on, 1st call): ".$instructor->elapsedTime()." seconds\n\n";
+echo "Time elapsed (cache on, 1st call): $delta seconds\n\n";
 
 $user3 = $instructor->request(
     messages: "Jason is 25 years old.",
@@ -56,8 +61,9 @@ $user3 = $instructor->request(
     options: ['cache' => true],
 )->get();
 
+$delta = Profiler::mark('cache 2nd call');
 dump($user3);
-echo "Time elapsed (cache on, 2nd call): ".$instructor->elapsedTime()." seconds\n\n";
+echo "Time elapsed (cache on, 2nd call): $delta seconds\n\n";
 
 $user4 = $instructor->request(
     messages: "Jason is 25 years old.",
@@ -65,8 +71,9 @@ $user4 = $instructor->request(
     options: ['cache' => false],
 )->get();
 
+$delta = Profiler::mark('cache 3rd call');
 dump($user4);
-echo "Time elapsed (cache turned off again): ".$instructor->elapsedTime()." seconds\n\n";
+echo "Time elapsed (cache turned off again): $delta seconds\n\n";
 
 ?>
 ```

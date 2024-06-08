@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Utils;
 
-use Cognesy\Instructor\Core\Messages\Message;
-use Cognesy\Instructor\Core\Messages\Messages;
+use Cognesy\Instructor\Data\Messages\Message;
+use Cognesy\Instructor\Data\Messages\Messages;
 use InvalidArgumentException;
 
 class Template

@@ -37,6 +37,7 @@ Catch up with the latest additions.
 - Data mapping module(s) for easier data transformations
 - Add super detailed tests of Module core functionality - esp. around input/output mappings
 - How to handle dynamic module graph definition + visualization
+- Foreign client support - OpenAI PHP, Amazon Bedrock SDK, etc. - via some kind of adapters?
 
 ## To research
 
