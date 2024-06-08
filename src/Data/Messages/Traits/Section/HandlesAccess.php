@@ -10,14 +10,14 @@ trait HandlesAccess
     }
 
     public function firstRole() : MessageRole {
-        return $this->messages->firstRole();
+        return $this->messages()->firstRole();
     }
 
     public function lastRole() : MessageRole {
-        return $this->messages->lastRole();
+        return $this->messages()->lastRole();
     }
 
     public function isEmpty() : bool {
-        return $this->messages->isEmpty();
+        return $this->messages()->isEmpty();
     }
 }

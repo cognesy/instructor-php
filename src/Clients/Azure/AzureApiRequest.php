@@ -18,9 +18,8 @@ class AzureApiRequest extends ApiRequest
         array            $body = [],
         string           $endpoint = '',
         Method           $method = Method::POST,
-        //
         ApiRequestConfig $requestConfig = null,
-        array            $data = [], // to consolidate into $config?
+        array            $data = [],
     ) {
         if ($this->isStreamed()) {
             $body['stream_options']['include_usage'] = true;

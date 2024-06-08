@@ -38,6 +38,7 @@ Catch up with the latest additions.
 - Add super detailed tests of Module core functionality - esp. around input/output mappings
 - How to handle dynamic module graph definition + visualization
 - Foreign client support - OpenAI PHP, Amazon Bedrock SDK, etc. - via some kind of adapters?
+- JSON Schema management for input/output definitions
 
 ## To research
 

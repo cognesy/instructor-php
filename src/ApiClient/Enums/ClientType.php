@@ -116,4 +116,59 @@ enum ClientType : string
             default => throw new Exception("Unknown client class: $class"),
         };
     }
+
+    public function getRoleMap() : array {
+        return match($this) {
+            self::Anthropic => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'user', 'tool' => 'user'],
+            self::Anyscale => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Azure => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Cohere => ['user' => 'USER', 'assistant' => 'CHATBOT', 'system' => 'USER', 'tool' => 'USER'],
+            self::Fireworks => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Gemini => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Groq => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Mistral => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Ollama => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::OpenAI => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::OpenRouter => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::Together => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+        };
+    }
+
+    public function mapRole(string $role) : string {
+        $map = $this->getRoleMap();
+        return $map[$role] ?? $role;
+    }
+
+    public function contentKey() : string {
+        return match($this) {
+            self::Anthropic => 'content',
+            self::Anyscale => 'content',
+            self::Azure => 'content',
+            self::Cohere => 'message',
+            self::Fireworks => 'content',
+            self::Gemini => 'content',
+            self::Groq => 'content',
+            self::Mistral => 'content',
+            self::Ollama => 'content',
+            self::OpenAI => 'content',
+            self::OpenRouter => 'content',
+            self::Together => 'content',
+        };
+    }
 }
+
+//$roleMap = [
+//    ClientType::Anthropic->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'assistant', 'tool' => 'user'],
+//    ClientType::Cohere->value => ['user' => 'USER', 'assistant' => 'CHATBOT', 'system' => 'CHATBOT', 'tool' => 'USER'],
+//    ClientType::Mistral->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+//    ClientType::OpenAI->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+//    ClientType::OpenAICompatible->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+//];
+//
+//$keyMap = [
+//    ClientType::Anthropic->value => 'content',
+//    ClientType::Cohere->value => 'message',
+//    ClientType::Mistral->value => 'content',
+//    ClientType::OpenAICompatible->value => 'content',
+//    ClientType::OpenAI->value => 'content',
+//];

@@ -11,7 +11,7 @@ trait HandlesTransformation
     use RendersTemplates;
 
     public function toMessages() : Messages {
-        return $this->messages;
+        return $this->messages();
     }
 
     /**
@@ -19,8 +19,11 @@ trait HandlesTransformation
      * @return array<string,mixed>
      */
     public function toArray(array $context = null) : array {
+        if ($this->isTemplate) {
+        }
+
         return $this->renderMessages(
-            $this->messages->toArray(),
+            $this->messages()->toArray(),
             $context
         );
     }
@@ -31,8 +34,11 @@ trait HandlesTransformation
      * @return array<string,mixed>
      */
     public function toNativeArray(ClientType $clientType, array $context = null) : array {
+        if ($this->isTemplate) {
+        }
+
         $array = $this->renderMessages(
-            $this->toArray(),
+            $this->toArray($context),
             $context,
         );
         return ChatFormat::mapToTargetAPI(
@@ -47,8 +53,11 @@ trait HandlesTransformation
      * @return array<string,mixed>
      */
     public function toString(array $context = [], string $separator = "\n") : string {
+        if ($this->isTemplate) {
+        }
+
         $text = array_reduce(
-            $this->messages->toArray(),
+            $this->messages($context)->toArray(),
             fn($carry, $message) => $carry . $message['content'] . $separator,
         );
         return $this->renderString($text, $context);

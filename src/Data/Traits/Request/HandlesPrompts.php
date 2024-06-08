@@ -10,7 +10,7 @@ trait HandlesPrompts
         Mode::Json->value => "Respond correctly with strict JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
         Mode::Tools->value => "Extract correct and accurate data from the input using provided tools. Response must be JSON object following provided tool schema.\n",
     ];
-    private string $dataAcknowledgedPrompt = "Input acknowledged.";
+    private string $dataAckPrompt = "Input acknowledged.";
     private string $prompt;
 
     public function prompt() : string {

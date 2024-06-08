@@ -12,6 +12,7 @@ use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
@@ -123,7 +124,7 @@ class Predict extends DynamicModule
             $input instanceof Example => $input->input(),
             $input instanceof BackedEnum => $input->value,
             // ...how do we handle chat messages input?
-            default => json_encode($input), // wrap in json
+            default => Json::encode($input), // wrap in json
         };
         return [
             ['role' => 'user', 'content' => $this->predictionPrompt()],

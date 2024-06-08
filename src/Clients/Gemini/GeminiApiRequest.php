@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Clients\Gemini;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 class GeminiApiRequest extends ApiRequest
 {
@@ -12,15 +13,17 @@ class GeminiApiRequest extends ApiRequest
     protected string $defaultEndpoint = '/models/{model}:generateContent';
 
     protected function defaultBody(): array {
-        return array_filter(
+        $body = array_filter(
             array_merge(
                 $this->requestBody,
                 [
-                    'model' => $this->model,
+                    'model' => $this->model(),
                     'tools' => $this->tools()
                 ],
             )
         );
+        $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
+        return $body;
     }
 
     public function resolveEndpoint(): string {

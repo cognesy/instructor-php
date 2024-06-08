@@ -17,7 +17,13 @@ class Template
         if (empty($context)) {
             return;
         }
-        $materializedContext = $this->materializeContext($context);
+        // remove keys starting with @ - these are used for section templates
+        $filteredContext = array_filter(
+            $context,
+            fn($key) => substr($key, 0, 1) !== '@',
+            ARRAY_FILTER_USE_KEY
+        );
+        $materializedContext = $this->materializeContext($filteredContext);
         $this->values = array_values($materializedContext);
         $this->keys = array_map(
             fn($key) => $this->varPattern($key),
@@ -36,6 +42,7 @@ class Template
         $missingKeys = array_diff($keys, $this->keys);
         // remove missing key strings from the template
         $template = str_replace($missingKeys, '', $template);
+
         return str_replace($this->keys, $this->values, $template);
     }
 

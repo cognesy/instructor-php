@@ -5,6 +5,7 @@ use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
 use Cognesy\Instructor\Utils\Arrays;
+use Exception;
 
 trait HandlesTransformation
 {
@@ -12,10 +13,17 @@ trait HandlesTransformation
      * @param array<string> $order
      * @return Messages
      */
-    public function toMessages() : Messages {
+    public function toMessages(array $context = null) : Messages {
         $messages = new Messages();
         foreach ($this->sections as $section) {
-            $messages->appendMessages($section->toMessages());
+            $content = match(true) {
+                $section->isTemplate() => $this->fromTemplate(
+                    name: $section->name(),
+                    context: Arrays::mergeNull($this->context, $context)
+                ) ?? $section->toMessages(),
+                default => $section->toMessages(),
+            };
+            $messages->appendMessages($content);
         }
         return $messages;
     }
@@ -65,5 +73,30 @@ trait HandlesTransformation
             return '';
         }
         return $this->renderString($text, Arrays::mergeNull($this->context, $context));
+    }
+
+    protected function fromTemplate(string $name, ?array $context) : Messages {
+        if (empty($context)) {
+            return new Messages();
+        }
+
+        $source = $context[$name] ?? throw new Exception("Context does not have template value: $name");
+
+        // process value from context
+        $values = match(true) {
+            is_callable($source) => $source($context),
+            is_array($source) => Messages::fromArray($source),
+            $source instanceof Messages => $source,
+            is_string($source) => Messages::fromString('user', $source),
+            default => throw new Exception("Invalid template value: $name"),
+        };
+
+        // process results of callable context value
+        return match(true) {
+            $values instanceof Messages => $values,
+            is_array($values) => Messages::fromArray($values),
+            is_string($values) => Messages::fromString('user', $values),
+            default => throw new Exception("Invalid template value: $name"),
+        };
     }
 }

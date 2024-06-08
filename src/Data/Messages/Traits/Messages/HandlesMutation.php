@@ -6,7 +6,7 @@ use Cognesy\Instructor\Data\Messages\Messages;
 
 trait HandlesMutation
 {
-    public function add(array|Message $message) : static {
+    public function appendMessage(array|Message $message) : static {
         $this->messages[] = match (true) {
             is_array($message) => new Message($message['role'], $message['content']),
             default => $message,

@@ -14,13 +14,17 @@ class ScriptFactory
         string $dataAckPrompt = '',
         string $prompt = '',
         ?array $examples = null,
+        string $retryPrompt = '',
+        array $attempts = [],
     ) : Script {
         $instance = new self();
         return $instance->makeScript(
             $instance->normalizeMessages($messages),
-            $prompt,
             $dataAckPrompt,
-            $examples
+            $prompt,
+            $examples,
+            $retryPrompt,
+            $attempts,
         );
     }
 
@@ -35,9 +39,11 @@ class ScriptFactory
 
     private function makeScript(
         array $messages,
-        string $prompt,
         string $dataAckPrompt,
-        array $examples
+        string $prompt,
+        array $examples,
+        string $retryPrompt,
+        array $attempts,
     ) : Script {
         if (empty($messages)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
@@ -46,8 +52,10 @@ class ScriptFactory
         $script = new Script();
         $script->addSection(new Section('system', 'System messages'));
         $script->addSection(new Section('messages', 'Chat messages'));
-        $script->addSection(new Section('command', 'Command prompt'));
         $script->addSection(new Section('data_ack', 'Data acknowledged prompt'));
+        $script->addSection(new Section('command', 'Command prompt'));
+        $script->addSection(new Section('examples', 'Inference examples'));
+        $script->addSection(new Section('retries', 'Responses and retries'));
 
         // SYSTEM SECTION
         $index = 0;
@@ -55,12 +63,12 @@ class ScriptFactory
             if ($message['role'] !== 'system') {
                 break;
             }
-            $script->section('system')->add(['role' => 'system', 'content' => $message['content']]);
+            $script->section('system')->appendMessage(['role' => 'system', 'content' => $message['content']]);
             $index++;
         }
 
         // DATA ACK SECTION
-        $script->section('data_ack')->add([
+        $script->section('data_ack')->appendMessage([
             'role' => 'assistant',
             'content' => $dataAckPrompt
         ]);
@@ -70,7 +78,7 @@ class ScriptFactory
 
         // PROMPT SECTION
         if (!empty($prompt)) {
-            $script->section('command')->add([
+            $script->section('command')->appendMessage([
                 'role' => 'user',
                 'content' => $prompt
             ]);
@@ -78,7 +86,6 @@ class ScriptFactory
 
         // EXAMPLES SECTION
         if (!empty($examples)) {
-            $script->addSection(new Section('examples', 'Inference examples'));
             foreach ($examples as $item) {
                 $example = match(true) {
                     is_array($item) => Example::fromArray($item),
@@ -87,6 +94,10 @@ class ScriptFactory
                 };
                 $script->section('examples')->appendMessages($example->toMessages());
             }
+        }
+
+        // RETRY SECTION
+        if (!empty($attempts)) {
         }
 
         return $script;

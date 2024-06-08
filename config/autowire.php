@@ -91,6 +91,7 @@ function autowire(
         context: [
             'cacheConfig' => $config->reference(CacheConfig::class),
             'debugConfig' => $config->reference(DebugConfig::class),
+            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 

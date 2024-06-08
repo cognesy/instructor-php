@@ -9,7 +9,7 @@ use InvalidArgumentException;
 trait HandlesCreation
 {
     static public function fromString(string $role = 'user', string $content = '') : Messages {
-        return (new self)->add(new Message($role, $content));
+        return (new self)->appendMessage(new Message($role, $content));
     }
 
     /**
@@ -32,9 +32,9 @@ trait HandlesCreation
             if ($message instanceof Messages) {
                 $instance->appendMessages($message);
             } elseif ($message instanceof Message) {
-                $instance->add($message);
+                $instance->appendMessage($message);
             } elseif (is_array($message)) {
-                $instance->add(new Message($message['role'], $message['content']));
+                $instance->appendMessage(new Message($message['role'], $message['content']));
             } else {
                 throw new InvalidArgumentException('Invalid type for message');
             }

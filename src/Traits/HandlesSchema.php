@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Utils\Json;
 
 trait HandlesSchema
 {
@@ -18,6 +19,6 @@ trait HandlesSchema
     }
 
     public function createJsonSchemaString(string|array|object $responseModel) : string {
-        return json_encode($this->createJsonSchema($responseModel));
+        return Json::encode($this->createJsonSchema($responseModel));
     }
 }

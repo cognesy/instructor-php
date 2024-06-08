@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\ApiClient\RequestConfig;
 
 use Closure;
+use Cognesy\Instructor\Utils\Json;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Saloon\CachePlugin\Contracts\Driver;
@@ -70,7 +71,7 @@ class CacheConfig
         $keyBase = implode('|', [
             get_class($pendingRequest->getConnector()),
             $pendingRequest->getUrl(),
-            json_encode($pendingRequest->body()),
+            Json::encode($pendingRequest->body()),
         ]);
         return md5($keyBase);
     }

@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 
 class AnthropicApiRequest extends ApiRequest
@@ -15,23 +16,33 @@ class AnthropicApiRequest extends ApiRequest
     protected string $defaultEndpoint = '/messages';
 
     protected function defaultBody(): array {
-        return array_filter(
+        $body = array_filter(
             array_merge(
                 $this->requestBody,
                 [
+                    'model' => $this->model(),
+                    'system' => $this->system(),
                     'messages' => $this->messages(),
-                    'model' => $this->model,
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                 ],
             )
         );
+        $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
+        return $body;
     }
 
     public function messages(): array {
         return $this->script
             ->withContext($this->scriptContext)
             ->select(['messages', 'data_ack', 'command', 'examples'])
+            ->toNativeArray(ClientType::fromRequestClass(static::class));
+    }
+
+    public function system(): array {
+        return $this->script
+            ->withContext($this->scriptContext)
+            ->select(['system'])
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 }

@@ -7,6 +7,7 @@ use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Instructor\Utils\Json;
 
 class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {
@@ -72,7 +73,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         $this->hasValue = $data['hasValue'] ?? false;
         $this->error = $data['error'] ?? '';
         if ($this->hasValue) {
-            $this->value = $this->deserializer->fromJson(json_encode($data['value']), $this->class);
+            $this->value = $this->deserializer->fromJson(Json::encode($data['value']), $this->class);
         }
         return $this;
     }

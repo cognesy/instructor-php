@@ -36,10 +36,10 @@ class RequestHandler implements CanHandleRequest
         }
         // try to respond to the request until success or max retries reached
         $this->retries = 0;
-        $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries()) {
             // (1) get the API client response
             $apiResponse = $this->getApiResponse($request);
+            $this->messages = $request->messages(); // TODO: tx messages to Scripts
             $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
 
             // (2) we have ApiResponse here - let's process it: deserialize, validate, transform
@@ -48,7 +48,7 @@ class RequestHandler implements CanHandleRequest
                 // get final value
                 $value = $processingResult->unwrap();
                 // store response
-                $request->addResponse($this->messages, $apiResponse, [], $value);
+                $request->addResponse($this->messages, $apiResponse, [], $value); // TODO: tx messages to Scripts
                 // we're done here - no need to retry
                 return $value;
             }
@@ -56,9 +56,10 @@ class RequestHandler implements CanHandleRequest
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
             // store failed response
-            $request->addFailedResponse($this->messages, $apiResponse, [], [$errors]);
-            $this->messages = $request->makeRetryMessages($this->messages, $apiResponse->content, $errors);
-            $request->withMessages($this->messages);
+            $request->addFailedResponse($this->messages, $apiResponse, [], [$errors]); // TODO: tx messages to Scripts
+            $request->script()->section('retries')->appendMessages(
+                $request->makeRetryMessages([], $apiResponse->content, $errors)
+            );
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));

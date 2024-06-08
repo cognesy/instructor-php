@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;

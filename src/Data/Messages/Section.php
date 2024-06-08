@@ -1,18 +1,33 @@
 <?php
 namespace Cognesy\Instructor\Data\Messages;
 
+use Exception;
+
 class Section {
     use Traits\Section\HandlesAccess;
     use Traits\Section\HandlesMutation;
     use Traits\Section\HandlesTransformation;
 
+    public const MARKER = '@';
     private Messages $messages;
+    private bool $isTemplate = false;
 
     public function __construct(
         public string $name,
         public string $description = '',
     ) {
+        if (str_starts_with($name, self::MARKER)) {
+            $this->isTemplate = true;
+        }
         $this->messages = new Messages();
+    }
+
+    public function isTemplate() : bool {
+        return $this->isTemplate;
+    }
+
+    public function messages() : Messages {
+        return $this->messages;
     }
 }
 

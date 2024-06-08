@@ -7,18 +7,18 @@ use Cognesy\Instructor\Data\Messages\Messages;
 
 trait HandlesMutation
 {
-    public function add(array|Message $message) : static {
-        $this->messages->add($message);
+    public function appendMessage(array|Message $message) : static {
+        $this->messages()->appendMessage($message);
         return $this;
     }
 
     public function appendMessages(array|Messages $messages) : static {
-        $this->messages->appendMessages($messages);
+        $this->messages()->appendMessages($messages);
         return $this;
     }
 
     public function prependMessages(array|Messages $messages) : static {
-        $this->messages->prependMessages($messages);
+        $this->messages()->prependMessages($messages);
         return $this;
     }
 }

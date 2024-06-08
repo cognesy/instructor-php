@@ -2,29 +2,30 @@
 namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
 use Cognesy\Instructor\Data\Messages\Enums\MessageRole;
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 
 trait HandlesAccess
 {
-    public function first() : \Cognesy\Instructor\Data\Messages\Message {
+    public function first() : Message {
         if (empty($this->messages)) {
-            return new \Cognesy\Instructor\Data\Messages\Message();
+            return new Message();
         }
         return $this->messages[0];
     }
 
-    public function last() : \Cognesy\Instructor\Data\Messages\Message {
+    public function last() : Message {
         if (empty($this->messages)) {
-            return new \Cognesy\Instructor\Data\Messages\Message();
+            return new Message();
         }
         return $this->messages[count($this->messages)-1];
     }
 
-    public function middle() : \Cognesy\Instructor\Data\Messages\Messages {
+    public function middle() : Messages {
         if (count($this->messages) < 3) {
-            return new \Cognesy\Instructor\Data\Messages\Messages();
+            return new Messages();
         }
-        return \Cognesy\Instructor\Data\Messages\Messages::fromMessages(array_slice($this->messages, 1, count($this->messages)-2));
+        return Messages::fromMessages(array_slice($this->messages, 1, count($this->messages)-2));
     }
 
     public function head() : array {
