@@ -51,7 +51,7 @@ class CohereApiRequest extends ApiRequest
     public function message(): string {
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['system', 'messages', 'data_ack', 'command', 'examples'])
+            ->select(['system', 'messages', 'input', 'data_ack', 'command', 'examples', 'retries'])
             ->toString();
     }
 }

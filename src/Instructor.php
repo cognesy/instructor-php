@@ -3,6 +3,7 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
@@ -40,6 +41,7 @@ class Instructor {
 
     private LoggerInterface $logger;
     private EventLogger $eventLogger;
+    private ApiRequestConfig $apiRequestConfig;
 
     public function __construct(array $config = []) {
         $this->queueEvent(new InstructorStarted($config));
@@ -51,6 +53,7 @@ class Instructor {
         $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
         $this->requestFactory = /** @var RequestFactory */ $this->config->get(RequestFactory::class);
         $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
+        $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
         //$this->logger = $this->config->get(LoggerInterface::class);
         //$this->eventLogger = $this->config->get(EventLogger::class);
         //$this->events->wiretap($this->eventLogger->eventListener(...));
@@ -63,9 +66,9 @@ class Instructor {
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
     public function respond(
-        string|object|array $responseModel,
-        string|array|object $input = [],
         string|array $messages = '',
+        string|array|object $input = [],
+        string|object|array $responseModel = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
@@ -114,8 +117,8 @@ class Instructor {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
         $this->request = $this->requestFactory->create(
-            input: $input,
             messages: $messages,
+            input: $input,
             responseModel: $responseModel,
             model: $model,
             maxRetries: $maxRetries,

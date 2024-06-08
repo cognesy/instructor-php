@@ -10,7 +10,7 @@ trait HandlesRequestedModel
     private ResponseModelFactory $responseModelFactory;
 
     private string $defaultToolName = 'extracted_data';
-    private string $defaultToolDescription = 'Function call based on the data extracted from provided content';
+    private string $defaultToolDescription = 'Function call based on user instructions.';
     private string $toolName;
     private string $toolDescription;
 

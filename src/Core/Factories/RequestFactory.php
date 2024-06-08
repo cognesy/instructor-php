@@ -21,8 +21,8 @@ class RequestFactory
     ) {}
 
     public function create(
-        string|array|object $input = [],
         string|array $messages = [],
+        string|array|object $input = [],
         string|object|array $responseModel = [],
         string $model = '',
         int $maxRetries = 0,

@@ -1,17 +1,14 @@
 <?php
-
 namespace Cognesy\Instructor\Traits;
 
 trait HandlesDebug
 {
-    protected bool $debug = false;
-
     public function debug() : bool {
-        return $this->debug;
+        return $this->apiRequestConfig->isDebug();
     }
 
-    public function withDebug(bool $debug = true) : static {
-        $this->debug = $debug;
+    public function withDebug(bool $debug = true, bool $stopOnDebug = true) : static {
+        $this->apiRequestConfig->withDebug($debug, $stopOnDebug);
         return $this;
     }
 }

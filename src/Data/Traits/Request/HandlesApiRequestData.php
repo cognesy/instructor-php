@@ -1,8 +1,5 @@
 <?php
-
 namespace Cognesy\Instructor\Data\Traits\Request;
-
-use Cognesy\Instructor\Data\Messages\Utils\ScriptFactory;
 
 trait HandlesApiRequestData
 {
@@ -19,13 +16,7 @@ trait HandlesApiRequestData
                 'script_context' => [
                     'json_schema' => $this->responseModel()?->toJsonSchema(),
                 ],
-                'script' => ScriptFactory::make(
-                    $this->messages(),
-                    $this->dataAckPrompt,
-                    $this->prompt(),
-                    $this->examples(),
-                    $this->retryPrompt(),
-                ),
+                'script' => $this->script(),
             ]
         ));
     }

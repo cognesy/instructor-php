@@ -17,9 +17,6 @@ trait HandlesRequest
     private RequestFactory $requestFactory;
 
     protected function getRequest() : Request {
-        if ($this->request && $this->debug()) {
-            $this->request->setOption('debug', true);
-        }
         return $this->request;
     }
 

@@ -6,7 +6,7 @@ trait HandlesInput
 {
     private string|array|object $input = '';
 
-    public function input(): array {
+    public function input(): string|array|object {
         return $this->input;
     }
 }

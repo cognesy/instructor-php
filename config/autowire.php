@@ -108,7 +108,7 @@ function autowire(
         class: DebugConfig::class,
         context: [
             'debug' => false,
-            'stopOnDebug' => true,
+            'stopOnDebug' => false,
         ]
     );
 

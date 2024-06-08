@@ -97,6 +97,7 @@ class Predict extends DynamicModule
 
         $response = $this->instructor->respond(
             messages: $this->toMessages($input),
+            input: [],
             responseModel: $targetObject,
             model: $this->model,
             maxRetries: $this->maxRetries,

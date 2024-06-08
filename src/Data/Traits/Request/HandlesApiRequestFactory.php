@@ -22,7 +22,10 @@ trait HandlesApiRequestFactory
         $requestClass = $this->client->getModeRequestClass($this->mode());
         return $this->apiRequestFactory->makeRequest(
             requestClass: $requestClass,
-            body: $this->toApiRequestBody(),
+            body: array_filter(array_merge(
+                ['model' => $this->modelName()],
+                $this->options(),
+            )),
             endpoint: $this->endpoint(),
             method: $this->method(),
             data: $this->data(),

@@ -9,12 +9,12 @@ use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\Messages\Script;
+use Cognesy\Instructor\Data\Messages\Utils\ScriptFactory;
 use Cognesy\Instructor\Enums\Mode;
 
 class Request
 {
     use Traits\Request\HandlesApiClient;
-    use Traits\Request\HandlesApiRequestBody;
     use Traits\Request\HandlesApiRequestConfig;
     use Traits\Request\HandlesApiRequestData;
     use Traits\Request\HandlesApiRequestEndpoint;
@@ -55,11 +55,11 @@ class Request
         $this->apiRequestFactory = $apiRequestFactory;
         $this->requestConfig = $requestConfig;
 
-        $this->requestConfig->withDebug($this->options['debug'] ?? false);
-        unset($options['debug']);
-        $this->requestConfig->cacheConfig()->setEnabled($this->options['cache'] ?? false);
-        unset($options['cache']);
-        $this->options = $options;
+//        $this->requestConfig->withDebug($this->options['debug'] ?? false);
+//        unset($options['debug']);
+//        $this->requestConfig->cacheConfig()->setEnabled($this->options['cache'] ?? false);
+//        unset($options['cache']);
+//        $this->options = $options;
 
         $this->client = $client ?? $clientFactory->getDefault();
         $this->withModel($model);
@@ -75,12 +75,6 @@ class Request
         $this->prompt = $prompt;
         $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
         $this->examples = $examples;
-        $this->script = Script::fromArray([
-            'messages' => $this->messages,
-            'command' => $this->prompt(),
-            'examples' => $this->examplesPrompt,
-            'retry_prompt' => $this->retryPrompt,
-        ]);
 
         $this->toolName = $toolName ?: $this->defaultToolName;
         $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
@@ -89,6 +83,22 @@ class Request
             $this->requestedSchema(),
             $this->toolName(),
             $this->toolDescription()
+        );
+
+//        $this->script = Script::fromArray([
+//            'messages' => $this->messages,
+//            'command' => $this->prompt(),
+//            'examples' => $this->examplesPrompt,
+//            'retry_prompt' => $this->retryPrompt,
+//        ]);
+
+        $this->script = ScriptFactory::make(
+            $this->messages(),
+            $this->input(),
+            $this->dataAckPrompt,
+            $this->prompt(),
+            $this->examples(),
+            $this->retryPrompt(),
         );
     }
 

@@ -35,7 +35,7 @@ class AnthropicApiRequest extends ApiRequest
     public function messages(): array {
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['messages', 'data_ack', 'command', 'examples'])
+            ->select(['messages', 'input', 'data_ack', 'command', 'examples', 'retries'])
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 

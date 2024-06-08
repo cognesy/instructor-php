@@ -11,7 +11,7 @@ trait HandlesScripts
         return [
             'system' => $script->select('system')->toString(),
             'messages' => $script
-                ->select(['messages', 'data_ack', 'command', 'examples'])
+                ->select(['messages', 'input', 'data_ack', 'command', 'examples'])
                 ->toNativeArray(ClientType::Anthropic),
         ];
     }

@@ -53,7 +53,6 @@ $input = [
 $receipt = (new Instructor)->respond(
     messages: $input,
     responseModel: Receipt::class,
-    //options: ['debug' => true],
     model: 'gpt-4-vision-preview',
     options: ['max_tokens' => 4096]
 );

@@ -8,7 +8,7 @@ trait HandlesMessages
     public function messages(): array {
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['system', 'messages', 'data_ack', 'command', 'examples'])
+            ->select(['system', 'messages', 'input', 'data_ack', 'command', 'examples', 'retries'])
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 }
