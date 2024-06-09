@@ -21,7 +21,7 @@ enum UserType : string {
 }
 
 class User {
-    public int $age;
+    public ?int $age;
     public string $name;
     public string $username;
     public UserType $role;
@@ -45,8 +45,12 @@ $user = $instructor
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
         model: 'llama3-8b-8192',
+        options: ['stream' => false],
+        examples: [[
+            'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
+            'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+        ]],
         mode: Mode::Json,
-        options: ['stream' => false]
     );
 
 print("Completed response model:\n\n");

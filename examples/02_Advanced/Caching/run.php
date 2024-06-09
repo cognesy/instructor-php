@@ -2,9 +2,11 @@
 
 > This feature is experimental.
 
-You can set `cache` option to `true` to enable caching for your requests.
-Instructor will store the response in cache and return it on subsequent requests
-with the same parameters (for given API client).
+You can enable/disable caching for your requests with `withCache()` method of
+`Instructor` class.
+
+When caching is enabled, Instructor will store the response in cache and return
+it on subsequent requests with the same parameters (for given API client).
 
 This option is available for all clients. By default, caching is turned off.
 

@@ -1,4 +1,4 @@
-# Language programs
+# Language programs with Modules
 
 Instructor provides an addon allowing to implement complex processing flows
 using LLM in a modular way. This addon to Instructor has been inspired by DSPy

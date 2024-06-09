@@ -1,4 +1,4 @@
-# Language programs
+# 'Structure to structure' LLM processing
 
 Instructor provides an addon allowing to implement complex processing flows
 using LLM in a modular way. This addon to Instructor has been inspired by DSPy
@@ -25,13 +25,15 @@ The outputs and flow can be arbitrarily shaped to the needs of specific use case
 ```php
 <?php
 
+use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
+use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
+use Cognesy\Instructor\Extras\Module\CallData\Traits\AutoSignature;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -40,9 +42,10 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 //#[Description('extract email details from text')]
 class ParsedEmail extends SignatureData {
+    // INPUTS
     #[InputField('text containing email')]
     public string $text;
-
+    // OUTPUTS
     #[OutputField('email address of sender')]
     public string $senderEmail;
     #[OutputField('subject of the email')]
@@ -52,25 +55,29 @@ class ParsedEmail extends SignatureData {
 }
 
 class FixedEmail extends SignatureData {
+    // INPUTS
     #[InputField('subject of the email')]
     public string $subject;
     #[InputField('body of the email')]
     public string $body;
-
+    // OUTPUTS
     #[OutputField('subject of the email with fixed spelling mistakes')]
     public string $fixedSubject;
     #[OutputField('body of the email with fixed spelling mistakes')]
     public string $fixedBody;
 }
 
-class EmailTranslation extends SignatureData {
+// Alternative way to define the class signature data without extending a class
+class EmailTranslation implements HasInputOutputData, CanProvideSchema {
+    use AutoSignature;
+    // INPUTS
     #[InputField('subject of email')]
     public string $subject;
     #[InputField('body of email')]
     public string $body;
     #[InputField('language to translate to')]
     public string $language;
-
+    // OUTPUTS
     #[OutputField('translated subject of email')]
     public string $translatedSubject;
     #[OutputField('translated body of email')]
@@ -101,7 +108,7 @@ class ProcessEmail extends Module {
     private Predict $translate;
 
     public function __construct() {
-        $instructor = new Instructor();
+        $instructor = (new Instructor);//->withClient(new AnthropicClient(Env::get('ANTHROPIC_API_KEY')));//->wiretap(fn($e) => $e->printDump());
 
         $this->parse = new Predict(signature: ParsedEmail::class, instructor: $instructor);
         $this->fix = new Predict(signature: FixedEmail::class, instructor: $instructor);

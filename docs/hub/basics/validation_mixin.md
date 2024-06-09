@@ -16,7 +16,6 @@ is `1010` instead of `2010`) and respond with correct graduation year.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
@@ -36,19 +35,22 @@ class UserDetails
         return ValidationResult::fieldError(
             field: 'graduationYear',
             value: $this->graduationYear,
-            message: "Graduation year has to be after birth year.",
+            message: "Graduation year has to be bigger than birth year."
         );
     }
 }
 
-$user = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => 'Jason was born in 1990 and graduated in 1010.']],
-    responseModel: UserDetails::class,
-    maxRetries: 2
-);
+$user = (new Instructor)
+    ->withDebug(true, false)
+    ->respond(
+        messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 1023.']],
+        responseModel: UserDetails::class,
+        model: 'gpt-4o',
+        maxRetries: 2,
+    );
 
 dump($user);
 
-assert($user->graduationYear === 2010);
+assert($user->graduationYear === 2023);
 ?>
 ```
