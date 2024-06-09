@@ -8,7 +8,7 @@ use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Stream;
 use Exception;
 
-trait HandlesExecution
+trait HandlesUserAPI
 {
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array

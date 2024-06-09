@@ -4,15 +4,18 @@ namespace Cognesy\Instructor\ApiClient\RequestConfig;
 
 class DebugConfig
 {
-    private bool $debug = false;
-    private bool $stopOnDebug = false;
+    private bool $debug;
+    private bool $stopOnDebug;
+    private bool $forceDebug;
 
     public function __construct(
         bool $debug = false,
-        bool $stopOnDebug = false
+        bool $stopOnDebug = false,
+        bool $forceDebug = false,
     ) {
-        $this->withDebug($debug);
-        $this->withStopOnDebug($stopOnDebug);
+        $this->debug = $debug;
+        $this->stopOnDebug = $stopOnDebug;
+        $this->forceDebug = $forceDebug;
     }
 
     public function withDebug(bool $debug = true) : static {
@@ -21,7 +24,7 @@ class DebugConfig
     }
 
     public function debug() : bool {
-        return $this->debug;
+        return $this->debug || $this->forceDebug;
     }
 
     public function withStopOnDebug(bool $stopOnDebug = true) : static {

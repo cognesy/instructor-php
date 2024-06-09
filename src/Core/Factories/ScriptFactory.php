@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Data\Messages\Utils;
+namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\Messages\Message;
@@ -41,13 +41,13 @@ class ScriptFactory
         }
 
         $script = new Script();
-        $script->createSection(new Section('system', 'System messages'));
-        $script->createSection(new Section('messages', 'Chat messages'));
-        $script->createSection(new Section('input', 'Data input messages'));
-        $script->createSection(new Section('data_ack', 'Data acknowledged prompt'));
-        $script->createSection(new Section('command', 'Command prompt'));
-        $script->createSection(new Section('examples', 'Inference examples'));
-        $script->createSection(new Section('retries', 'Responses and retries'));
+//        $script->createSection(new Section('system', 'System messages'));
+//        $script->createSection(new Section('messages', 'Chat messages'));
+//        $script->createSection(new Section('input', 'Data input messages'));
+//        $script->createSection(new Section('data_ack', 'Data acknowledged prompt'));
+//        $script->createSection(new Section('prompt', 'Command prompt'));
+//        $script->createSection(new Section('examples', 'Inference examples'));
+//        $script->createSection(new Section('retries', 'Responses and retries'));
 
         // NORMALIZE MESSAGES
         $messages = $this->normalizeMessages($messages);
@@ -69,14 +69,20 @@ class ScriptFactory
         ]);
 
         // MESSAGES SECTION
-        $script->section('messages')->appendMessages(array_slice($messages, $index));
+        $messagesSection = array_slice($messages, $index);
+        if (!empty($messagesSection)) {
+            $script->section('messages')->appendMessages($messagesSection);
+        }
 
         // INPUT DATA SECTION
-        $script->section('input')->appendMessage(Message::fromInput($input));
+        $inputMessage = Message::fromInput($input);
+        if (!$this->inputEmpty($inputMessage)) {
+            $script->section('input')->appendMessage($inputMessage);
+        }
 
         // PROMPT SECTION
         if (!empty($prompt)) {
-            $script->section('command')->appendMessage([
+            $script->section('prompt')->appendMessage([
                 'role' => 'user',
                 'content' => $prompt
             ]);
@@ -93,7 +99,10 @@ class ScriptFactory
                 $script->section('examples')->appendMessages($example->toMessages());
             }
         }
-
         return $script;
+    }
+
+    private function inputEmpty(Message $inputMessage) : bool {
+        return $inputMessage->isEmpty() || ($inputMessage->content() === '[]');
     }
 }

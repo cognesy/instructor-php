@@ -94,8 +94,8 @@ class Predict extends DynamicModule
         };
 
         return $this->instructor->respond(
-            messages: $this->toMessages($input),
-            input: Message::fromInput($input)->toArray(),
+            messages: $this->toMessages(),
+            input: $input,
             responseModel: $targetObject,
             model: $this->model,
             maxRetries: $this->maxRetries,
@@ -115,11 +115,10 @@ class Predict extends DynamicModule
 
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////
 
-    private function toMessages(string|array|object $input) : array {
+    private function toMessages() : array {
         return [
             ['role' => 'user', 'content' => $this->predictionPrompt()],
             ['role' => 'assistant', 'content' => 'Provide input data.'],
-            Message::fromInput($input)->toArray(),
         ];
     }
 

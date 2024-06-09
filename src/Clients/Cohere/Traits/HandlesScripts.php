@@ -11,7 +11,7 @@ trait HandlesScripts
         return array_filter([
             'preamble' => $script->select('system')->toString(),
             'chat_history' => $script->select('messages')->toNativeArray(ClientType::Cohere),
-            'message' => $script->select(['command', 'examples'])->toString(),
+            'message' => $script->select(['prompt', 'examples'])->toString(),
         ]);
     }
 }

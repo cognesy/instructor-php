@@ -109,6 +109,7 @@ function autowire(
         context: [
             'debug' => false,
             'stopOnDebug' => false,
+            'forceDebug' => false,
         ]
     );
 

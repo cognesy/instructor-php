@@ -44,14 +44,14 @@ class CohereApiRequest extends ApiRequest
         return [];
 //        return $this->script
 //            ->withContext($this->scriptContext)
-//            ->select(['messages', 'data_ack', 'command', 'examples'])
+//            ->select(['messages', 'data_ack', 'prompt', 'examples'])
 //            ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 
     public function message(): string {
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['system', 'messages', 'input', 'data_ack', 'command', 'examples', 'retries'])
+            ->select(['system', 'messages', 'input', 'data_ack', 'prompt', 'examples', 'retries'])
             ->toString();
     }
 }

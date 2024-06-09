@@ -41,7 +41,7 @@ trait HandlesCreation
         $content = match(true) {
             is_string($input) => $input,
             is_array($input) => Json::encode($input),
-            $input instanceof Example => $input->input(),
+            $input instanceof Example => $input->inputString(), // TODO: avoid recursion
             $input instanceof BackedEnum => $input->value,
             $input instanceof Closure => $input(),
             method_exists($input, 'toJson') => match(true) {

@@ -23,6 +23,9 @@ trait HandlesTransformation
                 ) ?? $section->toMessages(),
                 default => $section->toMessages(),
             };
+            if ($content->isEmpty()) {
+                continue;
+            }
             $messages->appendMessages($content);
         }
         return $messages;

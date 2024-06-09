@@ -19,9 +19,6 @@ trait HandlesTransformation
      * @return array<string,mixed>
      */
     public function toArray(array $context = null) : array {
-        if ($this->isTemplate) {
-        }
-
         return $this->renderMessages(
             $this->messages()->toArray(),
             $context
@@ -34,9 +31,6 @@ trait HandlesTransformation
      * @return array<string,mixed>
      */
     public function toNativeArray(ClientType $clientType, array $context = null) : array {
-        if ($this->isTemplate) {
-        }
-
         $array = $this->renderMessages(
             $this->toArray($context),
             $context,
@@ -53,11 +47,8 @@ trait HandlesTransformation
      * @return array<string,mixed>
      */
     public function toString(array $context = [], string $separator = "\n") : string {
-        if ($this->isTemplate) {
-        }
-
         $text = array_reduce(
-            $this->messages($context)->toArray(),
+            $this->messages()->toArray(),
             fn($carry, $message) => $carry . $message['content'] . $separator,
         );
         return $this->renderString($text, $context);

@@ -31,12 +31,12 @@ class Instructor {
     use Traits\Instructor\HandlesConfig;
     use Traits\Instructor\HandlesDebug;
     use Traits\Instructor\HandlesErrors;
-    use Traits\Instructor\HandlesExecution;
     use Traits\Instructor\HandlesPartialUpdates;
     use Traits\Instructor\HandlesQueuedEvents;
     use Traits\Instructor\HandlesRequest;
     use Traits\Instructor\HandlesSchema;
     use Traits\Instructor\HandlesSequenceUpdates;
+    use Traits\Instructor\HandlesUserAPI;
 
     private LoggerInterface $logger;
     private EventLogger $eventLogger;

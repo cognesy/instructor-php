@@ -10,7 +10,7 @@ trait HandlesScripts
         $script->withContext($context);
         return [
             'messages' => $script
-                ->select(['system', 'messages', 'input', 'data_ack', 'command', 'examples'])
+                ->select(['system', 'messages', 'input', 'data_ack', 'prompt', 'examples'])
                 ->toNativeArray(ClientType::OpenAI),
         ];
     }

@@ -10,7 +10,7 @@ trait HandlesScripts
         $script->withContext($context);
         return [
             'messages' => $script
-                ->select(['system', 'command', 'data_ack', 'examples', 'messages'])
+                ->select(['system', 'prompt', 'data_ack', 'examples', 'messages'])
                 ->toNativeArray(ClientType::Mistral),
         ];
     }

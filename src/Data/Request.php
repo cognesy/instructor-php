@@ -8,7 +8,7 @@ use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
-use Cognesy\Instructor\Data\Messages\Utils\ScriptFactory;
+use Cognesy\Instructor\Core\Factories\ScriptFactory;
 use Cognesy\Instructor\Enums\Mode;
 
 class Request

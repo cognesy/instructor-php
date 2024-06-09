@@ -43,7 +43,7 @@ it('can return example', function() {
     $add = new TestModule;
     $addition = $add->withArgs(numberA: 1, numberB: 2);
 
-    expect($addition->asExample()->input())->toBe('{"numberA":1,"numberB":2}');
+    expect($addition->asExample()->inputString())->toBe('{"numberA":1,"numberB":2}');
     expect($addition->asExample()->output())->toBe(['result' => 3]);
 });
 

@@ -6,6 +6,7 @@ use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Script;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\Contracts\Body\HasBody;
@@ -31,6 +32,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     protected array $data = [];
 
     // NEW
+    protected Mode $mode;
     protected Script $script;
     protected array $scriptContext = [];
 
@@ -65,13 +67,17 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         $this->messages = $this->pullBodyField('messages', []);
         $this->model = $this->pullBodyField('model', '');
 
-        // get parameter values
-        $this->tools = $this->getData('tools', []);
-        $this->toolChoice = $this->getData('tool_choice', []);
-        $this->responseFormat = $this->getData('response_format', []);
-
+        $this->mode = $this->getData('mode', Mode::MdJson);
         $this->script = $this->getData('script', new Script());
-        $this->scriptContext = $this->getData('context', []);
+        $this->scriptContext = $this->getData('script_context', []);
+
+        // get parameter values
+        if ($this->mode->is(Mode::Tools)) {
+            $this->tools = $this->getData('tools', []);
+            $this->toolChoice = $this->getData('tool_choice', []);
+        } elseif ($this->mode->is(Mode::Json)) {
+            $this->responseFormat = $this->getData('response_format', []);
+        }
 
         // set flags
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
