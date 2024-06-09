@@ -8,3 +8,4 @@ archived/
 vendor/
 php_errors.log
 composer.lock
+xdebug.log

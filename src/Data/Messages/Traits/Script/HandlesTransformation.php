@@ -38,7 +38,9 @@ trait HandlesTransformation
     public function toArray(array $context = null, bool $raw = false) : array {
         $array = $this->toMessages()->toArray();
         return match($raw) {
-            false => $this->renderMessages($array, $this->context()->merge($context)->toArray()),
+            false => $this->renderMessages(
+                messages: $array,
+                context: $this->context()->merge($context)->toArray()),
             true => $array,
         };
     }
@@ -51,8 +53,8 @@ trait HandlesTransformation
      */
     public function toNativeArray(ClientType $type, array $context = null) : array {
         $array = $this->renderMessages(
-            $this->toArray(raw: true),
-            $this->context()->merge($context)->toArray(),
+            messages: $this->toArray(raw: true),
+            context: $this->context()->merge($context)->toArray(),
         );
         return ChatFormat::mapToTargetAPI(
             clientType: $type,
@@ -68,13 +70,17 @@ trait HandlesTransformation
      */
     public function toString(string $separator = "\n", array $context = null) : string {
         $text = array_reduce(
-            $this->toArray(raw: true),
-            fn($carry, $message) => $carry . $message['content'] . $separator,
+            array: $this->toArray(raw: true),
+            callback: fn($carry, $message) => $carry . $message['content'] . $separator,
+            initial: '',
         );
         if (empty($text)) {
             return '';
         }
-        return $this->renderString($text, $this->context()->merge($context)->toArray());
+        return $this->renderString(
+            template: $text,
+            context: $this->context()->merge($context)->toArray()
+        );
     }
 
     protected function fromTemplate(string $name, ?array $context) : Messages {

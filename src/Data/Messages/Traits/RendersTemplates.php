@@ -33,7 +33,7 @@ trait RendersTemplates
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Instructor\Data\Messages\Messages $messages
+     * @param array<string,string|array>|Messages $messages
      * @param array<string,mixed>|null $context
      * @return string
      */

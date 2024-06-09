@@ -38,6 +38,7 @@ class Template
     public function renderString(string $template): string {
         // find all keys in the template
         $keys = $this->findVars($template);
+
         // find keys missing from $this->keys
         $missingKeys = array_diff($keys, $this->keys);
         // remove missing key strings from the template

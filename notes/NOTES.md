@@ -16,6 +16,7 @@ Catch up with the latest additions.
 
 ## Brain dump
 
+- Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
 - MessageSequence to better process multi-stage chat content
 - Extract APIClient to a separate package?
 - example of integration with Laravel/Livewire
@@ -25,6 +26,7 @@ Catch up with the latest additions.
 - Add more modules: XoT, RAG, ReAct, etc.
 - RAG - how to handle multiple VDB providers?
 - Better error messages
+- Better API for image / audio inputs
 - Finish module observability via events - currently no access to this info & only 2 events supported
 - Test validation in modules - provide an example
 - Parallel execution of modules (e.g. a la Laravel jobs?)

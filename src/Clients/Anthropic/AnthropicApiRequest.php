@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 
@@ -46,10 +47,16 @@ class AnthropicApiRequest extends ApiRequest
             'role' => 'assistant',
             'content' => "Provide input.",
         ]);
-        return $this->script
+
+        if($this->mode->is(Mode::Tools)) {
+            unset($this->scriptContext['json_schema']);
+        }
+
+        $x = $this->script
             ->withContext($this->scriptContext)
             ->select(['prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
             ->toNativeArray(ClientType::fromRequestClass(static::class));
+        dd($this->script);
     }
 
     public function system(): array {

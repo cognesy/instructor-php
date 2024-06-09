@@ -20,8 +20,8 @@ trait HandlesTransformation
      */
     public function toArray(array $context = null) : array {
         return $this->renderMessages(
-            $this->messages()->toArray(),
-            $context
+            messages: $this->messages()->toArray(),
+            context: $context
         );
     }
 
@@ -32,8 +32,8 @@ trait HandlesTransformation
      */
     public function toNativeArray(ClientType $clientType, array $context = null) : array {
         $array = $this->renderMessages(
-            $this->toArray($context),
-            $context,
+            messages: $this->toArray($context),
+            context: $context,
         );
         return ChatFormat::mapToTargetAPI(
             clientType: $clientType,
@@ -48,8 +48,8 @@ trait HandlesTransformation
      */
     public function toString(array $context = [], string $separator = "\n") : string {
         $text = array_reduce(
-            $this->messages()->toArray(),
-            fn($carry, $message) => $carry . $message['content'] . $separator,
+            array: $this->messages()->toArray(),
+            callback: fn($carry, $message) => $carry . $message['content'] . $separator,
         );
         return $this->renderString($text, $context);
     }
