@@ -43,7 +43,18 @@ trait HandlesAccess
     }
 
     public function isEmpty() : bool {
-        return empty($this->messages);
+        return match(true) {
+            empty($this->messages) => true,
+            default => $this->reduce(fn(bool $carry, Message $message) => $carry && $message->isEmpty(), true),
+        };
+    }
+
+    public function reduce(callable $callback, mixed $initial = null) : mixed {
+        return array_reduce($this->messages, $callback, $initial);
+    }
+
+    public function map(callable $callback) : array {
+        return array_map($callback, $this->messages);
     }
 
     public function filter(callable $callback = null) : Messages {

@@ -54,12 +54,18 @@ class Template
     }
 
     public function renderMessage(array|Message $message) : array {
-        $rendered = match(true) {
-            is_array($message) => ['role' => $message['role'], 'content' => $this->renderString($message['content'])],
-            $message instanceof Message => ['role' => $message->role, 'content' => $this->renderString($message->content)],
+        $normalized = match(true) {
+            is_array($message) => Message::fromArray($message),
+            $message instanceof Message => $message,
             default => throw new InvalidArgumentException('Invalid message type'),
         };
-        return $rendered;
+
+        // skip rendering if content is an array - it may contain non-text data
+        if (is_array($normalized->content)) {
+            return ['role' => $normalized->role, 'content' => $normalized->content];
+        }
+
+        return ['role' => $normalized->role, 'content' => $this->renderString($normalized->content)];
     }
 
     public function renderMessages(array|Messages $messages) : array {

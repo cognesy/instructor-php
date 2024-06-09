@@ -15,7 +15,7 @@ trait RendersTemplates
      */
     private function renderString(string $template, ?array $context) : string {
         return match(true) {
-            is_null($context) => $template,
+            empty($context) => $template,
             default => (new Template($context))->renderString($template),
         };
     }
@@ -27,7 +27,7 @@ trait RendersTemplates
      */
     protected function renderMessage(array|Message $message, ?array $context) : array {
         return match(true) {
-            is_null($context) => $message,
+            empty($context) => $message,
             default => (new Template($context))->renderMessage($message),
         };
     }
@@ -39,7 +39,7 @@ trait RendersTemplates
      */
     protected function renderMessages(array|Messages $messages, ?array $context) : array {
         return match(true) {
-            is_null($context) => $messages,
+            empty($context) => $messages,
             default => (new Template($context))->renderMessages($messages),
         };
     }

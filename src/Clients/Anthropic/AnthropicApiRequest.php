@@ -10,7 +10,6 @@ class AnthropicApiRequest extends ApiRequest
 {
     use Traits\HandlesResponse;
     use Traits\HandlesResponseFormat;
-    use Traits\HandlesScripts;
     use Traits\HandlesTools;
 
     protected string $defaultEndpoint = '/messages';
@@ -33,9 +32,23 @@ class AnthropicApiRequest extends ApiRequest
     }
 
     public function messages(): array {
+        if ($this->noScript()) {
+            return $this->messages;
+        }
+
+        if ($this->script->section('examples')->notEmpty()) {
+            $this->script->section('pre-examples')->appendMessage([
+                'role' => 'assistant',
+                'content' => 'Provide examples.',
+            ]);
+        }
+        $this->script->section('pre-input')->appendMessage([
+            'role' => 'assistant',
+            'content' => "Provide input.",
+        ]);
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['messages', 'input', 'data_ack', 'prompt', 'examples', 'retries'])
+            ->select(['prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 

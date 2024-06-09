@@ -37,6 +37,21 @@ trait HandlesAccess
         return $this->sectionIndex($name) !== -1;
     }
 
+    public function reduce(callable $callback, mixed $initial = null) : mixed {
+        return array_reduce($this->sections, $callback, $initial);
+    }
+
+    public function map(callable $callback) : array {
+        return array_map($callback, $this->sections);
+    }
+
+    public function isEmpty() : bool {
+        return match (true) {
+            empty($this->sections) => true,
+            default => $this->reduce(fn(mixed $carry, Section $section) => $carry && $section->isEmpty(), true),
+        };
+    }
+
     // INTERNAL ////////////////////////////////////////////////////
 
     private function sectionIndex(string $name) : int {

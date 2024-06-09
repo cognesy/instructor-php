@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
-use Cognesy\Instructor\Utils\Arrays;
 use Exception;
 
 trait HandlesTransformation
@@ -19,7 +18,7 @@ trait HandlesTransformation
             $content = match(true) {
                 $section->isTemplate() => $this->fromTemplate(
                     name: $section->name(),
-                    context: Arrays::mergeNull($this->context, $context)
+                    context: $this->context()->merge($context)->toArray(),
                 ) ?? $section->toMessages(),
                 default => $section->toMessages(),
             };
@@ -39,7 +38,7 @@ trait HandlesTransformation
     public function toArray(array $context = null, bool $raw = false) : array {
         $array = $this->toMessages()->toArray();
         return match($raw) {
-            false => $this->renderMessages($array, Arrays::mergeNull($this->context, $context)),
+            false => $this->renderMessages($array, $this->context()->merge($context)->toArray()),
             true => $array,
         };
     }
@@ -53,7 +52,7 @@ trait HandlesTransformation
     public function toNativeArray(ClientType $type, array $context = null) : array {
         $array = $this->renderMessages(
             $this->toArray(raw: true),
-            Arrays::mergeNull($this->context, $context)
+            $this->context()->merge($context)->toArray(),
         );
         return ChatFormat::mapToTargetAPI(
             clientType: $type,
@@ -75,7 +74,7 @@ trait HandlesTransformation
         if (empty($text)) {
             return '';
         }
-        return $this->renderString($text, Arrays::mergeNull($this->context, $context));
+        return $this->renderString($text, $this->context()->merge($context)->toArray());
     }
 
     protected function fromTemplate(string $name, ?array $context) : Messages {

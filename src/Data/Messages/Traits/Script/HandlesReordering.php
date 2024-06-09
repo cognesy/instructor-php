@@ -11,7 +11,7 @@ trait HandlesReordering
         $sections = $this->listInOrder($order);
 
         $script = new Script();
-        $script->context = $this->context;
+        $script->context = $this->context();
         foreach ($sections as $section) {
             $script->appendSection($section);
         }
@@ -20,7 +20,7 @@ trait HandlesReordering
 
     public function reverse() : Script {
         $script = new Script();
-        $script->context = $this->context;
+        $script->context = $this->context();
         foreach ($this->listReverse() as $section) {
             $script->appendSection($section);
         }

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
@@ -22,7 +23,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     use Traits\HandlesApiRequestCaching;
     use Traits\HandlesApiRequestConfig;
     use Traits\HandlesEndpoint;
-    use Traits\HandlesMessages;
     use Traits\HandlesRequestData;
     use Traits\HandlesTransformation;
 
@@ -98,6 +98,30 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         );
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
         return $body;
+    }
+
+    public function messages(): array {
+        if ($this->noScript()) {
+            return $this->messages;
+        }
+        if ($this->script->section('examples')->notEmpty()) {
+            $this->script->section('pre-examples')->appendMessage([
+                'role' => 'assistant',
+                'content' => 'Provide examples.',
+            ]);
+        }
+        $this->script->section('pre-input')->appendMessage([
+            'role' => 'assistant',
+            'content' => "Provide input.",
+        ]);
+        return $this->script
+            ->withContext($this->scriptContext)
+            ->select(['prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
+            ->toNativeArray(ClientType::fromRequestClass(static::class));
+    }
+
+    protected function noScript() : bool {
+        return empty($this->script) || $this->script->isEmpty();
     }
 
     abstract public function toApiResponse(Response $response): ApiResponse;

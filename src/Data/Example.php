@@ -17,12 +17,12 @@ class Example
     private mixed $output;
 
     public string $template = <<<TEMPLATE
-        INPUT:
-        {input}
+        EXAMPLE INPUT:
+        <|input|>
         
-        OUTPUT:
+        EXAMPLE OUTPUT:
         ```json
-        {output}
+        <|output|>
         ```
         TEMPLATE;
 

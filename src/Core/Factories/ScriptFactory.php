@@ -11,13 +11,7 @@ use Exception;
 class ScriptFactory
 {
     static public function fromRequest(Request $request) : Script {
-        return (new self)->makeScript(
-            $request->messages(),
-            $request->input(),
-            $request->dataAckPrompt(),
-            $request->prompt(),
-            $request->examples(),
-        );
+        return (new self)->makeScript($request);
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
@@ -29,28 +23,19 @@ class ScriptFactory
         return $messages;
     }
 
-    private function makeScript(
-        string|array $messages,
-        string|array|object $input,
-        string $dataAckPrompt,
-        string $prompt,
-        array $examples,
-    ) : Script {
-        if (empty($messages)) {
+    private function makeScript(Request $request) : Script {
+        if ($this->isRequestEmpty($request)) {
             throw new Exception('Messages cannot be empty - you have to provide the content for processing.');
         }
 
         $script = new Script();
-//        $script->createSection(new Section('system', 'System messages'));
-//        $script->createSection(new Section('messages', 'Chat messages'));
-//        $script->createSection(new Section('input', 'Data input messages'));
-//        $script->createSection(new Section('data_ack', 'Data acknowledged prompt'));
-//        $script->createSection(new Section('prompt', 'Command prompt'));
-//        $script->createSection(new Section('examples', 'Inference examples'));
-//        $script->createSection(new Section('retries', 'Responses and retries'));
 
-        // NORMALIZE MESSAGES
-        $messages = $this->normalizeMessages($messages);
+        // GET DATA
+        $messages = $this->normalizeMessages($request->messages());
+        $input = $request->input();
+        $examples = $request->examples();
+        $prompt = $request->prompt();
+        $dataAckPrompt = $request->dataAckPrompt();
 
         // SYSTEM SECTION
         $index = 0;
@@ -76,7 +61,7 @@ class ScriptFactory
 
         // INPUT DATA SECTION
         $inputMessage = Message::fromInput($input);
-        if (!$this->inputEmpty($inputMessage)) {
+        if (!$this->isInputEmpty($inputMessage)) {
             $script->section('input')->appendMessage($inputMessage);
         }
 
@@ -96,13 +81,23 @@ class ScriptFactory
                     is_string($item) => Example::fromJson($item),
                     $item instanceof Example => $item,
                 };
-                $script->section('examples')->appendMessages($example->toMessages());
+                $script->section('examples')->appendMessage(Message::fromString($example->toString()));
             }
         }
         return $script;
     }
 
-    private function inputEmpty(Message $inputMessage) : bool {
+    private function isInputEmpty(Message $inputMessage) : bool {
         return $inputMessage->isEmpty() || ($inputMessage->content() === '[]');
+    }
+
+    private function isRequestEmpty(Request $request) : bool {
+        return match(true) {
+            !empty($request->messages()) => false,
+            !empty($request->input()) => false,
+            !empty($request->examples()) => false,
+            !empty($request->prompt()) => false,
+            default => true,
+        };
     }
 }

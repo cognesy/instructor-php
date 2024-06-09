@@ -9,6 +9,5 @@ class MistralApiRequest extends ApiRequest
     use HandlesResponse;
 
     use Traits\HandlesResponseFormat;
-    use Traits\HandlesScripts;
     use Traits\HandlesTools;
 }
