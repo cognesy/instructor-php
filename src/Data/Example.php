@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Template;
 use DateTimeImmutable;
@@ -82,7 +83,7 @@ class Example
     }
 
     public function outputString() : string {
-        return Json::encode($this->output);
+        return Message::fromInput($this->output)->content();
     }
 
     public function toString() : string {
@@ -104,7 +105,7 @@ class Example
             'id' => $this->uid,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'input' => $this->input(),
-            'output' => $this->output(),
+            'output' => $this->outputString(),
         ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
 }

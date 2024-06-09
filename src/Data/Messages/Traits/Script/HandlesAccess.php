@@ -10,7 +10,7 @@ trait HandlesAccess
     public function section(string $name) : Section {
         $index = $this->sectionIndex($name);
         if ($index === -1) {
-            $this->addSection(new Section($name));
+            $this->createSection(new Section($name));
             $index = $this->sectionIndex($name);
         }
         return $this->sections[$index];
@@ -28,7 +28,7 @@ trait HandlesAccess
         $script = new Script();
         $script->context = $this->context;
         foreach ($names as $sectionName) {
-            $script->append($this->section($sectionName));
+            $script->appendSection($this->section($sectionName));
         }
         return $script;
     }

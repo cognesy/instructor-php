@@ -13,6 +13,10 @@ trait HandlesPrompts
     private string $dataAckPrompt = "Input acknowledged.";
     private string $prompt;
 
+    public function dataAckPrompt() : string {
+        return $this->dataAckPrompt;
+    }
+
     public function prompt() : string {
         return $this->prompt ?: $this->defaultPrompts[$this->mode()->value] ?? '';
     }

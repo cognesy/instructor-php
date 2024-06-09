@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Traits\Instructor;
 
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;

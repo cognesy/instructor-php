@@ -17,4 +17,13 @@ trait HandlesCacheConfig
     public function cacheConfig(): CacheConfig {
         return $this->cacheConfig;
     }
+
+    public function isCached() : bool {
+        return $this->cacheConfig->isEnabled();
+    }
+
+    public function withCache(bool $cache = true) : static {
+        $this->cacheConfig->setEnabled($cache);
+        return $this;
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Traits\Instructor;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;

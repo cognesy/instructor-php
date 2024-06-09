@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Traits\Instructor;
 
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;

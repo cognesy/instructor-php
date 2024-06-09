@@ -23,6 +23,7 @@ class InputOutputMapper
      * @return array<string, mixed>
      */
     public function mapFromInputs(mixed $inputs, array $inputNames) : array {
+        // TODO: is there a way to consolidate value rendering?
         $asArray = match(true) {
             ($inputs instanceof CanBeProcessed) => $inputs->inputs(),
             ($inputs instanceof HasInputOutputData) => $inputs->input()->getValues(),
@@ -43,6 +44,7 @@ class InputOutputMapper
      */
     public function mapToOutputs(mixed $result, array $outputNames) : array {
         $isSingleParamOutput = count($outputNames) === 1;
+        // TODO: how to consolidate value/structure rendering?
         $asArray = match(true) {
             ($result instanceof CanBeProcessed) => $result->outputs(),
             ($result instanceof HasInputOutputData) => $result->output()->getValues(),

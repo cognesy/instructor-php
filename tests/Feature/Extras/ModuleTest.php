@@ -1,16 +1,15 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Extras\Module\Addons\CallClosure\CallClosure;
 use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
+use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Profiler;
+use Cognesy\Instructor\Utils\Profiler\Profiler;
 use Tests\Examples\Module\TestModule;
 use Tests\MockLLM;
 

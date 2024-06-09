@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
+use Exception;
 
 trait HandlesMutation
 {
@@ -31,7 +32,12 @@ trait HandlesMutation
         } else {
             $prepended = [];
             foreach ($messages as $message) {
-                $prepended = new Message($message['role'], $message['content']);
+                $prepended[] = match(true) {
+                    is_array($message) => new Message($message['role'], $message['content']),
+                    is_string($message) => new Message('user', $message),
+                    $message instanceof Message => $message,
+                    default => throw new Exception('Invalid message type'),
+                };
             }
             $this->messages = array_merge($prepended, $this->messages);
         }

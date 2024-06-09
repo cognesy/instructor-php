@@ -21,7 +21,7 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translatedEmail = (new Instructor)->withDebug(true, false)->respond(
+$translatedEmail = (new Instructor)->respond(
     input: $email,
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',

@@ -2,32 +2,65 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
+use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
+use Exception;
 
 trait HandlesMutation
 {
-    public function addSection(Section $section) : static {
-        $this->append($section);
+    public function createSection(Section $section) : static {
+        if ($this->hasSection($section->name())) {
+            throw new Exception("Section with name '{$section->name()}' already exists - use mergeSection() instead.");
+        }
+        $this->appendSection($section);
         return $this;
     }
 
-    public function append(Section $section) : static {
+    public function appendSection(Section $section) : static {
+        if ($this->hasSection($section->name())) {
+            throw new Exception("Section with name '{$section->name()}' already exists - use mergeSection() instead.");
+        }
         $this->sections = $this->appendSections([$section]);
         return $this;
     }
 
-    public function prepend(Section $section) : static {
-        $this->sections = $this->prependSections([$section]);
+    public function mergeSection(Section $section) : static {
+        if ($this->hasSection($section->name())) {
+            $this->section($section->name())->mergeSection($section);
+        } else {
+            $this->appendSection($section);
+        }
         return $this;
     }
 
-    public function addBefore(string $name, Section $section) : static {
-        $this->sections = $this->insert($this->sections, $this->sectionIndex($name), [$section]);
+    public function overrideScript(Script $script) : static {
+        foreach($script->sections as $section) {
+            if ($this->hasSection($section->name())) {
+                $this->removeSection($section->name());
+            }
+            $this->appendSection($section);
+        }
+        $this->mergeContext($script->context);
         return $this;
     }
 
-    public function addAfter(string $name, Section $section) : static {
-        $this->sections = $this->insert($this->sections, $this->sectionIndex($name) + 1, [$section]);
+    public function mergeScript(Script $script) : static {
+        foreach($script->sections as $section) {
+            $this->mergeSection($section);
+        }
+        $this->mergeContext($script->context);
+        return $this;
+    }
+
+    public function mergeContext(array $context) : static {
+        foreach($context as $key => $value) {
+            $this->context[$key] = $value;
+        }
+        return $this;
+    }
+
+    public function removeSection(string $name) : static {
+        $this->sections = array_filter($this->sections, fn($section) => $section->name() !== $name);
         return $this;
     }
 

@@ -18,7 +18,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
-use Cognesy\Instructor\Utils\Profiler;
+use Cognesy\Instructor\Utils\Profiler\Profiler;
 
 class User {
     public int $age;
@@ -41,39 +41,36 @@ $user = $instructor->request(
     responseModel: User::class,
 )->get();
 
-$delta = Profiler::mark('no cache');
+$delta = Profiler::mark('no cache')->mili();
 dump($user);
-echo "Time elapsed (no cache, default): $delta seconds\n\n";
+echo "Time elapsed (no cache, default): $delta msec\n\n";
 
 $user2 = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-    options: ['cache' => true],
-)->get();
+)->withCache()->get();
 
-$delta = Profiler::mark('cache 1st call');
+$delta = Profiler::mark('cache 1st call')->mili();
 dump($user2);
-echo "Time elapsed (cache on, 1st call): $delta seconds\n\n";
+echo "Time elapsed (cache on, 1st call): $delta msec\n\n";
 
 $user3 = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-    options: ['cache' => true],
-)->get();
+)->withCache()->get();
 
-$delta = Profiler::mark('cache 2nd call');
+$delta = Profiler::mark('cache 2nd call')->mili();
 dump($user3);
-echo "Time elapsed (cache on, 2nd call): $delta seconds\n\n";
+echo "Time elapsed (cache on, 2nd call): $delta msec\n\n";
 
 $user4 = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-    options: ['cache' => false],
-)->get();
+)->withCache(false)->get();
 
-$delta = Profiler::mark('cache 3rd call');
+$delta = Profiler::mark('cache 3rd call')->mili();
 dump($user4);
-echo "Time elapsed (cache turned off again): $delta seconds\n\n";
+echo "Time elapsed (cache turned off again): $delta msec\n\n";
 
 ?>
 ```

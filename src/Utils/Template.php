@@ -85,6 +85,7 @@ class Template
     // INTERNAL //////////////////////////////////////////////////////////////////
 
     private function materializeContext(array $context) : array {
+        // TODO: is there a way to consolidate value rendering?
         $contextValues = [];
         foreach ($context as $key => $value) {
             $value = match (true) {

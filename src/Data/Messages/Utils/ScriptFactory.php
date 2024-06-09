@@ -1,32 +1,22 @@
 <?php
 namespace Cognesy\Instructor\Data\Messages\Utils;
 
-use BackedEnum;
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Data\Request;
 use Exception;
 
 class ScriptFactory
 {
-    static public function make(
-        string|array $messages = [],
-        string|array|object $input = [],
-        string $dataAckPrompt = '',
-        string $prompt = '',
-        ?array $examples = null,
-        string $retryPrompt = '',
-        array $attempts = [],
-    ) : Script {
-        $instance = new self();
-        return $instance->makeScript(
-            $instance->normalizeMessages($messages),
-            $input,
-            $dataAckPrompt,
-            $prompt,
-            $examples,
+    static public function fromRequest(Request $request) : Script {
+        return (new self)->makeScript(
+            $request->messages(),
+            $request->input(),
+            $request->dataAckPrompt(),
+            $request->prompt(),
+            $request->examples(),
         );
     }
 
@@ -40,7 +30,7 @@ class ScriptFactory
     }
 
     private function makeScript(
-        array $messages,
+        string|array $messages,
         string|array|object $input,
         string $dataAckPrompt,
         string $prompt,
@@ -51,13 +41,16 @@ class ScriptFactory
         }
 
         $script = new Script();
-        $script->addSection(new Section('system', 'System messages'));
-        $script->addSection(new Section('messages', 'Chat messages'));
-        $script->addSection(new Section('input', 'Data input messages'));
-        $script->addSection(new Section('data_ack', 'Data acknowledged prompt'));
-        $script->addSection(new Section('command', 'Command prompt'));
-        $script->addSection(new Section('examples', 'Inference examples'));
-        $script->addSection(new Section('retries', 'Responses and retries'));
+        $script->createSection(new Section('system', 'System messages'));
+        $script->createSection(new Section('messages', 'Chat messages'));
+        $script->createSection(new Section('input', 'Data input messages'));
+        $script->createSection(new Section('data_ack', 'Data acknowledged prompt'));
+        $script->createSection(new Section('command', 'Command prompt'));
+        $script->createSection(new Section('examples', 'Inference examples'));
+        $script->createSection(new Section('retries', 'Responses and retries'));
+
+        // NORMALIZE MESSAGES
+        $messages = $this->normalizeMessages($messages);
 
         // SYSTEM SECTION
         $index = 0;
@@ -79,7 +72,7 @@ class ScriptFactory
         $script->section('messages')->appendMessages(array_slice($messages, $index));
 
         // INPUT DATA SECTION
-        $script->section('input')->appendMessages($this->inputAsMessage($input));
+        $script->section('input')->appendMessage(Message::fromInput($input));
 
         // PROMPT SECTION
         if (!empty($prompt)) {
@@ -101,34 +94,6 @@ class ScriptFactory
             }
         }
 
-        // RETRY SECTION
-//        if (!empty($attempts)) {
-//            $script->section('retry')->appendMessage([
-//                'role' => 'user',
-//                'content' => $prompt
-//            ]);
-//        }
-
         return $script;
-    }
-
-    private function inputAsMessage(string|array|object $input) : Messages {
-        $content = match(true) {
-            is_string($input) => $input,
-            is_array($input) => Json::encode($input),
-            $input instanceof Example => $input->input(),
-            $input instanceof BackedEnum => $input->value,
-            method_exists($input, 'toJson') => match(true) {
-                is_string($input->toJson()) => $input->toJson(),
-                default => Json::encode($input->toJson()),
-            },
-            method_exists($input, 'toArray') => Json::encode($input->toArray()),
-            method_exists($input, 'toString') => $input->toString(),
-            // ...how do we handle chat messages input?
-            default => Json::encode($input), // wrap in json
-        };
-        return Messages::fromArray([
-            ['role' => 'user', 'content' => $content]
-        ]);
     }
 }

@@ -1,17 +1,15 @@
 <?php
 
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Traits\Instructor;
 
 trait HandlesCaching
 {
-    protected bool $cache = false;
-
     public function cache() : bool {
-        return $this->cache;
+        return $this->apiRequestConfig->isCached();
     }
 
     public function withCache(bool $cache = true) : static {
-        $this->cache = $cache;
+        $this->apiRequestConfig->withCache($cache);
         return $this;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Traits\Instructor;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;

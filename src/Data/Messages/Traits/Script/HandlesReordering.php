@@ -13,7 +13,7 @@ trait HandlesReordering
         $script = new Script();
         $script->context = $this->context;
         foreach ($sections as $section) {
-            $script->append($section);
+            $script->appendSection($section);
         }
         return $script;
     }
@@ -22,7 +22,7 @@ trait HandlesReordering
         $script = new Script();
         $script->context = $this->context;
         foreach ($this->listReverse() as $section) {
-            $script->append($section);
+            $script->appendSection($section);
         }
         return $script;
     }

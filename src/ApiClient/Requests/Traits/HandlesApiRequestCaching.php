@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests\Traits;
 
+use Exception;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Http\PendingRequest;
@@ -12,14 +13,14 @@ trait HandlesApiRequestCaching
 
     public function resolveCacheDriver(): Driver {
         if (empty($this->requestConfig()->cacheConfig())) {
-            throw new \Exception('Cache is not configured for this request');
+            throw new Exception('Cache is not configured for this request');
         }
         return $this->requestConfig()->cacheConfig()->getDriver();
     }
 
     public function cacheExpiryInSeconds(): int {
         if (empty($this->requestConfig()->cacheConfig())) {
-            throw new \Exception('Cache is not configured for this request');
+            throw new Exception('Cache is not configured for this request');
         }
         return $this->requestConfig()->cacheConfig()->expiryInSeconds();
     }

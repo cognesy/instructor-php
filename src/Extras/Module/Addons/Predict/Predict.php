@@ -2,8 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Module\Addons\Predict;
 
-use BackedEnum;
-use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Module\Core\DynamicModule;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
@@ -12,7 +11,6 @@ use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
@@ -22,9 +20,9 @@ class Predict extends DynamicModule
 
     protected string $predictionPrompt;
     protected string $extractionPrompt;
-    protected $options = [];
-    protected $model = 'gpt-4o';
-    protected $mode = Mode::Tools;
+    protected array $options = [];
+    protected string $model = 'gpt-4o';
+    protected Mode $mode = Mode::Tools;
     protected array $examples = [];
     protected int $maxRetries = 3;
 
@@ -85,7 +83,7 @@ class Predict extends DynamicModule
 
     public function forward(array $args, object $targetObject): mixed {
         $input = match(true) {
-            count($args) === 0 => throw new \Exception('Empty input'),
+            count($args) === 0 => throw new Exception('Empty input'),
             count($args) === 1 => reset($args),
             default => match(true) {
                 is_array($args) => $args,
@@ -95,9 +93,9 @@ class Predict extends DynamicModule
             }
         };
 
-        $response = $this->instructor->respond(
+        return $this->instructor->respond(
             messages: $this->toMessages($input),
-            input: [],
+            input: Message::fromInput($input)->toArray(),
             responseModel: $targetObject,
             model: $this->model,
             maxRetries: $this->maxRetries,
@@ -106,8 +104,6 @@ class Predict extends DynamicModule
             prompt: $this->extractionPrompt,
             mode: $this->mode,
         );
-
-        return $response;
     }
 
     protected function predictionPrompt() : string {
@@ -120,24 +116,10 @@ class Predict extends DynamicModule
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////
 
     private function toMessages(string|array|object $input) : array {
-        $content = match(true) {
-            is_string($input) => $input,
-            is_array($input) => Json::encode($input),
-            $input instanceof Example => $input->input(),
-            $input instanceof BackedEnum => $input->value,
-            method_exists($input, 'toJson') => match(true) {
-                is_string($input->toJson()) => $input->toJson(),
-                default => Json::encode($input->toJson()),
-            },
-            method_exists($input, 'toArray') => Json::encode($input->toArray()),
-            method_exists($input, 'toString') => $input->toString(),
-            // ...how do we handle chat messages input?
-            default => Json::encode($input), // wrap in json
-        };
         return [
             ['role' => 'user', 'content' => $this->predictionPrompt()],
             ['role' => 'assistant', 'content' => 'Provide input data.'],
-            ['role' => 'user', 'content' => $content]
+            Message::fromInput($input)->toArray(),
         ];
     }
 

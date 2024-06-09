@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Traits;
+namespace Cognesy\Instructor\Traits\Instructor;
 
 trait HandlesDebug
 {
