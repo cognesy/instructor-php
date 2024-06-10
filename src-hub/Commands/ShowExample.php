@@ -23,7 +23,6 @@ class ShowExample extends Command
             Cli::outln("You can list available examples with `list` command.\n", Color::DARK_GRAY);
             return;
         }
-        //$showErrors = ($params[1]=='--debug') ?? false;
         $example = $this->examples->resolveToExample($file);
         if (empty($example)) {
             Cli::outln("Example not found", [Color::RED]);

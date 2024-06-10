@@ -8,4 +8,8 @@ enum Mode : string
     case Json = 'json';
     case MdJson = 'markdown_json';
     case Text = 'text'; // unstructured text response
+
+    public function is(Mode $mode) : bool {
+        return $this->value === $mode->value;
+    }
 }

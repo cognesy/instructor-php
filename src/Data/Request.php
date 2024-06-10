@@ -1,77 +1,85 @@
 <?php
-
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
+use Cognesy\Instructor\Core\Factories\ScriptFactory;
 use Cognesy\Instructor\Enums\Mode;
 
 class Request
 {
     use Traits\Request\HandlesApiClient;
+    use Traits\Request\HandlesApiRequestConfig;
+    use Traits\Request\HandlesApiRequestData;
+    use Traits\Request\HandlesApiRequestEndpoint;
     use Traits\Request\HandlesApiRequestFactory;
-    use Traits\Request\HandlesData;
-    use Traits\Request\HandlesEndpoint;
+    use Traits\Request\HandlesApiRequestMethod;
+    use Traits\Request\HandlesApiRequestOptions;
     use Traits\Request\HandlesExamples;
+    use Traits\Request\HandlesInput;
     use Traits\Request\HandlesMessages;
-    use Traits\Request\HandlesMethod;
+    use Traits\Request\HandlesMode;
     use Traits\Request\HandlesModel;
-    use Traits\Request\HandlesOptions;
     use Traits\Request\HandlesPrompts;
-    use Traits\Request\HandlesRequestBody;
     use Traits\Request\HandlesRequestedModel;
     use Traits\Request\HandlesRetries;
 
-    private Mode $mode;
-
     public function __construct(
         string|array $messages,
+        string|array|object $input,
         string|object|array $responseModel,
-        string|ModelParams $model = '',
-        int $maxRetries = 0,
-        array $options = [],
-        array $examples = [],
-        string $toolName = '',
-        string $toolDescription = '',
-        string $prompt = '',
-        string $retryPrompt = '',
-        Mode $mode = Mode::Tools,
-        CanCallApi $client = null,
-        ModelFactory $modelFactory = null,
-        ResponseModelFactory $responseModelFactory = null,
-        ApiRequestFactory $apiRequestFactory = null,
+        string|ModelParams $model,
+        int $maxRetries,
+        array $options,
+        array $examples,
+        string $toolName,
+        string $toolDescription,
+        string $prompt,
+        string $retryPrompt,
+        Mode $mode,
+        CanCallApi $client,
+        ModelFactory $modelFactory,
+        ResponseModelFactory $responseModelFactory,
+        ApiClientFactory $clientFactory,
+        ApiRequestFactory $apiRequestFactory,
+        ApiRequestConfig $requestConfig,
     ) {
-        $this->messages = $this->normalizeMessages($messages);
-        $this->requestedSchema = $responseModel;
-        $this->maxRetries = $maxRetries;
-        $this->options = $options;
-        $this->toolName = $toolName ?: $this->defaultToolName;
-        $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
-        $this->mode = $mode;
-        $this->client = $client;
-        $this->prompt = $prompt;
-        $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
-
         $this->modelFactory = $modelFactory;
         $this->responseModelFactory = $responseModelFactory;
         $this->apiRequestFactory = $apiRequestFactory;
+        $this->requestConfig = $requestConfig;
 
-        $this->withExamples($examples);
+        $this->options = $options;
+        $this->maxRetries = $maxRetries;
+        $this->mode = $mode;
+
+        $this->input = $input;
+        $this->messages = $this->normalizeMessages($messages);
+        $this->prompt = $prompt;
+        $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
+        $this->examples = $examples;
+
+        $this->client = $client ?? $clientFactory->getDefault();
         $this->withModel($model);
-        $this->withResponseModel(
-            $this->responseModelFactory->fromAny(
-                $this->requestedSchema(),
-                $this->toolName(),
-                $this->toolDescription()
-            )
-        );
-    }
+        if (empty($this->option('max_tokens'))) {
+            $this->setOption('max_tokens', $this->client->defaultMaxTokens());
+        }
 
-    public function mode() : Mode {
-        return $this->mode;
+        $this->toolName = $toolName ?: $this->defaultToolName;
+        $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
+        $this->requestedSchema = $responseModel;
+        $this->responseModel = $this->responseModelFactory->fromAny(
+            $this->requestedSchema(),
+            $this->toolName(),
+            $this->toolDescription()
+        );
+
+        $this->script = ScriptFactory::fromRequest($this);
     }
 
     public function copy(array $messages) : self {

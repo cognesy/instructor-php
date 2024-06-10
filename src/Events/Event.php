@@ -14,7 +14,6 @@ class Event
     public mixed $data;
 
     public $logLevel = LogLevel::DEBUG;
-    public bool $isForwarded = false;
 
     public function __construct(mixed $data = []) {
         $this->eventId = Uuid::uuid4();

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Template;
 use DateTimeImmutable;
@@ -12,21 +13,22 @@ class Example
 {
     public readonly string $uid;
     public readonly DateTimeImmutable $createdAt;
-    private array $output;
+    private mixed $input;
+    private mixed $output;
 
     public string $template = <<<TEMPLATE
-        INPUT:
-        {input}
+        EXAMPLE INPUT:
+        <|input|>
         
-        OUTPUT:
+        EXAMPLE OUTPUT:
         ```json
-        {output}
+        <|output|>
         ```
         TEMPLATE;
 
     public function __construct(
-        private string $input,
-        array|object $output,
+        mixed $input,
+        mixed $output,
         string $template = '',
         string $uid = null,
         DateTimeImmutable $createdAt = null,
@@ -34,10 +36,11 @@ class Example
         $this->uid = $uid ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
         $this->template = $template ?: $this->template;
-        $this->output = is_array($output) ? $output : Json::parse($output);
+        $this->input = $input;
+        $this->output = $output;
     }
 
-    static public function fromChat(array $messages, array|object $output) : self {
+    static public function fromChat(array $messages, mixed $output) : self {
         $input = '';
         foreach ($messages as $message) {
             $input .= "{$message['role']}: {$message['content']}\n";
@@ -45,12 +48,8 @@ class Example
         return new self($input, $output);
     }
 
-    static public function fromText(string $text, array|object $output) : self {
+    static public function fromText(string $text, mixed $output) : self {
         return new self($text, $output);
-    }
-
-    static public function fromData(mixed $data, array|object $output) : self {
-        return new self(Json::encode($data), $output);
     }
 
     static public function fromJson(string $json) : self {
@@ -73,28 +72,36 @@ class Example
         );
     }
 
-    public function input() : string {
+    static public function fromData(mixed $data, mixed $output) : self {
+        return new self($data, $output);
+    }
+
+    public function input() : mixed {
         return $this->input;
     }
 
-    public function output() : array {
+    public function output() : mixed {
         return $this->output;
     }
 
+    public function inputString() : string {
+        return Message::fromInput($this->input)->content();
+    }
+
     public function outputString() : string {
-        return Json::encode($this->output);
+        return Message::fromInput($this->output)->content();
     }
 
     public function toString() : string {
         return Template::render($this->template, [
-            'input' => $this->input(),
+            'input' => $this->inputString(),
             'output' => $this->outputString(),
         ]);
     }
 
     public function toMessages() : array {
         return [
-            ['role' => 'user', 'content' => $this->input()],
+            ['role' => 'user', 'content' => $this->inputString()],
             ['role' => 'assistant', 'content' => $this->outputString()],
         ];
     }

@@ -25,8 +25,6 @@ The outputs and flow can be arbitrarily shaped to the needs of specific use case
 ```php
 <?php
 
-use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
-use Cognesy\Instructor\Clients\Groq\GroqClient;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Extras\Module\Addons\Predict\Predict;
 use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
@@ -36,7 +34,6 @@ use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Env;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');

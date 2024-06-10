@@ -35,17 +35,19 @@ class UserDetails
         return ValidationResult::fieldError(
             field: 'graduationYear',
             value: $this->graduationYear,
-            message: "Graduation year has to be after birth year.",
+            message: "Graduation year has to be bigger than birth year."
         );
     }
 }
 
-$user = (new Instructor)->wiretap(fn($e)=>$e->printDump())->respond(
-    messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 1923.']],
-    responseModel: UserDetails::class,
-    model: 'gpt-3.5-turbo',
-    maxRetries: 2
-);
+$user = (new Instructor)
+    ->withDebug(true, false)
+    ->respond(
+        messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 1023.']],
+        responseModel: UserDetails::class,
+        model: 'gpt-4o',
+        maxRetries: 2,
+    );
 
 dump($user);
 

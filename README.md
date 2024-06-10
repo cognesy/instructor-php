@@ -19,6 +19,7 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 ## Feature highlights
 
  - Get structured responses from LLM inference
+ - 'Structured-to-structured' processing - provide object or array as an input and get object with the results of inference back
  - Customize prompts and retry prompts
  - Process various types of input data: text, series of chat messages or images
  - Receive synchronous or streaming responses
@@ -125,7 +126,43 @@ var_dump($person);
 // }    
 ```
 > **NOTE:** Instructor supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values.
-> 
+>
+
+
+### Structured-to-structured processing
+
+Instructor offers a way to use structured data as an input. This is
+useful when you want to use object data as input and get another object
+with a result of LLM inference.
+
+The `input` field of Instructor's `respond()` and `request()` methods
+can be an object, but also an array or just a string.
+
+```php
+<?php
+use Cognesy\Instructor\Instructor;
+
+class Email {
+    public function __construct(
+        public string $address = '',
+        public string $subject = '',
+        public string $body = '',
+    ) {}
+}
+
+$email = new Email(
+    address: 'joe@gmail',
+    subject: 'Status update',
+    body: 'Your account has been updated.'
+);
+
+$translation = (new Instructor)->respond(
+    input: $email,
+    responseModel: Email::class,
+    prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
+);
+?>
+```
 
 
 ### Validation

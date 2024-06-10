@@ -46,7 +46,10 @@ $user = $instructor->respond(
     responseModel: User::class,
     model: 'claude-3-haiku-20240307',
     mode: Mode::Tools,
-    //options: ['stream' => true ]
+    examples: [[
+        'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
+        'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+    ]],
 );
 
 print("Completed response model:\n\n");

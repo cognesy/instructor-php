@@ -37,7 +37,6 @@ class StreamRequestHandler implements CanHandleStreamRequest
         }
         // try to respond to the request until success or max retries reached
         $this->retries = 0;
-        $this->messages = $request->messages();
         while ($this->retries <= $request->maxRetries()) {
             // (0) process stream and return partial results...
             yield from $this->getStreamedResponses($request);
@@ -52,7 +51,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
                 // get final value
                 $value = $processingResult->unwrap();
                 // store response
-                $request->addResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), $value);
+                $request->addResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), $value); // TODO: tx messages to Scripts
                 // return final result
                 yield $value;
                 // we're done here - no need to retry
@@ -62,9 +61,10 @@ class StreamRequestHandler implements CanHandleStreamRequest
             // (3) retry - we have not managed to deserialize, validate or transform the response
             $errors = $processingResult->error();
             // store failed response
-            $request->addFailedResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), [$errors]);
-            $this->messages = $request->makeRetryMessages($this->messages, $apiResponse->content, [$errors]);
-            $request->withMessages($this->messages);
+            $request->addFailedResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), [$errors]); // TODO: tx messages to Scripts
+            $request->script()->section('retries')->appendMessages(
+                $request->makeRetryMessages([], $apiResponse->content, $errors)
+            );
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
@@ -83,6 +83,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
             throw new Exception("Request does not have an API client");
         }
         $apiRequest = $request->toApiRequest();
+        $this->messages = $request->messages(); // TODO: tx messages to Scripts
         try {
             $this->events->dispatch(new RequestSentToLLM($apiRequest));
             $stream = $apiClient->withApiRequest($apiRequest)->stream();

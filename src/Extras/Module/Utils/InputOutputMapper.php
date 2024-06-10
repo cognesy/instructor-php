@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Extras\Module\Utils;
 
 use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
+use Cognesy\Instructor\Utils\Json;
 use Exception;
 
 class InputOutputMapper
@@ -22,6 +23,7 @@ class InputOutputMapper
      * @return array<string, mixed>
      */
     public function mapFromInputs(mixed $inputs, array $inputNames) : array {
+        // TODO: is there a way to consolidate value rendering?
         $asArray = match(true) {
             ($inputs instanceof CanBeProcessed) => $inputs->inputs(),
             ($inputs instanceof HasInputOutputData) => $inputs->input()->getValues(),
@@ -42,6 +44,7 @@ class InputOutputMapper
      */
     public function mapToOutputs(mixed $result, array $outputNames) : array {
         $isSingleParamOutput = count($outputNames) === 1;
+        // TODO: how to consolidate value/structure rendering?
         $asArray = match(true) {
             ($result instanceof CanBeProcessed) => $result->outputs(),
             ($result instanceof HasInputOutputData) => $result->output()->getValues(),
@@ -66,7 +69,7 @@ class InputOutputMapper
         $mapped = [];
         foreach ($expectedFields as $name) {
             if (!array_key_exists($name, $values)) {
-                throw new Exception("Missing field: {$name} in " . json_encode($values) . ". Make sure to use names arguments if you're calling the module via withArgs().");
+                throw new Exception("Missing field: {$name} in " . Json::encode($values) . ". Make sure to use names arguments if you're calling the module via withArgs().");
             }
             $mapped[$name] = $values[$name];
         }

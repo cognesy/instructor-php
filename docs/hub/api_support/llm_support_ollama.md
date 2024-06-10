@@ -10,6 +10,8 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Clients\Ollama\OllamaClient;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\Request\RequestSentToLLM;
+use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Instructor;
 
 enum UserType : string {
@@ -31,12 +33,14 @@ class User {
 $client = new OllamaClient();
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client)
-    ->onEvent(\Cognesy\Instructor\Events\Request\RequestSentToLLM::class, function($event) {
-        print("Request sent to LLM:\n\n");
-        dump($event->request);
-    })
-    ->onEvent(\Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM::class, function($event) {
+$instructor = (new Instructor)->withClient($client);
+
+// Listen to events to print request/response data
+$instructor->onEvent(RequestSentToLLM::class, function($event) {
+    print("Request sent to LLM:\n\n");
+    dump($event->request);
+});
+$instructor->onEvent(ResponseReceivedFromLLM::class, function($event) {
     print("Received response from LLM:\n\n");
     dump($event->response);
 });
@@ -45,6 +49,10 @@ $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     model: 'llama2:latest',
+    examples: [[
+        'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
+        'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+    ]],
     mode: Mode::Json,
 );
 

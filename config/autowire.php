@@ -1,10 +1,11 @@
 <?php
 namespace Cognesy\config;
 
-use Cognesy\Instructor\ApiClient\CacheConfig;
-use Cognesy\Instructor\ApiClient\Context\ApiRequestContext;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
+use Cognesy\Instructor\ApiClient\RequestConfig\CacheConfig;
+use Cognesy\Instructor\ApiClient\RequestConfig\DebugConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
@@ -86,9 +87,11 @@ function autowire(
     /// CONTEXT //////////////////////////////////////////////////////////////////////////////
 
     $config->declare(
-        class: ApiRequestContext::class,
+        class: ApiRequestConfig::class,
         context: [
             'cacheConfig' => $config->reference(CacheConfig::class),
+            'debugConfig' => $config->reference(DebugConfig::class),
+            'events' => $config->reference(EventDispatcher::class),
         ],
     );
 
@@ -98,6 +101,15 @@ function autowire(
             'enabled' => false,
             'expiryInSeconds' => 3600,
             'cachePath' => '/tmp/instructor/cache',
+        ]
+    );
+
+    $config->declare(
+        class: DebugConfig::class,
+        context: [
+            'debug' => false,
+            'stopOnDebug' => false,
+            'forceDebug' => false,
         ]
     );
 
@@ -115,6 +127,7 @@ function autowire(
                 'cohere:command' => $config->reference('cohere:command'),
                 'cohere:command-light' => $config->reference('cohere:command-light'),
                 'fireworks:mixtral-8x7b' => $config->reference('fireworks:mixtral-8x7b'),
+                'google:gemini-1.5-flash' => $config->reference('google:gemini-1.5-flash'),
                 'groq:llama3-8b' => $config->reference('groq:llama3-8b'),
                 'groq:llama3-70b' => $config->reference('groq:llama3-70b'),
                 'groq:mixtral-8x7b' => $config->reference('groq:mixtral-8x7b'),
@@ -149,6 +162,7 @@ function autowire(
             'responseModelFactory' => $config->reference(ResponseModelFactory::class),
             'modelFactory' => $config->reference(ModelFactory::class),
             'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
+            'requestConfig' => $config->reference(ApiRequestConfig::class),
             'events' => $config->reference(EventDispatcher::class),
         ],
     );
@@ -156,7 +170,7 @@ function autowire(
     $config->declare(
         class: ApiRequestFactory::class,
         context: [
-            'context' => $config->reference(ApiRequestContext::class),
+            'requestConfig' => $config->reference(ApiRequestConfig::class),
         ],
     );
 

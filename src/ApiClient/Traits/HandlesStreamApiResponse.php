@@ -46,7 +46,7 @@ trait HandlesStreamApiResponse
     protected function getStream(ApiRequest $request): Generator {
         $this?->events->dispatch(new ApiStreamRequestInitiated($request));
         try {
-            $response = $this->connector($request->isDebug())->send($request);
+            $response = $this->connector($request->requestConfig()->debugConfig)->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;

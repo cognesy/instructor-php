@@ -19,20 +19,15 @@ trait HandlesApiRequestFactory
     }
 
     public function toApiRequest() : ApiRequest {
-        if (empty($this->model())) {
-            $this->withModel($this->client->defaultModel());
-        }
-        if (empty($this->option('max_tokens'))) {
-            $this->setOption('max_tokens', $this->client->defaultMaxTokens);
-        }
-
         $requestClass = $this->client->getModeRequestClass($this->mode());
         return $this->apiRequestFactory->makeRequest(
             requestClass: $requestClass,
-            body: $this->toApiRequestBody(),
+            body: array_filter(array_merge(
+                ['model' => $this->modelName()],
+                $this->options(),
+            )),
             endpoint: $this->endpoint(),
             method: $this->method(),
-            options: $this->options,
             data: $this->data(),
         );
     }

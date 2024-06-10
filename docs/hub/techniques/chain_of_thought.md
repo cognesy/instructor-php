@@ -24,8 +24,8 @@ class Employee {
 $text = 'He was working here for 5 years. Now, in 2019, he is a manager.';
 
 $employee = (new Instructor)->respond(
-    [['role' => 'user', 'content' => $text]],
-    Employee::class
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Employee::class
 );
 
 dump($employee);

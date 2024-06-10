@@ -31,8 +31,8 @@ class MaybeUser
 }
 
 $user = (new Instructor)->respond(
-    [['role' => 'user', 'content' => 'We don\'t know anything about this guy.']],
-    MaybeUser::class
+    messages: [['role' => 'user', 'content' => 'We don\'t know anything about this guy.']],
+    responseModel: MaybeUser::class
 );
 
 dump($user);

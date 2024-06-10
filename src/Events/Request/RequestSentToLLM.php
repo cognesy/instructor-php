@@ -17,14 +17,6 @@ class RequestSentToLLM extends Event
     }
 
     public function __toString(): string {
-        return Json::encode(array_filter([
-            'class' => get_class($this->request),
-            'messages' => $this->request->messages ?? '',
-            'model' => $this->request->model ?? '',
-            'response_format' => $this->request->responseFormat ?? [],
-            'tools' => $this->request->tools ?? [],
-            'tool_choice' => $this->request->toolChoice ?? '',
-            'options' => $this->request->options ?? [],
-        ]));
+        return Json::encode($this->request->toArray());
     }
 }

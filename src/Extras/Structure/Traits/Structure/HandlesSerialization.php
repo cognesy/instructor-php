@@ -32,6 +32,7 @@ trait HandlesSerialization
     // INTERNAL //////////////////////////////////////////////////////////////////////
 
     private function serializeObjectField(object $object) : mixed {
+        // TODO: is there a way to consolidate value rendering?
         return match(true) {
             (method_exists($object, 'toArray')) => $object->toArray(),
             ($object instanceof Structure) => $object->toArray(),

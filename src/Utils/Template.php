@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Utils;
 
-use Cognesy\Instructor\Core\Messages\Message;
-use Cognesy\Instructor\Core\Messages\Messages;
+use Cognesy\Instructor\Data\Messages\Message;
+use Cognesy\Instructor\Data\Messages\Messages;
 use InvalidArgumentException;
 
 class Template
@@ -17,7 +17,13 @@ class Template
         if (empty($context)) {
             return;
         }
-        $materializedContext = $this->materializeContext($context);
+        // remove keys starting with @ - these are used for section templates
+        $filteredContext = array_filter(
+            $context,
+            fn($key) => substr($key, 0, 1) !== '@',
+            ARRAY_FILTER_USE_KEY
+        );
+        $materializedContext = $this->materializeContext($filteredContext);
         $this->values = array_values($materializedContext);
         $this->keys = array_map(
             fn($key) => $this->varPattern($key),
@@ -36,6 +42,7 @@ class Template
         $missingKeys = array_diff($keys, $this->keys);
         // remove missing key strings from the template
         $template = str_replace($missingKeys, '', $template);
+        // render values
         return str_replace($this->keys, $this->values, $template);
     }
 
@@ -47,12 +54,18 @@ class Template
     }
 
     public function renderMessage(array|Message $message) : array {
-        $rendered = match(true) {
-            is_array($message) => ['role' => $message['role'], 'content' => $this->renderString($message['content'])],
-            $message instanceof Message => ['role' => $message->role, 'content' => $this->renderString($message->content)],
+        $normalized = match(true) {
+            is_array($message) => Message::fromArray($message),
+            $message instanceof Message => $message,
             default => throw new InvalidArgumentException('Invalid message type'),
         };
-        return $rendered;
+
+        // skip rendering if content is an array - it may contain non-text data
+        if (is_array($normalized->content)) {
+            return ['role' => $normalized->role, 'content' => $normalized->content];
+        }
+
+        return ['role' => $normalized->role, 'content' => $this->renderString($normalized->content)];
     }
 
     public function renderMessages(array|Messages $messages) : array {
@@ -78,6 +91,7 @@ class Template
     // INTERNAL //////////////////////////////////////////////////////////////////
 
     private function materializeContext(array $context) : array {
+        // TODO: is there a way to consolidate value rendering?
         $contextValues = [];
         foreach ($context as $key => $value) {
             $value = match (true) {
