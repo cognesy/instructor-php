@@ -111,6 +111,7 @@ $instructor = (new Instructor)->withClient($client);
 echo "PROJECT EVENTS:\n\n";
 
 $events = $instructor
+    ->withDebug()
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
     ->request(
         messages: $report,

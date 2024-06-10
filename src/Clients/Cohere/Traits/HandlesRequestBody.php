@@ -66,7 +66,7 @@ trait HandlesRequestBody
         return $cohereFormat;
     }
 
-    protected function getToolChoice(): string|array {
+    public function getToolChoice(): string|array {
         return '';
     }
 

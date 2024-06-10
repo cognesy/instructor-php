@@ -24,6 +24,7 @@ class AnthropicApiRequest extends ApiRequest
                     'messages' => $this->messages(),
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
+                    'max_tokens' => $this->maxTokens,
                 ],
             )
         );
