@@ -10,10 +10,10 @@ trait HandlesResponse
 {
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response->body());
-        $content = $decoded['text'] ?? '';
-        $finishReason = $decoded['finish_reason'] ?? '';
-        $inputTokens = $decoded['meta']['tokens']['input_tokens'] ?? 0;
-        $outputTokens = $decoded['meta']['tokens']['output_tokens'] ?? 0;
+        $content = $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        $finishReason = $decoded['candidates'][0]['finishReason'] ?? '';
+        $inputTokens = $decoded['usageMetadata']['promptTokenCount'] ?? 0;
+        $outputTokens = $decoded['usageMetadata']['candidatesTokenCount'] ?? 0;
         return new ApiResponse(
             content: $content,
             responseData: $decoded,
@@ -27,10 +27,11 @@ trait HandlesResponse
 
     public function toPartialApiResponse(string $partialData) : PartialApiResponse {
         $decoded = Json::parse($partialData, default: []);
-        $delta = $decoded['text'] ?? $decoded['tool_calls'][0]['parameters'] ?? '';
-        $inputTokens = $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
-        $outputTokens = $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
-        $finishReason = $decoded['finish_reason'] ?? '';
+dump($decoded);
+        $delta = $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        $inputTokens = $decoded['usageMetadata']['promptTokenCount'] ?? 0;
+        $outputTokens = $decoded['usageMetadata']['candidatesTokenCount'] ?? 0;
+        $finishReason = $decoded['candidates'][0]['finishReason'] ?? '';
         return new PartialApiResponse(
             delta: $delta,
             responseData: $decoded,

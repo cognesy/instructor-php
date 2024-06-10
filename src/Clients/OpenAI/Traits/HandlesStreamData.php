@@ -8,7 +8,6 @@ trait HandlesStreamData
         return $data === '[DONE]';
     }
 
-
     protected function getData(string $data): string {
         if (str_starts_with($data, 'data:')) {
             return trim(substr($data, 5));

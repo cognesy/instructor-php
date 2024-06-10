@@ -44,6 +44,6 @@ class ApiConnector extends Connector
     }
 
     public function defaultConfig(): array {
-        return ['stream' => false];
+        return ['stream' => true];
     }
 }

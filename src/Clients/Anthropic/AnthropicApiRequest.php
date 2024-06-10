@@ -28,7 +28,6 @@ class AnthropicApiRequest extends ApiRequest
             )
         );
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
-dd($body);
         return $body;
     }
 }

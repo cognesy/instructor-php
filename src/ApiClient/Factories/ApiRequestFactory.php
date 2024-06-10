@@ -22,6 +22,8 @@ class ApiRequestFactory
         Method $method = Method::POST,
         array $data = [],
     ): ApiRequest {
-        return new $requestClass($body, $endpoint, $method, $this->requestConfig, $data);
+        $request = new $requestClass($body, $endpoint, $method, $this->requestConfig, $data);
+        $request->config()->add('stream', true);
+        return $request;
     }
 }

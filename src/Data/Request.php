@@ -67,7 +67,7 @@ class Request
         $this->client = $client ?? $clientFactory->getDefault();
         $this->withModel($model);
         if (empty($this->option('max_tokens'))) {
-            $this->setOption('max_tokens', $this->client->defaultMaxTokens);
+            $this->setOption('max_tokens', $this->client->defaultMaxTokens());
         }
 
         $this->toolName = $toolName ?: $this->defaultToolName;

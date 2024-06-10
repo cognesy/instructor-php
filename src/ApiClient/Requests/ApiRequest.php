@@ -37,6 +37,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     // BODY FIELDS
     protected string $model = '';
+    protected int $maxTokens = 512;
     protected array $messages = [];
     protected array $tools = [];
     protected string|array $toolChoice = [];
@@ -71,6 +72,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     protected function initBodyFields() : void {
         $this->model = $this->pullBodyField('model', '');
+        $this->maxTokens = $this->pullBodyField('max_tokens', 512);
         $this->messages = $this->pullBodyField('messages', []);
 
         // get tools and format

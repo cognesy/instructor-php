@@ -10,10 +10,7 @@ trait HandlesApiRequestOptions
     }
 
     public function option(string $key, mixed $defaultValue = null) : mixed {
-        if (!isset($this->options[$key])) {
-            return $defaultValue;
-        }
-        return $this->options[$key];
+        return $this->options[$key] ?? $defaultValue;
     }
 
     public function setOption(string $name, mixed $value) : self {

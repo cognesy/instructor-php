@@ -13,12 +13,6 @@ interface CanCallApi
 {
     public function request(array $body, string $endpoint, Method $method): static;
 
-//    public function chatCompletion(array $messages, string $model = '', array $options = []): static;
-//
-//    public function jsonCompletion(array $messages, array $responseFormat, string $model = '', array $options = []): static;
-//
-//    public function toolsCall(array $messages, array $tools, array $toolChoice, string $model = '', array $options = []): static;
-
     public function get() : ApiResponse;
 
     /** @return Generator<PartialApiResponse>  */
@@ -26,6 +20,7 @@ interface CanCallApi
 
     public function async() : PromiseInterface;
 
+    public function defaultMaxTokens() : int;
     public function defaultModel() : string;
 
     public function getModeRequestClass(Mode $mode) : string;
