@@ -12,7 +12,6 @@ class CohereApiRequest extends ApiRequest
 
     protected string $defaultEndpoint = '/chat';
 
-
     protected function defaultBody(): array {
         $body = array_filter(
             array_merge(

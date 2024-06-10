@@ -9,7 +9,6 @@ class AnthropicApiRequest extends ApiRequest
 {
     use Traits\HandlesResponse;
     use Traits\HandlesRequestBody;
-    use Traits\HandlesStreamData;
 
     protected string $defaultEndpoint = '/messages';
 
