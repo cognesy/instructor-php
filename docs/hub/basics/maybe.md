@@ -23,8 +23,8 @@ $text = 'We don\'t know anything about this guy.';
 echo "\nINPUT:\n$text\n";
 
 $maybeUser = (new Instructor)->respond(
-    [['role' => 'user', 'content' => $text]],
-    Maybe::is(User::class)
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Maybe::is(User::class)
 );
 
 echo "\nOUTPUT:\n";
@@ -38,8 +38,8 @@ $text = "Jason is our new developer, he is 25 years old.";
 echo "\nINPUT:\n$text\n";
 
 $maybeUser = (new Instructor)->respond(
-    [['role' => 'user', 'content' => $text]],
-    Maybe::is(User::class)
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Maybe::is(User::class)
 );
 
 echo "\nOUTPUT:\n";

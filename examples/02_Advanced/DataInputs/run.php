@@ -1,4 +1,11 @@
-# Using data as an input
+# Using structured data as an input
+
+Instructor offers a way to use structured data as an input. This is
+useful when you want to use object data as input and get another object
+with a result of LLM inference.
+
+The `input` field of Instructor's `respond()` and `request()` methods
+can be an object, but also an array or just a string.
 
 ```php
 <?php
