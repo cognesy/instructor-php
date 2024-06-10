@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Clients\Mistral\Traits;
 
-trait HandlesTools
+trait HandlesRequestBody
 {
     public function tools() : array {
         return $this->tools;
@@ -13,5 +13,13 @@ trait HandlesTools
             return '';
         }
         return $this->toolChoice ?: 'any';
+    }
+
+    protected function getResponseFormat(): array {
+        return ['type' => 'json_object'];
+    }
+
+    protected function getResponseSchema(): array {
+        return [];
     }
 }

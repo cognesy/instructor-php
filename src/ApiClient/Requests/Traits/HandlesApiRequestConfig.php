@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\ApiClient\Requests\Traits;
 
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
+use Exception;
 
 trait HandlesApiRequestConfig
 {
@@ -15,5 +16,14 @@ trait HandlesApiRequestConfig
 
     public function requestConfig() : ApiRequestConfig {
         return $this->requestConfig;
+    }
+
+    protected function applyRequestConfig() : void {
+        if (!is_null($this->requestConfig)) {
+            $this->cachingEnabled = $this->requestConfig->cacheConfig()->isEnabled();
+            if ($this->cachingEnabled & $this->isStreamed()) {
+                throw new Exception('Instructor does not support caching with streamed requests');
+            }
+        }
     }
 }

@@ -1,8 +1,5 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Anthropic\Traits;
-
-
 
 trait HandlesStreamData
 {

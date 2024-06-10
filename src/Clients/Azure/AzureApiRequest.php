@@ -4,14 +4,12 @@ namespace Cognesy\Instructor\Clients\Azure;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponseFormat;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesTools;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesRequestBody;
 use Saloon\Enums\Method;
 
 class AzureApiRequest extends ApiRequest
 {
-    use HandlesTools;
-    use HandlesResponseFormat;
+    use HandlesRequestBody;
     use HandlesResponse;
 
     public function __construct(

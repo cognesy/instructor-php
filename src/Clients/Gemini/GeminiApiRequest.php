@@ -6,9 +6,8 @@ use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 class GeminiApiRequest extends ApiRequest
 {
+    use Traits\HandlesRequestBody;
     use Traits\HandlesResponse;
-    use Traits\HandlesTools;
-    use Traits\HandlesResponseFormat;
 
     protected string $defaultEndpoint = '/models/{model}:generateContent';
 

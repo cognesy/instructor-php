@@ -4,14 +4,12 @@ namespace Cognesy\Instructor\Clients\Ollama;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponseFormat;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesTools;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesRequestBody;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 class OllamaApiRequest extends ApiRequest
 {
-    use HandlesTools;
-    use HandlesResponseFormat;
+    use HandlesRequestBody;
     use HandlesResponse;
 
     protected function defaultBody(): array {

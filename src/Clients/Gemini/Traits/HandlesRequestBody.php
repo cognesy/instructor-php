@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Clients\Gemini\Traits;
 
-trait HandlesTools
+trait HandlesRequestBody
 {
     public function tools(): array {
         return $this->tools;
@@ -13,5 +13,13 @@ trait HandlesTools
             return '';
         }
         return $this->toolChoice ?: 'auto';
+    }
+
+    protected function getResponseFormat(): array {
+        return [];
+    }
+
+    protected function getResponseSchema(): array {
+        return [];
     }
 }

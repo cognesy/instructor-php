@@ -2,8 +2,19 @@
 
 namespace Cognesy\Instructor\Clients\OpenAI\Traits;
 
-trait HandlesResponseFormat
+trait HandlesRequestBody
 {
+    public function tools(): array {
+        return $this->tools;
+    }
+
+    public function getToolChoice(): string|array {
+        if (empty($this->tools)) {
+            return '';
+        }
+        return $this->toolChoice ?: 'auto';
+    }
+
     protected function getResponseSchema() : array {
         return $this->responseFormat['schema'] ?? [];
     }

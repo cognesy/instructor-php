@@ -9,8 +9,7 @@ use Saloon\Enums\Method;
 
 class OpenAIApiRequest extends ApiRequest
 {
-    use Traits\HandlesTools;
-    use Traits\HandlesResponseFormat;
+    use Traits\HandlesRequestBody;
     use Traits\HandlesResponse;
 
     public function __construct(

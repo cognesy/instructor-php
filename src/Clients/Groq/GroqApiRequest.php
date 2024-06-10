@@ -3,12 +3,10 @@ namespace Cognesy\Instructor\Clients\Groq;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponseFormat;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesTools;
+use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesRequestBody;
 
 class GroqApiRequest extends ApiRequest
 {
-    use HandlesTools;
-    use HandlesResponseFormat;
+    use HandlesRequestBody;
     use HandlesResponse;
 }

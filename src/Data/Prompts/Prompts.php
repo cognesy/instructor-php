@@ -8,7 +8,16 @@ class Prompts
         private array $prompts = []
     ) {}
 
-    public function get(string $prompt) : Prompt {
-        return $this->prompts[$prompt];
+    public function get(string $name) : Prompt {
+        return $this->prompts[$name];
+    }
+
+    public function has(string $name) : bool {
+        return isset($this->prompts[$name]);
+    }
+
+    public function add(Prompt $prompt) : static {
+        $this->prompts[$prompt->name()] = $prompt;
+        return $this;
     }
 }

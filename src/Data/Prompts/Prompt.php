@@ -7,7 +7,8 @@ use Cognesy\Instructor\Utils\Template;
 
 class Prompt
 {
-    private array $variants;
+    private string $name = '';
+    private array $variants = [];
     private string $selected = '*';
 
     public function __construct(string|array $variants = []) {
@@ -20,13 +21,21 @@ class Prompt
         }
     }
 
+    public function name() : string {
+        return $this->name;
+    }
+
+    public function variants() : array {
+        return array_keys($this->variants);
+    }
+
     public function select(string $variant = '*') : static {
         $this->selected = $variant;
         return $this;
     }
 
-    public function variants() : array {
-        return array_keys($this->variants);
+    public function selected() : string {
+        return $this->selected;
     }
 
     public function toArray(string $role = 'user') : array {

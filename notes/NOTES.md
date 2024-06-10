@@ -16,6 +16,9 @@ Catch up with the latest additions.
 
 ## Brain dump
 
+- String >> Array >> Class - for example: prompts (they should be classes)
+- Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
+- Role - should be enum, not string
 - Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
 - MessageSequence to better process multi-stage chat content
 - Extract APIClient to a separate package?
