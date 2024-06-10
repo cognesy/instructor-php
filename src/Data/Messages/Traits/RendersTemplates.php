@@ -39,7 +39,7 @@ trait RendersTemplates
      */
     protected function renderMessages(array|Messages $messages, ?array $context) : array {
         return match(true) {
-            empty($context) => $messages,
+            //empty($context) => $messages,
             default => (new Template($context))->renderMessages($messages),
         };
     }
