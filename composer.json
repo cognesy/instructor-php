@@ -44,6 +44,7 @@
     },
     "require": {
         "php": "^8.2",
+        "ext-fileinfo": "*",
         "symfony/validator": "^6.4 || ^7.0",
         "symfony/serializer": "^6.4 || ^7.0",
         "symfony/property-info": "^6.4 || ^7.0",
@@ -62,7 +63,7 @@
         "symfony/type-info": "^7.1",
         "phpstan/phpdoc-parser": "^1.29",
         "psr/log": "^3.0",
-        "monolog/monolog": "^3.6"
+        "monolog/monolog": "^3.6",
     },
     "scripts": {
         "tests": "@php vendor/bin/pest"

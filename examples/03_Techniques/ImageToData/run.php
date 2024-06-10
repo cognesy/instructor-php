@@ -12,6 +12,7 @@ information with data of vendor, items, subtotal, tax, tip, and total.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Extras\Image\Image;
 use Cognesy\Instructor\Instructor;
 
 class Vendor {
@@ -37,22 +38,11 @@ class Receipt {
 }
 
 $imagePath = __DIR__ . '/receipt.png';
-// load image and convert to base64
-$imageBase64 = base64_encode(file_get_contents($imagePath));
-// add base 64 prefix
-$imageBase64 = 'data:image/png;base64,' . $imageBase64;
-
-$input = [
-    ['role' => 'user', 'content' => [
-        ['type' => 'text', 'text' => 'Extract data from attached receipt'],
-        // ['type' => 'image_url', 'image_url' => 'https://www.inogic.com/blog/wp-content/uploads/2020/09/Receipt-Processor-AI-Builder-in-Canvas-App-9.png'],
-        ['type' => 'image_url', 'image_url' => $imageBase64],
-    ]],
-];
 
 $receipt = (new Instructor)->respond(
-    messages: $input,
+    messages: Image::fromFile($imagePath)->toMessages(),
     responseModel: Receipt::class,
+    prompt: 'Extract structured data from the receipt.',
     model: 'gpt-4-vision-preview',
     options: ['max_tokens' => 4096]
 );
