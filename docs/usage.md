@@ -160,5 +160,5 @@ See [Streaming and partial updates](partials.md) for more information on how to 
 
 ## Extracting arguments for function call
 
-See [FunctionCall helper class](function-call.md) for more information on how to extract arguments for callable objects.
+See [FunctionCall helper class](function_calls.md) for more information on how to extract arguments for callable objects.
 ```

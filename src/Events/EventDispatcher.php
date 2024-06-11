@@ -18,6 +18,10 @@ class EventDispatcher
         $this->parent = $parent;
     }
 
+    public function name() : string {
+        return $this->name;
+    }
+
     public function addListener(string $eventClass, callable $listener): self {
         $this->listeners[$eventClass][] = $listener;
         return $this;

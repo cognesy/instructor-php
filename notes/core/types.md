@@ -13,7 +13,7 @@ This might be also a cleaner way to handle Sequenceables and Scalars.
 
 ## Handling of union types
 
-Currently not supported, needs to be supported to allow better interaction with external code, eg. Carbon dates.
+Currently not supported, needs to be supported to allow better interaction with external code, e.g. Carbon dates.
 
 ## Handling of some usual data types
 

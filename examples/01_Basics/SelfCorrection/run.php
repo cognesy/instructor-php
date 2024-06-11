@@ -42,6 +42,7 @@ $user = (new Instructor)
     );
 
 print("\nOUTPUT:\n");
+
 dump($user);
 
 assert($user->email === "jason@gmail.com");

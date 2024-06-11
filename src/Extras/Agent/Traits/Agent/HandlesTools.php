@@ -10,9 +10,11 @@ trait HandlesTools
 {
     private CanUseTools $tools;
 
-    public function selectTool(Call $task) : Tool {
+    public function selectTool(Call $task) : ?Tool {
+        return null;
     }
 
-    public function useTool(Call $task, Tool $tool) : Call {
+    public function useTool(Call $task, Tool $tool) : ?Call {
+        return null;
     }
 }

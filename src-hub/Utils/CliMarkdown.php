@@ -3,7 +3,6 @@ namespace Cognesy\InstructorHub\Utils;
 
 use cebe\markdown\GithubMarkdown;
 use Cognesy\InstructorHub\Core\Cli;
-use Symfony\Component\Translation\Dumper\PhpFileDumper;
 use Toolkit\Cli\Color;
 use Toolkit\Cli\Color\ColorTag;
 use Toolkit\Cli\Util\Highlighter;

@@ -24,7 +24,7 @@ class TestClass {
      *
      * @return string
      */
-    function testMethod(int $intParam, string $stringParam, bool $boolParam, TestClass $objectParam): string {
+    public function testMethod(int $intParam, string $stringParam, bool $boolParam, TestClass $objectParam): string {
         return 'test';
     }
 }

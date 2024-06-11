@@ -48,6 +48,7 @@ $user = (new Instructor)->respond(
 
 // Step 4: Now you can use the extracted data in your application
 print("Extracted data:\n");
+
 dump($user);
 
 assert(isset($user->name));

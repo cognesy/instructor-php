@@ -48,6 +48,7 @@ $user = (new Instructor)
         maxRetries: 2,
     );
 
+
 dump($user);
 
 assert($user->graduationYear === 2023);

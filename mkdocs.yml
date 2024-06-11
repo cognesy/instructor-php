@@ -319,7 +319,7 @@ plugins:
       categories:
         - categories
         - tags
-      enabled: !ENV [CI, false]
+      enabled: !ENV [ CI, "false" ]
 #  - redirects:
 #      redirect_maps:
 #        'blog/posts/ollama.md': 'hub/ollama.md'

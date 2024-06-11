@@ -51,10 +51,7 @@ trait ValidatesPartialResponse
             // also covers no JSON at all - which is fine, as some models will respond with text
             return false;
         }
-        if (isset($decoded['type']) && $decoded['type'] === 'object') {
-            return true;
-        }
-        return false;
+        return isset($decoded['type']) && $decoded['type'] === 'object';
     }
 
     private function detectNonMatchingJson(bool $check, string $responseText, ResponseModel $responseModel) : Result {

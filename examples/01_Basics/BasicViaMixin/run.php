@@ -40,6 +40,7 @@ class User {
 }
 
 $user = User::extract("Jason is 25 years old and works as an engineer.");
+
 dump($user);
 
 assert(isset($user->name));

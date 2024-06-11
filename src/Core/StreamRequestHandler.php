@@ -72,7 +72,8 @@ class StreamRequestHandler implements CanHandleStreamRequest
             // (3.1) reset partials generator
             $this->partialsGenerator->resetPartialResponse();
         }
-        $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, [$errors]));
+        $errors = $errors ?? [];
+        $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $errors));
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $errors));
     }
 

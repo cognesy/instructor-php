@@ -24,6 +24,7 @@ trait ProvidesJsonSchema
             ],
         ];
         if (!empty($this->options)) {
+            /** @noinspection UnsupportedStringOffsetOperationsInspection */
             $array['properties'][$name]['enum'] = $this->options;
         }
         if ($this->required) {

@@ -1,12 +1,10 @@
 <?php
-
 use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Tests\Examples\Deserialization\Person;
 use Tests\Examples\Deserialization\PersonWithArray;
 use Tests\Examples\Deserialization\PersonWithNestedObject;
 use Tests\Examples\Deserialization\PersonWithNullableProperty;
-
 
 it('deserializes simple cases', function () {
     $deserializer = new Deserializer();

@@ -24,7 +24,7 @@ class ShowExample extends Command
             return;
         }
         $example = $this->examples->resolveToExample($file);
-        if (empty($example)) {
+        if (is_null($example)) {
             Cli::outln("Example not found", [Color::RED]);
             return;
         }

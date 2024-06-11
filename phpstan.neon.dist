@@ -1,0 +1,12 @@
+parameters:
+  level: 8
+  paths:
+    - src
+    - tests
+    - src-hub
+    - config
+    - examples
+  reportUnmatchedIgnoredErrors: true
+  checkMissingIterableValueType: false
+  checkGenericClassInNonGenericObjectType: false
+  tmpDir: /tmp

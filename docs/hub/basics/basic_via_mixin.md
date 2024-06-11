@@ -6,7 +6,7 @@ extraction capabilities directly on class via static `extract()` method.
 `extract()` method returns an instance of the class with the data extracted
 using the Instructor.
 
-`extract()` method has following signature (you can also find it in the
+`extract()` method has the following signature (you can also find it in the
 `CanSelfExtract` interface):
 
 ```php

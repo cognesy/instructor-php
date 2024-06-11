@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Utils;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Exception;
 use JsonException;
+use Throwable;
 
 /**
  * Original author: Greg Hunt
@@ -13,7 +14,7 @@ use JsonException;
 class JsonParser
 {
     private $parsers = [];
-    private $lastParseReminding = null;
+    private string $lastParseReminding = '';
     private $onExtraToken;
     private $skipExtraTokens = true;
 
@@ -62,8 +63,11 @@ class JsonParser
         }
     }
 
-    private function parseAny($json, $e)
-    {
+    public function reminder() : string {
+        return $this->lastParseReminding;
+    }
+
+    private function parseAny(string $json, Throwable $e) : array|object {
         if (!$json) {
             throw $e;
         }
@@ -74,13 +78,11 @@ class JsonParser
         return $parser($json, $e);
     }
 
-    private function parseSpace($json, $e)
-    {
+    private function parseSpace(string $json, Throwable $e) : array|object {
         return $this->parseAny(trim($json), $e);
     }
 
-    private function parseArray($json, $e)
-    {
+    private function parseArray(string $json, Throwable $e) : array {
         $json = substr($json, 1);  // skip starting '['
         $acc = [];
         $json = trim($json);
@@ -100,8 +102,7 @@ class JsonParser
         return [$acc, $json];
     }
 
-    private function parseObject($json, $e)
-    {
+    private function parseObject(string $json, Throwable $e) : array {
         $json = substr($json, 1);  // skip starting '{'
         $acc = [];
         $json = trim($json);
@@ -144,8 +145,7 @@ class JsonParser
         return [$acc, $json];
     }
 
-    private function parseString($json, $e)
-    {
+    private function parseString(string $json, Throwable $e) : array {
         $end = strpos($json, '"', 1);
         while ($end !== false && $json[$end - 1] === '\\') {  // Handle escaped quotes
             $end = strpos($json, '"', $end + 1);
@@ -159,8 +159,7 @@ class JsonParser
         return [json_decode($strVal), $json];
     }
 
-    private function parseNumber($json, $e)
-    {
+    private function parseNumber(string $json, Throwable $e) : array {
         $i = 0;
         while ($i < strlen($json) && strpos('0123456789.-', $json[$i]) !== false) {
             $i++;
@@ -179,24 +178,21 @@ class JsonParser
         return [$num, $json];
     }
 
-    private function parseTrue($json, $e)
-    {
+    private function parseTrue(string $json, Throwable $e) : array {
         if (substr($json, 0, 4) === 'true') {
             return [true, substr($json, 4)];
         }
         throw $e;
     }
 
-    private function parseFalse($json, $e)
-    {
+    private function parseFalse(string $json, Throwable $e) : array {
         if (substr($json, 0, 5) === 'false') {
             return [false, substr($json, 5)];
         }
         throw $e;
     }
 
-    private function parseNull($json, $e)
-    {
+    private function parseNull(string $json, Throwable $e) : array {
         if (substr($json, 0, 4) === 'null') {
             return [null, substr($json, 4)];
         }

@@ -61,10 +61,8 @@ class CacheConfig
     // INTERNAL ////////////////////////////////////////////////////////////////////////////////////
 
     private function makeCacheDir(string $cachePath) : void {
-        if (!is_dir($cachePath)) {
-            if (!mkdir($cachePath, 0777, true) && !is_dir($cachePath)) {
-                throw new RuntimeException(sprintf('Cache directory "%s" was not created', $cachePath));
-            }
+        if (!is_dir($cachePath) && !mkdir($cachePath, 0777, true) && !is_dir($cachePath)) {
+            throw new RuntimeException(sprintf('Cache directory "%s" was not created', $cachePath));
         }
     }
 

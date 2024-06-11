@@ -45,6 +45,7 @@ class Event
 
     public function printDump(): void {
         echo "\n".$this->asConsole()."\n";
+        /** @noinspection ForgottenDebugOutputInspection */
         dump(json_decode($this->__toString()));
     }
 

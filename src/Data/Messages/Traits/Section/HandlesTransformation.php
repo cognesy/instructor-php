@@ -44,7 +44,7 @@ trait HandlesTransformation
     /**
      * @param array<string,mixed>|null $context
      * @param string $separator
-     * @return array<string,mixed>
+     * @return array<string, mixed>
      */
     public function toString(array $context = [], string $separator = "\n") : string {
         $text = array_reduce(
@@ -52,5 +52,16 @@ trait HandlesTransformation
             callback: fn($carry, $message) => $carry . $message['content'] . $separator,
         );
         return $this->renderString($text, $context);
+    }
+
+    public function toRoleString(string $role, string $separator = "\n") : string {
+        $result = '';
+        foreach ($this->messages as $message) {
+            if ($message->isEmpty() || $message->role() !== $role) {
+                continue;
+            }
+            $result .= $message->toRoleString() . $separator;
+        }
+        return $result;
     }
 }

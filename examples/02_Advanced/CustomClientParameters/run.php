@@ -41,6 +41,7 @@ $user = $instructor->respond(
     mode: Mode::Json,
 );
 
+
 dump($user);
 
 assert(isset($user->name));

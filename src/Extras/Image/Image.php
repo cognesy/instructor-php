@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\Image;
 
+use Exception;
+use League\Flysystem\Filesystem;
+
 class Image
 {
     private string $base64bytes = '';
@@ -24,6 +27,14 @@ class Image
         $mimeType = mime_content_type($imagePath);
         $imageBase64 = 'data:' . $mimeType. ';base64,' . base64_encode(file_get_contents($imagePath));
         return new self($imageBase64, $mimeType);
+    }
+
+    public static function fromBase64(string $base64string, string $mimeType): self {
+        $prefix = 'data:{$mimeType};base64,';
+        if (substr($base64string, 0, 5) !== 'data:') {
+            throw new Exception("Base64 encoded string has to start with: {$prefix}");
+        }
+        return new self($base64string, $mimeType);
     }
 
     public static function fromUrl(string $imageUrl, string $mimeType): self {

@@ -7,7 +7,7 @@
 
 Requirements and solution - to be analyzed
 
-- How to track regular vs streamed responses? Streamed responses are unreadable / meaningless individually. Higher abstraction layer is needed to handle them - eg. "folder" with individual chunks of data. Completion ID allows to track incoming chunks under a single context.
+- How to track regular vs streamed responses? Streamed responses are unreadable / meaningless individually. Higher abstraction layer is needed to handle them - e.g. "folder" with individual chunks of data. Completion ID allows to track incoming chunks under a single context.
 - Completion, if streamed, needs extra info on whether it has been completed or disrupted for any reason.
 
 

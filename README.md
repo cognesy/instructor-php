@@ -74,7 +74,7 @@ Instructor will repeat requests in case of validation or deserialization error u
 
 ## Get Started
 
-Installing Instructor is simple. Run following command in your terminal and you're on your way to a smoother data handling experience!
+Installing Instructor is simple. Run following command in your terminal, and you're on your way to a smoother data handling experience!
 
 ```bash
 composer install cognesy/instructor-php
@@ -846,6 +846,6 @@ If you have any questions or need help, please reach out to me on [Twitter](http
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 <a href="https://github.com/cognesy/instructor-php/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=cognesy/instructor-php" />
+  <img alt="Contributors" src="https://contrib.rocks/image?repo=cognesy/instructor-php" />
 </a>
 

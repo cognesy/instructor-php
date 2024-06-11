@@ -18,7 +18,7 @@ trait HandlesDeserialization
 
     public function fromArray(array $data): static {
         foreach ($data as $name => $fieldData) {
-            if (!$this->has($name) && $this->ignoreUnknownFields) {
+            if ($this->ignoreUnknownFields && !$this->has($name)) {
                 continue;
             }
             $field = $this->field($name);

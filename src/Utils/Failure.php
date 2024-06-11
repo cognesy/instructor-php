@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Utils;
 
+use Exception;
+
 /**
  * @template E
  * @extends Result<mixed, E>
@@ -26,10 +28,10 @@ class Failure extends Result {
     }
 
     public function errorMessage() : string {
-        if (is_a($this->error, Exception::class)) {
-            return $this->error->getMessage();
-        }
-        return (string) $this->error;
+        return match(true) {
+            $this->error instanceof Exception => $this->error->getMessage(),
+            default => (string) $this->error,
+        };
     }
 
     public function isSuccess(): bool {

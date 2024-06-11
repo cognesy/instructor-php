@@ -124,9 +124,8 @@ class Pipeline {
             if ($this->onErrorCall) {
                 $callback = $this->onErrorCall;
                 return $callback($e);
-            } else {
-                throw $e;
             }
+            throw $e;
         }
     }
 

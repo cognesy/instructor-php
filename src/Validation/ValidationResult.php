@@ -44,9 +44,9 @@ class ValidationResult
         foreach ($validationResults as $result) {
             if ($result->isValid) {
                 continue;
-            } else {
-                $hasErrors = true;
             }
+
+            $hasErrors = true;
             $errors[] = $result->errors;
         }
         return match ($hasErrors) {

@@ -19,7 +19,7 @@
           ]\n
         }
         """
-    ]
+    ],
     "finish_reason" => "end_turn"
   ]
 ]

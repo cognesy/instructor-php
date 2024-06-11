@@ -1,11 +1,12 @@
 .cache/
+.env
 .idea/
 .venv/
 .vscode/
-experimental/
-.env
 archived/
+experimental/
 vendor/
-php_errors.log
 composer.lock
+php_errors.log
+phpstan.neon
 xdebug.log

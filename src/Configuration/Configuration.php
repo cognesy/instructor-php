@@ -24,4 +24,11 @@ class Configuration implements ContainerInterface
         $this->events = $events ?? new EventDispatcher('configuration');
         $this->events->dispatch(new ConfigurationInitiated());
     }
+
+    public function canOverride(string $componentName): bool {
+        return match(false) {
+            is_null($this->getConfig($componentName)) => $this->allowOverride,
+            default => true,
+        };
+    }
 }

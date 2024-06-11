@@ -28,6 +28,7 @@ $employee = (new Instructor)->respond(
     responseModel: Employee::class
 );
 
+
 dump($employee);
 
 assert($employee->yearOfEmployment === 2014);

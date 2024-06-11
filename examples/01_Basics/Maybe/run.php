@@ -28,6 +28,7 @@ $maybeUser = (new Instructor)->respond(
 );
 
 echo "\nOUTPUT:\n";
+
 dump($maybeUser->get());
 
 assert($maybeUser->hasValue() === false);
@@ -43,6 +44,7 @@ $maybeUser = (new Instructor)->respond(
 );
 
 echo "\nOUTPUT:\n";
+
 dump($maybeUser->get());
 
 assert($maybeUser->hasValue() === true);

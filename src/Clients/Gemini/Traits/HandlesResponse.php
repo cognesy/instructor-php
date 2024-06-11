@@ -27,7 +27,6 @@ trait HandlesResponse
 
     public function toPartialApiResponse(string $partialData) : PartialApiResponse {
         $decoded = Json::parse($partialData, default: []);
-dump($decoded);
         $delta = $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '';
         $inputTokens = $decoded['usageMetadata']['promptTokenCount'] ?? 0;
         $outputTokens = $decoded['usageMetadata']['candidatesTokenCount'] ?? 0;

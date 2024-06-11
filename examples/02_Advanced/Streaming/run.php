@@ -38,6 +38,7 @@ function partialUpdate($partial) {
     echo "Waiting 250ms on every update received to make changes easier to observe...\n";
 
     // Display the partial object
+
     dump($partial);
 
     // Wait a bit before clearing the screen to make partial changes slower.

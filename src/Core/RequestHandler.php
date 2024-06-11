@@ -65,6 +65,7 @@ class RequestHandler implements CanHandleRequest
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
             }
         }
+        $errors = $errors ?? [];
         $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $errors));
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $errors));
     }

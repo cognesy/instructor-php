@@ -107,7 +107,7 @@ trait HandlesConfig
      */
     public function register(ComponentConfig $componentConfig) : self {
         $componentName = $componentConfig->name;
-        if (!$this->allowOverride && !empty($this->getConfig($componentName))) {
+        if (!$this->canOverride($componentName)) {
             throw new Exception("Component $componentName already defined");
         }
         $this->setConfig($componentName, $componentConfig);

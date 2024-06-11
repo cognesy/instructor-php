@@ -25,7 +25,7 @@
         \n
         This extracted JSON data accurately reflects the information about Jason, including his age, name, username, role, and hobbies.
         """
-    ]
+    ],
     "finish_reason" => "stop"
   ]
 ]

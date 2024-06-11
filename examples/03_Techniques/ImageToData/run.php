@@ -47,6 +47,7 @@ $receipt = (new Instructor)->respond(
     options: ['max_tokens' => 4096]
 );
 
+
 dump($receipt);
 ?>
 ```

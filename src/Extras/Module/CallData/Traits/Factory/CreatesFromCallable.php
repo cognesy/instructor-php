@@ -2,8 +2,6 @@
 namespace Cognesy\Instructor\Extras\Module\CallData\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
-use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
-use Cognesy\Instructor\Extras\Module\CallData\StructureCallData;
 use Cognesy\Instructor\Extras\Module\CallData\CallData;
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;

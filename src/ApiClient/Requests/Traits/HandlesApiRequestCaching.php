@@ -12,14 +12,14 @@ trait HandlesApiRequestCaching
     use HasCaching;
 
     public function resolveCacheDriver(): Driver {
-        if (empty($this->requestConfig()->cacheConfig())) {
+        if (is_null($this->requestConfig()->cacheConfig())) {
             throw new Exception('Cache is not configured for this request');
         }
         return $this->requestConfig()->cacheConfig()->getDriver();
     }
 
     public function cacheExpiryInSeconds(): int {
-        if (empty($this->requestConfig()->cacheConfig())) {
+        if (in_null($this->requestConfig()->cacheConfig())) {
             throw new Exception('Cache is not configured for this request');
         }
         return $this->requestConfig()->cacheConfig()->expiryInSeconds();

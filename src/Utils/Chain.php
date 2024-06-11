@@ -212,6 +212,7 @@ class Chain
      * @return iterable
      */
     public function stream(iterable $stream, bool $unwrap = true): iterable {
+        $chainResult = Result::success(true);
         foreach ($stream as $partial) {
             $chainResult = $this->applyProcessors($partial);
             yield $this->wrapOrUnwrap($chainResult, !$unwrap);

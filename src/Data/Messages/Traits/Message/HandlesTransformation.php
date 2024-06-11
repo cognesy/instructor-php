@@ -10,4 +10,8 @@ trait HandlesTransformation
     public function toString() : string {
         return $this->content;
     }
+
+    public function toRoleString() : string {
+        return $this->role . ': ' . $this->content;
+    }
 }

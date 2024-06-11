@@ -44,7 +44,6 @@ $user = $instructor->request(
 )->get();
 
 $delta = Profiler::mark('no cache')->mili();
-dump($user);
 echo "Time elapsed (no cache, default): $delta msec\n\n";
 
 $user2 = $instructor->request(
@@ -53,7 +52,6 @@ $user2 = $instructor->request(
 )->withCache()->get();
 
 $delta = Profiler::mark('cache 1st call')->mili();
-dump($user2);
 echo "Time elapsed (cache on, 1st call): $delta msec\n\n";
 
 $user3 = $instructor->request(
@@ -62,7 +60,6 @@ $user3 = $instructor->request(
 )->withCache()->get();
 
 $delta = Profiler::mark('cache 2nd call')->mili();
-dump($user3);
 echo "Time elapsed (cache on, 2nd call): $delta msec\n\n";
 
 $user4 = $instructor->request(
@@ -71,7 +68,6 @@ $user4 = $instructor->request(
 )->withCache(false)->get();
 
 $delta = Profiler::mark('cache 3rd call')->mili();
-dump($user4);
 echo "Time elapsed (cache turned off again): $delta msec\n\n";
 
 ?>

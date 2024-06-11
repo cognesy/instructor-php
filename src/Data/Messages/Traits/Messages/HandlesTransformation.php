@@ -27,4 +27,15 @@ trait HandlesTransformation
         }
         return $result;
     }
+
+    public function toRoleString(string $role, string $separator = "\n") : string {
+        $result = '';
+        foreach ($this->messages as $message) {
+            if ($message->isEmpty() || $message->role() !== $role) {
+                continue;
+            }
+            $result .= $message->toRoleString() . $separator;
+        }
+        return $result;
+    }
 }

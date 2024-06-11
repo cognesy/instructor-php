@@ -103,10 +103,8 @@ class DocGenerator
     private function copy(string $source, string $destination) : bool {
         // if destination does not exist, create it
         $destDir = dirname($destination);
-        if (!is_dir($destDir)) {
-            if (!mkdir($destDir, 0777, true) && !is_dir($destDir)) {
-                throw new \RuntimeException(sprintf('Directory "%s" was not created', $destDir));
-            }
+        if (!is_dir($destDir) && !mkdir($destDir, 0777, true) && !is_dir($destDir)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $destDir));
         }
         return copy($source, $destination);
     }

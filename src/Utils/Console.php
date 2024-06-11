@@ -6,7 +6,7 @@ use Cognesy\InstructorHub\Utils\Color;
 
 class Console
 {
-    static function columns(array $columns, int $maxWidth): string {
+    public static function columns(array $columns, int $maxWidth): string {
         $maxWidth = max($maxWidth, 80);
         $message = '';
         foreach ($columns as $row) {
