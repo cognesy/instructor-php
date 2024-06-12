@@ -16,33 +16,32 @@ Catch up with the latest additions.
 
 ## Brain dump
 
-- For the models requiring message role sequencing - add consolidation step: merge subsequent messages with the same role
+- Finish logging support
+- Document how to inject custom HTTP client
+- Better error messages
+- Documentation for logging
+- Finish module observability via events - currently no access to this info & only 2 events supported
+- Rework Events so they have toArray() method, make __toString() use it
+- Role - should be enum, not string
+- String >> Array >> Class - for example: prompts (they should be classes)
+- Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
+- Better API for image / audio inputs
+ 
 - Models to implement JsonSerializable: https://www.php.net/manual/en/jsonserializable.jsonserialize.php / https://www.sitepoint.com/use-jsonserializable-interface/
 - Support JsonException for serialization / deserialization errors - https://www.php.net/manual/en/class.jsonexception.php
 - ValueError - https://www.php.net/manual/en/class.valueerror.php
-- String >> Array >> Class - for example: prompts (they should be classes)
 - Use LLM to generate Example based on the class - just render object to JSON + add schema as an explanation - this should give the model enough info to come up with something that makes sense
-- Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
-- Role - should be enum, not string
 - Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
-- MessageSequence to better process multi-stage chat content
 - Extract APIClient to a separate package?
 - example of integration with Laravel/Livewire
 - DSPy next steps: eval, optimize, compile
-- Finish logging support
-- Documentation for logging
 - Add more modules: XoT, RAG, ReAct, etc.
 - RAG - how to handle multiple VDB providers?
-- Better error messages
-- Better API for image / audio inputs
-- Finish module observability via events - currently no access to this info & only 2 events supported
 - Test validation in modules - provide an example
 - Parallel execution of modules (e.g. a la Laravel jobs?)
 - How to track API rate limits across multiple requests / parallel executions
 - Moderation endpoint support
 - Make using DocBlocks optional - it may not always to be desired to pass this info to LLM
-- Rework Events so they have toArray() method, make __toString() use it
-- Document how to inject custom HTTP client
 - Git/GitHub integration module to allow easy automation
 - Data mapping module(s) for easier data transformations
 - Add super detailed tests of Module core functionality - esp. around input/output mappings
@@ -53,7 +52,9 @@ Catch up with the latest additions.
 ## To research
 
 - Schema.org ld+json // Spatie https://github.com/spatie/schema-org // https://developers.google.com/search/docs/appearance/structured-data?hl=pl
+- OpenAPI Schema
 - nette/schema https://github.com/nette/schema
+- https://flow-php.com/
 - Queue-based load leveling
 - Throttling
 - Circuit breaker

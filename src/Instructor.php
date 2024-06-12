@@ -38,8 +38,8 @@ class Instructor {
     use Traits\Instructor\HandlesSequenceUpdates;
     use Traits\Instructor\HandlesUserAPI;
 
-//    private LoggerInterface $logger;
-//    private EventLogger $eventLogger;
+    //private LoggerInterface $logger;
+    //private EventLogger $eventLogger;
     private ApiRequestConfig $apiRequestConfig;
 
     public function __construct(array $config = []) {
