@@ -18,6 +18,46 @@ Here's recording of a simple CLI demo app using Instructor to extract structured
 
 ![image](./img/extraction.gif)
 
+
+
+## Feature highlights
+
+### General
+
+ - Get structured responses from LLM inference
+ - Automate validation & retries
+
+### Flexible inputs
+
+ - Process various types of input data: text, series of chat messages or images
+ - 'Structured-to-structured' processing - provide object or array as an input and get object with the results of inference back
+ - Customize prompts and retry prompts
+ - Use attributes or PHP DocBlocks to provide additional instructions for LLM
+ - Demonstrate examples to improve the quality of inference
+
+### Customizable output models
+ 
+ - Define response data model the way to need: type-hinted classes, JSON Schema arrays, or dynamically define your data shapes with Structures
+ - Customize response model processing by providing your own implementation of schema, deserialization, validation and transformation interfaces
+
+### Sync and streaming support
+ - Receive synchronous or streaming responses
+ - Get partial updates & stream completed sequence items
+
+### Observability
+
+ - Get detailed insight into internal processing via events
+
+### Support for multiple LLMs / API providers
+ - Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Anyscale, Fireworks AI, Ollama, OpenRouter, Together AI)
+ - Use local models with Ollama
+
+### Documentation and examples
+
+ - Learn more from growing documentation and 50+ cookbooks
+
+
+
 ## Instructor in Other Languages
 
 Check out implementations in other languages below:

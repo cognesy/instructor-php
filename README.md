@@ -5,7 +5,7 @@ Structured data extraction in PHP, powered by LLMs. Designed for simplicity, tra
 
 ## What is Instructor?
 
-Instructor is a library that allows you to extract structured, validated data from unstructured text or OpenAI style chat sequence arrays. It is powered by Large Language Models (LLMs).
+Instructor is a library that allows you to extract structured, validated data from multiple types of inputs: text, images or OpenAI style chat sequence arrays. It is powered by Large Language Models (LLMs).
 
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
 
@@ -16,23 +16,45 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 ![image](./docs/img/extraction.gif)
 
 
+
 ## Feature highlights
 
- - Get structured responses from LLM inference
- - 'Structured-to-structured' processing - provide object or array as an input and get object with the results of inference back
- - Customize prompts and retry prompts
- - Process various types of input data: text, series of chat messages or images
- - Receive synchronous or streaming responses
- - Get partial updates & stream completed sequence items
- - Automate validation & retries
- - Define response data model the way to need: type-hinted classes, JSON Schema arrays, or dynamically define your data shapes with Structures
- - Use attributes or PHP DocBlocks to provide additional instructions for LLM
- - Customize response model processing by providing your own implementation of schema, deserialization, validation and transformation interfaces
- - Demonstrate examples to improve the quality of inference
- - Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Anyscale, Fireworks AI, Ollama, OpenRouter, Together AI)
- - Use local models with Ollama
- - Get detailed insight into internal processing via events
- - Learn more from growing documentation and 50+ cookbooks
+### Core features
+
+- Get structured responses from LLM inference
+- Validation of returned data
+- Automated retries in case of errors when LLM responds with invalid data
+
+### Flexible inputs
+
+- Process various types of input data: text, series of chat messages or images
+- 'Structured-to-structured' processing - provide object or array as an input and get object with the results of inference back
+- Demonstrate examples to improve the quality of inference
+
+### Customizable outputs
+
+- Define response data model the way to need: type-hinted classes, JSON Schema arrays, or dynamically define your data shapes with Structures
+- Customize prompts and retry prompts
+- Use attributes or PHP DocBlocks to provide additional instructions for LLM
+- Customize response model processing by providing your own implementation of schema, deserialization, validation and transformation interfaces
+
+### Sync and streaming support
+
+- Receive synchronous or streaming responses
+- Get partial updates & stream completed sequence items
+
+### Observability
+
+- Get detailed insight into internal processing via events
+
+### Support for multiple LLMs / API providers
+
+- Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Anyscale, Fireworks AI, Ollama, OpenRouter, Together AI)
+- Use local models with Ollama
+
+### Documentation and examples
+
+- Learn more from growing documentation and 50+ cookbooks
 
 
 

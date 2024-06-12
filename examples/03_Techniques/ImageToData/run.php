@@ -37,10 +37,8 @@ class Receipt {
     public float $total;
 }
 
-$imagePath = __DIR__ . '/receipt.png';
-
 $receipt = (new Instructor)->respond(
-    input: Image::fromFile($imagePath),
+    input: Image::fromFile(__DIR__ . '/receipt.png'),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt.',
     model: 'gpt-4-vision-preview',

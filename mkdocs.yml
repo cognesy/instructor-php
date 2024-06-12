@@ -212,7 +212,7 @@ nav:
       - Using structured data as an input: 'hub/advanced/data_inputs.md'
       - Extracting arguments of function or method: 'hub/advanced/function_arguments.md'
       - Language programs with Modules: 'hub/advanced/language_programs.md'
-      - Structure to structure processing: 'hub/advanced/language_programs2.md'
+      - 'Structure to structure' LLM processing: 'hub/advanced/language_programs2.md'
       - Streaming partial updates during inference: 'hub/advanced/partial_updates.md'
       - Providing example inputs and outputs: 'hub/advanced/providing_examples.md'
       - Extracting scalar values: 'hub/advanced/scalars.md'
