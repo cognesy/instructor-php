@@ -64,7 +64,7 @@ class Request
         $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
         $this->examples = $examples;
 
-        $this->client = $client ?? $clientFactory->getDefault();
+        $this->client = $client;
         $this->withModel($model);
         if (empty($this->option('max_tokens'))) {
             $this->setOption('max_tokens', $this->client->defaultMaxTokens());

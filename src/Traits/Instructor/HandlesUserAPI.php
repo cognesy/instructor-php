@@ -15,7 +15,7 @@ trait HandlesUserAPI
      */
     public function respond(
         string|array $messages = '',
-        string|array|object $input = [],
+        string|array|object $input = '',
         string|object|array $responseModel = [],
         string $model = '',
         int $maxRetries = 0,
@@ -49,7 +49,7 @@ trait HandlesUserAPI
      */
     public function request(
         string|array $messages = '',
-        string|array|object $input = [],
+        string|array|object $input = '',
         string|object|array $responseModel = [],
         string $model = '',
         int $maxRetries = 0,

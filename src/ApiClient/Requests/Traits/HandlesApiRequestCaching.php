@@ -19,7 +19,7 @@ trait HandlesApiRequestCaching
     }
 
     public function cacheExpiryInSeconds(): int {
-        if (in_null($this->requestConfig()->cacheConfig())) {
+        if (is_null($this->requestConfig()->cacheConfig())) {
             throw new Exception('Cache is not configured for this request');
         }
         return $this->requestConfig()->cacheConfig()->expiryInSeconds();

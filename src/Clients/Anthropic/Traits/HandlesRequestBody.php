@@ -29,6 +29,7 @@ trait HandlesRequestBody {
         return $this->script
             ->withContext($this->scriptContext)
             ->select(['prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
+            ->toAlternatingRoles()
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 

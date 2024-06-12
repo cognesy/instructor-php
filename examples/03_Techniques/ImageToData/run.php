@@ -40,7 +40,7 @@ class Receipt {
 $imagePath = __DIR__ . '/receipt.png';
 
 $receipt = (new Instructor)->respond(
-    messages: Image::fromFile($imagePath)->toMessages(),
+    input: Image::fromFile($imagePath),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt.',
     model: 'gpt-4-vision-preview',

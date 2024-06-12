@@ -1,6 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
+use Cognesy\Instructor\Data\Messages\Message;
+use Cognesy\Instructor\Data\Messages\Messages;
+
 trait HandlesTransformation
 {
     /**
@@ -37,5 +40,33 @@ trait HandlesTransformation
             $result .= $message->toRoleString() . $separator;
         }
         return $result;
+    }
+
+    public function toAlternatingRoles() : Messages {
+        if ($this->isEmpty()) {
+            return $this;
+        }
+        $role = $this->firstRole()->value;
+        $messages = new Messages();
+        $content = [];
+        foreach ($this->messages as $message) {
+            $content[] = $message->content();
+            if ($role !== $message->role()->value) {
+                $messages->appendMessage(new Message(
+                    $role,
+                    implode("\n", array_filter($content)),
+                ));
+                $role = $message->role()->value;
+                $content = [];
+            }
+        }
+        // append remaining content
+        if (!empty($content)) {
+            $messages->appendMessage(new Message(
+                $role,
+                implode("\n", array_filter($content)),
+            ));
+        }
+        return $messages;
     }
 }

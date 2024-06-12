@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\Messages\Message;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
 use Cognesy\Instructor\Data\Request;
@@ -60,9 +61,9 @@ class ScriptFactory
         }
 
         // INPUT DATA SECTION
-        $inputMessage = Message::fromInput($input);
-        if (!$this->isInputEmpty($inputMessage)) {
-            $script->section('input')->appendMessage($inputMessage);
+        $inputMessages = Messages::fromInput($input);
+        if (!$this->isInputEmpty($inputMessages)) {
+            $script->section('input')->appendMessages($inputMessages);
         }
 
         // PROMPT SECTION
@@ -80,6 +81,7 @@ class ScriptFactory
                     is_array($item) => Example::fromArray($item),
                     is_string($item) => Example::fromJson($item),
                     $item instanceof Example => $item,
+                    default => throw new Exception('Invalid example type'),
                 };
                 $script->section('examples')->appendMessage(Message::fromString($example->toString()));
             }
@@ -87,8 +89,12 @@ class ScriptFactory
         return $script;
     }
 
-    private function isInputEmpty(Message $inputMessage) : bool {
-        return $inputMessage->isEmpty() || ($inputMessage->content() === '[]');
+    private function isInputEmpty(Message|Messages $inputMessages) : bool {
+        return match(true) {
+            $inputMessages instanceof Messages => $inputMessages->isEmpty(),
+            $inputMessages instanceof Message => $inputMessages->isEmpty() || $inputMessages->isNull(),
+            default => true,
+        };
     }
 
     private function isRequestEmpty(Request $request) : bool {

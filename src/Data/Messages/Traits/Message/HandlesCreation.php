@@ -4,8 +4,11 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Message;
 
 use BackedEnum;
 use Closure;
+use Cognesy\Instructor\Contracts\CanProvideMessage\CanProvideMessage;
+use Cognesy\Instructor\Contracts\CanProvideMessages;
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\Messages\Message;
+use Cognesy\Instructor\Data\Messages\Utils\Text;
 use Cognesy\Instructor\Utils\Json;
 use Exception;
 use InvalidArgumentException;
@@ -42,31 +45,15 @@ trait HandlesCreation
         };
     }
 
-    public static function fromInput(string|array|object $input, string $role = 'user') : static {
-        // TODO: is there a way to consolidate value rendering?
-        $content = match(true) {
-            is_string($input) => $input,
-            is_array($input) => Json::encode($input),
-            $input instanceof Example => $input->inputString(), // TODO: avoid recursion
-            $input instanceof BackedEnum => $input->value,
-            $input instanceof Closure => $input(),
-            method_exists($input, 'toJson') => match(true) {
-                is_string($input->toJson()) => $input->toJson(),
-                default => Json::encode($input->toJson()),
-            },
-            method_exists($input, 'toArray') => Json::encode($input->toArray()),
-            method_exists($input, 'toString') => $input->toString(),
-            // ...how do we handle chat messages input?
-            default => Json::encode($input), // fallback - just encode as JSON
+    public static function fromInput(string|array|object $input, string $role = '') : static {
+        return match(true) {
+            $input instanceof Message => $input,
+            $input instanceof CanProvideMessage => $input->toMessage(),
+            default => new Message($role, Text::fromAny($input)),
         };
-        return new static($role, $content);
     }
 
     public function clone() : static {
         return new static($this->role, $this->content);
-    }
-
-    private static function hasRoleAndContent(array $message) : bool {
-        return isset($message['role'], $message['content']);
     }
 }

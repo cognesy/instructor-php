@@ -21,4 +21,8 @@ trait HandlesAccess
     public function isNull() : bool {
         return ($this->role === '' && $this->content === '');
     }
+
+    protected static function hasRoleAndContent(array $message) : bool {
+        return isset($message['role'], $message['content']);
+    }
 }

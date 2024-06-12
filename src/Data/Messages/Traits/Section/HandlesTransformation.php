@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Section;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Data\Messages\Section;
 use Cognesy\Instructor\Data\Messages\Traits\RendersTemplates;
 use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
 
@@ -23,6 +24,11 @@ trait HandlesTransformation
             messages: $this->messages()->toArray(),
             context: $context
         );
+    }
+
+    public function toAlternatingRoles() : static {
+        return (new Section($this->name(), $this->description()))
+            ->appendMessages($this->messages()->toAlternatingRoles());
     }
 
     /**

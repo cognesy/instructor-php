@@ -16,6 +16,10 @@ Catch up with the latest additions.
 
 ## Brain dump
 
+- For the models requiring message role sequencing - add consolidation step: merge subsequent messages with the same role
+- Models to implement JsonSerializable: https://www.php.net/manual/en/jsonserializable.jsonserialize.php / https://www.sitepoint.com/use-jsonserializable-interface/
+- Support JsonException for serialization / deserialization errors - https://www.php.net/manual/en/class.jsonexception.php
+- ValueError - https://www.php.net/manual/en/class.valueerror.php
 - String >> Array >> Class - for example: prompts (they should be classes)
 - Use LLM to generate Example based on the class - just render object to JSON + add schema as an explanation - this should give the model enough info to come up with something that makes sense
 - Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)

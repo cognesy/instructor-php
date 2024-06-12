@@ -2,14 +2,17 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Data\Messages\Message;
+use Cognesy\Instructor\Contracts\CanProvideJson;
+use Cognesy\Instructor\Contracts\CanProvideMessages;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Utils\Json;
 use Cognesy\Instructor\Utils\Template;
 use DateTimeImmutable;
 use Exception;
+use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 
-class Example
+class Example implements CanProvideMessages, CanProvideJson, JsonSerializable
 {
     public readonly string $uid;
     public readonly DateTimeImmutable $createdAt;
@@ -85,11 +88,11 @@ class Example
     }
 
     public function inputString() : string {
-        return Message::fromInput($this->input)->content();
+        return trim(Messages::fromInput($this->input)->toString());
     }
 
     public function outputString() : string {
-        return Message::fromInput($this->output)->content();
+        return trim(Messages::fromInput($this->output)->toString());
     }
 
     public function toString() : string {
@@ -99,19 +102,23 @@ class Example
         ]);
     }
 
-    public function toMessages() : array {
-        return [
+    public function toMessages() : Messages {
+        return Messages::fromArray([
             ['role' => 'user', 'content' => $this->inputString()],
             ['role' => 'assistant', 'content' => $this->outputString()],
-        ];
+        ]);
     }
 
     public function toJson() : string {
-        return Json::encode([
+        return Json::encode($this, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+    }
+
+    public function jsonSerialize(): array {
+        return [
             'id' => $this->uid,
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'input' => $this->input(),
             'output' => $this->output(),
-        ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+        ];
     }
 }

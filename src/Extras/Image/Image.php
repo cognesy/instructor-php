@@ -2,18 +2,21 @@
 
 namespace Cognesy\Instructor\Extras\Image;
 
+use Cognesy\Instructor\Contracts\CanProvideMessages;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Exception;
-use League\Flysystem\Filesystem;
 
-class Image
+class Image implements CanProvideMessages
 {
     private string $base64bytes = '';
     private string $url = '';
-    private string $mimeType = '';
+    private string $mimeType;
+    private string $prompt;
 
     public function __construct(
         string $imageUrl,
         string $mimeType,
+        string $prompt = 'Extract data from the image',
     ) {
         $this->mimeType = $mimeType;
         if (substr($imageUrl, 0, 4) === 'http') {
@@ -21,6 +24,7 @@ class Image
         } else {
             $this->base64bytes = $imageUrl;
         }
+        $this->prompt = $prompt;
     }
 
     public static function fromFile(string $imagePath): self {
@@ -41,17 +45,21 @@ class Image
         return new self($imageUrl, $mimeType);
     }
 
-    public function toMessages(string $prompt = 'Extract data from the image'): array {
-        return [[
+    public function toMessages(): Messages {
+        $messages = [[
             'role' => 'user',
             'content' => [
-                ['type' => 'text', 'text' => $prompt],
+                ['type' => 'text', 'text' => $this->prompt],
                 ['type' => 'image_url', 'image_url' => $this->url ?: $this->base64bytes],
             ],
         ]];
+        if (empty($this->prompt)) {
+            unset($messages[0]['content'][0]);
+        }
+        return Messages::fromArray($messages);
     }
 
-    public function getImageUrl(): string {
+    public function toImageUrl(): string {
         return $this->url ?: $this->base64bytes;
     }
 

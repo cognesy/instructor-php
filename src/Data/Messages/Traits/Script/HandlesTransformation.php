@@ -3,6 +3,8 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Data\Messages\Script;
+use Cognesy\Instructor\Data\Messages\Section;
 use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
 use Exception;
 
@@ -28,6 +30,15 @@ trait HandlesTransformation
             $messages->appendMessages($content);
         }
         return $messages;
+    }
+
+    public function toAlternatingRoles() : static {
+        $script = new Script;
+        foreach ($this->sections as $section) {
+            $script->appendSection($section->toAlternatingRoles());
+        }
+        $script->withContext($this->context());
+        return $script;
     }
 
     /**

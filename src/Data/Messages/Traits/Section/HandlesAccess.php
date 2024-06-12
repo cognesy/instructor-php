@@ -9,6 +9,10 @@ trait HandlesAccess
         return $this->name;
     }
 
+    public function description() : string {
+        return $this->description;
+    }
+
     public function firstRole() : MessageRole {
         return $this->messages()->firstRole();
     }
