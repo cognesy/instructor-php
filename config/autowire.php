@@ -24,18 +24,11 @@ use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Logging\EventLogger;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Symfony\Validator;
-use DateTimeZone;
-use Monolog\Handler\StreamHandler;
-use Monolog\Level;
-use Monolog\Logger;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 
 function autowire(
     Configuration $config,
@@ -63,26 +56,26 @@ function autowire(
         reference: $events
     );
 
-    $config->declare(
-        class: Logger::class,
-        name: LoggerInterface::class,
-        context: [
-            'name' => 'instructor',
-            'handlers' => [
-                new StreamHandler('php://stdout', Level::Debug)
-            ],
-            'processors' => [],
-            'timezone' => new DateTimeZone('UTC'),
-        ],
-    );
-
-    $config->declare(
-        class: EventLogger::class,
-        context: [
-            'logger' => $config->reference(LoggerInterface::class),
-            'level' => LogLevel::INFO,
-        ],
-    );
+//    $config->declare(
+//        class: Logger::class,
+//        name: LoggerInterface::class,
+//        context: [
+//            'name' => 'instructor',
+//            'handlers' => [
+//                new StreamHandler('php://stdout', Level::Debug)
+//            ],
+//            'processors' => [],
+//            'timezone' => new DateTimeZone('UTC'),
+//        ],
+//    );
+//
+//    $config->declare(
+//        class: EventLogger::class,
+//        context: [
+//            'logger' => $config->reference(LoggerInterface::class),
+//            'level' => LogLevel::INFO,
+//        ],
+//    );
 
     /// CONTEXT //////////////////////////////////////////////////////////////////////////////
 

@@ -10,9 +10,9 @@ use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
-use Cognesy\Instructor\Logging\EventLogger;
+//use Cognesy\Instructor\Logging\EventLogger;
 use Cognesy\Instructor\Utils\Env;
-use Psr\Log\LoggerInterface;
+//use Psr\Log\LoggerInterface;
 
 /**
  * Main access point to Instructor.
@@ -38,8 +38,8 @@ class Instructor {
     use Traits\Instructor\HandlesSequenceUpdates;
     use Traits\Instructor\HandlesUserAPI;
 
-    private LoggerInterface $logger;
-    private EventLogger $eventLogger;
+//    private LoggerInterface $logger;
+//    private EventLogger $eventLogger;
     private ApiRequestConfig $apiRequestConfig;
 
     public function __construct(array $config = []) {

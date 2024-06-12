@@ -39,12 +39,12 @@ $client = new GeminiClient(
 /// Get Instructor with the default client component overridden with your own
 $instructor = (new Instructor)->withClient($client);
 
-$user = $instructor//->withDebug()
+$user = $instructor
     ->respond(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
         model: 'gemini-1.5-flash',
-        options: ['stream' => true],
+        //options: ['stream' => true],
         examples: [[
             'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
             'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
