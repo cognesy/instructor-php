@@ -16,9 +16,10 @@ class Configuration implements ContainerInterface
     use HandlesEventListeners;
 
     use Traits\HandlesComponentInstances;
-    use Traits\HandlesConfig;
+    use Traits\HandlesComponentWiring;
     use Traits\HandlesConfigInclude;
     use Traits\HasConfigurationInstance;
+    use Traits\PreventsCycles;
 
     public function __construct(EventDispatcher $events = null) {
         $this->events = $events ?? new EventDispatcher('configuration');

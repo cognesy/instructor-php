@@ -5,7 +5,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
 trait HandlesSelfExtraction {
-    static public function extract(
+    public static function extract(
         string|array $messages,
         string $model = '',
         int $maxRetries = 2,

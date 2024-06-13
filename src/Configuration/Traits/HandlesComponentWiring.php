@@ -7,9 +7,8 @@ use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Events\Configuration\ConfigurationReady;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
-use function Cognesy\config\autowire;
 
-trait HandlesConfig
+trait HandlesComponentWiring
 {
     /** @var ComponentConfig[] array of component configurations */
     private array $config = [];
@@ -18,9 +17,9 @@ trait HandlesConfig
     /**
      * Always new, autowired configuration; useful mostly for tests
      */
-    static public function fresh(array $overrides = [], EventDispatcher $events = null) : Configuration {
-        $config = new Configuration($events);
-        return autowire($config, $config->events())->override($overrides);
+    static public function fresh(EventDispatcher $events = null) : Configuration {
+        return new Configuration($events);
+        //return autowire($config, $config->events())->override($overrides);
     }
 
     /**

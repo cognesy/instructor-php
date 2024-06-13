@@ -14,7 +14,7 @@ Examples to demonstrate use cases.
 
 Catch up with the latest additions.
 
-## Brain dump
+## TODOs
 
 - Finish logging support
 - Document how to inject custom HTTP client
@@ -26,10 +26,20 @@ Catch up with the latest additions.
 - String >> Array >> Class - for example: prompts (they should be classes)
 - Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
 - Better API for image / audio inputs
- 
+- Export configuration to user folder / use external configuration
+- Examples how to override default configuration
+- PSR-14 events - finish, demo how to plug custom dispatcher
+- PSR-11 container - finish, demo how to plug custom container
+- PSR-3 logger - finish, demo how to plug custom logger
+
+
+## Brain dump
+
 - Models to implement JsonSerializable: https://www.php.net/manual/en/jsonserializable.jsonserialize.php / https://www.sitepoint.com/use-jsonserializable-interface/
 - Support JsonException for serialization / deserialization errors - https://www.php.net/manual/en/class.jsonexception.php
 - ValueError - https://www.php.net/manual/en/class.valueerror.php
+- Task runner - https://robo.li/
+- Hub >> Laravel Zero - https://laravel-zero.com/
 - Use LLM to generate Example based on the class - just render object to JSON + add schema as an explanation - this should give the model enough info to come up with something that makes sense
 - Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
 - Extract APIClient to a separate package?

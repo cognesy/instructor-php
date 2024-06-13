@@ -2,7 +2,11 @@
 
 namespace Cognesy\Instructor\Events;
 
-class EventDispatcher
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
+use Psr\EventDispatcher\StoppableEventInterface;
+
+class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface
 {
     private string $name;
     private ?EventDispatcher $parent;
@@ -27,7 +31,15 @@ class EventDispatcher
         return $this;
     }
 
-    public function dispatch(Event $event): void {
+    public function getListenersForEvent(object $event): iterable {
+        foreach ($this->listeners as $eventClass => $listeners) {
+            if ($event instanceof $eventClass) {
+                yield from $listeners;
+            }
+        }
+    }
+
+    public function dispatch(object $event): void {
         $this->notifyListeners($event);
         // forward event to parent dispatcher
         if (isset($this->parent)) {
@@ -35,12 +47,14 @@ class EventDispatcher
         }
     }
 
-    protected function notifyListeners(Event $event) : void {
+    protected function notifyListeners(object $event) : void {
+        $listeners = $this->getListenersForEvent($event);
         // dispatch event to listeners
-        $eventClass = get_class($event);
-        $listeners = $this->listeners[$eventClass] ?? [];
         foreach ($listeners as $listener) {
             $listener($event);
+            if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
+                break;
+            }
         }
         $this->wiretapDispatch($event);
     }
@@ -50,7 +64,7 @@ class EventDispatcher
         return $this;
     }
 
-    private function wiretapDispatch(Event $event): void {
+    private function wiretapDispatch(object $event): void {
         foreach ($this->wiretaps as $wiretap) {
             $wiretap($event);
         }

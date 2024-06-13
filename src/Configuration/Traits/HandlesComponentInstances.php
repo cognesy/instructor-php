@@ -7,15 +7,9 @@ use Cognesy\Instructor\Events\Configuration\ExistingInstanceReturned;
 use Cognesy\Instructor\Events\Configuration\FreshInstanceForced;
 use Cognesy\Instructor\Events\Configuration\NewInstanceReturned;
 use Cognesy\Instructor\Events\Configuration\ReferenceResolutionRequested;
-use Cognesy\Instructor\Events\Traits\HandlesEvents;
 
 trait HandlesComponentInstances
 {
-    use HasConfigurationInstance;
-    use HandlesConfig;
-    use PreventsCycles;
-    use HandlesEvents;
-
     /** @var object[] array of component instances */
     private array $instances = [];
 

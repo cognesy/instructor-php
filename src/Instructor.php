@@ -4,6 +4,7 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
+use Cognesy\Instructor\Configs\InstructorConfigurator;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
@@ -43,19 +44,35 @@ class Instructor {
     private ApiRequestConfig $apiRequestConfig;
 
     public function __construct(array $config = []) {
+        // queue 'STARTED' event, to dispatch it after user is ready to handle it
         $this->queueEvent(new InstructorStarted($config));
+
         // try loading .env (if paths are set)
         Env::load();
-        $this->config = Configuration::fresh($config);
-        $this->events = $this->config->get(EventDispatcher::class);
-        $this->clientFactory = $this->config->get(ApiClientFactory::class);
-        $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
-        $this->requestFactory = /** @var RequestFactory */ $this->config->get(RequestFactory::class);
-        $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
-        $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
+
+        // wire up core components
+        $this->events = new EventDispatcher('instructor');
+        $this->config = Configuration::fresh($this->events);
+        InstructorConfigurator::with([
+            EventDispatcher::class => $this->events
+        ])->setup($this->config);
+
+        // override configuration with user-provided values
+        $this->config->override($config);
+
+        // wire up logging
         //$this->logger = $this->config->get(LoggerInterface::class);
         //$this->eventLogger = $this->config->get(EventLogger::class);
         //$this->events->wiretap($this->eventLogger->eventListener(...));
+
+        // get other components from configuration
+        $this->clientFactory = $this->config->get(ApiClientFactory::class);
+        $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
+        $this->requestFactory = $this->config->get(RequestFactory::class);
+        $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
+        $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
+
+        // queue 'READY' event
         $this->queueEvent(new InstructorReady($this->config));
     }
 }
