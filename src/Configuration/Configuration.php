@@ -18,18 +18,12 @@ class Configuration implements ContainerInterface
     use Traits\HandlesComponentInstances;
     use Traits\HandlesComponentWiring;
     use Traits\HandlesConfigInclude;
+    use Traits\HandlesConfigProviders;
     use Traits\HasConfigurationInstance;
     use Traits\PreventsCycles;
 
     public function __construct(EventDispatcher $events = null) {
         $this->events = $events ?? new EventDispatcher('configuration');
         $this->events->dispatch(new ConfigurationInitiated());
-    }
-
-    public function canOverride(string $componentName): bool {
-        return match(false) {
-            is_null($this->getConfig($componentName)) => $this->allowOverride,
-            default => true,
-        };
     }
 }

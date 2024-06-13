@@ -9,7 +9,6 @@
             "Cognesy\\Instructor\\": "src/"
         },
         "files": [
-            "config/autowire.php"
         ]
     },
     "autoload-dev": {

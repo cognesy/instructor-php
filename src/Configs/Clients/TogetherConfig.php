@@ -4,26 +4,27 @@ namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
-use Cognesy\Instructor\Clients\Anyscale\AnyscaleConnector;
+use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
+use Cognesy\Instructor\Clients\TogetherAI\TogetherAIConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class AnyscaleConfigurator extends Configurator
+class TogetherConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
-            class: AnyscaleClient::class,
+            class: TogetherAIClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'connector' => $config->reference(AnyscaleConnector::class),
+                'connector' => $config->reference(TogetherAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
                 'defaultMaxTokens' => 256,
             ],
             getInstance: function($context) {
-                $object = new AnyscaleClient(
+                $object = new TogetherAIClient(
                     events: $context['events'],
                     connector: $context['connector'],
                 );
@@ -35,10 +36,10 @@ class AnyscaleConfigurator extends Configurator
         );
 
         $config->declare(
-            class: AnyscaleConnector::class,
+            class:TogetherAIConnector::class,
             context: [
-                'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
-                'baseUrl' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
+                'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
+                'baseUrl' => $_ENV['TOGETHERAI_BASE_URI'] ?? '',
                 'connectTimeout' => 3,
                 'requestTimeout' => 30,
                 'metadata' => [],
@@ -48,9 +49,9 @@ class AnyscaleConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'anyscale:mixtral-8x7b',
+            name: 'together:mixtral-8x7b',
             context: [
-                'label' => 'Anyscale Mixtral 8x7B',
+                'label' => 'Together Mixtral 8x7B',
                 'type' => 'mixtral',
                 'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
                 'maxTokens' => 4096,
@@ -64,5 +65,6 @@ class AnyscaleConfigurator extends Configurator
                 ],
             ],
         );
+
     }
 }

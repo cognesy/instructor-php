@@ -4,26 +4,27 @@ namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
-use Cognesy\Instructor\Clients\TogetherAI\TogetherAIConnector;
+use Cognesy\Instructor\Clients\Azure\AzureClient;
+use Cognesy\Instructor\Clients\Azure\AzureConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class TogetherConfigurator extends Configurator
+class AzureConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
-            class: TogetherAIClient::class,
+            class: AzureClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'connector' => $config->reference(TogetherAIConnector::class),
+                'connector' => $config->reference(AzureConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+                'defaultModel' => 'gpt-4-turbo-preview',
                 'defaultMaxTokens' => 256,
             ],
             getInstance: function($context) {
-                $object = new TogetherAIClient(
+                $object = new AzureClient(
                     events: $context['events'],
                     connector: $context['connector'],
                 );
@@ -35,10 +36,13 @@ class TogetherConfigurator extends Configurator
         );
 
         $config->declare(
-            class:TogetherAIConnector::class,
+            class: AzureConnector::class,
             context: [
-                'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
-                'baseUrl' => $_ENV['TOGETHERAI_BASE_URI'] ?? '',
+                'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
+                'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
+                'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
+                'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
+                'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
                 'connectTimeout' => 3,
                 'requestTimeout' => 30,
                 'metadata' => [],
@@ -48,13 +52,13 @@ class TogetherConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'together:mixtral-8x7b',
+            name: 'azure:gpt-3.5-turbo',
             context: [
-                'label' => 'Together Mixtral 8x7B',
-                'type' => 'mixtral',
-                'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-                'maxTokens' => 4096,
-                'contextSize' => 4096,
+                'label' => 'Azure GPT 3.5 Turbo',
+                'type' => 'gpt35',
+                'name' => 'gpt-3.5-turbo',
+                'maxTokens' => 4_096,
+                'contextSize' => 16_385,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
@@ -64,5 +68,6 @@ class TogetherConfigurator extends Configurator
                 ],
             ],
         );
+
     }
 }

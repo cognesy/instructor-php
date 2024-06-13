@@ -4,26 +4,27 @@ namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
-use Cognesy\Instructor\Clients\Anthropic\AnthropicConnector;
+use Cognesy\Instructor\Clients\Groq\GroqClient;
+use Cognesy\Instructor\Clients\Groq\GroqConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class AnthropicConfigurator extends Configurator
+class GroqConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
-            class: AnthropicClient::class,
+            class: GroqClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'connector' => $config->reference(AnthropicConnector::class),
+                'connector' => $config->reference(GroqConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'claude-3-haiku-20240307',
+                'defaultModel' => 'llama3-8b-8192',
                 'defaultMaxTokens' => 256,
             ],
             getInstance: function($context) {
-                $object = new AnthropicClient(
+                $object = new GroqClient(
                     events: $context['events'],
                     connector: $context['connector'],
                 );
@@ -35,10 +36,10 @@ class AnthropicConfigurator extends Configurator
         );
 
         $config->declare(
-            class: AnthropicConnector::class,
+            class: GroqConnector::class,
             context: [
-                'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
-                'baseUrl' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
+                'apiKey' => $_ENV['GROQ_API_KEY'] ?? '',
+                'baseUrl' => $_ENV['GROQ_BASE_URI'] ?? '',
                 'connectTimeout' => 3,
                 'requestTimeout' => 30,
                 'metadata' => [],
@@ -48,13 +49,13 @@ class AnthropicConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'anthropic:claude-3-haiku',
+            name: 'groq:llama3-8b',
             context: [
-                'label' => 'Claude 3 Haiku',
-                'type' => 'claude3',
-                'name' => 'claude-3-haiku-20240307',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
+                'label' => 'GroQ LLaMA3 8B',
+                'type' => 'llama3',
+                'name' => 'llama3-8b-8192',
+                'maxTokens' => 8192,
+                'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
@@ -67,13 +68,13 @@ class AnthropicConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'anthropic:claude-3-sonnet',
+            name: 'groq:llama3-70b',
             context: [
-                'label' => 'Claude 3 Sonnet',
-                'type' => 'claude3',
-                'name' => 'claude-3-sonnet-20240229',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
+                'label' => 'GroQ LLaMA3 70B',
+                'type' => 'llama3',
+                'name' => 'llama3-70b-8192',
+                'maxTokens' => 8192,
+                'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
@@ -86,13 +87,13 @@ class AnthropicConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'anthropic:claude-3-opus',
+            name: 'groq:mixtral-8x7b',
             context: [
-                'label' => 'Claude 3 Opus',
-                'type' => 'claude3',
-                'name' => 'claude-3-opus-20240229',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
+                'label' => 'GroQ Mixtral 8x7B',
+                'type' => 'mixtral',
+                'name' => 'mixtral-8x7b-32768',
+                'maxTokens' => 32768,
+                'contextSize' => 32768,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
@@ -102,5 +103,25 @@ class AnthropicConfigurator extends Configurator
                 ],
             ],
         );
+
+        $config->declare(
+            class: ModelParams::class,
+            name: 'groq:gemma-7b',
+            context: [
+                'label' => 'GroQ Gemma 7B',
+                'type' => 'gemma',
+                'name' => 'gemma-7b-it',
+                'maxTokens' => 8192,
+                'contextSize' => 8192,
+                'inputCost' => 1,
+                'outputCost' => 1,
+                'roleMap' => [
+                    'user' => 'user',
+                    'assistant' => 'assistant',
+                    'system' => 'system'
+                ],
+            ],
+        );
+
     }
 }

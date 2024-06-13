@@ -7,12 +7,13 @@ use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class OpenRouterConfigurator extends Configurator
+class OpenRouterConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
             class: OpenRouterClient::class,
             context: [
@@ -121,5 +122,6 @@ class OpenRouterConfigurator extends Configurator
                 ],
             ],
         );
+
     }
 }

@@ -4,26 +4,27 @@ namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Clients\Gemini\GeminiClient;
-use Cognesy\Instructor\Clients\Gemini\GeminiConnector;
+use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
+use Cognesy\Instructor\Clients\Anyscale\AnyscaleConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class GeminiConfigurator extends Configurator
+class AnyscaleConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
-            class: GeminiClient::class,
+            class: AnyscaleClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'connector' => $config->reference(GeminiConnector::class),
+                'connector' => $config->reference(AnyscaleConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'llama3-8b-8192',
+                'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
                 'defaultMaxTokens' => 256,
             ],
             getInstance: function($context) {
-                $object = new GeminiClient(
+                $object = new AnyscaleClient(
                     events: $context['events'],
                     connector: $context['connector'],
                 );
@@ -35,10 +36,10 @@ class GeminiConfigurator extends Configurator
         );
 
         $config->declare(
-            class: GeminiConnector::class,
+            class: AnyscaleConnector::class,
             context: [
-                'apiKey' => $_ENV['GEMINI_API_KEY'] ?? '',
-                'baseUrl' => $_ENV['GEMINI_BASE_URI'] ?? '',
+                'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
+                'baseUrl' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
                 'connectTimeout' => 3,
                 'requestTimeout' => 30,
                 'metadata' => [],
@@ -48,21 +49,22 @@ class GeminiConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'google:gemini-1.5-flash',
+            name: 'anyscale:mixtral-8x7b',
             context: [
-                'label' => 'Google Gemini 1.5 Flash',
-                'type' => 'gemini',
-                'name' => 'gemini-1.5-flash',
+                'label' => 'Anyscale Mixtral 8x7B',
+                'type' => 'mixtral',
+                'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
                 'maxTokens' => 4096,
-                'contextSize' => 128_000,
+                'contextSize' => 4096,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
                     'user' => 'user',
-                    'assistant' => 'model',
-                    'system' => 'user'
+                    'assistant' => 'assistant',
+                    'system' => 'system'
                 ],
             ],
         );
+
     }
 }

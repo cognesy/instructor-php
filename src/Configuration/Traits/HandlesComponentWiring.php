@@ -5,7 +5,6 @@ namespace Cognesy\Instructor\Configuration\Traits;
 use Cognesy\Instructor\Configuration\ComponentConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Events\Configuration\ConfigurationReady;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Exception;
 
 trait HandlesComponentWiring
@@ -13,14 +12,6 @@ trait HandlesComponentWiring
     /** @var ComponentConfig[] array of component configurations */
     private array $config = [];
     private bool $allowOverride = true; // does configuration allow override
-
-    /**
-     * Always new, autowired configuration; useful mostly for tests
-     */
-    static public function fresh(EventDispatcher $events = null) : Configuration {
-        return new Configuration($events);
-        //return autowire($config, $config->events())->override($overrides);
-    }
 
     /**
      * Does component exist
@@ -111,5 +102,12 @@ trait HandlesComponentWiring
         }
         $this->setConfig($componentName, $componentConfig);
         return $this;
+    }
+
+    public function canOverride(string $componentName): bool {
+        return match(false) {
+            is_null($this->getConfig($componentName)) => $this->allowOverride,
+            default => true,
+        };
     }
 }

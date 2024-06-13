@@ -18,4 +18,11 @@ trait HasConfigurationInstance
         }
         return self::$instance;
     }
+
+    /**
+     * Always new, autowired configuration; useful mostly for tests
+     */
+    static public function fresh(EventDispatcher $events = null) : Configuration {
+        return new Configuration($events);
+    }
 }

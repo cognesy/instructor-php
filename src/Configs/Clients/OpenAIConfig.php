@@ -8,12 +8,13 @@ use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class OpenAIConfigurator extends Configurator
+class OpenAIConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
             class: OpenAIClient::class,
             name: CanCallApi::class, // default client
@@ -143,5 +144,6 @@ class OpenAIConfigurator extends Configurator
                 ],
             ],
         );
+
     }
 }

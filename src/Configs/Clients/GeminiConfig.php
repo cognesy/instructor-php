@@ -4,26 +4,27 @@ namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
-use Cognesy\Instructor\Clients\Azure\AzureClient;
-use Cognesy\Instructor\Clients\Azure\AzureConnector;
+use Cognesy\Instructor\Clients\Gemini\GeminiClient;
+use Cognesy\Instructor\Clients\Gemini\GeminiConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class AzureConfigurator extends Configurator
+class GeminiConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
-            class: AzureClient::class,
+            class: GeminiClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'connector' => $config->reference(AzureConnector::class),
+                'connector' => $config->reference(GeminiConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'gpt-4-turbo-preview',
+                'defaultModel' => 'llama3-8b-8192',
                 'defaultMaxTokens' => 256,
             ],
             getInstance: function($context) {
-                $object = new AzureClient(
+                $object = new GeminiClient(
                     events: $context['events'],
                     connector: $context['connector'],
                 );
@@ -35,13 +36,10 @@ class AzureConfigurator extends Configurator
         );
 
         $config->declare(
-            class: AzureConnector::class,
+            class: GeminiConnector::class,
             context: [
-                'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
-                'resourceName' => $_ENV['AZURE_RESOURCE_NAME'] ?? '',
-                'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
-                'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
-                'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
+                'apiKey' => $_ENV['GEMINI_API_KEY'] ?? '',
+                'baseUrl' => $_ENV['GEMINI_BASE_URI'] ?? '',
                 'connectTimeout' => 3,
                 'requestTimeout' => 30,
                 'metadata' => [],
@@ -51,21 +49,22 @@ class AzureConfigurator extends Configurator
 
         $config->declare(
             class: ModelParams::class,
-            name: 'azure:gpt-3.5-turbo',
+            name: 'google:gemini-1.5-flash',
             context: [
-                'label' => 'Azure GPT 3.5 Turbo',
-                'type' => 'gpt35',
-                'name' => 'gpt-3.5-turbo',
-                'maxTokens' => 4_096,
-                'contextSize' => 16_385,
+                'label' => 'Google Gemini 1.5 Flash',
+                'type' => 'gemini',
+                'name' => 'gemini-1.5-flash',
+                'maxTokens' => 4096,
+                'contextSize' => 128_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
                     'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
+                    'assistant' => 'model',
+                    'system' => 'user'
                 ],
             ],
         );
+
     }
 }

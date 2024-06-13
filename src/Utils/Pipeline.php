@@ -4,10 +4,8 @@ namespace Cognesy\Instructor\Utils;
 use Throwable;
 
 /**
- * Class Pipeline
- *
- * The Pipeline class is a utility class that allows you to process a payload through a series of callable processors.
- *  It also provides hooks for executing callbacks before and after each processor, as well as error handling.
+ * Pipeline class is a utility class that allows you to process a payload through a series of callable processors.
+ * It also provides hooks for executing callbacks before and after each processor, as well as error handling.
  *
  * ## Example #1:
  *

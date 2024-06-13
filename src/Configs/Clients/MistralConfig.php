@@ -7,12 +7,13 @@ use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Clients\Mistral\MistralConnector;
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class MistralConfigurator extends Configurator
+class MistralConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
+    public function addConfiguration(Configuration $config): void {
+
         $config->declare(
             class: MistralClient::class,
             context: [
@@ -159,5 +160,6 @@ class MistralConfigurator extends Configurator
                 ],
             ],
         );
+
     }
 }

@@ -4,15 +4,16 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
-use Cognesy\Instructor\Configs\InstructorConfigurator;
+use Cognesy\Instructor\Configs\InstructorConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
-//use Cognesy\Instructor\Logging\EventLogger;
 use Cognesy\Instructor\Utils\Env;
+
+//use Cognesy\Instructor\Logging\EventLogger;
 //use Psr\Log\LoggerInterface;
 
 /**
@@ -50,12 +51,16 @@ class Instructor {
         // try loading .env (if paths are set)
         Env::load();
 
-        // wire up core components
+        // main event dispatcher
         $this->events = new EventDispatcher('instructor');
+
+        // wire up core components
         $this->config = Configuration::fresh($this->events);
-        InstructorConfigurator::with([
-            EventDispatcher::class => $this->events
-        ])->setup($this->config);
+        $this->config->external(
+            class: EventDispatcher::class,
+            reference: $this->events
+        );
+        $this->config->fromConfigProvider(new InstructorConfig());
 
         // override configuration with user-provided values
         $this->config->override($config);

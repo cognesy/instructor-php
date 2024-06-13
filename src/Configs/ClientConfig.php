@@ -5,8 +5,12 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
+use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
+use Cognesy\Instructor\ApiClient\RequestConfig\CacheConfig;
+use Cognesy\Instructor\ApiClient\RequestConfig\DebugConfig;
+
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
+use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 
@@ -23,34 +27,43 @@ use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 
-use Cognesy\Instructor\Configs\Clients\AnthropicConfigurator;
-use Cognesy\Instructor\Configs\Clients\AnyscaleConfigurator;
-use Cognesy\Instructor\Configs\Clients\AzureConfigurator;
-use Cognesy\Instructor\Configs\Clients\CohereConfigurator;
-use Cognesy\Instructor\Configs\Clients\FireworksConfigurator;
-use Cognesy\Instructor\Configs\Clients\GeminiConfigurator;
-use Cognesy\Instructor\Configs\Clients\GroqConfigurator;
-use Cognesy\Instructor\Configs\Clients\MistralConfigurator;
-use Cognesy\Instructor\Configs\Clients\OllamaConfigurator;
-use Cognesy\Instructor\Configs\Clients\OpenAIConfigurator;
-use Cognesy\Instructor\Configs\Clients\OpenRouterConfigurator;
-use Cognesy\Instructor\Configs\Clients\TogetherConfigurator;
-
-class ClientConfigurator extends Configurator
+class ClientConfig implements CanAddConfiguration
 {
-    public function setup(Configuration $config): void {
-        AnthropicConfigurator::addTo($config);
-        AnyscaleConfigurator::addTo($config);
-        AzureConfigurator::addTo($config);
-        CohereConfigurator::addTo($config);
-        FireworksConfigurator::addTo($config);
-        GeminiConfigurator::addTo($config);
-        GroqConfigurator::addTo($config);
-        MistralConfigurator::addTo($config);
-        OllamaConfigurator::addTo($config);
-        OpenAIConfigurator::addTo($config);
-        OpenRouterConfigurator::addTo($config);
-        TogetherConfigurator::addTo($config);
+    public function addConfiguration(Configuration $config): void {
+
+        $config->declare(
+            class: ApiRequestFactory::class,
+            context: [
+                'requestConfig' => $config->reference(ApiRequestConfig::class),
+            ],
+        );
+
+        $config->declare(
+            class: ApiRequestConfig::class,
+            context: [
+                'cacheConfig' => $config->reference(CacheConfig::class),
+                'debugConfig' => $config->reference(DebugConfig::class),
+                'events' => $config->reference(EventDispatcher::class),
+            ],
+        );
+
+        $config->declare(
+            class: CacheConfig::class,
+            context: [
+                'enabled' => false,
+                'expiryInSeconds' => 3600,
+                'cachePath' => '/tmp/instructor/cache',
+            ]
+        );
+
+        $config->declare(
+            class: DebugConfig::class,
+            context: [
+                'debug' => false,
+                'stopOnDebug' => false,
+                'forceDebug' => false,
+            ]
+        );
 
         $config->declare(
             class: ApiClientFactory::class,
@@ -114,5 +127,6 @@ class ClientConfigurator extends Configurator
                 'allowUnknownModels' => false,
             ],
         );
+
     }
 }
