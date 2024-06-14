@@ -7,15 +7,13 @@ use Cognesy\Instructor\Instructor;
 interface CanExtractSelf
 {
     static public function extract(
-        string|array $messages,
+        string|array $messages = '',
+        string|array|object $input = '',
         string $model = '',
         int $maxRetries = 2,
         array $options = [],
         array $examples = [],
-        string $toolName = '',
-        string $toolDescription = '',
         string $prompt = '',
-        string $retryPrompt = '',
         Mode $mode = Mode::Tools,
         Instructor $instructor = null,
     ) : static;

@@ -21,11 +21,6 @@ trait HandlesRequestedModel
         return $this->responseModel;
     }
 
-    public function withResponseModel(ResponseModel $responseModel) : static {
-        $this->responseModel = $responseModel;
-        return $this;
-    }
-
     public function requestedSchema() : string|array|object {
         return $this->requestedSchema;
     }
@@ -58,5 +53,12 @@ trait HandlesRequestedModel
             'type' => 'json_object',
             'schema' => $this->jsonSchema()
         ];
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function withResponseModel(ResponseModel $responseModel) : static {
+        $this->responseModel = $responseModel;
+        return $this;
     }
 }

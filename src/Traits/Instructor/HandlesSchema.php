@@ -5,7 +5,9 @@ namespace Cognesy\Instructor\Traits\Instructor;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Json;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 trait HandlesSchema
 {
     protected ResponseModelFactory $responseModelFactory;

@@ -8,6 +8,7 @@ use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\RequestData;
 
 class RequestFactory
 {
@@ -20,15 +21,32 @@ class RequestFactory
         protected EventDispatcher $events,
     ) {}
 
+    public function fromData(RequestData $data) : Request {
+        return $this->create(
+            messages: $data->messages,
+            input: $data->input,
+            responseModel: $data->responseModel,
+            prompt: $data->prompt,
+            examples: $data->examples,
+            model: $data->model,
+            maxRetries: $data->maxRetries,
+            options: $data->options,
+            toolName: $data->toolName,
+            toolDescription: $data->toolDescription,
+            retryPrompt: $data->retryPrompt,
+            mode: $data->mode,
+        );
+    }
+
     public function create(
         string|array $messages = [],
         string|array|object $input = '',
-        string|object|array $responseModel = [],
+        string|array|object $responseModel = [],
         string $prompt = '',
+        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        array $examples = [],
         string $toolName = '',
         string $toolDescription = '',
         string $retryPrompt = '',
@@ -38,19 +56,18 @@ class RequestFactory
             messages: $messages,
             input: $input,
             responseModel: $responseModel,
+            prompt: $prompt,
+            examples: $examples,
             model: $model,
             maxRetries: $maxRetries,
             options: $options,
-            examples: $examples,
             toolName: $toolName,
             toolDescription: $toolDescription,
-            prompt: $prompt,
             retryPrompt: $retryPrompt,
             mode: $mode,
             client: $this->clientFactory->getDefault(),
             modelFactory: $this->modelFactory,
             responseModelFactory: $this->responseModelFactory,
-            clientFactory: $this->clientFactory,
             apiRequestFactory: $this->apiRequestFactory,
             requestConfig: $this->requestConfig,
         );

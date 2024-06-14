@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor\Traits;
 
+use JetBrains\PhpStorm\Deprecated;
+
+#[Deprecated]
 trait HandlesTimer
 {
     protected float $startTime;

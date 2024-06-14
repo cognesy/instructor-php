@@ -12,7 +12,9 @@ trait HandlesApiClient
         return $this->client;
     }
 
-    public function withClient(CanCallApi $client) : self {
+    // INTERNAL //////////////////////////////////////////////////////////////////
+
+    protected function withClient(CanCallApi $client) : self {
         $this->client = $client;
         return $this;
     }

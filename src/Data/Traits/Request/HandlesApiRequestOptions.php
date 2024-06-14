@@ -13,12 +13,14 @@ trait HandlesApiRequestOptions
         return $this->options[$key] ?? $defaultValue;
     }
 
-    public function setOption(string $name, mixed $value) : self {
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function setOption(string $name, mixed $value) : self {
         $this->options[$name] = $value;
         return $this;
     }
 
-    public function unsetOption(string $name) : self {
+    protected function unsetOption(string $name) : self {
         unset($this->options[$name]);
         return $this;
     }

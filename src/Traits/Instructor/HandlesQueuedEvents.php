@@ -6,7 +6,7 @@ use Cognesy\Instructor\Events\Event;
 
 trait HandlesQueuedEvents
 {
-    protected $queuedEvents = [];
+    protected array $queuedEvents = [];
 
     protected function queueEvent(Event $event) : static {
         $this->queuedEvents[] = $event;

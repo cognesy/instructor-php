@@ -21,7 +21,9 @@ trait HandlesPrompts
         return $this->prompt ?: $this->defaultPrompts[$this->mode()->value] ?? '';
     }
 
-    public function withPrompt(string $prompt) : self {
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function withPrompt(string $prompt) : self {
         $this->prompt = $prompt;
         return $this;
     }

@@ -9,11 +9,6 @@ trait HandlesApiRequestFactory
 {
     private ?ApiRequestFactory $apiRequestFactory;
 
-    public function withApiRequestFactory(ApiRequestFactory $apiRequestFactory): static {
-        $this->apiRequestFactory = $apiRequestFactory;
-        return $this;
-    }
-
     public function apiRequestFactory() : ApiRequestFactory {
         return $this->apiRequestFactory;
     }
@@ -30,5 +25,12 @@ trait HandlesApiRequestFactory
             method: $this->method(),
             data: $this->data(),
         );
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function withApiRequestFactory(ApiRequestFactory $apiRequestFactory): static {
+        $this->apiRequestFactory = $apiRequestFactory;
+        return $this;
     }
 }

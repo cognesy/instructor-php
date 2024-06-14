@@ -9,6 +9,7 @@ use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\RequestData;
 use Throwable;
 
 trait HandlesRequest
@@ -18,6 +19,11 @@ trait HandlesRequest
 
     protected function getRequest() : Request {
         return $this->request;
+    }
+
+    public function withRequest(RequestData $request) : static {
+        $this->request = $this->requestFactory->fromData($request);
+        return $this;
     }
 
     protected function handleRequest() : mixed {

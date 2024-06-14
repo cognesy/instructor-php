@@ -11,7 +11,9 @@ trait HandlesExamples
         return $this->examples;
     }
 
-    public function withExamples(array $examples) : self {
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function withExamples(array $examples) : self {
         $this->examples = $examples;
         return $this;
     }

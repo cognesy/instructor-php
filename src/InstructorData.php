@@ -5,10 +5,10 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class InstructorBuilder
+class InstructorData
 {
     public CanCallApi $client;
-    public EventDispatcher $eventDispatcher;
+    public EventDispatcher $events;
     public Configuration $config;
     public bool $stopOnDebug;
     public bool $debug;
@@ -22,6 +22,40 @@ class InstructorBuilder
     /** @var callable|null */
     public $onEvent;
 
+    // STATIC ENTRY POINTS ////////////////////////////////////////////////////////////
+
+    public static function new() : static {
+        return new static();
+    }
+
+    public static function with(
+        EventDispatcher $eventDispatcher = null,
+        Configuration $config = null,
+        CanCallApi $client = null,
+        bool $debug = null,
+        bool $stopOnDebug = null,
+        bool $cache = null,
+        callable $onEvent = null,
+        callable $wiretap = null,
+        callable $onSequenceUpdate = null,
+        callable $onError = null,
+    ) : static {
+        $data = new static();
+        $data->events = $eventDispatcher;
+        $data->config = $config;
+        $data->client = $client;
+        $data->debug = $debug;
+        $data->cache = $cache;
+        $data->stopOnDebug = $stopOnDebug;
+        $data->onEvent = $onEvent;
+        $data->wiretap = $wiretap;
+        $data->onSequenceUpdate = $onSequenceUpdate;
+        $data->onError = $onError;
+        return $data;
+    }
+
+    // SETTERS ////////////////////////////////////////////////////////////////////////
+
     public function withClient(CanCallApi $client) : static {
         $this->client = $client;
         return $this;
@@ -33,7 +67,7 @@ class InstructorBuilder
     }
 
     public function withEventDispatcher(EventDispatcher $eventDispatcher) : static {
-        $this->eventDispatcher = $eventDispatcher;
+        $this->events = $eventDispatcher;
         return $this;
     }
 
@@ -47,6 +81,8 @@ class InstructorBuilder
         $this->cache = $cache;
         return $this;
     }
+
+    // LISTENER SETTERS ///////////////////////////////////////////////////////////////
 
     public function onEvent(callable $listener) : static {
         $this->onEvent = $listener;
@@ -66,35 +102,5 @@ class InstructorBuilder
     public function onSequenceUpdate(callable $listener) : static {
         $this->onSequenceUpdate = $listener;
         return $this;
-    }
-
-    public static function new() : InstructorBuilder {
-        return new InstructorBuilder();
-    }
-
-    public static function with(
-        EventDispatcher $eventDispatcher = null,
-        Configuration $config = null,
-        CanCallApi $client = null,
-        bool $debug = null,
-        bool $stopOnDebug = null,
-        bool $cache = null,
-        callable $onEvent = null,
-        callable $wiretap = null,
-        callable $onSequenceUpdate = null,
-        callable $onError = null,
-    ) : InstructorBuilder {
-        $builder = new InstructorBuilder();
-        $builder->eventDispatcher = $eventDispatcher;
-        $builder->config = $config;
-        $builder->client = $client;
-        $builder->debug = $debug;
-        $builder->cache = $cache;
-        $builder->stopOnDebug = $stopOnDebug;
-        $builder->onEvent = $onEvent;
-        $builder->wiretap = $wiretap;
-        $builder->onSequenceUpdate = $onSequenceUpdate;
-        $builder->onError = $onError;
-        return $builder;
     }
 }

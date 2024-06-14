@@ -20,7 +20,9 @@ trait HandlesMessages
         return $this->messages;
     }
 
-    public function withMessages(array $messages) : self {
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function withMessages(array $messages) : self {
         $this->messages = $messages;
         return $this;
     }

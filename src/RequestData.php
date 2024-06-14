@@ -3,21 +3,23 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Enums\Mode;
 
-class RequestBuilder
+class RequestData
 {
-    public array $messages = [];
+    public string|array $messages = [];
     public string|array|object $input;
-    public ResponseModel $responseModel;
+    public string|array|object $responseModel;
     public string $model;
     public string $prompt;
     public int $maxRetries;
     public array $options;
     /** @var Example[] */
     public array $examples;
-    public $retryPrompt;
-    public $toolName;
-    public $toolDescription;
+    public string $retryPrompt;
+    public string $toolName;
+    public string $toolDescription;
+    public Mode $mode;
 
     public function withMessages(string|array $messages) : static {
         $this->messages = $messages;
@@ -74,8 +76,13 @@ class RequestBuilder
         return $this;
     }
 
-    public static function new() : RequestBuilder {
-        return new RequestBuilder();
+    public function withMode(Mode $mode) : static {
+        $this->mode = $mode;
+        return $this;
+    }
+
+    public static function new() : static {
+        return new static();
     }
 
     public static function with(
@@ -90,19 +97,21 @@ class RequestBuilder
         $toolDescription = null,
         $prompt = null,
         $retryPrompt = null,
-    ) : RequestBuilder {
-        $builder = new RequestBuilder();
-        $builder->messages = $messages;
-        $builder->input = $input;
-        $builder->responseModel = $responseModel;
-        $builder->model = $model;
-        $builder->maxRetries = $maxRetries;
-        $builder->options = $options;
-        $builder->examples = $examples;
-        $builder->toolName = $toolName;
-        $builder->toolDescription = $toolDescription;
-        $builder->prompt = $prompt;
-        $builder->retryPrompt = $retryPrompt;
-        return $builder;
+        $mode = null,
+    ) : static {
+        $data = new static();
+        $data->messages = $messages;
+        $data->input = $input;
+        $data->responseModel = $responseModel;
+        $data->model = $model;
+        $data->maxRetries = $maxRetries;
+        $data->options = $options;
+        $data->examples = $examples;
+        $data->toolName = $toolName;
+        $data->toolDescription = $toolDescription;
+        $data->prompt = $prompt;
+        $data->retryPrompt = $retryPrompt;
+        $data->mode = $mode;
+        return $data;
     }
 }

@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
-use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
@@ -32,20 +31,19 @@ class Request
     public function __construct(
         string|array $messages,
         string|array|object $input,
-        string|object|array $responseModel,
+        string|array|object $responseModel,
+        string $prompt,
+        array $examples,
         string|ModelParams $model,
         int $maxRetries,
         array $options,
-        array $examples,
         string $toolName,
         string $toolDescription,
-        string $prompt,
         string $retryPrompt,
         Mode $mode,
         CanCallApi $client,
         ModelFactory $modelFactory,
         ResponseModelFactory $responseModelFactory,
-        ApiClientFactory $clientFactory,
         ApiRequestFactory $apiRequestFactory,
         ApiRequestConfig $requestConfig,
     ) {
@@ -79,7 +77,7 @@ class Request
             $this->toolDescription()
         );
 
-        $this->script = ScriptFactory::fromRequest($this);
+        $this->script = (new ScriptFactory)->fromRequest($this);
     }
 
     public function copy(array $messages) : self {

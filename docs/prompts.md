@@ -63,39 +63,43 @@ prompt, rather than just as `response_format` parameter in the request
 (e.g. OpenAI).
 
 For this reason, when using Instructor's `Mode::Json` and `Mode::MdJson`
-consider including the expected JSON Schema in the prompt. Otherwise, the
+you should include the expected JSON Schema in the prompt. Otherwise, the
 response is unlikely to match your target model, making it impossible for
 Instructor to deserialize it correctly.
 
-Instructor provides a helper method `createJsonSchema()` that generates
-a JSON Schema for given `responseModel` input. It accepts the same parameters
-as `$responseModel` parameter of `request()` and `respond()` methods and
-returns JSON Schema array. You can use `json_encode()` to convert it to
-a JSON string. Alternatively, you can call `createJsonSchemaString()` method
-that returns a JSON string directly.
-
 ```php
 <?php
-$jsonSchema = (new Instructor)->createJsonSchemaString(User::class);
+$jsonSchema = json_encode([
+    "type" => "object",
+    "properties" => [
+        "name" => ["type" => "string"],
+        "age" => ["type" => "integer"]
+    ],
+    "required" => ["name", "age"]
+]);
 
 $user = $instructor
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
-        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n" . $jsonSchema,
+        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema: $jsonSchema\n",
         mode: Mode::Json)
     ->get();
 ```
+
+The example above demonstrates how to manually create JSON Schema, but
+with Instructor you do not have to build the schema manually - you can use prompt
+template placeholder syntax to use Instructor-generated JSON Schema.
 
 
 ## Prompt as template
 
 Instructor allows you to use a template string as a prompt. You can use
-`{variable}` placeholders in the template string, which will be replaced
+`<|variable|>` placeholders in the template string, which will be replaced
 with the actual values during the execution.
 
 Currently, the following placeholders are supported:
- - `{json_schema}` - replaced with the JSON Schema for current response model
+ - `<|json_schema|>` - replaced with the JSON Schema for current response model
 
 Example below demonstrates how to use a template string as a prompt:
 
@@ -105,7 +109,7 @@ $user = (new Instructor)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
-        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n{json_schema}\n",
+        prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
         mode: Mode::Json)
     ->get();
 ```

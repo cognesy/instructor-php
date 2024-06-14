@@ -7,7 +7,8 @@ use Cognesy\Instructor\Enums\Mode;
 interface CanExtract
 {
     public function extract(
-        string|array $messages,
+        string|array $messages = '',
+        string|array|object $input = '',
         string $model = '',
         int $maxRetries = 2,
         array $options = [],

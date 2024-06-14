@@ -7,7 +7,6 @@ use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Configs\InstructorConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
@@ -26,7 +25,6 @@ class Instructor {
     use Events\Traits\HandlesEventListeners;
 
     use Traits\HandlesEnv;
-    use Traits\HandlesTimer;
 
     use Traits\Instructor\HandlesApiClient;
     use Traits\Instructor\HandlesCaching;
@@ -36,7 +34,6 @@ class Instructor {
     use Traits\Instructor\HandlesPartialUpdates;
     use Traits\Instructor\HandlesQueuedEvents;
     use Traits\Instructor\HandlesRequest;
-    use Traits\Instructor\HandlesSchema;
     use Traits\Instructor\HandlesSequenceUpdates;
     use Traits\Instructor\HandlesUserAPI;
 
@@ -62,20 +59,16 @@ class Instructor {
         );
         $this->config->fromConfigProvider(new InstructorConfig());
 
-        // override configuration with user-provided values
-        $this->config->override($config);
-
         // wire up logging
         //$this->logger = $this->config->get(LoggerInterface::class);
         //$this->eventLogger = $this->config->get(EventLogger::class);
         //$this->events->wiretap($this->eventLogger->eventListener(...));
 
         // get other components from configuration
+        $this->requestFactory = $this->config->get(RequestFactory::class);
+        $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
         $this->clientFactory = $this->config->get(ApiClientFactory::class);
         $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
-        $this->requestFactory = $this->config->get(RequestFactory::class);
-        $this->responseModelFactory = $this->config->get(ResponseModelFactory::class);
-        $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady($this->config));

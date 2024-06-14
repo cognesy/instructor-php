@@ -8,6 +8,7 @@ use Throwable;
 
 trait HandlesErrors
 {
+    /** @var callable|null */
     protected $onError;
 
     /**

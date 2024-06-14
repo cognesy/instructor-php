@@ -52,7 +52,7 @@ class ToolCallBuilder {
             }
             $definitions[$reference->classShort] = $this->schemaFactory
                 ->schema($reference->class)
-                ->toArray($this->onObjectRef(...));
+                ->toJsonSchema();
         }
         return array_reverse($definitions);
     }

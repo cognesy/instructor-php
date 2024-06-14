@@ -25,7 +25,9 @@ trait HandlesModel
         return $this->model;
     }
 
-    public function withModel(string|ModelParams $model) : self {
+    // INTERNAL ///////////////////////////////////////////////////////////////
+
+    protected function withModel(string|ModelParams $model) : self {
         if ($model instanceof ModelParams) {
             $this->modelParams = $model;
             $this->model = $model->name;

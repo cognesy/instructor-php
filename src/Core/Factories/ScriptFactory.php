@@ -5,13 +5,13 @@ use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Script;
-use Cognesy\Instructor\Data\Messages\Section;
 use Cognesy\Instructor\Data\Request;
 use Exception;
 
 class ScriptFactory
 {
-    static public function fromRequest(Request $request) : Script {
+
+    public function fromRequest(Request $request) : Script {
         return (new self)->makeScript($request);
     }
 

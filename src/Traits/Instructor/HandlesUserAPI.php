@@ -16,15 +16,12 @@ trait HandlesUserAPI
     public function respond(
         string|array $messages = '',
         string|array|object $input = '',
-        string|object|array $responseModel = [],
+        string|array|object $responseModel = [],
+        string $prompt = '',
+        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        array $examples = [],
-        string $toolName = '',
-        string $toolDescription = '',
-        string $prompt = '',
-        string $retryPrompt = '',
         Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
@@ -32,13 +29,10 @@ trait HandlesUserAPI
             input: $input,
             responseModel: $responseModel,
             prompt: $prompt,
+            examples: $examples,
             model: $model,
             maxRetries: $maxRetries,
             options: $options,
-            examples: $examples,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
             mode: $mode,
         );
         return $this->get();
@@ -50,15 +44,12 @@ trait HandlesUserAPI
     public function request(
         string|array $messages = '',
         string|array|object $input = '',
-        string|object|array $responseModel = [],
+        string|array|object $responseModel = [],
         string $prompt = '',
+        array $examples = [],
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
-        array $examples = [],
-        string $toolName = '',
-        string $toolDescription = '',
-        string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : ?self {
         if (empty($responseModel)) {
@@ -69,13 +60,10 @@ trait HandlesUserAPI
             input: $input,
             responseModel: $responseModel,
             prompt: $prompt,
+            examples: $examples,
             model: $model,
             maxRetries: $maxRetries,
             options: $options,
-            examples: $examples,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
             mode: $mode,
         );
         $this->dispatchQueuedEvents();
