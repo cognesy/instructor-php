@@ -22,6 +22,8 @@ trait HandlesPartialUpdates
         return $this;
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////////
+
     /**
      * Provides partial response instead of event - for developer convenience
      */

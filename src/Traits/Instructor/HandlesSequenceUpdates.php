@@ -22,6 +22,8 @@ trait HandlesSequenceUpdates
         return $this;
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////////
+
     /**
      * Provides sequence instead of event - for developer convenience
      */

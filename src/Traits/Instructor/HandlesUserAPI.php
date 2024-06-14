@@ -5,11 +5,22 @@ namespace Cognesy\Instructor\Traits\Instructor;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
+use Cognesy\Instructor\RequestData;
 use Cognesy\Instructor\Stream;
 use Exception;
 
 trait HandlesUserAPI
 {
+    private RequestData $requestData;
+
+    /**
+     * Prepares Instructor for execution with provided request data
+     */
+    public function withRequest(RequestData $requestData) : static {
+        $this->requestData = $requestData;
+        return $this;
+    }
+
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */
@@ -55,7 +66,7 @@ trait HandlesUserAPI
         if (empty($responseModel)) {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
-        $this->request = $this->requestFactory->create(
+        $this->requestData = RequestData::with(
             messages: $messages,
             input: $input,
             responseModel: $responseModel,
@@ -66,8 +77,7 @@ trait HandlesUserAPI
             options: $options,
             mode: $mode,
         );
-        $this->dispatchQueuedEvents();
-        $this->events->dispatch(new RequestReceived($this->getRequest()));
+        $this->queueEvent(new RequestReceived($this->requestData));
         return $this;
     }
 
@@ -75,12 +85,11 @@ trait HandlesUserAPI
      * Executes the request and returns the response
      */
     public function get() : mixed {
-        if ($this->getRequest() === null) {
-            throw new Exception('Request not defined, call request() first');
+        if ($this->requestData === null) {
+            throw new Exception('Request not defined, call request() or withRequest() first');
         }
 
-        $isStream = $this->getRequest()->option(key: 'stream', defaultValue: false);
-        if ($isStream) {
+        if ($this->requestData->isStream()) {
             return $this->stream()->final();
         }
 
@@ -93,13 +102,12 @@ trait HandlesUserAPI
      * Executes the request and returns the response stream
      */
     public function stream() : Stream {
-        if ($this->getRequest() === null) {
-            throw new Exception('Request not defined, call request() first');
+        if ($this->requestData === null) {
+            throw new Exception('Request not defined, call request() or withRequest() first');
         }
 
         // TODO: do we need this? cannot we just turn streaming on?
-        $isStream = $this->getRequest()->option('stream', false);
-        if (!$isStream) {
+        if (!$this->requestData->isStream()) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
 

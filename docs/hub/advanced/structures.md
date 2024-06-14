@@ -20,7 +20,9 @@ error_reporting(E_ALL);
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Structure\Field;use Cognesy\Instructor\Extras\Structure\Structure;use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Instructor;
 
 enum Role : string {
     case Manager = 'manager';
@@ -56,6 +58,6 @@ print("Name: " . $person->name . "\n");
 print("Age: " . $person->age . "\n");
 print("Address / city: " . $person->address->city . "\n");
 print("Address / ZIP: " . $person->address->zip . "\n");
-print("Role: " . $person->role . "\n");
+print("Role: " . $person->role->value . "\n");
 ?>
 ```

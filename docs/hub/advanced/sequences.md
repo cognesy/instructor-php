@@ -39,7 +39,9 @@ $list = (new Instructor)
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->get();
 
+
 dump(count($list));
+
 assert(count($list) === 4);
 ?>
 ```

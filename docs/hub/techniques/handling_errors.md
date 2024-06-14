@@ -35,6 +35,7 @@ $user = (new Instructor)->respond(
     responseModel: MaybeUser::class
 );
 
+
 dump($user);
 
 assert($user->noUserData);

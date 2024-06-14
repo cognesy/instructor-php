@@ -8,6 +8,8 @@ trait HandlesQueuedEvents
 {
     protected array $queuedEvents = [];
 
+    // INTERNAL ////////////////////////////////////////////////////////////////////
+
     protected function queueEvent(Event $event) : static {
         $this->queuedEvents[] = $event;
         return $this;

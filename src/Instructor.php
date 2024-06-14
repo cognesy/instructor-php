@@ -41,18 +41,21 @@ class Instructor {
     //private EventLogger $eventLogger;
     private ApiRequestConfig $apiRequestConfig;
 
-    public function __construct(array $config = []) {
+    public function __construct(
+        EventDispatcher $events = null,
+        Configuration $config = null,
+    ) {
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
-        $this->queueEvent(new InstructorStarted($config));
+        $this->queueEvent(new InstructorStarted());
 
         // try loading .env (if paths are set)
         Env::load();
 
         // main event dispatcher
-        $this->events = new EventDispatcher('instructor');
+        $this->events = $events ?? new EventDispatcher('instructor');
 
         // wire up core components
-        $this->config = Configuration::fresh($this->events);
+        $this->config = $config ?? Configuration::fresh($this->events);
         $this->config->external(
             class: EventDispatcher::class,
             reference: $this->events

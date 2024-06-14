@@ -2,12 +2,11 @@
 namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 
 class RequestData
 {
-    public string|array $messages = [];
+    public string|array $messages;
     public string|array|object $input;
     public string|array|object $responseModel;
     public string $model;
@@ -21,6 +20,10 @@ class RequestData
     public string $toolDescription;
     public Mode $mode;
 
+    public function isStream() : bool {
+        return $this->options['stream'] ?? false;
+    }
+
     public function withMessages(string|array $messages) : static {
         $this->messages = $messages;
         return $this;
@@ -31,7 +34,7 @@ class RequestData
         return $this;
     }
 
-    public function withResponseModel(ResponseModel $responseModel) : static {
+    public function withResponseModel(string|array|object $responseModel) : static {
         $this->responseModel = $responseModel;
         return $this;
     }
@@ -86,18 +89,18 @@ class RequestData
     }
 
     public static function with(
-        $messages = null,
-        $input = null,
-        $responseModel = null,
-        $model = null,
-        $maxRetries = null,
-        $options = null,
-        $examples = null,
-        $toolName = null,
-        $toolDescription = null,
-        $prompt = null,
-        $retryPrompt = null,
-        $mode = null,
+        $messages = '',
+        $input = '',
+        $responseModel = '',
+        $prompt = '',
+        $examples = [],
+        $model = '',
+        $maxRetries = 0,
+        $options = [],
+        $toolName = '',
+        $toolDescription = '',
+        $retryPrompt = '',
+        $mode = Mode::Tools,
     ) : static {
         $data = new static();
         $data->messages = $messages;

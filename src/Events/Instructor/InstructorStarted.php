@@ -10,9 +10,7 @@ class InstructorStarted extends Event
 {
     public $logLevel = LogLevel::INFO;
 
-    public function __construct(
-        public array $config
-    ) {
+    public function __construct() {
         parent::__construct();
     }
 

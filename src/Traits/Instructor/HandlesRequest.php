@@ -7,42 +7,35 @@ use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\StreamRequestHandler;
-use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
-use Cognesy\Instructor\RequestData;
 use Throwable;
 
 trait HandlesRequest
 {
-    private ?Request $request = null;
     private RequestFactory $requestFactory;
 
-    protected function getRequest() : Request {
-        return $this->request;
-    }
-
-    public function withRequest(RequestData $request) : static {
-        $this->request = $this->requestFactory->fromData($request);
-        return $this;
-    }
+    // INTERNAL ////////////////////////////////////////////////////////////////////
 
     protected function handleRequest() : mixed {
+        $this->dispatchQueuedEvents();
+        /** @var RequestHandler $requestHandler */
+        $requestHandler = $this->config->get(CanHandleRequest::class);
         try {
-            /** @var RequestHandler $requestHandler */
-            $requestHandler = $this->config->get(CanHandleRequest::class);
-            $response = $requestHandler->respondTo($this->getRequest());
-            $this->events->dispatch(new ResponseGenerated($response));
-            return $response;
+            return $requestHandler->respondTo(
+                $this->requestFactory->fromData($this->requestData)
+            );
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
     }
 
     protected function handleStreamRequest() : Iterable {
+        $this->dispatchQueuedEvents();
+        /** @var StreamRequestHandler $streamHandler */
+        $streamHandler = $this->config->get(CanHandleStreamRequest::class);
         try {
-            /** @var StreamRequestHandler $streamHandler */
-            $streamHandler = $this->config->get(CanHandleStreamRequest::class);
-            yield from $streamHandler->respondTo($this->getRequest());
+            yield from $streamHandler->respondTo(
+                $this->requestFactory->fromData($this->requestData)
+            );
         } catch (Throwable $error) {
             return $this->handleError($error);
         }

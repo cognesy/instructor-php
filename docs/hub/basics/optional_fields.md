@@ -28,6 +28,7 @@ $user = (new Instructor)->respond(
     responseModel: UserDetail::class,
 );
 
+
 dump($user);
 
 assert(!isset($user->role));

@@ -30,8 +30,7 @@ $client = new OpenAIClient(
 );
 
 // Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)
-    ->withClient($client);
+$instructor = (new Instructor)->withClient($client);
 
 // Call with custom model and execution mode
 $user = $instructor->respond(
@@ -40,6 +39,7 @@ $user = $instructor->respond(
     model: 'gpt-3.5-turbo',
     mode: Mode::Json,
 );
+
 
 dump($user);
 

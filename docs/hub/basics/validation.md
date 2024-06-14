@@ -36,6 +36,7 @@ $user = (new Instructor)->request(
     $caughtException = true;
 })->get();
 
+
 dump($user);
 
 assert($user === null);

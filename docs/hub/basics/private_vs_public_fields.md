@@ -54,6 +54,7 @@ $user = (new Instructor)->respond(
 );
 
 echo "User with public fields\n";
+
 dump($user);
 
 assert($user->name === "Jason");
@@ -69,6 +70,7 @@ $userPriv = (new Instructor)->respond(
 );
 
 echo "User with private 'password' and 'age' fields\n";
+
 dump($userPriv);
 
 assert($userPriv->name === "Jason");

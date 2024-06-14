@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\RequestData;
 use Psr\Log\LogLevel;
 use Throwable;
 
@@ -13,7 +13,7 @@ class ErrorRaised extends Event
 
     public function __construct(
         public Throwable $error,
-        public ?Request $request = null,
+        public ?RequestData $request = null,
         public mixed $context = null,
     )
     {

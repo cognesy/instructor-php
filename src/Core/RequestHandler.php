@@ -8,6 +8,7 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
@@ -49,6 +50,8 @@ class RequestHandler implements CanHandleRequest
                 $value = $processingResult->unwrap();
                 // store response
                 $request->addResponse($this->messages, $apiResponse, [], $value); // TODO: tx messages to Scripts
+                // notify on response generation
+                $this->events->dispatch(new ResponseGenerated($value));
                 // we're done here - no need to retry
                 return $value;
             }

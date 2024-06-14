@@ -41,13 +41,13 @@ class UserDetails
 }
 
 $user = (new Instructor)
-    ->withDebug(true, false)
     ->respond(
         messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 1023.']],
         responseModel: UserDetails::class,
         model: 'gpt-4o',
         maxRetries: 2,
     );
+
 
 dump($user);
 

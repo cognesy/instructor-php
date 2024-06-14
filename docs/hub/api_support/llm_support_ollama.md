@@ -38,10 +38,12 @@ $instructor = (new Instructor)->withClient($client);
 // Listen to events to print request/response data
 $instructor->onEvent(RequestSentToLLM::class, function($event) {
     print("Request sent to LLM:\n\n");
+
     dump($event->request);
 });
 $instructor->onEvent(ResponseReceivedFromLLM::class, function($event) {
     print("Received response from LLM:\n\n");
+
     dump($event->response);
 });
 
@@ -57,6 +59,7 @@ $user = $instructor->respond(
 );
 
 print("Completed response model:\n\n");
+
 dump($user);
 
 assert(isset($user->name));

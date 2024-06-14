@@ -6,11 +6,10 @@ extraction capabilities directly on class via static `extract()` method.
 `extract()` method returns an instance of the class with the data extracted
 using the Instructor.
 
-`extract()` method has the following signature (you can also find it in the
+`extract()` method has following signature (you can also find it in the
 `CanSelfExtract` interface):
 
 ```php
-...
 static public function extract(
     string|array $messages, // (required) The message(s) to extract data from
     string $model = '',     // (optional) The model to use for extraction (otherwise - use default)
@@ -24,7 +23,6 @@ static public function extract(
     Mode $mode = Mode::Tools, // (optional) The mode to use for extraction
     Instructor $instructor = null // (optional) The Instructor instance to use for extraction
 ) : static;
-...
 ```
 
 ```php
@@ -42,6 +40,7 @@ class User {
 }
 
 $user = User::extract("Jason is 25 years old and works as an engineer.");
+
 dump($user);
 
 assert(isset($user->name));

@@ -28,6 +28,7 @@ $value = (new Instructor)->respond(
     responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
 );
 
+
 dump($value);
 
 assert($value instanceof CitizenshipGroup);

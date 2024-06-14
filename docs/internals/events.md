@@ -21,7 +21,7 @@ Instructor allows you to receive detailed information at every stage of request 
 
  * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
  * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
- * `(new Instructor)->onError(callable $callback)` method - receive callback on any uncaught error, so you can customize handling it, for example logging the error or using some fallback mechanism in an attempt to recover
+ * `(new Instructor)->onError(callable $callback)` method - receive callback on any uncaught error, so you can customize handling it, for example logging the error
 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
@@ -48,20 +48,22 @@ $instructor->respond(
 
 ## onError handler
 
-`Instructor->onError(callable $callback)` method allows you to receive callback
-on any uncaught error, so you can customize handling it, for example logging the
-error or using some fallback mechanism in an attempt to recover.
-
 In case Instructor encounters any error that it cannot handle, your callable (if
 defined) will be called with an instance of `ErrorRaised` event, which contains
 information about the error and request that caused it (among some other properties).
 
-In most cases, after you process the error (e.g. store it in a log via some logger)
-the best way to proceed is to rethrow the error.
+`Instructor->onError(callable $callback)` method allows you to receive callback
+on any uncaught error, so you can customize handling it, for example to log the
+error.
 
 If you do not rethrow the error and just return some value, Instructor will return
 it as a result of response processing. This way you can provide a fallback response,
 e.g. with an object with default values.
+
+> NOTE: In almost all situations, the best way to proceed after you process the
+> error (e.g. store it in a log) is to *rethrow the error*. Make sure you clearly
+> understand what you're doing if you choose not to rethrow the exception from your
+> handler. 
 
 
 ## Convenience methods for get streamed model updates

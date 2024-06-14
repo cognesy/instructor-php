@@ -30,9 +30,8 @@ $user = $instructor
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
-        toolName: 'extract',
-        toolDescription: 'Extract information from provided content',
-        mode: Mode::Tools);
+        mode: Mode::Tools
+    );
 
 print("\n# Request for Mode::Json:\n\n");
 $user = $instructor
@@ -40,7 +39,8 @@ $user = $instructor
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        mode: Mode::Json);
+        mode: Mode::Json
+    );
 
 print("\n# Request for Mode::MdJson:\n\n");
 $user = $instructor
@@ -48,7 +48,8 @@ $user = $instructor
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
-        mode: Mode::MdJson);
+        mode: Mode::MdJson
+    );
 
 ?>
 ```

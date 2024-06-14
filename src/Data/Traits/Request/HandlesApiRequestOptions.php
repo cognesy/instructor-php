@@ -5,6 +5,10 @@ trait HandlesApiRequestOptions
 {
     private array $options = [];
 
+    public function isStream() : bool {
+        return $this->option('stream', false);
+    }
+
     public function options() : array {
         return $this->options;
     }

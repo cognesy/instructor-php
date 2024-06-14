@@ -54,6 +54,7 @@ $user = $instructor
     );
 
 print("Completed response model:\n\n");
+
 dump($user);
 
 assert(isset($user->name));
