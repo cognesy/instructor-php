@@ -20,8 +20,8 @@ class AnyscaleConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(AnyscaleConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['ANYSCALE_DEFAULT_MODEL'] ?? 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+                'defaultMaxTokens' => $_ENV['ANYSCALE_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new AnyscaleClient(
@@ -40,8 +40,8 @@ class AnyscaleConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['ANYSCALE_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['ANYSCALE_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['ANYSCALE_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],
@@ -54,15 +54,10 @@ class AnyscaleConfig implements CanAddConfiguration
                 'label' => 'Anyscale Mixtral 8x7B',
                 'type' => 'mixtral',
                 'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-                'maxTokens' => 4096,
-                'contextSize' => 4096,
+                'maxTokens' => 256,
+                'contextSize' => 200_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
             ],
         );
 

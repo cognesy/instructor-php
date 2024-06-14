@@ -1,10 +1,9 @@
 <?php
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Enums\Mode;
 
-class RequestData
+class RequestInfo
 {
     public string|array $messages;
     public string|array|object $input;

@@ -1,11 +1,11 @@
 <?php
-namespace Cognesy\Instructor;
+namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class InstructorData
+class InstructorInfo
 {
     public EventDispatcher $events;
     public Configuration $config;

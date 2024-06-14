@@ -6,9 +6,9 @@ use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Data\Request;
+use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\RequestData;
 
 class RequestFactory
 {
@@ -21,7 +21,7 @@ class RequestFactory
         protected EventDispatcher $events,
     ) {}
 
-    public function fromData(RequestData $data) : Request {
+    public function fromData(RequestInfo $data) : Request {
         return $this->create(
             messages: $data->messages,
             input: $data->input,

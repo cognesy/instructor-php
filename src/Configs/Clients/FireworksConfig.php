@@ -20,8 +20,8 @@ class FireworksConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(FireworksAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'accounts/fireworks/models/mixtral-8x7b-instruct',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['FIREWORKSAI_DEFAULT_MODEL'] ?? 'accounts/fireworks/models/mixtral-8x7b-instruct',
+                'defaultMaxTokens' => $_ENV['FIREWORKSAI_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new FireworksAIClient(
@@ -40,8 +40,8 @@ class FireworksConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['FIREWORKSAI_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['FIREWORKSAI_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

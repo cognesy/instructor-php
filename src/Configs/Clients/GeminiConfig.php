@@ -20,8 +20,8 @@ class GeminiConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(GeminiConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'llama3-8b-8192',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['GEMINI_DEFAULT_MODEL'] ?? 'gemini-1.5-flash',
+                'defaultMaxTokens' => $_ENV['GEMINI_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new GeminiClient(
@@ -40,8 +40,8 @@ class GeminiConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['GEMINI_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['GEMINI_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['GEMINI_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['GEMINI_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
@@ -20,8 +19,8 @@ class CohereConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(CohereConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'cohere-r-plus',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['COHERE_DEFAULT_MODEL'] ?? 'cohere-r-plus',
+                'defaultMaxTokens' => $_ENV['COHERE_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new CohereClient(
@@ -38,10 +37,10 @@ class CohereConfig implements CanAddConfiguration
         $config->declare(
             class:CohereConnector::class,
             context: [
-                'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
-                'baseUrl' => $_ENV['FIREWORKSAI_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'apiKey' => $_ENV['COHERE_API_KEY'] ?? '',
+                'baseUrl' => $_ENV['COHERE_BASE_URI'] ?? '',
+                'connectTimeout' => $_ENV['COHERE_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['COHERE_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

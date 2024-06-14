@@ -20,8 +20,8 @@ class GroqConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(GroqConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'llama3-8b-8192',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['GROQ_DEFAULT_MODEL'] ?? 'llama3-8b-8192',
+                'defaultMaxTokens' => $_ENV['GROQ_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new GroqClient(
@@ -40,8 +40,8 @@ class GroqConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['GROQ_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['GROQ_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['GROQ_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['GROQ_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

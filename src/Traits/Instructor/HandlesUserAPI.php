@@ -2,21 +2,21 @@
 
 namespace Cognesy\Instructor\Traits\Instructor;
 
+use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\RequestData;
 use Cognesy\Instructor\Stream;
 use Exception;
 
 trait HandlesUserAPI
 {
-    private RequestData $requestData;
+    private RequestInfo $requestData;
 
     /**
      * Prepares Instructor for execution with provided request data
      */
-    public function withRequest(RequestData $requestData) : static {
+    public function withRequest(RequestInfo $requestData) : static {
         $this->requestData = $requestData;
         return $this;
     }
@@ -66,7 +66,7 @@ trait HandlesUserAPI
         if (empty($responseModel)) {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
-        $this->requestData = RequestData::with(
+        $this->requestData = RequestInfo::with(
             messages: $messages,
             input: $input,
             responseModel: $responseModel,

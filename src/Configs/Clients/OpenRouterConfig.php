@@ -20,8 +20,8 @@ class OpenRouterConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(OpenRouterConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'gpt-3.5-turbo',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['OPENROUTER_DEFAULT_MODEL'] ?? 'gpt-3.5-turbo',
+                'defaultMaxTokens' => $_ENV['OPENROUTER_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new OpenRouterClient(
@@ -40,8 +40,8 @@ class OpenRouterConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['OPENROUTER_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['OPENROUTER_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['OPENROUTER_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

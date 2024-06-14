@@ -20,8 +20,8 @@ class AnthropicConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(AnthropicConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'claude-3-haiku-20240307',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['ANTHROPIC_DEFAULT_MODEL'] ?? 'claude-3-haiku-20240307',
+                'defaultMaxTokens' => $_ENV['ANTHROPIC_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new AnthropicClient(
@@ -40,8 +40,8 @@ class AnthropicConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['ANTHROPIC_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['ANTHROPIC_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['ANTHROPIC_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

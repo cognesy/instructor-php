@@ -20,8 +20,8 @@ class MistralConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(MistralConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'mistral-small-latest',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['MISTRAL_DEFAULT_MODEL'] ?? 'mistral-small-latest',
+                'defaultMaxTokens' => $_ENV['MISTRAL_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new MistralClient(
@@ -40,8 +40,8 @@ class MistralConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['MISTRAL_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['MISTRAL_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['MISTRAL_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['MISTRAL_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

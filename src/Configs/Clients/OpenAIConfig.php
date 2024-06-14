@@ -22,8 +22,8 @@ class OpenAIConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(OpenAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'gpt-4o',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['OPENAI_DEFAULT_MODEL'] ?? 'gpt-4o',
+                'defaultMaxTokens' => $_ENV['OPENAI_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new OpenAIClient(
@@ -43,8 +43,8 @@ class OpenAIConfig implements CanAddConfiguration
                 'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
                 'organization' => $_ENV['OPENAI_ORGANIZATION'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['OPENAI_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['OPENAI_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

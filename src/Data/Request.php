@@ -9,7 +9,6 @@ use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Core\Factories\ScriptFactory;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\RequestData;
 
 class Request
 {

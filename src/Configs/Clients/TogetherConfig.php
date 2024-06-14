@@ -20,8 +20,8 @@ class TogetherConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(TogetherAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['TOGETHERAI_DEFAULT_MODEL'] ?? 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+                'defaultMaxTokens' => $_ENV['TOGETHERAI_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new TogetherAIClient(
@@ -40,8 +40,8 @@ class TogetherConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
                 'baseUrl' => $_ENV['TOGETHERAI_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['TOGETHERAI_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['TOGETHERAI_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

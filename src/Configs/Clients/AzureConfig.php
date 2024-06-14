@@ -20,8 +20,8 @@ class AzureConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(AzureConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'gpt-4-turbo-preview',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['AZURE_DEFAULT_MODEL'] ?? 'gpt-4-turbo-preview',
+                'defaultMaxTokens' => $_ENV['AZURE_DEFAULT_MAX_TOKENS'] ?? 4_096,
             ],
             getInstance: function($context) {
                 $object = new AzureClient(
@@ -43,8 +43,8 @@ class AzureConfig implements CanAddConfiguration
                 'deploymentId' => $_ENV['AZURE_DEPLOYMENT_ID'] ?? '',
                 'apiVersion' => $_ENV['AZURE_API_VERSION'] ?? '',
                 'baseUrl' => $_ENV['OPENAI_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 30,
+                'connectTimeout' => $_ENV['AZURE_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['AZURE_REQUEST_TIMEOUT'] ?? 30,
                 'metadata' => [],
                 'senderClass' => '',
             ],

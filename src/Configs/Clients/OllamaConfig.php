@@ -20,8 +20,8 @@ class OllamaConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(OllamaConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => 'llama2',
-                'defaultMaxTokens' => 256,
+                'defaultModel' => $_ENV['OLLAMA_DEFAULT_MODEL'] ?? 'llama2',
+                'defaultMaxTokens' => $_ENV['OLLAMA_DEFAULT_MAX_TOKENS'] ?? 256,
             ],
             getInstance: function($context) {
                 $object = new OllamaClient(
@@ -40,8 +40,8 @@ class OllamaConfig implements CanAddConfiguration
             context: [
                 'apiKey' => $_ENV['OLLAMA_API_KEY'] ?? 'ollama',
                 'baseUrl' => $_ENV['OLLAMA_BASE_URI'] ?? '',
-                'connectTimeout' => 3,
-                'requestTimeout' => 90,
+                'connectTimeout' => $_ENV['OLLAMA_CONNECT_TIMEOUT'] ?? 3,
+                'requestTimeout' => $_ENV['OLLAMA_REQUEST_TIMEOUT'] ?? 90,
                 'metadata' => [],
                 'senderClass' => '',
             ],

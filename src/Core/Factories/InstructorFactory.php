@@ -1,18 +1,18 @@
 <?php
 namespace Cognesy\Instructor\Core\Factories;
 
+use Cognesy\Instructor\Data\InstructorInfo;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\InstructorData;
 
 class InstructorFactory
 {
-    private InstructorData $data;
+    private InstructorInfo $data;
 
-    public function __construct(InstructorData $data) {
+    public function __construct(InstructorInfo $data) {
         $this->data = $data;
     }
 
-    public static function makeWith(InstructorData $data) : Instructor {
+    public static function makeWith(InstructorInfo $data) : Instructor {
         return (new static($data))->make();
     }
 
