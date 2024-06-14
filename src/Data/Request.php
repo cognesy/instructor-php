@@ -9,6 +9,7 @@ use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Core\Factories\ScriptFactory;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\RequestData;
 
 class Request
 {
@@ -51,6 +52,7 @@ class Request
         $this->responseModelFactory = $responseModelFactory;
         $this->apiRequestFactory = $apiRequestFactory;
         $this->requestConfig = $requestConfig;
+        $this->client = $client;
 
         $this->options = $options;
         $this->maxRetries = $maxRetries;
@@ -62,7 +64,6 @@ class Request
         $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
         $this->examples = $examples;
 
-        $this->client = $client;
         $this->withModel($model);
         if (empty($this->option('max_tokens'))) {
             $this->setOption('max_tokens', $this->client->defaultMaxTokens());

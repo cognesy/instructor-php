@@ -1,0 +1,67 @@
+https://sambanova.ai/
+
+# CURL
+
+curl -X POST -H 'Content-Type: application/json' -H 'key: <your-api-key>' -H 'modelName: Meta/llama-2-13b-chat-hf' --data '{"inputs":["{"conversation_id":"sambaverse-conversation-id","messages":[{"message_id":0,"role":"system","content":"Respond for marketing uses only."},{"message_id":1,"role":"user","content":"What are the main benefits of using AI?"}]}"],"params":{"do_sample":{"type":"bool","value":"false"},"max_tokens_to_generate":{"type":"int","value":"256"},"process_prompt":{"type":"bool","value":"true"},"repetition_penalty":{"type":"float","value":"1.0"},"select_expert":{"type":"str","value":"llama-2-13b-chat-hf"},"stop_sequences":{"type":"str","value":""},"temperature":{"type":"float","value":"0.0"},"top_k":{"type":"int","value":"1"},"top_p":{"type":"float","value":"0.95"}}}' 'https://sambaverse.sambanova.net/api/predict'
+
+# STRUCTURE
+
+{
+   "inputs":[
+      "
+      {
+        "conversation_id": "sambaverse-conversation-id",
+        "messages":[
+            {
+                "message_id":0,
+                "role":"system",
+                "content":"Respond for marketing uses only."
+            },
+            {
+                "message_id":1,
+                "role":"user",
+                "content":"What are the main benefits of using AI?"
+            }
+        ]
+      }
+      "
+   ],
+   "params":{
+      "do_sample":{
+         "type":"bool",
+         "value":"false"
+      },
+      "max_tokens_to_generate":{
+         "type":"int",
+         "value":"256"
+      },
+      "process_prompt":{
+         "type":"bool",
+         "value":"true"
+      },
+      "repetition_penalty":{
+         "type":"float",
+         "value":"1.0"
+      },
+      "select_expert":{
+         "type":"str",
+         "value":"llama-2-13b-chat-hf"
+      },
+      "stop_sequences":{
+         "type":"str",
+         "value":""
+      },
+      "temperature":{
+         "type":"float",
+         "value":"0.0"
+      },
+      "top_k":{
+         "type":"int",
+         "value":"1"
+      },
+      "top_p":{
+         "type":"float",
+         "value":"0.95"
+      }
+   }
+}
