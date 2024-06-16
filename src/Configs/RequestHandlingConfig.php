@@ -51,7 +51,7 @@ class RequestHandlingConfig implements CanAddConfiguration
         $config->declare(
             class: SchemaFactory::class,
             context: [
-                'useObjectReferences' => false,
+                'useObjectReferences' => $_ENV['INSTRUCTOR_USE_OBJECT_REFERENCES'] ?? false,
             ]
         );
 

@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Schema\Visitors;
 
 use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
+use Cognesy\Instructor\Schema\Data\Schema\ArrayShapeSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
@@ -70,6 +71,39 @@ class SchemaToXml implements CanVisitSchema
             $xml[] = '</parameter>';
         } else {
             $xml[] = '<type>object</type>';
+            if ($schema->description) {
+                $xml[] = '<description>'.trim($schema->description).'</description>';
+            }
+            $xml[] = '<properties>';
+            $childrenXml = [];
+            foreach ($schema->properties as $property) {
+                $childrenXml[] = (new SchemaToXml)->toXml($property);
+            }
+            $xml[] = implode($this->xmlLineSeparator, $childrenXml);
+            $xml[] = '</properties>';
+        }
+        $this->xml[] = implode($this->xmlLineSeparator, $xml);
+    }
+
+    public function visitArrayShapeSchema(ArrayShapeSchema $schema): void {
+        $xml = [];
+        if (!$this->asArrayItem) {
+            $xml[] = '<parameter>';
+            $xml[] = '<name>'.$schema->name.'</name>';
+            $xml[] = '<type>array-shape</type>';
+            if ($schema->description) {
+                $xml[] = '<description>'.trim($schema->description).'</description>';
+            }
+            $xml[] = '<properties>';
+            $childrenXml = [];
+            foreach ($schema->properties as $property) {
+                $childrenXml[] = (new SchemaToXml)->toXml($property);
+            }
+            $xml[] = implode($this->xmlLineSeparator, $childrenXml);
+            $xml[] = '</properties>';
+            $xml[] = '</parameter>';
+        } else {
+            $xml[] = '<type>array-shape</type>';
             if ($schema->description) {
                 $xml[] = '<description>'.trim($schema->description).'</description>';
             }

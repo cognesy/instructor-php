@@ -22,8 +22,8 @@ class InstructorFactory
             config: $this->data->config,
         );
         $instructor->withClient($this->data->client);
-        $instructor->withDebug($this->data->debug, $this->data->stopOnDebug);
-        $instructor->withCache($this->data->cache);
+        $instructor->withDebug($this->data->debug ?? false, $this->data->stopOnDebug ?? false);
+        $instructor->withCache($this->data->cache ?? false);
         return $instructor;
     }
 }

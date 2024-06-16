@@ -60,6 +60,10 @@ class Instructor {
             class: EventDispatcher::class,
             reference: $this->events
         );
+        $this->config->external(
+            class: Instructor::class,
+            reference: $this
+        );
         $this->config->fromConfigProvider(new InstructorConfig());
 
         // wire up logging

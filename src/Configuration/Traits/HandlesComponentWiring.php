@@ -110,4 +110,8 @@ trait HandlesComponentWiring
             default => true,
         };
     }
+
+    public function getComponentNames() : array {
+        return array_keys($this->config);
+    }
 }

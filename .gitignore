@@ -3,8 +3,9 @@
 .idea/
 .venv/
 .vscode/
+_docs/
 archived/
-experimental/
+experimental/*
 vendor/
 composer.lock
 php_errors.log

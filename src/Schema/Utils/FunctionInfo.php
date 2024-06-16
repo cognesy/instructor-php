@@ -6,11 +6,14 @@ use Cognesy\Instructor\Schema\Attributes\Description;
 use Cognesy\Instructor\Schema\Attributes\Instructions;
 use ReflectionFunction;
 use ReflectionMethod;
+use ReflectionParameter;
 
 class FunctionInfo
 {
     private ReflectionFunction|ReflectionMethod $function;
+    /** @var ReflectionParameter[] */
     private array $parameters;
+    private $returnType;
 
     public function __construct(ReflectionFunction|ReflectionMethod $function) {
         $this->function = $function;

@@ -14,10 +14,10 @@ use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSelf, CanValidateSelf
 {
     use Traits\HandlesDeserialization;
-    use Traits\HandlesTransformation;
-    use Traits\HandlesValidation;
-    use Traits\HandlesTypeDefinitions;
     use Traits\ProvidesJsonSchema;
+    use Traits\HandlesTransformation;
+    use Traits\HandlesTypeDefinitions;
+    use Traits\HandlesValidation;
 
     public mixed $value;
 

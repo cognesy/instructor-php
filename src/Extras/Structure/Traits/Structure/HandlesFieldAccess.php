@@ -13,6 +13,10 @@ trait HandlesFieldAccess
         return isset($this->fields[$field]);
     }
 
+    public function actsAsScalar() : bool {
+        return count($this->fields) === 1;
+    }
+
     public function field(string $name) : Field {
         if (!$this->has($name)) {
             throw new \Exception("Field `$name` not found in structure.");
@@ -55,7 +59,25 @@ trait HandlesFieldAccess
         return count($this->fields);
     }
 
+    public function asScalar() : mixed {
+        if (!$this->actsAsScalar()) {
+            throw new \Exception("Cannot convert structure to scalar - it has more than one field.");
+        }
+        return $this->get($this->firstKey());
+    }
+
+    private function firstKey() : string {
+        return array_key_first($this->fields);
+    }
+
     public function __get(string $field) : mixed {
+// TODO: this feels hacky, but it is useful - let's figure it out later
+// for structures with a single field return it for whatever field is requested
+// it is hacky indeed, but it helps to use structures with signatures - we basically
+// treat structure as a scalar
+//        if ($this->actsAsScalar()) {
+//            return $this->get($this->scalarKey());
+//        }
         return $this->get($field);
     }
 

@@ -8,6 +8,7 @@ trait DefinesPhpTypeConstants
     public const PHP_OBJECT = 'object';
     public const PHP_ENUM = 'enum';
     public const PHP_ARRAY = 'array';
+    public const PHP_SHAPE = 'shape';
     public const PHP_INT = 'int';
     public const PHP_FLOAT = 'float';
     public const PHP_STRING = 'string';
@@ -40,6 +41,7 @@ trait DefinesPhpTypeConstants
         self::PHP_OBJECT,
         self::PHP_ENUM,
         self::PHP_ARRAY,
+        self::PHP_SHAPE,
     ];
 
     public const PHP_ENUM_TYPES = [

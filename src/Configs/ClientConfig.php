@@ -50,18 +50,18 @@ class ClientConfig implements CanAddConfiguration
         $config->declare(
             class: CacheConfig::class,
             context: [
-                'enabled' => false,
-                'expiryInSeconds' => 3600,
-                'cachePath' => '/tmp/instructor/cache',
+                'enabled' => $_ENV['INSTRUCTOR_CACHE_ENABLED'] ?? false,
+                'expiryInSeconds' => $_ENV['INSTRUCTOR_CACHE_EXPIRY'] ?? 3600,
+                'cachePath' => $_ENV['INSTRUCTOR_CACHE_PATH'] ?? '/tmp/instructor/cache',
             ]
         );
 
         $config->declare(
             class: DebugConfig::class,
             context: [
-                'debug' => false,
-                'stopOnDebug' => false,
-                'forceDebug' => false,
+                'debug' => $_ENV['INSTRUCTOR_DEBUG'] ?? false,
+                'stopOnDebug' => $_ENV['INSTRUCTOR_STOP_ON_DEBUG'] ?? false,
+                'forceDebug' => $_ENV['INSTRUCTOR_FORCE_DEBUG'] ?? false,
             ]
         );
 

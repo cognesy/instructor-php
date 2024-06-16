@@ -3,9 +3,7 @@
 namespace Cognesy\Instructor\Configs;
 
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Configurator;
 use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
-use Cognesy\Instructor\Configuration\Contracts\CanProvideConfiguration;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;

@@ -2,19 +2,18 @@
 
 namespace Cognesy\Instructor\Extras\Module\Addons\Predict;
 
-use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Module\Core\DynamicModule;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
-use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\Addons\InstructorModule\InstructorModule;
 use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
+use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Template;
 use Exception;
 
-class Predict extends DynamicModule
+class Predict extends InstructorModule
 {
     protected Instructor $instructor;
 
@@ -97,11 +96,11 @@ class Predict extends DynamicModule
             messages: $this->toMessages(),
             input: $input,
             responseModel: $targetObject,
+            prompt: $this->extractionPrompt,
+            examples: $this->examples,
             model: $this->model,
             maxRetries: $this->maxRetries,
             options: $this->options,
-            examples: $this->examples,
-            prompt: $this->extractionPrompt,
             mode: $this->mode,
         );
     }
@@ -122,7 +121,7 @@ class Predict extends DynamicModule
         ];
     }
 
-    public function renderPrompt(string $template): string {
+    private function renderPrompt(string $template): string {
         return Template::render($template, [
             'signature' => $this->getSignature()->toSignatureString(),
             'description' => $this->getSignature()->toOutputSchema()->description(),

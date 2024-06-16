@@ -17,7 +17,7 @@ trait HandlesTypeDetailsConstruction
         ?string $class,
         ?TypeDetails $nestedType,
         ?string $enumType,
-        ?array $enumValues
+        ?array $enumValues,
     ) : void {
         if (!in_array($type, self::PHP_TYPES)) {
             throw new \Exception('Unsupported type: '.$type);

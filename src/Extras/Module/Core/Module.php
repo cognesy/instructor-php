@@ -9,4 +9,7 @@ abstract class Module extends BaseModule
     public function signature() : string|Signature {
         return SignatureFactory::fromCallable($this->forward(...));
     }
+
+    // INTERNAL /////////////////////////////////////////////////////////////
+
 }

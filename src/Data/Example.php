@@ -51,8 +51,8 @@ class Example implements CanProvideMessages, CanProvideJson, JsonSerializable
         return new self($input, $output);
     }
 
-    static public function fromText(string $text, mixed $output) : self {
-        return new self($text, $output);
+    static public function fromText(string $input, mixed $output) : self {
+        return new self($input, $output);
     }
 
     static public function fromJson(string $json) : self {
@@ -75,8 +75,8 @@ class Example implements CanProvideMessages, CanProvideJson, JsonSerializable
         );
     }
 
-    static public function fromData(mixed $data, mixed $output) : self {
-        return new self($data, $output);
+    static public function fromData(mixed $input, mixed $output) : self {
+        return new self($input, $output);
     }
 
     public function input() : mixed {

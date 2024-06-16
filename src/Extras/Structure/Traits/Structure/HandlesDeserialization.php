@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;

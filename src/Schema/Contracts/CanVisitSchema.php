@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Schema\Contracts;
 
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
+use Cognesy\Instructor\Schema\Data\Schema\ArrayShapeSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
@@ -13,6 +14,8 @@ interface CanVisitSchema
 {
     public function visitSchema(Schema $schema): void;
     public function visitArraySchema(ArraySchema $schema): void;
+
+    public function visitArrayShapeSchema(ArrayShapeSchema $schema): void;
     public function visitObjectSchema(ObjectSchema $schema): void;
     public function visitEnumSchema(EnumSchema $schema): void;
     public function visitScalarSchema(ScalarSchema $schema): void;

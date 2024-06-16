@@ -24,6 +24,7 @@ class TypeDetails
         public ?TypeDetails $nestedType = null,
         public ?string $enumType = null,
         public ?array $enumValues = null,
+        public ?string $docString = null,
     ) {
         $this->validate($type, $class, $nestedType, $enumType, $enumValues);
     }
@@ -46,6 +47,10 @@ class TypeDetails
 
     public function enumValues() : ?array {
         return $this->enumValues;
+    }
+
+    public function docString() : string {
+        return $this->docString;
     }
 
     public function __toString() : string {

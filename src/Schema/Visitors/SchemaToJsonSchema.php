@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Schema\Visitors;
 use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
 use Cognesy\Instructor\Schema\Data\Reference;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
+use Cognesy\Instructor\Schema\Data\Schema\ArrayShapeSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
@@ -85,10 +86,25 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    public function visitArrayShapeSchema(ArrayShapeSchema $schema): void {
+        $propertyDefs = [];
+        foreach ($schema->properties as $property) {
+            $propertyDefs[$property->name] = (new SchemaToJsonSchema)->toArray($property, $this->refCallback);
+        }
+        $this->result = array_filter([
+            'type' => 'object',
+            'title' => $schema->name,
+            'description' => $schema->description,
+            'properties' => $propertyDefs,
+            'required' => $schema->required,
+        ]);
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////////
 
     private function className(string $fqcn) : string {
         $classSegments = explode('\\', $fqcn);
         return array_pop($classSegments);
     }
+
 }

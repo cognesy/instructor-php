@@ -2,11 +2,11 @@
 namespace Cognesy\Instructor\Extras\Module\Addons\CallClosure;
 
 use Closure;
-use Cognesy\Instructor\Extras\Module\Core\DynamicModule;
-use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
+use Cognesy\Instructor\Extras\Module\Addons\InstructorModule\InstructorModule;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
 
-class CallClosure extends DynamicModule
+class CallClosure extends InstructorModule
 {
     private Closure $callable;
 

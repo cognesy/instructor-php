@@ -11,6 +11,8 @@ use Symfony\Component\PropertyInfo\Type;
  */
 class TypeDetailsFactory
 {
+    // TYPE DETAILS RESOLUTION ////////////////////////////////////////////////////////////////
+
     /**
      * Create TypeDetails from type string
      *
@@ -62,6 +64,8 @@ class TypeDetailsFactory
         };
     }
 
+    // TYPE DETAILS CREATION //////////////////////////////////////////////////////////////////
+
     /**
      * Create TypeDetails for atom (scalar) type
      *
@@ -72,7 +76,10 @@ class TypeDetailsFactory
         if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
             throw new \Exception('Unsupported scalar type: '.$type);
         }
-        return new TypeDetails($type);
+        return new TypeDetails(
+            type: $type,
+            docString: $type
+        );
     }
 
     /**
@@ -82,6 +89,9 @@ class TypeDetailsFactory
      * @return \Cognesy\Instructor\Schema\Data\TypeDetails
      */
     public function arrayType(string $typeSpec) : TypeDetails {
+        if ($this->isArrayShape($typeSpec)) {
+            return $this->arrayShapeType($typeSpec);
+        }
         $typeName = $this->getArrayType($typeSpec);
         $nestedType = match (true) {
             ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed type not supported'),
@@ -91,8 +101,19 @@ class TypeDetailsFactory
         };
         return new TypeDetails(
             type: TypeDetails::PHP_ARRAY,
-            nestedType: $nestedType
+            nestedType: $nestedType,
+            docString: $typeSpec
         );
+    }
+
+    /**
+     * Create TypeDetails for array type
+     *
+     * @param string $typeSpec
+     * @return \Cognesy\Instructor\Schema\Data\TypeDetails
+     */
+    public function arrayShapeType(string $typeSpec) : TypeDetails {
+        throw new \Exception('Array shape type not supported yet');
     }
 
     /**
@@ -107,9 +128,9 @@ class TypeDetailsFactory
         }
         $instance = new TypeDetails(
             type: TypeDetails::PHP_OBJECT,
-            class: $typeName
+            class: $typeName,
+            docString: $typeName
         );
-        $instance->class = $typeName;
         return $instance;
     }
 
@@ -133,11 +154,12 @@ class TypeDetailsFactory
             type: TypeDetails::PHP_ENUM,
             class: $typeName,
             enumType: $backingType,
-            enumValues: $enumValues ?? $classInfo->enumValues()
+            enumValues: $enumValues ?? $classInfo->enumValues(),
+            docString: $typeName
         );
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // INTERNAL ///////////////////////////////////////////////////////////////////////////////
 
     /**
      * Extract array type from type string
@@ -189,5 +211,10 @@ class TypeDetailsFactory
             return "{$nestedClass}[]";
         }
         throw new \Exception('Unsupported array element type: '.$nestedType);
+    }
+
+    private function isArrayShape(string $typeSpec) : bool {
+        // TODO: not supported yet
+        return false;
     }
 }
