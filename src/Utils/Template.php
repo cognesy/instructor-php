@@ -8,12 +8,17 @@ use InvalidArgumentException;
 
 class Template
 {
-    private array $values = [];
-    private array $keys = [];
+    private array $context = [];
+    private array $contextValues = [];
+    private array $contextKeys = [];
+    private bool $clearUnknownParams = true;
 
     public function __construct(
-        array $context = []
+        array $context = [],
+        bool $clearUnknownParams = true,
     ) {
+        $this->clearUnknownParams = $clearUnknownParams;
+        $this->context = $context;
         if (empty($context)) {
             return;
         }
@@ -24,29 +29,45 @@ class Template
             ARRAY_FILTER_USE_KEY
         );
         $materializedContext = $this->materializeContext($filteredContext);
-        $this->values = array_values($materializedContext);
-        $this->keys = array_map(
+        $this->contextValues = array_values($materializedContext);
+        $this->contextKeys = array_map(
             fn($key) => $this->varPattern($key),
             array_keys($materializedContext)
         );
     }
 
-    public static function render(string $template, array $context) : string {
-        return (new Template($context))->renderString($template);
+    public function getContext() : array {
+        return $this->context;
+    }
+
+    public static function render(
+        string $template,
+        array $context,
+        bool $clearUnknownParams = true,
+    ) : string {
+        return (new Template(
+            $context,
+            $clearUnknownParams
+        ))->renderString($template);
     }
 
     public function renderString(string $template): string {
         // find all keys in the template
         $keys = $this->findVars($template);
-        // find keys missing from $this->keys
-        $missingKeys = array_diff($keys, $this->keys);
-        // remove missing key strings from the template
-        $template = str_replace($missingKeys, '', $template);
+        if ($this->clearUnknownParams) {
+            // find keys missing from $this->keys
+            $missingKeys = array_diff($keys, $this->contextKeys);
+            // remove missing key strings from the template
+            $template = str_replace($missingKeys, '', $template);
+        }
         // render values
-        return str_replace($this->keys, $this->values, $template);
+        return str_replace($this->contextKeys, $this->contextValues, $template);
     }
 
-    public function renderArray(array $rows, string $field = 'content'): array {
+    public function renderArray(
+        array $rows,
+        string $field = 'content'
+    ): array {
         return array_map(
             fn($item) => $this->renderString($item[$field] ?? ''),
             $rows
