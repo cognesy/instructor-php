@@ -43,7 +43,7 @@ class Event
         echo $this->asLog()."\n";
     }
 
-    public function printDump(): void {
+    public function printDebug(): void {
         echo "\n".$this->asConsole()."\n";
         /** @noinspection ForgottenDebugOutputInspection */
         dump(json_decode($this->__toString()));

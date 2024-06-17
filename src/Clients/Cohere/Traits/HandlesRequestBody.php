@@ -22,7 +22,7 @@ trait HandlesRequestBody
         }
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['system', 'prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
+            ->select(['system', 'pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
             ->toString();
     }
 
@@ -38,7 +38,7 @@ trait HandlesRequestBody
         return [];
 //        return $this->script
 //            ->withContext($this->scriptContext)
-//            ->select(['messages', 'data_ack', 'prompt', 'examples'])
+//            ->select(['messages', 'data-ack', 'prompt', 'examples'])
 //            ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 

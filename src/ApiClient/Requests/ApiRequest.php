@@ -97,7 +97,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
                 ]
             )
         );
-//dd($body);
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
         return $body;
     }

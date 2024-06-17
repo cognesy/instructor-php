@@ -5,12 +5,16 @@ namespace Cognesy\Instructor\Clients\OpenAI\Traits;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json;
+use Exception;
 use Saloon\Http\Response;
 
 trait HandlesResponse
 {
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response->body());
+        if (empty($decoded)) {
+            throw new Exception('Response body empty or does not contain correct JSON: ' . $response->body());
+        }
         $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
         $toolName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
         $contentMsg = $decoded['choices'][0]['message']['content'] ?? '';

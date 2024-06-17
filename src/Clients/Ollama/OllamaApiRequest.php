@@ -31,7 +31,9 @@ class OllamaApiRequest extends ApiRequest
     public function messages(): array {
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['system', 'prompt', 'examples', 'messages', 'input', 'retries'])
+            ->select(['system', 'pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
+            ->toSingleSection('merged')
+            ->toAlternatingRoles()
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }
 }

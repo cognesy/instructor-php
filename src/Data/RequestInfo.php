@@ -105,13 +105,13 @@ class RequestInfo
         $data->messages = $messages;
         $data->input = $input;
         $data->responseModel = $responseModel;
+        $data->prompt = $prompt;
+        $data->examples = $examples;
         $data->model = $model;
         $data->maxRetries = $maxRetries;
         $data->options = $options;
-        $data->examples = $examples;
         $data->toolName = $toolName;
         $data->toolDescription = $toolDescription;
-        $data->prompt = $prompt;
         $data->retryPrompt = $retryPrompt;
         $data->mode = $mode;
         return $data;

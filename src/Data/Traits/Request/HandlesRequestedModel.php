@@ -50,7 +50,7 @@ trait HandlesRequestedModel
 
     public function responseFormat() : array {
         return [
-            'type' => 'json_object',
+            'format' => ['type' => 'json_object'],
             'schema' => $this->jsonSchema()
         ];
     }

@@ -1,121 +1,63 @@
 <?php
 namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
-use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
-use Exception;
 
 trait HandlesTransformation
 {
-    /**
-     * @param array<string> $order
-     * @return Messages
-     */
-    public function toMessages(array $context = null) : Messages {
-        $messages = new Messages();
-        foreach ($this->sections as $section) {
-            $content = match(true) {
-                $section->isTemplate() => $this->fromTemplate(
-                    name: $section->name(),
-                    context: $this->context()->merge($context)->toArray(),
-                ) ?? $section->toMessages(),
-                default => $section->toMessages(),
-            };
-            if ($content->isEmpty()) {
-                continue;
-            }
-            $messages->appendMessages($content);
+    public function toSingleSection(string $section) : static {
+        $script = new Script();
+        $script->withContext($this->context());
+        foreach ($this->sections as $sourceSection) {
+            $script->section($section)->appendMessages($sourceSection->messages());
         }
-        return $messages;
+        return $script;
     }
 
     public function toAlternatingRoles() : static {
         $script = new Script;
+        $script->withContext($this->context());
         foreach ($this->sections as $section) {
+            if ($section->isEmpty()) {
+                continue;
+            }
             $script->appendSection($section->toAlternatingRoles());
         }
+        return $script;
+    }
+
+    public function asSingleMessage(string $separator = "\n") : static {
+        $script = new Script();
         $script->withContext($this->context());
+        $script->appendSection(new Section('messages'));
+        $script->section('messages')->appendMessage(
+            new Message('user', $this->toString($separator))
+        );
         return $script;
     }
 
     /**
-     * @param array<string> $order
-     * @param array<string,mixed>|null $context
-     * @return array<string,mixed>
+     * @param string|string[] $sections
      */
-    public function toArray(array $context = null, bool $raw = false) : array {
-        $array = $this->toMessages()->toArray();
-        return match($raw) {
-            false => $this->renderMessages(
-                messages: $array,
-                context: $this->context()->merge($context)->toArray()),
-            true => $array,
-        };
-    }
-
-    /**
-     * @param ClientType $type
-     * @param array<string> $order
-     * @param array<string,mixed>|null $context
-     * @return array<string,mixed>
-     */
-    public function toNativeArray(ClientType $type, array $context = null) : array {
-        $array = $this->renderMessages(
-            messages: $this->toArray(raw: true),
-            context: $this->context()->merge($context)->toArray(),
-        );
-        return ChatFormat::mapToTargetAPI(
-            clientType: $type,
-            messages: $array,
-        );
-    }
-
-    /**
-     * @param array<string> $order
-     * @param string $separator
-     * @param array<string,mixed>|null $context
-     * @return string
-     */
-    public function toString(string $separator = "\n", array $context = null) : string {
-        $text = array_reduce(
-            array: $this->toArray(raw: true),
-            callback: fn($carry, $message) => $carry . $message['content'] . $separator,
-            initial: '',
-        );
-        if (empty($text)) {
-            return '';
+    public function select(string|array $sections = []) : static {
+        // return empty script
+        if (empty($sections)) {
+            $script = new Script();
+            $script->context = $this->context;
+            return $script;
         }
-        return $this->renderString(
-            template: $text,
-            context: $this->context()->merge($context)->toArray()
-        );
-    }
-
-    protected function fromTemplate(string $name, ?array $context) : Messages {
-        if (empty($context)) {
-            return new Messages();
+        $names = match (true) {
+            empty($sections) => array_map(fn($section) => $section->name, $this->sections),
+            is_string($sections) => [$sections],
+            is_array($sections) => $sections,
+        };
+        $script = new Script();
+        $script->withContext($this->context);
+        foreach ($names as $sectionName) {
+            $script->appendSection($this->section($sectionName));
         }
-
-        $source = $context[$name] ?? throw new Exception("Context does not have template value: $name");
-
-        // process value from context
-        $values = match(true) {
-            is_callable($source) => $source($context),
-            is_array($source) => Messages::fromArray($source),
-            $source instanceof Messages => $source,
-            is_string($source) => Messages::fromString('user', $source),
-            default => throw new Exception("Invalid template value: $name"),
-        };
-
-        // process results of callable context value
-        return match(true) {
-            $values instanceof Messages => $values,
-            is_array($values) => Messages::fromArray($values),
-            is_string($values) => Messages::fromString('user', $values),
-            default => throw new Exception("Invalid template value: $name"),
-        };
+        return $script;
     }
 }

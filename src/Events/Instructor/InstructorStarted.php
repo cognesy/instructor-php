@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
 use Psr\Log\LogLevel;
 
 class InstructorStarted extends Event
@@ -16,6 +15,6 @@ class InstructorStarted extends Event
 
     public function __toString(): string
     {
-        return Json::encode($this->config);
+        return '';
     }
 }

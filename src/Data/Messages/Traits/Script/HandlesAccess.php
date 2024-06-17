@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
-use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
 
 trait HandlesAccess
@@ -16,21 +15,8 @@ trait HandlesAccess
         return $this->sections[$index];
     }
 
-    /**
-     * @param string|string[] $sections
-     */
-    public function select(string|array $sections = []) : Script {
-        $names = match (true) {
-            empty($sections) => array_map(fn($section) => $section->name, $this->sections),
-            is_string($sections) => [$sections],
-            is_array($sections) => $sections,
-        };
-        $script = new Script();
-        $script->context = $this->context;
-        foreach ($names as $sectionName) {
-            $script->appendSection($this->section($sectionName));
-        }
-        return $script;
+    public function sectionNames() : array {
+        return $this->map(fn(Section $section) => $section->name);
     }
 
     public function hasSection(string $name) : bool {

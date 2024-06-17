@@ -33,6 +33,9 @@ trait HandlesUserAPI
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
+        string $toolTitle = '',
+        string $toolDescription = '',
+        string $retryPrompt = '',
         Mode $mode = Mode::Tools
     ) : mixed {
         $this->request(
@@ -44,6 +47,9 @@ trait HandlesUserAPI
             model: $model,
             maxRetries: $maxRetries,
             options: $options,
+            toolTitle: $toolTitle,
+            toolDescription: $toolDescription,
+            retryPrompt: $retryPrompt,
             mode: $mode,
         );
         return $this->get();
@@ -61,6 +67,9 @@ trait HandlesUserAPI
         string $model = '',
         int $maxRetries = 0,
         array $options = [],
+        string $toolTitle = '',
+        string $toolDescription = '',
+        string $retryPrompt = '',
         Mode $mode = Mode::Tools,
     ) : ?self {
         if (empty($responseModel)) {
@@ -75,6 +84,9 @@ trait HandlesUserAPI
             model: $model,
             maxRetries: $maxRetries,
             options: $options,
+            toolName: $toolTitle,
+            toolDescription: $toolDescription,
+            retryPrompt: $retryPrompt,
             mode: $mode,
         );
         $this->queueEvent(new RequestReceived($this->requestData));

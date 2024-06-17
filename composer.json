@@ -34,7 +34,8 @@
         "toolkit/cli-utils": "^2.0",
         "cebe/markdown": "^1.2",
         "phpstan/phpstan": "^1.11",
-        "spatie/php-structure-discoverer": "^2.1"
+        "spatie/php-structure-discoverer": "^2.1",
+        "vimeo/psalm": "dev-master"
     },
     "config": {
         "allow-plugins": {
@@ -67,6 +68,7 @@
     },
     "scripts": {
         "tests": "@php vendor/bin/pest",
-        "phpstan": "@php vendor/bin/phpstan -c phpstan.neon"
+        "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+        "psalm": "@php vendor/bin/psalm"
     }
 }

@@ -17,9 +17,10 @@ trait HandlesRequestBody {
                 'content' => 'Provide examples.',
             ]);
         }
+
         $this->script->section('pre-input')->appendMessage([
-            'role' => 'assistant',
-            'content' => "Provide input.",
+            'role' => 'user',
+            'content' => "Analyze following context and respond to user prompt.",
         ]);
 
         if($this->mode->is(Mode::Tools)) {
@@ -28,7 +29,8 @@ trait HandlesRequestBody {
 
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
+            ->select(['pre-input', 'messages', 'input', 'data-ack', 'prompt', 'pre-examples', 'examples', 'retries'])
+            ->toSingleSection('merged')
             ->toAlternatingRoles()
             ->toNativeArray(ClientType::fromRequestClass(static::class));
     }

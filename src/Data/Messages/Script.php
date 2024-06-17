@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Data\Messages;
 class Script {
     use Traits\Script\HandlesAccess;
     use Traits\Script\HandlesContext;
+    use Traits\Script\HandlesConversion;
     use Traits\Script\HandlesMutation;
     use Traits\Script\HandlesReordering;
     use Traits\Script\HandlesTransformation;
