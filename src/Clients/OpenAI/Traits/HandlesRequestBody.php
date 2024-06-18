@@ -14,7 +14,7 @@ trait HandlesRequestBody
 
         $this->script->section('pre-input')->appendMessage([
             'role' => 'user',
-            'content' => "Analyze following context and respond to user prompt.",
+            'content' => "Analyze following context and respond to user prompt.\n\n### CONEXT\n\n",
         ]);
 
         if($this->mode->is(Mode::Tools)) {
@@ -24,8 +24,9 @@ trait HandlesRequestBody
         return $this->script
             ->withContext($this->scriptContext)
             ->select(['system', 'pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
+            ->toSingleSection('merged')
             ->toAlternatingRoles()
-            ->toNativeArray(ClientType::OpenAI, $this->scriptContext);
+            ->toNativeArray(ClientType::Groq, $this->scriptContext);
     }
 
     public function tools(): array {

@@ -44,6 +44,7 @@ $user = $instructor
     ->respond(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
+        prompt: 'Parse the user data to JSON, respond using following JSON Schema: <|json_schema|>',
         model: 'llama3-8b-8192',
         options: ['stream' => false],
         examples: [[

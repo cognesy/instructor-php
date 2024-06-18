@@ -49,10 +49,10 @@ class ScriptFactory
         }
 
         // DATA ACK SECTION
-        $script->section('data-ack')->appendMessage([
-            'role' => 'assistant',
-            'content' => $dataAckPrompt
-        ]);
+        //$script->section('data-ack')->appendMessage([
+        //    'role' => 'assistant',
+        //    'content' => $dataAckPrompt
+        //]);
 
         // MESSAGES SECTION
         $messagesSection = array_slice($messages, $index);
