@@ -11,13 +11,6 @@ trait HandlesRequestBody {
             return $this->messages;
         }
 
-        if ($this->script->section('examples')->notEmpty()) {
-            $this->script->section('pre-examples')->appendMessage([
-                'role' => 'assistant',
-                'content' => 'Provide examples.',
-            ]);
-        }
-
         $this->script->section('pre-input')->appendMessage([
             'role' => 'user',
             'content' => "Analyze following context and respond to user prompt.",

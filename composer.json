@@ -73,6 +73,6 @@
         "tests": "@php vendor/bin/pest",
         "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
         "psalm": "@php vendor/bin/psalm",
-        "hub": "@php ./hub.sh"
+        "hub": "@php ./hub.php"
     }
 }

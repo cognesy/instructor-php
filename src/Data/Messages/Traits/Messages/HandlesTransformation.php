@@ -50,21 +50,21 @@ trait HandlesTransformation
         $messages = new Messages();
         $content = [];
         foreach ($this->messages as $message) {
-            $content[] = $message->content();
             if ($role !== $message->role()->value) {
                 $messages->appendMessage(new Message(
-                    $role,
-                    implode("\n", array_filter($content)),
+                    role: $role,
+                    content: implode("\n\n", array_filter($content)), // TODO: check if content is array, needs different strategy then
                 ));
                 $role = $message->role()->value;
                 $content = [];
             }
+            $content[] = $message->content();
         }
         // append remaining content
         if (!empty($content)) {
             $messages->appendMessage(new Message(
-                $role,
-                implode("\n", array_filter($content)),
+                role: $role,
+                content: implode("\n", array_filter($content)), // TODO: see above
             ));
         }
         return $messages;
