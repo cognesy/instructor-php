@@ -42,7 +42,7 @@ trait HandlesTransformation
         return $result;
     }
 
-    public function toAlternatingRoles() : Messages {
+    public function toMergedPerRole() : Messages {
         if ($this->isEmpty()) {
             return $this;
         }
@@ -50,13 +50,18 @@ trait HandlesTransformation
         $messages = new Messages();
         $content = [];
         foreach ($this->messages as $message) {
-            if ($role !== $message->role()->value) {
+            if ($role !== $message->role()->value || $message->isComposite()) {
                 $messages->appendMessage(new Message(
                     role: $role,
                     content: implode("\n\n", array_filter($content)), // TODO: check if content is array, needs different strategy then
                 ));
                 $role = $message->role()->value;
                 $content = [];
+
+                if ($message->isComposite()) {
+                    $messages->appendMessage($message);
+                    continue;
+                }
             }
             $content[] = $message->content();
         }

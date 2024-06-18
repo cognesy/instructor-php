@@ -26,9 +26,9 @@ trait HandlesTransformation
         );
     }
 
-    public function toAlternatingRoles() : static {
+    public function toMergedPerRole() : static {
         return (new Section($this->name(), $this->description()))
-            ->appendMessages($this->messages()->toAlternatingRoles());
+            ->appendMessages($this->messages()->toMergedPerRole());
     }
 
     /**

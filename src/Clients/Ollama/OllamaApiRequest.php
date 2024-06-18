@@ -32,8 +32,6 @@ class OllamaApiRequest extends ApiRequest
         return $this->script
             ->withContext($this->scriptContext)
             ->select(['system', 'pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
-            ->toSingleSection('merged')
-            ->toAlternatingRoles()
-            ->toNativeArray(ClientType::fromRequestClass(static::class));
+            ->toNativeArray(type: ClientType::fromRequestClass(static::class), context: [], mergePerRole: true);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data;
 
+use BackedEnum;
 use Cognesy\Instructor\Contracts\CanProvideJson;
 use Cognesy\Instructor\Contracts\CanProvideMessages;
 use Cognesy\Instructor\Data\Messages\Messages;
@@ -85,6 +86,18 @@ class Example implements CanProvideMessages, CanProvideJson, JsonSerializable
 
     public function output() : mixed {
         return $this->output;
+    }
+
+    public function toArray() : array {
+        return match(true) {
+            is_array($this->output) => $this->output,
+            is_scalar($this->output) => ['value' => $this->output],
+            is_object($this->output) && $this->output instanceof BackedEnum => ['value' => $this->output->value()],
+            is_object($this->output) && method_exists($this->output, 'toArray') => $this->output->toArray(),
+            is_object($this->output) && method_exists($this->output, 'toJson') => $this->output->toJson(),
+            is_object($this->output) => get_object_vars($this->output),
+            default => [],
+        };
     }
 
     public function inputString() : string {

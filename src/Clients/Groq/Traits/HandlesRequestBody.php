@@ -48,9 +48,7 @@ trait HandlesRequestBody
         return $this->script
             ->withContext($this->scriptContext)
             ->select(['pre-prompt', 'prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries', 'pre-response'])
-            ->toSingleSection('merged')
-            ->toAlternatingRoles()
-            ->toNativeArray(ClientType::fromRequestClass(static::class));
+            ->toNativeArray(type: ClientType::fromRequestClass(static::class), context: [], mergePerRole: true);
     }
 
     public function tools(): array {

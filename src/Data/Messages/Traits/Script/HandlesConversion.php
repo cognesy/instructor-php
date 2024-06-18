@@ -53,9 +53,11 @@ trait HandlesConversion
      * @param array<string,mixed>|null $context
      * @return array<string,mixed>
      */
-    public function toNativeArray(ClientType $type, array $context = null) : array {
+    public function toNativeArray(ClientType $type, array $context = null, bool $mergePerRole = false) : array {
         $array = $this->renderMessages(
-            messages: $this->toArray(raw: true),
+            messages: $mergePerRole
+                ? $this->toSingleSection('merged')->toMergedPerRole()->toArray(raw: true)
+                : $this->toArray(raw: true),
             context: $this->context()->merge($context)->toArray(),
         );
         return ChatFormat::mapToTargetAPI(

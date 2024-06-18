@@ -16,19 +16,19 @@ trait HandlesTransformation
         return $script;
     }
 
-    public function toAlternatingRoles() : static {
-        $script = new Script;
+    public function toMergedPerRole() : static {
+        $script = new Script();
         $script->withContext($this->context());
-        foreach ($this->sections as $section) {
-            if ($section->isEmpty()) {
+        foreach ($this->sections as $item) {
+            if ($item->isEmpty()) {
                 continue;
             }
-            $script->appendSection($section->toAlternatingRoles());
+            $script->appendSection($item->toMergedPerRole());
         }
         return $script;
     }
 
-    public function asSingleMessage(string $separator = "\n") : static {
+    public function toSingleMessage(string $separator = "\n") : static {
         $script = new Script();
         $script->withContext($this->context());
         $script->appendSection(new Section('messages'));

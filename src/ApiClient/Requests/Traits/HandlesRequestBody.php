@@ -16,24 +16,10 @@ trait HandlesRequestBody
             return $this->messages;
         }
 
-        //$this->script->section('pre-input')->appendMessage([
-        //    'role' => 'assistant',
-        //    'content' => "Provide input.",
-        //]);
-
-        //if ($this->script->section('examples')->notEmpty()) {
-        //    $this->script->section('pre-examples')->appendMessage([
-        //        'role' => 'user',
-        //        'content' => "\n\n### EXAMPLES:\n\n",
-        //    ]);
-        //}
-
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['pre-input', 'messages', 'input', 'data-ack', 'prompt', 'pre-examples', 'examples', 'retries'])
-            //->toSingleSection('merged')
-            //->toAlternatingRoles()
-            ->toNativeArray(ClientType::fromRequestClass(static::class));
+            ->select(['pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
+            ->toNativeArray(type: ClientType::fromRequestClass(static::class), context: [], mergePerRole: true);
     }
 
     public function tools(): array {
