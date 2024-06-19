@@ -37,7 +37,8 @@
         "spatie/php-structure-discoverer": "^2.1",
         "vimeo/psalm": "dev-master",
         "illuminate/database": "^11.10",
-        "illuminate/events": "^11.10"
+        "illuminate/events": "^11.10",
+        "spatie/yaml-front-matter": "^2.0"
     },
     "config": {
         "allow-plugins": {

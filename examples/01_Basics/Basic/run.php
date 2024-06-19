@@ -1,4 +1,9 @@
-# Basic use
+---
+title: 'Basic use'
+file: 'basic_use'
+---
+
+## Introduction
 
 Instructor allows you to use large language models to extract information
 from the text (or content of chat messages), while following the structure
@@ -19,6 +24,8 @@ Returned object will contain the values of fields extracted from the text.
 
 The format of the extracted data is defined by the response model, which
 in this case is a simple PHP class with some public properties.
+
+## Example
 
 ```php
 <?php

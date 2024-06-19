@@ -1,0 +1,80 @@
+---
+title: 'Quickstart'
+description: 'Start processing your data with LLMs in under 5 minutes'
+---
+
+## Setup your development
+
+Set up LLM provider API keys - create `.env` file in the root of your project and add the following:
+
+```env
+OPENAI_API_KEY=your-openai-api-key
+```
+
+> NOTE: You can get your LLM provider API key from the provider's dashboard, e.g.:
+> [OpenAI](https://platform.openai.com/)
+
+## Install Instructor with Composer
+
+Installing Instructor is simple. Run following command in your terminal, and you're on your way to a smoother data handling experience!
+
+```bash
+composer install cognesy/instructor-php
+```
+
+
+## Basic example
+
+This is a simple example demonstrating how Instructor retrieves structured information from provided text (or chat message sequence).
+
+Response model class is a plain PHP class with typehints specifying the types of fields of the object.
+
+Create file `instructor-test.php` with the following content:
+
+```php
+<?php
+$loader = require 'vendor/autoload.php';
+$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+
+use Cognesy\Instructor\Instructor;
+
+// Step 1: Define target data structure(s)
+class Person {
+    public string $name;
+    public int $age;
+}
+
+// Step 2: Provide content to process
+$text = "His name is Jason and he is 28 years old.";
+
+// Step 3: Use Instructor to run LLM inference
+$person = (new Instructor)->respond(
+    messages: $text,
+    responseModel: Person::class,
+);
+
+// Step 4: Work with structured response data
+assert($person instanceof Person); // true
+assert($person->name === 'Jason'); // true
+assert($person->age === 28); // true
+
+echo $person->name; // Jason
+echo $person->age; // 28
+
+var_dump($person);
+// Person {
+//     name: "Jason",
+//     age: 28
+// }
+```
+
+Now, you can run you example:
+
+```bash
+php instructor-test.php
+```
+
+> **NOTE:** Instructor supports classes / objects as response models. In case you want to extract
+> simple types like strings, integers, float, booleans or enums, you need to wrap them in Scalar adapter.
+> See section: Extracting Scalar Values.
+

@@ -1,0 +1,32 @@
+## Configuration handling
+
+Instructor uses `Configuration` and `ConmponentConfig` classes to handle
+configuration of all components of the library.
+
+
+## `Configuration` class
+
+Instructor uses `Configuration` class to handle configuration of all
+components of the library. It is used to define components, the way to
+instantiate them and the dependencies between components.
+
+`Configuration` class is responsible for instantiation of the components
+(and inject them with the configuration data).
+
+
+
+## `ComponentConfig` class
+
+`ComponentConfig` class contains a configuration data of a single component.
+
+
+
+## Configurators
+
+Instructor uses a set of `Configurators` to define the configuration of the
+submodules of the library.
+
+Configurators are classes defining how to wire up a group of components with their
+dependencies and setting initial values of parameters.
+
+See the source code for more details: https://github.com/cognesy/instructor-php/tree/main/src/Configs

@@ -1,0 +1,205 @@
+{
+    "name": "Starter Kit",
+    "logo": {
+        "dark": "\/logo\/dark.svg",
+        "light": "\/logo\/light.svg"
+    },
+    "favicon": "\/favicon.svg",
+    "colors": {
+        "primary": "#0D9373",
+        "light": "#07C983",
+        "dark": "#0D9373",
+        "anchors": {
+            "from": "#0D9373",
+            "to": "#07C983"
+        }
+    },
+    "topbarLinks": [
+        {
+            "name": "Issues",
+            "url": "https:\/\/github.com\/cognesy\/instructor-php\/issues"
+        }
+    ],
+    "topbarCtaButton": {
+        "name": "Github",
+        "url": "https:\/\/github.com\/cognesy\/instructor-php"
+    },
+    "primaryTab": {
+        "name": "Home"
+    },
+    "tabs": [
+        {
+            "name": "Examples",
+            "url": "cookbook"
+        }
+    ],
+    "anchors": [
+        {
+            "name": "Community",
+            "icon": "discord",
+            "url": "https:\/\/discord.com\/invite\/bD9YE9JArw"
+        },
+        {
+            "name": "Blog",
+            "icon": "newspaper",
+            "url": "https:\/\/cognesy.com\/blog"
+        },
+        {
+            "name": "Commercial support",
+            "icon": "book-open-cover",
+            "url": "https:\/\/cognesy.com\/"
+        }
+    ],
+    "navigation": [
+        {
+            "group": "Get Started",
+            "pages": [
+                "introduction",
+                "quickstart",
+                "llm_providers"
+            ]
+        },
+        {
+            "group": "Concepts",
+            "pages": [
+                "\/concepts\/overview",
+                "\/concepts\/why"
+            ]
+        },
+        {
+            "group": "Essentials",
+            "pages": [
+                "\/essentials\/installation",
+                "\/essentials\/usage",
+                "\/essentials\/modes",
+                "\/essentials\/data_model",
+                "\/essentials\/scalars",
+                "\/essentials\/validation",
+                "\/essentials\/prompts",
+                "\/essentials\/demonstrations"
+            ]
+        },
+        {
+            "group": "Practical techniques",
+            "pages": [
+                "\/techniques\/prompting",
+                "\/techniques\/classification",
+                "\/techniques\/search"
+            ]
+        },
+        {
+            "group": "Internals",
+            "pages": [
+                "\/internals\/instructor",
+                "\/internals\/lifecycle",
+                "\/internals\/response_models",
+                "\/internals\/debugging",
+                "\/internals\/http",
+                "\/internals\/events",
+                "\/internals\/configuration"
+            ]
+        },
+        {
+            "group": "More",
+            "pages": [
+                "misc\/philosophy",
+                "misc\/contributing",
+                "misc\/help"
+            ]
+        },
+        {
+            "group": "Instructor Hub",
+            "pages": [
+                "cookbook\/introduction",
+                "cookbook\/contributing"
+            ]
+        },
+        {
+            "group": "Basics",
+            "pages": [
+                "\/examples\/basics\/basic",
+                "\/examples\/basics\/basic_via_mixin",
+                "\/examples\/basics\/complex_extraction",
+                "\/examples\/basics\/complex_extraction_claude",
+                "\/examples\/basics\/maybe",
+                "\/examples\/basics\/optional_fields",
+                "\/examples\/basics\/private_vs_public_fields",
+                "\/examples\/basics\/self_correction",
+                "\/examples\/basics\/using_attributes",
+                "\/examples\/basics\/validation",
+                "\/examples\/basics\/validation_mixin"
+            ]
+        },
+        {
+            "group": "Advanced",
+            "pages": [
+                "\/examples\/advanced\/caching",
+                "\/examples\/advanced\/custom_client_parameters",
+                "\/examples\/advanced\/custom_prompts",
+                "\/examples\/advanced\/custom_validator",
+                "\/examples\/advanced\/data_inputs",
+                "\/examples\/advanced\/function_arguments",
+                "\/examples\/advanced\/modules",
+                "\/examples\/advanced\/multistep_llm_processing",
+                "\/examples\/advanced\/partial_updates",
+                "\/examples\/advanced\/providing_examples",
+                "\/examples\/advanced\/scalars",
+                "\/examples\/advanced\/sequences",
+                "\/examples\/advanced\/streaming",
+                "\/examples\/advanced\/structures"
+            ]
+        },
+        {
+            "group": "Techniques",
+            "pages": [
+                "\/examples\/techniques\/arbitrary_properties",
+                "\/examples\/techniques\/arbitrary_properties_consistency",
+                "\/examples\/techniques\/chain_of_summaries",
+                "\/examples\/techniques\/chain_of_thought",
+                "\/examples\/techniques\/classification",
+                "\/examples\/techniques\/classification_multiclass",
+                "\/examples\/techniques\/entity_relationships",
+                "\/examples\/techniques\/handling_errors",
+                "\/examples\/techniques\/image_to_data",
+                "\/examples\/techniques\/limiting_length_of_lists",
+                "\/examples\/techniques\/restating_instructions",
+                "\/examples\/techniques\/rewriting_instructions",
+                "\/examples\/techniques\/search_criteria",
+                "\/examples\/techniques\/time_range",
+                "\/examples\/techniques\/time_range_with_cot"
+            ]
+        },
+        {
+            "group": "Troubleshooting",
+            "pages": [
+                "\/examples\/troubleshooting\/debugging",
+                "\/examples\/troubleshooting\/on_error",
+                "\/examples\/troubleshooting\/on_event",
+                "\/examples\/troubleshooting\/wiretap"
+            ]
+        },
+        {
+            "group": "LLM API Support",
+            "pages": [
+                "\/examples\/api_support\/llm_support_anthropic",
+                "\/examples\/api_support\/llm_support_anyscale",
+                "\/examples\/api_support\/llm_support_azure_oai",
+                "\/examples\/api_support\/llm_support_cohere",
+                "\/examples\/api_support\/llm_support_fireworks_ai",
+                "\/examples\/api_support\/llm_support_gemini",
+                "\/examples\/api_support\/llm_support_groq",
+                "\/examples\/api_support\/llm_support_mistral",
+                "\/examples\/api_support\/llm_support_ollama",
+                "\/examples\/api_support\/llm_support_open_ai",
+                "\/examples\/api_support\/llm_support_open_router",
+                "\/examples\/api_support\/llm_support_together_ai"
+            ]
+        }
+    ],
+    "footerSocials": {
+        "x": "https:\/\/x.com\/mintlify",
+        "github": "https:\/\/github.com\/mintlify",
+        "linkedin": "https:\/\/www.linkedin.com\/company\/mintsearch"
+    },
+    "analytics": []
+}

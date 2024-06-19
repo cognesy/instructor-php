@@ -10,8 +10,8 @@ use Cognesy\InstructorHub\Commands\ListAllExamples;
 use Cognesy\InstructorHub\Commands\RunAllExamples;
 use Cognesy\InstructorHub\Commands\RunOneExample;
 use Cognesy\InstructorHub\Commands\ShowExample;
-use Cognesy\InstructorHub\Services\DocGenerator;
 use Cognesy\InstructorHub\Services\ExampleRepository;
+use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
 
 class CommandConfig implements CanAddConfiguration
@@ -23,7 +23,7 @@ class CommandConfig implements CanAddConfiguration
         $config->declare(
             class: GenerateDocs::class,
             context: [
-                'docGen' => $config->reference(DocGenerator::class),
+                'docGen' => $config->reference(MintlifyDocGenerator::class),
             ],
         );
 

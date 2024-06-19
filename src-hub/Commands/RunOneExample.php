@@ -25,7 +25,7 @@ class RunOneExample extends Command
             Cli::outln("You can list available examples with `list` command.\n", Color::DARK_GRAY);
             return;
         }
-        $example = $this->examples->resolveToExample($file);
+        $example = $this->examples->argToExample($file);
         if (is_null($example)) {
             Cli::outln("Example not found", [Color::RED]);
             return;

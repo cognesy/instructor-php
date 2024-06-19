@@ -13,6 +13,7 @@ use Cognesy\InstructorHub\Commands\ShowExample;
 use Cognesy\InstructorHub\Core\CommandProvider;
 use Cognesy\InstructorHub\Services\DocGenerator;
 use Cognesy\InstructorHub\Services\ExampleRepository;
+use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
 
 class ServiceConfig implements CanAddConfiguration
@@ -52,14 +53,23 @@ class ServiceConfig implements CanAddConfiguration
             ],
         );
 
+//        $config->declare(
+//            class: DocGenerator::class,
+//            context: [
+//                'examples' => $config->reference(ExampleRepository::class),
+//                'hubDocsDir' => __DIR__ . '/../../docs/hub',
+//                'mkDocsFile' => __DIR__ . '/../../mkdocs.yml',
+//                'sectionStartMarker' => '###HUB-INDEX-START###',
+//                'sectionEndMarker' => '###HUB-INDEX-END###',
+//            ],
+//        );
+
         $config->declare(
-            class: DocGenerator::class,
+            class: MintlifyDocGenerator::class,
             context: [
                 'examples' => $config->reference(ExampleRepository::class),
-                'hubDocsDir' => __DIR__ . '/../../docs/hub',
-                'mkDocsFile' => __DIR__ . '/../../mkdocs.yml',
-                'sectionStartMarker' => '###HUB-INDEX-START###',
-                'sectionEndMarker' => '###HUB-INDEX-END###',
+                'mintlifyCookbookDir' => __DIR__ . '/../../docs_mintlify/cookbook',
+                'mintlifyIndexFile' => __DIR__ . '/../../docs_mintlify/mint.json',
             ],
         );
     }

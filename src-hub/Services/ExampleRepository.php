@@ -2,6 +2,7 @@
 namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Data\Example;
+use Cognesy\InstructorHub\Data\ExampleGroup;
 
 class ExampleRepository {
     public string $baseDir = '';
@@ -10,6 +11,12 @@ class ExampleRepository {
         $this->baseDir = $baseDir ?: ($this->guessBaseDir() . '/');
     }
 
+    /** @return ExampleGroup[] */
+    public function getExampleGroups() : array {
+        return $this->getExamplesInGroups();
+    }
+
+    /** @return array<Example> */
     public function forEachExample(callable $callback, string $path = '') : array {
         $directories = $this->getExampleDirectories();
         // loop through the files and select only directories
@@ -30,7 +37,7 @@ class ExampleRepository {
         return $list;
     }
 
-    public function resolveToExample(string $input) : ?Example {
+    public function argToExample(string $input) : ?Example {
         // handle example provided by index
         $example = (int) ($input ?? '');
         if ($example > 0) {
@@ -46,23 +53,44 @@ class ExampleRepository {
         return $this->getExample($input);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // INTERNAL ////////////////////////////////////////////////////////////////////////////////////////////
+
+    /** @return array<string, array<Example> */
+    private function getExamplesInGroups() : array {
+        $examples = $this->forEachExample(fn($example) => $example);
+        $groups = [];
+        foreach ($examples as $example) {
+            $group = $example->group;
+            if (!isset($groups[$group])) {
+                $groups[$group] = new ExampleGroup($example->group, $example->groupTitle, []);
+            }
+            $groups[$group]->addExample($example);
+        }
+        return $groups;
+    }
 
     private function getExample(string $path, int $index = 0) : Example {
-        [$group, $name] = explode('/', $path, 2);
-
-        $content = $this->getContent($path);
-        return new Example(
-            index: $index,
-            group: $group,
-            name: $name,
-            hasTitle: $this->hasTitle($content),
-            title: $this->getTitle($content),
-            content: $content,
-            directory: $this->baseDir . $path,
-            relativePath: './examples/' . $path . '/run.php',
-            runPath: $this->getRunPath($path),
-        );
+        return Example::fromFile($this->baseDir, $path, $index);
+//        [$group, $name] = explode('/', $path, 2);
+//
+//        $fileContent = $this->getContent($path);
+//
+//        $document = YamlFrontMatter::parse($fileContent);
+//        $content = $document->body();
+//        $title = $document->matter('title') ?: $this->getTitle($content);
+//        $hasTitle = !empty($title);
+//
+//        return new Example(
+//            index: $index,
+//            group: $group,
+//            name: $name,
+//            hasTitle: $hasTitle,
+//            title: $title,
+//            content: $content,
+//            directory: $this->baseDir . $path,
+//            relativePath: './examples/' . $path . '/run.php',
+//            runPath: $this->getRunPath($path),
+//        );
     }
 
     private function getRunPath(string $path) : string {
@@ -77,11 +105,6 @@ class ExampleRepository {
     private function getTitle(string $content) : string {
         $header = $this->findMdH1Line($content);
         return $this->cleanStr($header, 60);
-    }
-
-    private function hasTitle(string $content) : bool {
-        $title = $this->getTitle($content);
-        return ($title !== '');
     }
 
     private function exampleExists(string $path) : bool {
@@ -129,6 +152,8 @@ class ExampleRepository {
         return count($directories) > 0;
     }
 
+    // DEPRECATED /////////////////////////////////////////////////////////////////////////
+
     private function cleanStr(string $input, int $limit) : string {
         // remove any \n, \r, PHP tags, md hashes
         $output = str_replace(array("\n", "\r", '<?php', '?>', '#'), array(' ', '', '', '', ''), $input);
@@ -139,6 +164,11 @@ class ExampleRepository {
         // remove any ANSI codes
         $output = preg_replace('/\e\[[\d;]*m/', '', $output);
         return substr(trim($output), 0, $limit);
+    }
+
+    private function hasTitle(string $content) : bool {
+        $title = $this->getTitle($content);
+        return ($title !== '');
     }
 
     private function findMdH1Line(string $input) : string {

@@ -3,16 +3,18 @@ namespace Cognesy\InstructorHub\Commands;
 
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
-use Cognesy\InstructorHub\Services\DocGenerator;
+use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Utils\Color;
 
 class GenerateDocs extends Command
 {
     public string $name = "gendocs";
     public string $description = "Generate documentation";
-    public DocGenerator $docGen;
+    public MintlifyDocGenerator $docGen;
 
-    public function __construct(DocGenerator $docGen) {
+    public function __construct(
+        MintlifyDocGenerator $docGen
+    ) {
         $this->docGen = $docGen;
     }
 
@@ -22,7 +24,7 @@ class GenerateDocs extends Command
         $timeStart = microtime(true);
         Cli::outln("Generating docs...", [Color::BOLD, Color::YELLOW]);
         try {
-            $this->docGen->makeDocs($refresh);
+            $this->docGen->makeDocs();
         } catch (\Exception $e) {
             Cli::outln("Error:", [Color::BOLD, Color::RED]);
             Cli::outln($e->getMessage(), Color::GRAY);
