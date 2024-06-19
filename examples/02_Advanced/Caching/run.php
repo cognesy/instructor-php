@@ -1,4 +1,9 @@
-# Caching
+---
+title: 'Caching'
+docname: 'caching'
+---
+
+## Overview
 
 > This feature is experimental.
 
@@ -11,6 +16,9 @@ it on subsequent requests with the same parameters (for given API client).
 This option is available for all clients. By default, caching is turned off.
 
 NOTE: Currently, Instructor does not support caching for streamed responses.
+
+
+## Example
 
 ```php
 <?php

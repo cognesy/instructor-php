@@ -1,4 +1,9 @@
-# Debugging
+---
+title: 'Debugging'
+docname: 'debugging'
+---
+
+## Overview
 
 Instructor gives you access to SaloonPHP debugging mode by setting `options` array
 key `debug` to `true` when creating a client instance.
@@ -6,6 +11,8 @@ key `debug` to `true` when creating a client instance.
 Setting `debug` option to true causes underlying SaloonPHP library to output
 HTTP request and response details to the console, so you can see what is being
 sent to LLM API and what is being received.
+
+## Example
 
 ```php
 <?php

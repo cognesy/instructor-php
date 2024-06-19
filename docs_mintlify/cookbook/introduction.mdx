@@ -1,12 +1,12 @@
-## Running cookbooks with Instructor Hub
+## Running cookbooks with Instructor Hub tool
 
-Welcome to Instructor Hub. The goal of this section is to provide a set of tutorials and examples to help you get started, and allow you to pull in the code you need to get started with Instructor.
+Welcome to Instructor cookbooks. The goal of this section is to provide a set of tutorials and examples to help you get started.
 
 
 
 ## CLI Usage
 
-Instructor hub comes with a command line interface (CLI) that allows you to view and interact with the tutorials and examples and allows you to pull in the code you need to get started with the API.
+Instructor comes with a CLI tool that allows you to view and interact with the tutorials and examples and allows you to find the code snippets you may need to get solution to your problem.
 
 
 
@@ -15,7 +15,7 @@ Instructor hub comes with a command line interface (CLI) that allows you to view
 Run `./hub.sh list` you can see all the available tutorials and examples.
 
 ```bash
-$ ./cookbook.sh list
+$ ./hub.sh list
 ```
 ...or on Windows:
 
@@ -28,7 +28,7 @@ $ ./hub.bat list
 To read a tutorial, you can run `./hub.sh show {id}` to see the full tutorial in the terminal.
 
 ```bash
-$ ./cookbook.sh show {name or id}
+$ ./hub.sh show {name or id}
 ```
 
 Currently, there is no way to page through the tutorial - feel free to contribute :)
@@ -39,7 +39,7 @@ Currently, there is no way to page through the tutorial - feel free to contribut
 To run a tutorial, you run `./hub.sh run {id}` in terminal - it will execute the code and show the output. You need to have your OPENAI_API_KEY set in your environment (.env file in root directory of your copy of instructor-php repo). 
 
 ```bash
-$ ./cookbook.sh run {name or id}
+$ ./hub.sh run {name or id}
 ```
 
 
@@ -48,6 +48,6 @@ $ ./cookbook.sh run {name or id}
 This is mostly for testing if cookbooks are executed properly, but you can run `./hub.sh all {id}` to run all the tutorials and examples in the terminal.
 
 ```bash
-$ ./cookbook.sh all {name or id}
+$ ./hub.sh all {name or id}
 ```
 

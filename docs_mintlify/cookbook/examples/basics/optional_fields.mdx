@@ -1,8 +1,15 @@
-# Making some fields optional
+---
+title: 'Making some fields optional'
+docname: 'optional_fields'
+---
+
+## Overview
 
 Use PHP's nullable types by prefixing type name with question mark (?) to mark
 component fields which are optional and set a default value to prevent undesired
 defaults like empty strings.
+
+## Example
 
 ```php
 <?php

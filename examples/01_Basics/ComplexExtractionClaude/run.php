@@ -1,7 +1,14 @@
-# Extraction of complex objects (Anthropic)
+---
+title: 'Extraction of complex objects (Anthropic)'
+docname: 'complex_extraction_claude'
+---
+
+## Overview
 
 This is an example of extraction of a very complex structure from
 the provided text with Anthropic Claude 3 model.
+
+## Example
 
 ```php
 <?php

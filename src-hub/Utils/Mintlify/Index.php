@@ -29,7 +29,7 @@ class Index
     }
 
     public function saveFile(string $path) : false|int {
-        $json = json_encode($this->toArray(), JSON_PRETTY_PRINT);
+        $json = json_encode($this->toArray(), JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
         return file_put_contents($path, $json);
     }
 
@@ -51,7 +51,7 @@ class Index
     }
 
     public function toArray() : array {
-        return [
+        return array_filter([
             'name' => $this->name,
             'logo' => $this->logo,
             'favicon' => $this->favicon,
@@ -64,6 +64,6 @@ class Index
             'navigation' => $this->navigation->toArray(),
             'footerSocials' => $this->footerSocials,
             'analytics' => $this->analytics,
-        ];
+        ], fn($v) => !empty($v));
     }
 }

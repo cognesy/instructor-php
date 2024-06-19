@@ -27,14 +27,34 @@ class MintlifyDocGenerator
     }
 
     private function updateFiles() : void {
-        $this->removeDir($this->mintlifyCookbookDir . '/examples');
+        //$this->removeDir($this->mintlifyCookbookDir . '/examples');
         $groups = $this->examples->getExampleGroups();
         foreach ($groups as $group) {
             foreach ($group->examples as $example) {
                 $this->view->renderFile($example);
                 $targetFilePath = $this->mintlifyCookbookDir . $example->toDocPath() . '.mdx';
-                $this->view->renderNew();
-                $this->copy($example->runPath, $targetFilePath);
+
+                // get last update date of source file
+                $sourceFileLastUpdate = filemtime($example->runPath);
+                // get last update date of target file
+                $targetFile = $this->mintlifyCookbookDir . $example->toDocPath() . '.mdx';
+                $targetFileExists = file_exists($targetFile);
+
+                if ($targetFileExists) {
+                    $targetFileLastUpdate = filemtime($targetFile);
+                    // if source file is older than target file, skip
+                    if ($sourceFileLastUpdate > $targetFileLastUpdate) {
+                        // remove target file
+                        unlink($targetFile);
+                        $this->copy($example->runPath, $targetFilePath);
+                        $this->view->renderExists(true);
+                    } else {
+                        $this->view->renderExists(false);
+                    }
+                } else {
+                    $this->copy($example->runPath, $targetFilePath);
+                    $this->view->renderNew();
+                }
                 $this->view->renderResult(true);
             }
         }
@@ -43,6 +63,7 @@ class MintlifyDocGenerator
         $this->copy($this->mintlifyIndexFile, $this->mintlifyIndexFile . '_' . $currentDateTime);
         // update mint.json
         $this->updateHubIndex($groups);
+        $this->view->renderResult(true);
     }
 
     private function updateHubIndex(array $exampleGroups) : bool {

@@ -26,7 +26,7 @@ class Example
     }
 
     public function toNavigationItem() : NavigationItem {
-        return NavigationItem::fromString($this->toDocPath());
+        return NavigationItem::fromString('cookbook' . $this->toDocPath());
     }
 
     public function toDocPath() : string {

@@ -28,7 +28,7 @@ class DocGenView
     }
 
     public function renderUpdate(bool $success) : void {
-        Cli::out("Updating mkdocs index... ", [Color::GRAY]);
+        Cli::out("Updating index... ", [Color::GRAY]);
         if (!$success) {
             Cli::outln("ERROR", [Color::RED]);
             return;
