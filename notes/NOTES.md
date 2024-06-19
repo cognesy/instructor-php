@@ -35,6 +35,11 @@ Catch up with the latest additions.
 
 ## Brain dump
 
+- Streaming JSON parser - https://github.com/kelunik/streaming-json
+- Retry - https://github.com/kelunik/retry
+- Rate limiter - https://github.com/kelunik/rate-limit
+- Check for broken links - https://github.com/kelunik/link-check
+- Async flow execution - https://github.com/darkwood-com/flow
 - Models to implement JsonSerializable: https://www.php.net/manual/en/jsonserializable.jsonserialize.php / https://www.sitepoint.com/use-jsonserializable-interface/
 - Support JsonException for serialization / deserialization errors - https://www.php.net/manual/en/class.jsonexception.php
 - ValueError - https://www.php.net/manual/en/class.valueerror.php
