@@ -59,8 +59,8 @@ class MintlifyDocGenerator
             }
         }
         // make backup copy of mint.json
-        $currentDateTime = date('Y-m-d_H-i-s');
-        $this->copy($this->mintlifyIndexFile, $this->mintlifyIndexFile . '_' . $currentDateTime);
+        //$currentDateTime = date('Y-m-d_H-i-s');
+        //$this->copy($this->mintlifyIndexFile, $this->mintlifyIndexFile . '_' . $currentDateTime);
         // update mint.json
         $this->updateHubIndex($groups);
         $this->view->renderResult(true);
