@@ -27,6 +27,7 @@ use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherApiRequest;
 use Exception;
+use Tests\MockLLM;
 
 enum ClientType : string
 {
@@ -44,7 +45,6 @@ enum ClientType : string
     case Together = 'together';
     case OpenAICompatible = 'openai-compatible';
 
-
     public static function fromString(string $type) : self {
         return match($type) {
             'anthropic' => self::Anthropic,
@@ -59,7 +59,7 @@ enum ClientType : string
             'openai' => self::OpenAI,
             'openrouter' => self::OpenRouter,
             'together' => self::Together,
-            default => throw new Exception("Unknown client type: $type"),
+            default => self::OpenAICompatible,
         };
     }
 
@@ -78,7 +78,7 @@ enum ClientType : string
             OpenAIApiRequest::class => self::OpenAI,
             OpenRouterApiRequest::class => self::OpenRouter,
             TogetherApiRequest::class => self::Together,
-            default => throw new Exception("Unknown client class: $class"),
+            default => self::OpenAICompatible,
         };
     }
 
@@ -96,6 +96,7 @@ enum ClientType : string
             self::OpenAI => OpenAIClient::class,
             self::OpenRouter => OpenRouterClient::class,
             self::Together => TogetherAIClient::class,
+            default => OpenAIClient::class,
         };
     }
 
@@ -116,7 +117,7 @@ enum ClientType : string
             OpenAIClient::class => self::OpenAI,
             OpenRouterClient::class => self::OpenRouter,
             TogetherAIClient::class => self::Together,
-            default => throw new Exception("Unknown client class: $class"),
+            default => self::OpenAICompatible,
         };
     }
 
@@ -134,6 +135,7 @@ enum ClientType : string
             self::OpenAI => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::OpenRouter => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::Together => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            self::OpenAICompatible => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
         };
     }
 
@@ -156,6 +158,7 @@ enum ClientType : string
             self::OpenAI => 'content',
             self::OpenRouter => 'content',
             self::Together => 'content',
+            self::OpenAICompatible => 'content',
         };
     }
 
@@ -173,6 +176,7 @@ enum ClientType : string
             self::OpenAI => $message,
             self::OpenRouter => $message,
             self::Together => $message,
+            self::OpenAICompatible => $message,
         };
     }
 
