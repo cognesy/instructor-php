@@ -21,7 +21,7 @@ class GroqConfig implements CanAddConfiguration
                 'connector' => $config->reference(GroqConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['GROQ_DEFAULT_MODEL'] ?? 'llama3-8b-8192',
-                'defaultMaxTokens' => $_ENV['GROQ_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['GROQ_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new GroqClient(
@@ -92,8 +92,8 @@ class GroqConfig implements CanAddConfiguration
                 'label' => 'GroQ Mixtral 8x7B',
                 'type' => 'mixtral',
                 'name' => 'mixtral-8x7b-32768',
-                'maxTokens' => 32768,
-                'contextSize' => 32768,
+                'maxTokens' => 32_768,
+                'contextSize' => 32_768,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [

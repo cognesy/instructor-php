@@ -1,10 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Clients\Ollama;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesRequestBody;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesResponse;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesRequestBody;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 class OllamaApiRequest extends ApiRequest
@@ -18,20 +17,15 @@ class OllamaApiRequest extends ApiRequest
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'messages' => $this->messages(),
-                    'tools' => $this->tools(),
-                    'tool_choice' => $this->getToolChoice(),
+                    'messages' => $this->clientType->toNativeMessages($this->withMetaSections()->messages()),
+                    'response_format' => $this->getResponseFormat(),
+                    // TODO: Ollama does not support tool calling - add when supported
+                    //'tools' => $this->tools(),
+                    //'tool_choice' => $this->getToolChoice(),
                 ],
             )
         );
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
         return $body;
-    }
-
-    public function messages(): array {
-        return $this->script
-            ->withContext($this->scriptContext)
-            ->select(['system', 'pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
-            ->toNativeArray(type: ClientType::fromRequestClass(static::class), context: [], mergePerRole: true);
     }
 }

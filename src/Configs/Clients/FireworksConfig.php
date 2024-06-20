@@ -21,7 +21,7 @@ class FireworksConfig implements CanAddConfiguration
                 'connector' => $config->reference(FireworksAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['FIREWORKSAI_DEFAULT_MODEL'] ?? 'accounts/fireworks/models/mixtral-8x7b-instruct',
-                'defaultMaxTokens' => $_ENV['FIREWORKSAI_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['FIREWORKSAI_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new FireworksAIClient(

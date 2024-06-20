@@ -23,7 +23,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'connector' => $config->reference(OpenAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['OPENAI_DEFAULT_MODEL'] ?? 'gpt-4o',
-                'defaultMaxTokens' => $_ENV['OPENAI_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['OPENAI_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new OpenAIClient(
@@ -95,8 +95,8 @@ class OpenAIConfig implements CanAddConfiguration
                 'label' => 'OpenAI GPT 4',
                 'type' => 'gpt4',
                 'name' => 'gpt-4',
-                'maxTokens' => 8_192,
-                'contextSize' => 8_192,
+                'maxTokens' => 8192,
+                'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [
@@ -133,7 +133,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'label' => 'OpenAI GPT 3.5 Turbo',
                 'type' => 'gpt35',
                 'name' => 'gpt-3.5-turbo',
-                'maxTokens' => 4_096,
+                'maxTokens' => 4096,
                 'contextSize' => 16_385,
                 'inputCost' => 1,
                 'outputCost' => 1,

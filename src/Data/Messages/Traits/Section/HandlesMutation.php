@@ -18,6 +18,20 @@ trait HandlesMutation
         return $this;
     }
 
+    public function appendMessageIfEmpty(array|Message $message) : static {
+        if ($this->messages()->isEmpty()) {
+            $this->messages()->appendMessage($message);
+        }
+        return $this;
+    }
+
+    public function appendMessageIf(array|Message $message, callable $condition) : static {
+        if ($condition($this)) {
+            $this->messages()->appendMessage($message);
+        }
+        return $this;
+    }
+
     public function appendMessages(array|Messages $messages) : static {
         $this->messages()->appendMessages($messages);
         return $this;

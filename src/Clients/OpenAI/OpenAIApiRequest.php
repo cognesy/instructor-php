@@ -3,12 +3,13 @@ namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesResponse;
 use Saloon\Enums\Method;
 
 class OpenAIApiRequest extends ApiRequest
 {
     use Traits\HandlesRequestBody;
-    use Traits\HandlesResponse;
+    use HandlesResponse;
 
     public function __construct(
         array            $body = [],

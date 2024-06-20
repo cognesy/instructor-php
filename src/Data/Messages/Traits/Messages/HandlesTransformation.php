@@ -6,6 +6,59 @@ use Cognesy\Instructor\Data\Messages\Messages;
 
 trait HandlesTransformation
 {
+    public static function mergedPerRole(array $messages) : array {
+        if (empty($messages)) {
+            return ['role' => 'system', 'content' => ''];
+        }
+
+        $role = 'user';
+        $merged = new Messages();
+        $content = [];
+        foreach ($messages as $message) {
+            if ($role !== $message['role'] || is_array($message['content'])) {
+                $merged->appendMessage(new Message(
+                    role: $role,
+                    content: implode("\n\n", array_filter($content)),
+                ));
+                $role = $message['role'];
+                $content = [];
+
+                if (is_array($message['content'])) {
+                    $merged->appendMessage($message);
+                    continue;
+                }
+            }
+            $content[] = $message['content'];
+        }
+        // append remaining content
+        if (!empty($content)) {
+            $merged->appendMessage(new Message(
+                role: $role,
+                content: implode("\n", array_filter($content)), // TODO: see above
+            ));
+        }
+        return $merged->toArray();
+    }
+
+    public static function asString(
+        array $messages,
+        string $separator = "\n",
+        callable $renderer = null
+    ) : string {
+        $result = '';
+        foreach ($messages as $message) {
+            if (empty($message) || !is_array($message) || empty($message['content'])) {
+                continue;
+            }
+            $rendered = match(true) {
+                !is_null($renderer) => $renderer($message),
+                default => $message['content'] . $separator,
+            };
+            $result .= $rendered;
+        }
+        return $result;
+    }
+
     /**
      * @return array<string, string|array>
      */
@@ -21,14 +74,7 @@ trait HandlesTransformation
     }
 
     public function toString(string $separator = "\n") : string {
-        $result = '';
-        foreach ($this->messages as $message) {
-            if ($message->isEmpty()) {
-                continue;
-            }
-            $result .= $message->toString() . $separator;
-        }
-        return $result;
+        return self::asString($this->toArray(), $separator);
     }
 
     public function toRoleString(string $role, string $separator = "\n") : string {

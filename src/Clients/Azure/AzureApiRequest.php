@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesRequestBody;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesResponse;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesRequestBody;
 use Saloon\Enums\Method;
 
 class AzureApiRequest extends ApiRequest

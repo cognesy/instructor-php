@@ -21,7 +21,7 @@ class TogetherConfig implements CanAddConfiguration
                 'connector' => $config->reference(TogetherAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['TOGETHERAI_DEFAULT_MODEL'] ?? 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-                'defaultMaxTokens' => $_ENV['TOGETHERAI_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['TOGETHERAI_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new TogetherAIClient(

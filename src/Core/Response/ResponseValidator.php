@@ -37,6 +37,11 @@ class ResponseValidator
         };
     }
 
+    public function withValidator(CanValidateObject $validator) : self {
+        $this->validator = $validator;
+        return $this;
+    }
+
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {
         $this->events->dispatch(new CustomResponseValidationAttempt($response));
         return $response->validate();

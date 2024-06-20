@@ -44,14 +44,14 @@ trait HandlesStreamApiResponse
     }
 
     protected function getStream(ApiRequest $request): Generator {
-        $this?->events->dispatch(new ApiStreamRequestInitiated($request));
+        $this?->events->dispatch(new ApiStreamRequestInitiated($request->toArray()));
         try {
             $response = $this->connector($request->requestConfig()->debugConfig)->send($request);
         } catch (RequestException $exception) {
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
         }
-        $this?->events->dispatch(new ApiStreamConnected($response));
+        $this?->events->dispatch(new ApiStreamConnected($response->status()));
 
         $iterator = $this->getStreamIterator(
             stream: $response->stream(),
@@ -65,7 +65,7 @@ trait HandlesStreamApiResponse
             $this?->events->dispatch(new ApiStreamUpdateReceived($streamedData));
             yield $streamedData;
         }
-        $this?->events->dispatch(new ApiStreamResponseReceived($response));
+        $this?->events->dispatch(new ApiStreamResponseReceived($response->status()));
     }
 
     abstract protected function isDone(string $data): bool;

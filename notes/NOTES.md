@@ -31,6 +31,7 @@ Catch up with the latest additions.
 - PSR-14 events - finish, demo how to plug custom dispatcher
 - PSR-11 container - finish, demo how to plug custom container
 - PSR-3 logger - finish, demo how to plug custom logger
+- Validators / Deserializers / Transformers - chain of objects, not a single object
 
 
 ## Brain dump

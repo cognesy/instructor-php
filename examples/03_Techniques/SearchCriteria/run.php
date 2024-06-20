@@ -1,5 +1,5 @@
 ---
-title: 'Expanding Search Queries'
+title: 'Expanding search queries'
 docname: 'search_query_expansion'
 ---
 
@@ -20,11 +20,13 @@ against specialized APIs or search engines.
 
 ## Structure of the data
 
-The `SearchQuery` class is a PHP class that defines the structure of an individual
-search query. It has three fields: `title`, `query`, and `type`. The `title` field
-is the title of the request, the `query` field is the query to search for relevant
-content, and the `type` field is the type of search. The `execute` method is used
-to execute the search query.
+The `SearchQuery` is a PHP class that defines the structure of an individual
+search query.
+
+It has three fields: `title`, `query`, and `type`. The `title` field is the title
+of the request, the `query` field is the query to search for relevant content, and
+the `type` field is the type of search. The `execute` method is used to execute the
+search query.
 
 ## Example
 
@@ -66,9 +68,9 @@ class SearchQuery
 ## Segmenting the Search Prompt
 
 The `segment` function takes a string `data` and segments it into multiple search queries.
-It uses the `Instructor::respond` method to send a prompt and extract the data into
-the target object. The `responseModel` parameter specifies `Search::class` as the model
-to use for extraction.
+
+It uses the `Instructor::respond()` method to extract the data into the target object.
+The `responseModel` parameter specifies `Search::class` as the model to use for extraction.
 
 ```php
 <?php

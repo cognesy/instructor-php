@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 
@@ -21,7 +22,7 @@ class AnthropicApiRequest extends ApiRequest
                 [
                     'model' => $this->model(),
                     'system' => $this->system(),
-                    'messages' => $this->messages(),
+                    'messages' => $this->clientType->toNativeMessages(Messages::mergedPerRole($this->withMetaSections()->messages())),
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                     'max_tokens' => $this->maxTokens,

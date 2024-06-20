@@ -21,7 +21,7 @@ class OpenRouterConfig implements CanAddConfiguration
                 'connector' => $config->reference(OpenRouterConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['OPENROUTER_DEFAULT_MODEL'] ?? 'gpt-3.5-turbo',
-                'defaultMaxTokens' => $_ENV['OPENROUTER_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['OPENROUTER_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new OpenRouterClient(
@@ -73,7 +73,7 @@ class OpenRouterConfig implements CanAddConfiguration
                 'label' => 'OpenRouter Mixtral 8x7b',
                 'type' => 'mixtral',
                 'name' => 'mistralai/mixtral-8x7b',
-                'maxTokens' => 32768,
+                'maxTokens' => 32_768,
                 'contextSize' => 32768,
                 'inputCost' => 1,
                 'outputCost' => 1,
@@ -92,7 +92,7 @@ class OpenRouterConfig implements CanAddConfiguration
                 'label' => 'OpenRouter Mistral 7B Instruct',
                 'type' => 'mistral',
                 'name' => 'mistralai/mistral-7b-instruct:free',
-                'maxTokens' => 32768,
+                'maxTokens' => 32_768,
                 'contextSize' => 32768,
                 'inputCost' => 1,
                 'outputCost' => 1,
@@ -111,8 +111,8 @@ class OpenRouterConfig implements CanAddConfiguration
                 'label' => 'OpenRouter GPT 3.5 Turbo',
                 'type' => 'gpt3.5',
                 'name' => 'gpt-3.5-turbo',
-                'maxTokens' => 32768,
-                'contextSize' => 32768,
+                'maxTokens' => 32_768,
+                'contextSize' => 32_768,
                 'inputCost' => 1,
                 'outputCost' => 1,
                 'roleMap' => [

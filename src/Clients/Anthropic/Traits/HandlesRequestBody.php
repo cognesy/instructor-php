@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Clients\Anthropic\Traits;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesRequestBody {
@@ -11,19 +10,20 @@ trait HandlesRequestBody {
             return $this->messages;
         }
 
-        $this->script->section('pre-input')->appendMessage([
-            'role' => 'user',
-            'content' => "Analyze following context and respond to user prompt.",
-        ]);
-
         if($this->mode->is(Mode::Tools)) {
             unset($this->scriptContext['json_schema']);
         }
 
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['pre-input', 'messages', 'input', 'data-ack', 'prompt', 'pre-examples', 'examples', 'retries'])
-            ->toNativeArray(type: ClientType::fromRequestClass(static::class), context: [], mergePerRole: true);
+            ->select([
+                'system',
+                'pre-input', 'messages', 'input', 'post-input',
+                'pre-prompt', 'prompt', 'post-prompt',
+                'pre-examples', 'examples', 'post-examples',
+                'pre-retries', 'retries', 'post-retries'
+            ])
+            ->toArray();
     }
 
     public function system(): string {

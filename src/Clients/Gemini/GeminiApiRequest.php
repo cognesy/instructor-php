@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Clients\Gemini;
 
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 use Saloon\Enums\Method;
 
@@ -14,7 +15,7 @@ class GeminiApiRequest extends ApiRequest
     protected string $defaultEndpoint = '/models/{model}:generateContent';
     protected string $streamEndpoint = '/models/{model}:streamGenerateContent?alt=sse';
 
-    private string $system;
+    private string $system = '';
 
     public function __construct(
         array $body = [],
@@ -27,12 +28,10 @@ class GeminiApiRequest extends ApiRequest
     }
 
     protected function defaultBody(): array {
-        $system = $this->system();
         $body = array_filter(
             [
-                'systemInstruction' => $system,
-                'contents' => $this->messages(),
-                //'tools' => [$this->tools()],
+                'systemInstruction' => empty($this->system()) ? [] : ['parts' => ['text' => Messages::asString($this->system())]],
+                'contents' => $this->clientType->toNativeMessages($this->withMetaSections()->messages()),
                 'generationConfig' => $this->options(),
             ],
         );

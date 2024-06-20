@@ -21,7 +21,7 @@ class GeminiConfig implements CanAddConfiguration
                 'connector' => $config->reference(GeminiConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['GEMINI_DEFAULT_MODEL'] ?? 'gemini-1.5-flash',
-                'defaultMaxTokens' => $_ENV['GEMINI_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['GEMINI_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new GeminiClient(

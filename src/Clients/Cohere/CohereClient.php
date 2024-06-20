@@ -12,7 +12,7 @@ class CohereClient extends ApiClient
     use Traits\HandlesStreamData;
 
     public string $defaultModel = 'cohere:command-r';
-    public int $defaultMaxTokens = 256;
+    public int $defaultMaxTokens = 1024;
 
     public function __construct(
         protected $apiKey = '',

@@ -99,7 +99,10 @@ enum ClientType : string
         };
     }
 
-    public static function fromClientClass(string $class) : self {
+    public static function fromClientClass(string|object $class) : self {
+        if (is_object($class)) {
+            $class = get_class($class);
+        }
         return match($class) {
             AnthropicClient::class => self::Anthropic,
             AnyscaleClient::class => self::Anyscale,
@@ -155,20 +158,32 @@ enum ClientType : string
             self::Together => 'content',
         };
     }
-}
 
-//$roleMap = [
-//    ClientType::Anthropic->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'assistant', 'tool' => 'user'],
-//    ClientType::Cohere->value => ['user' => 'USER', 'assistant' => 'CHATBOT', 'system' => 'CHATBOT', 'tool' => 'USER'],
-//    ClientType::Mistral->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
-//    ClientType::OpenAI->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
-//    ClientType::OpenAICompatible->value => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
-//];
-//
-//$keyMap = [
-//    ClientType::Anthropic->value => 'content',
-//    ClientType::Cohere->value => 'message',
-//    ClientType::Mistral->value => 'content',
-//    ClientType::OpenAICompatible->value => 'content',
-//    ClientType::OpenAI->value => 'content',
-//];
+    public function toNativeMessage(array $message) : array {
+        return match($this) {
+            self::Anthropic => ['role' => $this->mapRole($message['role']), 'content' => $message['content']],
+            self::Anyscale => $message,
+            self::Azure => $message,
+            self::Cohere => ['role' => $this->mapRole($message['role']), 'message' => $message['content']],
+            self::Fireworks => $message,
+            self::Gemini => ['role' => $this->mapRole($message['role']), "parts" => [["text" => $message['content']]]],
+            self::Groq => $message,
+            self::Mistral => $message,
+            self::Ollama => $message,
+            self::OpenAI => $message,
+            self::OpenRouter => $message,
+            self::Together => $message,
+        };
+    }
+
+    public function toNativeMessages(string|array $messages) : array {
+        if (is_string($messages)) {
+            $messages = [['role' => 'user', 'content' => $messages]];
+        }
+        $transformed = [];
+        foreach ($messages as $message) {
+            $transformed[] = $this->toNativeMessage($message);
+        }
+        return $transformed;
+    }
+}

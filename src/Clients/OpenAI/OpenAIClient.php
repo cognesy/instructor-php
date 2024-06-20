@@ -3,16 +3,17 @@ namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 
 class OpenAIClient extends ApiClient
 {
-    use Traits\HandlesStreamData;
+    use HandlesStreamData;
 
     public string $defaultModel = 'openai:gpt-4o';
-    public int $defaultMaxTokens = 256;
+    public int $defaultMaxTokens = 1024;
 
     public function __construct(
         protected $apiKey = '',

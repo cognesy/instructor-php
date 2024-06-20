@@ -2,9 +2,11 @@
 
 namespace Cognesy\Instructor\ApiClient\Requests;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
@@ -32,12 +34,13 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     // NEW
     protected Mode $mode;
+    protected ClientType $clientType;
     protected Script $script;
     protected array $scriptContext = [];
 
     // BODY FIELDS
     protected string $model = '';
-    protected int $maxTokens = 512;
+    protected int $maxTokens = 1024;
     protected array $messages = [];
     protected array $tools = [];
     protected string|array $toolChoice = [];
@@ -66,13 +69,14 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
 
     protected function applyData() : void {
         $this->mode = $this->getData('mode', Mode::MdJson);
+        $this->clientType = $this->getData('client_type', ClientType::fromRequestClass(static::class));
         $this->script = $this->getData('script', new Script());
         $this->scriptContext = $this->getData('script_context', []);
     }
 
     protected function initBodyFields() : void {
         $this->model = $this->pullBodyField('model', '');
-        $this->maxTokens = $this->pullBodyField('max_tokens', 512);
+        $this->maxTokens = $this->pullBodyField('max_tokens', 1024);
         $this->messages = $this->pullBodyField('messages', []);
 
         // get tools and format
@@ -90,7 +94,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'messages' => $this->messages(),
+                    'messages' => $this->clientType->toNativeMessages(Messages::asString($this->withMetaSections()->messages())),
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                     'response_format' => $this->getResponseFormat(),
@@ -99,6 +103,43 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         );
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
         return $body;
+    }
+
+    protected function withMetaSections() : static {
+        $this->script->section('pre-input')->appendMessageIfEmpty([
+            'role' => 'user',
+            'content' => "INPUT:",
+        ]);
+
+        $this->script->section('pre-prompt')->appendMessageIfEmpty([
+            'role' => 'user',
+            'content' => "TASK:",
+        ]);
+
+        if ($this->script->section('examples')->notEmpty()) {
+            $this->script->section('pre-examples')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "EXAMPLES:",
+            ]);
+        }
+
+        $this->script->section('post-examples')->appendMessageIfEmpty([
+            'role' => 'user',
+            'content' => "RESPONSE:",
+        ]);
+
+        if ($this->script->section('retries')->notEmpty()) {
+            $this->script->section('pre-retries')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "FEEDBACK:",
+            ]);
+            $this->script->section('post-retries')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "CORRECTED RESPONSE:",
+            ]);
+        }
+
+        return $this;
     }
 
     protected function getData(string $name, mixed $defaultValue) : mixed {

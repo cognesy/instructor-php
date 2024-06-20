@@ -57,7 +57,7 @@ class AzureConfig implements CanAddConfiguration
                 'label' => 'Azure GPT 3.5 Turbo',
                 'type' => 'gpt35',
                 'name' => 'gpt-3.5-turbo',
-                'maxTokens' => 4_096,
+                'maxTokens' => 4096,
                 'contextSize' => 16_385,
                 'inputCost' => 1,
                 'outputCost' => 1,

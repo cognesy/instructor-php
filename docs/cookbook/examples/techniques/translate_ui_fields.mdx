@@ -1,0 +1,57 @@
+---
+title: 'Translating UI text fields'
+docname: 'translate_ui_fields'
+---
+
+## Overview
+
+You can use Instructor to translate text fields in your UI. We can instruct the model to
+translate only the text fields from one language to another, but leave the other fields,
+like emails or URLs, unchanged.
+
+This example demonstrates how to translate text fields from English to German using
+structure-to-structure processing with LLM.
+
+## Example
+
+```php
+<?php
+$loader = require 'vendor/autoload.php';
+$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+
+use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Schema\Attributes\Instructions;
+
+#[Instructions('Text fields translated to German, other fields unchanged.')]
+class TextElementModel
+{
+    public function __construct(
+        public string $headline = '',
+        public string $text = '',
+        public string $url = 'https://translation.com/'
+    ) {}
+}
+
+$sourceModel = new TextElementModel(
+    headline: 'This is my headline',
+    text: '<p>This is some WYSIWYG HTML content.<\/p>'
+);
+
+$transformedModel = (new Instructor)->respond(
+    input: $sourceModel,
+    responseModel: get_class($sourceModel),
+    options: ['temperature' => 0],
+);
+
+dump($transformedModel);
+
+assert((
+    str_contains($transformedModel->headline, 'Überschrift')
+    || str_contains($transformedModel->headline, 'Schlagzeile')
+) === true);
+assert(str_contains($transformedModel->text, 'Inhalt') === true);
+assert(str_contains($transformedModel->text, '<p>') === true);
+assert(str_contains(str_replace('\/', '/', $transformedModel->url), 'https://translation.com/') === true);
+?>
+```
+

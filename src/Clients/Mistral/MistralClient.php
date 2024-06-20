@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Clients\Mistral;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesStreamData;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
@@ -14,7 +14,7 @@ class MistralClient extends ApiClient
     use HandlesStreamData;
 
     public string $defaultModel = 'mistral:mistral-small';
-    public int $defaultMaxTokens = 256;
+    public int $defaultMaxTokens = 1024;
 
     public function __construct(
         protected $apiKey = '',

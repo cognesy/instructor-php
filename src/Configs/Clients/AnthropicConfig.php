@@ -21,7 +21,7 @@ class AnthropicConfig implements CanAddConfiguration
                 'connector' => $config->reference(AnthropicConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['ANTHROPIC_DEFAULT_MODEL'] ?? 'claude-3-haiku-20240307',
-                'defaultMaxTokens' => $_ENV['ANTHROPIC_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['ANTHROPIC_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new AnthropicClient(

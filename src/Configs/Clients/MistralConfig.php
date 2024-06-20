@@ -21,7 +21,7 @@ class MistralConfig implements CanAddConfiguration
                 'connector' => $config->reference(MistralConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['MISTRAL_DEFAULT_MODEL'] ?? 'mistral-small-latest',
-                'defaultMaxTokens' => $_ENV['MISTRAL_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['MISTRAL_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new MistralClient(

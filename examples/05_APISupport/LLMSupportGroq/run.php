@@ -29,12 +29,12 @@ enum UserType : string {
 }
 
 class User {
-    public ?int $age;
     public string $name;
-    public string $username;
     public UserType $role;
     /** @var string[] */
     public array $hobbies;
+    public string $username;
+    public ?int $age;
 }
 
 // Mistral instance params
@@ -53,12 +53,16 @@ $user = $instructor
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
         prompt: 'Parse the user data to JSON, respond using following JSON Schema: <|json_schema|>',
-        model: 'llama3-8b-8192',
-        options: ['stream' => false],
         examples: [[
-            'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
-            'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+            'input' => 'Ive got email Frank - their developer. Asked to connect via Twitter @frankch. Btw, he plays on drums!',
+            'output' => ['name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'], 'username' => 'frankch', 'age' => null],
+        ],[
+            'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
+            'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
         ]],
+        model: 'llama3-8b-8192',
+        maxRetries: 2,
+        options: ['temperature' => 0],
         mode: Mode::Json,
     );
 
@@ -67,6 +71,13 @@ print("Completed response model:\n\n");
 dump($user);
 
 assert(isset($user->name));
+assert(isset($user->role));
 assert(isset($user->age));
+assert(isset($user->hobbies));
+assert(is_array($user->hobbies));
+assert(count($user->hobbies) > 0);
+assert($user->role === UserType::Admin);
+assert($user->age === 25);
+assert($user->name === 'Jason');
 ?>
 ```

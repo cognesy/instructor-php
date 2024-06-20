@@ -1,25 +1,19 @@
 <?php
 namespace Cognesy\Instructor\Clients\Gemini\Traits;
 
+// GEMINI API
+
 trait HandlesRequestBody
 {
     protected function system() : array {
         if ($this->noScript()) {
-            return match(true) {
-                empty($this->system) => [],
-                default => ["parts" => [["text" => $this->system]]]
-            };
+            return [];
         }
 
-        $text = $this->script
+        return $this->script
             ->withContext($this->scriptContext)
             ->select(['system'])
-            ->toString();
-
-        return match(true) {
-            empty($text) => [],
-            default => ["parts" => [["text" => $text]]]
-        };
+            ->toArray();
     }
 
     public function messages(): array {
@@ -27,17 +21,15 @@ trait HandlesRequestBody
             return $this->messages;
         }
 
-        $this->script->section('pre-input')->appendMessage([
-            'role' => 'assistant',
-            'content' => "Provide input.",
-        ]);
-
-        $text = $this->script
+        return $this->script
             ->withContext($this->scriptContext)
-            ->select(['prompt', 'pre-examples', 'examples', 'pre-input', 'messages', 'input', 'retries'])
-            ->toString();
-
-        return [['role' => 'user', "parts" => [["text" => $text]]]];
+            ->select([
+                'pre-input', 'messages', 'input', 'post-input',
+                'pre-prompt', 'prompt', 'post-prompt',
+                'pre-examples', 'examples', 'post-examples',
+                'pre-retries', 'retries', 'post-retries'
+            ])
+            ->toArray();
     }
 
     public function tools(): array {

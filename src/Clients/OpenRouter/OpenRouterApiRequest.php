@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Clients\OpenRouter;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesResponse;
-use Cognesy\Instructor\Clients\OpenAI\Traits\HandlesRequestBody;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesResponse;
+use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesRequestBody;
 
 class OpenRouterApiRequest extends ApiRequest
 {

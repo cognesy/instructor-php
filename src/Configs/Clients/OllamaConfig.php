@@ -21,7 +21,7 @@ class OllamaConfig implements CanAddConfiguration
                 'connector' => $config->reference(OllamaConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['OLLAMA_DEFAULT_MODEL'] ?? 'llama2',
-                'defaultMaxTokens' => $_ENV['OLLAMA_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['OLLAMA_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new OllamaClient(

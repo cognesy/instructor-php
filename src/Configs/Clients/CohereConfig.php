@@ -20,7 +20,7 @@ class CohereConfig implements CanAddConfiguration
                 'connector' => $config->reference(CohereConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'defaultModel' => $_ENV['COHERE_DEFAULT_MODEL'] ?? 'cohere-r-plus',
-                'defaultMaxTokens' => $_ENV['COHERE_DEFAULT_MAX_TOKENS'] ?? 256,
+                'defaultMaxTokens' => $_ENV['COHERE_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
                 $object = new CohereClient(

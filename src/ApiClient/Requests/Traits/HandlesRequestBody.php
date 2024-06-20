@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Requests\Traits;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-
 // API REQUEST - DEFAULT IMPLEMENTATION
 
 trait HandlesRequestBody
@@ -18,8 +16,14 @@ trait HandlesRequestBody
 
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
-            ->toNativeArray(type: ClientType::fromRequestClass(static::class), context: [], mergePerRole: true);
+            ->select([
+                'system',
+                'pre-input', 'messages', 'input', 'post-input',
+                'pre-prompt', 'prompt', 'post-prompt',
+                'pre-examples', 'examples', 'post-examples',
+                'pre-retries', 'retries', 'post-retries'
+            ])
+            ->toArray();
     }
 
     public function tools(): array {

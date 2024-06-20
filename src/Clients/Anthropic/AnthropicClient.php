@@ -12,7 +12,7 @@ class AnthropicClient extends ApiClient
     use Traits\HandlesStreamData;
 
     public string $defaultModel = 'anthropic:claude-3-haiku';
-    public int $defaultMaxTokens = 256;
+    public int $defaultMaxTokens = 1024;
 
     public function __construct(
         protected $apiKey = '',

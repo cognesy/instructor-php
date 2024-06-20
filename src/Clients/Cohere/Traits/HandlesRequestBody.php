@@ -1,29 +1,23 @@
 <?php
 namespace Cognesy\Instructor\Clients\Cohere\Traits;
 
-use Cognesy\Instructor\Data\Messages\Messages;
-
 trait HandlesRequestBody
 {
-    public function message(): string {
+    public function messages(): array {
         if ($this->noScript()) {
-            return Messages::fromArray($this->messages)->toString();
+            return $this->messages;
         }
 
-        if ($this->script->section('examples')->notEmpty()) {
-            $this->script->section('pre-examples')->appendMessage([
-                'role' => 'assistant',
-                'content' => 'Examples:',
-            ]);
-            $this->script->section('pre-input')->appendMessage([
-                'role' => 'user',
-                'content' => 'INPUT:',
-            ]);
-        }
         return $this->script
             ->withContext($this->scriptContext)
-            ->select(['system', 'pre-input', 'messages', 'input', 'prompt', 'pre-examples', 'examples', 'retries'])
-            ->toString();
+            ->select([
+                'system',
+                'pre-input', 'messages', 'input', 'post-input',
+                'pre-prompt', 'prompt', 'post-prompt',
+                'pre-examples', 'examples', 'post-examples',
+                'pre-retries', 'retries', 'post-retries'
+            ])
+            ->toArray();
     }
 
     public function preamble(): string {
