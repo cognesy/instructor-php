@@ -14,12 +14,11 @@ use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
+use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Instructor\Validation\Symfony\Validator;
+use Cognesy\Instructor\Validation\Symfony\SymfonyValidator;
 
 class ResponseHandlingConfig implements CanAddConfiguration
 {
@@ -68,34 +67,37 @@ class ResponseHandlingConfig implements CanAddConfiguration
         $config->declare(
             class: ResponseDeserializer::class,
             context: [
-                'deserializer' => $config->reference(CanDeserializeClass::class),
                 'events' => $config->reference(EventDispatcher::class),
+                'deserializers' => $config->referenceList([
+                    CanDeserializeClass::class,
+                ]),
             ]
         );
         $config->declare(
-            class: Deserializer::class,
+            class: SymfonyDeserializer::class,
             name: CanDeserializeClass::class,
         );
 
         $config->declare(
             class: ResponseValidator::class,
             context: [
-                'validator' => $config->reference(CanValidateObject::class),
                 'events' => $config->reference(EventDispatcher::class),
+                'validators' => $config->referenceList([
+                    SymfonyValidator::class,
+                ]),
             ]
         );
 
         $config->declare(
-            class: Validator::class,
-            name: CanValidateObject::class,
+            class: SymfonyValidator::class,
         );
 
         $config->declare(
             class: ResponseTransformer::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
+                'transformers' => [],
             ]
         );
-
     }
 }

@@ -1,13 +1,13 @@
 <?php
 use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
-use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
+use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
 use Tests\Examples\Deserialization\Person;
 use Tests\Examples\Deserialization\PersonWithArray;
 use Tests\Examples\Deserialization\PersonWithNestedObject;
 use Tests\Examples\Deserialization\PersonWithNullableProperty;
 
 it('deserializes simple cases', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $json = '{"name": "Jason", "age": 28}';
     $class = Person::class;
     $object = $deserializer->fromJson($json, $class);
@@ -17,7 +17,7 @@ it('deserializes simple cases', function () {
 });
 
 it('deserializes nested objects', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $json = '{"name":"Jason", "age":28, "address": {"city": "New York", "country": "US"}}';
     $class = PersonWithNestedObject::class;
     $object = $deserializer->fromJson($json, $class);
@@ -26,7 +26,7 @@ it('deserializes nested objects', function () {
 });
 
 it('deserializes nested arrays', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $json = '{"name":"Jason", "age":28, "hobbies": ["reading", "gym"]}';
     $class = PersonWithArray::class;
     $object = $deserializer->fromJson($json, $class);
@@ -38,7 +38,7 @@ it('deserializes nested arrays', function () {
 });
 
 it('deserializes nullable values', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $json = '{"name": "Jason", "age": null}';
     $class = PersonWithNullableProperty::class;
 
@@ -49,7 +49,7 @@ it('deserializes nullable values', function () {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 it('throws exception on invalid JSON', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $invalidJsonData = '{invalid_json}';
     $class = Person::class;
     $this->expectException(DeserializationException::class);
@@ -57,7 +57,7 @@ it('throws exception on invalid JSON', function () {
 });
 
 it('throws exception for non-nullable values', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $invalidJsonData = '{"name": "Jason", "age": null}';
     $class = Person::class;
     $this->expectException(DeserializationException::class);
@@ -65,7 +65,7 @@ it('throws exception for non-nullable values', function () {
 });
 
 it('throws exception on wrong data type', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $invalidJsonData = '{"name": "Jason", "age": "28"}';
     $class = Person::class;
     $this->expectException(DeserializationException::class);
@@ -75,7 +75,7 @@ it('throws exception on wrong data type', function () {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 it('deserializes PHPDoc class and property information', function () {
-    $deserializer = new Deserializer();
+    $deserializer = new SymfonyDeserializer();
     $json = '{"property": "value"}';
     $class = PhpDocClass::class;
     $object = $deserializer->fromJson($json, $class);

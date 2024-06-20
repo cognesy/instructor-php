@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Utils\Json;
 
 class ResponseTransformationAttempt extends Event

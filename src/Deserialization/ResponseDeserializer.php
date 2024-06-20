@@ -11,12 +11,14 @@ use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserialized;
 use Cognesy\Instructor\Utils\Result;
+use Exception;
 
 class ResponseDeserializer
 {
     public function __construct(
         private EventDispatcher $events,
-        private CanDeserializeClass $deserializer,
+        /** @var CanDeserializeClass $deserializer */
+        private array $deserializers,
     ) {}
 
     public function deserialize(string $json, ResponseModel $responseModel, string $toolName = null) : Result {
@@ -37,7 +39,16 @@ class ResponseDeserializer
     }
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {
-        $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
-        return Result::try(fn() => $this->deserializer->fromJson($json, $responseModel->returnedClass()));
+        foreach ($this->deserializers as $deserializer) {
+            if (!$deserializer instanceof CanDeserializeClass) {
+                throw new Exception('Deserializer must implement CanDeserializeClass interface');
+            }
+            $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
+            $result = Result::try(fn() => $deserializer->fromJson($json, $responseModel->returnedClass()));
+            if ($result->isSuccess()) {
+                return $result;
+            }
+        }
+        return Result::failure('No deserializer found for the response');
     }
 }

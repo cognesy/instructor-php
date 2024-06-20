@@ -15,7 +15,8 @@ class ResponseValidator
 {
     public function __construct(
         private EventDispatcher $events,
-        private CanValidateObject $validator,
+        /** @var CanValidateObject[] $validators */
+        private array $validators,
     ) {}
 
     /**
@@ -36,8 +37,8 @@ class ResponseValidator
         };
     }
 
-    public function withValidator(CanValidateObject $validator) : self {
-        $this->validator = $validator;
+    public function addValidator(CanValidateObject $validator) : self {
+        $this->validators[] = $validator;
         return $this;
     }
 
@@ -48,6 +49,10 @@ class ResponseValidator
 
     protected function validateObject(object $response) : ValidationResult {
         $this->events->dispatch(new ResponseValidationAttempt($response));
-        return $this->validator->validate($response);
+        $results = [];
+        foreach ($this->validators as $validator) {
+            $results[] = $validator->validate($response);
+        }
+        return ValidationResult::merge($results);
     }
 }

@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class Deserializer implements CanDeserializeClass
+class SymfonyDeserializer implements CanDeserializeClass
 {
     public function __construct(
         protected ?PropertyInfoExtractor $typeExtractor = null,

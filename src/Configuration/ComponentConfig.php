@@ -73,13 +73,17 @@ class ComponentConfig
         $ctx = [];
         $contextItems = $this->context;
         foreach ($contextItems as $name => $value) {
-            $ctx[$name] = match(true) {
-                is_callable($value) => $value($this),
-                default => $value,
-            };
+            $ctx[$name] = $this->resolveContextValue($value);
         }
         $this->emit(new ContextBuilt($this->name, $this->context));
         return $ctx;
+    }
+
+    private function resolveContextValue(mixed $value) {
+        return match(true) {
+            is_callable($value) => $value($this),
+            default => $value,
+        };
     }
 
     /**

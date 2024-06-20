@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
-use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
+use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\TypeDetails;
@@ -12,7 +12,7 @@ use Exception;
 
 trait HandlesDeserialization
 {
-    private Deserializer $deserializer;
+    private SymfonyDeserializer $deserializer;
     protected bool $ignoreUnknownFields = true;
 
     public function fromArray(array $data): static {

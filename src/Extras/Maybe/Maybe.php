@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Maybe;
 
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
+use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
@@ -22,12 +22,12 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 
     private SchemaFactory $schemaFactory;
     private TypeDetailsFactory $typeDetailsFactory;
-    private Deserializer $deserializer;
+    private SymfonyDeserializer $deserializer;
 
     public function __construct() {
         $this->schemaFactory = new SchemaFactory(false);
         $this->typeDetailsFactory = new TypeDetailsFactory();
-        $this->deserializer = new Deserializer();
+        $this->deserializer = new SymfonyDeserializer();
     }
 
     public static function is(string $class, string $name = '', string $description = '') : self {
