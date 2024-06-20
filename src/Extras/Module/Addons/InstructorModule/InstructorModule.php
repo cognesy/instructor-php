@@ -21,14 +21,16 @@ abstract class InstructorModule extends Module
 
     private ?array $examples = null;
     private string|array|object $responseModel;
+    private array $validators = [];
 
-    private string $signatureString = '';
-    private string $signatureInstructions = '';
+    private string $signatureString;
+    private string $signatureInstructions;
 
     public function __construct(
         string $signature = '',
         string $instructions = '',
         Example $examples = null,
+        array $validators = [],
         Instructor $instructor = null,
     ) {
         $this->instructor = $instructor ?? new Instructor();

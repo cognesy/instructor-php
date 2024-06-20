@@ -38,6 +38,14 @@ trait HandlesAccess
         };
     }
 
+    public function notEmpty() : bool {
+        return !$this->isEmpty();
+    }
+
+    public function hasComposites() : bool {
+        return $this->reduce(fn(bool $carry, Section $section) => $carry || $section->hasComposites(), false);
+    }
+
     // INTERNAL ////////////////////////////////////////////////////
 
     private function sectionIndex(string $name) : int {

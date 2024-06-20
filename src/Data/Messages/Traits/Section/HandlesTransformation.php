@@ -6,6 +6,7 @@ use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Section;
 use Cognesy\Instructor\Data\Messages\Traits\RendersTemplates;
 use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
+use RuntimeException;
 
 trait HandlesTransformation
 {
@@ -53,6 +54,9 @@ trait HandlesTransformation
      * @return array<string, mixed>
      */
     public function toString(array $context = [], string $separator = "\n") : string {
+        if ($this->hasComposites()) {
+            throw new RuntimeException('Section contains composite messages and cannot be converted to string.');
+        }
         $text = array_reduce(
             array: $this->messages()->toArray(),
             callback: fn($carry, $message) => $carry . $message['content'] . $separator,
@@ -61,6 +65,9 @@ trait HandlesTransformation
     }
 
     public function toRoleString(string $role, string $separator = "\n") : string {
+        if ($this->hasComposites()) {
+            throw new RuntimeException('Section contains composite messages and cannot be converted to string.');
+        }
         $result = '';
         foreach ($this->messages as $message) {
             if ($message->isEmpty() || $message->role() !== $role) {

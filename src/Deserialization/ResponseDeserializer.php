@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core\Response;
+namespace Cognesy\Instructor\Deserialization;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;

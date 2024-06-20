@@ -6,6 +6,7 @@ use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
 use Exception;
+use RuntimeException;
 
 trait HandlesConversion
 {
@@ -73,6 +74,9 @@ trait HandlesConversion
      * @return string
      */
     public function toString(string $separator = "\n", array $context = null) : string {
+        if ($this->hasComposites()) {
+            throw new RuntimeException('Script contains composite messages and cannot be converted to string.');
+        }
         $text = array_reduce(
             array: $this->toArray(raw: true),
             callback: fn($carry, $message) => $carry . $message['content'] . $separator,

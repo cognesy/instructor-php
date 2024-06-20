@@ -21,6 +21,10 @@ trait HandlesAccess
         return $this->messages[count($this->messages)-1];
     }
 
+    public function hasComposites() : bool {
+        return $this->reduce(fn(bool $carry, Message $message) => $carry || $message->isComposite(), false);
+    }
+
     public function middle() : Messages {
         if (count($this->messages) < 3) {
             return new Messages();
@@ -47,6 +51,10 @@ trait HandlesAccess
             empty($this->messages) => true,
             default => $this->reduce(fn(bool $carry, Message $message) => $carry && $message->isEmpty(), true),
         };
+    }
+
+    public function notEmpty() : bool {
+        return !$this->isEmpty();
     }
 
     public function reduce(callable $callback, mixed $initial = null) : mixed {

@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Data\Messages\Traits\Section;
 
 use Cognesy\Instructor\Data\Messages\Enums\MessageRole;
+use Cognesy\Instructor\Data\Messages\Messages;
 
 trait HandlesAccess
 {
@@ -27,5 +28,17 @@ trait HandlesAccess
 
     public function notEmpty() : bool {
         return !$this->isEmpty();
+    }
+
+    public function hasComposites() : bool {
+        return $this->messages()->hasComposites();
+    }
+
+    public function isTemplate() : bool {
+        return $this->isTemplate;
+    }
+
+    public function messages() : Messages {
+        return $this->messages;
     }
 }

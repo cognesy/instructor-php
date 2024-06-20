@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core\Response;
+namespace Cognesy\Instructor\Transformation;
 
 use Cognesy\Instructor\Contracts\CanTransformSelf;
 use Cognesy\Instructor\Events\EventDispatcher;

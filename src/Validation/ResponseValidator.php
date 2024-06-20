@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core\Response;
+namespace Cognesy\Instructor\Validation;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
@@ -10,7 +10,6 @@ use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Utils\Result;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Validation\ValidationResult;
 
 class ResponseValidator
 {

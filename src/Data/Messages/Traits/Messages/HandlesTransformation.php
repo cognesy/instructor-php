@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
+use RuntimeException;
 
 trait HandlesTransformation
 {
@@ -52,7 +53,10 @@ trait HandlesTransformation
             }
             $rendered = match(true) {
                 !is_null($renderer) => $renderer($message),
-                default => $message['content'] . $separator,
+                default => match(true) {
+                    is_array($message['content']) => throw new RuntimeException('Array contains composite messages, cannot be converted to string.'),
+                    default => $message['content'] . $separator,
+                }
             };
             $result .= $rendered;
         }
@@ -74,10 +78,16 @@ trait HandlesTransformation
     }
 
     public function toString(string $separator = "\n") : string {
+        if ($this->hasComposites()) {
+            throw new RuntimeException('Collection contains composite messages and cannot be converted to string.');
+        }
         return self::asString($this->toArray(), $separator);
     }
 
     public function toRoleString(string $role, string $separator = "\n") : string {
+        if ($this->hasComposites()) {
+            throw new RuntimeException('Collection contains composite messages and cannot be converted to string.');
+        }
         $result = '';
         foreach ($this->messages as $message) {
             if ($message->isEmpty() || $message->role() !== $role) {

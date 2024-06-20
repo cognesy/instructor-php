@@ -3,9 +3,9 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
-use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
@@ -25,7 +25,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
     public function __construct(
         private EventDispatcher $events,
         private CanGenerateResponse $responseGenerator,
-        private PartialsGenerator $partialsGenerator,
+        private CanGeneratePartials $partialsGenerator,
     ) {}
 
     /**

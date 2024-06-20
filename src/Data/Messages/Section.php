@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Data\Messages;
 
-use Exception;
-
 class Section {
     use Traits\Section\HandlesAccess;
     use Traits\Section\HandlesMutation;
@@ -20,14 +18,6 @@ class Section {
             $this->isTemplate = true;
         }
         $this->messages = new Messages();
-    }
-
-    public function isTemplate() : bool {
-        return $this->isTemplate;
-    }
-
-    public function messages() : Messages {
-        return $this->messages;
     }
 }
 

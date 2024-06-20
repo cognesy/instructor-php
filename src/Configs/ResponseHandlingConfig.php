@@ -9,16 +9,16 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\Response\ResponseDeserializer;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
-use Cognesy\Instructor\Core\Response\ResponseTransformer;
-use Cognesy\Instructor\Core\Response\ResponseValidator;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Deserialization\Symfony\Deserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Symfony\Validator;
 
 class ResponseHandlingConfig implements CanAddConfiguration

@@ -94,7 +94,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'messages' => $this->clientType->toNativeMessages(Messages::asString($this->withMetaSections()->messages())),
+                    'messages' => $this->clientType->toNativeMessages($this->withMetaSections()->messages()),
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                     'response_format' => $this->getResponseFormat(),
