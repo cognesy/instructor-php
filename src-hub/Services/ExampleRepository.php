@@ -23,7 +23,7 @@ class ExampleRepository {
         $index = 1;
         $list = [];
         foreach ($directories as $file) {
-            // check if test.php exists in the directory
+            // check if run.php exists in the directory
             if (!$this->exampleExists($file)) {
                 continue;
             }
@@ -71,30 +71,10 @@ class ExampleRepository {
 
     private function getExample(string $path, int $index = 0) : Example {
         return Example::fromFile($this->baseDir, $path, $index);
-//        [$group, $name] = explode('/', $path, 2);
-//
-//        $fileContent = $this->getContent($path);
-//
-//        $document = YamlFrontMatter::parse($fileContent);
-//        $content = $document->body();
-//        $title = $document->matter('title') ?: $this->getTitle($content);
-//        $hasTitle = !empty($title);
-//
-//        return new Example(
-//            index: $index,
-//            group: $group,
-//            name: $name,
-//            hasTitle: $hasTitle,
-//            title: $title,
-//            content: $content,
-//            directory: $this->baseDir . $path,
-//            relativePath: './examples/' . $path . '/test.php',
-//            runPath: $this->getRunPath($path),
-//        );
     }
 
     private function getRunPath(string $path) : string {
-        return $this->baseDir . $path . '/test.php';
+        return $this->baseDir . $path . '/run.php';
     }
 
     private function getContent(string $path) : string {
@@ -114,7 +94,7 @@ class ExampleRepository {
 
     private function guessBaseDir() : string {
         // get current directory of this script
-        return dirname(__DIR__).'/../examples';
+        return dirname(__DIR__).'/../../examples';
     }
 
     private function getExampleDirectories() : array {

@@ -19,10 +19,11 @@ structure-to-structure processing with LLM.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Instructions;
+use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ValidationResult;
 
-#[Instructions('Text fields translated to German, other fields unchanged.')]
 class TextElementModel
 {
     public function __construct(
@@ -34,12 +35,29 @@ class TextElementModel
 
 $sourceModel = new TextElementModel(
     headline: 'This is my headline',
-    text: '<p>This is some WYSIWYG HTML content.<\/p>'
+    text: '<p>This is some WYSIWYG HTML content.</p>'
 );
 
-$transformedModel = (new Instructor)->respond(
+$validator = new class implements CanValidateObject {
+    public function validate(object $dataObject): ValidationResult {
+        $json = json_encode($dataObject);
+        $isInGerman = (new Instructor)->respond(
+            input: $json,
+            responseModel: Scalar::boolean(),
+            prompt: 'Are all content fields translated to German?',
+        );
+        return match($isInGerman) {
+            true => ValidationResult::valid(),
+            default => ValidationResult::invalid(['All input text fields have to be translated to German. Keep HTML tags unchanged.']),
+        };
+    }
+};
+
+$transformedModel = (new Instructor)->withValidator($validator)->respond(
     input: $sourceModel,
     responseModel: get_class($sourceModel),
+    prompt: 'Translate all text fields to German. Keep HTML tags unchanged.',
+    maxRetries: 2,
     options: ['temperature' => 0],
 );
 
@@ -54,4 +72,3 @@ assert(str_contains($transformedModel->text, '<p>') === true);
 assert(str_contains(str_replace('\/', '/', $transformedModel->url), 'https://translation.com/') === true);
 ?>
 ```
-

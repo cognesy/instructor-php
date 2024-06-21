@@ -108,6 +108,86 @@
                 "cookbook/introduction",
                 "cookbook/contributing"
             ]
+        },
+        {
+            "group": "Basics",
+            "pages": [
+                "cookbook/examples/basics/basic_use",
+                "cookbook/examples/basics/basic_use_mixin",
+                "cookbook/examples/basics/complex_extraction",
+                "cookbook/examples/basics/complex_extraction_claude",
+                "cookbook/examples/basics/maybe",
+                "cookbook/examples/basics/optional_fields",
+                "cookbook/examples/basics/public_vs_private",
+                "cookbook/examples/basics/self_correction",
+                "cookbook/examples/basics/attributes",
+                "cookbook/examples/basics/validation",
+                "cookbook/examples/basics/validation_multifield"
+            ]
+        },
+        {
+            "group": "Advanced",
+            "pages": [
+                "cookbook/examples/advanced/caching",
+                "cookbook/examples/advanced/custom_client",
+                "cookbook/examples/advanced/custom_prompts",
+                "cookbook/examples/advanced/custom_validation",
+                "cookbook/examples/advanced/structured_input",
+                "cookbook/examples/advanced/function_calls",
+                "cookbook/examples/advanced/partials",
+                "cookbook/examples/advanced/demonstrations",
+                "cookbook/examples/advanced/scalars",
+                "cookbook/examples/advanced/sequences",
+                "cookbook/examples/advanced/streaming",
+                "cookbook/examples/advanced/structures"
+            ]
+        },
+        {
+            "group": "Techniques",
+            "pages": [
+                "cookbook/examples/techniques/arbitrary_properties",
+                "cookbook/examples/techniques/arbitrary_properties_consistent",
+                "cookbook/examples/techniques/chain_of_summaries",
+                "cookbook/examples/techniques/chain_of_thought",
+                "cookbook/examples/techniques/classification",
+                "cookbook/examples/techniques/classification_multiclass",
+                "cookbook/examples/techniques/entity_relationships",
+                "cookbook/examples/techniques/handling_errors",
+                "cookbook/examples/techniques/image_to_data",
+                "cookbook/examples/techniques/limiting_lists",
+                "cookbook/examples/techniques/restate_instructions",
+                "cookbook/examples/techniques/rewrite_instructions",
+                "cookbook/examples/techniques/search_query_expansion",
+                "cookbook/examples/techniques/component_reuse",
+                "cookbook/examples/techniques/component_reuse_cot",
+                "cookbook/examples/techniques/translate_ui_fields"
+            ]
+        },
+        {
+            "group": "Troubleshooting",
+            "pages": [
+                "cookbook/examples/troubleshooting/debugging",
+                "cookbook/examples/troubleshooting/on_error",
+                "cookbook/examples/troubleshooting/on_event",
+                "cookbook/examples/troubleshooting/wiretap"
+            ]
+        },
+        {
+            "group": "LLM API Support",
+            "pages": [
+                "cookbook/examples/api_support/anthropic",
+                "cookbook/examples/api_support/anyscale",
+                "cookbook/examples/api_support/azure_openai",
+                "cookbook/examples/api_support/cohere",
+                "cookbook/examples/api_support/fireworks",
+                "cookbook/examples/api_support/google_gemini",
+                "cookbook/examples/api_support/groq",
+                "cookbook/examples/api_support/mistralai",
+                "cookbook/examples/api_support/ollama",
+                "cookbook/examples/api_support/openai",
+                "cookbook/examples/api_support/openrouter",
+                "cookbook/examples/api_support/togetherai"
+            ]
         }
     ],
     "footerSocials": {
