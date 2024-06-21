@@ -38,7 +38,7 @@ class Example
     private function loadExample(string $baseDir, string $path, int $index = 0) : static {
         [$group, $name] = explode('/', $path, 2);
 
-        $document = YamlFrontMatter::parseFile($baseDir . $path . '/run.php');
+        $document = YamlFrontMatter::parseFile($baseDir . $path . '/test.php');
         $content = $document->body();
         $title = $document->matter('title') ?: $this->getTitle($content);
         $docName = $document->matter('docname') ?: Str::snake($name);
@@ -61,8 +61,8 @@ class Example
             docName: $docName,
             content: $content,
             directory: $baseDir . $path,
-            relativePath: './examples/' . $path . '/run.php',
-            runPath: $baseDir . $path . '/run.php',
+            relativePath: './examples/' . $path . '/test.php',
+            runPath: $baseDir . $path . '/test.php',
         );
     }
 

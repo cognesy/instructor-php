@@ -23,7 +23,7 @@ class ExampleRepository {
         $index = 1;
         $list = [];
         foreach ($directories as $file) {
-            // check if run.php exists in the directory
+            // check if test.php exists in the directory
             if (!$this->exampleExists($file)) {
                 continue;
             }
@@ -88,13 +88,13 @@ class ExampleRepository {
 //            title: $title,
 //            content: $content,
 //            directory: $this->baseDir . $path,
-//            relativePath: './examples/' . $path . '/run.php',
+//            relativePath: './examples/' . $path . '/test.php',
 //            runPath: $this->getRunPath($path),
 //        );
     }
 
     private function getRunPath(string $path) : string {
-        return $this->baseDir . $path . '/run.php';
+        return $this->baseDir . $path . '/test.php';
     }
 
     private function getContent(string $path) : string {
