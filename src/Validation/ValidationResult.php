@@ -42,10 +42,9 @@ class ValidationResult
         $errors = [];
         $hasErrors = false;
         foreach ($validationResults as $result) {
-            if ($result->isValid) {
+            if (empty($result) || $result->isValid) {
                 continue;
             }
-
             $hasErrors = true;
             $errors[] = $result->errors;
         }

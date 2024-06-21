@@ -50,7 +50,7 @@ class Chain
     private array $onFailure = [];
     private array $processors;
     private mixed $finalizer;
-    private mixed $context = null;
+    private mixed $context;
 
     public function __construct(
         Result $value = null,

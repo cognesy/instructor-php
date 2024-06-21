@@ -7,9 +7,11 @@ use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
+use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Result;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Validation\Validators\SelfValidator;
 use Exception;
 
 class ResponseValidator
@@ -19,6 +21,18 @@ class ResponseValidator
         /** @var CanValidateObject[] $validators */
         private array $validators,
     ) {}
+
+    /** @param CanValidateObject[] $validators */
+    public function appendValidators(array $validators) : self {
+        $this->validators = array_merge($this->validators, $validators);
+        return $this;
+    }
+
+    /** @param CanValidateObject[] $validators */
+    public function setValidators(array $validators) : self {
+        $this->validators = $validators;
+        return $this;
+    }
 
     /**
      * Validate deserialized response object
@@ -38,11 +52,6 @@ class ResponseValidator
         };
     }
 
-    public function addValidator(CanValidateObject $validator) : self {
-        $this->validators[] = $validator;
-        return $this;
-    }
-
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {
         $this->events->dispatch(new CustomResponseValidationAttempt($response));
         return $response->validate();
@@ -57,8 +66,26 @@ class ResponseValidator
                 $validator instanceof CanValidateObject => $validator,
                 default => throw new Exception('Validator must implement CanValidateObject interface'),
             };
+            // TODO: how do we handle exceptions here?
             $results[] = $validator->validate($response);
         }
         return ValidationResult::merge($results);
     }
 }
+
+//$chain = Chain::for($response)
+//    ->through(
+//        processors: array_map(
+//            fn($v) => fn($data) => $v->validate($data),
+//            array_merge($this->validators, [new SelfValidator])
+//        ),
+//        onNull: Chain::CONTINUE_ON_NULL
+//    )
+//    ->then(function($data) {
+//        $this->events->dispatch(match(true) {
+//            $validation->isInvalid() => new ResponseValidationFailed($validation),
+//            default => new ResponseValidated($validation)
+//        });
+//        return Result::success($data);
+//    });
+//return $chain->result();

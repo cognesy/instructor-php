@@ -6,9 +6,9 @@ use ArrayAccess;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Validation\Symfony\SymfonyValidator;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use IteratorAggregate;
 
 class Sequence implements

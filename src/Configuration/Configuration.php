@@ -24,7 +24,7 @@ class Configuration implements ContainerInterface
     use Traits\PreventsCycles;
 
     public function __construct(EventDispatcher $events = null) {
-        $this->events = $events ?? new EventDispatcher('configuration');
+        $this->events = new EventDispatcher('configuration');
         $this->events->dispatch(new ConfigurationInitiated());
     }
 }

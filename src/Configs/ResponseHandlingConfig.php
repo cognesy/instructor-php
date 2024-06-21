@@ -13,11 +13,11 @@ use Cognesy\Instructor\Core\Response\ResponseGenerator;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Instructor\Validation\Symfony\SymfonyValidator;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 
 class ResponseHandlingConfig implements CanAddConfiguration
 {

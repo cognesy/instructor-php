@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Structure;
 
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;

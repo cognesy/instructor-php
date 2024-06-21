@@ -7,5 +7,12 @@ namespace Cognesy\Instructor\Transformation\Contracts;
  */
 interface CanTransformObject
 {
+    /**
+     * Transform the given data into a different format
+     * or throw an exception if the transformation fails.
+     *
+     * @param mixed $data
+     * @return mixed
+     */
     public function transform(mixed $data): mixed;
 }

@@ -14,5 +14,5 @@ interface CanValidateObject
      * @param object $dataObject
      * @return array
      */
-    public function validate(object $dataObject) : ValidationResult;
+    public function validate(object $dataObject) : ?ValidationResult;
 }

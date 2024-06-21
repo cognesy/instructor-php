@@ -56,7 +56,6 @@ class PropertyInfo
 
     public function getTypeName() : string {
         $type = $this->getType();
-dump("pi: ", $type);
         $builtInType = $type->getBuiltinType();
         return match($builtInType) {
             Type::BUILTIN_TYPE_INT => 'int',

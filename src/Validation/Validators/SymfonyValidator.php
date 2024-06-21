@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Validation\Symfony;
+namespace Cognesy\Instructor\Validation\Validators;
 
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\ValidationError;

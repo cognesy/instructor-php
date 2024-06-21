@@ -21,6 +21,18 @@ class ResponseDeserializer
         private array $deserializers,
     ) {}
 
+    /** @param CanDeserializeClass[] $deserializers */
+    public function appendDeserializers(array $deserializers) : self {
+        $this->deserializers = array_merge($this->deserializers, $deserializers);
+        return $this;
+    }
+
+    /** @param CanDeserializeClass[] $deserializers */
+    public function setDeserializers(array $deserializers) : self {
+        $this->deserializers = $deserializers;
+        return $this;
+    }
+
     public function deserialize(string $json, ResponseModel $responseModel, string $toolName = null) : Result {
         $result = match(true) {
             $responseModel->instance() instanceof CanDeserializeSelf => $this->deserializeSelf($json, $responseModel->instance(), $toolName),
@@ -46,6 +58,8 @@ class ResponseDeserializer
                 $deserializer instanceof CanDeserializeClass => $deserializer,
                 default => throw new Exception('Deserializer must implement CanDeserializeClass interface'),
             };
+            // we're catching exceptions here - then trying the next deserializer
+            // TODO: but the exceptions can be for other reason than deserialization problems
             $result = Result::try(fn() => $deserializer->fromJson($json, $responseModel->returnedClass()));
             if ($result->isSuccess()) {
                 return $result;

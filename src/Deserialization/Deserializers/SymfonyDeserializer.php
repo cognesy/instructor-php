@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Deserialization\Symfony;
+namespace Cognesy\Instructor\Deserialization\Deserializers;
 
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;

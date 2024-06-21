@@ -19,6 +19,18 @@ class ResponseTransformer
         private array $transformers = []
     ) {}
 
+    /** @param CanTransformObject[] $transformers */
+    public function appendTransformers(array $transformers) : self {
+        $this->transformers = array_merge($this->transformers, $transformers);
+        return $this;
+    }
+
+    /** @param CanTransformObject[] $transformers */
+    public function setTransformers(array $transformers) : self {
+        $this->transformers = $transformers;
+        return $this;
+    }
+
     public function transform(object $object) : Result {
         return match(true) {
             $object instanceof CanTransformSelf => $this->transformSelf($object),
@@ -51,7 +63,11 @@ class ResponseTransformer
                 default => throw new Exception('Transformer must implement CanTransformObject interface'),
             };
             $this->events->dispatch(new ResponseTransformationAttempt($data));
-            $data = $transformer->transform($data);
+            // TODO: should we catch exceptions here?
+            $result = $transformer->transform($data);
+            if (!empty($result)) {
+                $data = $result;
+            }
         }
         return Result::success($data);
     }
