@@ -58,7 +58,7 @@ it('it can handle variadic args', function () {
     $call = FunctionCall::fromCallable(variadicFunction(...));
     $arguments = $call->getArgumentNames();
     expect($arguments)->toBe(['objectParams']);
-    expect($call->getField('objectParams')->typeDetails()->type)->toBe('array');
+    expect($call->getField('objectParams')->typeDetails()->type)->toBe('collection');
     expect($call->getField('objectParams')->typeDetails()->nestedType->type)->toBe('object');
     expect($call->getField('objectParams')->typeDetails()->nestedType->class)->toBe('Tests\Examples\Call\TestClass');
 });

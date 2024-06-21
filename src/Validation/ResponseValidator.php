@@ -10,6 +10,7 @@ use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Utils\Result;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
+use Exception;
 
 class ResponseValidator
 {
@@ -51,6 +52,11 @@ class ResponseValidator
         $this->events->dispatch(new ResponseValidationAttempt($response));
         $results = [];
         foreach ($this->validators as $validator) {
+            $validator = match(true) {
+                is_string($validator) && is_subclass_of($validator, CanValidateObject::class) => new $validator(),
+                $validator instanceof CanValidateObject => $validator,
+                default => throw new Exception('Validator must implement CanValidateObject interface'),
+            };
             $results[] = $validator->validate($response);
         }
         return ValidationResult::merge($results);

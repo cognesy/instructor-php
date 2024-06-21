@@ -14,7 +14,7 @@ class AnthropicConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: AnthropicClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class AnthropicConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: AnthropicConnector::class,
             context: [
                 'apiKey' => $_ENV['ANTHROPIC_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class AnthropicConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'anthropic:claude-3-haiku',
             context: [
@@ -66,7 +66,7 @@ class AnthropicConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'anthropic:claude-3-sonnet',
             context: [
@@ -85,7 +85,7 @@ class AnthropicConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'anthropic:claude-3-opus',
             context: [

@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Schema\Factories\Traits;
 
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
+use Cognesy\Instructor\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
@@ -40,11 +41,16 @@ trait HandlesTypeDetails
                 name: $type->class,
                 description: $classInfo->getClassDescription(),
             ),
-            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+            ($type->type == TypeDetails::PHP_COLLECTION) => new CollectionSchema(
                 type: $type,
                 name: '',
                 description: '',
                 nestedItemSchema: $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
+            ),
+            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+                type: $type,
+                name: '',
+                description: ''
             ),
             in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema(
                 type: $type,
@@ -67,11 +73,16 @@ trait HandlesTypeDetails
         return match (true) {
             ($type->type == TypeDetails::PHP_OBJECT) => $this->makeObjectSchema($type, $name, $description),
             ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
-            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+            ($type->type == TypeDetails::PHP_COLLECTION) => new CollectionSchema(
                 $type,
                 $name,
                 $description,
                 $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
+            ),
+            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+                $type,
+                $name,
+                $description
             ),
             in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, $name, $description),
             default => throw new \Exception('Unknown type: ' . $type->type),

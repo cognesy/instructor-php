@@ -14,7 +14,7 @@ class OpenRouterConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: OpenRouterClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class OpenRouterConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: OpenRouterConnector::class,
             context: [
                 'apiKey' => $_ENV['OPENROUTER_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class OpenRouterConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openrouter:llama3',
             context: [
@@ -66,7 +66,7 @@ class OpenRouterConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openrouter:mixtral-8x7b',
             context: [
@@ -85,7 +85,7 @@ class OpenRouterConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openrouter:mistral-7b',
             context: [
@@ -104,7 +104,7 @@ class OpenRouterConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openrouter:gpt-3.5-turbo',
             context: [

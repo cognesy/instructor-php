@@ -7,9 +7,9 @@ use Symfony\Component\PropertyInfo\Type;
 test('creates TypeDetails from type string', function () {
     $factory = new TypeDetailsFactory();
 
-    $stringType = $factory->fromTypeName('string');
+    $stringType = $factory->fromTypeName(TypeDetails::PHP_STRING);
     $this->assertInstanceOf(TypeDetails::class, $stringType);
-    $this->assertSame('string', $stringType->type);
+    $this->assertSame(TypeDetails::PHP_STRING, $stringType->type);
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Object type must have a class name');
@@ -20,10 +20,10 @@ test('creates TypeDetails from PropertyInfo', function () {
     $factory = new TypeDetailsFactory();
     // Assuming you have a PropertyInfo instance $propertyInfo
 
-    $propertyInfo = new Type('string', false, null, false, null, null);
+    $propertyInfo = new Type(TypeDetails::PHP_STRING, false, null, false, null, null);
     $typeDetails = $factory->fromPropertyInfo($propertyInfo);
     $this->assertInstanceOf(TypeDetails::class, $typeDetails);
-    $this->assertSame('string', $typeDetails->type);
+    $this->assertSame(TypeDetails::PHP_STRING, $typeDetails->type);
 });
 
 test('creates TypeDetails from value', function () {
@@ -31,15 +31,15 @@ test('creates TypeDetails from value', function () {
 
     $stringType = $factory->fromValue('test');
     $this->assertInstanceOf(TypeDetails::class, $stringType);
-    $this->assertSame('string', $stringType->type);
+    $this->assertSame(TypeDetails::PHP_STRING, $stringType->type);
 });
 
 test('creates TypeDetails for scalar type', function () {
     $factory = new TypeDetailsFactory();
 
-    $intType = $factory->scalarType('int');
+    $intType = $factory->scalarType(TypeDetails::PHP_INT);
     $this->assertInstanceOf(TypeDetails::class, $intType);
-    $this->assertSame('int', $intType->type);
+    $this->assertSame(TypeDetails::PHP_INT, $intType->type);
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Unsupported scalar type: unknown');
@@ -49,23 +49,33 @@ test('creates TypeDetails for scalar type', function () {
 test('creates TypeDetails for array type', function () {
     $factory = new TypeDetailsFactory();
 
-    // Test with array brackets
-    $arrayType = $factory->arrayType('int[]');
+    // Test with array
+    $arrayType = $factory->arrayType();
     $this->assertInstanceOf(TypeDetails::class, $arrayType);
-    $this->assertSame('array', $arrayType->type);
-    $this->assertInstanceOf(TypeDetails::class, $arrayType->nestedType);
-    $this->assertSame('int', $arrayType->nestedType->type);
+    $this->assertSame(TypeDetails::PHP_ARRAY, $arrayType->type);
+    $this->assertSame(null, $arrayType->nestedType);
+});
+
+test('creates TypeDetails for collection type', function () {
+    $factory = new TypeDetailsFactory();
+
+    // Test with array brackets
+    $collectionType = $factory->collectionType('int[]');
+    $this->assertInstanceOf(TypeDetails::class, $collectionType);
+    $this->assertSame(TypeDetails::PHP_COLLECTION, $collectionType->type);
+    $this->assertInstanceOf(TypeDetails::class, $collectionType->nestedType);
+    $this->assertSame(TypeDetails::PHP_INT, $collectionType->nestedType->type);
 
     // Test without array brackets
-    $arrayType = $factory->arrayType('int');
-    $this->assertInstanceOf(TypeDetails::class, $arrayType);
-    $this->assertSame('array', $arrayType->type);
-    $this->assertInstanceOf(TypeDetails::class, $arrayType->nestedType);
-    $this->assertSame('int', $arrayType->nestedType->type);
+    $collectionType = $factory->collectionType(TypeDetails::PHP_INT);
+    $this->assertInstanceOf(TypeDetails::class, $collectionType);
+    $this->assertSame(TypeDetails::PHP_COLLECTION, $collectionType->type);
+    $this->assertInstanceOf(TypeDetails::class, $collectionType->nestedType);
+    $this->assertSame(TypeDetails::PHP_INT, $collectionType->nestedType->type);
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Class "unknown" does not exist');
-    $factory->arrayType('unknown');
+    $factory->fromTypeName('unknown[]');
 });
 
 test('creates TypeDetails for object type', function () {
@@ -74,7 +84,7 @@ test('creates TypeDetails for object type', function () {
     $className = Tests\Examples\Schema\SimpleClass::class;
     $objectType = $factory->objectType($className);
     $this->assertInstanceOf(TypeDetails::class, $objectType);
-    $this->assertSame('object', $objectType->type);
+    $this->assertSame(TypeDetails::PHP_OBJECT, $objectType->type);
     $this->assertSame($className, $objectType->class);
 });
 
@@ -84,7 +94,7 @@ test('creates TypeDetails for enum type', function () {
     $enumClassName = 'Tests\Examples\Schema\StringEnum';
     $enumType = $factory->enumType($enumClassName);
     $this->assertInstanceOf(TypeDetails::class, $enumType);
-    $this->assertSame('enum', $enumType->type);
+    $this->assertSame(TypeDetails::PHP_ENUM, $enumType->type);
     $this->assertSame($enumClassName, $enumType->class);
 
     $this->expectException(Exception::class);

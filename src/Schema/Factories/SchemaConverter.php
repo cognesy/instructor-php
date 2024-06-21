@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Schema\Factories;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
+use Cognesy\Instructor\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ScalarSchema;
@@ -67,7 +67,7 @@ class SchemaConverter
     private function makePropertySchema(string $name, array $jsonSchema) : Schema {
         return match ($jsonSchema['type']) {
             TypeDetails::JSON_OBJECT => $this->makeObjectProperty($name, $jsonSchema),
-            TypeDetails::JSON_ARRAY => $this->makeArrayProperty($name, $jsonSchema),
+            TypeDetails::JSON_ARRAY => $this->makeCollectionProperty($name, $jsonSchema),
             TypeDetails::JSON_STRING,
             TypeDetails::JSON_BOOLEAN,
             TypeDetails::JSON_NUMBER,
@@ -120,13 +120,29 @@ class SchemaConverter
     /**
      * Create array property schema
      */
+    private function makeCollectionProperty(string $name, array $jsonSchema) : CollectionSchema {
+        if (!isset($jsonSchema['items'])) {
+            throw new \Exception('Array must have items field defining the nested type');
+        }
+        $factory = new TypeDetailsFactory();
+        return new CollectionSchema(
+            type: $factory->collectionType($this->makeNestedType($jsonSchema['items'])),
+            name: $name,
+            description: $jsonSchema['description'] ?? '',
+            nestedItemSchema: $this->makePropertySchema('', $jsonSchema['items'] ?? []),
+        );
+    }
+
+    /**
+     * Create array property schema
+     */
     private function makeArrayProperty(string $name, array $jsonSchema) : ArraySchema {
         if (!isset($jsonSchema['items'])) {
             throw new \Exception('Array must have items field defining the nested type');
         }
         $factory = new TypeDetailsFactory();
-        return new ArraySchema(
-            type: $factory->arrayType($this->makeNestedType($jsonSchema['items'])),
+        return new CollectionSchema(
+            type: $factory->collectionType($this->makeNestedType($jsonSchema['items'])),
             name: $name,
             description: $jsonSchema['description'] ?? '',
             nestedItemSchema: $this->makePropertySchema('', $jsonSchema['items'] ?? []),

@@ -65,19 +65,19 @@ it('creates Schema object from JSON Schema array - array props', function ($json
 
     expect($schema->properties['arrayProperty']->name)->toBe('arrayProperty');
     expect($schema->properties['arrayProperty']->description)->toBe('Array property');
-    expect($schema->properties['arrayProperty']->typeDetails->type)->toBe('array');
+    expect($schema->properties['arrayProperty']->typeDetails->type)->toBe('collection');
     expect($schema->properties['arrayProperty']->nestedItemSchema->typeDetails->type)->toBe('string');
     expect($schema->properties['arrayProperty']->nestedItemSchema->typeDetails->class)->toBe(null);
     expect($schema->properties['arrayObjectProperty']->name)->toBe('arrayObjectProperty');
     expect($schema->properties['arrayObjectProperty']->description)->toBe('Array of objects property');
-    expect($schema->properties['arrayObjectProperty']->typeDetails->type)->toBe('array');
+    expect($schema->properties['arrayObjectProperty']->typeDetails->type)->toBe('collection');
     expect($schema->properties['arrayObjectProperty']->nestedItemSchema->typeDetails->type)->toBe('object');
     expect($schema->properties['arrayObjectProperty']->nestedItemSchema->typeDetails->class)->toBe('Tests\Examples\SchemaConverter\TestNestedObject');
     expect($schema->properties['arrayObjectProperty']->nestedItemSchema->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
     expect($schema->properties['arrayObjectProperty']->nestedItemSchema->properties['nestedStringProperty']->typeDetails->type)->toBe('string');
     expect($schema->properties['arrayEnumProperty']->name)->toBe('arrayEnumProperty');
     expect($schema->properties['arrayEnumProperty']->description)->toBe('Array of enum property');
-    expect($schema->properties['arrayEnumProperty']->typeDetails->type)->toBe('array');
+    expect($schema->properties['arrayEnumProperty']->typeDetails->type)->toBe('collection');
     expect($schema->properties['arrayEnumProperty']->nestedItemSchema->typeDetails->type)->toBe('enum');
     expect($schema->properties['arrayEnumProperty']->nestedItemSchema->typeDetails->class)->toBe('Tests\Examples\SchemaConverter\TestEnum');
     expect($schema->properties['arrayEnumProperty']->nestedItemSchema->typeDetails->enumType)->toBe('string');

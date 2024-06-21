@@ -23,7 +23,11 @@ trait CreatesStructureFromJsonSchema
     static private function makeJsonSchemaFields(array $jsonSchema) : array {
         $fields = [];
         foreach ($jsonSchema['properties'] as $name => $value) {
-            $typeName = TypeDetails::fromJsonType($value['type']);
+            $typeName = match(true) {
+                isset($value['enum']) => 'enum',
+                isset($value['items']) => 'collection',
+                default => TypeDetails::fromJsonType($value['type']),
+            };
             $fields[] = FieldFactory::fromTypeName($name, $typeName, $value['description'] ?? '');
         }
         return $fields;

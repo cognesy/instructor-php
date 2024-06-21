@@ -14,7 +14,7 @@ class AnyscaleConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: AnyscaleClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class AnyscaleConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: AnyscaleConnector::class,
             context: [
                 'apiKey' => $_ENV['ANYSCALE_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class AnyscaleConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'anyscale:mixtral-8x7b',
             context: [

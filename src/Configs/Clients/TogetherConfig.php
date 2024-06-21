@@ -14,7 +14,7 @@ class TogetherConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: TogetherAIClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class TogetherConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class:TogetherAIConnector::class,
             context: [
                 'apiKey' => $_ENV['TOGETHERAI_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class TogetherConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'together:mixtral-8x7b',
             context: [

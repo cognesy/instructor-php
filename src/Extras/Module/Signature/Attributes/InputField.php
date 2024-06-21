@@ -4,9 +4,6 @@ namespace Cognesy\Instructor\Extras\Module\Signature\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class InputField
+class InputField extends SignatureField
 {
-    public function __construct(
-        public string $description = '',
-    ) {}
 }

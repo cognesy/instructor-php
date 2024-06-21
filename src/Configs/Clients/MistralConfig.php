@@ -14,7 +14,7 @@ class MistralConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: MistralClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class MistralConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: MistralConnector::class,
             context: [
                 'apiKey' => $_ENV['MISTRAL_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class MistralConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'mistral:mistral-7b',
             context: [
@@ -66,7 +66,7 @@ class MistralConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'mistral:mixtral-8x7b',
             context: [
@@ -85,7 +85,7 @@ class MistralConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'mistral:mixtral-8x22b',
             context: [
@@ -104,7 +104,7 @@ class MistralConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'mistral:mistral-small',
             context: [
@@ -123,7 +123,7 @@ class MistralConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'mistral:mistral-medium',
             context: [
@@ -142,7 +142,7 @@ class MistralConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'mistral:mistral-large',
             context: [

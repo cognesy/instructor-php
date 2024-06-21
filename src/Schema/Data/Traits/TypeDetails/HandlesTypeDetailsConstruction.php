@@ -36,8 +36,8 @@ trait HandlesTypeDetailsConstruction
             }
         }
         // ...check array
-        if (($type === self::PHP_ARRAY) && ($nestedType === null)) {
-            throw new \Exception('Array type must have a nested type');
+        if (($type === self::PHP_COLLECTION) && ($nestedType === null)) {
+            throw new \Exception('Collection type must have a nested type');
         }
     }
 }

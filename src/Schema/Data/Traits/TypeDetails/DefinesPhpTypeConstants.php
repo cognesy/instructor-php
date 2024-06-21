@@ -7,6 +7,7 @@ trait DefinesPhpTypeConstants
     public const PHP_MIXED = 'mixed';
     public const PHP_OBJECT = 'object';
     public const PHP_ENUM = 'enum';
+    public const PHP_COLLECTION = 'collection';
     public const PHP_ARRAY = 'array';
     public const PHP_SHAPE = 'shape';
     public const PHP_INT = 'int';
@@ -18,6 +19,7 @@ trait DefinesPhpTypeConstants
     public const PHP_TYPES = [
         self::PHP_OBJECT,
         self::PHP_ENUM,
+        self::PHP_COLLECTION,
         self::PHP_ARRAY,
         self::PHP_INT,
         self::PHP_FLOAT,
@@ -40,6 +42,7 @@ trait DefinesPhpTypeConstants
     public const PHP_NON_SCALAR_TYPES = [
         self::PHP_OBJECT,
         self::PHP_ENUM,
+        self::PHP_COLLECTION,
         self::PHP_ARRAY,
         self::PHP_SHAPE,
     ];

@@ -21,7 +21,7 @@ class ServiceConfig implements CanAddConfiguration
 
         /// SERVICES //////////////////////////////////////////////////////////////////
 
-        $config->declare(
+        $config->object(
             class: CommandProvider::class,
             context: [
                 'config' => $config,
@@ -35,14 +35,14 @@ class ServiceConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ExampleRepository::class,
             context: [
                 'baseDir' => __DIR__ . '/../../examples/',
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: Runner::class,
             context: [
                 'examples' => $config->reference(ExampleRepository::class),
@@ -52,7 +52,7 @@ class ServiceConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: MintlifyDocGenerator::class,
             context: [
                 'examples' => $config->reference(ExampleRepository::class),

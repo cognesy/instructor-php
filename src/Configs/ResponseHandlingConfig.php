@@ -12,7 +12,6 @@ use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
 use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Deserialization\Symfony\SymfonyDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -24,7 +23,7 @@ class ResponseHandlingConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: RequestHandler::class,
             name: CanHandleRequest::class,
             context: [
@@ -33,7 +32,7 @@ class ResponseHandlingConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: ResponseGenerator::class,
             name: CanGenerateResponse::class,
             context: [
@@ -44,7 +43,7 @@ class ResponseHandlingConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: StreamRequestHandler::class,
             name: CanHandleStreamRequest::class,
             context: [
@@ -54,7 +53,7 @@ class ResponseHandlingConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: PartialsGenerator::class,
             name: CanGeneratePartials::class,
             context: [
@@ -64,40 +63,47 @@ class ResponseHandlingConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: ResponseDeserializer::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'deserializers' => $config->referenceList([
-                    CanDeserializeClass::class,
-                ]),
+                'deserializers' => $config->reference('deserializers'),
             ]
         );
-        $config->declare(
-            class: SymfonyDeserializer::class,
-            name: CanDeserializeClass::class,
-        );
 
-        $config->declare(
+        $config->object(
             class: ResponseValidator::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'validators' => $config->referenceList([
-                    SymfonyValidator::class,
-                ]),
+                'validators' => $config->reference('validators'),
             ]
         );
 
-        $config->declare(
-            class: SymfonyValidator::class,
-        );
-
-        $config->declare(
+        $config->object(
             class: ResponseTransformer::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
-                'transformers' => [],
+                'transformers' => $config->reference('transformers'),
             ]
+        );
+
+        $config->value(
+            name: 'validators',
+            value: [
+                SymfonyValidator::class,
+            ],
+        );
+
+        $config->value(
+            name: 'deserializers',
+            value: [
+                SymfonyDeserializer::class,
+            ],
+        );
+
+        $config->value(
+            name: 'transformers',
+            value: [],
         );
     }
 }

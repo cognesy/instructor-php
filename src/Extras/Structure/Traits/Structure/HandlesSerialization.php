@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 use BackedEnum;
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Schema\Data\TypeDetails;
 
 trait HandlesSerialization
 {
@@ -20,8 +21,9 @@ trait HandlesSerialization
             }
             $data[$fieldName] = match(true) {
                 ($field->typeDetails()->class == Structure::class) => $value?->toArray(),
-                ($field->typeDetails()->type === 'enum') => $value->value,
-                ($field->typeDetails()->type === 'array') => $this->serializeArrayField($value),
+                ($field->typeDetails()->type === TypeDetails::PHP_ENUM) => $value->value,
+                ($field->typeDetails()->type === TypeDetails::PHP_ARRAY) => $this->serializeArrayField($value),
+                ($field->typeDetails()->type === TypeDetails::PHP_COLLECTION) => $this->serializeArrayField($value),
                 ($field->typeDetails()->class !== null) => $this->serializeObjectField($value),
                 default => $value,
             };

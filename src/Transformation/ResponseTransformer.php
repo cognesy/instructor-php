@@ -45,9 +45,11 @@ class ResponseTransformer
         // transform
         $data = $object->clone();
         foreach ($this->transformers as $transformer) {
-            if (!$transformer instanceof CanTransformObject) {
-                throw new Exception('Transformer must implement CanTransformObject interface');
-            }
+            $transformer = match(true) {
+                is_string($transformer) && is_subclass_of($transformer, CanTransformObject::class) => new $transformer(),
+                $transformer instanceof CanTransformObject => $transformer,
+                default => throw new Exception('Transformer must implement CanTransformObject interface'),
+            };
             $this->events->dispatch(new ResponseTransformationAttempt($data));
             $data = $transformer->transform($data);
         }

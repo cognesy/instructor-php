@@ -14,7 +14,7 @@ class OllamaConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: OllamaClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class OllamaConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: OllamaConnector::class,
             context: [
                 'apiKey' => $_ENV['OLLAMA_API_KEY'] ?? 'ollama',
@@ -47,7 +47,7 @@ class OllamaConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'ollama:llama2',
             context: [
@@ -66,7 +66,7 @@ class OllamaConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'ollama:llama3',
             context: [

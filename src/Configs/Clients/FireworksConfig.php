@@ -14,7 +14,7 @@ class FireworksConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class:FireworksAIClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class FireworksConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class:FireworksAIConnector::class,
             context: [
                 'apiKey' => $_ENV['FIREWORKSAI_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class FireworksConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'fireworks:mixtral-8x7b',
             context: [

@@ -19,8 +19,9 @@ class TestNestedObject {
     public float $floatProperty;
     public DateTime $datetimeProperty;
     public TestEnum $enumProperty;
-    /** @var string[] */
     public array $arrayProperty;
+    /** @var string[] */
+    public array $collectionProperty;
 }
 
 it('creates structure', function () {
@@ -32,11 +33,12 @@ it('creates structure', function () {
         Field::datetime('datetimeProperty', 'Datetime property'),
         Field::enum('enumProperty', TestEnum::class, 'Enum property'),
         Field::object('objectProperty', TestNestedObject::class, 'Object property'),
-        Field::array('arrayProperty', TypeDetails::PHP_STRING, 'Array property'),
-        Field::array('arrayObjectProperty', TestNestedObject::class, 'Array object property'),
-        Field::array('arrayEnumProperty', TestEnum::class, 'Array enum property'),
+        Field::array('arrayProperty', 'Array property'),
+        Field::collection('collectionProperty', TypeDetails::PHP_STRING, 'Array property'),
+        Field::collection('collectionObjectProperty', TestNestedObject::class, 'Array object property'),
+        Field::collection('collectionEnumProperty', TestEnum::class, 'Array enum property'),
     ]);
-    expect($structure->fields())->toHaveCount(10);
+    expect($structure->fields())->toHaveCount(11);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('boolProperty')->name())->toBe('boolProperty');
@@ -45,8 +47,9 @@ it('creates structure', function () {
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
     expect($structure->field('objectProperty')->name())->toBe('objectProperty');
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
-    expect($structure->field('arrayObjectProperty')->name())->toBe('arrayObjectProperty');
-    expect($structure->field('arrayEnumProperty')->name())->toBe('arrayEnumProperty');
+    expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
+    expect($structure->field('collectionObjectProperty')->name())->toBe('collectionObjectProperty');
+    expect($structure->field('collectionEnumProperty')->name())->toBe('collectionEnumProperty');
 });
 
 it('serializes structure', function() {
@@ -58,9 +61,10 @@ it('serializes structure', function() {
         Field::datetime('datetimeProperty', 'Datetime property'),
         Field::enum('enumProperty', TestEnum::class, 'Enum property'),
         Field::object('objectProperty', TestNestedObject::class, 'Object property'),
-        Field::array('arrayProperty', TypeDetails::PHP_STRING, 'Array property'),
-        Field::array('arrayObjectProperty', TestNestedObject::class, 'Array object property'),
-        Field::array('arrayEnumProperty', TestEnum::class, 'Array enum property'),
+        Field::array('arrayProperty', 'Array property'),
+        Field::collection('collectionProperty', TypeDetails::PHP_STRING, 'Collection property'),
+        Field::collection('collectionObjectProperty', TestNestedObject::class, 'Collection object property'),
+        Field::collection('collectionEnumProperty', TestEnum::class, 'Collection enum property'),
     ]);
 
     $structure->stringProperty = 'string';
@@ -70,12 +74,13 @@ it('serializes structure', function() {
     $structure->datetimeProperty = new DateTime('2020-10-01');
     $structure->enumProperty = TestEnum::A;
     $structure->objectProperty = new TestNestedObject();
-    $structure->arrayProperty = ['a', 'b', 'c'];
-    $structure->arrayObjectProperty = [new TestNestedObject(), new TestNestedObject()];
-    $structure->arrayEnumProperty = [TestEnum::A, TestEnum::B];
+    $structure->arrayProperty = ['a', 'b', 1];
+    $structure->collectionProperty = ['a', 'b', 'c'];
+    $structure->collectionObjectProperty = [new TestNestedObject(), new TestNestedObject()];
+    $structure->collectionEnumProperty = [TestEnum::A, TestEnum::B];
 
     $data = $structure->toArray();
-    expect($data)->toHaveCount(10);
+    expect($data)->toHaveCount(11);
     expect($data['stringProperty'])->toBe('string');
     expect($data['integerProperty'])->toBe(1);
     expect($data['boolProperty'])->toBe(true);
@@ -83,10 +88,11 @@ it('serializes structure', function() {
     expect($data['datetimeProperty'])->toBe('2020-10-01 00:00:00');
     expect($data['enumProperty'])->toBe(TestEnum::A->value);
     expect($data['objectProperty'])->toBe([]);
-    expect($data['arrayProperty'])->toBe(['a', 'b', 'c']);
-    expect($data['arrayObjectProperty'])->toBeArray();
-    expect($data['arrayObjectProperty'])->toHaveCount(2);
-    expect($data['arrayEnumProperty'])->toBe(['A', 'B']);
+    expect($data['arrayProperty'])->toBe(['a', 'b', 1]);
+    expect($data['collectionProperty'])->toBe(['a', 'b', 'c']);
+    expect($data['collectionObjectProperty'])->toBeArray();
+    expect($data['collectionObjectProperty'])->toHaveCount(2);
+    expect($data['collectionEnumProperty'])->toBe(['A', 'B']);
 });
 
 it('deserializes structure', function() {
@@ -100,11 +106,12 @@ it('deserializes structure', function() {
             Field::string('stringProperty', 'String property'),
             Field::int('integerProperty', 'Integer property'),
             Field::bool('boolProperty', 'Boolean property'),
-        ], 'Object property'),
+        ], 'Structure property'),
         Field::object('objectProperty', TestNestedObject::class, 'Object property')->optional(),
-        Field::array('arrayProperty', TypeDetails::PHP_STRING, 'Array property'),
-        Field::array('arrayDateProperty', DateTime::class, 'Array object property')->optional(),
-        Field::array('arrayEnumProperty', TestEnum::class, 'Array enum property'),
+        Field::array('arrayProperty', 'Array property'),
+        Field::collection('collectionProperty', TypeDetails::PHP_STRING, 'Collection property'),
+        Field::collection('collectionDateProperty', DateTime::class, 'Collection object property')->optional(),
+        Field::collection('collectionEnumProperty', TestEnum::class, 'Collection enum property'),
     ]);
 
     $data = [
@@ -125,11 +132,12 @@ it('deserializes structure', function() {
             'floatProperty' => 1.1,
             'datetimeProperty' => '2020-10-01',
             'enumProperty' => TestEnum::A->value,
-            'arrayProperty' => ['a', 'b', 'c'],
+            'arrayProperty' => ['a', 'b', 2],
         ],
-        'arrayProperty' => ['a', 'b', 'c'],
-        'arrayDateProperty' => ['2020-10-01', '2021-01-12'],
-        'arrayEnumProperty' => ['A', 'B'],
+        'arrayProperty' => ['a', 'b', 1],
+        'collectionProperty' => ['a', 'b', 'c'],
+        'collectionDateProperty' => ['2020-10-01', '2021-01-12'],
+        'collectionEnumProperty' => ['A', 'B'],
     ];
 
     $structure->fromArray($data);
@@ -151,22 +159,23 @@ it('deserializes structure', function() {
     expect($structure->objectProperty->datetimeProperty)->toBeInstanceOf(DateTime::class);
     expect($structure->objectProperty->datetimeProperty->format("Y-m-d"))->toBe('2020-10-01');
     expect($structure->objectProperty->enumProperty)->toBe(TestEnum::A);
-    expect($structure->objectProperty->arrayProperty)->toBe(['a', 'b', 'c']);
-    expect($structure->arrayProperty)->toBe(['a', 'b', 'c']);
-    expect($structure->arrayDateProperty)->toBeArray();
-    expect($structure->arrayDateProperty)->toHaveCount(2);
-    expect($structure->arrayDateProperty[0])->toBeInstanceOf(DateTime::class);
-    expect($structure->arrayDateProperty[1])->toBeInstanceOf(DateTime::class);
-    expect($structure->arrayEnumProperty)->toBeArray();
-    expect($structure->arrayEnumProperty)->toHaveCount(2);
-    expect($structure->arrayEnumProperty[0])->toBe(TestEnum::A);
-    expect($structure->arrayEnumProperty[1])->toBe(TestEnum::B);
+    expect($structure->objectProperty->arrayProperty)->toBe(['a', 'b', 2]);
+    expect($structure->arrayProperty)->toBe(['a', 'b', 1]);
+    expect($structure->collectionProperty)->toBe(['a', 'b', 'c']);
+    expect($structure->collectionDateProperty)->toBeArray();
+    expect($structure->collectionDateProperty)->toHaveCount(2);
+    expect($structure->collectionDateProperty[0])->toBeInstanceOf(DateTime::class);
+    expect($structure->collectionDateProperty[1])->toBeInstanceOf(DateTime::class);
+    expect($structure->collectionEnumProperty)->toBeArray();
+    expect($structure->collectionEnumProperty)->toHaveCount(2);
+    expect($structure->collectionEnumProperty[0])->toBe(TestEnum::A);
+    expect($structure->collectionEnumProperty[1])->toBe(TestEnum::B);
 });
 
 it('creates structure from class', function() {
     $structure = StructureFactory::fromClass(TestNestedObject::class);
 
-    expect($structure->fields())->toHaveCount(7);
+    expect($structure->fields())->toHaveCount(8);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('boolProperty')->name())->toBe('boolProperty');
@@ -174,6 +183,7 @@ it('creates structure from class', function() {
     expect($structure->field('datetimeProperty')->name())->toBe('datetimeProperty');
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
+    expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
 });
 
 it('creates structure from JSON Schema', function() {
@@ -226,9 +236,11 @@ it('creates structure from array', function() {
         'boolProperty' => true,
         'floatProperty' => 1.1,
         'enumProperty' => TestEnum::A->value,
+        'arrayProperty' => ['a', 'b', 1],
+        'collectionProperty' => ['a', 'b', 1],
     ]);
 
-    expect($structure->fields())->toHaveCount(5);
+    expect($structure->fields())->toHaveCount(7);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('integerProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_INT);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
@@ -239,4 +251,8 @@ it('creates structure from array', function() {
     expect($structure->field('floatProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_FLOAT);
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
     expect($structure->field('enumProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
+    expect($structure->field('arrayProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
+    expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
+    expect($structure->field('collectionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
 });

@@ -17,6 +17,7 @@ class Configuration implements ContainerInterface
 
     use Traits\HandlesComponentInstances;
     use Traits\HandlesComponentWiring;
+    use Traits\HandlesConfigSetup;
     use Traits\HandlesConfigInclude;
     use Traits\HandlesConfigProviders;
     use Traits\HasConfigurationInstance;

@@ -39,11 +39,13 @@ class ResponseDeserializer
     }
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {
+        $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
         foreach ($this->deserializers as $deserializer) {
-            if (!$deserializer instanceof CanDeserializeClass) {
-                throw new Exception('Deserializer must implement CanDeserializeClass interface');
-            }
-            $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
+            $deserializer = match(true) {
+                is_string($deserializer) && is_subclass_of($deserializer, CanDeserializeClass::class) => new $deserializer(),
+                $deserializer instanceof CanDeserializeClass => $deserializer,
+                default => throw new Exception('Deserializer must implement CanDeserializeClass interface'),
+            };
             $result = Result::try(fn() => $deserializer->fromJson($json, $responseModel->returnedClass()));
             if ($result->isSuccess()) {
                 return $result;

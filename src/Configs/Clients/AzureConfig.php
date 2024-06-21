@@ -14,7 +14,7 @@ class AzureConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: AzureClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class AzureConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: AzureConnector::class,
             context: [
                 'apiKey' => $_ENV['AZURE_API_KEY'] ?? '',
@@ -50,7 +50,7 @@ class AzureConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'azure:gpt-3.5-turbo',
             context: [

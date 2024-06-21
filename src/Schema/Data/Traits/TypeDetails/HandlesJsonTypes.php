@@ -11,6 +11,7 @@ trait HandlesJsonTypes
         return match ($this->type) {
             self::PHP_OBJECT => self::JSON_OBJECT,
             self::PHP_ENUM => ($this->enumType === self::PHP_INT ? self::JSON_INTEGER : self::JSON_STRING),
+            self::PHP_COLLECTION => self::JSON_ARRAY,
             self::PHP_ARRAY => self::JSON_ARRAY,
             self::PHP_INT => self::JSON_INTEGER,
             self::PHP_FLOAT => self::JSON_NUMBER,

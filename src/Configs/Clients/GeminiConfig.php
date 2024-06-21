@@ -14,7 +14,7 @@ class GeminiConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: GeminiClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class GeminiConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: GeminiConnector::class,
             context: [
                 'apiKey' => $_ENV['GEMINI_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class GeminiConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'google:gemini-1.5-flash',
             context: [

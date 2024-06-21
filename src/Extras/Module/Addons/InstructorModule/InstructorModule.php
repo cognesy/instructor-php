@@ -19,7 +19,7 @@ abstract class InstructorModule extends Module
     private Instructor $instructor;
     private ?string $prompt = null;
 
-    private ?array $examples = null;
+    private ?array $examples = [];
     private string|array|object $responseModel;
     private array $validators = [];
 
@@ -29,11 +29,12 @@ abstract class InstructorModule extends Module
     public function __construct(
         string $signature = '',
         string $instructions = '',
-        Example $examples = null,
+        array|Example $examples = [],
         array $validators = [],
         Instructor $instructor = null,
     ) {
         $this->instructor = $instructor ?? new Instructor();
+        $instructor->withValidators($validators);
         $this->signatureString = $this->signatureFromAttribute() ?: $signature;
         $this->signatureInstructions = $this->instructionsFromAttribute() ?: $instructions;
         $this->withExamples($examples);

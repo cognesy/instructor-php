@@ -16,6 +16,7 @@ trait HandlesSignature
             $signature = $this->signature();
             $this->signature = match(true) {
                 is_string($signature) && str_contains($signature, Signature::ARROW) => SignatureFactory::fromString($signature),
+                is_string($signature) && (is_subclass_of($signature, Signature::class)) => (new $signature),
                 is_string($signature) && (is_subclass_of($signature, HasSignature::class)) => (new $signature)->signature(),
                 $signature instanceof HasSignature => $signature->signature(),
                 $signature instanceof Signature => $signature,

@@ -15,7 +15,7 @@ class OpenAIConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: OpenAIClient::class,
             name: CanCallApi::class, // default client
             context: [
@@ -37,7 +37,7 @@ class OpenAIConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: OpenAIConnector::class,
             context: [
                 'apiKey' => $_ENV['OPENAI_API_KEY'] ?? '',
@@ -50,7 +50,7 @@ class OpenAIConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openai:gpt-4o',
             context: [
@@ -69,7 +69,7 @@ class OpenAIConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openai:gpt-4-turbo',
             context: [
@@ -88,7 +88,7 @@ class OpenAIConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openai:gpt-4',
             context: [
@@ -107,7 +107,7 @@ class OpenAIConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openai:gpt-4-32k',
             context: [
@@ -126,7 +126,7 @@ class OpenAIConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'openai:gpt-3.5-turbo',
             context: [

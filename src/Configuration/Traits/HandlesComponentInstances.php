@@ -30,28 +30,6 @@ trait HandlesComponentInstances
     }
 
     /**
-     * Get a reference to a component
-     */
-    public function reference(string $componentName, bool $fresh = false) : callable {
-        return function () use ($componentName, $fresh) {
-            return $this->resolveReference($componentName, $fresh);
-        };
-    }
-
-    /**
-     * Get a list of references to components
-     */
-    public function referenceList(array $componentNames) : callable {
-        return function () use ($componentNames) {
-            $list = [];
-            foreach ($componentNames as $componentName) {
-                $list[] = $this->resolveReference($componentName);
-            }
-            return $list;
-        };
-    }
-
-    /**
      * Resolve a component reference and return existing or fresh instance
      */
     private function resolveReference(string $componentName, bool $fresh = false) : mixed

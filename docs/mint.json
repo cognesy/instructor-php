@@ -43,11 +43,6 @@
             "name": "Blog",
             "icon": "newspaper",
             "url": "https://cognesy.com/blog"
-        },
-        {
-            "name": "Commercial support",
-            "icon": "book-open-cover",
-            "url": "https://cognesy.com/"
         }
     ],
     "navigation": [

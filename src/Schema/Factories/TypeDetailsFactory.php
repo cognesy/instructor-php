@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Schema\Factories;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Schema\Utils\PropertyInfo;
 use Symfony\Component\PropertyInfo\Type;
 
 /**
@@ -20,11 +21,12 @@ class TypeDetailsFactory
      * @return \Cognesy\Instructor\Schema\Data\TypeDetails
      */
     public function fromTypeName(string $anyType) : TypeDetails {
-        $normalized = $this->normalizeIfArray($anyType);
+        $normalized = $this->normalizeIfCollection($anyType);
         return match (true) {
             ($normalized == TypeDetails::PHP_OBJECT) => throw new \Exception('Object type must have a class name'),
             ($normalized == TypeDetails::PHP_ENUM) => throw new \Exception('Enum type must have a class'),
-            ($normalized == TypeDetails::PHP_ARRAY) => $this->arrayType($anyType),
+            ($normalized == TypeDetails::PHP_COLLECTION) => $this->collectionType($anyType),
+            ($normalized == TypeDetails::PHP_ARRAY) => $this->arrayType(),
             (in_array($normalized, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($anyType),
             default => $this->objectType($anyType),
         };
@@ -42,7 +44,8 @@ class TypeDetailsFactory
         return match(true) {
             (in_array($type, TypeDetails::PHP_OBJECT_TYPES)) => $this->fromTypeName($class),
             (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($type),
-            ($type === TypeDetails::PHP_ARRAY) => $this->arrayType($this->arrayTypeString($propertyInfo)),
+            ($type === TypeDetails::PHP_ARRAY && $this->isCollection($type, $class)) => $this->collectionType($this->collectionTypeString($propertyInfo)),
+            ($type === TypeDetails::PHP_ARRAY) => $this->arrayType(),
             ($class !== null) => $this->objectType($class),
             default => throw new \Exception('Unsupported type: '.$type),
         };
@@ -58,7 +61,8 @@ class TypeDetailsFactory
         $type = TypeDetails::getType($anyVar);
         return match (true) {
             ($type == TypeDetails::PHP_OBJECT) => $this->objectType(get_class($anyVar)),
-            ($type == TypeDetails::PHP_ARRAY) => $this->arrayType($this->arrayTypeStringFromValues($anyVar)),
+            ($type == TypeDetails::PHP_ARRAY && $this->allItemsShareType($anyVar)) => $this->collectionType($this->collectionTypeStringFromValues($anyVar)),
+            ($type == TypeDetails::PHP_ARRAY) => $this->arrayType(),
             (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($type),
             default => throw new \Exception('Unsupported type: '.$type),
         };
@@ -88,11 +92,25 @@ class TypeDetailsFactory
      * @param string $typeSpec
      * @return \Cognesy\Instructor\Schema\Data\TypeDetails
      */
-    public function arrayType(string $typeSpec) : TypeDetails {
+    public function arrayType(string $typeSpec = '') : TypeDetails {
         if ($this->isArrayShape($typeSpec)) {
             return $this->arrayShapeType($typeSpec);
         }
-        $typeName = $this->getArrayType($typeSpec);
+        return new TypeDetails(
+            type: TypeDetails::PHP_ARRAY,
+            nestedType: null,
+            docString: $typeSpec
+        );
+    }
+
+    /**
+     * Create TypeDetails for array type
+     *
+     * @param string $typeSpec
+     * @return \Cognesy\Instructor\Schema\Data\TypeDetails
+     */
+    public function collectionType(string $typeSpec) : TypeDetails {
+        $typeName = $this->getCollectionType($typeSpec);
         $nestedType = match (true) {
             ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed type not supported'),
             ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('You have not specified array element type'),
@@ -100,7 +118,7 @@ class TypeDetailsFactory
             default => $this->objectType($typeName),
         };
         return new TypeDetails(
-            type: TypeDetails::PHP_ARRAY,
+            type: TypeDetails::PHP_COLLECTION,
             nestedType: $nestedType,
             docString: $typeSpec
         );
@@ -164,7 +182,7 @@ class TypeDetailsFactory
     /**
      * Extract array type from type string
      */
-    private function getArrayType(string $typeSpec) : string {
+    private function getCollectionType(string $typeSpec) : string {
         if (substr($typeSpec, -2) !== '[]') {
             return $typeSpec;
         }
@@ -174,20 +192,22 @@ class TypeDetailsFactory
     /**
      * Express Type[] type as array
      */
-    private function normalizeIfArray(string $type) : string {
-        if (substr($type, -2) === '[]') {
-            return TypeDetails::PHP_ARRAY;
-        }
-        return $type;
+    private function normalizeIfCollection(string $type) : string {
+        return match(true) {
+            (substr($type, -2) === '[]') => TypeDetails::PHP_COLLECTION,
+            ($type === TypeDetails::PHP_ARRAY) => TypeDetails::PHP_ARRAY,
+            (substr($type, 0, 5) === 'array') => TypeDetails::PHP_ARRAY,
+            default => $type,
+        };
     }
 
     /**
      * Express array type as <type>[]
      */
-    private function arrayTypeString(Type $propertyInfo) : string {
+    private function collectionTypeString(Type $propertyInfo) : string {
         $collectionValueType = $propertyInfo->getCollectionValueTypes()[0];
         if ($collectionValueType === null) {
-            throw new \Exception('Array type must have a collection value type specified');
+            return '';
         }
         $nestedType = $collectionValueType->getBuiltinType() ?? '';
         $nestedClass = $collectionValueType->getClassName() ?? '';
@@ -197,7 +217,7 @@ class TypeDetailsFactory
     /**
      * Determine array type from array values
      */
-    private function arrayTypeStringFromValues(array $array) : string
+    private function collectionTypeStringFromValues(array $array) : string
     {
         if (empty($array)) {
             throw new \Exception('Array is empty, cannot determine type of elements');
@@ -213,8 +233,27 @@ class TypeDetailsFactory
         throw new \Exception('Unsupported array element type: '.$nestedType);
     }
 
+    private function allItemsShareType(array $array) : bool {
+        $type = TypeDetails::getType($array[0]);
+        foreach ($array as $item) {
+            if (TypeDetails::getType($item) !== $type) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private function isArrayShape(string $typeSpec) : bool {
         // TODO: not supported yet
         return false;
+    }
+
+    private function isCollection(string $typeSpec, string|null $class = '') : bool {
+        return match(true) {
+            (substr($typeSpec, -2) === '[]') => true,
+            // TODO: implement tests for this, then enable
+            //(is_subclass_of($class, IteratorAggregate::class)) => true,
+            default => false,
+        };
     }
 }

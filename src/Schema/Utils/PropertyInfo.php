@@ -56,13 +56,14 @@ class PropertyInfo
 
     public function getTypeName() : string {
         $type = $this->getType();
+dump("pi: ", $type);
         $builtInType = $type->getBuiltinType();
         return match($builtInType) {
             Type::BUILTIN_TYPE_INT => 'int',
             Type::BUILTIN_TYPE_FLOAT => 'float',
             Type::BUILTIN_TYPE_STRING => 'string',
             Type::BUILTIN_TYPE_BOOL => 'bool',
-            Type::BUILTIN_TYPE_ARRAY => $this->getArrayTypeName($type),
+            Type::BUILTIN_TYPE_ARRAY => $this->getCollectionOrArrayType($type),
             Type::BUILTIN_TYPE_OBJECT => $this->getType()->getClassName(),
             Type::BUILTIN_TYPE_CALLABLE => 'callable',
             Type::BUILTIN_TYPE_ITERABLE => 'iterable',
@@ -80,7 +81,6 @@ class PropertyInfo
             AttributeUtils::getValues($this->reflection, InputField::class, 'description'),
             AttributeUtils::getValues($this->reflection, OutputField::class, 'description'),
         );
-
         // get property description from PHPDoc
         $descriptions[] = $this->extractor()->getShortDescription($this->class, $this->property);
         $descriptions[] = $this->extractor()->getLongDescription($this->class, $this->property);
@@ -124,11 +124,11 @@ class PropertyInfo
 
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
-    private function getArrayTypeName(Type $type) : string {
+    private function getCollectionOrArrayType(Type $type) : string {
         $valueType = $type->getCollectionValueTypes();
         $valueType = $valueType[0] ?? null;
         if (is_null($valueType)) {
-            return 'mixed';
+            return 'array';
         }
         $builtInType = $valueType->getBuiltinType();
         return match($builtInType) {
@@ -142,7 +142,7 @@ class PropertyInfo
             Type::BUILTIN_TYPE_ITERABLE => 'iterable',
             Type::BUILTIN_TYPE_RESOURCE => 'resource',
             Type::BUILTIN_TYPE_NULL => 'null',
-            default => 'mixed',
+            default => 'array',
         };
     }
 

@@ -41,7 +41,7 @@ trait CreatesStructureFromCallables
             $isOptional = $parameter->isOptional();
             $isVariadic = $parameter->isVariadic();
             $typeDetails = match($isVariadic) {
-                true => $typeDetailsFactory->arrayType($parameter->getType()),
+                true => $typeDetailsFactory->collectionType($parameter->getType()),
                 default => $typeDetailsFactory->fromTypeName($parameter->getType())
             };
             $arguments[] = FieldFactory::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)->optional($isOptional);

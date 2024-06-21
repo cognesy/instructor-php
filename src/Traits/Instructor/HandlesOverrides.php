@@ -10,4 +10,9 @@ trait HandlesOverrides
         $this->config->override([CanValidateObject::class => $validator]);
         return $this;
     }
+
+    public function withValidators(array $validators) : static {
+        $this->config->override(['instructor.validators' => $validators]);
+        return $this;
+    }
 }

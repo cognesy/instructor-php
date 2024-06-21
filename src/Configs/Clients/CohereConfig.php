@@ -13,7 +13,7 @@ class CohereConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: CohereClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -34,7 +34,7 @@ class CohereConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class:CohereConnector::class,
             context: [
                 'apiKey' => $_ENV['COHERE_API_KEY'] ?? '',
@@ -46,7 +46,7 @@ class CohereConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'cohere:command-r-plus',
             context: [
@@ -65,7 +65,7 @@ class CohereConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'cohere:command-r',
             context: [
@@ -84,7 +84,7 @@ class CohereConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'cohere:command',
             context: [
@@ -103,7 +103,7 @@ class CohereConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'cohere:command-light',
             context: [

@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Schema\Visitors;
 use Cognesy\Instructor\Schema\Contracts\CanVisitSchema;
 use Cognesy\Instructor\Schema\Data\Reference;
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
+use Cognesy\Instructor\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ArrayShapeSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
@@ -31,6 +32,13 @@ class SchemaToJsonSchema implements CanVisitSchema
     }
 
     public function visitArraySchema(ArraySchema $schema): void {
+        $this->result = array_filter([
+            'type' => 'array',
+            'description' => $schema->description,
+        ]);
+    }
+
+    public function visitCollectionSchema(CollectionSchema $schema): void {
         $this->result = array_filter([
             'type' => 'array',
             'items' => (new SchemaToJsonSchema)->toArray($schema->nestedItemSchema, $this->refCallback),

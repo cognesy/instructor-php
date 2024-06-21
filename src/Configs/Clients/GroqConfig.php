@@ -14,7 +14,7 @@ class GroqConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: GroqClient::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -35,7 +35,7 @@ class GroqConfig implements CanAddConfiguration
             },
         );
 
-        $config->declare(
+        $config->object(
             class: GroqConnector::class,
             context: [
                 'apiKey' => $_ENV['GROQ_API_KEY'] ?? '',
@@ -47,7 +47,7 @@ class GroqConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'groq:llama3-8b',
             context: [
@@ -66,7 +66,7 @@ class GroqConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'groq:llama3-70b',
             context: [
@@ -85,7 +85,7 @@ class GroqConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'groq:mixtral-8x7b',
             context: [
@@ -104,7 +104,7 @@ class GroqConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelParams::class,
             name: 'groq:gemma-7b',
             context: [

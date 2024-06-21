@@ -61,9 +61,15 @@ trait HandlesFieldDefinitions
         return $result;
     }
 
-    static public function array(string $name, string $itemType, string $description = '') : self {
+    static public function collection(string $name, string $itemType, string $description = '') : self {
         $factory = new TypeDetailsFactory();
-        $type = $factory->arrayType($itemType);
+        $type = $factory->collectionType($itemType);
+        return new Field($name, $description, $type);
+    }
+
+    static public function array(string $name, string $description = '') : self {
+        $factory = new TypeDetailsFactory();
+        $type = $factory->arrayType();
         return new Field($name, $description, $type);
     }
 }

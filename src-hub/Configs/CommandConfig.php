@@ -20,28 +20,28 @@ class CommandConfig implements CanAddConfiguration
 
         /// COMMANDS //////////////////////////////////////////////////////////////////
 
-        $config->declare(
+        $config->object(
             class: GenerateDocs::class,
             context: [
                 'docGen' => $config->reference(MintlifyDocGenerator::class),
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ListAllExamples::class,
             context: [
                 'examples' => $config->reference(ExampleRepository::class),
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: RunAllExamples::class,
             context: [
                 'runner' => $config->reference(Runner::class),
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: RunOneExample::class,
             context: [
                 'runner' => $config->reference(Runner::class),
@@ -49,7 +49,7 @@ class CommandConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ShowExample::class,
             context: [
                 'examples' => $config->reference(ExampleRepository::class),

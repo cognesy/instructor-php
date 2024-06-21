@@ -38,7 +38,7 @@ class ComponentConfig
     /**
      * Get the component instance
      */
-    public function get() : object {
+    public function get() : mixed {
         $this->emit(new ComponentRequested($this));
         try {
             $context = $this->buildContext();
@@ -54,7 +54,7 @@ class ComponentConfig
             $this->emit(new ComponentCreationFailed($this->name, $e));
             throw new Exception("Failed to create component $this->name: " . $e->getMessage());
         }
-        if ($instance == null) {
+        if (is_null($instance)) {
             throw new Exception($this->name . " instance is null");
         }
         return $instance;

@@ -19,7 +19,7 @@ class RequestHandlingConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: RequestFactory::class,
             context: [
                 'clientFactory' => $config->reference(ApiClientFactory::class),
@@ -31,7 +31,7 @@ class RequestHandlingConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ResponseModelFactory::class,
             context: [
                 'toolCallBuilder' => $config->reference(ToolCallBuilder::class),
@@ -40,7 +40,7 @@ class RequestHandlingConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: ToolCallBuilder::class,
             context: [
                 'schemaFactory' => $config->reference(SchemaFactory::class),
@@ -48,14 +48,14 @@ class RequestHandlingConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: SchemaFactory::class,
             context: [
                 'useObjectReferences' => $_ENV['INSTRUCTOR_USE_OBJECT_REFERENCES'] ?? false,
             ]
         );
 
-        $config->declare(class: ReferenceQueue::class);
+        $config->object(class: ReferenceQueue::class);
 
     }
 }

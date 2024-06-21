@@ -31,14 +31,14 @@ class ClientConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
 
-        $config->declare(
+        $config->object(
             class: ApiRequestFactory::class,
             context: [
                 'requestConfig' => $config->reference(ApiRequestConfig::class),
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ApiRequestConfig::class,
             context: [
                 'cacheConfig' => $config->reference(CacheConfig::class),
@@ -47,7 +47,7 @@ class ClientConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: CacheConfig::class,
             context: [
                 'enabled' => $_ENV['INSTRUCTOR_CACHE_ENABLED'] ?? false,
@@ -56,7 +56,7 @@ class ClientConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: DebugConfig::class,
             context: [
                 'debug' => $_ENV['INSTRUCTOR_DEBUG'] ?? false,
@@ -65,7 +65,7 @@ class ClientConfig implements CanAddConfiguration
             ]
         );
 
-        $config->declare(
+        $config->object(
             class: ApiClientFactory::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
@@ -88,7 +88,7 @@ class ClientConfig implements CanAddConfiguration
             ],
         );
 
-        $config->declare(
+        $config->object(
             class: ModelFactory::class,
             context: [
                 'models' => [

@@ -15,7 +15,8 @@ trait HandlesPhpTypes
         return match ($this->type) {
             self::PHP_OBJECT => $this->classOnly(),
             self::PHP_ENUM => "one of: ".implode(', ', $this->enumValues),
-            self::PHP_ARRAY => $this->nestedType->shortName().'[]',
+            self::PHP_COLLECTION => $this->nestedType->shortName().'[]',
+            self::PHP_ARRAY => 'array',
             self::PHP_SHAPE => 'struct: '.$this->docString,
             default => $this->type,
         };
@@ -33,7 +34,8 @@ trait HandlesPhpTypes
         return match ($this->type) {
             self::PHP_OBJECT => $this->class,
             self::PHP_ENUM => $this->class,
-            self::PHP_ARRAY => $this->nestedType->__toString().'[]',
+            self::PHP_COLLECTION => $this->nestedType->__toString().'[]',
+            self::PHP_ARRAY => 'array',
             self::PHP_SHAPE => $this->docString,
             default => $this->type,
         };

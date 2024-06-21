@@ -5,7 +5,6 @@ namespace Cognesy\Instructor\Extras\Module\Signature;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasInputSchema;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Extras\Module\Signature\Traits\ConvertsToSignatureString;
-use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 

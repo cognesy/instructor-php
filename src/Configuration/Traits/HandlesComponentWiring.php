@@ -44,7 +44,7 @@ trait HandlesComponentWiring
         }
         // ...apply
         foreach ($configOverrides as $name => $value) {
-            $this->declare($name, getInstance: fn() => $value);
+            $this->object($name, getInstance: fn() => $value);
         }
         $this->events()->dispatch(new ConfigurationReady($configOverrides));
         return $this;
@@ -55,40 +55,8 @@ trait HandlesComponentWiring
      */
     public function context(array $context) : self {
         foreach ($context as $name => $value) {
-            $this->declare($name, context: [$name => $value]);
+            $this->object($name, context: [$name => $value]);
         }
-        return $this;
-    }
-
-    /**
-     * Declare a component configuration
-     */
-    public function declare(
-        string   $class,
-        string   $name = null,
-        array    $context = [],
-        callable $getInstance = null,
-        bool     $injectContext = true,
-    ) : self {
-        $name = $name ?? $class;
-        $this->register((new ComponentConfig(
-            $name, $class, $context, $getInstance, $injectContext
-        ))->withEventDispatcher($this->events));
-        return $this;
-    }
-
-    public function external(
-        string $class,
-        string $name = null,
-        object $reference = null,
-        array $context = [],
-    ) : self {
-        $this->register((new ComponentConfig(
-            name: $name ?? $class,
-            class: $class,
-            context: $context,
-            getInstance: fn() => $reference,
-        ))->withEventDispatcher($this->events));
         return $this;
     }
 
