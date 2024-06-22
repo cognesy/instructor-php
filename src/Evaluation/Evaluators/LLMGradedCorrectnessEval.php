@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Evaluation\Evaluators;
 
-use Cognesy\Instructor\Evaluation\Contracts\CanEvaluateResult;
+use Cognesy\Instructor\Evaluation\Contracts\CanEvaluate;
 use Cognesy\Instructor\Evaluation\Enums\CorrectnessGrade;
 use Cognesy\Instructor\Evaluation\Metrics\GradedCorrectness;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 
-class LLMGradedCorrectnessEval implements CanEvaluateResult
+class LLMGradedCorrectnessEval implements CanEvaluate
 {
     public function __construct(
         private array $expected,

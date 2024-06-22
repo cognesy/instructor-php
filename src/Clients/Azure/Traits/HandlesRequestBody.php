@@ -1,19 +1,17 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\Requests\Traits;
+namespace Cognesy\Instructor\Clients\Azure\Traits;
 
-// API REQUEST - DEFAULT IMPLEMENTATION
-
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesRequestBody
 {
-    protected function model() : string {
-        return $this->model;
-    }
-
     public function messages(): array {
         if ($this->noScript()) {
             return $this->messages;
+        }
+
+        if($this->mode->is(Mode::Tools)) {
+            unset($this->scriptContext['json_schema']);
         }
 
         return $this
@@ -26,7 +24,7 @@ trait HandlesRequestBody
                 'pre-examples', 'examples', 'post-examples',
                 'pre-retries', 'retries', 'post-retries'
             ])
-            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
+            ->toArray();
     }
 
     public function tools(): array {
@@ -46,9 +44,5 @@ trait HandlesRequestBody
 
     protected function getResponseFormat(): array {
         return $this->responseFormat['format'] ?? [];
-    }
-
-    public function isStreamed(): bool {
-        return $this->requestBody['stream'] ?? false;
     }
 }

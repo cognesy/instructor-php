@@ -2,14 +2,9 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Message;
 
-use BackedEnum;
-use Closure;
 use Cognesy\Instructor\Contracts\CanProvideMessage\CanProvideMessage;
-use Cognesy\Instructor\Contracts\CanProvideMessages;
-use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Utils\Text;
-use Cognesy\Instructor\Utils\Json;
 use Exception;
 use InvalidArgumentException;
 

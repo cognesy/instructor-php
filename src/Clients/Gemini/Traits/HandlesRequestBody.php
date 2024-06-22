@@ -3,6 +3,8 @@ namespace Cognesy\Instructor\Clients\Gemini\Traits;
 
 // GEMINI API
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
+
 trait HandlesRequestBody
 {
     protected function system() : array {
@@ -21,7 +23,8 @@ trait HandlesRequestBody
             return $this->messages;
         }
 
-        return $this->script
+        return $this
+            ->withMetaSections($this->script)
             ->withContext($this->scriptContext)
             ->select([
                 'pre-input', 'messages', 'input', 'post-input',
@@ -29,7 +32,7 @@ trait HandlesRequestBody
                 'pre-examples', 'examples', 'post-examples',
                 'pre-retries', 'retries', 'post-retries'
             ])
-            ->toArray();
+            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
     }
 
     public function tools(): array {

@@ -16,7 +16,8 @@ trait HandlesRequestBody
             return $this->messages;
         }
 
-        return $this->script
+        return $this
+            ->withMetaSections($this->script)
             ->withContext($this->scriptContext)
             ->select([
                 'system',

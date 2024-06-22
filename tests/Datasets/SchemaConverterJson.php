@@ -4,6 +4,10 @@ dataset('schema_converter_json', [[[
     '$comment' => 'Tests\Examples\SchemaConverter\TestObject',
     'type' => 'object',
     'properties' => [
+        'optionalProperty' => [
+            'description' => 'Optional property',
+            'type' => 'string',
+        ],
         'stringProperty' => [
             'description' => 'String property',
             'type' => 'string',
@@ -59,8 +63,21 @@ dataset('schema_converter_json', [[[
                 'type' => 'string',
             ],
         ],
-        'arrayObjectProperty' => [
-            'description' => 'Array of objects property',
+        'collectionProperty' => [
+            'description' => 'Collection property',
+            'type' => 'array',
+            'items' => [
+                '$comment' => 'Cognesy\Instructor\Extras\Scalar\Scalar',
+                'type' => 'object',
+                'properties' => [
+                    'nestedStringProperty' => [
+                        'type' => 'string',
+                    ],
+                ],
+            ],
+        ],
+        'collectionObjectProperty' => [
+            'description' => 'Collection of objects property',
             'type' => 'array',
             'items' => [
                 '$comment' => 'Tests\Examples\SchemaConverter\TestNestedObject',
@@ -75,8 +92,8 @@ dataset('schema_converter_json', [[[
                 ],
             ],
         ],
-        'arrayEnumProperty' => [
-            'description' => 'Array of enum property',
+        'collectionEnumProperty' => [
+            'description' => 'Collection of enum property',
             'type' => 'array',
             'items' => [
                 '$comment' => 'Tests\Examples\SchemaConverter\TestEnum',
@@ -93,7 +110,8 @@ dataset('schema_converter_json', [[[
         'enumProperty',
         'objectProperty',
         'arrayProperty',
-        'arrayObjectProperty',
-        'arrayEnumProperty'
+        'collectionProperty',
+        'collectionObjectProperty',
+        'collectionEnumProperty'
     ],
 ]]]);

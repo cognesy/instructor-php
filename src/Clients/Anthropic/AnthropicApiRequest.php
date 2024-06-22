@@ -22,7 +22,7 @@ class AnthropicApiRequest extends ApiRequest
                 [
                     'model' => $this->model(),
                     'system' => $this->system(),
-                    'messages' => $this->clientType->toNativeMessages(Messages::mergedPerRole($this->withMetaSections()->messages())),
+                    'messages' => $this->messages(),
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                     'max_tokens' => $this->maxTokens,

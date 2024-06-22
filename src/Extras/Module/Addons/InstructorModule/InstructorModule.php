@@ -34,7 +34,7 @@ abstract class InstructorModule extends Module
         Instructor $instructor = null,
     ) {
         $this->instructor = $instructor ?? new Instructor();
-        $this->instructor->appendValidators($validators);
+        $this->instructor->addValidators($validators);
         $this->signatureString = $this->signatureFromAttribute() ?: $signature;
         $this->signatureInstructions = $this->instructionsFromAttribute() ?: $instructions;
         $this->withExamples($examples);

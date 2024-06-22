@@ -26,8 +26,6 @@ use Cognesy\Instructor\Clients\OpenRouter\OpenRouterApiRequest;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherApiRequest;
-use Exception;
-use Tests\MockLLM;
 
 enum ClientType : string
 {
@@ -63,8 +61,11 @@ enum ClientType : string
         };
     }
 
-    public static function fromRequestClass(string $class)
+    public static function fromRequestClass(string|object $class)
     {
+        if (is_object($class)) {
+            $class = get_class($class);
+        }
         return match($class) {
             AnthropicApiRequest::class => self::Anthropic,
             AnyscaleApiRequest::class => self::Anyscale,

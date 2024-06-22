@@ -1,6 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Clients\Cohere\Traits;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
+
+// COHERE API
+
 trait HandlesRequestBody
 {
     public function messages(): array {
@@ -8,7 +12,8 @@ trait HandlesRequestBody
             return $this->messages;
         }
 
-        return $this->script
+        return $this
+            ->withMetaSections($this->script)
             ->withContext($this->scriptContext)
             ->select([
                 'system',
@@ -17,7 +22,7 @@ trait HandlesRequestBody
                 'pre-examples', 'examples', 'post-examples',
                 'pre-retries', 'retries', 'post-retries'
             ])
-            ->toArray();
+            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
     }
 
     public function preamble(): string {
@@ -29,7 +34,7 @@ trait HandlesRequestBody
     }
 
     public function chatHistory(): array {
-        return [];
+        return $this->clientType->toNativeMessages([]);
 //        return $this->script
 //            ->withContext($this->scriptContext)
 //            ->select(['messages', 'data-ack', 'prompt', 'examples'])

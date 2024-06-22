@@ -2,20 +2,18 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
-use BackedEnum;
-use Closure;
 use Cognesy\Instructor\Contracts\CanProvideMessage\CanProvideMessage;
 use Cognesy\Instructor\Contracts\CanProvideMessages;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Utils\Text;
-use Cognesy\Instructor\Utils\Json;
+use Exception;
 use InvalidArgumentException;
 
 trait HandlesCreation
 {
-    static public function fromString(string $role = 'user', string $content = '') : Messages {
-        return (new self)->appendMessage(new Message($role, $content));
+    static public function fromString(string $content) : Messages {
+        return (new self)->appendMessage(Message::fromString($content));
     }
 
     /**
@@ -24,7 +22,11 @@ trait HandlesCreation
     static public function fromArray(array $messages) : Messages {
         $instance = new self();
         foreach ($messages as $message) {
-            $instance->messages[] = new Message($message['role'], $message['content']);
+            $instance->messages[] = match(true) {
+                is_string($message) => Message::fromString($message),
+                Message::hasRoleAndContent($message) => new Message($message['role'], $message['content']),
+                default => throw new Exception('Invalid message array - missing role or content keys'),
+            };
         }
         return $instance;
     }
@@ -46,6 +48,35 @@ trait HandlesCreation
             }
         }
         return $instance;
+    }
+
+    public static function fromAnyArray(array $messages) : Messages {
+        if (Message::hasRoleAndContent($messages)) {
+            return self::fromArray([$messages]);
+        }
+        $normalized = new self();
+        foreach ($messages as $message) {
+            $normalized->appendMessage(match(true) {
+                is_array($message) => match(true) {
+                    Message::hasRoleAndContent($message) => new Message($message['role'], $message['content']),
+                    default => throw new Exception('Invalid message array - missing role or content keys'),
+                },
+                is_string($message) => new Message('user', $message),
+                $message instanceof Message => $message,
+                default => throw new Exception('Invalid message type'),
+            });
+        }
+        return $normalized;
+    }
+
+    public static function fromAny(string|array|Message|Messages $messages) : Messages {
+        return match(true) {
+            is_string($messages) => self::fromString($messages),
+            is_array($messages) => self::fromAnyArray($messages),
+            $messages instanceof Message => (new Messages)->appendMessage($messages),
+            $messages instanceof Messages => $messages,
+            default => throw new Exception('Invalid message type'),
+        };
     }
 
     public static function fromInput(string|array|object $input) : static {

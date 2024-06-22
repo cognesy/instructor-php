@@ -94,7 +94,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'messages' => $this->clientType->toNativeMessages($this->withMetaSections()->messages()),
+                    'messages' => $this->messages(),
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                     'response_format' => $this->getResponseFormat(),
@@ -105,41 +105,43 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $body;
     }
 
-    protected function withMetaSections() : static {
-        $this->script->section('pre-input')->appendMessageIfEmpty([
+    protected function withMetaSections(Script $script) : Script {
+        $result = Script::fromScript($script);
+
+        $result->section('pre-input')->appendMessageIfEmpty([
             'role' => 'user',
             'content' => "INPUT:",
         ]);
 
-        $this->script->section('pre-prompt')->appendMessageIfEmpty([
+        $result->section('pre-prompt')->appendMessageIfEmpty([
             'role' => 'user',
             'content' => "TASK:",
         ]);
 
-        if ($this->script->section('examples')->notEmpty()) {
-            $this->script->section('pre-examples')->appendMessageIfEmpty([
+        if ($result->section('examples')->notEmpty()) {
+            $result->section('pre-examples')->appendMessageIfEmpty([
                 'role' => 'user',
                 'content' => "EXAMPLES:",
             ]);
         }
 
-        $this->script->section('post-examples')->appendMessageIfEmpty([
+        $result->section('post-examples')->appendMessageIfEmpty([
             'role' => 'user',
             'content' => "RESPONSE:",
         ]);
 
-        if ($this->script->section('retries')->notEmpty()) {
-            $this->script->section('pre-retries')->appendMessageIfEmpty([
+        if ($result->section('retries')->notEmpty()) {
+            $result->section('pre-retries')->appendMessageIfEmpty([
                 'role' => 'user',
                 'content' => "FEEDBACK:",
             ]);
-            $this->script->section('post-retries')->appendMessageIfEmpty([
+            $result->section('post-retries')->appendMessageIfEmpty([
                 'role' => 'user',
                 'content' => "CORRECTED RESPONSE:",
             ]);
         }
 
-        return $this;
+        return $result;
     }
 
     protected function getData(string $name, mixed $defaultValue) : mixed {

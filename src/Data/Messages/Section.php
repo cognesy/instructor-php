@@ -3,11 +3,15 @@ namespace Cognesy\Instructor\Data\Messages;
 
 class Section {
     use Traits\Section\HandlesAccess;
+    use Traits\Section\HandlesConversion;
+    use Traits\Section\HandlesHeaderFooter;
     use Traits\Section\HandlesMutation;
     use Traits\Section\HandlesTransformation;
 
     public const MARKER = '@';
     private Messages $messages;
+    private Messages $header;
+    private Messages $footer;
     private bool $isTemplate = false;
 
     public function __construct(
@@ -18,6 +22,8 @@ class Section {
             $this->isTemplate = true;
         }
         $this->messages = new Messages();
+        $this->header = new Messages();
+        $this->footer = new Messages();
     }
 }
 

@@ -17,7 +17,7 @@ class OllamaApiRequest extends ApiRequest
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'messages' => $this->clientType->toNativeMessages($this->withMetaSections()->messages()),
+                    'messages' => $this->messages(),
                     'response_format' => $this->getResponseFormat(),
                     // TODO: Ollama does not support tool calling - add when supported
                     //'tools' => $this->tools(),

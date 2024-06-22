@@ -2,12 +2,13 @@
 
 namespace Cognesy\Instructor\Evaluation\Evaluators;
 
-use Cognesy\Instructor\Evaluation\Contracts\CanEvaluateResult;
+use Cognesy\Instructor\Evaluation\Contracts\CanQuantify;
+use Cognesy\Instructor\Evaluation\Contracts\CanEvaluate;
 use Cognesy\Instructor\Evaluation\Metrics\BooleanCorrectness;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 
-class LLMBooleanCorrectnessEval implements CanEvaluateResult
+class LLMBooleanCorrectnessEval implements CanQuantify
 {
     public function __construct(
         private array $expected,

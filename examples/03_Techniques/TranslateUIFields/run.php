@@ -54,7 +54,7 @@ $validator = new class implements CanValidateObject {
 
 $transformedModel = (new Instructor)
     ->wiretap(fn($e)=>$e->print())
-    ->appendValidator($validator)
+    ->addValidator($validator)
     ->respond(
         input: $sourceModel,
         responseModel: get_class($sourceModel),

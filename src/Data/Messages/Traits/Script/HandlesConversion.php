@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
-use Cognesy\Instructor\Data\Messages\Utils\ChatFormat;
 use Exception;
 use RuntimeException;
 
@@ -49,22 +48,19 @@ trait HandlesConversion
     }
 
     /**
-     * @param ClientType $type
+     * @param ClientType $clientType
      * @param array<string> $order
      * @param array<string,mixed>|null $context
      * @return array<string,mixed>
      */
-    public function toNativeArray(ClientType $type, array $context = null, bool $mergePerRole = false) : array {
+    public function toNativeArray(ClientType $clientType, array $context = null, bool $mergePerRole = false) : array {
         $array = $this->renderMessages(
             messages: $mergePerRole
                 ? $this->toSingleSection('merged')->toMergedPerRole()->toArray(raw: true)
                 : $this->toArray(raw: true),
             context: $this->context()->merge($context)->toArray(),
         );
-        return ChatFormat::mapToTargetAPI(
-            clientType: $type,
-            messages: $array,
-        );
+        return $clientType->toNativeMessages($array);
     }
 
     /**
@@ -105,7 +101,7 @@ trait HandlesConversion
             is_callable($source) => $source($context),
             is_array($source) => Messages::fromArray($source),
             $source instanceof Messages => $source,
-            is_string($source) => Messages::fromString('user', $source),
+            is_string($source) => Messages::fromString($source),
             default => throw new Exception("Invalid template value: $name"),
         };
 
@@ -113,7 +109,7 @@ trait HandlesConversion
         return match(true) {
             $values instanceof Messages => $values,
             is_array($values) => Messages::fromArray($values),
-            is_string($values) => Messages::fromString('user', $values),
+            is_string($values) => Messages::fromString($values),
             default => throw new Exception("Invalid template value: $name"),
         };
     }

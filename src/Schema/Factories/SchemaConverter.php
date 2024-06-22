@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Schema\Factories;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
@@ -33,7 +34,7 @@ class SchemaConverter
         string $customName = '',
         string $customDescription = '',
     ) : ObjectSchema {
-        $class = $jsonSchema['$comment'] ?? $this->defaultClass;
+        $class = $jsonSchema['$comment'] ?? throw new Exception('Object must have $comment field with the target class name');
         $type = $jsonSchema['type'] ?? null;
         if ($type !== 'object') {
             throw new Exception('JSON Schema must have type: object');
@@ -67,7 +68,10 @@ class SchemaConverter
     private function makePropertySchema(string $name, array $jsonSchema) : Schema {
         return match ($jsonSchema['type']) {
             TypeDetails::JSON_OBJECT => $this->makeObjectProperty($name, $jsonSchema),
-            TypeDetails::JSON_ARRAY => $this->makeCollectionProperty($name, $jsonSchema),
+            TypeDetails::JSON_ARRAY => match(true) {
+                $this->isCollection($jsonSchema) => $this->makeCollectionProperty($name, $jsonSchema),
+                default => $this->makeArrayProperty($name, $jsonSchema),
+            },
             TypeDetails::JSON_STRING,
             TypeDetails::JSON_BOOLEAN,
             TypeDetails::JSON_NUMBER,
@@ -122,7 +126,10 @@ class SchemaConverter
      */
     private function makeCollectionProperty(string $name, array $jsonSchema) : CollectionSchema {
         if (!isset($jsonSchema['items'])) {
-            throw new \Exception('Array must have items field defining the nested type');
+            throw new \Exception('Collection must have items field defining the nested type');
+        }
+        if (!isset($jsonSchema['items']['$comment'])) {
+            throw new \Exception('Collection must have items $comment field defining target class of the nested type');
         }
         $factory = new TypeDetailsFactory();
         return new CollectionSchema(
@@ -138,14 +145,22 @@ class SchemaConverter
      */
     private function makeArrayProperty(string $name, array $jsonSchema) : ArraySchema {
         if (!isset($jsonSchema['items'])) {
-            throw new \Exception('Array must have items field defining the nested type');
+            throw new \Exception('Array must have items field');
+        }
+        if ($jsonSchema['items']['type'] === 'array') {
+            throw new \Exception('Nested type cannot be array');
+        }
+        // for each $jsonSchema['items']['type'] check if it is one or more of ['object','string','integer','number','boolean']
+        if (!isset($jsonSchema['items']['anyOf'])) {
+            if (!in_array($jsonSchema['items']['type'], ['object','string','integer','number','boolean'])) {
+                throw new \Exception('Nested array type must be either object, string, integer, number or boolean');
+            }
         }
         $factory = new TypeDetailsFactory();
-        return new CollectionSchema(
-            type: $factory->collectionType($this->makeNestedType($jsonSchema['items'])),
+        return new ArraySchema(
+            type: $factory->arrayType(),
             name: $name,
             description: $jsonSchema['description'] ?? '',
-            nestedItemSchema: $this->makePropertySchema('', $jsonSchema['items'] ?? []),
         );
     }
 
@@ -197,5 +212,13 @@ class SchemaConverter
             throw new \Exception('Unknown type: '.$jsonSchema['type']);
         }
         return $factory->scalarType(TypeDetails::fromJsonType($jsonSchema['type']));
+    }
+
+    private function isCollection(array $jsonSchema) : bool {
+        return $jsonSchema['type'] === 'array'
+            && isset($jsonSchema['items'])
+            && isset($jsonSchema['items']['type'])
+            && in_array($jsonSchema['items']['type'], ['object','string','integer']) // ENUM(string/int) or OBJECT(object)
+            && isset($jsonSchema['items']['$comment']);
     }
 }

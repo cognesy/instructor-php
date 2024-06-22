@@ -25,13 +25,13 @@ trait HandlesOverrides
         return $this;
     }
 
-    public function appendValidator(CanValidateObject $validator) : static {
-        $this->appendValidators([$validator]);
+    public function addValidator(CanValidateObject $validator) : static {
+        $this->addValidators([$validator]);
         return $this;
     }
 
     /** @param CanValidateObject[] $validators */
-    public function appendValidators(array $validators) : static {
+    public function addValidators(array $validators) : static {
         $responseGenerator = $this->config->get(ResponseValidator::class);
         $responseGenerator->appendValidators($validators);
         return $this;
@@ -51,13 +51,13 @@ trait HandlesOverrides
         return $this;
     }
 
-    public function appendTransformer(CanTransformObject $transformer) : static {
-        $this->appendTransformers([$transformer]);
+    public function addTransformer(CanTransformObject $transformer) : static {
+        $this->addTransformers([$transformer]);
         return $this;
     }
 
     /** @param CanTransformObject[] $transformers */
-    public function appendTransformers(array $transformers) : static {
+    public function addTransformers(array $transformers) : static {
         $responseGenerator = $this->config->get(ResponseTransformer::class);
         $responseGenerator->appendTransformers($transformers);
         return $this;
@@ -77,13 +77,13 @@ trait HandlesOverrides
         return $this;
     }
 
-    public function appendDeserializer(CanDeserializeClass $deserializer) : static {
-        $this->appendDeserializers([$deserializer]);
+    public function addDeserializer(CanDeserializeClass $deserializer) : static {
+        $this->addDeserializers([$deserializer]);
         return $this;
     }
 
     /** @param CanDeserializeClass[] $deserializers */
-    public function appendDeserializers(array $deserializers) : static {
+    public function addDeserializers(array $deserializers) : static {
         $responseGenerator = $this->config->get(ResponseDeserializer::class);
         $responseGenerator->appendDeserializers($deserializers);
         return $this;

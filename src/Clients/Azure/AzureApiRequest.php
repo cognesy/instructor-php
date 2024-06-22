@@ -4,12 +4,11 @@ namespace Cognesy\Instructor\Clients\Azure;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesResponse;
-use Cognesy\Instructor\ApiClient\Requests\Traits\HandlesRequestBody;
 use Saloon\Enums\Method;
 
 class AzureApiRequest extends ApiRequest
 {
-    use HandlesRequestBody;
+    use Traits\HandlesRequestBody;
     use HandlesResponse;
 
     public function __construct(

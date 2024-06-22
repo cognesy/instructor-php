@@ -41,10 +41,11 @@ class TypeDetailsFactory
     public function fromPropertyInfo(Type $propertyInfo) : TypeDetails {
         $class = $propertyInfo->getClassName();
         $type = $propertyInfo->getBuiltinType();
+        $collectionType = ($propertyInfo->getBuiltinType() === 'array') ? $this->collectionTypeString($propertyInfo) : '';
         return match(true) {
             (in_array($type, TypeDetails::PHP_OBJECT_TYPES)) => $this->fromTypeName($class),
             (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($type),
-            ($type === TypeDetails::PHP_ARRAY && $this->isCollection($type, $class)) => $this->collectionType($this->collectionTypeString($propertyInfo)),
+            ($type === TypeDetails::PHP_ARRAY && $this->isCollection($collectionType)) => $this->collectionType($collectionType),
             ($type === TypeDetails::PHP_ARRAY) => $this->arrayType(),
             ($class !== null) => $this->objectType($class),
             default => throw new \Exception('Unsupported type: '.$type),
@@ -248,11 +249,9 @@ class TypeDetailsFactory
         return false;
     }
 
-    private function isCollection(string $typeSpec, string|null $class = '') : bool {
+    private function isCollection(string $typeSpec) : bool {
         return match(true) {
             (substr($typeSpec, -2) === '[]') => true,
-            // TODO: implement tests for this, then enable
-            //(is_subclass_of($class, IteratorAggregate::class)) => true,
             default => false,
         };
     }

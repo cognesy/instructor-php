@@ -31,7 +31,7 @@ class GeminiApiRequest extends ApiRequest
         $body = array_filter(
             [
                 'systemInstruction' => empty($this->system()) ? [] : ['parts' => ['text' => Messages::asString($this->system())]],
-                'contents' => $this->clientType->toNativeMessages($this->withMetaSections()->messages()),
+                'contents' => $this->messages(),
                 'generationConfig' => $this->options(),
             ],
         );

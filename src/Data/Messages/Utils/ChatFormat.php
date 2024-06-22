@@ -3,7 +3,9 @@
 namespace Cognesy\Instructor\Data\Messages\Utils;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class ChatFormat
 {
     static public function mapToTargetAPI(ClientType $clientType, array $messages) : array {

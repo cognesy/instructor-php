@@ -119,7 +119,7 @@ class PartialsGenerator implements CanGeneratePartials
             ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->toolName()))
             ->through(fn() => $this->tryGetPartialObject($partialJson, $responseModel))
             ->onFailure(fn($result) => $this->events->dispatch(
-                new PartialResponseGenerationFailed(Arrays::toArray($result->error()))
+                new PartialResponseGenerationFailed(Arrays::asArray($result->error()))
             ))
             ->then(fn($result) => $this->getChangedOnly($result))
             ->result();

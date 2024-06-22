@@ -34,6 +34,7 @@ class SchemaToJsonSchema implements CanVisitSchema
     public function visitArraySchema(ArraySchema $schema): void {
         $this->result = array_filter([
             'type' => 'array',
+            'items' => ['anyOf' => [['type' => 'string'], ['type' => 'integer'], ['type' => 'number'], ['type' => 'boolean']]],
             'description' => $schema->description,
         ]);
     }

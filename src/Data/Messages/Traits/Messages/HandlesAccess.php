@@ -46,6 +46,22 @@ trait HandlesAccess
         return array_slice($this->messages, count($this->messages)-1);
     }
 
+    public static function becomesEmpty(array|Message|Messages $messages) : bool {
+        return match(true) {
+            is_array($messages) && empty($messages) => true,
+            $messages instanceof Message => $messages->isEmpty(),
+            $messages instanceof Messages => $messages->isEmpty(),
+            default => false,
+        };
+    }
+
+    public static function becomesComposite(array $messages) : bool {
+        return match(true) {
+            empty($messages) => false,
+            default => Messages::fromMessages($messages)->hasComposites(),
+        };
+    }
+
     public function isEmpty() : bool {
         return match(true) {
             empty($this->messages) => true,

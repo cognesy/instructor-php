@@ -6,6 +6,14 @@ use Cognesy\Instructor\Data\Messages\Enums\MessageRole;
 
 trait HandlesAccess
 {
+    public static function becomesComposite(array $message) : bool {
+        return is_array($message['content']);
+    }
+
+    public static function hasRoleAndContent(array $message) : bool {
+        return isset($message['role'], $message['content']);
+    }
+
     public function role() : MessageRole {
         return MessageRole::fromString($this->role);
     }
@@ -24,9 +32,5 @@ trait HandlesAccess
 
     public function isComposite() : bool {
         return is_array($this->content);
-    }
-
-    protected static function hasRoleAndContent(array $message) : bool {
-        return isset($message['role'], $message['content']);
     }
 }

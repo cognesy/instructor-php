@@ -15,15 +15,15 @@ trait HandlesAccess
     }
 
     public function firstRole() : MessageRole {
-        return $this->messages()->firstRole();
+        return $this->messages->firstRole();
     }
 
     public function lastRole() : MessageRole {
-        return $this->messages()->lastRole();
+        return $this->messages->lastRole();
     }
 
     public function isEmpty() : bool {
-        return $this->messages()->isEmpty();
+        return $this->messages->isEmpty();
     }
 
     public function notEmpty() : bool {
@@ -31,7 +31,7 @@ trait HandlesAccess
     }
 
     public function hasComposites() : bool {
-        return $this->messages()->hasComposites();
+        return $this->messages->hasComposites();
     }
 
     public function isTemplate() : bool {
@@ -39,6 +39,11 @@ trait HandlesAccess
     }
 
     public function messages() : Messages {
-        return $this->messages;
+        return match(true) {
+            $this->isEmpty() => $this->messages,
+            default => $this->messages
+                ->prependMessages($this->header)
+                ->appendMessages($this->footer),
+        };
     }
 }

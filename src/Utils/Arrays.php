@@ -25,7 +25,7 @@ class Arrays
         return $array;
     }
 
-    public static function toArray(mixed $value): array {
+    public static function asArray(mixed $value): array {
         if (is_array($value)) {
             return $value;
         }

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Clients\OpenAI\Traits;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesRequestBody
@@ -15,7 +16,8 @@ trait HandlesRequestBody
             unset($this->scriptContext['json_schema']);
         }
 
-        return $this->script
+        return $this
+            ->withMetaSections($this->script)
             ->withContext($this->scriptContext)
             ->select([
                 'system',
@@ -24,7 +26,7 @@ trait HandlesRequestBody
                 'pre-examples', 'examples', 'post-examples',
                 'pre-retries', 'retries', 'post-retries'
             ])
-            ->toArray();
+            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
     }
 
     public function tools(): array {

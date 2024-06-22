@@ -3,44 +3,41 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
-use Exception;
 
 trait HandlesMutation
 {
+    public function setMessage(string|array|Message $message) : static {
+        $this->messages = match (true) {
+            is_string($message) => [Message::fromString($message)],
+            is_array($message) => [Message::fromArray($message)],
+            default => [$message],
+        };
+        return $this;
+    }
+
     public function appendMessage(array|Message $message) : static {
         $this->messages[] = match (true) {
-            is_array($message) => new Message($message['role'], $message['content']),
+            is_array($message) => Message::fromArray($message),
             default => $message,
         };
         return $this;
     }
 
     public function appendMessages(array|Messages $messages) : static {
-        if ($messages instanceof Messages) {
-            $this->messages = array_merge($this->messages, $messages->messages);
-        } else {
-            foreach ($messages as $message) {
-                $this->messages[] = new Message($message['role'], $message['content']);
-            }
-        }
+        $appended = match (true) {
+            $messages instanceof Messages => $messages->messages,
+            default => Messages::fromAnyArray($messages)->messages,
+        };
+        $this->messages = array_merge($this->messages, $appended);
         return $this;
     }
 
     public function prependMessages(array|Messages $messages) : static {
-        if ($messages instanceof Messages) {
-            $this->messages = array_merge($messages->messages, $this->messages);
-        } else {
-            $prepended = [];
-            foreach ($messages as $message) {
-                $prepended[] = match(true) {
-                    is_array($message) => new Message($message['role'], $message['content']),
-                    is_string($message) => new Message('user', $message),
-                    $message instanceof Message => $message,
-                    default => throw new Exception('Invalid message type'),
-                };
-            }
-            $this->messages = array_merge($prepended, $this->messages);
-        }
+        $this->messages = match (true) {
+            empty($messages) => $this->messages,
+            $messages instanceof Messages => array_merge($messages->messages, $this->messages),
+            default => array_merge(Messages::fromAnyArray($messages)->messages, $this->messages),
+        };
         return $this;
     }
 

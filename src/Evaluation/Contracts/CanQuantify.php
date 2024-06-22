@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Evaluation\Contracts;
 
 use Cognesy\Instructor\Evaluation\Data\Evaluation;
 
-interface CanEvaluateResult
+interface CanQuantify
 {
-    public function process(Evaluation $evaluation) : Evaluation;
+    public function quantify(Evaluation $evaluation) : Metric;
 }

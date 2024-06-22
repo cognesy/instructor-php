@@ -76,7 +76,9 @@ class SchemaFactory
 
         // if schema is not registered, create it, register it and return it
         if (!$this->schemaMap->has($type)) {
-            $this->schemaMap->register($typeString, $this->makeSchema($type));
+            $this->schemaMap->register(
+                typeName: $typeString,
+                schema: $this->makeSchema($type));
         }
         return $this->schemaMap->get($anyType);
     }

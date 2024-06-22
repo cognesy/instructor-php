@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Data\Messages;
 
 class Messages {
+    use Traits\Messages\HandlesConversion;
     use Traits\Messages\HandlesCreation;
     use Traits\Messages\HandlesAccess;
     use Traits\Messages\HandlesMutation;

@@ -20,8 +20,8 @@ class CohereApiRequest extends ApiRequest
                 [
                     'model' => $this->model(),
                     'preamble' => $this->preamble(),
-                    'chat_history' => $this->clientType->toNativeMessages($this->chatHistory()),
-                    'message' => Messages::asString($this->withMetaSections()->messages()),
+                    'chat_history' => $this->chatHistory(),
+                    'message' => Messages::asString($this->messages()),
                     'tools' => $this->tools(),
                 ],
             )
