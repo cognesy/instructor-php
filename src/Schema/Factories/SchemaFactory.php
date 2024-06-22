@@ -22,8 +22,8 @@ use Exception;
  */
 class SchemaFactory
 {
-    use Traits\HandlesClassInfo;
-    use Traits\HandlesTypeDetails;
+    use Traits\SchemaFactory\HandlesClassInfo;
+    use Traits\SchemaFactory\HandlesTypeDetails;
 
     /** @var bool switches schema rendering between inlined or referenced object properties */
     protected bool $useObjectReferences;

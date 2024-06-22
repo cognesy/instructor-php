@@ -6,8 +6,6 @@ use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
-use Cognesy\Instructor\ApiClient\RequestConfig\CacheConfig;
-use Cognesy\Instructor\ApiClient\RequestConfig\DebugConfig;
 
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
@@ -36,33 +34,6 @@ class ClientConfig implements CanAddConfiguration
             context: [
                 'requestConfig' => $config->reference(ApiRequestConfig::class),
             ],
-        );
-
-        $config->object(
-            class: ApiRequestConfig::class,
-            context: [
-                'cacheConfig' => $config->reference(CacheConfig::class),
-                'debugConfig' => $config->reference(DebugConfig::class),
-                'events' => $config->reference(EventDispatcher::class),
-            ],
-        );
-
-        $config->object(
-            class: CacheConfig::class,
-            context: [
-                'enabled' => $_ENV['INSTRUCTOR_CACHE_ENABLED'] ?? false,
-                'expiryInSeconds' => $_ENV['INSTRUCTOR_CACHE_EXPIRY'] ?? 3600,
-                'cachePath' => $_ENV['INSTRUCTOR_CACHE_PATH'] ?? '/tmp/instructor/cache',
-            ]
-        );
-
-        $config->object(
-            class: DebugConfig::class,
-            context: [
-                'debug' => $_ENV['INSTRUCTOR_DEBUG'] ?? false,
-                'stopOnDebug' => $_ENV['INSTRUCTOR_STOP_ON_DEBUG'] ?? false,
-                'forceDebug' => $_ENV['INSTRUCTOR_FORCE_DEBUG'] ?? false,
-            ]
         );
 
         $config->object(

@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Transformation;
 
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -13,23 +12,13 @@ use Exception;
 
 class ResponseTransformer
 {
+    use Traits\ResponseTransformer\HandlesMutation;
+
     public function __construct(
         private EventDispatcher $events,
         /** @var CanTransformObject[] $transformers */
         private array $transformers = []
     ) {}
-
-    /** @param CanTransformObject[] $transformers */
-    public function appendTransformers(array $transformers) : self {
-        $this->transformers = array_merge($this->transformers, $transformers);
-        return $this;
-    }
-
-    /** @param CanTransformObject[] $transformers */
-    public function setTransformers(array $transformers) : self {
-        $this->transformers = $transformers;
-        return $this;
-    }
 
     public function transform(object $object) : Result {
         return match(true) {
@@ -37,6 +26,8 @@ class ResponseTransformer
             default => $this->transformObject($object),
         };
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////
 
     protected function transformSelf(CanTransformSelf $object) : Result {
         $this->events->dispatch(new ResponseTransformationAttempt($object));
@@ -54,7 +45,7 @@ class ResponseTransformer
         if (empty($this->transformers)) {
             return Result::success($object);
         }
-        // transform
+
         $data = $object->clone();
         foreach ($this->transformers as $transformer) {
             $transformer = match(true) {

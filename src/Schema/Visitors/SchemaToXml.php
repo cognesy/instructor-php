@@ -11,7 +11,9 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class SchemaToXml implements CanVisitSchema
 {
     private string $xmlLineSeparator = "\n";

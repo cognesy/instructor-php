@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Schema\Factories\Traits;
+namespace Cognesy\Instructor\Schema\Factories\Traits\SchemaFactory;
 
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Schema\Data\Schema\CollectionSchema;

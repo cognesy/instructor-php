@@ -7,32 +7,20 @@ use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
-use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Result;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Validation\Validators\SelfValidator;
 use Exception;
 
 class ResponseValidator
 {
+    use Traits\ResponseValidator\HandlesMutation;
+
     public function __construct(
         private EventDispatcher $events,
         /** @var CanValidateObject[] $validators */
         private array $validators,
     ) {}
-
-    /** @param CanValidateObject[] $validators */
-    public function appendValidators(array $validators) : self {
-        $this->validators = array_merge($this->validators, $validators);
-        return $this;
-    }
-
-    /** @param CanValidateObject[] $validators */
-    public function setValidators(array $validators) : self {
-        $this->validators = $validators;
-        return $this;
-    }
 
     /**
      * Validate deserialized response object
@@ -51,6 +39,8 @@ class ResponseValidator
             default => Result::success($response)
         };
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////
 
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {
         $this->events->dispatch(new CustomResponseValidationAttempt($response));

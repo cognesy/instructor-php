@@ -15,23 +15,13 @@ use Exception;
 
 class ResponseDeserializer
 {
+    use Traits\ResponseDeserializer\HandlesMutation;
+
     public function __construct(
         private EventDispatcher $events,
         /** @var CanDeserializeClass $deserializer */
         private array $deserializers,
     ) {}
-
-    /** @param CanDeserializeClass[] $deserializers */
-    public function appendDeserializers(array $deserializers) : self {
-        $this->deserializers = array_merge($this->deserializers, $deserializers);
-        return $this;
-    }
-
-    /** @param CanDeserializeClass[] $deserializers */
-    public function setDeserializers(array $deserializers) : self {
-        $this->deserializers = $deserializers;
-        return $this;
-    }
 
     public function deserialize(string $json, ResponseModel $responseModel, string $toolName = null) : Result {
         $result = match(true) {
@@ -44,6 +34,8 @@ class ResponseDeserializer
         });
         return $result;
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////
 
     protected function deserializeSelf(string $json, CanDeserializeSelf $response, string $toolName = null) : Result {
         $this->events->dispatch(new CustomResponseDeserializationAttempt($response, $json));
