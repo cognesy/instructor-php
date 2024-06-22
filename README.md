@@ -9,11 +9,11 @@ Instructor is a library that allows you to extract structured, validated data fr
 
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
 
-![image](./docs/img/concept.png)
+![image](./docs/images/concept.png)
 
 Here's a simple CLI demo app using Instructor to extract structured data from text:
 
-![image](./docs/img/extraction.gif)
+![image](./docs/images/extraction.gif)
 
 
 
