@@ -4,12 +4,13 @@ namespace Cognesy\Instructor\Evaluation\Evaluators;
 
 use Cognesy\Instructor\Evaluation\Contracts\CanEvaluate;
 use Cognesy\Instructor\Evaluation\Contracts\CanExplain;
+use Cognesy\Instructor\Evaluation\Contracts\CanQuantify;
 use Cognesy\Instructor\Evaluation\Data\Feedback;
 use Cognesy\Instructor\Evaluation\Metrics\BooleanCorrectness;
 use Cognesy\Instructor\Evaluation\ResponseModels\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Instructor;
 
-class LLMCoTBoolCorrectnessEval implements CanEvaluate, CanExplain
+class LLMCoTBoolCorrectnessEval implements CanEvaluate
 {
     private BooleanCorrectnessAnalysis $analysis;
 

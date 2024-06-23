@@ -32,6 +32,7 @@ class Request
         string|array $messages,
         string|array|object $input,
         string|array|object $responseModel,
+        string $system,
         string $prompt,
         array $examples,
         string|ModelParams $model,
@@ -59,6 +60,7 @@ class Request
 
         $this->input = $input;
         $this->messages = $this->normalizeMessages($messages);
+        $this->system = $system;
         $this->prompt = $prompt;
         $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
         $this->examples = $examples;

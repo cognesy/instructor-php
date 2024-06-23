@@ -65,6 +65,7 @@ class ClientConfig implements CanAddConfiguration
                 'models' => [
                     'anthropic:claude-3-haiku' => $config->reference('anthropic:claude-3-haiku'),
                     'anthropic:claude-3-sonnet' => $config->reference('anthropic:claude-3-sonnet'),
+                    'anthropic:claude-3.5-sonnet' => $config->reference('anthropic:claude-3.5-sonnet'),
                     'anthropic:claude-3-opus' => $config->reference('anthropic:claude-3-opus'),
                     'anyscale:mixtral-8x7b' => $config->reference('anyscale:mixtral-8x7b'),
                     'azure:gpt-3.5-turbo' => $config->reference('azure:gpt-3.5-turbo'),

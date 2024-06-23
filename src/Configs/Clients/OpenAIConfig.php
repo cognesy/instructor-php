@@ -61,11 +61,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'contextSize' => 128_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -80,11 +76,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'contextSize' => 128_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -99,11 +91,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -118,11 +106,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'contextSize' => 32_768,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -137,11 +121,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'contextSize' => 16_385,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 

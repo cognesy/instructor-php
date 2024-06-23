@@ -20,7 +20,7 @@ class AnthropicConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(AnthropicConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => $_ENV['ANTHROPIC_DEFAULT_MODEL'] ?? 'claude-3-haiku-20240307',
+                'defaultModel' => $_ENV['ANTHROPIC_DEFAULT_MODEL'] ?? 'claude-3-5-sonnet-20240620',
                 'defaultMaxTokens' => $_ENV['ANTHROPIC_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
@@ -58,11 +58,20 @@ class AnthropicConfig implements CanAddConfiguration
                 'contextSize' => 200_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+            ],
+        );
+
+        $config->object(
+            class: ModelParams::class,
+            name: 'anthropic:claude-3.5-sonnet',
+            context: [
+                'label' => 'Claude 3.5 Sonnet',
+                'type' => 'claude3',
+                'name' => 'claude-3-5-sonnet-20240620',
+                'maxTokens' => 4096,
+                'contextSize' => 200_000,
+                'inputCost' => 1,
+                'outputCost' => 1,
             ],
         );
 
@@ -77,11 +86,6 @@ class AnthropicConfig implements CanAddConfiguration
                 'contextSize' => 200_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
             ],
         );
 
@@ -96,11 +100,6 @@ class AnthropicConfig implements CanAddConfiguration
                 'contextSize' => 200_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
             ],
         );
 

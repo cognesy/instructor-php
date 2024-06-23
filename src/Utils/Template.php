@@ -40,6 +40,10 @@ class Template
         return $this->context;
     }
 
+    public static function cleanVarMarkers(string $template) : string {
+        return str_replace(['<|', '|>'], '', $template);
+    }
+
     public static function render(
         string $template,
         array $context,

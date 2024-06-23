@@ -2,9 +2,11 @@
 namespace Cognesy\Instructor\Clients\Groq\Traits;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use JetBrains\PhpStorm\Deprecated;
 
 // API REQUEST - GROQ
 
+#[Deprecated]
 trait HandlesRequestBody
 {
     protected function model() : string {

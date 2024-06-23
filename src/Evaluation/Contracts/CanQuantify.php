@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Evaluation\Contracts;
 
-use Cognesy\Instructor\Evaluation\Data\Evaluation;
+use Cognesy\Instructor\Evaluation\Data\PromptEvaluation;
 
 interface CanQuantify
 {
-    public function quantify(Evaluation $evaluation) : Metric;
+    public function quantify(PromptEvaluation $evaluation) : Metric;
 }

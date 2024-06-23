@@ -58,11 +58,7 @@ class MistralConfig implements CanAddConfiguration
                 'contextSize' => 32_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -77,11 +73,7 @@ class MistralConfig implements CanAddConfiguration
                 'contextSize' => 32_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -96,11 +88,7 @@ class MistralConfig implements CanAddConfiguration
                 'contextSize' => 64_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -115,11 +103,7 @@ class MistralConfig implements CanAddConfiguration
                 'contextSize' => 32_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -134,11 +118,7 @@ class MistralConfig implements CanAddConfiguration
                 'contextSize' => 32_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -153,11 +133,7 @@ class MistralConfig implements CanAddConfiguration
                 'contextSize' => 32_000,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 

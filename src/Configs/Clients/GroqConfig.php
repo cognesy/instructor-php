@@ -58,11 +58,7 @@ class GroqConfig implements CanAddConfiguration
                 'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -77,11 +73,7 @@ class GroqConfig implements CanAddConfiguration
                 'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -96,11 +88,7 @@ class GroqConfig implements CanAddConfiguration
                 'contextSize' => 32_768,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 
@@ -115,11 +103,7 @@ class GroqConfig implements CanAddConfiguration
                 'contextSize' => 8192,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 

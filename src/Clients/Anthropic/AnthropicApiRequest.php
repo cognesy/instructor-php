@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 

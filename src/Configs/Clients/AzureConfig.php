@@ -61,11 +61,7 @@ class AzureConfig implements CanAddConfiguration
                 'contextSize' => 16_385,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 

@@ -9,6 +9,7 @@ class RequestInfo
     public string|array|object $input;
     public string|array|object $responseModel;
     public string $model;
+    public string $system;
     public string $prompt;
     public int $maxRetries;
     public array $options;
@@ -40,6 +41,11 @@ class RequestInfo
 
     public function withModel(string $model) : static {
         $this->model = $model;
+        return $this;
+    }
+
+    public function withSystem(string $system) : static {
+        $this->system = $system;
         return $this;
     }
 
@@ -91,6 +97,7 @@ class RequestInfo
         $messages = '',
         $input = '',
         $responseModel = '',
+        $system = '',
         $prompt = '',
         $examples = [],
         $model = '',
@@ -105,6 +112,7 @@ class RequestInfo
         $data->messages = $messages;
         $data->input = $input;
         $data->responseModel = $responseModel;
+        $data->system = $system;
         $data->prompt = $prompt;
         $data->examples = $examples;
         $data->model = $model;

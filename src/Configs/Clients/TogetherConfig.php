@@ -58,11 +58,7 @@ class TogetherConfig implements CanAddConfiguration
                 'contextSize' => 4096,
                 'inputCost' => 1,
                 'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'assistant',
-                    'system' => 'system'
-                ],
+
             ],
         );
 

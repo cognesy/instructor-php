@@ -74,6 +74,10 @@ class RequestHandler implements CanHandleRequest
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $errors));
     }
 
+
+    // INTERNAL ////////////////////////////////////////////////////////
+
+
     protected function getApiResponse(Request $request) : ApiResponse {
         /** @var ApiClient $apiClient */
         $apiClient = $request->client();

@@ -20,7 +20,6 @@ trait HandlesRequestBody {
             ->withMetaSections($this->script)
             ->withContext($this->scriptContext)
             ->select([
-                'system',
                 'pre-input', 'messages', 'input', 'post-input',
                 'pre-prompt', 'prompt', 'post-prompt',
                 'pre-examples', 'examples', 'post-examples',

@@ -75,7 +75,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     protected function initBodyFields() : void {
-        $this->model = $this->pullBodyField('model', '');
+        $this->model = $this->pullBodyField('model', $this->model());
         $this->maxTokens = $this->pullBodyField('max_tokens', 1024);
         $this->messages = $this->pullBodyField('messages', []);
 

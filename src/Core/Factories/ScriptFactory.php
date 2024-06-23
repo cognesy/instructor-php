@@ -40,6 +40,7 @@ class ScriptFactory
 
         // SYSTEM SECTION
         $index = 0;
+        $script->section('system')->appendMessage(['role' => 'system', 'content' => $request->system()]);
         foreach ($messages as $message) {
             if ($message['role'] !== 'system') {
                 break;

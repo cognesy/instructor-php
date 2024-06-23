@@ -2,15 +2,13 @@
 
 namespace Cognesy\Instructor\Evaluation;
 
-use Cognesy\Instructor\Evaluation\Data\Evaluation;
+use Cognesy\Instructor\Evaluation\Data\PromptEvaluation;
 
 class Evaluator
 {
     public function __construct(
-        private Evaluation $evaluation,
-    ) {
-    }
+    ) {}
 
-    public function evaluate() : static {
+    public function run() : static {
     }
 }

@@ -80,6 +80,10 @@ class StreamRequestHandler implements CanHandleStreamRequest
         throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $errors));
     }
 
+
+    // INTERNAL ////////////////////////////////////////////////////////
+
+
     protected function getStreamedResponses(Request $request) : Generator {
         /** @var ApiClient $apiClient */
         $apiClient = $request->client();
