@@ -8,6 +8,8 @@ use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
+use Cognesy\Instructor\Core\RawRequestHandler;
+use Cognesy\Instructor\Core\RawStreamRequestHandler;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
 use Cognesy\Instructor\Core\StreamRequestHandler;
@@ -22,6 +24,20 @@ use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 class ResponseHandlingConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
+
+        $config->object(
+            class: RawRequestHandler::class,
+            context: [
+                'events' => $config->reference(EventDispatcher::class),
+            ]
+        );
+
+        $config->object(
+            class: RawStreamRequestHandler::class,
+            context: [
+                'events' => $config->reference(EventDispatcher::class),
+            ]
+        );
 
         $config->object(
             class: RequestHandler::class,

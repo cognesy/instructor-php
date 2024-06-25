@@ -27,16 +27,16 @@ abstract class InstructorModule extends Module
     private string $signatureInstructions;
 
     public function __construct(
-        string $signature = '',
-        string $instructions = '',
+        string        $signature = '',
+        string        $prompt = '',
         array|Example $examples = [],
-        array $validators = [],
-        Instructor $instructor = null,
+        array         $validators = [],
+        Instructor    $instructor = null,
     ) {
         $this->instructor = $instructor ?? new Instructor();
         $this->instructor->addValidators($validators);
         $this->signatureString = $this->signatureFromAttribute() ?: $signature;
-        $this->signatureInstructions = $this->instructionsFromAttribute() ?: $instructions;
+        $this->signatureInstructions = $this->instructionsFromAttribute() ?: $prompt;
         $this->withExamples($examples);
         $this->responseModel = $this->outputModelFromSignature();
     }

@@ -73,11 +73,13 @@ class Request
         $this->toolName = $toolName ?: $this->defaultToolName;
         $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
         $this->requestedSchema = $responseModel;
-        $this->responseModel = $this->responseModelFactory->fromAny(
-            $this->requestedSchema(),
-            $this->toolName(),
-            $this->toolDescription()
-        );
+        if (!empty($this->requestedSchema)) {
+            $this->responseModel = $this->responseModelFactory->fromAny(
+                $this->requestedSchema(),
+                $this->toolName(),
+                $this->toolDescription()
+            );
+        }
 
         $this->script = (new ScriptFactory)->fromRequest($this);
     }

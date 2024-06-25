@@ -1,0 +1,21 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+.cache/
+.github/
+.idea/
+.venv/
+archived/
+vendor/
+
+.env
+.env-dist
+.gitignore
+.phpstorm.meta.php
+Doxyfile
+LICENSE
+mkdocs.yml
+mkdocs.yml.bak
+php_errors.log
+phpstan.neon
+phpstan.neon.dist
+psalm.xml
+requirements-doc.txt

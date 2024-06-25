@@ -6,7 +6,7 @@ use Cognesy\Instructor\Evaluation\Contracts\Metric;
 use Cognesy\Instructor\Evaluation\Data\PromptEvaluation;
 use Cognesy\Instructor\Evaluation\Data\EvaluationResult;
 use Cognesy\Instructor\Evaluation\Data\Feedback;
-use Cognesy\Instructor\Evaluation\Data\VariableFeedback;
+use Cognesy\Instructor\Evaluation\Data\ParameterFeedback;
 use Cognesy\Instructor\Evaluation\Metrics\ExactValueMatch;
 
 class ArrayExactValueMatchEval implements CanEvaluate
@@ -22,10 +22,10 @@ class ArrayExactValueMatchEval implements CanEvaluate
             $total++;
             $actualVal = $evaluation->actualResult[$key] ?? null;
             $varFeedback = match(true) {
-                $actualVal === null => new VariableFeedback($key,
+                $actualVal === null => new ParameterFeedback($key,
                     "Expected param `$key`, but param not found in actual result"
                 ),
-                $value !== $evaluation->actualResult => new VariableFeedback($key,
+                $value !== $evaluation->actualResult => new ParameterFeedback($key,
                     "Expected value `$value`, but actual is `$actualVal`"
                 ),
                 default => null,

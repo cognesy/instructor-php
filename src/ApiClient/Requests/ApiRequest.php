@@ -6,7 +6,6 @@ use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;

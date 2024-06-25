@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Evaluation\Data;
 
-class VariableFeedback
+class ParameterFeedback
 {
     public function __construct(
-        public string $variableName,
+        public string $parameterName,
         public string $feedback,
     ) {}
 }

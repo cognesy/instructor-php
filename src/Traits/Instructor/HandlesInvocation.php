@@ -128,4 +128,19 @@ trait HandlesInvocation
 
         return new Stream($this->handleStreamRequest(), $this->events());
     }
+
+
+    public function raw() : mixed {
+        if ($this->requestData === null) {
+            throw new Exception('Request not defined, call request() or withRequest() first');
+        }
+
+        if ($this->requestData->isStream()) {
+            return $this->stream()->final();
+        }
+
+        $result = $this->handleRawRequest();
+        $this->events->dispatch(new InstructorDone(['result' => $result]));
+        return $result;
+    }
 }
