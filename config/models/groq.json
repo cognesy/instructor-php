@@ -1,0 +1,109 @@
+{
+  "data":
+  [
+    {
+      "id": "groq/llama3-8b",
+      "name": "Groq: Llama3 8B",
+      "code": "llama3-8b-8192",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0.0000001",
+        "completion": "0.0000001",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 8192,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 8192,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "groq/llama3-70b",
+      "name": "Groq: Llama3 70B",
+      "code": "llama3-70b-8192",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0.0000008",
+        "completion": "0.0000008",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 8192,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 8192,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "groq/mixtral-8x7b",
+      "name": "Groq: Mixtral-8x7b-32768",
+      "code": "mixtral-8x7b-32768",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0.0000027",
+        "completion": "0.0000027",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 32768,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "groq/gemma-7b-it",
+      "name": "Groq: Gemma-7b-it",
+      "code": "gemma-7b-it",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0.0000001",
+        "completion": "0.0000001",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 8192,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 8192,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    }
+  ]
+}

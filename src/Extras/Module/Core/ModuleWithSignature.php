@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Module\Core;
 
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Instructor\Extras\Module\Call\Call;
+use Cognesy\Instructor\Extras\Module\Call\CallWithSignature;
 use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
 use Cognesy\Instructor\Extras\Module\CallData\CallDataFactory;
@@ -11,11 +11,12 @@ use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\CanProcessCall;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\HasPendingExecution;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
 use Cognesy\Instructor\Utils\Result;
 use Exception;
 
-abstract class BaseModule implements CanProcessCall
+abstract class ModuleWithSignature implements CanProcessCall
 {
     use Traits\HandlesSignature;
 
@@ -31,6 +32,10 @@ abstract class BaseModule implements CanProcessCall
         $call = $this->makeCallFromArgs(...$inputs);
         $call->changeStatus(CallStatus::Ready);
         return $this->makePendingExecution($call);
+    }
+
+    public function signature() : string|Signature {
+        return SignatureFactory::fromCallable($this->forward(...));
     }
 
     public function process(CanBeProcessed $call) : mixed {
@@ -53,7 +58,7 @@ abstract class BaseModule implements CanProcessCall
     protected function makeCall(HasInputOutputData $data) : CanBeProcessed {
         $caller = static::class;
         $signature = $this->getSignature()->toSignatureString();
-        return new Call($data, $caller, $signature);
+        return new CallWithSignature($data, $caller, $signature);
     }
 
     protected function makeCallFromArgs(mixed ...$inputs) : CanBeProcessed {

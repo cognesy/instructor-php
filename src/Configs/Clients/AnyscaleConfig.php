@@ -56,8 +56,8 @@ class AnyscaleConfig implements CanAddConfiguration
                 'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
                 'maxTokens' => 4096,
                 'contextSize' => 200_000,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 0.5,
+                'outputCost' => 0.5,
             ],
         );
 

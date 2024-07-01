@@ -124,4 +124,22 @@ class RequestInfo
         $data->mode = $mode;
         return $data;
     }
+
+    public static function fromArray(array $data) : static {
+        return self::with(
+            $data['messages'] ?? '',
+            $data['input'] ?? '',
+            $data['responseModel'] ?? '',
+            $data['system'] ?? '',
+            $data['prompt'] ?? '',
+            $data['examples'] ?? [],
+            $data['model'] ?? '',
+            $data['maxRetries'] ?? 0,
+            $data['options'] ?? [],
+            $data['toolName'] ?? '',
+            $data['toolDescription'] ?? '',
+            $data['retryPrompt'] ?? '',
+            $data['mode'] ?? Mode::Tools,
+        );
+    }
 }

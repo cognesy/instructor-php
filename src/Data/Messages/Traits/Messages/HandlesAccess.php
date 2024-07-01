@@ -111,4 +111,9 @@ trait HandlesAccess
     public function lastContent() : string|array {
         return $this->last()?->content();
     }
+
+    /**  @return Message[] */
+    public function all() : array {
+        return $this->messages;
+    }
 }

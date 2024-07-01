@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Extras\Module\Call\Contracts;
 
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
-use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
 
 interface CanBeProcessed
 {

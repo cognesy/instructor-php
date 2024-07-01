@@ -1,0 +1,80 @@
+{
+  "TODO:data":
+  [
+    {
+      "id": "cohere/command",
+      "name": "Cohere: Command",
+      "description": "Command is an instruction-following conversational model that performs language tasks with high quality, more reliably and with a longer context than our base generative models.\n\nUse of this model is subject to Cohere's [Acceptable Use Policy](https://docs.cohere.com/docs/c4ai-acceptable-use-policy).",
+      "pricing":
+      {
+        "prompt": "0.000001",
+        "completion": "0.000002",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 4096,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Cohere",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 4000,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "cohere/command-r",
+      "name": "Cohere: Command R",
+      "description": "Command-R is a 35B parameter model that performs conversational language tasks at a higher quality, more reliably, and with a longer context than previous models. It can be used for complex workflows like code generation, retrieval augmented generation (RAG), tool use, and agents.\n\nRead the launch post [here](https://txt.cohere.com/command-r/).\n\nUse of this model is subject to Cohere's [Acceptable Use Policy](https://docs.cohere.com/docs/c4ai-acceptable-use-policy).",
+      "pricing":
+      {
+        "prompt": "0.0000005",
+        "completion": "0.0000015",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 128000,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Cohere",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 4000,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "cohere/command-r-plus",
+      "name": "Cohere: Command R+",
+      "description": "Command R+ is a new, 104B-parameter LLM from Cohere. It's useful for roleplay, general consumer usecases, and Retrieval Augmented Generation (RAG).\n\nIt offers multilingual support for ten key languages to facilitate global business operations. See benchmarks and the launch post [here](https://txt.cohere.com/command-r-plus-microsoft-azure/).\n\nUse of this model is subject to Cohere's [Acceptable Use Policy](https://docs.cohere.com/docs/c4ai-acceptable-use-policy).",
+      "pricing":
+      {
+        "prompt": "0.000003",
+        "completion": "0.000015",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 128000,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Cohere",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 4000,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    }
+  ]
+}

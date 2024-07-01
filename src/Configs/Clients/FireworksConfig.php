@@ -55,9 +55,9 @@ class FireworksConfig implements CanAddConfiguration
                 'type' => 'mixtral',
                 'name' => 'accounts/fireworks/models/mixtral-8x7b-instruct',
                 'maxTokens' => 4096,
-                'contextSize' => 4096,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'contextSize' => 32768,
+                'inputCost' => 0.2,
+                'outputCost' => 0.2,
 
             ],
         );

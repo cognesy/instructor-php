@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Extras\Module\Call\Traits;
 
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
-use Cognesy\Instructor\Extras\Module\Core\Module;
 use DateTime;
 
 trait HandlesCallStatus

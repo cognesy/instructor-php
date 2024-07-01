@@ -56,8 +56,8 @@ class GroqConfig implements CanAddConfiguration
                 'name' => 'llama3-8b-8192',
                 'maxTokens' => 8192,
                 'contextSize' => 8192,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 0.1,
+                'outputCost' => 0.1,
 
             ],
         );
@@ -71,8 +71,8 @@ class GroqConfig implements CanAddConfiguration
                 'name' => 'llama3-70b-8192',
                 'maxTokens' => 8192,
                 'contextSize' => 8192,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 0.8,
+                'outputCost' => 0.8,
 
             ],
         );
@@ -86,8 +86,8 @@ class GroqConfig implements CanAddConfiguration
                 'name' => 'mixtral-8x7b-32768',
                 'maxTokens' => 32_768,
                 'contextSize' => 32_768,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 0.27,
+                'outputCost' => 0.27,
 
             ],
         );
@@ -101,9 +101,8 @@ class GroqConfig implements CanAddConfiguration
                 'name' => 'gemma-7b-it',
                 'maxTokens' => 8192,
                 'contextSize' => 8192,
-                'inputCost' => 1,
-                'outputCost' => 1,
-
+                'inputCost' => 0.1,
+                'outputCost' => 0.1,
             ],
         );
 

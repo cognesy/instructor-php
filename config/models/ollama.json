@@ -1,0 +1,57 @@
+{
+  "data":
+  [
+    {
+      "id": "ollama/llama-3-8b",
+      "name": "Ollama: Llama 3 8B",
+      "code": "llama3:latest",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0",
+        "completion": "0",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 8192,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Llama3",
+        "instruct_type": "llama3"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "ollama/llama-2-8b",
+      "name": "Ollama: Llama v2 8B",
+      "code": "llama2:latest",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0",
+        "completion": "0",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 4096,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Llama2",
+        "instruct_type": "llama2"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    }
+  ]
+}

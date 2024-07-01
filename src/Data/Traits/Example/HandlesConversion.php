@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Data\Traits\Example;
 use BackedEnum;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Utils\Template;
+use Cognesy\Instructor\Utils\TemplateUtil;
 
 trait HandlesConversion
 {
@@ -21,7 +21,7 @@ trait HandlesConversion
     }
 
     public function toString() : string {
-        return Template::render($this->template, [
+        return TemplateUtil::render($this->template, [
             'input' => $this->inputString(),
             'output' => $this->outputString(),
         ]);

@@ -4,17 +4,17 @@ namespace Cognesy\Instructor\Extras\Module\Addons\InstructorModule;
 
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Module\Attributes\Signature as SignatureAttribute;
-use Cognesy\Instructor\Extras\Module\Core\Module;
+use Cognesy\Instructor\Extras\Module\Core\ModuleWithSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Schema\Utils\AttributeUtils;
-use Cognesy\Instructor\Utils\Template;
+use Cognesy\Instructor\Utils\TemplateUtil;
 use ReflectionClass;
 
-abstract class InstructorModule extends Module
+abstract class InstructorModule extends ModuleWithSignature
 {
     private Instructor $instructor;
     private ?string $prompt = null;
@@ -116,7 +116,7 @@ abstract class InstructorModule extends Module
         $result = $this->instructor->respond(
             input: $params,
             responseModel: $this->responseModel(),
-            prompt: Template::render($this->prompt(), $params),
+            prompt: TemplateUtil::render($this->prompt(), $params),
             examples: $this->examples(),
         );
         if ($result instanceof Structure && $result->actsAsScalar()) {

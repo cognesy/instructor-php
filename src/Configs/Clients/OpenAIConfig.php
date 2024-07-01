@@ -59,8 +59,8 @@ class OpenAIConfig implements CanAddConfiguration
                 'name' => 'gpt-4o',
                 'maxTokens' => 128_000,
                 'contextSize' => 128_000,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 5,
+                'outputCost' => 15,
 
             ],
         );
@@ -74,8 +74,8 @@ class OpenAIConfig implements CanAddConfiguration
                 'name' => 'gpt-4-turbo',
                 'maxTokens' => 128_000,
                 'contextSize' => 128_000,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 10,
+                'outputCost' => 30,
 
             ],
         );
@@ -119,8 +119,8 @@ class OpenAIConfig implements CanAddConfiguration
                 'name' => 'gpt-3.5-turbo',
                 'maxTokens' => 4096,
                 'contextSize' => 16_385,
-                'inputCost' => 1,
-                'outputCost' => 1,
+                'inputCost' => 0.5,
+                'outputCost' => 1.5,
 
             ],
         );

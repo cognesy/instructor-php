@@ -16,9 +16,9 @@ trait HandlesCallInfo
     }
 
     public function name(): string {
-        $className = $this->className();
-        $signature = $this->signature()->toShortSignature();
-        return "{$className}({$signature})";
+        return $this->className();
+        //$signature = $this->signature()->toShortSignature();
+        //return "{$className}({$signature})";
     }
 
     public function createdAt(): DateTimeImmutable {

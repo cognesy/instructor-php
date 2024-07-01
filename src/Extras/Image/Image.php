@@ -50,7 +50,7 @@ class Image implements CanProvideMessages
             'role' => 'user',
             'content' => [
                 ['type' => 'text', 'text' => $this->prompt],
-                ['type' => 'image_url', 'image_url' => $this->url ?: $this->base64bytes],
+                ['type' => 'image_url', 'image_url' => ['url' => $this->url ?: $this->base64bytes]],
             ],
         ]];
         if (empty($this->prompt)) {

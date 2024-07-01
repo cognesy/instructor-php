@@ -1,0 +1,380 @@
+{
+  "data":
+  [
+    {
+      "id": "mistralai/mistral-7b-instruct:free",
+      "name": "Mistral: Mistral 7B Instruct (free)",
+      "description": "A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.\n\nNote: this is a free, rate-limited version of [Mistral 7B Instruct](/models/mistralai/mistral-7b-instruct). Outputs may be cached. Read about rate limits [here](/docs/limits).",
+      "pricing":
+      {
+        "prompt": "0",
+        "completion": "0",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mixtral-8x22b",
+      "name": "Mistral: Mixtral 8x22B (base)",
+      "description": "Mixtral 8x22B is a large-scale language model from Mistral AI. It consists of 8 experts, each 22 billion parameters, with each token using 2 experts at a time.\n\nIt was released via [X](https://twitter.com/MistralAI/status/1777869263778291896).\n\n#moe",
+      "pricing":
+      {
+        "prompt": "0.00000108",
+        "completion": "0.00000108",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 65536,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "chatml"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mixtral-8x7b-instruct:nitro",
+      "name": "Mixtral 8x7B Instruct (nitro)",
+      "description": "A pretrained generative Sparse Mixture of Experts, by Mistral AI, for chat and instruction use. Incorporates 8 experts (feed-forward networks) for a total of 47 billion parameters.\n\nInstruct model fine-tuned by Mistral. #moe\n\nNote: this is a higher-throughput version of [Mixtral 8x7B Instruct](/models/mistralai/mixtral-8x7b-instruct). It may have higher prices and slightly different outputs.",
+      "pricing":
+      {
+        "prompt": "0.00000054",
+        "completion": "0.00000054",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-tiny",
+      "name": "Mistral Tiny",
+      "description": "This model is currently powered by Mistral-7B-v0.2, and incorporates a \"better\" fine-tuning than [Mistral 7B](/models/mistralai/mistral-7b-instruct-v0.1), inspired by community work. It's best used for large batch processing tasks where cost is a significant factor but reasoning capabilities are not crucial.",
+      "pricing":
+      {
+        "prompt": "0.00000025",
+        "completion": "0.00000025",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32000,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-small",
+      "name": "Mistral Small",
+      "description": "This model is currently powered by Mixtral-8X7B-v0.1, a sparse mixture of experts model with 12B active parameters. It has better reasoning, exhibits more capabilities, can produce and reason about code, and is multiligual, supporting English, French, German, Italian, and Spanish.\n#moe",
+      "pricing":
+      {
+        "prompt": "0.000002",
+        "completion": "0.000006",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32000,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-medium",
+      "name": "Mistral Medium",
+      "description": "This is Mistral AI's closed-source, medium-sided model. It's powered by a closed-source prototype and excels at reasoning, code, JSON, chat, and more. In benchmarks, it compares with many of the flagship models of other companies.",
+      "pricing":
+      {
+        "prompt": "0.0000027",
+        "completion": "0.0000081",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32000,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-large",
+      "name": "Mistral Large",
+      "description": "This is Mistral AI's closed-source, flagship model. It's powered by a closed-source prototype and excels at reasoning, code, JSON, chat, and more. Read the launch announcement [here](https://mistral.ai/news/mistral-large/).\n\nIt is fluent in English, French, Spanish, German, and Italian, with high grammatical accuracy, and its 32K tokens context window allows precise information recall from large documents.",
+      "pricing":
+      {
+        "prompt": "0.000008",
+        "completion": "0.000024",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32000,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mixtral-8x7b",
+      "name": "Mixtral 8x7B (base)",
+      "description": "A pretrained generative Sparse Mixture of Experts, by Mistral AI. Incorporates 8 experts (feed-forward networks) for a total of 47B parameters. Base model (not fine-tuned for instructions) - see [Mixtral 8x7B Instruct](/models/mistralai/mixtral-8x7b-instruct) for an instruct-tuned model.\n\n#moe",
+      "pricing":
+      {
+        "prompt": "0.0000005",
+        "completion": "0.0000005",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "none"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mixtral-8x7b-instruct",
+      "name": "Mixtral 8x7B Instruct",
+      "description": "A pretrained generative Sparse Mixture of Experts, by Mistral AI, for chat and instruction use. Incorporates 8 experts (feed-forward networks) for a total of 47 billion parameters.\n\nInstruct model fine-tuned by Mistral. #moe",
+      "pricing":
+      {
+        "prompt": "0.00000024",
+        "completion": "0.00000024",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mixtral-8x22b-instruct",
+      "name": "Mistral: Mixtral 8x22B Instruct",
+      "description": "Mistral's official instruct fine-tuned version of [Mixtral 8x22B](/models/mistralai/mixtral-8x22b). It uses 39B active parameters out of 141B, offering unparalleled cost efficiency for its size. Its strengths include:\n- strong math, coding, and reasoning\n- large context length (64k)\n- fluency in English, French, Italian, German, and Spanish\n\nSee benchmarks on the launch announcement [here](https://mistral.ai/news/mixtral-8x22b/).\n#moe",
+      "pricing":
+      {
+        "prompt": "0.00000065",
+        "completion": "0.00000065",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 65536,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-7b-instruct-v0.1",
+      "name": "Mistral: Mistral 7B Instruct v0.1",
+      "description": "A 7.3B parameter model that outperforms Llama 2 13B on all benchmarks, with optimizations for speed and context length.",
+      "pricing":
+      {
+        "prompt": "0.000000064",
+        "completion": "0.000000064",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 4096,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-7b-instruct-v0.2",
+      "name": "Mistral: Mistral 7B Instruct v0.2",
+      "description": "A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.\n\nAn improved version of [Mistral 7B Instruct](/modelsmistralai/mistral-7b-instruct-v0.1), with the following changes:\n\n- 32k context window (vs 8k context in v0.1)\n- Rope-theta = 1e6\n- No Sliding-Window Attention",
+      "pricing":
+      {
+        "prompt": "0.00000007",
+        "completion": "0.00000007",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-7b-instruct",
+      "name": "Mistral: Mistral 7B Instruct",
+      "description": "A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.",
+      "pricing":
+      {
+        "prompt": "0.00000007",
+        "completion": "0.00000007",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-7b-instruct-v0.3",
+      "name": "Mistral: Mistral 7B Instruct v0.3",
+      "description": "A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.\n\nAn improved version of [Mistral 7B Instruct v0.2](/models/mistralai/mistral-7b-instruct-v0.2), with the following changes:\n\n- Extended vocabulary to 32768\n- Supports v3 Tokenizer\n- Supports function calling\n\nNOTE: Support for function calling depends on the provider.",
+      "pricing":
+      {
+        "prompt": "0.00000007",
+        "completion": "0.00000007",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "mistralai/mistral-7b-instruct:nitro",
+      "name": "Mistral: Mistral 7B Instruct (nitro)",
+      "description": "A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.\n\nNote: this is a higher-throughput version of [Mistral 7B Instruct](/models/mistralai/mistral-7b-instruct). It may have higher prices and slightly different outputs.",
+      "pricing":
+      {
+        "prompt": "0.00000007",
+        "completion": "0.00000007",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 32768,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Mistral",
+        "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    }
+  ]
+}

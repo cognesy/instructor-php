@@ -1,12 +1,11 @@
 <?php
-
 namespace Cognesy\Instructor\Utils;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 use InvalidArgumentException;
 
-class Template
+class TemplateUtil
 {
     private array $context = [];
     private array $contextValues = [];
@@ -49,7 +48,7 @@ class Template
         array $context,
         bool $clearUnknownParams = true,
     ) : string {
-        return (new Template(
+        return (new TemplateUtil(
             $context,
             $clearUnknownParams
         ))->renderString($template);

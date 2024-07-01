@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Evaluation;
 
 use Cognesy\Instructor\Evaluation\Data\PromptEvaluation;
 use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Utils\Template;
+use Cognesy\Instructor\Utils\TemplateUtil;
 use Spatie\ArrayToXml\ArrayToXml;
 
 class EvaluationRenderer {
@@ -25,7 +25,7 @@ class EvaluationRenderer {
     private function renderPrompt(string $prompt) : string {
         $output = [
             'comment' => 'original prompt - subject of your task',
-            'prompt' => ['_cdata' => Template::cleanVarMarkers($prompt)],
+            'prompt' => ['_cdata' => TemplateUtil::cleanVarMarkers($prompt)],
         ];
         return $this->toString($output);
     }

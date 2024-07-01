@@ -1,0 +1,230 @@
+{
+  "TODO:data":
+  [
+    {
+      "id": "google/gemma-7b-it:free",
+      "name": "Google: Gemma 7B (free)",
+      "description": "Gemma by Google is an advanced, open-source language model family, leveraging the latest in decoder-only, text-to-text technology. It offers English language capabilities across text generation tasks like question answering, summarization, and reasoning. The Gemma 7B variant is comparable in performance to leading open source models.\n\nUsage of Gemma is subject to Google's [Gemma Terms of Use](https://ai.google.dev/gemma/terms).\n\nNote: this is a free, rate-limited version of [Gemma 7B](/models/google/gemma-7b-it). Outputs may be cached. Read about rate limits [here](/docs/limits).",
+      "pricing":
+      {
+        "prompt": "0",
+        "completion": "0",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 8192,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Gemini",
+        "instruct_type": "gemma"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/palm-2-chat-bison",
+      "name": "Google: PaLM 2 Chat",
+      "description": "PaLM 2 is a language model by Google with improved multilingual, reasoning and coding capabilities.",
+      "pricing":
+      {
+        "prompt": "0.00000025",
+        "completion": "0.0000005",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 25804,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "PaLM",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 2867,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/palm-2-codechat-bison",
+      "name": "Google: PaLM 2 Code Chat",
+      "description": "PaLM 2 fine-tuned for chatbot conversations that help with code-related questions.",
+      "pricing":
+      {
+        "prompt": "0.00000025",
+        "completion": "0.0000005",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 20070,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "PaLM",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 2867,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/palm-2-chat-bison-32k",
+      "name": "Google: PaLM 2 Chat 32k",
+      "description": "PaLM 2 is a language model by Google with improved multilingual, reasoning and coding capabilities.",
+      "pricing":
+      {
+        "prompt": "0.00000025",
+        "completion": "0.0000005",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 91750,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "PaLM",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 22937,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/palm-2-codechat-bison-32k",
+      "name": "Google: PaLM 2 Code Chat 32k",
+      "description": "PaLM 2 fine-tuned for chatbot conversations that help with code-related questions.",
+      "pricing":
+      {
+        "prompt": "0.00000025",
+        "completion": "0.0000005",
+        "image": "0",
+        "request": "0"
+      },
+      "context_length": 91750,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "PaLM",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 22937,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/gemini-pro",
+      "name": "Google: Gemini Pro 1.0",
+      "description": "Google's flagship text generation model. Designed to handle natural language tasks, multiturn text and code chat, and code generation.\n\nSee the benchmarks and prompting guidelines from [Deepmind](https://deepmind.google/technologies/gemini/).\n\nUsage of Gemini is subject to Google's [Gemini Terms of Use](https://ai.google.dev/terms).",
+      "pricing":
+      {
+        "prompt": "0.000000125",
+        "completion": "0.000000375",
+        "image": "0.0025",
+        "request": "0"
+      },
+      "context_length": 91728,
+      "architecture":
+      {
+        "modality": "text",
+        "tokenizer": "Gemini",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 22937,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/gemini-pro-vision",
+      "name": "Google: Gemini Pro Vision 1.0",
+      "description": "Google's flagship multimodal model, supporting image and video in text or chat prompts for a text or code response.\n\nSee the benchmarks and prompting guidelines from [Deepmind](https://deepmind.google/technologies/gemini/).\n\nUsage of Gemini is subject to Google's [Gemini Terms of Use](https://ai.google.dev/terms).\n\n#multimodal",
+      "pricing":
+      {
+        "prompt": "0.000000125",
+        "completion": "0.000000375",
+        "image": "0.0025",
+        "request": "0"
+      },
+      "context_length": 45875,
+      "architecture":
+      {
+        "modality": "multimodal",
+        "tokenizer": "Gemini",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 5734,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/gemini-pro-1.5",
+      "name": "Google: Gemini Pro 1.5",
+      "description": "Google's latest multimodal model, supporting image and video in text or chat prompts.\n\nOptimized for language tasks including:\n\n- Code generation\n- Text generation\n- Text editing\n- Problem solving\n- Recommendations\n- Information extraction\n- Data extraction or generation\n- AI agents\n\nUsage of Gemini is subject to Google's [Gemini Terms of Use](https://ai.google.dev/terms).\n\n#multimodal",
+      "pricing":
+      {
+        "prompt": "0.0000025",
+        "completion": "0.0000075",
+        "image": "0.00265",
+        "request": "0"
+      },
+      "context_length": 2800000,
+      "architecture":
+      {
+        "modality": "multimodal",
+        "tokenizer": "Gemini",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 22937,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "google/gemini-flash-1.5",
+      "name": "Google: Gemini Flash 1.5",
+      "description": "Gemini 1.5 Flash is a foundation model that performs well at a variety of multimodal tasks such as visual understanding, classification, summarization, and creating content from image, audio and video. It's adept at processing visual and text inputs such as photographs, documents, infographics, and screenshots.\n\nGemini 1.5 Flash is designed for high-volume, high-frequency tasks where cost and latency matter. On most common tasks, Flash achieves comparable quality to other Gemini Pro models at a significantly reduced cost. Flash is well-suited for applications like chat assistants and on-demand content generation where speed and scale matter.\n\nUsage of Gemini is subject to Google's [Gemini Terms of Use](https://ai.google.dev/terms).\n\n#multimodal",
+      "pricing":
+      {
+        "prompt": "0.00000025",
+        "completion": "0.00000075",
+        "image": "0.000265",
+        "request": "0"
+      },
+      "context_length": 2800000,
+      "architecture":
+      {
+        "modality": "multimodal",
+        "tokenizer": "Gemini",
+        "instruct_type": null
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": 22937,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    }
+  ]
+}

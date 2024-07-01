@@ -9,7 +9,7 @@ class Script {
     use Traits\Script\HandlesMutation;
     use Traits\Script\HandlesReordering;
     use Traits\Script\HandlesTransformation;
-    use Traits\RendersTemplates;
+    use Traits\RendersContent;
 
     /** @var Section[] */
     private array $sections;

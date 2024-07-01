@@ -4,12 +4,12 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Section;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
-use Cognesy\Instructor\Data\Messages\Traits\RendersTemplates;
+use Cognesy\Instructor\Data\Messages\Traits\RendersContent;
 use RuntimeException;
 
 trait HandlesConversion
 {
-    use RendersTemplates;
+    use RendersContent;
 
     public function toMessages() : Messages {
         return $this->messages();

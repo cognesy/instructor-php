@@ -56,7 +56,7 @@ $receipt = (new Instructor)->respond(
     input: Image::fromFile(__DIR__ . '/receipt.png'),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt.',
-    model: 'gpt-4-vision-preview',
+    model: 'gpt-4o',
     options: ['max_tokens' => 4096]
 );
 

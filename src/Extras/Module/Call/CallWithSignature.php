@@ -14,7 +14,7 @@ use Exception;
 
 // Calls are used to track execution of modules
 
-class Call implements CanBeProcessed, HasErrorData
+class CallWithSignature implements CanBeProcessed, HasErrorData
 {
     use Traits\HandlesContext;
     use Traits\HandlesErrors;

@@ -38,7 +38,15 @@
         "vimeo/psalm": "dev-master",
         "illuminate/database": "^11.10",
         "illuminate/events": "^11.10",
-        "spatie/yaml-front-matter": "^2.0"
+        "spatie/yaml-front-matter": "^2.0",
+        "ext-curl": "*",
+        "league/html-to-markdown": "^5.1",
+        "spatie/browsershot": "^4.1",
+        "symfony/browser-kit": "^7.1",
+        "symfony/css-selector": "^7.1",
+        "symfony/dom-crawler": "^7.1",
+        "duzun/hquery": "^3.1",
+        "ext-dom": "*"
     },
     "config": {
         "allow-plugins": {

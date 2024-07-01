@@ -1,5 +1,4 @@
 .cache/
-.env
 .idea/
 .venv/
 .vscode/
@@ -7,6 +6,8 @@ _docs/
 archived/
 experimental/*
 vendor/
+.cursorignore
+.env
 composer.lock
 php_errors.log
 phpstan.neon
