@@ -10,16 +10,18 @@ trait CreatesFromStructure
     static public function fromStructures(
         Structure $inputs,
         Structure $outputs,
+        string $description = '',
     ) : Signature {
         return new Signature(
             input: $inputs->schema(),
             output: $outputs->schema(),
-            description: $outputs->description(),
+            description: $description ?: $outputs->description(),
         );
     }
 
     static public function fromStructure(
         Structure $structure,
+        string $description = '',
     ) : Signature {
         // check if structure has inputs and outputs fields
         if (!$structure->has('inputs') || !$structure->has('outputs')) {
@@ -35,7 +37,7 @@ trait CreatesFromStructure
         return new Signature(
             input: $structure->inputs->schema(),
             output: $structure->outputs->schema(),
-            description: '',
+            description: $description ?: $structure->outputs->description(),
         );
     }
 }

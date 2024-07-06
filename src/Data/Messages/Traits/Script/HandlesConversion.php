@@ -35,7 +35,7 @@ trait HandlesConversion
     /**
      * @param array<string> $order
      * @param array<string,mixed>|null $context
-     * @return array<string,mixed>
+     * @return array<string,string|array>
      */
     public function toArray(array $context = null, bool $raw = false) : array {
         $array = $this->toMessages()->toArray();

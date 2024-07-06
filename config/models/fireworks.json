@@ -2,9 +2,9 @@
   "TODO:data":
   [
     {
-      "id": "mistralai/mistral-7b-instruct:free",
+      "id": "fireworks/mistral-7b-instruct",
       "name": "Mistral: Mistral 7B Instruct (free)",
-      "description": "A high-performing, industry-standard 7.3B parameter model, with optimizations for speed and context length.\n\nNote: this is a free, rate-limited version of [Mistral 7B Instruct](/models/mistralai/mistral-7b-instruct). Outputs may be cached. Read about rate limits [here](/docs/limits).",
+      "description": "",
       "pricing":
       {
         "prompt": "0",
@@ -18,6 +18,32 @@
         "modality": "text",
         "tokenizer": "Mistral",
         "instruct_type": "mistral"
+      },
+      "top_provider":
+      {
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null
+    },
+    {
+      "id": "fireworks/firellava-13b",
+      "name": "Mistral: Mistral 7B Instruct (free)",
+      "code": "accounts/fireworks/models/firellava-13b",
+      "description": "",
+      "pricing":
+      {
+        "prompt": "0.0000002",
+        "completion": "0.0000002",
+        "image": "0.0000002",
+        "request": "0"
+      },
+      "context_length": 4096,
+      "architecture":
+      {
+        "modality": "vision",
+        "tokenizer": "",
+        "instruct_type": ""
       },
       "top_provider":
       {

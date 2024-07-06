@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Schema\Factories;
 
+use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Exception;
 
@@ -28,7 +29,7 @@ class SchemaConverter
         string $customName = '',
         string $customDescription = '',
     ) : ObjectSchema {
-        $class = $jsonSchema['$comment'] ?? throw new Exception('Object must have $comment field with the target class name');
+        $class = $jsonSchema['$comment'] ?? Structure::class; // throw new Exception('Object must have $comment field with the target class name');
         $type = $jsonSchema['type'] ?? null;
         if ($type !== 'object') {
             throw new Exception('JSON Schema must have type: object');

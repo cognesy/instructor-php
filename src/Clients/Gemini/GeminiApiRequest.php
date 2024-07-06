@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Clients\Gemini;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Data\Messages\Messages;
@@ -28,10 +29,17 @@ class GeminiApiRequest extends ApiRequest
     }
 
     protected function defaultBody(): array {
+        $system = Messages::fromArray($this->messages)
+            ->forRoles(['system'])
+            ->toString();
+        $system = empty($system) ? [] : ['parts' => ['text' => $system]];
+        $contents = Messages::fromArray($this->messages)
+            ->exceptRoles(['system'])
+            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
         $body = array_filter(
             [
-                'systemInstruction' => empty($this->system()) ? [] : ['parts' => ['text' => Messages::asString($this->system())]],
-                'contents' => $this->messages(),
+                'systemInstruction' => $system,
+                'contents' => $contents,
                 'generationConfig' => $this->options(),
             ],
         );

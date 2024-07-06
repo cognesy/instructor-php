@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor\Utils;
 
+use JetBrains\PhpStorm\Deprecated;
+
+#[Deprecated('Not used - may be removed in the future.')]
 class XmlExtractor
 {
     public function extractToolCalls(string $content) : array {

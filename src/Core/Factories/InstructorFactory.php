@@ -3,7 +3,9 @@ namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\Data\InstructorInfo;
 use Cognesy\Instructor\Instructor;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated('Not used - may be removed in the future.')]
 class InstructorFactory
 {
     private InstructorInfo $data;

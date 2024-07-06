@@ -25,32 +25,10 @@ trait HandlesConversion
         return $this->fullSignature;
     }
 
-    public function toTemplate() : string {
-        return <<<TEMPLATE
-            YOUR TASK:
-            {$this->toSignatureString()}
-            {$this->getDescription()}
-            
-            INPUT DATA:
-            <|input|>
-            
-            RESPONSE:
-        TEMPLATE;
-    }
-
-    public function toStructuredTemplate() : string {
-        return <<<TEMPLATE
-            YOUR TASK:
-            {$this->toSignatureString()}
-            {$this->getDescription()}
-            
-            INPUT DATA:
-            <|input|>
-            
-            OUTPUT JSON SCHEMA:
-            {$this->toOutputSchema()->toJsonSchema()}
-            
-            RESPONSE IN JSON:
-        TEMPLATE;
+    public function toInstructions(): string {
+        return $this->compiled ?: implode("\n", array_filter([
+            $this->getDescription(),
+            $this->toSignatureString(),
+        ]));
     }
 }

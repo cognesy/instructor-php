@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Data;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Events\EventDispatcher;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated('Not used - may be removed in the future.')]
 class InstructorInfo
 {
     public EventDispatcher $events;

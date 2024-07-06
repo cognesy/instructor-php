@@ -33,12 +33,12 @@ trait HandlesRequestedModel
         return $this->responseModel ? $this->responseModel->toolDescription() : $this->toolDescription;
     }
 
-    public function jsonSchema() : array {
-        return $this->responseModel->toJsonSchema();
+    public function jsonSchema() : ?array {
+        return $this->responseModel?->toJsonSchema();
     }
 
-    public function toolCallSchema() : array {
-        return $this->responseModel->toolCallSchema();
+    public function toolCallSchema() : ?array {
+        return $this->responseModel?->toolCallSchema();
     }
 
     public function toolChoice() : string|array {

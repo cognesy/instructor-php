@@ -16,30 +16,38 @@ trait CreatesFromClassMetadata
         'signature',
     ];
 
-    static public function fromClassMetadata(string $class): Signature {
-        return (new self)->makeSignature($class);
+    static public function fromClassMetadata(
+        string $class,
+        string $description = '',
+    ): Signature {
+        return (new self)->makeSignatureFromClass($class, $description);
     }
 
-    private function makeSignature(string $class) : Signature {
+    // INTERNAL ///////////////////////////////////////////////////////////////////////
+
+    private function makeSignatureFromClass(
+        string $class,
+        string $description = '',
+    ) : Signature {
         $classInfo = new ClassInfo($class);
-        $description = $classInfo->getClassDescription();
+        $description = $description ?: $classInfo->getClassDescription();
 
         $inputProperties = $classInfo->getFilteredPropertyNames([
             fn($property) => $property->hasAttribute(InputField::class),
             fn($property) => $this->defaultExclusionsFilter($property), // TODO: is it needed?
         ]);
-        $inputSchema = $this->makeSchema($class, $inputProperties);
+        $inputSchema = $this->makeSchemaFromClass($class, $inputProperties);
 
         $outputProperties = $classInfo->getFilteredPropertyNames([
             fn($property) => $property->hasAttribute(OutputField::class),
             fn($property) => $this->defaultExclusionsFilter($property), // TODO: is it needed?
         ]);
-        $outputSchema = $this->makeSchema($class, $outputProperties);
+        $outputSchema = $this->makeSchemaFromClass($class, $outputProperties);
 
         return new Signature($inputSchema, $outputSchema, $description);
     }
 
-    private function makeSchema(string $class, array $propertyNames): Schema {
+    private function makeSchemaFromClass(string $class, array $propertyNames): Schema {
         $schema = (new SchemaFactory)->schema($class);
         foreach ($schema->getPropertyNames() as $property) {
             if (!in_array($property, $propertyNames)) {

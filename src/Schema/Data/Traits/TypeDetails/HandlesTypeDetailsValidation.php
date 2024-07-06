@@ -4,14 +4,8 @@ namespace Cognesy\Instructor\Schema\Data\Traits\TypeDetails;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
-trait HandlesTypeDetailsConstruction
+trait HandlesTypeDetailsValidation
 {
-    use DefinesPhpTypeConstants;
-
-    static public function undefined() : self {
-        return new self(self::PHP_UNSUPPORTED);
-    }
-
     private function validate(
         string $type,
         ?string $class,

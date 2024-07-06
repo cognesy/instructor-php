@@ -4,9 +4,6 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 trait HandlesStructureInfo
 {
-    protected string $name = '';
-    protected string $description = '';
-
     public function withName(string $name) : self {
         $this->name = $name;
         return $this;

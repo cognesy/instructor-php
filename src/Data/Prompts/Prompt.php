@@ -5,7 +5,9 @@ namespace Cognesy\Instructor\Data\Prompts;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Utils\TemplateUtil;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated('Not used - may be removed in the future.')]
 class Prompt {
     private array $context;
     private array $template;

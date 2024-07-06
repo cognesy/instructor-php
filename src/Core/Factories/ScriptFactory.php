@@ -36,7 +36,6 @@ class ScriptFactory
         $input = $request->input();
         $examples = $request->examples();
         $prompt = $request->prompt();
-        $dataAckPrompt = $request->dataAckPrompt();
 
         // SYSTEM SECTION
         $index = 0;
@@ -48,12 +47,6 @@ class ScriptFactory
             $script->section('system')->appendMessage(['role' => 'system', 'content' => $message['content']]);
             $index++;
         }
-
-        // DATA ACK SECTION
-        //$script->section('data-ack')->appendMessage([
-        //    'role' => 'assistant',
-        //    'content' => $dataAckPrompt
-        //]);
 
         // MESSAGES SECTION
         $messagesSection = array_slice($messages, $index);

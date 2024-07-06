@@ -1,0 +1,62 @@
+<?php
+namespace Cognesy\Instructor\Data\Traits\RequestInfo;
+
+use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Enums\Mode;
+
+trait HandlesCreation
+{
+    public static function new() : static {
+        return new static();
+    }
+
+    public static function with(
+        $messages = '',
+        $input = '',
+        $responseModel = '',
+        $system = '',
+        $prompt = '',
+        $examples = [],
+        $model = '',
+        $maxRetries = 0,
+        $options = [],
+        $toolName = '',
+        $toolDescription = '',
+        $retryPrompt = '',
+        $mode = Mode::Tools,
+    ) : static {
+        $data = new static();
+        $data->messages = $messages;
+        $data->input = $input;
+        $data->responseModel = $responseModel;
+        $data->system = $system;
+        $data->prompt = $prompt;
+        $data->examples = $examples;
+        $data->model = $model;
+        $data->maxRetries = $maxRetries;
+        $data->options = $options;
+        $data->toolName = $toolName;
+        $data->toolDescription = $toolDescription;
+        $data->retryPrompt = $retryPrompt;
+        $data->mode = $mode;
+        return $data;
+    }
+
+    public static function fromArray(array $data) : static {
+        return self::with(
+            messages: $data['messages'] ?? '',
+            input: $data['input'] ?? '',
+            responseModel: $data['responseModel'] ?? '',
+            system: $data['system'] ?? '',
+            prompt: $data['prompt'] ?? '',
+            examples: $data['examples'] ?? array_map(fn($example) => Example::fromArray($example), $data['examples'] ?? []),
+            model: $data['model'] ?? '',
+            maxRetries: $data['maxRetries'] ?? 0,
+            options: $data['options'] ?? [],
+            toolName: $data['toolName'] ?? '',
+            toolDescription: $data['toolDescription'] ?? '',
+            retryPrompt: $data['retryPrompt'] ?? '',
+            mode: $data['mode'] ?? Mode::Tools,
+        );
+    }
+}

@@ -21,7 +21,7 @@ trait HandlesConversion
     }
 
     public function toString() : string {
-        return TemplateUtil::render($this->template, [
+        return TemplateUtil::render($this->template(), [
             'input' => $this->inputString(),
             'output' => $this->outputString(),
         ]);
@@ -51,6 +51,8 @@ trait HandlesConversion
             'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'input' => $this->input(),
             'output' => $this->output(),
+            'structured' => $this->isStructured,
+            'template' => $this->template,
         ];
     }
 }

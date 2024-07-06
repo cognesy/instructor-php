@@ -62,7 +62,7 @@ trait HandlesMakers
      */
     private function makeScalarProperty(string $name, array $jsonSchema) : ScalarSchema {
         $factory = new TypeDetailsFactory();
-        $type = $factory->scalarType(TypeDetails::fromJsonType($jsonSchema['type']));
+        $type = $factory->scalarType(TypeDetails::toPhpType($jsonSchema['type']));
         return new ScalarSchema(
             name: $name,
             description: $jsonSchema['description'] ?? '',
@@ -81,7 +81,7 @@ trait HandlesMakers
             throw new \Exception('Enum must have $comment field with the target class name');
         }
         $factory = new TypeDetailsFactory();
-        $type = $factory->enumType($class, TypeDetails::fromJsonType($jsonSchema['type']), $jsonSchema['enum']);
+        $type = $factory->enumType($class, TypeDetails::toPhpType($jsonSchema['type']), $jsonSchema['enum']);
         return new EnumSchema(type: $type, name: $name, description: $jsonSchema['description'] ?? '');
     }
 
@@ -168,15 +168,19 @@ trait HandlesMakers
             if (!($class = $jsonSchema['$comment'] ?? null)) {
                 throw new \Exception('Nested enum type needs $comment field');
             }
-            return $factory->enumType($class, TypeDetails::fromJsonType($jsonSchema['type']), $jsonSchema['enum']);
+            return $factory->enumType($class, TypeDetails::toPhpType($jsonSchema['type']), $jsonSchema['enum']);
         }
 
         if (!in_array($jsonSchema['type'], TypeDetails::JSON_SCALAR_TYPES)) {
             throw new \Exception('Unknown type: '.$jsonSchema['type']);
         }
-        return $factory->scalarType(TypeDetails::fromJsonType($jsonSchema['type']));
+        return $factory->scalarType(TypeDetails::toPhpType($jsonSchema['type']));
     }
 
+    /**
+     * Check if schema property is a collection
+     * TODO: document what is a collection for Instructor - e.g. is string[] a collection?
+     */
     private function isCollection(array $jsonSchema) : bool {
         return $jsonSchema['type'] === 'array'
             && isset($jsonSchema['items'])

@@ -11,7 +11,11 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 class Signature implements HasInputSchema, HasOutputSchema
 {
     use ConvertsToSignatureString;
+    use Traits\Signature\HandlesAccess;
+    use Traits\Signature\HandlesMutation;
     use Traits\Signature\HandlesConversion;
+    use Traits\Signature\HandlesSerialization;
+    use Traits\Signature\HandlesTemplates;
 
     public const ARROW = '->';
 
@@ -20,6 +24,7 @@ class Signature implements HasInputSchema, HasOutputSchema
     private string $description;
     private string $shortSignature;
     private string $fullSignature;
+    private string $compiled = '';
 
     public function __construct(
         Schema $input,
@@ -31,17 +36,5 @@ class Signature implements HasInputSchema, HasOutputSchema
         $this->description = $description;
         $this->shortSignature = $this->makeShortSignatureString();
         $this->fullSignature = $this->makeSignatureString();
-    }
-
-    public function getDescription(): string {
-        return $this->description;
-    }
-
-    public function inputNames(): array {
-        return $this->toInputSchema()->getPropertyNames();
-    }
-
-    public function outputNames(): array {
-        return $this->toOutputSchema()->getPropertyNames();
     }
 }

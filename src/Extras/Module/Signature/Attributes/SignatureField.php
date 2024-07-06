@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Extras\Module\Signature\Attributes;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 
 abstract class SignatureField
 {
@@ -32,54 +31,56 @@ abstract class SignatureField
     public static function string(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = (new TypeDetailsFactory)->scalarType('string');
+        $field->type = TypeDetails::string();
         return $field;
     }
 
     public static function int(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = (new TypeDetailsFactory)->scalarType('int');
+        $field->type = TypeDetails::int();
         return $field;
     }
 
     public static function float(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = (new TypeDetailsFactory)->scalarType('float');
+        $field->type = TypeDetails::float();
         return $field;
     }
 
     public static function bool(string $name, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = (new TypeDetailsFactory)->scalarType('bool');
+        $field->type = TypeDetails::bool();
         return $field;
     }
 
-    public static function collection(string $name, string $class, string $description = '') {
+    public static function collection(string $name, string $nestedTypeName, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = (new TypeDetailsFactory)->collectionType($class);
+        $field->type = TypeDetails::collection(TypeDetails::fromTypeName($nestedTypeName));
         return $field;
     }
 
     public static function array(string $name, string $description = '') {
-        // TODO: implement support for arbitrary arrays
+        $field = new static($description);
+        $field->name = $name;
+        $field->type = TypeDetails::array();
+        return $field;
     }
 
     public static function object(string $name, string $class, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = (new TypeDetailsFactory)->objectType($class);
+        $field->type = TypeDetails::object($class);
         return $field;
     }
 
     public static function enum(string $name, string $class, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $values = (new $class)->values();
-        $field->type = (new TypeDetailsFactory)->enumType($class, $values);
+        $field->type = TypeDetails::enum($class);
         return $field;
     }
 }

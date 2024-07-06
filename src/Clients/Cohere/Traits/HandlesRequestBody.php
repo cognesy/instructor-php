@@ -1,44 +1,16 @@
 <?php
 namespace Cognesy\Instructor\Clients\Cohere\Traits;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-
 // COHERE API
 
 trait HandlesRequestBody
 {
+    protected function model() : string {
+        return $this->model;
+    }
+
     public function messages(): array {
-        if ($this->noScript()) {
-            return $this->messages;
-        }
-
-        return $this
-            ->withMetaSections($this->script)
-            ->withContext($this->scriptContext)
-            ->select([
-                'system',
-                'pre-input', 'messages', 'input', 'post-input',
-                'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples', 'examples', 'post-examples',
-                'pre-retries', 'retries', 'post-retries'
-            ])
-            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
-    }
-
-    public function preamble(): string {
-        return '';
-//        return $this->script
-//            ->withContext($this->scriptContext)
-//            ->select(['system'])
-//            ->toNativeArray(ClientType::fromRequestClass(static::class));
-    }
-
-    public function chatHistory(): array {
-        return $this->clientType->toNativeMessages([]);
-//        return $this->script
-//            ->withContext($this->scriptContext)
-//            ->select(['messages', 'data-ack', 'prompt', 'examples'])
-//            ->toNativeArray(ClientType::fromRequestClass(static::class));
+        return $this->messages;
     }
 
     public function tools(): array {

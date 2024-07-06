@@ -8,7 +8,13 @@ use InvalidArgumentException;
 
 trait CreatesSignatureFromString
 {
-    static public function fromString(string $signatureString): Signature {
+    static public function fromString(
+        string $signatureString,
+        string $description = '',
+    ): Signature {
+        if (empty($signatureString)) {
+            throw new InvalidArgumentException('Invalid signature string, empty string');
+        }
         if (!str_contains($signatureString, Signature::ARROW)) {
             throw new InvalidArgumentException('Invalid signature string, missing arrow -> marker separating inputs and outputs');
         }
@@ -23,6 +29,7 @@ trait CreatesSignatureFromString
         return new Signature(
             input: StructureFactory::fromString('inputs', $inputs)->schema(),
             output: StructureFactory::fromString('outputs', $outputs)->schema(),
+            description: $description,
         );
     }
 }

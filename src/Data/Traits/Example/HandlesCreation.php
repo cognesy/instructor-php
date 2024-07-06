@@ -35,6 +35,7 @@ trait HandlesCreation
         return new self(
             input: $data['input'],
             output: $data['output'],
+            isStructured: $data['structured'] ?? true,
             uid: $data['id'] ?? Uuid::uuid4(),
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : new DateTimeImmutable(),
         );

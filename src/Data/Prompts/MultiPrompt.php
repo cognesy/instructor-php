@@ -4,7 +4,9 @@ namespace Cognesy\Instructor\Data\Prompts;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Utils\TemplateUtil;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated('Not used - may be removed in the future.')]
 class MultiPrompt
 {
     private string $name = '';

@@ -72,14 +72,14 @@ test('returns correct class only name', function () {
 });
 
 test('converts JSON type to PHP type', function () {
-    $this->assertSame('object', TypeDetails::fromJsonType('object'));
-    $this->assertSame('array', TypeDetails::fromJsonType('array'));
-    $this->assertSame('int', TypeDetails::fromJsonType('integer'));
-    $this->assertSame('float', TypeDetails::fromJsonType('number'));
-    $this->assertSame('string', TypeDetails::fromJsonType('string'));
-    $this->assertSame('bool', TypeDetails::fromJsonType('boolean'));
+    $this->assertSame('object', TypeDetails::toPhpType('object'));
+    $this->assertSame('array', TypeDetails::toPhpType('array'));
+    $this->assertSame('int', TypeDetails::toPhpType('integer'));
+    $this->assertSame('float', TypeDetails::toPhpType('number'));
+    $this->assertSame('string', TypeDetails::toPhpType('string'));
+    $this->assertSame('bool', TypeDetails::toPhpType('boolean'));
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Unknown type: unknown');
-    TypeDetails::fromJsonType('unknown');
+    TypeDetails::toPhpType('unknown');
 });

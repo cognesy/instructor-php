@@ -17,8 +17,18 @@ class Example implements CanProvideMessages, CanProvideJson, JsonSerializable
     public readonly DateTimeImmutable $createdAt;
     private mixed $input;
     private mixed $output;
+    private bool $isStructured;
+    private string $template;
 
-    public string $template = <<<TEMPLATE
+    public string $defaultTemplate = <<<TEMPLATE
+        EXAMPLE INPUT:
+        <|input|>
+        
+        EXAMPLE OUTPUT:
+        <|output|>
+        TEMPLATE;
+
+    public string $defaultStructuredTemplate = <<<TEMPLATE
         EXAMPLE INPUT:
         <|input|>
         
@@ -31,14 +41,26 @@ class Example implements CanProvideMessages, CanProvideJson, JsonSerializable
     public function __construct(
         mixed $input,
         mixed $output,
+        bool $isStructured = true,
         string $template = '',
         string $uid = null,
         DateTimeImmutable $createdAt = null,
     ) {
         $this->uid = $uid ?? Uuid::uuid4();
         $this->createdAt = $createdAt ?? new DateTimeImmutable();
-        $this->template = $template ?: $this->template;
         $this->input = $input;
         $this->output = $output;
+        $this->isStructured = $isStructured;
+        $this->template = $template;
+    }
+
+    public function template() : string {
+        return match(true) {
+            !empty($this->template) => $this->template,
+            default => match(true) {
+                $this->isStructured => $this->defaultStructuredTemplate,
+                default => $this->defaultTemplate,
+            },
+        };
     }
 }

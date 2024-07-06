@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\Maybe;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
@@ -21,12 +22,10 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     private string $error = '';
 
     private SchemaFactory $schemaFactory;
-    private TypeDetailsFactory $typeDetailsFactory;
     private SymfonyDeserializer $deserializer;
 
     public function __construct() {
         $this->schemaFactory = new SchemaFactory(false);
-        $this->typeDetailsFactory = new TypeDetailsFactory();
         $this->deserializer = new SymfonyDeserializer();
     }
 
@@ -53,7 +52,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     public function toJsonSchema(): array {
         $schema = $this->schemaFactory->schema($this->class);
         $schemaData = (new SchemaToJsonSchema)->toArray($schema);
-        $schemaData['title'] = $this->name ?: $this->typeDetailsFactory->fromTypeName($this->class)->classOnly();
+        $schemaData['title'] = $this->name ?: TypeDetails::fromTypeName($this->class)->classOnly();
         $schemaData['description'] = $this->description ?: "Correctly extracted values of ".$schemaData['title'];
         $schemaData['$comment'] = $this->class;
         return [

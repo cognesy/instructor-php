@@ -1,15 +1,21 @@
 <?php
 namespace Cognesy\Instructor\Schema\Data;
 
+use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\DefinesJsonTypeConstants;
+use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\DefinesPhpTypeConstants;
 use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesJsonTypes;
 use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesPhpTypes;
-use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesTypeDetailsConstruction;
+use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesTypeDetailsValidation;
 
 class TypeDetails
 {
+    use Traits\TypeDetails\HandlesAccess;
+    use Traits\TypeDetails\HandlesFactoryMethods;
     use HandlesPhpTypes;
     use HandlesJsonTypes;
-    use HandlesTypeDetailsConstruction;
+    use DefinesJsonTypeConstants;
+    use DefinesPhpTypeConstants;
+    use HandlesTypeDetailsValidation;
 
     /**
      * @param string $type object, enum, array, int, string, bool, float
@@ -27,33 +33,5 @@ class TypeDetails
         public ?string $docString = null,
     ) {
         $this->validate($type, $class, $nestedType, $enumType, $enumValues);
-    }
-
-    public function type() : string {
-        return $this->type;
-    }
-
-    public function class() : ?string {
-        return $this->class;
-    }
-
-    public function nestedType() : ?TypeDetails {
-        return $this->nestedType;
-    }
-
-    public function enumType() : ?string {
-        return $this->enumType;
-    }
-
-    public function enumValues() : ?array {
-        return $this->enumValues;
-    }
-
-    public function docString() : string {
-        return $this->docString;
-    }
-
-    public function __toString() : string {
-        return $this->toString();
     }
 }

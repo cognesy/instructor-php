@@ -16,10 +16,12 @@ namespace Cognesy\Instructor\Utils;
 //
 // $nameLength = $person->getNameLength(null)->getOrElse(0);
 //////////////////////////////////////////////////////////
+use JetBrains\PhpStorm\Deprecated;
 
- /**
+/**
  * @template T The type of the value in case of success.
  */
+#[Deprecated('Not used - may be removed in the future.')]
 class Optional {
     private mixed $value;
 

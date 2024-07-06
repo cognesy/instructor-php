@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 use RuntimeException;
@@ -87,5 +88,14 @@ trait HandlesConversion
             throw new RuntimeException('Collection contains composite messages and cannot be converted to string.');
         }
         return self::asString($this->toArray(), $separator);
+    }
+
+    public function toNativeArray(ClientType $clientType, bool $mergePerRole = false) : array {
+        $messages = match(true) {
+            $mergePerRole => $this->toMergedPerRole(),
+            default => $this,
+        };
+        $array = $messages->toArray();
+        return $clientType->toNativeMessages($array);
     }
 }

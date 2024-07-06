@@ -4,15 +4,11 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
 
 trait ProvidesSchema
 {
-    private TypeDetailsFactory $typeDetailsFactory;
-    private SchemaFactory $schemaFactory;
-
     public function schema() : Schema {
         return $this->makeSchema();
     }
@@ -37,9 +33,8 @@ trait ProvidesSchema
                 $required[] = $fieldName;
             }
         }
-        $typeDetails = $this->typeDetailsFactory->objectType(static::class);
         $schema = new ObjectSchema(
-            type: $typeDetails,
+            type: TypeDetails::object(static::class),
             name: $this->name(),
             description: $this->description(),
             properties: $properties,

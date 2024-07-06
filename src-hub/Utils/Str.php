@@ -66,4 +66,12 @@ class Str
     static public function contains(string $haystack, string $needle) : bool {
         return strpos($haystack, $needle) !== false;
     }
+
+    public static function startsWith(string $url, string $string) : bool {
+        return substr($url, 0, strlen($string)) === $string;
+    }
+
+    public static function endsWith(string $url, string $string) : bool {
+        return substr($url, -strlen($string)) === $string;
+    }
 }

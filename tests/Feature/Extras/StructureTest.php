@@ -189,6 +189,7 @@ it('creates structure from class', function() {
 it('creates structure from JSON Schema', function() {
     $jsonSchema = [
         'title' => 'TestStructure',
+        'type' => 'object',
         'description' => 'Test structure',
         'properties' => [
             'stringProperty' => [
@@ -210,13 +211,31 @@ it('creates structure from JSON Schema', function() {
             'enumProperty' => [
                 'type' => 'string',
                 'description' => 'Enum property',
+                '$comment' => 'Tests\Feature\Extras\TestEnum',
+            ],
+            'arrayProperty' => [
+                'type' => 'array',
+                'description' => 'Array property',
+                'items' => [
+                    'type' => 'string',
+                ],
+            ],
+            'collectionProperty' => [
+                'type' => 'array',
+                'description' => 'Collection property',
+                'items' => [
+                    'description' => 'Collection item',
+                    '$comment' => 'Tests\Feature\Extras\TestEnum',
+                    'type' => 'string',
+                    'enum' => ['A', 'B'],
+                ],
             ],
         ],
     ];
 
     $structure = StructureFactory::fromJsonSchema($jsonSchema);
 
-    expect($structure->fields())->toHaveCount(5);
+    expect($structure->fields())->toHaveCount(7);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('integerProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_INT);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
@@ -227,6 +246,13 @@ it('creates structure from JSON Schema', function() {
     expect($structure->field('floatProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_FLOAT);
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
     expect($structure->field('enumProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
+    expect($structure->field('arrayProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
+    expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
+    expect($structure->field('collectionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_COLLECTION);
+    expect($structure->field('collectionProperty')->typeDetails()->nestedType->type)->toBe(TypeDetails::PHP_ENUM);
+    expect($structure->field('collectionProperty')->typeDetails()->nestedType->class)->toBe(TestEnum::class);
+    expect($structure->field('collectionProperty')->typeDetails()->nestedType->enumValues())->toBe(['A', 'B']);
 });
 
 it('creates structure from array', function() {

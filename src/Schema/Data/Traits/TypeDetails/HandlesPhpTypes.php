@@ -4,8 +4,6 @@ namespace Cognesy\Instructor\Schema\Data\Traits\TypeDetails;
 
 trait HandlesPhpTypes
 {
-    use DefinesPhpTypeConstants;
-
     static public function getType(mixed $variable) : ?string {
         $type = gettype($variable);
         return self::TYPE_MAP[$type] ?? self::PHP_UNSUPPORTED;
@@ -39,5 +37,9 @@ trait HandlesPhpTypes
             self::PHP_SHAPE => $this->docString,
             default => $this->type,
         };
+    }
+
+    public function isScalar() : bool {
+        return in_array($this->type, [self::PHP_INT, self::PHP_STRING, self::PHP_BOOL, self::PHP_FLOAT]);
     }
 }

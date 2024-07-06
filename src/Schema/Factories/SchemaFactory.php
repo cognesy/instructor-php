@@ -23,6 +23,7 @@ use Exception;
 class SchemaFactory
 {
     use Traits\SchemaFactory\HandlesClassInfo;
+    use Traits\SchemaFactory\HandlesFactoryMethods;
     use Traits\SchemaFactory\HandlesTypeDetails;
 
     /** @var bool switches schema rendering between inlined or referenced object properties */
@@ -56,12 +57,7 @@ class SchemaFactory
      */
     public function schema(string|object $anyType) : Schema
     {
-        if (array_reduce(
-            $this->warnOnInstancesOf,
-            function ($carry, $item) use ($anyType) {
-                return $carry || ($anyType instanceof $item);
-            }, false)
-        ) {
+        if ($this->isAnyOf($anyType)) {
             throw new Exception('You are trying to get static schema for a known dynamic schema provider: ' . get_class($anyType) . ' directly');
         }
 
@@ -81,5 +77,15 @@ class SchemaFactory
                 schema: $this->makeSchema($type));
         }
         return $this->schemaMap->get($anyType);
+    }
+
+    private function isAnyOf(string|object $anyType) : bool {
+        return array_reduce(
+            array: $this->warnOnInstancesOf,
+            callback: function ($carry, $item) use ($anyType) {
+                return $carry || ($anyType instanceof $item);
+            },
+            initial: false
+        );
     }
 }

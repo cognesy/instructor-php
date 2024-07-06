@@ -4,9 +4,6 @@ namespace Cognesy\Instructor\Schema\Data\Traits\TypeDetails;
 
 trait HandlesJsonTypes
 {
-    use DefinesJsonTypeConstants;
-    use DefinesPhpTypeConstants;
-
     public function jsonType() : string {
         return match ($this->type) {
             self::PHP_OBJECT => self::JSON_OBJECT,
@@ -21,7 +18,7 @@ trait HandlesJsonTypes
         };
     }
 
-    static public function fromJsonType(string $jsonType) : string {
+    static public function toPhpType(string $jsonType) : string {
         return match ($jsonType) {
             self::JSON_OBJECT => self::PHP_OBJECT,
             self::JSON_ARRAY => self::PHP_ARRAY,

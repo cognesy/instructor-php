@@ -19,21 +19,23 @@ trait CreatesFromCallable
         return (new self)->makeFromCallable($callable);
     }
 
+    // INTERNAL ///////////////////////////////////////////////////////////////////////
+
     private function makeFromCallable(callable $callable): Signature {
         $reflection = new ReflectionFunction($callable);
         $description = $reflection->getDocComment();
         return new Signature(
-            input: $this->makeInputSchema($callable),
-            output: $this->makeOutputSchema($reflection),
+            input: $this->inputSchemaFromCallable($callable),
+            output: $this->makeOutputSchemaFromReflection($reflection),
             description: $description,
         );
     }
 
-    private function makeInputSchema(callable $callable): Schema {
+    private function inputSchemaFromCallable(callable $callable): Schema {
         return StructureFactory::fromCallable($callable, 'inputs')->schema();
     }
 
-    private function makeOutputSchema(ReflectionFunction $reflection): Schema {
+    private function makeOutputSchemaFromReflection(ReflectionFunction $reflection): Schema {
         $returnType = $reflection->getReturnType();
         if ($returnType === null) {
             throw new \InvalidArgumentException('Cannot build signature from callable with no return type');

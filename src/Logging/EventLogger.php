@@ -3,9 +3,11 @@
 namespace Cognesy\Instructor\Logging;
 
 use Cognesy\Instructor\Events\Event;
+use JetBrains\PhpStorm\Deprecated;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
+#[Deprecated('Not used - may be removed in the future.')]
 class EventLogger implements LoggerAwareInterface
 {
     private LoggerInterface $logger;

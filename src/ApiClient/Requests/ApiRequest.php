@@ -6,7 +6,6 @@ use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 use Saloon\CachePlugin\Contracts\Cacheable;
@@ -34,8 +33,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     // NEW
     protected Mode $mode;
     protected ClientType $clientType;
-    protected Script $script;
-    protected array $scriptContext = [];
 
     // BODY FIELDS
     protected string $model = '';
@@ -66,11 +63,13 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         $this->body()->setJsonFlags(JSON_UNESCAPED_SLASHES);
     }
 
+    public function isStreamed(): bool {
+        return $this->requestBody['stream'] ?? false;
+    }
+
     protected function applyData() : void {
         $this->mode = $this->getData('mode', Mode::MdJson);
         $this->clientType = $this->getData('client_type', ClientType::fromRequestClass(static::class));
-        $this->script = $this->getData('script', new Script());
-        $this->scriptContext = $this->getData('script_context', []);
     }
 
     protected function initBodyFields() : void {
@@ -104,45 +103,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $body;
     }
 
-    protected function withMetaSections(Script $script) : Script {
-        $result = Script::fromScript($script);
-
-        $result->section('pre-input')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => "INPUT:",
-        ]);
-
-        $result->section('pre-prompt')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => "TASK:",
-        ]);
-
-        if ($result->section('examples')->notEmpty()) {
-            $result->section('pre-examples')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "EXAMPLES:",
-            ]);
-        }
-
-        $result->section('post-examples')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => "RESPONSE:",
-        ]);
-
-        if ($result->section('retries')->notEmpty()) {
-            $result->section('pre-retries')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "FEEDBACK:",
-            ]);
-            $result->section('post-retries')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "CORRECTED RESPONSE:",
-            ]);
-        }
-
-        return $result;
-    }
-
     protected function getData(string $name, mixed $defaultValue) : mixed {
         return $this->data[$name] ?? $defaultValue;
     }
@@ -151,10 +111,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         $value = $this->requestBody[$name] ?? $default;
         unset($this->requestBody[$name]);
         return $value;
-    }
-
-    protected function noScript() : bool {
-        return empty($this->script) || $this->script->isEmpty();
     }
 
     abstract public function toApiResponse(Response $response): ApiResponse;

@@ -14,14 +14,17 @@ class CohereApiRequest extends ApiRequest
     protected string $defaultEndpoint = '/chat';
 
     protected function defaultBody(): array {
+        $system = '';
+        $chatHistory = [];
+        $messages = Messages::asString($this->messages());
         $body = array_filter(
             array_merge(
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'preamble' => $this->preamble(),
-                    'chat_history' => $this->chatHistory(),
-                    'message' => Messages::asString($this->messages()),
+                    'preamble' => $system,
+                    'chat_history' => $chatHistory,
+                    'message' => $messages,
                     'tools' => $this->tools(),
                 ],
             )

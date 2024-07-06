@@ -7,8 +7,18 @@ use Cognesy\Instructor\Schema\Factories\SchemaConverter;
 it('creates Schema object from JSON Schema array - required fields', function ($jsonSchema) {
     $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
-
-    expect($schema->required)->toBe(['stringProperty', 'integerProperty', 'boolProperty', 'floatProperty', 'enumProperty', 'objectProperty', 'arrayProperty', 'collectionProperty', 'collectionObjectProperty', 'collectionEnumProperty']);
+    expect($schema->required)->toBe([
+        'stringProperty',
+        'integerProperty',
+        'boolProperty',
+        'floatProperty',
+        'enumProperty',
+        'objectProperty',
+        'arrayProperty',
+        'collectionProperty',
+        'collectionObjectProperty',
+        'collectionEnumProperty'
+    ]);
 })->with('schema_converter_json');
 
 it('creates Schema object from JSON Schema array - scalar props', function ($jsonSchema) {

@@ -10,12 +10,12 @@ use Exception;
 class FieldFactory
 {
     public static function fromTypeName(string $name, string $typeName, string $description = ''): Field {
-        $typeDetails = (new TypeDetailsFactory)->fromTypeName($typeName);
+        $typeDetails = TypeDetails::fromTypeName($typeName);
         return FieldFactory::fromTypeDetails($name, $typeDetails, $description);
     }
 
     public static function fromPropertyInfoType(string $name, Type $type, string $description = ''): Field {
-        $typeDetails = (new TypeDetailsFactory)->fromPropertyInfo($type);
+        $typeDetails = TypeDetailsFactory::fromPropertyInfo($type);
         return FieldFactory::fromTypeDetails($name, $typeDetails, $description);
     }
 

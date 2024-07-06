@@ -23,19 +23,19 @@ class RequestFactory
 
     public function fromData(RequestInfo $data) : Request {
         return $this->create(
-            messages: $data->messages,
-            input: $data->input,
-            responseModel: $data->responseModel,
-            system: $data->system,
-            prompt: $data->prompt,
-            examples: $data->examples,
-            model: $data->model,
-            maxRetries: $data->maxRetries,
-            options: $data->options,
-            toolName: $data->toolName,
-            toolDescription: $data->toolDescription,
-            retryPrompt: $data->retryPrompt,
-            mode: $data->mode,
+            messages: $data->messages ?? [],
+            input: $data->input ?? [],
+            responseModel: $data->responseModel ?? [],
+            system: $data->system ?? '',
+            prompt: $data->prompt ?? '',
+            examples: $data->examples ?? [],
+            model: $data->model ?? '',
+            maxRetries: $data->maxRetries ?? 0,
+            options: $data->options ?? [],
+            toolName: $data->toolName ?? '',
+            toolDescription: $data->toolDescription ?? '',
+            retryPrompt: $data->retryPrompt ?? '',
+            mode: $data->mode ?? Mode::Tools,
         );
     }
 

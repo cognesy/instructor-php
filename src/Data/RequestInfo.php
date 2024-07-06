@@ -5,6 +5,10 @@ use Cognesy\Instructor\Enums\Mode;
 
 class RequestInfo
 {
+    use Traits\RequestInfo\HandlesMutation;
+    use Traits\RequestInfo\HandlesCreation;
+    use Traits\RequestInfo\HandlesSerialization;
+
     public string|array $messages;
     public string|array|object $input;
     public string|array|object $responseModel;
@@ -22,124 +26,5 @@ class RequestInfo
 
     public function isStream() : bool {
         return $this->options['stream'] ?? false;
-    }
-
-    public function withMessages(string|array $messages) : static {
-        $this->messages = $messages;
-        return $this;
-    }
-
-    public function withInput(string|array|object $input) : static {
-        $this->input = $input;
-        return $this;
-    }
-
-    public function withResponseModel(string|array|object $responseModel) : static {
-        $this->responseModel = $responseModel;
-        return $this;
-    }
-
-    public function withModel(string $model) : static {
-        $this->model = $model;
-        return $this;
-    }
-
-    public function withSystem(string $system) : static {
-        $this->system = $system;
-        return $this;
-    }
-
-    public function withPrompt(string $prompt) : static {
-        $this->prompt = $prompt;
-        return $this;
-    }
-
-    public function withExamples(array $examples) : static {
-        $this->examples = $examples;
-        return $this;
-    }
-
-    public function withMaxRetries(int $maxRetries) : static {
-        $this->maxRetries = $maxRetries;
-        return $this;
-    }
-
-    public function withOptions(array $options) : static {
-        $this->options = $options;
-        return $this;
-    }
-
-    public function withRetryPrompt($retryPrompt) : static {
-        $this->retryPrompt = $retryPrompt;
-        return $this;
-    }
-
-    public function withToolName($toolName) : static {
-        $this->toolName = $toolName;
-        return $this;
-    }
-
-    public function withToolDescription($toolDescription) : static {
-        $this->toolDescription = $toolDescription;
-        return $this;
-    }
-
-    public function withMode(Mode $mode) : static {
-        $this->mode = $mode;
-        return $this;
-    }
-
-    public static function new() : static {
-        return new static();
-    }
-
-    public static function with(
-        $messages = '',
-        $input = '',
-        $responseModel = '',
-        $system = '',
-        $prompt = '',
-        $examples = [],
-        $model = '',
-        $maxRetries = 0,
-        $options = [],
-        $toolName = '',
-        $toolDescription = '',
-        $retryPrompt = '',
-        $mode = Mode::Tools,
-    ) : static {
-        $data = new static();
-        $data->messages = $messages;
-        $data->input = $input;
-        $data->responseModel = $responseModel;
-        $data->system = $system;
-        $data->prompt = $prompt;
-        $data->examples = $examples;
-        $data->model = $model;
-        $data->maxRetries = $maxRetries;
-        $data->options = $options;
-        $data->toolName = $toolName;
-        $data->toolDescription = $toolDescription;
-        $data->retryPrompt = $retryPrompt;
-        $data->mode = $mode;
-        return $data;
-    }
-
-    public static function fromArray(array $data) : static {
-        return self::with(
-            $data['messages'] ?? '',
-            $data['input'] ?? '',
-            $data['responseModel'] ?? '',
-            $data['system'] ?? '',
-            $data['prompt'] ?? '',
-            $data['examples'] ?? [],
-            $data['model'] ?? '',
-            $data['maxRetries'] ?? 0,
-            $data['options'] ?? [],
-            $data['toolName'] ?? '',
-            $data['toolDescription'] ?? '',
-            $data['retryPrompt'] ?? '',
-            $data['mode'] ?? Mode::Tools,
-        );
     }
 }

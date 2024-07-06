@@ -14,7 +14,7 @@ class ArrayExactValueMatchEval implements CanEvaluate
     private Feedback $feedback;
     private Metric $metric;
 
-    public function process(PromptEvaluation $evaluation): EvaluationResult {
+    public function evaluate(PromptEvaluation $evaluation): EvaluationResult {
         $this->feedback = new Feedback();
         $matches = 0;
         $total = 0;

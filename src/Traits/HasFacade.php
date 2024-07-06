@@ -3,8 +3,10 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Attributes\FacadeAccessor;
 use BadMethodCallException;
+use JetBrains\PhpStorm\Deprecated;
 use ReflectionClass;
 
+#[Deprecated('Not used - may be removed in the future.')]
 trait HasFacade
 {
     /**

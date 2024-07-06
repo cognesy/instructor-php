@@ -6,9 +6,6 @@ use Cognesy\Instructor\Schema\Data\TypeDetails;
 
 trait HandlesFieldAccess
 {
-    /** @var \Cognesy\Instructor\Extras\Structure\Field[] */
-    protected array $fields = [];
-
     public function has(string $field) : bool {
         return isset($this->fields[$field]);
     }
@@ -24,7 +21,7 @@ trait HandlesFieldAccess
         return $this->fields[$name];
     }
 
-    /** @return \Cognesy\Instructor\Extras\Structure\Field[] */
+    /** @return Field[] */
     public function fields() : array {
         return $this->fields;
     }
@@ -71,13 +68,6 @@ trait HandlesFieldAccess
     }
 
     public function __get(string $field) : mixed {
-// TODO: this feels hacky, but it is useful - let's figure it out later
-// for structures with a single field return it for whatever field is requested
-// it is hacky indeed, but it helps to use structures with signatures - we basically
-// treat structure as a scalar
-//        if ($this->actsAsScalar()) {
-//            return $this->get($this->scalarKey());
-//        }
         return $this->get($field);
     }
 

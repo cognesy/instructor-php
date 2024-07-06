@@ -1,7 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Clients\Anthropic;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 
 
@@ -12,16 +14,23 @@ class AnthropicApiRequest extends ApiRequest
 
     protected string $defaultEndpoint = '/messages';
 
-    private string $system;
-
     protected function defaultBody(): array {
+        $system = Messages::fromArray($this->messages)
+            ->forRoles(['system'])
+            ->toString();
+        $messages = Messages::fromArray($this->messages)
+            ->exceptRoles(['system'])
+            ->toNativeArray(
+                clientType: ClientType::fromRequestClass($this),
+                mergePerRole: true
+            );
         $body = array_filter(
             array_merge(
                 $this->requestBody,
                 [
                     'model' => $this->model(),
-                    'system' => $this->system(),
-                    'messages' => $this->messages(),
+                    'system' => $system,
+                    'messages' => $messages,
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
                     'max_tokens' => $this->maxTokens,

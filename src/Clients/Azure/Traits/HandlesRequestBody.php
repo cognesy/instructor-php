@@ -1,30 +1,14 @@
 <?php
 namespace Cognesy\Instructor\Clients\Azure\Traits;
 
-use Cognesy\Instructor\Enums\Mode;
-
 trait HandlesRequestBody
 {
+    protected function model() : string {
+        return $this->model;
+    }
+
     public function messages(): array {
-        if ($this->noScript()) {
-            return $this->messages;
-        }
-
-        if($this->mode->is(Mode::Tools)) {
-            unset($this->scriptContext['json_schema']);
-        }
-
-        return $this
-            ->withMetaSections($this->script)
-            ->withContext($this->scriptContext)
-            ->select([
-                'system',
-                'pre-input', 'messages', 'input', 'post-input',
-                'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples', 'examples', 'post-examples',
-                'pre-retries', 'retries', 'post-retries'
-            ])
-            ->toArray();
+        return $this->messages;
     }
 
     public function tools(): array {

@@ -7,5 +7,5 @@ use Cognesy\Instructor\Evaluation\Data\EvaluationResult;
 
 interface CanEvaluate
 {
-    public function process(PromptEvaluation $evaluation) : EvaluationResult;
+    public function evaluate(PromptEvaluation $evaluation) : EvaluationResult;
 }

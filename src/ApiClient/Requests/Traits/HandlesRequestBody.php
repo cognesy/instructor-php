@@ -3,8 +3,6 @@ namespace Cognesy\Instructor\ApiClient\Requests\Traits;
 
 // API REQUEST - DEFAULT IMPLEMENTATION
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-
 trait HandlesRequestBody
 {
     protected function model() : string {
@@ -12,21 +10,7 @@ trait HandlesRequestBody
     }
 
     public function messages(): array {
-        if ($this->noScript()) {
-            return $this->messages;
-        }
-
-        return $this
-            ->withMetaSections($this->script)
-            ->withContext($this->scriptContext)
-            ->select([
-                'system',
-                'pre-input', 'messages', 'input', 'post-input',
-                'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples', 'examples', 'post-examples',
-                'pre-retries', 'retries', 'post-retries'
-            ])
-            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
+        return $this->messages;
     }
 
     public function tools(): array {
@@ -46,9 +30,5 @@ trait HandlesRequestBody
 
     protected function getResponseFormat(): array {
         return $this->responseFormat['format'] ?? [];
-    }
-
-    public function isStreamed(): bool {
-        return $this->requestBody['stream'] ?? false;
     }
 }

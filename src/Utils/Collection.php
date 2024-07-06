@@ -5,11 +5,13 @@ use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use JetBrains\PhpStorm\Deprecated;
 use Traversable;
 
 /**
  * @template T
  */
+#[Deprecated('Not used - may be removed in the future.')]
 class Collection implements IteratorAggregate, ArrayAccess, Countable
 {
     /**

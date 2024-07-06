@@ -38,4 +38,24 @@ trait HandlesTransformation
         }
         return $messages;
     }
+
+    public function forRoles(array $roles) : Messages {
+        $messages = new Messages();
+        foreach ($this->messages as $message) {
+            if (in_array($message->role()->value, $roles)) {
+                $messages->appendMessage($message);
+            }
+        }
+        return $messages;
+    }
+
+    public function exceptRoles(array $roles) : Messages {
+        $messages = new Messages();
+        foreach ($this->messages as $message) {
+            if (!in_array($message->role()->value, $roles)) {
+                $messages->appendMessage($message);
+            }
+        }
+        return $messages;
+    }
 }

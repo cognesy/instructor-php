@@ -2,33 +2,8 @@
 
 namespace Cognesy\Instructor\Clients\OpenAI\Traits;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-use Cognesy\Instructor\Enums\Mode;
-
 trait HandlesRequestBody
 {
-    public function messages(): array {
-        if ($this->noScript()) {
-            return $this->messages;
-        }
-
-        if($this->mode->is(Mode::Tools)) {
-            unset($this->scriptContext['json_schema']);
-        }
-
-        return $this
-            ->withMetaSections($this->script)
-            ->withContext($this->scriptContext)
-            ->select([
-                'system',
-                'pre-input', 'messages', 'input', 'post-input',
-                'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples', 'examples', 'post-examples',
-                'pre-retries', 'retries', 'post-retries'
-            ])
-            ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
-    }
-
     public function tools(): array {
         return $this->tools;
     }
