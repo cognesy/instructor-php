@@ -82,7 +82,8 @@ trait HandlesResolvers
      * Express array type as <type>[]
      */
     private function collectionTypeString(Type $propertyInfo) : string {
-        $collectionValueType = $propertyInfo->getCollectionValueTypes()[0];
+        $collectionValueTypes = $propertyInfo->getCollectionValueTypes();
+        $collectionValueType = $collectionValueTypes[0] ?? null;
         if ($collectionValueType === null) {
             return '';
         }

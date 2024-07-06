@@ -37,7 +37,7 @@ trait HandlesFactoryMethods
     }
 
     public static function object(string $class, string $name = '', string $description = '', $properties = [], $required = []): ObjectSchema {
-        return (new SchemaFactory)->object($class, $name, $description);
+        return (new SchemaFactory)->object($class, $name, $description, $properties, $required);
     }
 
     public static function enum(string $class, string $name = '', string $description = ''): EnumSchema {
