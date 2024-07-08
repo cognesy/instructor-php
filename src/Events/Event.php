@@ -35,7 +35,10 @@ class Event
         return $this->consoleFormat($message, $quote);
     }
 
-    public function print(bool $quote = false): void {
+    public function print(bool $quote = false, string $threshold = LogLevel::DEBUG): void {
+        if (!$this->logFilter($threshold, $this->logLevel)) {
+            return;
+        }
         echo $this->asConsole($quote)."\n";
     }
 
@@ -46,14 +49,18 @@ class Event
     public function printDebug(): void {
         echo "\n".$this->asConsole()."\n";
         /** @noinspection ForgottenDebugOutputInspection */
-        dump(json_decode($this->__toString()));
+        dump($this);
+    }
+
+    public function __toString(): string {
+        return Json::encode($this->data, JSON_PRETTY_PRINT);
     }
 
     /// PRIVATE ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private function logFormat(string $message): string {
         $class = (new \ReflectionClass($this))->getName();
-        return "({$this->eventId}) {$this->createdAt->format('Y-m-d H:i:s v')}ms [$class] - $message";
+        return "({$this->eventId}) {$this->createdAt->format('Y-m-d H:i:s v')}ms ($this->logLevel) [$class] - $message";
     }
 
     private function consoleFormat(string $message = '', bool $quote = false) : string {
@@ -66,15 +73,11 @@ class Event
         return Console::columns([
             [7, '(.'.substr($this->eventId, -4).')'],
             [14, $this->createdAt->format('H:i:s v').'ms'],
-            //[15, "{$eventGroup}\\", STR_PAD_LEFT],
+            [7, "{$this->logLevel}", STR_PAD_LEFT],
             [30, "{$eventName}"],
             '-',
             [-1, $message],
         ], 140);
-    }
-
-    public function __toString(): string {
-        return Json::encode($this->data, JSON_PRETTY_PRINT);
     }
 
     protected function dumpVar(mixed $var) : array {
@@ -95,5 +98,23 @@ class Event
             }
         }
         return $properties;
+    }
+
+    protected function logFilter(string $level, string $threshold): bool {
+        return $this->logLevelRank($level) >= $this->logLevelRank($threshold);
+    }
+
+    protected function logLevelRank(string $level): int {
+        return match($level) {
+            LogLevel::EMERGENCY => 0,
+            LogLevel::ALERT => 1,
+            LogLevel::CRITICAL => 2,
+            LogLevel::ERROR => 3,
+            LogLevel::WARNING => 4,
+            LogLevel::NOTICE => 5,
+            LogLevel::INFO => 6,
+            LogLevel::DEBUG => 7,
+            default => 8,
+        };
     }
 }

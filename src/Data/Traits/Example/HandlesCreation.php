@@ -2,9 +2,7 @@
 namespace Cognesy\Instructor\Data\Traits\Example;
 
 use Cognesy\Instructor\Utils\Json;
-use DateTimeImmutable;
 use Exception;
-use Ramsey\Uuid\Uuid;
 
 trait HandlesCreation
 {
@@ -36,8 +34,6 @@ trait HandlesCreation
             input: $data['input'],
             output: $data['output'],
             isStructured: $data['structured'] ?? true,
-            uid: $data['id'] ?? Uuid::uuid4(),
-            createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : new DateTimeImmutable(),
         );
     }
 

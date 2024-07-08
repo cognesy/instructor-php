@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Core\Factories;
 
+use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
@@ -11,7 +12,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Schema\Factories\SchemaConverter;
@@ -85,7 +85,7 @@ class ResponseModelFactory
             'json-schema-provider' => get_class($requestedModel),
             'schema-provider' => get_class($requestedModel),
             'class-string' => $requestedModel,
-            'json-schema' => $requestedModel['$comment'] ?? Structure::class,
+            'json-schema' => $requestedModel['x-php-class'] ?? Structure::class,
             'instance' => get_class($requestedModel),
             default => null,
         };
@@ -118,7 +118,7 @@ class ResponseModelFactory
     }
 
     private function fromJsonSchema(array $requestedModel, string $name = '', string $description = '') : ResponseModel {
-        $class = $requestedModel['$comment'] ?? Structure::class;
+        $class = $requestedModel['x-php-class'] ?? Structure::class;
         $instance = new $class;
         $schema = $this->schemaConverter->fromJsonSchema($requestedModel, $name, $description);
         $jsonSchema = $requestedModel;

@@ -54,10 +54,10 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
         $schemaData = (new SchemaToJsonSchema)->toArray($schema);
         $schemaData['title'] = $this->name ?: TypeDetails::fromTypeName($this->class)->classOnly();
         $schemaData['description'] = $this->description ?: "Correctly extracted values of ".$schemaData['title'];
-        $schemaData['$comment'] = $this->class;
+        $schemaData['x-php-class'] = $this->class;
         return [
             'type' => 'object',
-            '$comment' => Maybe::class,
+            'x-php-class' => Maybe::class,
             'properties' => [
                 'value' => $schemaData,
                 'hasValue' => ['type' => 'boolean'],

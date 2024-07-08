@@ -104,11 +104,11 @@ it('can provide JSON schema of function call', function () {
                     'boolField' => ['type' => 'boolean'],
                 ],
                 'required' => ['intField', 'stringField', 'boolField'],
-                '$comment' => 'Tests\Examples\Call\TestClass'
+                'x-php-class' => 'Tests\Examples\Call\TestClass'
             ],
         ],
         'required' => ['intParam', 'stringParam', 'boolParam', 'objectParam'],
-        '$comment' => 'Cognesy\Instructor\Extras\Structure\Structure',
+        'x-php-class' => 'Cognesy\Instructor\Extras\Structure\Structure',
     ]);
 });
 
@@ -135,11 +135,11 @@ it('can provide OpenAI tool call format for function', function () {
                             'boolField' => ['type' => 'boolean'],
                         ],
                         'required' => ['intField', 'stringField', 'boolField'],
-                        '$comment' => 'Tests\Examples\Call\TestClass'
+                        'x-php-class' => 'Tests\Examples\Call\TestClass'
                     ],
                 ],
                 'required' => ['intParam', 'stringParam', 'boolParam', 'objectParam'],
-                '$comment' => 'Cognesy\Instructor\Extras\Structure\Structure',
+                'x-php-class' => 'Cognesy\Instructor\Extras\Structure\Structure',
             ],
         ],
     ]);

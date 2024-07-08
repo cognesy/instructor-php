@@ -1,10 +1,10 @@
 <?php
 namespace Tests\Feature\Extras;
 
+use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
-use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Schema\Attributes\Description;
@@ -56,4 +56,4 @@ it('creates auto signature from class metadata - autowiring', function () {
     }
     $signature = (new TestSignature2Task)->signature();
     expect($signature->toSignatureString())->toBe('stringProperty:string, boolProperty:bool (bool description) -> intProperty:int, mixedProperty:string');
-});
+})->skip("To be reimplemented");

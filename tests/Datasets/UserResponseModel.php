@@ -1,7 +1,7 @@
 <?php
 
 dataset('user_response_model', [[[
-    '$comment' => 'Tests\Examples\ResponseModel\User',
+    'x-php-class' => 'Tests\Examples\ResponseModel\User',
     'type' => 'object',
     'properties' => [
         'name' => [

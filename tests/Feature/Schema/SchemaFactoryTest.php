@@ -54,7 +54,7 @@ it('creates a schema from a class name with object references', function () {
             'publicProperty',
             'readOnlyProperty',
         ],
-        '$comment' => 'Tests\Examples\ClassInfo\TestClassA',
+        'x-php-class' => 'Tests\Examples\ClassInfo\TestClassA',
     ];
     expect($json)->toBe($expected);
 });

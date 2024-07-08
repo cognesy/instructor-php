@@ -21,17 +21,16 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Instructor;
 
 enum CitizenshipGroup : string {
-    case US = "us";
-    case Canada = "uk";
-    case Other = "other";
+    case US = "US";
+    case Canada = "Canada";
+    case Germany = "Germany";
+    case Other = "Other";
 }
 
-$text = "His name is Jason, he is 28 years old and he lives in Germany.";
+$text = "His name is Jason, he is 28 years old American who lives in Germany.";
 $value = (new Instructor)->respond(
-    messages: [
-        ['role' => 'system', 'content' => $text],
-        ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],
-    ],
+    messages: $text,
+    prompt: 'What is user\'s citizenship?',
     responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
 );
 
@@ -42,4 +41,3 @@ assert($value instanceof CitizenshipGroup);
 expect($value == CitizenshipGroup::Other);
 ?>
 ```
-

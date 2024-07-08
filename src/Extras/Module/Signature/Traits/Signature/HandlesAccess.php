@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Signature;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
@@ -10,16 +9,16 @@ trait HandlesAccess
         return $this->description;
     }
 
-    public function getInstructions() : string {
-        return $this->compiled;
-    }
-
     public function inputNames(): array {
         return $this->toInputSchema()->getPropertyNames();
     }
 
     public function outputNames(): array {
         return $this->toOutputSchema()->getPropertyNames();
+    }
+
+    public function hasSingleOutput(): bool {
+        return (count($this->outputNames()) == 1);
     }
 
     public function hasScalarOutput(): bool {

@@ -12,7 +12,7 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Utils\Env;
 
-//use Cognesy\Instructor\Logging\EventLogger;
+//use Cognesy\Experimental\Logging\EventLogger;
 //use Psr\Log\LoggerInterface;
 
 /**

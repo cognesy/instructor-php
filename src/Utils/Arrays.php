@@ -46,7 +46,7 @@ class Arrays
         return array_slice($array, 0, -$count);
     }
 
-    static public function flatten(array $arrays, string $separator): string {
+    static public function flatten(array $arrays, string $separator = ''): string {
         return self::doFlatten($arrays, $separator);
     }
 

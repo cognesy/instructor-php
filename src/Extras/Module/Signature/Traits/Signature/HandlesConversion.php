@@ -24,11 +24,4 @@ trait HandlesConversion
     public function toSignatureString(): string {
         return $this->fullSignature;
     }
-
-    public function toInstructions(): string {
-        return $this->compiled ?: implode("\n", array_filter([
-            $this->getDescription(),
-            $this->toSignatureString(),
-        ]));
-    }
 }

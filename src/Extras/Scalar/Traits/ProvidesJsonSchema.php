@@ -13,11 +13,11 @@ trait ProvidesJsonSchema
     public function toJsonSchema() : array {
         $name = $this->name;
         $array = [
-            '$comment' => Scalar::class,
+            'x-php-class' => Scalar::class,
             'type' => 'object',
             'properties' => [
                 $name => [
-                    '$comment' => $this->enumType ?? '',
+                    'x-php-class' => $this->enumType ?? '',
                     'description' => $this->description,
                     'type' => $this->type->toJsonType(),
                 ],

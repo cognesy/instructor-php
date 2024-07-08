@@ -107,7 +107,7 @@ it('creates Schema object from JSON Schema array - collection props', function (
 
 it('throws exception when object schema has empty properties array', function () {
     $jsonSchema = [
-        '$comment' => 'stdClass',
+        'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [],
     ];
@@ -116,7 +116,7 @@ it('throws exception when object schema has empty properties array', function ()
 
 it('throws exception when array schema is missing items field', function () {
     $jsonSchema = [
-        '$comment' => 'stdClass',
+        'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [
             'arrayProperty' => [
@@ -129,7 +129,7 @@ it('throws exception when array schema is missing items field', function () {
 
 it('throws exception for invalid enum type', function () {
     $jsonSchema = [
-        '$comment' => 'stdClass',
+        'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [
             'arrayProperty' => [
@@ -137,7 +137,7 @@ it('throws exception for invalid enum type', function () {
                 'items' => [
                     'type' => 'enum', // this is wrong: enum is not a valid type, should be string or int
                     'enum' => ['one', 'two', 'three'],
-                    '$comment' => 'Tests\Examples\SchemaConverter\TestEnum',
+                    'x-php-class' => 'Tests\Examples\SchemaConverter\TestEnum',
                 ],
             ],
         ],
@@ -145,9 +145,9 @@ it('throws exception for invalid enum type', function () {
     (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Nested array type must be either object, string, integer, number or boolean');
 
-it('throws exception when $comment is missing for enum', function () {
+it('throws exception when x-php-class is missing for enum', function () {
     $jsonSchema = [
-        '$comment' => 'stdClass',
+        'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [
             'collectionProperty' => [
@@ -160,11 +160,11 @@ it('throws exception when $comment is missing for enum', function () {
         ],
     ];
     (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Nested enum type needs $comment field')->skip('This should be supported by array type');
+})->throws(\Exception::class, 'Nested enum type needs x-php-class field')->skip('This should be supported by array type');
 
-it('throws exception when $comment is missing for object', function () {
+it('throws exception when x-php-class is missing for object', function () {
     $jsonSchema = [
-        '$comment' => 'stdClass',
+        'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [
             'objectProperty' => [
@@ -176,11 +176,11 @@ it('throws exception when $comment is missing for object', function () {
         ],
     ];
     (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Object must have $comment field with the target class name');
+})->throws(\Exception::class, 'Object must have x-php-class field with the target class name');
 
 it('throws exception for invalid type in nested schema', function () {
     $jsonSchema = [
-        '$comment' => 'stdClass',
+        'x-php-class' => 'stdClass',
         'type' => 'object',
         'properties' => [
             'arrayProperty' => [

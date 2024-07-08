@@ -77,8 +77,8 @@ trait HandlesMakers
         if (!in_array($jsonSchema['type'], [TypeDetails::JSON_STRING, TypeDetails::JSON_INTEGER])) {
             throw new \Exception('Enum type must be either string or int');
         }
-        if (!($class = $jsonSchema['$comment'] ?? null)) {
-            throw new \Exception('Enum must have $comment field with the target class name');
+        if (!($class = $jsonSchema['x-php-class'] ?? null)) {
+            throw new \Exception('Enum must have x-php-class field with the target class name');
         }
         $factory = new TypeDetailsFactory();
         $type = $factory->enumType($class, TypeDetails::toPhpType($jsonSchema['type']), $jsonSchema['enum']);
@@ -92,8 +92,8 @@ trait HandlesMakers
         if (!isset($jsonSchema['items'])) {
             throw new \Exception('Collection must have items field defining the nested type');
         }
-        if (!isset($jsonSchema['items']['$comment'])) {
-            throw new \Exception('Collection must have items $comment field defining target class of the nested type');
+        if (!isset($jsonSchema['items']['x-php-class'])) {
+            throw new \Exception('Collection must have items x-php-class field defining target class of the nested type');
         }
         $factory = new TypeDetailsFactory();
         return new CollectionSchema(
@@ -131,8 +131,8 @@ trait HandlesMakers
      * Create object property schema
      */
     private function makeObjectProperty(string $name, array $jsonSchema) : ObjectSchema {
-        if (!($class = $jsonSchema['$comment'] ?? null)) {
-            throw new \Exception('Object must have $comment field with the target class name');
+        if (!($class = $jsonSchema['x-php-class'] ?? null)) {
+            throw new \Exception('Object must have x-php-class field with the target class name');
         }
         $factory = new TypeDetailsFactory();
         return new ObjectSchema(
@@ -155,8 +155,8 @@ trait HandlesMakers
         $factory = new TypeDetailsFactory();
 
         if ($jsonSchema['type'] === TypeDetails::JSON_OBJECT) {
-            if (!($class = $jsonSchema['$comment']??null)) {
-                throw new \Exception('Nested type must have $comment field with the target class name');
+            if (!($class = $jsonSchema['x-php-class'] ?? null)) {
+                throw new \Exception('Nested type must have x-php-class field with the target class name');
             }
             return $factory->objectType($class);
         }
@@ -165,8 +165,8 @@ trait HandlesMakers
             if (!in_array($jsonSchema['type'], [TypeDetails::JSON_STRING, TypeDetails::JSON_INTEGER])) {
                 throw new \Exception('Nested enum type must be either string or int');
             }
-            if (!($class = $jsonSchema['$comment'] ?? null)) {
-                throw new \Exception('Nested enum type needs $comment field');
+            if (!($class = $jsonSchema['x-php-class'] ?? null)) {
+                throw new \Exception('Nested enum type needs x-php-class field');
             }
             return $factory->enumType($class, TypeDetails::toPhpType($jsonSchema['type']), $jsonSchema['enum']);
         }
@@ -186,6 +186,6 @@ trait HandlesMakers
             && isset($jsonSchema['items'])
             && isset($jsonSchema['items']['type'])
             && in_array($jsonSchema['items']['type'], ['object','string','integer']) // ENUM(string/int) or OBJECT(object)
-            && isset($jsonSchema['items']['$comment']);
+            && isset($jsonSchema['items']['x-php-class']);
     }
 }

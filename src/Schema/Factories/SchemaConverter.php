@@ -11,7 +11,7 @@ use Exception;
  * Used by ResponseModel to derive schema from raw JSON Schema format,
  * when full processing customization is needed.
  *
- * Requires $comments field to contain the target class name for each
+ * Requires x-php-class field to contain the target class name for each
  * object and enum type.
  */
 class SchemaConverter
@@ -29,7 +29,7 @@ class SchemaConverter
         string $customName = '',
         string $customDescription = '',
     ) : ObjectSchema {
-        $class = $jsonSchema['$comment'] ?? Structure::class; // throw new Exception('Object must have $comment field with the target class name');
+        $class = $jsonSchema['x-php-class'] ?? Structure::class; // throw new Exception('Object must have x-php-class field with the target class name');
         $type = $jsonSchema['type'] ?? null;
         if ($type !== 'object') {
             throw new Exception('JSON Schema must have type: object');

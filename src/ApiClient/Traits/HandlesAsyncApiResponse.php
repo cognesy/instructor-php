@@ -8,9 +8,11 @@ use Cognesy\Instructor\Events\ApiClient\ApiAsyncResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Exception;
 use GuzzleHttp\Promise\PromiseInterface;
+use JetBrains\PhpStorm\Deprecated;
 use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
 
+#[Deprecated('This is not yet implemented')]
 trait HandlesAsyncApiResponse
 {
     use HandlesApiRequest;

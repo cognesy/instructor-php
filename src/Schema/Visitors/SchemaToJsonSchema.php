@@ -58,7 +58,7 @@ class SchemaToJsonSchema implements CanVisitSchema
             'description' => $schema->description,
             'properties' => $propertyDefs,
             'required' => $schema->required,
-            '$comment' => $schema->typeDetails->class,
+            'x-php-class' => $schema->typeDetails->class,
         ]);
     }
 
@@ -67,7 +67,7 @@ class SchemaToJsonSchema implements CanVisitSchema
             'description' => $schema->description ?? '',
             'type' => $schema->typeDetails->enumType ?? 'string',
             'enum' => $schema->typeDetails->enumValues ?? [],
-            '$comment' => $schema->typeDetails->class ?? '',
+            'x-php-class' => $schema->typeDetails->class ?? '',
         ]);
     }
 
@@ -91,7 +91,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         $this->result = array_filter([
             '$ref' => $id,
             'description' => $schema->description,
-            '$comment' => $schema->typeDetails->class,
+            'x-php-class' => $schema->typeDetails->class,
         ]);
     }
 

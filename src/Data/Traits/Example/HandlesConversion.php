@@ -47,11 +47,8 @@ trait HandlesConversion
 
     public function jsonSerialize(): array {
         return [
-            'id' => $this->uid,
-            'created_at' => $this->createdAt->format('Y-m-d H:i:s'),
             'input' => $this->input(),
             'output' => $this->output(),
-            'structured' => $this->isStructured,
             'template' => $this->template,
         ];
     }

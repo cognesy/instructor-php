@@ -35,7 +35,7 @@ trait CreatesStructureFromJsonSchema
 //            //    default => TypeDetails::toPhpType($value['type']),
 //            //};
 //            $typeDetails = match($typeName) {
-//                TypeDetails::PHP_ENUM => TypeDetails::enum($value['$comment']),
+//                TypeDetails::PHP_ENUM => TypeDetails::enum($value['x-php-class']),
 //                TypeDetails::PHP_ARRAY => TypeDetails::collection(self::getCollectionType($value)),
 //                TypeDetails::PHP_OBJECT => TypeDetails::object($name),
 //                default => TypeDetails::fromTypeName($typeName),
@@ -61,9 +61,9 @@ trait CreatesStructureFromJsonSchema
 //            default => TypeDetails::toPhpType($items['type']),
 //        };
 //        return match($typeName) {
-//            TypeDetails::PHP_ENUM => TypeDetails::enum($items['$comment']),
+//            TypeDetails::PHP_ENUM => TypeDetails::enum($items['x-php-class']),
 //            TypeDetails::PHP_COLLECTION => throw new Exception('Nested collections are not supported'),
-//            TypeDetails::PHP_OBJECT => TypeDetails::object($items['$comment']),
+//            TypeDetails::PHP_OBJECT => TypeDetails::object($items['x-php-class']),
 //            default => TypeDetails::fromTypeName($typeName),
 //        };
 //    }

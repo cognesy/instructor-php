@@ -211,7 +211,7 @@ it('creates structure from JSON Schema', function() {
             'enumProperty' => [
                 'type' => 'string',
                 'description' => 'Enum property',
-                '$comment' => 'Tests\Feature\Extras\TestEnum',
+                'x-php-class' => 'Tests\Feature\Extras\TestEnum',
             ],
             'arrayProperty' => [
                 'type' => 'array',
@@ -225,7 +225,7 @@ it('creates structure from JSON Schema', function() {
                 'description' => 'Collection property',
                 'items' => [
                     'description' => 'Collection item',
-                    '$comment' => 'Tests\Feature\Extras\TestEnum',
+                    'x-php-class' => 'Tests\Feature\Extras\TestEnum',
                     'type' => 'string',
                     'enum' => ['A', 'B'],
                 ],

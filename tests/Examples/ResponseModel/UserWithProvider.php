@@ -7,7 +7,7 @@ use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 class UserWithProvider implements CanProvideJsonSchema {
     public function toJsonSchema() : array {
         return [
-            '$comment' => User::class,
+            'x-php-class' => User::class,
             'type' => 'object',
             'properties' => [
                 'name' => [

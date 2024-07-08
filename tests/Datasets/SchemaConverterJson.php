@@ -1,7 +1,7 @@
 <?php
 
 dataset('schema_converter_json', [[[
-    '$comment' => 'Tests\Examples\SchemaConverter\TestObject',
+    'x-php-class' => 'Tests\Examples\SchemaConverter\TestObject',
     'type' => 'object',
     'properties' => [
         'optionalProperty' => [
@@ -25,13 +25,13 @@ dataset('schema_converter_json', [[[
             'type' => 'number',
         ],
         'enumProperty' => [
-            '$comment' => 'Tests\Examples\SchemaConverter\TestEnum',
+            'x-php-class' => 'Tests\Examples\SchemaConverter\TestEnum',
             'description' => 'Enum property',
             'type' => 'string',
             'enum' => ['one', 'two', 'three'],
         ],
         'objectProperty' => [
-            '$comment' => 'Tests\Examples\SchemaConverter\TestNestedObject',
+            'x-php-class' => 'Tests\Examples\SchemaConverter\TestNestedObject',
             'description' => 'Object property',
             'type' => 'object',
             'properties' => [
@@ -39,7 +39,7 @@ dataset('schema_converter_json', [[[
                     'type' => 'string',
                 ],
                 'nestedObjectProperty' => [
-                    '$comment' => 'Tests\Examples\SchemaConverter\TestDoubleNestedObject',
+                    'x-php-class' => 'Tests\Examples\SchemaConverter\TestDoubleNestedObject',
                     'type' => 'object',
                     'properties' => [
                         'nestedNestedStringProperty' => [
@@ -67,7 +67,7 @@ dataset('schema_converter_json', [[[
             'description' => 'Collection property',
             'type' => 'array',
             'items' => [
-                '$comment' => 'Cognesy\Instructor\Extras\Scalar\Scalar',
+                'x-php-class' => 'Cognesy\Instructor\Extras\Scalar\Scalar',
                 'type' => 'object',
                 'properties' => [
                     'nestedStringProperty' => [
@@ -80,7 +80,7 @@ dataset('schema_converter_json', [[[
             'description' => 'Collection of objects property',
             'type' => 'array',
             'items' => [
-                '$comment' => 'Tests\Examples\SchemaConverter\TestNestedObject',
+                'x-php-class' => 'Tests\Examples\SchemaConverter\TestNestedObject',
                 'type' => 'object',
                 'properties' => [
                     'nestedStringProperty' => [
@@ -96,7 +96,7 @@ dataset('schema_converter_json', [[[
             'description' => 'Collection of enum property',
             'type' => 'array',
             'items' => [
-                '$comment' => 'Tests\Examples\SchemaConverter\TestEnum',
+                'x-php-class' => 'Tests\Examples\SchemaConverter\TestEnum',
                 'type' => 'string',
                 'enum' => ['one', 'two', 'three'],
             ],
