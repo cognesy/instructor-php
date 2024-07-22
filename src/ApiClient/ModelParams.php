@@ -12,8 +12,8 @@ class ModelParams
         public string $name = 'undefined',
         public int $maxTokens = 4096,
         public int $contextSize = 4096,
-        public int $inputCost = 0,
-        public int $outputCost = 0,
+        public float $inputCost = 0,
+        public float $outputCost = 0,
         public array $stopTokens = [],
         public array $roleMap = [
             'user' => 'user',

@@ -12,10 +12,10 @@ use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 #[ModuleDescription('Summarize a webpage')]
 class SummarizeWebpage extends Module
 {
-    private SummarizeText $summarize;
-    private GetHtmlLinks $getLinks;
-    private ConvertHtmlToMarkdown $convertToMarkdown;
-    private GetUrlContent $getContent;
+    protected SummarizeText $summarize;
+    protected GetHtmlLinks $getLinks;
+    protected ConvertHtmlToMarkdown $convertToMarkdown;
+    protected GetUrlContent $getContent;
 
     public function __construct(
         string|Closure $scraper = 'browsershot',

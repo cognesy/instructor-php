@@ -27,19 +27,4 @@ trait HandlesPhpTypes
         $segments = explode('\\', $this->class);
         return array_pop($segments);
     }
-
-    public function toString() : string {
-        return match ($this->type) {
-            self::PHP_OBJECT => $this->class,
-            self::PHP_ENUM => $this->class,
-            self::PHP_COLLECTION => $this->nestedType->__toString().'[]',
-            self::PHP_ARRAY => 'array',
-            self::PHP_SHAPE => $this->docString,
-            default => $this->type,
-        };
-    }
-
-    public function isScalar() : bool {
-        return in_array($this->type, [self::PHP_INT, self::PHP_STRING, self::PHP_BOOL, self::PHP_FLOAT]);
-    }
 }

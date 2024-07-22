@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predict;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
 use Cognesy\Instructor\Extras\Module\Core\Feedback;
 use Cognesy\Instructor\Extras\Module\Core\Predictor;

@@ -9,5 +9,6 @@ class StructureFactory
     use Traits\Factory\CreatesStructureFromClasses;
     use Traits\Factory\CreatesStructureFromJsonSchema;
     use Traits\Factory\CreatesStructureFromSchema;
+    use Traits\Factory\CreatesStructureFromSignature;
     use Traits\Factory\CreatesStructureFromString;
 }

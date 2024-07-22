@@ -37,10 +37,11 @@ abstract class Module implements CanInitiateModuleCall
     public function using(
         Instructor $instructor = null,
         CanCallApi $client = null,
-    ) {
+    ) : static {
         foreach($this->predictors() as $predictor) {
             $predictor->using(instructor: $instructor, client: $client);
         }
+        return $this;
     }
 
     public function __invoke(mixed ...$callArgs): ModuleCall {

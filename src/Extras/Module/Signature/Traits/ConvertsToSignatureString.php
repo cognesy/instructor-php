@@ -7,6 +7,16 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 trait ConvertsToSignatureString
 {
+    public function toShortSignature(): string {
+        return $this->shortSignature;
+    }
+
+    public function toSignatureString(): string {
+        return $this->fullSignature;
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////////////
+
     protected function makeShortSignatureString() : string {
         return $this->renderSignature($this->shortPropertySignature(...));
     }
@@ -14,8 +24,6 @@ trait ConvertsToSignatureString
     protected function makeSignatureString() : string {
         return $this->renderSignature($this->propertySignature(...));
     }
-
-    // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     private function renderSignature(callable $nameRenderer) : string {
         $inputs = $this->mapProperties($this->input->getPropertySchemas(), $nameRenderer);

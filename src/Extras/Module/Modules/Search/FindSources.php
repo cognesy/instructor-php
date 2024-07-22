@@ -5,13 +5,14 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Modules\Markdown\SplitMarkdown;
 use Cognesy\Instructor\Extras\Module\Modules\Web\ConvertHtmlToMarkdown;
 use Cognesy\Instructor\Extras\Module\Modules\Web\GetUrlContent;
-use Cognesy\Instructor\Utils\BM25\SearchWithBM25;
+use Cognesy\Instructor\Utils\BM25;
+//use Cognesy\Instructor\Utils\BM25\SearchWithBM25;
 
 class FindSources extends Module
 {
-    private GetUrlContent $getWebpageContent;
-    private ConvertHtmlToMarkdown $convertToMarkdown;
-    private SplitMarkdown $splitMarkdown;
+    protected GetUrlContent $getWebpageContent;
+    protected ConvertHtmlToMarkdown $convertToMarkdown;
+    protected SplitMarkdown $splitMarkdown;
 
     public function __construct() {
         $this->getWebpageContent = new GetUrlContent();
@@ -37,19 +38,20 @@ class FindSources extends Module
         foreach ($urls as $url) {
             $webpage = $this->getWebpageContent->for(url: $url);
             $markdown = $this->convertToMarkdown->for(html: $webpage);
-            $split = $this->splitMarkdown->for(markdown: $markdown, source: $url);
-            $data[] = $split;
+//            $split = $this->splitMarkdown->for(markdown: $markdown, source: $url);
+            $data[] = $markdown;
         }
-        $documents = array_merge(...$data);
-        $index = new SearchWithBM25($documents);
-        $results = $index->search($query);
-        $sources = [];
-        foreach ($results as $result) {
-            $sources[] = $documents[$result];
-            if (count($sources) >= $topK) {
-                break;
-            }
-        }
-        return $sources;
+        //$documents = array_merge(...$data);
+        //$index = new BM25();
+        //$index->preprocess($data);
+        //$results = $index->search($query);
+        //$sources = [];
+        //foreach ($results as $result) {
+        //    $sources[] = $documents[$result];
+        //    if (count($sources) >= $topK) {
+        //        break;
+        //    }
+        //}
+        return $data;
     }
 }

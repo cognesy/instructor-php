@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Module\Signature\Signature;

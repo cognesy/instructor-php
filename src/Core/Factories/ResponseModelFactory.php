@@ -1,7 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Core\Factories;
 
-use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
+use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
@@ -48,11 +49,11 @@ class ResponseModelFactory
 
         // determine the type of the requested model and build it
         $responseModel = match(true) {
-            $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
-            is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel, $toolName, $toolDescription),
-            is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
             is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
+            $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
+            is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
+            is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
             is_string($requestedModel) => $this->fromClassString($requestedModel),
             is_array($requestedModel) => $this->fromJsonSchema($requestedModel, $toolName, $toolDescription),
             is_object($requestedModel) => $this->fromInstance($requestedModel),
@@ -70,27 +71,27 @@ class ResponseModelFactory
         return $responseModel;
     }
 
-    public function getSignature(mixed $requestedModel) : string {
-        $type = match(true) {
-            $requestedModel instanceof ObjectSchema => 'schema',
-            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => 'json-schema-provider',
-            is_subclass_of($requestedModel, CanProvideSchema::class) => 'schema-provider',
-            is_string($requestedModel) => 'class-string',
-            is_array($requestedModel) => 'json-schema',
-            is_object($requestedModel) => 'instance',
-            default => null,
-        };
-        $keyType = match($type) {
-            'schema' => $requestedModel->typeDetails->class,
-            'json-schema-provider' => get_class($requestedModel),
-            'schema-provider' => get_class($requestedModel),
-            'class-string' => $requestedModel,
-            'json-schema' => $requestedModel['x-php-class'] ?? Structure::class,
-            'instance' => get_class($requestedModel),
-            default => null,
-        };
-        return $type;
-    }
+//    public function getSignature(mixed $requestedModel) : string {
+//        $type = match(true) {
+//            $requestedModel instanceof ObjectSchema => 'schema',
+//            is_subclass_of($requestedModel, CanProvideJsonSchema::class) => 'json-schema-provider',
+//            is_subclass_of($requestedModel, CanProvideSchema::class) => 'schema-provider',
+//            is_string($requestedModel) => 'class-string',
+//            is_array($requestedModel) => 'json-schema',
+//            is_object($requestedModel) => 'instance',
+//            default => null,
+//        };
+//        $keyType = match($type) {
+//            'schema' => $requestedModel->typeDetails->class,
+//            'json-schema-provider' => get_class($requestedModel),
+//            'schema-provider' => get_class($requestedModel),
+//            'class-string' => $requestedModel,
+//            'json-schema' => $requestedModel['x-php-class'] ?? Structure::class,
+//            'instance' => get_class($requestedModel),
+//            default => null,
+//        };
+//        return $type;
+//    }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////////////
 
@@ -110,6 +111,7 @@ class ResponseModelFactory
     }
 
     private function fromClassString(string $requestedModel) : ResponseModel {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromClassString'));
         $class = $requestedModel;
         $instance = new $class;
         $schema = $this->schemaFactory->schema($class);
@@ -118,6 +120,7 @@ class ResponseModelFactory
     }
 
     private function fromJsonSchema(array $requestedModel, string $name = '', string $description = '') : ResponseModel {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromJsonSchema'));
         $class = $requestedModel['x-php-class'] ?? Structure::class;
         $instance = new $class;
         $schema = $this->schemaConverter->fromJsonSchema($requestedModel, $name, $description);
@@ -126,6 +129,7 @@ class ResponseModelFactory
     }
 
     private function fromInstance(mixed $requestedModel) : ResponseModel {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromInstance'));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
         $schema = $this->schemaFactory->schema($class);
@@ -134,6 +138,7 @@ class ResponseModelFactory
     }
 
     private function fromJsonSchemaProvider(mixed $requestedModel, string $name = '', string $description = '') : ResponseModel {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromJsonSchemaProvider'));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;
@@ -147,6 +152,7 @@ class ResponseModelFactory
     }
 
     private function fromSchemaProvider(mixed $requestedModel) : ResponseModel {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromSchemaProvider'));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;
@@ -160,6 +166,7 @@ class ResponseModelFactory
     }
 
     private function fromSchema(Schema $requestedModel) : ResponseModel {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromSchema'));
         $schema = $requestedModel;
         $class = $schema->typeDetails->class;
         $instance = new $class;
@@ -168,6 +175,7 @@ class ResponseModelFactory
     }
 
     private function fromToolSelectionProvider(CanHandleToolSelection $requestedModel) {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromToolSelectionProvider'));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
         $jsonSchema = $instance->toJsonSchema();
@@ -176,6 +184,7 @@ class ResponseModelFactory
     }
 
     private function fromOutputSchemaProvider(mixed $requestedModel) {
+        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromOutputSchemaProvider'));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;

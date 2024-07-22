@@ -11,7 +11,7 @@ use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 #[ModuleDescription('Convert HTML to Markdown')]
 class ConvertHtmlToMarkdown extends Module
 {
-    private HtmlProcessor $processHtml;
+    protected HtmlProcessor $processHtml;
 
     public function __construct() {
         $this->processHtml = new HtmlProcessor();

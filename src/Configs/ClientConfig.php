@@ -87,6 +87,7 @@ class ClientConfig implements CanAddConfiguration
                     'mistral:mistral-large' => $config->reference('mistral:mistral-large'),
                     'ollama:llama2' => $config->reference('ollama:llama2'),
                     'openai:gpt-4o' => $config->reference('openai:gpt-4o'),
+                    'openai:gpt-4o-mini' => $config->reference('openai:gpt-4o-mini'),
                     'openai:gpt-4-turbo' => $config->reference('openai:gpt-4-turbo'),
                     'openai:gpt-4' => $config->reference('openai:gpt-4'),
                     'openai:gpt-4-32k' => $config->reference('openai:gpt-4-32k'),

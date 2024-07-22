@@ -21,6 +21,10 @@ class GetHtmlLinks extends Module
         't.me',
     ];
 
+    public function __construct(array $blacklist = null) {
+        $this->blacklist = $blacklist ?? $this->blacklist;
+    }
+
     public function for(string $html): array {
         return ($this)(html: $html)->get('links');
     }
@@ -28,7 +32,7 @@ class GetHtmlLinks extends Module
     /**
      * @return Link[]
      */
-    protected function forward(...$callArgs): array {
+    protected function forward(mixed ...$callArgs): array {
         $html = $callArgs['html'];
         $links = $this->extractLinks($html);
         return [

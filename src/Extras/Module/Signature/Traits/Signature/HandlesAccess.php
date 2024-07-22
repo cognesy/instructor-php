@@ -21,6 +21,21 @@ trait HandlesAccess
         return (count($this->outputNames()) == 1);
     }
 
+    public function hasArrayOutput(): bool {
+        return (count($this->outputNames()) == 1)
+            && ($this->output->isArray() || $this->output->getPropertySchema($this->outputNames()[0])->isArray());
+    }
+
+    public function hasObjectOutput(): bool {
+        return (count($this->outputNames()) == 1)
+            && ($this->output->isObject() || $this->output->getPropertySchema($this->outputNames()[0])->isObject());
+    }
+
+    public function hasEnumOutput(): bool {
+        return (count($this->outputNames()) == 1)
+            && ($this->output->isEnum() || $this->output->getPropertySchema($this->outputNames()[0])->isEnum());
+    }
+
     public function hasScalarOutput(): bool {
         return (count($this->outputNames()) == 1)
             && ($this->output->isScalar() || $this->output->getPropertySchema($this->outputNames()[0])->isScalar());

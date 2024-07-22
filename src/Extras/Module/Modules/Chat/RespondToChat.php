@@ -14,20 +14,22 @@ use Cognesy\Instructor\Extras\Module\Modules\Text\Translate;
  */
 class RespondToChat extends Module
 {
-    private AnswerQuestion $answerQuestion;
-    private Translate $translate;
-    private MakeSubqueries $makeSubqueries;
-    private FindSources $findSources;
-    private InferQueryFromChat $inferQueryFromChat;
-    private GuessLanguage $guessLanguage;
+    protected AnswerQuestion $answerQuestion;
+    protected Translate $translate;
+    protected MakeSubqueries $makeSubqueries;
+    protected FindSources $findSources;
+    protected InferQueryFromChat $inferQueryFromChat;
+    protected GuessLanguage $guessLanguage;
+    protected array $urls;
 
-    public function __construct() {
+    public function __construct(array $urls = []) {
         $this->guessLanguage = new GuessLanguage();
         $this->inferQueryFromChat = new InferQueryFromChat();
         $this->makeSubqueries = new MakeSubqueries();
         $this->findSources = new FindSources();
         $this->answerQuestion = new AnswerQuestion();
         $this->translate = new Translate();
+        $this->urls = $urls;
     }
 
     public function for(string|array $chat) : string {
@@ -40,19 +42,19 @@ class RespondToChat extends Module
 
     protected function forward(mixed ...$callArgs) : array {
         $chat = $callArgs['chat'];
-        $language = $this->guessLanguage->for($chat);
-        $query = $this->inferQueryFromChat->for($chat);
-        $subqueries = $this->makeSubqueries->for($query, $chat);
+        $language = $this->guessLanguage->for(text: $chat);
+        $query = $this->inferQueryFromChat->for(chat: $chat);
+        $subqueries = $this->makeSubqueries->for(question: $query, context: $chat);
         $sources = [];
         foreach ($subqueries as $subquery) {
-            $sources[] = $this->findSources->for(query: $subquery);
+            $sources[] = $this->findSources->for(sourceUrls: $this->urls, query: $subquery, topK: 3);
         }
         $context = implode("\n", array_merge(["SOURCES:\n"], $sources));
-        $answer = $this->answerQuestion->for($query, $context);
-        $answerLanguage = $this->guessLanguage->for($answer);
+        $answer = $this->answerQuestion->for(question: $query, context: $context);
+        $answerLanguage = $this->guessLanguage->for(text: $answer);
         $finalAnswer = match(true) {
             $answerLanguage === $language => $answer,
-            default => $this->translate->from($answer, $language),
+            default => $this->translate->for(text: $answer, language: $language),
         };
         return [
             'answer' => $finalAnswer

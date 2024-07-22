@@ -16,9 +16,9 @@ trait HandlesSerialization
         ];
     }
 
-    public static function fromJson(array $data) {
+    public static function fromJson(array $data) : static {
         $converter = new SchemaConverter;
-        $signature = new static(
+        return new static(
             $converter->fromJsonSchema($data['input']),
             $converter->fromJsonSchema($data['output']),
             $data['description'] ?? '',

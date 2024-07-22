@@ -12,9 +12,6 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Utils\Env;
 
-//use Cognesy\Experimental\Logging\EventLogger;
-//use Psr\Log\LoggerInterface;
-
 /**
  * Main access point to Instructor.
  *

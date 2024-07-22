@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
@@ -49,7 +48,7 @@ class RequestHandler implements CanHandleRequest
                 // get final value
                 $value = $processingResult->unwrap();
                 // store response
-                $request->addResponse($this->messages, $apiResponse, [], $value); // TODO: tx messages to Scripts
+                $request->setResponse($this->messages, $apiResponse, [], $value); // TODO: tx messages to Scripts
                 // notify on response generation
                 $this->events->dispatch(new ResponseGenerated($value));
                 // we're done here - no need to retry
@@ -61,9 +60,6 @@ class RequestHandler implements CanHandleRequest
 
             // store failed response
             $request->addFailedResponse($this->messages, $apiResponse, [], [$errors]); // TODO: tx messages to Scripts
-            $request->script()->section('retries')->appendMessages(
-                $request->makeRetryMessages([], $apiResponse->content, $errors)
-            );
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));

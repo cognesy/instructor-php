@@ -7,10 +7,6 @@ use Cognesy\Instructor\Data\Response;
 
 trait HandlesRetries
 {
-//    private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors:\n<|errors|>\n";
-    private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors:\n";
-    private string $retryPrompt;
-
     private int $maxRetries;
     /** @var Response[] */
     private array $failedResponses = [];
@@ -18,10 +14,6 @@ trait HandlesRetries
 
     public function maxRetries() : int {
         return $this->maxRetries;
-    }
-
-    public function retryPrompt() : string {
-        return $this->retryPrompt;
     }
 
     public function response() : Response {
@@ -39,8 +31,16 @@ trait HandlesRetries
         };
     }
 
+    public function hasLastResponseFailed() : bool {
+        return $this->hasFailures() && !$this->hasResponse();
+    }
+
+    public function lastFailedResponse() : ?Response {
+        return end($this->failedResponses) ?: null;
+    }
+
     public function hasResponse() : bool {
-        return $this->response !== null;
+        return isset($this->response) && $this->response !== null;
     }
 
     public function hasAttempts() : bool {
@@ -51,15 +51,7 @@ trait HandlesRetries
         return count($this->failedResponses) > 0;
     }
 
-    public function makeRetryMessages(
-        array $messages, string $jsonData, array $errors
-    ) : array {
-        $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $this->retryPrompt() . implode(", ", $errors)];
-        return $messages;
-    }
-
-    public function addResponse(
+    public function setResponse(
         array $messages,
         ApiResponse $apiResponse,
         array $partialApiResponses = [],

@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Module\Modules\Markdown\Utils\MarkdownSplitter;
 
 class SplitMarkdown extends Module
 {
-    private MarkdownSplitter $splitter;
+    protected MarkdownSplitter $splitter;
 
     public function __construct() {
         $this->splitter = new MarkdownSplitter();

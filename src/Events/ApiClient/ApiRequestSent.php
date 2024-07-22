@@ -1,14 +1,17 @@
 <?php
-
 namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json;
+use Psr\Log\LogLevel;
 
-class ApiResponseReceived extends Event
+class ApiRequestSent extends Event
 {
+    public $logLevel = LogLevel::INFO;
+
     public function __construct(
-        public int $status,
+        public string $uri,
+        public string $method,
         public array $headers,
         public string $body,
     ) {
@@ -17,7 +20,8 @@ class ApiResponseReceived extends Event
 
     public function __toString() : string {
         return Json::encode([
-            'status' => $this->status,
+            'uri' => $this->uri,
+            'method' => $this->method,
             'headers' => $this->headers,
             'body' => $this->body,
         ]);

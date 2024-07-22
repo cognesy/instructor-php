@@ -69,4 +69,16 @@ class Schema implements CanAcceptSchemaVisitor
     public function isScalar(): bool {
         return $this->typeDetails->isScalar();
     }
+
+    public function isObject(): bool {
+        return $this->typeDetails->isObject();
+    }
+
+    public function isEnum(): bool {
+        return $this->typeDetails->isEnum();
+    }
+
+    public function isArray(): bool {
+        return $this->typeDetails->isArray();
+    }
 }

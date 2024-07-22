@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predict;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Data\RequestInfo;
@@ -33,6 +33,7 @@ trait HandlesParametrization
     public function withInstructor(?Instructor $instructor) : static {
         $this->instructor = match(true) {
             !is_null($instructor) => $instructor,
+            !isset($this->instructor) => new Instructor(),
             default => $this->instructor,
         };
         return $this;
@@ -49,6 +50,7 @@ trait HandlesParametrization
     public function withRequestInfo(?RequestInfo $requestInfo) : static {
         $this->requestInfo = match(true) {
             !is_null($requestInfo) => $requestInfo,
+            !isset($this->requestInfo) => new RequestInfo(),
             default => $this->requestInfo,
         };
         return $this;
@@ -57,6 +59,7 @@ trait HandlesParametrization
     public function withSignature(?Signature $signature) : static {
         $this->signature = match(true) {
             !is_null($signature) => $signature,
+            !isset($this->signature) => null,
             default => $this->signature,
         };
         return $this;
@@ -65,6 +68,7 @@ trait HandlesParametrization
     public function withInstructions(?string $instructions) : static {
         $this->instructions = match(true) {
             !is_null($instructions) => $instructions,
+            !isset($this->instructions) => $this->signature->getDescription(),
             default => $this->instructions,
         };
         return $this;
@@ -73,6 +77,7 @@ trait HandlesParametrization
     public function withExamples(?array $examples) : static {
         $this->requestInfo->examples = match(true) {
             !is_null($examples) => $examples,
+            !isset($this->requestInfo->examples) => [],
             default => $this->requestInfo->examples,
         };
         return $this;
@@ -81,6 +86,7 @@ trait HandlesParametrization
     public function withOptions(?array $options) : static {
         $this->requestInfo->options = match(true) {
             !is_null($options) => $options,
+            !isset($this->requestInfo->options) => [],
             default => $this->requestInfo->options,
         };
         return $this;
@@ -89,6 +95,7 @@ trait HandlesParametrization
     public function withModel(?string $model) : static {
         $this->requestInfo->model = match(true) {
             !is_null($model) => $model,
+            !isset($this->requestInfo->model) => '',
             default => $this->requestInfo->model,
         };
         return $this;
@@ -97,6 +104,7 @@ trait HandlesParametrization
     public function withRoleDescription(?string $roleDescription) : static {
         $this->roleDescription = match(true) {
             !is_null($roleDescription) => $roleDescription,
+            !isset($this->roleDescription) => '',
             default => $this->roleDescription,
         };
         return $this;

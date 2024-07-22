@@ -1,8 +1,10 @@
 <?php
+namespace Cognesy\Instructor\Extras\Module\Modules;
 
-namespace Cognesy\Instructor\Extras\Module\Core;
-
+use Cognesy\Instructor\Extras\Module\Core\Module;
+use Cognesy\Instructor\Extras\Module\Core\Predictor;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
+use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasSignature;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
 use Cognesy\Instructor\Schema\Attributes\Description;
@@ -12,11 +14,11 @@ use Exception;
 use InvalidArgumentException;
 use ReflectionClass;
 
-class Prediction extends Module
+class Prediction extends Module implements HasSignature
 {
-    private Predictor $predictor;
-    private Signature $signature;
-    private string $outputName;
+    protected Predictor $predictor;
+    protected Signature $signature;
+    protected string $outputName;
 
     public function __construct() {
         $this->setup();
@@ -27,11 +29,13 @@ class Prediction extends Module
     }
 
     public function for(mixed ...$callArgs) : mixed {
-        if (!$this->signature->hasSingleOutput()) {
-            return ($this)(...$callArgs);
-        }
-        return ($this)(...$callArgs)->get($this->outputName);
+        return match(true) {
+            $this->signature->hasSingleOutput() => ($this)(...$callArgs)->get($this->outputName),
+            default => ($this)(...$callArgs),
+        };
     }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     protected function forward(mixed ...$callArgs) : array {
         $this->validateArgs($callArgs, $this->signature->inputNames());
@@ -46,7 +50,7 @@ class Prediction extends Module
         $reflection = new ReflectionClass($this);
         $hasSignature = AttributeUtils::hasAttribute($reflection, ModuleSignature::class);
         if (!$hasSignature) {
-            throw new Exception("PredictionModule must have a #[Signature] attribute");
+            throw new Exception("Prediction module must have a #[Signature] attribute");
         }
         $signatures = AttributeUtils::getValues($reflection, ModuleSignature::class, 'signature');
         $descriptions = AttributeUtils::getValues($reflection, Description::class, 'text');
@@ -55,7 +59,7 @@ class Prediction extends Module
 
         // OUTPUT NAME
         if (!$this->signature->hasSingleOutput()) {
-            throw new InvalidArgumentException("PredictionModule must have a single output - you can implement custom Module to handle multiple outputs");
+            throw new InvalidArgumentException("Prediction module must have a single output - you can implement custom Module to handle multiple outputs");
         }
         $this->outputName = $this->signature->outputNames()[0];
 
@@ -88,6 +92,6 @@ class Prediction extends Module
                 throw new InvalidArgumentException("Missing input field: $name");
             }
         }
-        // TODO: check argument types
+        // TODO: check argument types?
     }
 }

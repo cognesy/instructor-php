@@ -1,6 +1,5 @@
 <?php
-
-namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predict;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
 use Cognesy\Instructor\Utils\Arrays;
 
@@ -11,7 +10,7 @@ trait HandlesAccess
             empty($this->instructions) => Arrays::flatten([
                 $this->signature->getDescription(),
                 $this->signature->toSignatureString(),
-            ]),
+            ], PHP_EOL),
             default => $this->instructions,
         };
     }
@@ -26,6 +25,18 @@ trait HandlesAccess
 
     protected function hasScalarOutput() : bool {
         return $this->signature->hasScalarOutput();
+    }
+
+    protected function hasArrayOutput() : bool {
+        return $this->signature->hasArrayOutput();
+    }
+
+    protected function hasObjectOutput() : bool {
+        return $this->signature->hasObjectOutput();
+    }
+
+    protected function hasEnumOutput() : bool {
+        return $this->signature->hasEnumOutput();
     }
 
     protected function hasTextOutput() : bool {

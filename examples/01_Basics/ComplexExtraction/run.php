@@ -112,6 +112,7 @@ $events = $instructor
     ->request(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
+        model: 'openai:gpt-4o-mini',
         mode: Mode::Json,
         options: [
             'max_tokens' => 2048,

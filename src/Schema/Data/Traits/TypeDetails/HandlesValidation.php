@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Schema\Data\Traits\TypeDetails;
 
 use Cognesy\Instructor\Schema\Data\TypeDetails;
 
-trait HandlesTypeDetailsValidation
+trait HandlesValidation
 {
     private function validate(
         string $type,

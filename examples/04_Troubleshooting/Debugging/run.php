@@ -5,12 +5,14 @@ docname: 'debugging'
 
 ## Overview
 
-Instructor gives you access to SaloonPHP debugging mode by setting `options` array
-key `debug` to `true` when creating a client instance.
+The `Instructor` class has a `withDebug()` method that can be used to debug the request and response.
 
-Setting `debug` option to true causes underlying SaloonPHP library to output
-HTTP request and response details to the console, so you can see what is being
-sent to LLM API and what is being received.
+It displays detailed information about the request being sent to LLM API and response received from it,
+including:
+ - request headers, URI, method and body,
+ - response status, headers, and body.
+
+This is useful for debugging the request and response when you are not getting the expected results.
 
 ## Example
 
@@ -30,6 +32,7 @@ echo "Debugging request and response:\n\n";
 $user = (new Instructor)->withDebug()->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
+    options: [ 'stream' => true ]
 );
 
 echo "\nResult:\n";

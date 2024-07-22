@@ -12,9 +12,9 @@ use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 #[ModuleDescription('Retrieve information from a webpage')]
 class GetWebpageDetails extends Module
 {
-    private GetHtmlLinks $getLinks;
-    private GetUrlContent $getUrlContent;
-    private HtmlProcessor $processHtml;
+    protected GetHtmlLinks $getLinks;
+    protected GetUrlContent $getUrlContent;
+    protected HtmlProcessor $processHtml;
 
     public function __construct() {
         $this->getLinks = new GetHtmlLinks();

@@ -11,8 +11,7 @@ For more details see the [Events](events.mdx) section.
 
 ## HTTP Debugging
 
-Instructor gives you access to SaloonPHP debugging mode by calling `withDebug()`
-method on Instructor instance. For example:
+The `Instructor` class has a `withDebug()` method that can be used to debug the request and response.
 
 ```php
 $result = (new Instructor)->withDebug()->respond(
@@ -21,9 +20,13 @@ $result = (new Instructor)->withDebug()->respond(
 );
 ```
 
-Setting debug mode causes underlying SaloonPHP library to output HTTP request and
-response details to the console, so you can see what is being sent to LLM API and
-what is being received.
+It displays detailed information about the request being sent to LLM API and response received from it,
+including:
+
+ - request headers, URI, method and body,
+ - response status, headers, and body.
+
+This is useful for debugging the request and response when you are not getting the expected results.
 
 
 ## Debugging SaloonPHP requests

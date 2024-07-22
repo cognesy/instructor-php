@@ -1,16 +1,13 @@
 <?php
-
 namespace Cognesy\Instructor\Data\Traits\Request;
-
-use Cognesy\Instructor\Data\Messages\Script;
 
 trait HandlesMessages
 {
-    private Script $script;
     private string|array $messages;
+    private string|array|object $input = '';
 
-    public function script() : Script {
-        return $this->script;
+    public function input(): string|array|object {
+        return $this->input;
     }
 
     public function messages() : array {

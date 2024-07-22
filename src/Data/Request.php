@@ -7,7 +7,6 @@ use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
-use Cognesy\Instructor\Core\Factories\ScriptFactory;
 use Cognesy\Instructor\Enums\Mode;
 
 class Request
@@ -20,13 +19,12 @@ class Request
     use Traits\Request\HandlesApiRequestMethod;
     use Traits\Request\HandlesApiRequestOptions;
     use Traits\Request\HandlesExamples;
-    use Traits\Request\HandlesInput;
     use Traits\Request\HandlesMessages;
     use Traits\Request\HandlesMode;
     use Traits\Request\HandlesModel;
     use Traits\Request\HandlesPrompts;
-    use Traits\Request\HandlesRequestedModel;
     use Traits\Request\HandlesRetries;
+    use Traits\Request\HandlesSchema;
 
     public function __construct(
         string|array $messages,
@@ -62,7 +60,7 @@ class Request
         $this->messages = $this->normalizeMessages($messages);
         $this->system = $system;
         $this->prompt = $prompt;
-        $this->retryPrompt = $retryPrompt ?: $this->defaultRetryPrompt;
+        $this->retryPrompt = $retryPrompt;
         $this->examples = $examples;
 
         $this->withModel($model);
@@ -80,8 +78,6 @@ class Request
                 $this->toolDescription()
             );
         }
-
-        $this->script = (new ScriptFactory)->fromRequest($this);
     }
 
     public function copy(array $messages) : self {

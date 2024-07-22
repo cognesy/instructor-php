@@ -7,13 +7,17 @@ class ApiStreamResponseReceived extends ApiResponseReceived
 {
     public function __construct(
         public int $status,
+        public array $headers,
+        public string $body,
     ) {
-        parent::__construct($status);
+        parent::__construct($status, $headers, $body);
     }
 
     public function __toString() : string {
         return Json::encode([
             'status' => $this->status,
+            'headers' => $this->headers,
+            'body' => $this->body,
         ]);
     }
 }

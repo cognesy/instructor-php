@@ -52,7 +52,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
                 // get final value
                 $value = $processingResult->unwrap();
                 // store response
-                $request->addResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), $value); // TODO: tx messages to Scripts
+                $request->setResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), $value); // TODO: tx messages to Scripts
                 // notify on response generation
                 $this->events->dispatch(new ResponseGenerated($value));
                 // return final result
@@ -65,9 +65,6 @@ class StreamRequestHandler implements CanHandleStreamRequest
             $errors = $processingResult->error();
             // store failed response
             $request->addFailedResponse($this->messages, $apiResponse, $this->partialsGenerator->partialResponses(), [$errors]); // TODO: tx messages to Scripts
-            $request->script()->section('retries')->appendMessages(
-                $request->makeRetryMessages([], $apiResponse->content, $errors)
-            );
             $this->retries++;
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));

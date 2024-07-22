@@ -5,11 +5,16 @@ namespace Cognesy\Instructor\Extras\Module\Core\Traits\Module;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Core\Predictor;
 use Generator;
+use ReflectionObject;
 
 trait HandlesTraversal
 {
-    protected function submodules(string $path = '') : Generator {
-        foreach (get_object_vars($this) as $name => $value) {
+    /**
+     * @param string $path
+     * @return Generator<string, Module>
+     */
+    public function submodules(string $path = '') : Generator {
+        foreach ($this->getProperties() as $name => $value) {
             if ($value instanceof Module) {
                 yield from $value->submodules($this->varPath($path, $name));
                 yield $this->varPath($path, $name) => $value;
@@ -17,7 +22,11 @@ trait HandlesTraversal
         }
     }
 
-    protected function predictors(string $path = '') : Generator {
+    /**
+     * @param string $path
+     * @return Generator<string, Predictor>
+     */
+    public function predictors(string $path = '') : Generator {
         foreach ($this->submodules() as $modulePath => $module) {
             yield from $module->predictors($modulePath);
         }
@@ -28,7 +37,17 @@ trait HandlesTraversal
         }
     }
 
+    // INTERNAL /////////////////////////////////////////////////////////////////
+
     private function varPath(string $path, string $name) : string {
         return $path . '.' . $name;
+    }
+
+    private function getProperties() : array {
+        $objectReflection = new ReflectionObject($this);
+        $propertyReflection = $objectReflection->getProperties();
+        $properties = array_map(fn($property) => $property->getName(), $propertyReflection);
+        $values = array_map(fn($property) => $this->{$property->getName()}, $propertyReflection);
+        return array_combine($properties, $values);
     }
 }

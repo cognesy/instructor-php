@@ -8,11 +8,11 @@ use Cognesy\Instructor\Instructor;
 
 class Predictor
 {
-    use Traits\Predict\HandlesCreation;
-    use Traits\Predict\HandlesAccess;
-    use Traits\Predict\HandlesFeedback;
-    use Traits\Predict\HandlesParametrization;
-    use Traits\Predict\HandlesPrediction;
+    use Traits\Predictor\HandlesCreation;
+    use Traits\Predictor\HandlesAccess;
+    use Traits\Predictor\HandlesFeedback;
+    use Traits\Predictor\HandlesParametrization;
+    use Traits\Predictor\HandlesPrediction;
 
     protected Instructor $instructor;
     protected RequestInfo $requestInfo;
@@ -35,6 +35,9 @@ class Predictor
             !empty($signature) => $this->makeSignature($signature, $description),
             default => null,
         };
+        $this->instructions = $instructions;
+        $this->roleDescription = $roleDescription;
+        $this->feedback = new Feedback();
 //        $this->provideFeedback = new ProvideFeedback();
 //        $this->instructions = new Parameter(
 //            $this->signature->toInstructions(),

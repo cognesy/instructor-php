@@ -3,10 +3,11 @@
 namespace Cognesy\Instructor\Extras\Module\Modules\Code;
 
 //use Cognesy\Instructor\Extras\Module\Core\Module;
-use Cognesy\Instructor\Extras\Module\Core\Prediction;
-//use Cognesy\Instructor\Extras\Module\Core\Predictor;
+use Cognesy\Instructor\Extras\Module\Modules\Prediction;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
+
+//use Cognesy\Instructor\Extras\Module\Core\Predictor;
 
 #[ModuleSignature('code -> language')]
 #[ModuleDescription("Identify the programming language of the code. Return only the language name.")]

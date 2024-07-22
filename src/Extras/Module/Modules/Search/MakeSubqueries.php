@@ -1,12 +1,18 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Modules\Search;
 
+use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Core\Predictor;
+use Cognesy\Instructor\Extras\Module\Modules\Prediction;
+use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
+use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 
+//#[ModuleSignature('question, context -> list_of_subqueries:string[]')]
+//#[ModuleDescription('Generate relevant subqueries to extract context needed to answer provided question')]
 class MakeSubqueries extends Module
 {
-    private Predictor $makeSubqueries;
+    protected Predictor $makeSubqueries;
 
     public function __construct() {
         $this->makeSubqueries = Predictor::fromSignature(
@@ -15,7 +21,11 @@ class MakeSubqueries extends Module
         );
     }
 
-    public function for(string $question, string $context) : array {
+    public function for(string $question, string|array $context) : array {
+        $context = match(true) {
+            is_array($context) => Messages::fromArray($context)->toString(),
+            default => $context,
+        };
         return ($this)(question: $question, context: $context)
             ->get('subqueries')
             ->toArray();
@@ -25,6 +35,7 @@ class MakeSubqueries extends Module
         $query = $callArgs['question'];
         $context = $callArgs['context'];
         $result = $this->makeSubqueries->predict(question: $query, context: $context);
+dd($result);
         return [
             'subqueries' => $result
         ];

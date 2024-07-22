@@ -26,6 +26,7 @@ class CohereApiRequest extends ApiRequest
                     'chat_history' => $chatHistory,
                     'message' => $messages,
                     'tools' => $this->tools(),
+                    'response_format' => $this->getResponseFormat(),
                 ],
             )
         );

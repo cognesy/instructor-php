@@ -2,15 +2,15 @@
 namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
+use Exception;
 use Psr\Log\LogLevel;
-use Saloon\Exceptions\Request\RequestException;
 
 class ApiRequestErrorRaised extends Event
 {
     public $logLevel = LogLevel::ERROR;
 
     public function __construct(
-        public RequestException $exception
+        public Exception $exception
     ) {
         parent::__construct();
     }

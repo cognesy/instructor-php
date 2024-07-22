@@ -22,7 +22,7 @@ class OpenAIConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(OpenAIConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => $_ENV['OPENAI_DEFAULT_MODEL'] ?? 'gpt-4o',
+                'defaultModel' => $_ENV['OPENAI_DEFAULT_MODEL'] ?? 'gpt-4o-mini',
                 'defaultMaxTokens' => $_ENV['OPENAI_DEFAULT_MAX_TOKENS'] ?? 1024,
             ],
             getInstance: function($context) {
@@ -54,13 +54,28 @@ class OpenAIConfig implements CanAddConfiguration
             class: ModelParams::class,
             name: 'openai:gpt-4o',
             context: [
-                'label' => 'OpenAI GPT4 Turbo',
+                'label' => 'OpenAI GPT4o',
                 'type' => 'gpt4',
                 'name' => 'gpt-4o',
                 'maxTokens' => 128_000,
                 'contextSize' => 128_000,
                 'inputCost' => 5,
                 'outputCost' => 15,
+
+            ],
+        );
+
+        $config->object(
+            class: ModelParams::class,
+            name: 'openai:gpt-4o-mini',
+            context: [
+                'label' => 'OpenAI GPT4o Mini',
+                'type' => 'gpt4',
+                'name' => 'gpt-4o-mini',
+                'maxTokens' => 128_000,
+                'contextSize' => 128_000,
+                'inputCost' => 0.15,
+                'outputCost' => 0.60,
 
             ],
         );

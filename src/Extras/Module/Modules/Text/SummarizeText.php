@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Module\Modules\Text;
 
 //use Cognesy\Instructor\Extras\Module\Core\Module;
 //use Cognesy\Instructor\Extras\Module\Core\Predictor;
-use Cognesy\Instructor\Extras\Module\Core\Prediction;
+use Cognesy\Instructor\Extras\Module\Modules\Prediction;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 

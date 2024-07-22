@@ -48,10 +48,11 @@ class UserDetails
 }
 
 $user = (new Instructor)
+    ->wiretap(fn($e) => $e->print())
     ->respond(
-        messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 1023.']],
+        messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 23.']],
         responseModel: UserDetails::class,
-        model: 'gpt-4o',
+        model: 'gpt-3.5-turbo',
         maxRetries: 2,
     );
 

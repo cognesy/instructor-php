@@ -1,7 +1,7 @@
 <?php
+namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
-namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predict;
-
+use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Instructor\Utils\TemplateUtil;
 use InvalidArgumentException;
 
@@ -48,7 +48,7 @@ trait HandlesPrediction
     protected function predictStructure(array $callArgs) : mixed {
         $this->requestInfo->input = $callArgs;
         $this->requestInfo->prompt = $this->instructions();
-        $this->requestInfo->responseModel = $this->signature->toSchema();
+        $this->requestInfo->responseModel = StructureFactory::fromSignature('prediction', $this->signature);
         return $this->instructor->withRequest($this->requestInfo)->get();
     }
 

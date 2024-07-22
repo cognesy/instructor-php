@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Modules\Chat;
 
-use Cognesy\Instructor\Extras\Module\Core\Prediction;
+use Cognesy\Instructor\Extras\Module\Modules\Prediction;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 

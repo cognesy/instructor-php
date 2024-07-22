@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Data\Traits\Request;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 
-trait HandlesRequestedModel
+trait HandlesSchema
 {
     private ResponseModelFactory $responseModelFactory;
 

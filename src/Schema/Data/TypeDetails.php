@@ -1,21 +1,16 @@
 <?php
 namespace Cognesy\Instructor\Schema\Data;
 
-use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\DefinesJsonTypeConstants;
-use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\DefinesPhpTypeConstants;
-use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesJsonTypes;
-use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesPhpTypes;
-use Cognesy\Instructor\Schema\Data\Traits\TypeDetails\HandlesTypeDetailsValidation;
-
 class TypeDetails
 {
     use Traits\TypeDetails\HandlesAccess;
+    use Traits\TypeDetails\HandlesConversion;
     use Traits\TypeDetails\HandlesFactoryMethods;
-    use HandlesPhpTypes;
-    use HandlesJsonTypes;
-    use DefinesJsonTypeConstants;
-    use DefinesPhpTypeConstants;
-    use HandlesTypeDetailsValidation;
+    use Traits\TypeDetails\HandlesJsonTypes;
+    use Traits\TypeDetails\DefinesJsonTypeConstants;
+    use Traits\TypeDetails\DefinesPhpTypeConstants;
+    use Traits\TypeDetails\HandlesPhpTypes;
+    use Traits\TypeDetails\HandlesValidation;
 
     /**
      * @param string $type object, enum, array, int, string, bool, float

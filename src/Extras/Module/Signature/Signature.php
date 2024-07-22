@@ -1,10 +1,8 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Module\Signature;
 
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasInputSchema;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
-use Cognesy\Instructor\Extras\Module\Signature\Traits\ConvertsToSignatureString;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
 
 /**
@@ -22,7 +20,7 @@ use Cognesy\Instructor\Schema\Data\Schema\Schema;
  */
 class Signature implements HasInputSchema, HasOutputSchema
 {
-    use ConvertsToSignatureString;
+    use Traits\ConvertsToSignatureString;
     use Traits\Signature\HandlesAccess;
     use Traits\Signature\HandlesConversion;
     use Traits\Signature\HandlesSerialization;

@@ -8,8 +8,8 @@ use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
 
 class CallClosure extends Module
 {
-    private Closure $callable;
-    private Signature $signature;
+    protected Closure $callable;
+    protected Signature $signature;
 
     public function __construct(Closure $callable) {
         $this->callable = $callable;

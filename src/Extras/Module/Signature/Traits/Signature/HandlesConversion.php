@@ -16,12 +16,4 @@ trait HandlesConversion
     public function toSchema(): Schema {
         return $this->output;
     }
-
-    public function toShortSignature(): string {
-        return $this->shortSignature;
-    }
-
-    public function toSignatureString(): string {
-        return $this->fullSignature;
-    }
 }

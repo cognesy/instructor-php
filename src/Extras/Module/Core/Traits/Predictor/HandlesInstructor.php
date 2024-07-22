@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predict;
+namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
 use Cognesy\Instructor\Instructor;
 use JetBrains\PhpStorm\Deprecated;

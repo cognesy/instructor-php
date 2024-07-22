@@ -50,7 +50,10 @@ print("Extracted data:\n");
 dump($user);
 
 assert(isset($user->name));
+assert($user->name === "JASON");
 assert(isset($user->age));
+assert($user->age === 25);
 assert(isset($user->job));
+assert($user->job === "engineer");
 ?>
 ```

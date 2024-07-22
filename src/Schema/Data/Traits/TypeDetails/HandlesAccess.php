@@ -30,7 +30,19 @@ trait HandlesAccess
         return $this->docString;
     }
 
-    public function __toString() : string {
-        return $this->toString();
+    public function isScalar() : bool {
+        return in_array($this->type, [self::PHP_INT, self::PHP_STRING, self::PHP_BOOL, self::PHP_FLOAT]);
+    }
+
+    public function isObject() : bool {
+        return $this->type === self::PHP_OBJECT;
+    }
+
+    public function isEnum() : bool {
+        return $this->type === self::PHP_ENUM;
+    }
+
+    public function isArray() : bool {
+        return in_array($this->type, [self::PHP_ARRAY, self::PHP_COLLECTION]);
     }
 }

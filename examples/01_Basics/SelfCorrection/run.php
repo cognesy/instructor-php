@@ -32,7 +32,7 @@ class UserDetails
     #[Assert\Email]
     public string $email;
 }
-$text = "you can reply to me via jason@gmailcom -- Jason";
+$text = "you can reply to me via jason wp.pl -- Jason";
 
 print("INPUT:\n$text\n\n");
 
@@ -52,6 +52,6 @@ print("\nOUTPUT:\n");
 
 dump($user);
 
-assert($user->email === "jason@gmail.com");
+assert($user->email === "jason@wp.pl");
 ?>
 ```

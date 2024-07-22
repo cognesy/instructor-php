@@ -14,7 +14,7 @@ use Spatie\Browsershot\Browsershot;
 #[ModuleDescription('Retrieve the content of a URL')]
 class GetUrlContent extends Module
 {
-    private Closure $getUrlFn;
+    protected Closure $getUrlFn;
 
     public function __construct(
         Closure|string $scraper = null

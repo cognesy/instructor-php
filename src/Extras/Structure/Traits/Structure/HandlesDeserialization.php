@@ -15,6 +15,11 @@ trait HandlesDeserialization
     private SymfonyDeserializer $deserializer;
     protected bool $ignoreUnknownFields = true;
 
+    public function fromJson(string $jsonData, string $toolName = null): static {
+        $data = Json::parse($jsonData);
+        return $this->fromArray($data);
+    }
+
     public function fromArray(array $data): static {
         foreach ($data as $name => $fieldData) {
             if ($this->ignoreUnknownFields && !$this->has($name)) {
@@ -31,11 +36,6 @@ trait HandlesDeserialization
             $this->set($name, $value);
         }
         return $this;
-    }
-
-    public function fromJson(string $jsonData, string $toolName = null): static {
-        $data = Json::parse($jsonData);
-        return $this->fromArray($data);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////

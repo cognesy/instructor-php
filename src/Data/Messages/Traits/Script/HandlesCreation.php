@@ -25,7 +25,7 @@ trait HandlesCreation
         return new self(...$sectionList);
     }
 
-    static public function fromScript(Script $script) : Script {
+    static public function clone(Script $script) : Script {
         $script = new Script(...$script->sections);
         $script->withContext($script->context());
         return $script;

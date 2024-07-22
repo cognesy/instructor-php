@@ -11,7 +11,7 @@ use InvalidArgumentException;
 #[ModuleDescription('Map arguments to the expected format')]
 class MapArgs extends Module
 {
-    private Closure $mapping;
+    protected Closure $mapping;
 
     public function __construct(array|Closure $mapping = []) {
         $this->mapping = match(true) {

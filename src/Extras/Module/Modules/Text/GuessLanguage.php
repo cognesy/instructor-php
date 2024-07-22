@@ -3,13 +3,14 @@
 namespace Cognesy\Instructor\Extras\Module\Modules\Text;
 
 //use Cognesy\Instructor\Extras\Module\Core\Module;
-use Cognesy\Instructor\Extras\Module\Core\Prediction;
-//use Cognesy\Instructor\Extras\Module\Core\Predictor;
+use Cognesy\Instructor\Extras\Module\Modules\Prediction;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 
+//use Cognesy\Instructor\Extras\Module\Core\Predictor;
+
 #[ModuleSignature('text:string -> language:string')]
-#[ModuleDescription('Guess the language of the provided text')]
+#[ModuleDescription('Return full name of the language of the provided text')]
 class GuessLanguage extends Prediction
 {
 //    private Predictor $guessLanguage;

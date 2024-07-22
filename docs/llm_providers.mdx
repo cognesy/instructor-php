@@ -59,13 +59,14 @@ You can find the details on how to configure the client in the example below.
 Cohere does not support JSON mode.
 
 Mode compatibility:
-- Mode::MdJson - supported, recommended
+- Mode::MdJson - supported
+- Mode::Json - supported, recommended
 - Mode::Tools - partially supported, not recommended (at the moment)
 
 Reasons Mode::Tools is not recommended:
 
-- Cohere does not support JSON Schema, which only allows to extract very simple data schemas.
-- Performance of the currently available versions of Cohere models in tools mode for Instructor use case (data extraction) is extremely poor.
+- Cohere tools mode does not support JSON Schema, which only allows to extract very simple data schemas.
+- Performance of the currently available versions of Cohere models in tools mode for Instructor use case (data extraction) is poor.
 
 Example:
 - `./examples/05_APISupport/LLMSupportCohere/run.php`

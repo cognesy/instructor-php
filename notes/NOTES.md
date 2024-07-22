@@ -16,11 +16,16 @@ Catch up with the latest additions.
 
 ## TODOs
 
+- Make system, prompt, script etc. available for configuration by user
+- Parallel tool calls
+- Async mode
+- Fix debug and cache mode
 - Finish logging support
 - Document how to inject custom HTTP client
 - Better error messages
 - Documentation for logging
-- Finish module observability via events - currently no access to this info & only 2 events supported
+- More modular design - serialization, validation, transformation should be a configurable pipeline
+- Add module observability via events - currently no access to this info
 - Rework Events so they have toArray() method, make __toString() use it
 - Role - should be enum, not string
 - String >> Array >> Class - for example: prompts (they should be classes)

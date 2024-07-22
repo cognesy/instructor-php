@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
 use Cognesy\Instructor\Data\Messages\Script;
