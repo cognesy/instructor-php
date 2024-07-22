@@ -40,9 +40,8 @@ $sourceModel = new TextElementModel(
 
 $validator = new class implements CanValidateObject {
     public function validate(object $dataObject): ValidationResult {
-        $json = json_encode($dataObject);
         $isInGerman = (new Instructor)->respond(
-            input: $json,
+            input: $dataObject,
             responseModel: Scalar::boolean(),
             prompt: 'Are all content fields translated to German?',
         );
@@ -53,12 +52,15 @@ $validator = new class implements CanValidateObject {
     }
 };
 
-$transformedModel = (new Instructor)->withValidator($validator)->respond(
-    input: $sourceModel,
-    responseModel: get_class($sourceModel),
-    prompt: 'Translate all text fields to German. Keep HTML tags unchanged.',
-    maxRetries: 2,
-    options: ['temperature' => 0],
+$transformedModel = (new Instructor)
+    ->wiretap(fn($e)=>$e->print())
+    ->addValidator($validator)
+    ->respond(
+        input: $sourceModel,
+        responseModel: get_class($sourceModel),
+        prompt: 'Translate all text fields to German. Keep HTML tags unchanged.',
+        maxRetries: 2,
+        options: ['temperature' => 0],
 );
 
 dump($transformedModel);

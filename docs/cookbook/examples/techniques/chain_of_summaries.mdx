@@ -50,11 +50,11 @@ $report = <<<EOT
 /** Executive level summary of the project */
 class Summary {
     /** current summary iteration, not bigger than 3 */
-    public int $iteration;
+    public int $iteration = 0;
     /** @var string[] 1-3 facts most relevant from executive perspective and missing from the summary (avoid technical details) */
-    public array $missingFacts;
+    public array $missingFacts = [];
     /** denser summary in 1-3 sentences, which covers every fact from the previous summary plus the missing ones */
-    public string $expandedSummary;
+    public string $expandedSummary = '';
 }
 
 /** Increasingly denser, expanded summaries */
@@ -69,6 +69,9 @@ $summaries = (new Instructor)
     ->request(
         messages: $report,
         responseModel: ChainOfSummaries::class,
+        prompt: 'Generate a denser summary based on the provided content.',
+        toolTitle: 'summarizer',
+        toolDescription: 'Generates a summary based on the provided content.',
         options: [
             'max_tokens' => 4096,
         ])

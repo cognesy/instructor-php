@@ -39,7 +39,7 @@ print("INPUT:\n$text\n\n");
 print("OUTPUT:\n");
 $list = (new Instructor)
     ->request(
-        messages: [['role' => 'user', 'content' => $text]],
+        messages: $text,
         responseModel: Sequence::of(Person::class),
         options: ['stream' => true],
     )

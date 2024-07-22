@@ -58,13 +58,18 @@ $instructor->onEvent(ResponseReceivedFromLLM::class, function($event) {
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'llama2:latest',
+    prompt: 'Parse the user data to JSON, respond using following JSON Schema: <|json_schema|>',
     examples: [[
-        'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
-        'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+        'input' => 'Ive got email Frank - their developer. Asked to connect via Twitter @frankch. Btw, he plays on drums!',
+        'output' => ['name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'], 'username' => 'frankch', 'age' => null],
+    ],[
+        'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
+        'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
     ]],
+    model: 'qwen2',
     mode: Mode::Json,
 );
+
 
 print("Completed response model:\n\n");
 

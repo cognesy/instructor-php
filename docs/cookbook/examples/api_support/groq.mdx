@@ -60,7 +60,7 @@ $user = $instructor
             'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
             'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
         ]],
-        model: 'llama3-8b-8192',
+        model: 'gemma2-9b-it',
         maxRetries: 2,
         options: ['temperature' => 0],
         mode: Mode::Json,
