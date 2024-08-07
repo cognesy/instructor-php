@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Data\Traits\Request;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\InstructorHub\Utils\Str;
 
 trait HandlesSchema
 {
@@ -47,6 +48,20 @@ trait HandlesSchema
             'type' => 'function',
             'function' => ['name' => $this->toolName()]
         ];
+    }
+
+    public function schemaName() : string {
+        $requestedSchema = $this->requestedSchema();
+        $name = match(true) {
+            is_string($requestedSchema) => $requestedSchema,
+            is_array($requestedSchema) => $requestedSchema['name'] ?? 'default_schema',
+            is_object($requestedSchema) => get_class($requestedSchema),
+            default => 'default_schema',
+        };
+        if (Str::startsWith($name, '\\')) {
+            $name = substr($name, 1);
+        }
+        return str_replace($name, '\\', '_');
     }
 
 //    public function responseFormat() : string {
