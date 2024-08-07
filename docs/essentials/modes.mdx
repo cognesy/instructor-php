@@ -68,6 +68,9 @@ the provided schema.
 
 It is currently supported only by new OpenAI models (check their docs for details).
 
+NOTE: OpenAI JsonSchema mode does not support optional properties. If you need to have optional
+properties in your schema, use `Mode::Tools` or `Mode::Json`.
+
 See more about JSONSchema mode in:
 
  - https://platform.openai.com/docs/guides/structured-outputs
