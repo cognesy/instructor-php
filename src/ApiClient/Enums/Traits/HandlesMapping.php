@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\ApiClient\Enums\Traits;
 
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
-use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
+//use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
 use Cognesy\Instructor\Clients\Cohere\CohereClient;
 use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
@@ -19,7 +19,7 @@ trait HandlesMapping
     public function toNativeMessage(array $message) : array {
         return match($this) {
             self::Anthropic => ['role' => $this->mapRole($message['role']), 'content' => $message['content']],
-            self::Anyscale => $message,
+            //self::Anyscale => $message,
             self::Azure => $message,
             self::Cohere => ['role' => $this->mapRole($message['role']), 'message' => $message['content']],
             self::Fireworks => $message,
@@ -48,7 +48,7 @@ trait HandlesMapping
     public function toClientClass() : string {
         return match($this) {
             self::Anthropic => AnthropicClient::class,
-            self::Anyscale => AnyscaleClient::class,
+            //self::Anyscale => AnyscaleClient::class,
             self::Azure => AzureClient::class,
             self::Cohere => CohereClient::class,
             self::Fireworks => FireworksAIClient::class,
@@ -73,7 +73,7 @@ trait HandlesMapping
     private function getRoleMap() : array {
         return match($this) {
             self::Anthropic => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'user', 'tool' => 'user'],
-            self::Anyscale => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+            //self::Anyscale => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::Azure => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::Cohere => ['user' => 'USER', 'assistant' => 'CHATBOT', 'system' => 'USER', 'tool' => 'USER'],
             self::Fireworks => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],

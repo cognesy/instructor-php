@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Clients\Azure\Traits;
 
+use Cognesy\Instructor\Enums\Mode;
+
 trait HandlesRequestBody
 {
     protected function model() : string {
@@ -23,10 +25,13 @@ trait HandlesRequestBody
     }
 
     protected function getResponseSchema() : array {
-        return $this->responseFormat['schema'] ?? [];
+        return $this->jsonSchema ?? [];
     }
 
     protected function getResponseFormat(): array {
-        return $this->responseFormat['format'] ?? [];
+        return match($this->mode) {
+            Mode::Json => ['type' => 'json_object'],
+            default => $this->responseFormat ?? []
+        };
     }
 }

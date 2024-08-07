@@ -14,7 +14,7 @@ class ScrapFly {
     private ClientInterface $client;
 
     public function __construct() {
-        $this->baseUrl = Env::get('SCRAPFLY_BASE_URL');
+        $this->baseUrl = Env::get('SCRAPFLY_BASE_URI');
         $this->apiKey = Env::get('SCRAPFLY_API_KEY');
         $this->client = new Client();
     }

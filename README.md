@@ -49,7 +49,7 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 
 ### Support for multiple LLMs / API providers
 
-- Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Anyscale, Fireworks AI, Ollama, OpenRouter, Together AI)
+- Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Fireworks AI, Ollama, OpenRouter, Together AI)
 - Use local models with Ollama
 
 ### Documentation and examples
@@ -183,6 +183,14 @@ $translation = (new Instructor)->respond(
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
 );
+
+assert($translation instanceof Email); // true
+dd($translation);
+// Email {
+//     address: "joe@gmail",
+//     subject: "Actualización de estado",
+//     body: "Su cuenta ha sido actualizada."
+// }
 ?>
 ```
 
@@ -619,7 +627,6 @@ $user = $instructor->respond(
 Instructor offers out of the box support for following API providers:
 
 - Anthropic
-- Anyscale
 - Azure OpenAI
 - Cohere
 - Fireworks AI

@@ -33,6 +33,8 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     // NEW
     protected Mode $mode;
     protected ClientType $clientType;
+    protected array $jsonSchema = [];
+    protected string $schemaName = '';
 
     // BODY FIELDS
     protected string $model = '';
@@ -70,6 +72,8 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     protected function applyData() : void {
         $this->mode = $this->getData('mode', Mode::MdJson);
         $this->clientType = $this->getData('client_type', ClientType::fromRequestClass(static::class));
+        $this->jsonSchema = $this->getData('json_schema', []);
+        $this->schemaName = $this->getData('schema_name', '');
     }
 
     protected function initBodyFields() : void {
@@ -82,7 +86,19 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
             $this->tools = $this->getData('tools', []);
             $this->toolChoice = $this->getData('tool_choice', []);
         } elseif ($this->mode->is(Mode::Json)) {
-            $this->responseFormat = $this->getData('response_format', []);
+            $this->responseFormat = [
+                'type' => 'json_object',
+                'schema' => $this->jsonSchema,
+            ];
+        } elseif ($this->mode->is(Mode::JsonSchema)) {
+            $this->responseFormat = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $this->schemaName,
+                    'schema' => $this->jsonSchema,
+                ],
+            ];
+            $this->responseFormat['json_schema']['strict'] = true;
         }
     }
 
@@ -92,13 +108,21 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
                 $this->requestBody,
                 [
                     'model' => $this->model(),
+                    'max_tokens' => $this->maxTokens,
                     'messages' => $this->messages(),
-                    'tools' => $this->tools(),
-                    'tool_choice' => $this->getToolChoice(),
-                    'response_format' => $this->getResponseFormat(),
-                ]
+                ],
             )
         );
+        switch($this->mode) {
+            case Mode::Tools:
+                $body['tools'] = $this->tools();
+                $body['tool_choice'] = $this->getToolChoice();
+                break;
+            case Mode::Json:
+            case Mode::JsonSchema:
+                $body['response_format'] = $this->getResponseFormat();
+                break;
+        }
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
         return $body;
     }

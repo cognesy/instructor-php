@@ -24,11 +24,9 @@ class OpenAIConnector extends ApiConnector
         $this->organization = $organization;
     }
 
-
     protected function defaultAuth() : Authenticator {
         return new TokenAuthenticator($this->apiKey);
     }
-
 
     protected function defaultHeaders(): array {
         $headers = [

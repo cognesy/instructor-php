@@ -6,6 +6,7 @@ enum Mode : string
 {
     case Tools = 'tool_call';
     case Json = 'json';
+    case JsonSchema = 'json_schema';
     case MdJson = 'markdown_json';
     case Text = 'text'; // unstructured text response
 

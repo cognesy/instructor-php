@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\ApiClient\Utils;
 
 use Psr\Http\Message\RequestInterface;

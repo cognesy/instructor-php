@@ -5,7 +5,7 @@ use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
 
 use Cognesy\Instructor\Configs\Clients\AnthropicConfig;
-use Cognesy\Instructor\Configs\Clients\AnyscaleConfig;
+//use Cognesy\Instructor\Configs\Clients\AnyscaleConfig;
 use Cognesy\Instructor\Configs\Clients\AzureConfig;
 use Cognesy\Instructor\Configs\Clients\CohereConfig;
 use Cognesy\Instructor\Configs\Clients\FireworksConfig;
@@ -25,7 +25,7 @@ class InstructorConfig implements CanAddConfiguration
             new ResponseHandlingConfig(),
             new ClientConfig(),
             new AnthropicConfig(),
-            new AnyscaleConfig(),
+            //new AnyscaleConfig(),
             new AzureConfig(),
             new CohereConfig(),
             new FireworksConfig(),

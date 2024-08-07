@@ -13,7 +13,7 @@ use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
-use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
+//use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
 use Cognesy\Instructor\Clients\Cohere\CohereClient;
 use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
@@ -44,7 +44,7 @@ class ClientConfig implements CanAddConfiguration
                 'defaultClient' => $config->reference(CanCallApi::class),
                 'clients' => [
                     'anthropic' => $config->reference(AnthropicClient::class),
-                    'anyscale' => $config->reference(AnyscaleClient::class),
+                    //'anyscale' => $config->reference(AnyscaleClient::class),
                     'azure' => $config->reference(AzureClient::class),
                     'cohere' => $config->reference(CohereClient::class),
                     'fireworks' => $config->reference(FireworksAIClient::class),
@@ -67,7 +67,7 @@ class ClientConfig implements CanAddConfiguration
                     'anthropic:claude-3-sonnet' => $config->reference('anthropic:claude-3-sonnet'),
                     'anthropic:claude-3.5-sonnet' => $config->reference('anthropic:claude-3.5-sonnet'),
                     'anthropic:claude-3-opus' => $config->reference('anthropic:claude-3-opus'),
-                    'anyscale:mixtral-8x7b' => $config->reference('anyscale:mixtral-8x7b'),
+                    //'anyscale:mixtral-8x7b' => $config->reference('anyscale:mixtral-8x7b'),
                     'azure:gpt-3.5-turbo' => $config->reference('azure:gpt-3.5-turbo'),
                     'cohere:command-r' => $config->reference('cohere:command-r'),
                     'cohere:command-r-plus' => $config->reference('cohere:command-r-plus'),

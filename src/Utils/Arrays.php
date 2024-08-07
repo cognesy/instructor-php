@@ -84,4 +84,18 @@ class Arrays
         };
         return $toArray($anyValue);
     }
+
+    static public function removeRecursively(array $array, array $keys): array {
+        $remove = function($array, $keys) use(&$remove) {
+            foreach ($array as $key => $value) {
+                if (in_array($key, $keys)) {
+                    unset($array[$key]);
+                } elseif (is_array($value)) {
+                    $array[$key] = $remove($value, $keys);
+                }
+            }
+            return $array;
+        };
+        return $remove($array, $keys);
+    }
 }

@@ -9,10 +9,7 @@ trait HandlesRequestBody
     }
 
     public function getToolChoice(): string|array {
-        if (empty($this->tools)) {
-            return '';
-        }
-        return $this->toolChoice ?: 'any';
+        return 'any';
     }
 
     protected function getResponseFormat(): array {

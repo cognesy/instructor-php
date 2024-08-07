@@ -8,10 +8,10 @@ docname: 'openai'
 This is the default client used by Instructor.
 
 Mode compatibility:
- - Mode::Tools (recommended)
- - Mode::Json
- - Mode::MdJson
-
+ - Mode::Tools (supported)
+ - Mode::Json (supported)
+ - Mode::JsonSchema (recommended for new models)
+ - Mode::MdJson (fallback)
 
 ## Example
 
@@ -21,6 +21,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
@@ -57,10 +58,11 @@ $instructor = (new Instructor)->withClient($client);
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'gpt-3.5-turbo',
+    model: 'gpt-4o-mini', // set your own value/source
+    mode: Mode::JsonSchema,
     examples: [[
-        'input' => 'Ive got email Frank - their developer. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
-        'output' => ['age' => null, 'name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+        'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',
+        'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
 );
 
@@ -69,6 +71,15 @@ print("Completed response model:\n\n");
 dump($user);
 
 assert(isset($user->name));
+assert(isset($user->role));
 assert(isset($user->age));
+assert(isset($user->hobbies));
+assert(isset($user->username));
+assert(is_array($user->hobbies));
+assert(count($user->hobbies) > 0);
+assert($user->role === UserType::Admin);
+assert($user->age === 25);
+assert($user->name === 'Jason');
+assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
 ```

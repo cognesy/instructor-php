@@ -44,6 +44,7 @@ check their documentation for more information.
  - https://docs.anthropic.com/en/docs/build-with-claude/tool-use
  - https://docs.mistral.ai/capabilities/function_calling/
 
+
 ### `Mode::Json`
 
 In this mode Instructor provides response format as JSONSchema and asks LLM
@@ -57,6 +58,19 @@ See more about JSON mode in:
  - https://platform.openai.com/docs/guides/text-generation/json-mode
  - https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/increase-consistency
  - https://docs.mistral.ai/capabilities/json_mode/
+
+
+### `Mode::JsonSchema`
+
+In contrast to `Mode::Json` which may not always manage to meet the schema requirements,
+`Mode::JsonSchema` is strict and guarantees the response to be a valid JSON object that matches
+the provided schema.
+
+It is currently supported only by new OpenAI models (check their docs for details).
+
+See more about JSONSchema mode in:
+
+ - https://platform.openai.com/docs/guides/structured-outputs
 
 
 ### `Mode::MdJson`

@@ -10,7 +10,7 @@ class ModelParams
         public string $label = 'Undefined',
         public string $type = 'undefined',
         public string $name = 'undefined',
-        public int $maxTokens = 4096,
+        public int $maxTokens = 1024,
         public int $contextSize = 4096,
         public float $inputCost = 0,
         public float $outputCost = 0,

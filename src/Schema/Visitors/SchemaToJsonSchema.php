@@ -60,6 +60,7 @@ class SchemaToJsonSchema implements CanVisitSchema
             'required' => $schema->required,
             'x-php-class' => $schema->typeDetails->class,
         ]);
+        $this->result['additionalProperties'] = false;
     }
 
     public function visitEnumSchema(EnumSchema $schema): void {

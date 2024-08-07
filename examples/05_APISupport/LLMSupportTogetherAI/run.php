@@ -13,9 +13,9 @@ Please note that some Together.ai models support Mode::Tools or Mode::Json, whic
 more reliable than Mode::MdJson.
 
 Mode compatibility:
-- Mode::Tools - selected models
-- Mode::Json - selected models
-- Mode::MdJson
+- Mode::Tools - supported for selected models
+- Mode::Json - supported for selected models
+- Mode::MdJson - fallback mode
 
 
 ## Example
@@ -45,12 +45,9 @@ class User {
     public array $hobbies;
 }
 
-// Mistral instance params
-$yourApiKey = Env::get('TOGETHERAI_API_KEY'); // set your own API key
-
 // Create instance of client initialized with custom parameters
 $client = new TogetherAIClient(
-    apiKey: $yourApiKey,
+    apiKey: Env::get('TOGETHERAI_API_KEY'),
 );
 
 /// Get Instructor with the default client component overridden with your own
@@ -60,15 +57,31 @@ $user = $instructor
     ->respond(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
-        model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-        mode: Mode::Json,
+        examples: [[
+            'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
+            'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+        ],[
+            'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
+            'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
+        ]],
+        model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
         //options: ['stream' => true ]
+        mode: Mode::Tools,
     );
 
 print("Completed response model:\n\n");
 dump($user);
 
 assert(isset($user->name));
+assert(isset($user->role));
 assert(isset($user->age));
+assert(isset($user->hobbies));
+assert(isset($user->username));
+assert(is_array($user->hobbies));
+assert(count($user->hobbies) > 0);
+assert($user->role === UserType::Admin);
+assert($user->age === 25);
+assert($user->name === 'Jason');
+assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
 ```

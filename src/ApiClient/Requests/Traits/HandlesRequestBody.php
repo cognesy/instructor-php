@@ -25,10 +25,10 @@ trait HandlesRequestBody
     }
 
     protected function getResponseSchema() : array {
-        return $this->responseFormat['schema'] ?? [];
+        return $this->jsonSchema ?? [];
     }
 
     protected function getResponseFormat(): array {
-        return $this->responseFormat['format'] ?? [];
+        return $this->responseFormat ?? [];
     }
 }

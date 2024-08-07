@@ -4,8 +4,8 @@ namespace Cognesy\Instructor\ApiClient\Enums\Traits;
 
 use Cognesy\Instructor\Clients\Anthropic\AnthropicApiRequest;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
-use Cognesy\Instructor\Clients\Anyscale\AnyscaleApiRequest;
-use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
+//use Cognesy\Instructor\Clients\Anyscale\AnyscaleApiRequest;
+//use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureApiRequest;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
 use Cognesy\Instructor\Clients\Cohere\CohereApiRequest;
@@ -32,7 +32,7 @@ trait HandlesCreation
     public static function fromString(string $type) : self {
         return match($type) {
             'anthropic' => self::Anthropic,
-            'anyscale' => self::Anyscale,
+            //'anyscale' => self::Anyscale,
             'azure' => self::Azure,
             'cohere' => self::Cohere,
             'fireworks' => self::Fireworks,
@@ -54,7 +54,7 @@ trait HandlesCreation
         }
         return match($class) {
             AnthropicApiRequest::class => self::Anthropic,
-            AnyscaleApiRequest::class => self::Anyscale,
+            //AnyscaleApiRequest::class => self::Anyscale,
             AzureApiRequest::class => self::Azure,
             CohereApiRequest::class => self::Cohere,
             FireworksAIApiRequest::class => self::Fireworks,
@@ -75,7 +75,7 @@ trait HandlesCreation
         }
         return match($class) {
             AnthropicClient::class => self::Anthropic,
-            AnyscaleClient::class => self::Anyscale,
+            //AnyscaleClient::class => self::Anyscale,
             AzureClient::class => self::Azure,
             CohereClient::class => self::Cohere,
             FireworksAIClient::class => self::Fireworks,

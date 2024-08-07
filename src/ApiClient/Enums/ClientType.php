@@ -7,7 +7,7 @@ enum ClientType : string
     use Traits\HandlesMapping;
 
     case Anthropic = 'anthropic';
-    case Anyscale = 'anyscale';
+    //case Anyscale = 'anyscale';
     case Azure = 'azure';
     case Cohere = 'cohere';
     case Fireworks = 'fireworks';

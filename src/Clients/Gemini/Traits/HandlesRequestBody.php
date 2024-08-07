@@ -3,6 +3,9 @@ namespace Cognesy\Instructor\Clients\Gemini\Traits;
 
 // GEMINI API
 
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Utils\Arrays;
+
 trait HandlesRequestBody
 {
     public function tools(): array {
@@ -17,14 +20,29 @@ trait HandlesRequestBody
     }
 
     protected function getResponseFormat(): array {
-        return ['application/json'];
+        return match($this->mode) {
+            Mode::MdJson => ["text/plain"],
+            default => ["application/json"],
+        };
+    }
+
+    protected function getResponseSchema() : array {
+        return Arrays::removeRecursively($this->jsonSchema, [
+            'title',
+            'x-php-class',
+            'additionalProperties',
+        ]);
     }
 
     private function options() : array {
         return array_filter([
 //            "stopSequences" => $this->requestBody['stopSequences'] ?? [],
             "responseMimeType" => $this->getResponseFormat()[0],
-            "responseSchema" => $this->getResponseSchema(),
+            "responseSchema" => match($this->mode) {
+                Mode::MdJson => '',
+                Mode::Json => $this->getResponseSchema(),
+                default => '',
+            },
             "candidateCount" => 1,
             "maxOutputTokens" => $this->maxTokens,
             "temperature" => $this->requestBody['temperature'] ?? 1.0,

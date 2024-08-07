@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Clients\OpenAI\Traits;
 
+use Cognesy\Instructor\Enums\Mode;
+
 trait HandlesRequestBody
 {
     public function tools(): array {
@@ -16,10 +18,13 @@ trait HandlesRequestBody
     }
 
     protected function getResponseSchema() : array {
-        return $this->responseFormat['schema'] ?? [];
+        return $this->jsonSchema ?? [];
     }
 
     protected function getResponseFormat(): array {
-        return $this->responseFormat['format'] ?? [];
+        return match($this->mode) {
+            Mode::Json => ['type' => 'json_object'],
+            default => $this->responseFormat ?? []
+        };
     }
 }

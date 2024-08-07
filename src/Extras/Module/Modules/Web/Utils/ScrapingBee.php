@@ -14,7 +14,7 @@ class ScrapingBee {
     private ClientInterface $client;
 
     public function __construct() {
-        $this->baseUrl = Env::get('SCRAPINGBEE_BASE_URL');
+        $this->baseUrl = Env::get('SCRAPINGBEE_BASE_URI');
         $this->apiKey = Env::get('SCRAPINGBEE_API_KEY');
         $this->client = new Client();
     }

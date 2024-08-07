@@ -13,10 +13,9 @@ Please note that the larger Mistral models support Mode::Json, which is much mor
 reliable than Mode::MdJson.
 
 Mode compatibility:
- - Mode::Tools - Mistral-Small / Mistral-Medium / Mistral-Large
- - Mode::Json - Mistral-Small / Mistral-Medium / Mistral-Large
- - Mode::MdJson - Mistral 7B / Mixtral 8x7B
-
+ - Mode::Tools - supported (Mistral-Small / Mistral-Medium / Mistral-Large)
+ - Mode::Json - recommended (Mistral-Small / Mistral-Medium / Mistral-Large)
+ - Mode::MdJson - fallback mode (Mistral 7B / Mixtral 8x7B)
 
 ## Example
 
@@ -61,7 +60,14 @@ $user = $instructor
     ->respond(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
-        model: 'open-mixtral-8x7b',
+        examples: [[
+            'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
+            'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
+        ],[
+            'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
+            'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
+        ]],
+        model: 'mistral-small-latest', //'open-mixtral-8x7b',
         mode: Mode::Json,
     );
 
@@ -69,6 +75,15 @@ print("Completed response model:\n\n");
 dump($user);
 
 assert(isset($user->name));
+assert(isset($user->role));
 assert(isset($user->age));
+assert(isset($user->hobbies));
+assert(isset($user->username));
+assert(is_array($user->hobbies));
+assert(count($user->hobbies) > 0);
+assert($user->role === UserType::Admin);
+assert($user->age === 25);
+assert($user->name === 'Jason');
+assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
 ```

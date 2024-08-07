@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Data\Traits\Request;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesSchema
 {
@@ -48,12 +49,13 @@ trait HandlesSchema
         ];
     }
 
-    public function responseFormat() : array {
-        return [
-            'format' => ['type' => 'json_object'],
-            'schema' => $this->jsonSchema()
-        ];
-    }
+//    public function responseFormat() : string {
+//        return match($this->mode()) {
+//            Mode::Json => 'json_object',
+//            Mode::JsonSchema => 'json_schema',
+//            default => ''
+//        };
+//    }
 
     // INTERNAL ///////////////////////////////////////////////////////////////
 

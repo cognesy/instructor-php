@@ -8,7 +8,7 @@ class JinaReader {
     private string $apiKey;
 
     public function __construct() {
-        $this->baseUrl = Env::get('JINA_READER_BASE_URL', '');
+        $this->baseUrl = Env::get('JINA_READER_BASE_URI', '');
         $this->apiKey = Env::get('JINA_READER_API_KEY', '');
     }
 

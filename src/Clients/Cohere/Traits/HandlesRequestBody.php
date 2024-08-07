@@ -42,11 +42,14 @@ trait HandlesRequestBody
     }
 
     protected function getResponseFormat(): array {
-        return $this->responseFormat['format'] ?? [];
+        return [
+            'type' => 'json_object',
+            'schema' => $this->getResponseSchema(),
+        ];
     }
 
     protected function getResponseSchema(): array {
-        return $this->responseFormat['schema'] ?? [];
+        return $this->jsonSchema ?? [];
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////

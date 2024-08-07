@@ -35,7 +35,6 @@ class OpenRouterClient extends ApiClient
         ));
     }
 
-
     public function getModeRequestClass(Mode $mode = null) : string {
         return OpenRouterApiRequest::class;
     }
