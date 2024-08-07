@@ -5,9 +5,14 @@ docname: 'ollama'
 
 ## Overview
 
-You can use Instructor with local Ollama instance. Please note that, at least currently,
-OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model.
+You can use Instructor with local Ollama instance.
 
+Please note that, at least currently, OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model for complex data schemas.
+
+Supported modes:
+ - Mode::MdJson - fallback mode
+ - Mode::Json - recommended
+ - Mode::Tools - supported
 
 ## Example
 
@@ -44,16 +49,14 @@ $client = new OllamaClient();
 $instructor = (new Instructor)->withClient($client);
 
 // Listen to events to print request/response data
-$instructor->onEvent(RequestSentToLLM::class, function($event) {
-    print("Request sent to LLM:\n\n");
-
-    dump($event->request);
-});
-$instructor->onEvent(ResponseReceivedFromLLM::class, function($event) {
-    print("Received response from LLM:\n\n");
-
-    dump($event->response);
-});
+//$instructor->onEvent(RequestSentToLLM::class, function($event) {
+//    print("Request sent to LLM:\n\n");
+//    dump($event->request);
+//});
+//$instructor->onEvent(ResponseReceivedFromLLM::class, function($event) {
+//    print("Received response from LLM:\n\n");
+//    dump($event->response);
+//});
 
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
@@ -66,7 +69,7 @@ $user = $instructor->respond(
         'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
         'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
     ]],
-    model: 'qwen2',
+    model: 'gemma2:2b',
     mode: Mode::Json,
 );
 
@@ -76,6 +79,15 @@ print("Completed response model:\n\n");
 dump($user);
 
 assert(isset($user->name));
+assert(isset($user->role));
 assert(isset($user->age));
+assert(isset($user->hobbies));
+assert(isset($user->username));
+assert(is_array($user->hobbies));
+assert(count($user->hobbies) > 0);
+assert($user->role === UserType::Admin);
+assert($user->age === 25);
+assert($user->name === 'Jason');
+assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
 ```

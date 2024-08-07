@@ -21,15 +21,22 @@ This is useful for debugging the request and response when you are not getting t
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Env;
 
 class User {
     public int $age;
     public string $name;
 }
 
+$instructor = (new Instructor)->withClient(new OpenAIClient(
+    apiKey: Env::get('OPENAI_API_KEY'),
+    baseUri: Env::get('OPENAI_BASE_URI'),
+));
+
 echo "Debugging request and response:\n\n";
-$user = (new Instructor)->withDebug()->respond(
+$user = $instructor->withDebug()->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
     options: [ 'stream' => true ]

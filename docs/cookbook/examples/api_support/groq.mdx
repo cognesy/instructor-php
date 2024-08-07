@@ -7,8 +7,13 @@ docname: 'groq'
 
 Groq is LLM providers offering a very fast inference thanks to their
 custom hardware. They provide a several models - Llama2, Mixtral and Gemma.
-Here's how you can use Instructor with Groq API.
 
+Supported modes depend on the specific model, but generally include:
+ - Mode::MdJson - fallback mode
+ - Mode::Json - recommended
+ - Mode::Tools - supported
+
+Here's how you can use Instructor with Groq API.
 
 ## Example
 
@@ -54,8 +59,8 @@ $user = $instructor
         responseModel: User::class,
         prompt: 'Parse the user data to JSON, respond using following JSON Schema: <|json_schema|>',
         examples: [[
-            'input' => 'Ive got email Frank - their developer. Asked to connect via Twitter @frankch. Btw, he plays on drums!',
-            'output' => ['name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'], 'username' => 'frankch', 'age' => null],
+            'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
+            'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
         ],[
             'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
             'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
@@ -74,10 +79,12 @@ assert(isset($user->name));
 assert(isset($user->role));
 assert(isset($user->age));
 assert(isset($user->hobbies));
+assert(isset($user->username));
 assert(is_array($user->hobbies));
 assert(count($user->hobbies) > 0);
 assert($user->role === UserType::Admin);
 assert($user->age === 25);
 assert($user->name === 'Jason');
+assert(in_array($user->username, ['jxnlco', '@jxnlco']));
 ?>
 ```
