@@ -61,7 +61,8 @@ trait HandlesSchema
         if (Str::startsWith($name, '\\')) {
             $name = substr($name, 1);
         }
-        return str_replace($name, '\\', '_');
+        $name = str_replace('\\', '_', $name);
+        return $name;
     }
 
 //    public function responseFormat() : string {

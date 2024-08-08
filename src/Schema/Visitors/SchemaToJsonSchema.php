@@ -11,6 +11,8 @@ use Cognesy\Instructor\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use DateTime;
+use DateTimeImmutable;
 
 class SchemaToJsonSchema implements CanVisitSchema
 {
@@ -48,6 +50,16 @@ class SchemaToJsonSchema implements CanVisitSchema
     }
 
     public function visitObjectSchema(ObjectSchema $schema): void {
+        // SPECIAL CASES: DateTime and DateTimeImmutable
+        if (in_array($schema->typeDetails->class, [
+            DateTime::class,
+            DateTimeImmutable::class,
+        ], false)) {
+            $this->handleDateTimeSchema($schema);
+            return;
+        }
+
+        // DEFAULT
         $propertyDefs = [];
         foreach ($schema->properties as $property) {
             $propertyDefs[$property->name] = (new SchemaToJsonSchema)->toArray($property, $this->refCallback);
@@ -61,6 +73,15 @@ class SchemaToJsonSchema implements CanVisitSchema
             'x-php-class' => $schema->typeDetails->class,
         ]);
         $this->result['additionalProperties'] = false;
+    }
+
+    public function handleDateTimeSchema(ObjectSchema $schema): void {
+        $this->result = array_filter([
+            'type' => 'string',
+            'title' => $schema->name,
+            'description' => $schema->description,
+            'x-php-class' => $schema->typeDetails->class,
+        ]);
     }
 
     public function visitEnumSchema(EnumSchema $schema): void {

@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\OpenAI\Traits;
 
 use Cognesy\Instructor\Enums\Mode;
@@ -22,9 +21,9 @@ trait HandlesRequestBody
     }
 
     protected function getResponseFormat(): array {
-        return match($this->mode) {
-            Mode::Json => ['type' => 'json_object'],
-            default => $this->responseFormat ?? []
-        };
+        if ($this->mode == Mode::Json) {
+            return ['type' => 'json_object'];
+        }
+        return $this->responseFormat;
     }
 }

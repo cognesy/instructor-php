@@ -30,7 +30,7 @@ class Debugger
     public static function responseDebugger(
         Response $response,
         ResponseInterface $psrResponse,
-        string $body
+        string $body = ''
     ): void {
         $headers = self::getResponseHeaders($psrResponse);
 

@@ -36,7 +36,13 @@ $instructor = (new Instructor)->withClient(new OpenAIClient(
 ));
 
 echo "Debugging request and response:\n\n";
-$user = $instructor->withDebug()->respond(
+$user = $instructor->respond(
+    messages: "Jason is 25 years old.",
+    responseModel: User::class,
+    options: [ 'stream' => true ]
+);
+
+$user2 = $instructor->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
     options: [ 'stream' => true ]
@@ -44,6 +50,7 @@ $user = $instructor->withDebug()->respond(
 
 echo "\nResult:\n";
 dump($user);
+dump($user2);
 
 assert(isset($user->name));
 assert(isset($user->age));
