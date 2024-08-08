@@ -160,6 +160,7 @@
                 "cookbook/examples/techniques/search_query_expansion",
                 "cookbook/examples/techniques/component_reuse",
                 "cookbook/examples/techniques/component_reuse_cot",
+                "cookbook/examples/techniques/transcription_to_tasks",
                 "cookbook/examples/techniques/translate_ui_fields"
             ]
         },
