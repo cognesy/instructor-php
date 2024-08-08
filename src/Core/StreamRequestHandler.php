@@ -69,8 +69,6 @@ class StreamRequestHandler implements CanHandleStreamRequest
             if ($this->retries <= $request->maxRetries()) {
                 $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $errors));
             }
-            // (3.1) reset partials generator
-            $this->partialsGenerator->resetPartialResponse();
         }
         $errors = $errors ?? [];
         $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $errors));

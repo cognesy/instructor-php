@@ -55,6 +55,9 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable {
+        // reset state
+        $this->resetPartialResponse();
+
         // receive data
         /** @var \Cognesy\Instructor\ApiClient\Responses\PartialApiResponse $partialResponse */
         foreach($stream as $partialResponse) {
@@ -156,7 +159,10 @@ class PartialsGenerator implements CanGeneratePartials
 
     public function resetPartialResponse() : void {
         $this->previousHash = '';
+        $this->responseText = '';
+        $this->responseJson = '';
         $this->sequenceableHandler->reset();
+        $this->toolCalls->reset();
     }
 
     public function getCompleteResponse() : ApiResponse {

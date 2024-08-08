@@ -25,8 +25,9 @@ class AttributeUtils
         $attributes = $element->getAttributes($attributeClass);
         $values = [];
         foreach ($attributes as $attribute) {
-            if (property_exists($attribute->newInstance(), $attributeProperty)) {
-                $values[] = $attribute->newInstance()->$attributeProperty;
+            $instance = $attribute->newInstance();
+            if (property_exists($instance, $attributeProperty)) {
+                $values[] = $instance->$attributeProperty;
             }
         }
         return $values;

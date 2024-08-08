@@ -9,6 +9,7 @@ use Attribute;
     | Attribute::TARGET_METHOD
     | Attribute::TARGET_FUNCTION
     | Attribute::TARGET_PARAMETER
+    | Attribute::IS_REPEATABLE
 )]
 class Description
 {

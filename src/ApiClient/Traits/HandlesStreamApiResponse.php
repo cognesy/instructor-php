@@ -40,10 +40,7 @@ trait HandlesStreamApiResponse
         $this?->events->dispatch(new ApiStreamRequestInitiated($request->toArray()));
 
         try {
-            $response = $this->connector()
-//                ->debugRequest(Debugger::requestDebugger(...))
-//                ->debugResponse(Debugger::responseDebugger(...))
-                ->send($request);
+            $response = $this->connector()->send($request);
 
             $this->events->dispatch(new ApiStreamRequestSent(
                 uri: (string) $response->getPsrRequest()->getUri(),

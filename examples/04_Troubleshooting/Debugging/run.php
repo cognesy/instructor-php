@@ -31,18 +31,12 @@ class User {
 }
 
 $instructor = (new Instructor)->withClient(new OpenAIClient(
-    apiKey: Env::get('OPENAI_API_KEY'),
+    apiKey: Env::get('OPENAI_API_KEY'),// . 'invalid', // intentionally invalid API key
     baseUri: Env::get('OPENAI_BASE_URI'),
 ));
 
 echo "Debugging request and response:\n\n";
-$user = $instructor->respond(
-    messages: "Jason is 25 years old.",
-    responseModel: User::class,
-    options: [ 'stream' => true ]
-);
-
-$user2 = $instructor->respond(
+$user = $instructor->withDebug()->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
     options: [ 'stream' => true ]
@@ -50,7 +44,6 @@ $user2 = $instructor->respond(
 
 echo "\nResult:\n";
 dump($user);
-dump($user2);
 
 assert(isset($user->name));
 assert(isset($user->age));
