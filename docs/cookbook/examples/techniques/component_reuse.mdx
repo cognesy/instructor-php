@@ -34,9 +34,9 @@ class UserDetail
 }
 
 $user = (new Instructor)->respond(
-    messages: [['role' => 'user', 'content' => "Yesterday Jason worked from 9 for 5 hours. Later I watched 2 hour movie which I finished at 19."]],
+    messages: [['role' => 'user', 'content' => "Yesterday Jason worked from 9 for 5 hours. After that I watched 2 hour movie which I finished at 19."]],
     responseModel: UserDetail::class,
-    maxRetries: 2
+    model: 'gpt-4o',
 );
 
 dump($user);

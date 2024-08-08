@@ -50,7 +50,7 @@ function partialUpdate($partial) {
 
     // Wait a bit before clearing the screen to make partial changes slower.
     // Don't use this in your application :)
-    usleep(250000);
+    // usleep(250000);
 }
 ?>
 ```

@@ -25,10 +25,11 @@ use Cognesy\Instructor\Schema\Attributes\Instructions;
 class User {
     #[Description("User's age")]
     public int $age;
-    #[Instructions("Make it ALL CAPS")]
+    #[Instructions("Make user name ALL CAPS")]
     public string $name;
     #[Description("User's job")]
     #[Instructions("Ignore hobbies, identify profession")]
+    #[Instructions("Make the profession name lowercase")]
     public string $job;
 }
 
