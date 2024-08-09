@@ -4,8 +4,7 @@ namespace Cognesy\Instructor\Data\Traits\Request;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\InstructorHub\Utils\Str;
+use Cognesy\Instructor\Utils\Str;
 
 trait HandlesSchema
 {

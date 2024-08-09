@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\InstructorHub\Data;
 
+use Cognesy\Instructor\Utils\Str;
 use Cognesy\InstructorHub\Utils\Mintlify\NavigationItem;
-use Cognesy\InstructorHub\Utils\Str;
 use Spatie\YamlFrontMatter\YamlFrontMatter;
 
 class Example

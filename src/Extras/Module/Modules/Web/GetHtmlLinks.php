@@ -5,7 +5,7 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Modules\Web\Data\Link;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\InstructorHub\Utils\Str;
+use Cognesy\Instructor\Utils\Str;
 
 #[ModuleSignature('html:string -> links:Link[]')]
 #[ModuleDescription('Extract links from HTML')]

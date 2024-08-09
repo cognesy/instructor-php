@@ -1,8 +1,6 @@
 <?php
 
-namespace Cognesy\InstructorHub\Utils;
-
-use Cognesy\Instructor\Utils\Pipeline;
+namespace Cognesy\Instructor\Utils;
 
 class Str
 {

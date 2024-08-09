@@ -31,16 +31,16 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 - 'Structured-to-structured' processing - provide object or array as an input and get object with the results of inference back
 - Demonstrate examples to improve the quality of inference
 
-### Customizable outputs
+### Customization
 
-- Define response data model the way to need: type-hinted classes, JSON Schema arrays, or dynamically define your data shapes with Structures
+- Define response data model the way you want: type-hinted classes, JSON Schema arrays, or dynamic data shapes with `Structure` class
 - Customize prompts and retry prompts
 - Use attributes or PHP DocBlocks to provide additional instructions for LLM
 - Customize response model processing by providing your own implementation of schema, deserialization, validation and transformation interfaces
 
 ### Sync and streaming support
 
-- Receive synchronous or streaming responses
+- Supports both synchronous or streaming responses
 - Get partial updates & stream completed sequence items
 
 ### Observability
@@ -49,7 +49,8 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 
 ### Support for multiple LLMs / API providers
 
-- Use multiple LLM API providers (incl. OpenAI,  Anthropic, Cohere, Azure, Groq, Mistral, Fireworks AI, Ollama, OpenRouter, Together AI)
+- Use multiple LLM API providers (incl. OpenAI, Gemini, Anthropic, Cohere, Azure, Groq, Mistral, Fireworks AI, Together AI)
+- OpenRouter support - access to 100+ language models
 - Use local models with Ollama
 
 ### Documentation and examples

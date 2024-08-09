@@ -31,7 +31,7 @@ class User {
 }
 
 $instructor = (new Instructor)->withClient(new OpenAIClient(
-    apiKey: Env::get('OPENAI_API_KEY'),// . 'invalid', // intentionally invalid API key
+    apiKey: Env::get('OPENAI_API_KEY'),//  . 'invalid', // intentionally invalid API key
     baseUri: Env::get('OPENAI_BASE_URI'),
 ));
 
