@@ -2,6 +2,7 @@
 namespace Cognesy\InstructorHub\Utils;
 
 use cebe\markdown\GithubMarkdown;
+use Cognesy\Instructor\Utils\Color as IColor;
 use Cognesy\InstructorHub\Core\Cli;
 use Toolkit\Cli\Color;
 use Toolkit\Cli\Color\ColorTag;
@@ -20,7 +21,6 @@ use function str_replace;
 use function substr;
 use function trim;
 use function ucwords;
-use Cognesy\InstructorHub\Utils\Color as IColor;
 
 /**
  * Class CliMarkdown

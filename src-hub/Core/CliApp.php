@@ -2,7 +2,7 @@
 namespace Cognesy\InstructorHub\Core;
 
 use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\InstructorHub\Utils\Color;
+use Cognesy\Instructor\Utils\Color;
 
 abstract class CliApp {
     private CommandProvider $commandProvider;

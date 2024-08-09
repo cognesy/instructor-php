@@ -2,9 +2,9 @@
 
 namespace Cognesy\InstructorHub\Views;
 
+use Cognesy\Instructor\Utils\Color;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
-use Cognesy\InstructorHub\Utils\Color;
 use Exception;
 
 class RunnerView

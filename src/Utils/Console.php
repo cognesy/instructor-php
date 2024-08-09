@@ -1,8 +1,5 @@
 <?php
-
 namespace Cognesy\Instructor\Utils;
-
-use Cognesy\InstructorHub\Utils\Color;
 
 class Console
 {

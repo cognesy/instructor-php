@@ -1,11 +1,11 @@
 <?php
 namespace Cognesy\InstructorHub\Commands;
 
+use Cognesy\Instructor\Utils\Color;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
-use Cognesy\InstructorHub\Utils\Color;
 
 class ListAllExamples extends Command
 {
