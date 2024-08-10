@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 
 class StreamedResponseReceived extends Event
 {

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Clients\Anthropic\Traits;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Saloon\Http\Response;
 
 trait HandlesResponse

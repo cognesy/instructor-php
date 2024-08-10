@@ -5,8 +5,8 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Modules\Markdown\SplitMarkdown;
 use Cognesy\Instructor\Extras\Module\Modules\Web\ConvertHtmlToMarkdown;
 use Cognesy\Instructor\Extras\Module\Modules\Web\GetUrlContent;
-use Cognesy\Instructor\Utils\BM25;
-//use Cognesy\Instructor\Utils\BM25\SearchWithBM25;
+
+//use Cognesy\Experimental\BM25\SearchWithBM25;
 
 class FindSources extends Module
 {

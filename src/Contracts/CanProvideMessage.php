@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Contracts\CanProvideMessage;
+namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\Messages\Message;
 

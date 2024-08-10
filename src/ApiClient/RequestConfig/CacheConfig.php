@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\ApiClient\RequestConfig;
 
 use Closure;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use RuntimeException;

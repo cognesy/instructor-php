@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Message;
 
-use Cognesy\Instructor\Contracts\CanProvideMessage\CanProvideMessage;
+use Cognesy\Instructor\Contracts\CanProvideMessage;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Utils\Text;
 use Exception;

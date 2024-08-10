@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Extras\Module\Events;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use DateTime;
 use DateTimeImmutable;
 

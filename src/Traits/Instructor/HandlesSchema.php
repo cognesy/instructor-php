@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Traits\Instructor;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use JetBrains\PhpStorm\Deprecated;
 
 #[Deprecated]

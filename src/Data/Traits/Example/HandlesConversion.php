@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Data\Traits\Example;
 
 use BackedEnum;
 use Cognesy\Instructor\Data\Messages\Messages;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\TemplateUtil;
 
 trait HandlesConversion

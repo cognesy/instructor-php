@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Utils;
+namespace Cognesy\Instructor\Utils\Json;
 
 class Json
 {

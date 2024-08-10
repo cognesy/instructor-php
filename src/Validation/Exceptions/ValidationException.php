@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Validation\Exceptions;
 
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Exception;
 
 class ValidationException extends Exception

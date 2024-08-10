@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core\Traits\OperationCall;
 
-use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Utils\Result\Result;
 use InvalidArgumentException;
 use Throwable;
 

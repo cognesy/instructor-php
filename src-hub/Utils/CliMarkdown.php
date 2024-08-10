@@ -2,7 +2,7 @@
 namespace Cognesy\InstructorHub\Utils;
 
 use cebe\markdown\GithubMarkdown;
-use Cognesy\Instructor\Utils\Color as IColor;
+use Cognesy\Instructor\Utils\Cli\Color as IColor;
 use Cognesy\InstructorHub\Core\Cli;
 use Toolkit\Cli\Color;
 use Toolkit\Cli\Color\ColorTag;

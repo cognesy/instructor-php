@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Utils;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Utils\Json\Json;
 use InvalidArgumentException;
 
 class TemplateUtil

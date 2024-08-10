@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Psr\Log\LogLevel;
 

@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\Call\Contracts\HasErrorData;
 use Cognesy\Instructor\Extras\Module\Call\Enums\CallStatus;
 use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
 use DateTimeImmutable;

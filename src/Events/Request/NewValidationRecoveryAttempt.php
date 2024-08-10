@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Events\Request;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 
 class NewValidationRecoveryAttempt extends Event
 {

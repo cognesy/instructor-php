@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Events\ApiClient;
 
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 
 class ApiStreamResponseReceived extends ApiResponseReceived
 {

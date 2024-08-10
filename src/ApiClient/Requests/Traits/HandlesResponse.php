@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\ApiClient\Requests\Traits;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Exception;
 use Saloon\Http\Response;
 

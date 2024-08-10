@@ -6,8 +6,8 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Chain;
-use Cognesy\Instructor\Utils\Json;
-use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
 
 trait ValidatesPartialResponse

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Deserialization\Exceptions;
 
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 
 class DeserializationException extends \Exception
 {

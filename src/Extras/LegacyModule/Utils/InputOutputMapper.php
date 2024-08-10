@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Module\Utils;
 
 use Cognesy\Instructor\Extras\Module\Call\Contracts\CanBeProcessed;
 use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Exception;
 
 class InputOutputMapper

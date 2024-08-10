@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core\Contracts;
 
-use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Utils\Result\Result;
 
 interface HasPendingExecution
 {
@@ -15,7 +15,7 @@ interface HasPendingExecution
     /**
      * Returns Result object containing the result of forward() method
      * or errors if there are any. Does not throw the exception.
-     * @return Result
+     * @return \Cognesy\Instructor\Utils\Result\Result
      */
     public function try() : Result;
 

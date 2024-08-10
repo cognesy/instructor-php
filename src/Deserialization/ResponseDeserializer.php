@@ -10,7 +10,7 @@ use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserialized;
-use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
 
 class ResponseDeserializer

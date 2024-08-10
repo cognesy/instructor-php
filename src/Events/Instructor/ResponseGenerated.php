@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\Instructor;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
 class ResponseGenerated extends Event

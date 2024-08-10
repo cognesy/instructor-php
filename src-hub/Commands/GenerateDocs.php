@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\InstructorHub\Commands;
 
-use Cognesy\Instructor\Utils\Color;
+use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;

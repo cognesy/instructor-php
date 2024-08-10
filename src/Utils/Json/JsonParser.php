@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Utils;
+namespace Cognesy\Instructor\Utils\Json;
 
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Exception;

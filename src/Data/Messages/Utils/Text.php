@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Data\Messages\Utils;
 
 use BackedEnum;
 use Closure;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 
 // TODO: this should be moved to a chain-like component, so the way we handle inputs can be customized
 class Text

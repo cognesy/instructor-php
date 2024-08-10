@@ -1,8 +1,8 @@
 <?php
 
 use Cognesy\Instructor\Utils\Chain;
-use Cognesy\Instructor\Utils\Failure;
-use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Utils\Result\Failure;
+use Cognesy\Instructor\Utils\Result\Result;
 
 test('processing chain', function () {
     $result = Chain::make()

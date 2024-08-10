@@ -1,5 +1,6 @@
 <?php
-use Cognesy\Instructor\Utils\JsonParser;
+
+use Cognesy\Instructor\Utils\Json\JsonParser;
 
 it('can parse partial JSON', function () {
     $examples = [

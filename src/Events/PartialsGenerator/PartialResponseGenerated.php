@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json;
+use Cognesy\Instructor\Utils\Json\Json;
 
 class PartialResponseGenerated extends Event
 {

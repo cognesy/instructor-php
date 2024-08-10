@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Utils\Tests\Utils;
 
-use Cognesy\Instructor\Utils\Console;
+use Cognesy\Instructor\Utils\Cli\Console;
 
 it('displays single string column correctly', function () {
     $output = Console::columns(['Sample text'], 80);
@@ -20,7 +20,7 @@ it('aligns single column text to the right', function () {
 
 it('truncates and appends ellipsis to long text based on maxWidth', function () {
     $longText = str_repeat('A', 100);
-    $output = Console::columns([[-1, $longText]], 80);
+    $output = \Cognesy\Instructor\Utils\Cli\Console::columns([[-1, $longText]], 80);
     $expected = str_pad(substr($longText, 0, 79) . '… ', 80);
     expect($output)->toBe($expected);
 });

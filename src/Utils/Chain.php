@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor\Utils;
 
+use Cognesy\Instructor\Utils\Result\Failure;
+use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\Instructor\Utils\Result\Success;
 use Exception;
 
 /**

@@ -13,7 +13,7 @@ use Cognesy\Instructor\Extras\Module\CallData\Contracts\HasInputOutputData;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\CanProcessCall;
 use Cognesy\Instructor\Extras\Module\Core\Contracts\HasPendingExecution;
 use Cognesy\Instructor\Extras\Module\Utils\InputOutputMapper;
-use Cognesy\Instructor\Utils\Result;
+use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
 
 abstract class ModuleWithSignature implements CanProcessCall
