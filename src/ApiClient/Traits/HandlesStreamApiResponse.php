@@ -12,6 +12,8 @@ use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
 use Exception;
 use Generator;
+use Saloon\Exceptions\Request\RequestException;
+use Saloon\Http\Response;
 
 trait HandlesStreamApiResponse
 {
@@ -49,6 +51,15 @@ trait HandlesStreamApiResponse
                 body: (string) $response->getPsrRequest()->getBody(),
             ));
         } catch (Exception $exception) {
+            if ($request->requestConfig()->isDebug() && method_exists($exception, 'getResponse')) {
+                /** @var Response $response */
+                $response = $exception->getResponse();
+                if (!empty($response)) {
+                    Debugger::requestDebugger($response->getPendingRequest(), $response->getPsrRequest());
+                    // body cannot be accessed - see Saloon issue: https://github.com/saloonphp/saloon/issues/447
+                    Debugger::responseDebugger($response, $response->getPsrResponse(), $response->getPsrResponse()->getBody());
+                }
+            }
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
         }

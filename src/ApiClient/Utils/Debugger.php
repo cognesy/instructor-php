@@ -59,4 +59,21 @@ class Debugger
         }
         return $headers;
     }
+
+    public static function getRequestData(RequestInterface $request): array {
+        return [
+            'method' => $request->getMethod(),
+            'uri' => (string) $request->getUri(),
+            'headers' => $request->getHeaders(),
+            'body' => (string) $request->getBody(),
+        ];
+    }
+
+    public static function getResponseData(ResponseInterface $response): array {
+        return [
+            'status' => $response->getStatusCode(),
+            'headers' => $response->getHeaders(),
+            'body' => (string) $response->getBody(),
+        ];
+    }
 }

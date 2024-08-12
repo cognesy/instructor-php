@@ -16,7 +16,6 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract
@@ -33,7 +32,6 @@ enum Role : string {
 class Task {
     public string $title;
     public string $description;
-    #[Description("Due date in ISO 8601 format")]
     public DateTime $dueDate;
     public Role $owner;
     public TaskStatus $status;
@@ -78,6 +76,18 @@ print("Extracted data:\n");
 dump($tasks);
 
 assert($tasks->meetingDate->format('Y-m-d') === '2024-01-15');
-assert(count($tasks->tasks) > 1);
+assert(count($tasks->tasks) == 3);
+
+assert($tasks->tasks[0]->dueDate->format('Y-m-d') === '2024-01-20');
+assert($tasks->tasks[0]->status === TaskStatus::Pending);
+assert($tasks->tasks[0]->owner === Role::Dev);
+
+assert($tasks->tasks[1]->dueDate->format('Y-m-d') === '2024-01-18');
+assert($tasks->tasks[1]->status === TaskStatus::Pending);
+assert($tasks->tasks[1]->owner === Role::PM);
+
+assert($tasks->tasks[2]->dueDate->format('Y-m-d') === '2024-01-16');
+assert($tasks->tasks[2]->status === TaskStatus::Pending);
+assert($tasks->tasks[2]->owner === Role::PM);
 ?>
 ```

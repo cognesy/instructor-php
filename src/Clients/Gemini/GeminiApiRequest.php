@@ -32,13 +32,12 @@ class GeminiApiRequest extends ApiRequest
         $system = Messages::fromArray($this->messages)
             ->forRoles(['system'])
             ->toString();
-        $system = empty($system) ? [] : ['parts' => ['text' => $system]];
         $contents = Messages::fromArray($this->messages)
             ->exceptRoles(['system'])
             ->toNativeArray(ClientType::fromRequestClass($this), mergePerRole: true);
         $body = array_filter(
             [
-                'systemInstruction' => $system,
+                'systemInstruction' => empty($system) ? [] : ['parts' => ['text' => $system]],
                 'contents' => $contents,
                 'generationConfig' => $this->options(),
             ],
