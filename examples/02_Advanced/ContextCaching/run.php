@@ -16,8 +16,11 @@ able to take advantage of lower latency and costs.
 When you need to process multiple requests with the same context, you can use context
 caching to improve performance and reduce costs.
 
-Let's start by defining the data model for the user details and the properties
-that we want to extract from the text message.
+In our example we will be analyzing the README.md file of this Github project and
+generating its structured description for multiple audiences.
+
+Let's start by defining the data model for the project details and the properties
+that we want to extract or generate based on README file.
 
 ```php
 <?php
