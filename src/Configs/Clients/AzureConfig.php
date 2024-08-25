@@ -20,7 +20,7 @@ class AzureConfig implements CanAddConfiguration
                 'events' => $config->reference(EventDispatcher::class),
                 'connector' => $config->reference(AzureConnector::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
-                'defaultModel' => $_ENV['AZURE_DEFAULT_MODEL'] ?? 'gpt-4-turbo-preview',
+                'defaultModel' => $_ENV['AZURE_DEFAULT_MODEL'] ?? 'gpt-4o',
                 'defaultMaxTokens' => $_ENV['AZURE_DEFAULT_MAX_TOKENS'] ?? 4_096,
             ],
             getInstance: function($context) {
@@ -50,20 +50,20 @@ class AzureConfig implements CanAddConfiguration
             ],
         );
 
-        $config->object(
-            class: ModelParams::class,
-            name: 'azure:gpt-3.5-turbo',
-            context: [
-                'label' => 'Azure GPT 3.5 Turbo',
-                'type' => 'gpt35',
-                'name' => 'gpt-3.5-turbo',
-                'maxTokens' => 4096,
-                'contextSize' => 16_385,
-                'inputCost' => 1,
-                'outputCost' => 1,
-
-            ],
-        );
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'azure:gpt-3.5-turbo',
+//            context: [
+//                'label' => 'Azure GPT 3.5 Turbo',
+//                'type' => 'gpt35',
+//                'name' => 'gpt-3.5-turbo',
+//                'maxTokens' => 4096,
+//                'contextSize' => 16_385,
+//                'inputCost' => 1,
+//                'outputCost' => 1,
+//
+//            ],
+//        );
 
     }
 }

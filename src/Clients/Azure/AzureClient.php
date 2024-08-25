@@ -12,7 +12,7 @@ class AzureClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'azure:gpt-3.5-turbo'; //'gpt-4-turbo-preview';
+    public string $defaultModel = 'gpt-3.5-turbo'; //'gpt-4-turbo-preview';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(

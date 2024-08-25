@@ -47,24 +47,24 @@ class GeminiConfig implements CanAddConfiguration
             ],
         );
 
-        $config->object(
-            class: ModelParams::class,
-            name: 'google:gemini-1.5-flash',
-            context: [
-                'label' => 'Google Gemini 1.5 Flash',
-                'type' => 'gemini',
-                'name' => 'gemini-1.5-flash',
-                'maxTokens' => 4096,
-                'contextSize' => 128_000,
-                'inputCost' => 1,
-                'outputCost' => 1,
-                'roleMap' => [
-                    'user' => 'user',
-                    'assistant' => 'model',
-                    'system' => 'user'
-                ],
-            ],
-        );
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'google:gemini-1.5-flash',
+//            context: [
+//                'label' => 'Google Gemini 1.5 Flash',
+//                'type' => 'gemini',
+//                'name' => 'gemini-1.5-flash',
+//                'maxTokens' => 4096,
+//                'contextSize' => 128_000,
+//                'inputCost' => 1,
+//                'outputCost' => 1,
+//                'roleMap' => [
+//                    'user' => 'user',
+//                    'assistant' => 'model',
+//                    'system' => 'user'
+//                ],
+//            ],
+//        );
 
     }
 }

@@ -47,20 +47,20 @@ class FireworksConfig implements CanAddConfiguration
             ],
         );
 
-        $config->object(
-            class: ModelParams::class,
-            name: 'fireworks:mixtral-8x7b',
-            context: [
-                'label' => 'Fireworks Mixtral 8x7B',
-                'type' => 'mixtral',
-                'name' => 'accounts/fireworks/models/mixtral-8x7b-instruct',
-                'maxTokens' => 4096,
-                'contextSize' => 32768,
-                'inputCost' => 0.2,
-                'outputCost' => 0.2,
-
-            ],
-        );
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'fireworks:mixtral-8x7b',
+//            context: [
+//                'label' => 'Fireworks Mixtral 8x7B',
+//                'type' => 'mixtral',
+//                'name' => 'accounts/fireworks/models/mixtral-8x7b-instruct',
+//                'maxTokens' => 4096,
+//                'contextSize' => 32768,
+//                'inputCost' => 0.2,
+//                'outputCost' => 0.2,
+//
+//            ],
+//        );
 
     }
 }

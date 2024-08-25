@@ -47,61 +47,61 @@ class AnthropicConfig implements CanAddConfiguration
             ],
         );
 
-        $config->object(
-            class: ModelParams::class,
-            name: 'anthropic:claude-3-haiku',
-            context: [
-                'label' => 'Claude 3 Haiku',
-                'type' => 'claude3',
-                'name' => 'claude-3-haiku-20240307',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
-                'inputCost' => 0.25,
-                'outputCost' => 1.25,
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'anthropic:claude-3.5-sonnet',
-            context: [
-                'label' => 'Claude 3.5 Sonnet',
-                'type' => 'claude3',
-                'name' => 'claude-3-5-sonnet-20240620',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
-                'inputCost' => 3,
-                'outputCost' => 15,
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'anthropic:claude-3-sonnet',
-            context: [
-                'label' => 'Claude 3 Sonnet',
-                'type' => 'claude3',
-                'name' => 'claude-3-sonnet-20240229',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
-                'inputCost' => 3,
-                'outputCost' => 15,
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'anthropic:claude-3-opus',
-            context: [
-                'label' => 'Claude 3 Opus',
-                'type' => 'claude3',
-                'name' => 'claude-3-opus-20240229',
-                'maxTokens' => 4096,
-                'contextSize' => 200_000,
-                'inputCost' => 15,
-                'outputCost' => 75,
-            ],
-        );
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'anthropic:claude-3-haiku',
+//            context: [
+//                'label' => 'Claude 3 Haiku',
+//                'type' => 'claude3',
+//                'name' => 'claude-3-haiku-20240307',
+//                'maxTokens' => 4096,
+//                'contextSize' => 200_000,
+//                'inputCost' => 0.25,
+//                'outputCost' => 1.25,
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'anthropic:claude-3.5-sonnet',
+//            context: [
+//                'label' => 'Claude 3.5 Sonnet',
+//                'type' => 'claude3',
+//                'name' => 'claude-3-5-sonnet-20240620',
+//                'maxTokens' => 4096,
+//                'contextSize' => 200_000,
+//                'inputCost' => 3,
+//                'outputCost' => 15,
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'anthropic:claude-3-sonnet',
+//            context: [
+//                'label' => 'Claude 3 Sonnet',
+//                'type' => 'claude3',
+//                'name' => 'claude-3-sonnet-20240229',
+//                'maxTokens' => 4096,
+//                'contextSize' => 200_000,
+//                'inputCost' => 3,
+//                'outputCost' => 15,
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'anthropic:claude-3-opus',
+//            context: [
+//                'label' => 'Claude 3 Opus',
+//                'type' => 'claude3',
+//                'name' => 'claude-3-opus-20240229',
+//                'maxTokens' => 4096,
+//                'contextSize' => 200_000,
+//                'inputCost' => 15,
+//                'outputCost' => 75,
+//            ],
+//        );
 
     }
 }

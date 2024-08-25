@@ -47,20 +47,20 @@ class TogetherConfig implements CanAddConfiguration
             ],
         );
 
-        $config->object(
-            class: ModelParams::class,
-            name: 'together:mixtral-8x7b',
-            context: [
-                'label' => 'Together Mixtral 8x7B',
-                'type' => 'mixtral',
-                'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-                'maxTokens' => 4096,
-                'contextSize' => 4096,
-                'inputCost' => 1,
-                'outputCost' => 1,
-
-            ],
-        );
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'together:mixtral-8x7b',
+//            context: [
+//                'label' => 'Together Mixtral 8x7B',
+//                'type' => 'mixtral',
+//                'name' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+//                'maxTokens' => 4096,
+//                'contextSize' => 4096,
+//                'inputCost' => 1,
+//                'outputCost' => 1,
+//
+//            ],
+//        );
 
     }
 }

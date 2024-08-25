@@ -11,7 +11,7 @@ class GeminiClient extends ApiClient
 {
     use Traits\HandlesStreamData;
 
-    public string $defaultModel = 'google:gemini-1.5-flash';
+    public string $defaultModel = 'gemini-1.5-flash';
     public int $defaultMaxTokens = 4096;
 
     public function __construct(

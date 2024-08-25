@@ -50,95 +50,95 @@ class OpenAIConfig implements CanAddConfiguration
             ],
         );
 
-        $config->object(
-            class: ModelParams::class,
-            name: 'openai:gpt-4o',
-            context: [
-                'label' => 'OpenAI GPT4o',
-                'type' => 'gpt4',
-                'name' => 'gpt-4o',
-                'maxTokens' => 128_000,
-                'contextSize' => 128_000,
-                'inputCost' => 5,
-                'outputCost' => 15,
-
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'openai:gpt-4o-mini',
-            context: [
-                'label' => 'OpenAI GPT4o Mini',
-                'type' => 'gpt4',
-                'name' => 'gpt-4o-mini',
-                'maxTokens' => 128_000,
-                'contextSize' => 128_000,
-                'inputCost' => 0.15,
-                'outputCost' => 0.60,
-
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'openai:gpt-4-turbo',
-            context: [
-                'label' => 'OpenAI GPT4 Turbo',
-                'type' => 'gpt4',
-                'name' => 'gpt-4-turbo',
-                'maxTokens' => 128_000,
-                'contextSize' => 128_000,
-                'inputCost' => 10,
-                'outputCost' => 30,
-
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'openai:gpt-4',
-            context: [
-                'label' => 'OpenAI GPT 4',
-                'type' => 'gpt4',
-                'name' => 'gpt-4',
-                'maxTokens' => 8192,
-                'contextSize' => 8192,
-                'inputCost' => 1,
-                'outputCost' => 1,
-
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'openai:gpt-4-32k',
-            context: [
-                'label' => 'OpenAI GPT 4 32k',
-                'type' => 'gpt4',
-                'name' => 'gpt-4-32k',
-                'maxTokens' => 32_768,
-                'contextSize' => 32_768,
-                'inputCost' => 1,
-                'outputCost' => 1,
-
-            ],
-        );
-
-        $config->object(
-            class: ModelParams::class,
-            name: 'openai:gpt-3.5-turbo',
-            context: [
-                'label' => 'OpenAI GPT 3.5 Turbo',
-                'type' => 'gpt35',
-                'name' => 'gpt-3.5-turbo',
-                'maxTokens' => 4096,
-                'contextSize' => 16_385,
-                'inputCost' => 0.5,
-                'outputCost' => 1.5,
-
-            ],
-        );
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'openai:gpt-4o',
+//            context: [
+//                'label' => 'OpenAI GPT4o',
+//                'type' => 'gpt4',
+//                'name' => 'gpt-4o',
+//                'maxTokens' => 128_000,
+//                'contextSize' => 128_000,
+//                'inputCost' => 5,
+//                'outputCost' => 15,
+//
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'openai:gpt-4o-mini',
+//            context: [
+//                'label' => 'OpenAI GPT4o Mini',
+//                'type' => 'gpt4',
+//                'name' => 'gpt-4o-mini',
+//                'maxTokens' => 128_000,
+//                'contextSize' => 128_000,
+//                'inputCost' => 0.15,
+//                'outputCost' => 0.60,
+//
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'openai:gpt-4-turbo',
+//            context: [
+//                'label' => 'OpenAI GPT4 Turbo',
+//                'type' => 'gpt4',
+//                'name' => 'gpt-4-turbo',
+//                'maxTokens' => 128_000,
+//                'contextSize' => 128_000,
+//                'inputCost' => 10,
+//                'outputCost' => 30,
+//
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'openai:gpt-4',
+//            context: [
+//                'label' => 'OpenAI GPT 4',
+//                'type' => 'gpt4',
+//                'name' => 'gpt-4',
+//                'maxTokens' => 8192,
+//                'contextSize' => 8192,
+//                'inputCost' => 1,
+//                'outputCost' => 1,
+//
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'openai:gpt-4-32k',
+//            context: [
+//                'label' => 'OpenAI GPT 4 32k',
+//                'type' => 'gpt4',
+//                'name' => 'gpt-4-32k',
+//                'maxTokens' => 32_768,
+//                'contextSize' => 32_768,
+//                'inputCost' => 1,
+//                'outputCost' => 1,
+//
+//            ],
+//        );
+//
+//        $config->object(
+//            class: ModelParams::class,
+//            name: 'openai:gpt-3.5-turbo',
+//            context: [
+//                'label' => 'OpenAI GPT 3.5 Turbo',
+//                'type' => 'gpt35',
+//                'name' => 'gpt-3.5-turbo',
+//                'maxTokens' => 4096,
+//                'contextSize' => 16_385,
+//                'inputCost' => 0.5,
+//                'outputCost' => 1.5,
+//
+//            ],
+//        );
 
     }
 }

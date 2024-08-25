@@ -14,30 +14,50 @@ Examples to demonstrate use cases.
 
 Catch up with the latest additions.
 
+
 ## TODOs
 
-- Make system, prompt, script etc. available for configuration by user
 - Parallel tool calls
-- Async mode
-- Fix debug and cache mode
-- Finish logging support
-- Document how to inject custom HTTP client
-- Better error messages
-- Documentation for logging
+- Multiple tools with tool selection
+- Modules: Add module observability via events - currently no access to this info
+- Generate unstructured, then format to structured - to improve reasoning
+
+### API Client
+
+- Clean up predefined models, prices, etc.
+
+### Configuration
+
+- Export configuration to user folder / use external configuration
+- Examples how to override default configuration
+
+### Refactorings
+
 - More modular design - serialization, validation, transformation should be a configurable pipeline
+- Validators / Deserializers / Transformers - chain of objects, not a single object
 - Rework Events so they have toArray() method, make __toString() use it
 - Role - should be enum, not string
 - String >> Array >> Class - for example: prompts (they should be classes)
 - Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
-- Better API for image / audio inputs
-- Export configuration to user folder / use external configuration
-- Examples how to override default configuration
+
+### Infrastructure
+
+- Async mode
+- Fix cache mode
+- Finish logging support
+- Document how to inject custom HTTP client
+- Better error messages
+- Documentation for logging
 - PSR-14 events - finish, demo how to plug custom dispatcher
 - PSR-11 container - finish, demo how to plug custom container
 - PSR-3 logger - finish, demo how to plug custom logger
-- Validators / Deserializers / Transformers - chain of objects, not a single object
-- Modules: Add module observability via events - currently no access to this info
-- Generate unstructured, then format to structured - to improve reasoning
+
+### Partially done
+
+- Better API for image / audio inputs
+- Make system, prompt, script etc. available for configuration by user
+
+
 
 ## Brain dump
 

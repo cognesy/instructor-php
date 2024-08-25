@@ -13,7 +13,7 @@ class GroqClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'groq:llama3-8b';
+    public string $defaultModel = 'gemma2-9b-it';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(

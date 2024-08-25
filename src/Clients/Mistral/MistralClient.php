@@ -13,7 +13,7 @@ class MistralClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'mistral:mistral-small';
+    public string $defaultModel = 'mistral-small';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(

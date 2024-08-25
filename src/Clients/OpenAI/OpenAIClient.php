@@ -12,7 +12,7 @@ class OpenAIClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'openai:gpt-4o-mini';
+    public string $defaultModel = 'gpt-4o-mini';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(

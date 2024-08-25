@@ -12,7 +12,7 @@ class FireworksAIClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'fireworks:mixtral-8x7b';
+    public string $defaultModel = 'accounts/fireworks/models/mixtral-8x7b-instruct';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(

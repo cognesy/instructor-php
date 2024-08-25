@@ -12,7 +12,7 @@ class TogetherAIClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'together:mixtral-8x7b';
+    public string $defaultModel = 'mistralai/Mixtral-8x7B-Instruct-v0.1';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(
