@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Enums\Traits;
 
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 //use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
@@ -32,17 +34,17 @@ trait HandlesMapping
         return match($this) {
             self::Anthropic => ['role' => $this->mapRole($message['role']), 'content' => $this->toAnthropicContent($message['content'])],
             //self::Anyscale => $message,
-            self::Azure => $message,
+            self::Azure => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
             self::Cohere => ['role' => $this->mapRole($message['role']), 'message' => $message['content']],
-            self::Fireworks => $message,
+            self::Fireworks => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
             self::Gemini => ['role' => $this->mapRole($message['role']), "parts" => $this->toGeminiParts($message['content'])],
-            self::Groq => $message,
-            self::Mistral => $message,
-            self::Ollama => $message,
-            self::OpenAI => $message,
-            self::OpenRouter => $message,
-            self::Together => $message,
-            self::OpenAICompatible => $message,
+            self::Groq => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
+            self::Mistral => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
+            self::Ollama => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
+            self::OpenAI => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
+            self::OpenRouter => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
+            self::Together => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
+            self::OpenAICompatible => ['role' => $this->mapRole($message['role']), 'content' => $this->toOpenAIContent($message['content'])],
         };
     }
 
@@ -61,6 +63,24 @@ trait HandlesMapping
             self::OpenRouter => OpenRouterClient::class,
             self::Together => TogetherAIClient::class,
             default => OpenAIClient::class,
+        };
+    }
+
+    public static function fromClient(CanCallApi $client) : ClientType {
+        return match(true) {
+            $client instanceof AnthropicClient => self::Anthropic,
+            //is AnyscaleClient => self::Anyscale,
+            $client instanceof AzureClient => self::Azure,
+            $client instanceof CohereClient => self::Cohere,
+            $client instanceof FireworksAIClient => self::Fireworks,
+            $client instanceof GeminiClient => self::Gemini,
+            $client instanceof GroqClient => self::Groq,
+            $client instanceof MistralClient => self::Mistral,
+            $client instanceof OllamaClient => self::Ollama,
+            $client instanceof OpenAIClient => self::OpenAI,
+            $client instanceof OpenRouterClient => self::OpenRouter,
+            $client instanceof TogetherAIClient => self::Together,
+            default => self::OpenAICompatible,
         };
     }
 
@@ -87,6 +107,29 @@ trait HandlesMapping
             self::Together => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::OpenAICompatible => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
         };
+    }
+
+    private function toOpenAIContent(string|array $content) : string|array {
+        if (is_string($content)) {
+            return $content;
+        }
+        // if content is array - process each part
+        $transformed = [];
+        foreach ($content as $contentPart) {
+            $transformed[] = $this->contentPartToOpenAI($contentPart);
+        }
+        return $transformed;
+    }
+
+    private function contentPartToOpenAI(array $contentPart) : array {
+        $type = $contentPart['type'] ?? 'text';
+        if ($type === 'text') {
+            $contentPart = [
+                'type' => 'text',
+                'text' => $contentPart['text'],
+            ];
+        }
+        return $contentPart;
     }
 
     private function toAnthropicContent(string|array $content) : string|array {

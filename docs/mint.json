@@ -130,6 +130,7 @@
             "group": "Advanced",
             "pages": [
                 "cookbook/examples/advanced/caching",
+                "cookbook/examples/advanced/context_cache",
                 "cookbook/examples/advanced/custom_client",
                 "cookbook/examples/advanced/custom_prompts",
                 "cookbook/examples/advanced/custom_validation",

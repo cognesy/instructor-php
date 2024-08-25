@@ -8,7 +8,7 @@ trait HandlesPrompts
     private string $retryPrompt;
     private string $prompt = '';
     private string $system = '';
-    protected array $cachedContext = [];
+    private array $cachedContext = [];
 
     public function withPrompt(string $prompt) : self {
         $this->prompt = $prompt;

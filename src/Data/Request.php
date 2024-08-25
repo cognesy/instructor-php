@@ -2,13 +2,14 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
-use RuntimeException;
+//use RuntimeException;
 
 class Request
 {
@@ -53,6 +54,7 @@ class Request
         $this->apiRequestFactory = $apiRequestFactory;
         $this->requestConfig = $requestConfig;
         $this->client = $client;
+        $this->clientType = ClientType::fromClient($client);
         $this->cachedContext = $cachedContext;
 
         $this->options = $options;
@@ -65,10 +67,10 @@ class Request
         $this->retryPrompt = $retryPrompt;
         $this->examples = $examples;
         $this->system = $system;
-        if (!empty($this->system) && !empty($this->cachedContext['system'])) {
-            throw new RuntimeException('System is already set in cached context');
-            //unset($this->cachedContext['system']);
-        }
+//        if (!empty($this->system) && !empty($this->cachedContext['system'])) {
+//            throw new RuntimeException('System is already set in cached context');
+//            //unset($this->cachedContext['system']);
+//        }
 
         $this->withModel($model);
         if (empty($this->option('max_tokens'))) {

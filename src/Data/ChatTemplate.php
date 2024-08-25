@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Script;
@@ -32,25 +33,37 @@ class ChatTemplate
     }
 
     public function toMessages() : array {
-        $this->script = $this->makeScript($this->request);
+        $this->script = $this->makeScript($this->request)->mergeScript(
+            $this->makeCachedScript($this->request->cachedContext())
+        );
 
         // Add retry messages if needed
         $this->addRetryMessages();
 
         // Add meta sections
-        return $this->withMetasections($this->script)
+        $output = $this
+            ->withCacheMetaSections($this->withMetaSections($this->script))
             ->select([
+                // potentially cached - predefined sections used to construct the script
                 'system',
+                'pre-cached',
+                    'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+                    'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+                    'pre-cached-input', 'cached-input', 'post-cached-input',
+                    'cached-messages',
+                'post-cached',
+                // never cached
                 'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples',
-                    'examples',
-                    'pre-input', 'messages', 'input', 'post-input',
-                'post-examples',
+                'pre-examples', 'examples', 'post-examples',
+                'pre-input', 'input', 'post-input',
+                'messages',
                 'pre-retries', 'retries', 'post-retries'
             ])
             ->toArray(
-                context: ['json_schema' => $this->makeJsonSchema() ?? []]
+                context: ['json_schema' => $this->makeJsonSchema() ?? []],
             );
+
+        return $output;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
@@ -91,30 +104,27 @@ class ChatTemplate
         }
 
         $script = new Script();
-        $script->section('system')->appendMessages(
+
+        $script->section('system')->prependMessages(
             $this->makeSystem($cachedContext['messages'], $cachedContext['system'])
         );
-        $script->section('messages')->appendMessages(
+        $script->section('cached-messages')->appendMessages(
             $this->makeMessages($cachedContext['messages'])
         );
-        $script->section('input')->appendMessages(
+        $script->section('cached-input')->appendMessages(
             $this->makeInput($cachedContext['input'])
         );
-        $script->section('prompt')->appendMessage(
+        $script->section('cached-prompt')->appendMessage(
             Message::fromString($cachedContext['prompt'])
         );
-        $script->section('examples')->appendMessages(
+        $script->section('cached-examples')->appendMessages(
             $this->makeExamples($cachedContext['examples'])
         );
+
         return $script;
     }
 
     protected function withMetaSections(Script $script) : Script {
-        $script->section('pre-input')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => "INPUT:",
-        ]);
-
         if ($script->section('prompt')->notEmpty()) {
             $script->section('pre-prompt')->appendMessageIfEmpty([
                 'role' => 'user',
@@ -129,10 +139,16 @@ class ChatTemplate
             ]);
         }
 
-        $script->section('post-examples')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => "RESPONSE:",
-        ]);
+        if ($script->section('input')->notEmpty()) {
+            $script->section('pre-input')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "INPUT:",
+            ]);
+            $script->section('post-input')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "RESPONSE:",
+            ]);
+        }
 
         if ($script->section('retries')->notEmpty()) {
             $script->section('pre-retries')->appendMessageIfEmpty([
@@ -144,6 +160,45 @@ class ChatTemplate
                 'content' => "CORRECTED RESPONSE:",
             ]);
         }
+
+        return $script;
+    }
+
+    protected function withCacheMetaSections(Script $script) : Script {
+        if (empty($this->request->cachedContext())) {
+            return $script;
+        }
+
+        if ($script->section('cached-prompt')->notEmpty()) {
+            $script->removeSection('prompt');
+            $script->section('pre-cached-prompt')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "TASK:",
+            ]);
+        }
+
+        if ($script->section('cached-examples')->notEmpty()) {
+            $script->section('pre-cached-examples')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "EXAMPLES:",
+            ]);
+        }
+
+        if ($script->section('cached-input')->notEmpty()) {
+            $script->section('pre-cached-input')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "INPUT:",
+            ]);
+        }
+
+        $script->section('post-cached')->appendMessageIfEmpty([
+            'role' => 'user',
+            'content' => [[
+                'type' => 'text',
+                'text' => 'INSTRUCTIONS:',
+                'cache_control' => ["type" => "ephemeral"],
+            ]],
+        ]);
 
         return $script;
     }
@@ -183,11 +238,15 @@ class ChatTemplate
         return $messages;
     }
 
-    protected function makeSystem(array $messages, string $system) : Messages {
+    protected function makeSystem(string|array $messages, string $system) : Messages {
         $output = new Messages();
 
         if (!empty($system)) {
             $output->appendMessage(['role' => 'system', 'content' => $system]);
+        }
+
+        if (!is_array($messages)) {
+            $messages = [['role' => 'user', 'content' => $messages]];
         }
 
         // EXTRACT SYSTEM ROLE FROM MESSAGES - until first non-system message
@@ -201,10 +260,13 @@ class ChatTemplate
         return $output;
     }
 
-    protected function makeMessages(array $messages) : Messages {
+    protected function makeMessages(string|array $messages) : Messages {
         $output = new Messages();
         if (empty($messages)) {
             return $output;
+        }
+        if (!is_array($messages)) {
+            $messages = [['role' => 'user', 'content' => $messages]];
         }
         // skip system messages
         $index = 0;

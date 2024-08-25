@@ -8,6 +8,11 @@ use Cognesy\Instructor\Data\Messages\Section;
 
 trait HandlesMutation
 {
+    public function setMessages(Messages $messages) : static {
+        $this->messages = $messages;
+        return $this;
+    }
+
     public function prependMessageIfEmpty(array|Message $message) : static {
         if ($this->messages->isEmpty()) {
             $this->prependMessage($message);

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Utils\Json;
 
 class Json
 {
-    static public function find(string $text) : string {
+    public static function find(string $text) : string {
         if (empty($text)) {
             return '';
         }
@@ -12,7 +12,7 @@ class Json
         return empty($candidates) ? '' : $candidates[0];
     }
 
-    static public function findPartial(string $text) : string {
+    public static function findPartial(string $text) : string {
         if (empty($text)) {
             return '';
         }
@@ -24,16 +24,16 @@ class Json
         return substr($text, $firstOpenBracket, $lastCloseBracket - $firstOpenBracket + 1);
     }
 
-    static public function fix(string $text) : string {
+    public static function fix(string $text) : string {
         return (new JsonParser)->fix($text);
     }
 
-    static public function parse(string $text, mixed $default = null) : mixed {
+    public static function parse(string $text, mixed $default = null) : mixed {
         $decoded = json_decode($text, true);
         return empty($decoded) ? $default : $decoded;
     }
 
-    static public function parsePartial(string $text, bool $associative = true) : mixed {
+    public static function parsePartial(string $text, bool $associative = true) : mixed {
         return (new JsonParser)->parse($text, $associative);
     }
 
@@ -58,8 +58,7 @@ class Json
         return substr($text, $firstOpenBracket, $lastCloseBracket - $firstOpenBracket + 1);
     }
 
-    private function extractJSONStrings(string $text): array
-    {
+    private function extractJSONStrings(string $text): array {
         $candidates = [];
         $currentCandidate = '';
         $bracketCount = 0;
@@ -100,8 +99,7 @@ class Json
         return $this->validateJSONStrings($candidates);
     }
 
-    private function validateJSONStrings(array $candidates): array
-    {
+    private function validateJSONStrings(array $candidates): array {
         return array_filter($candidates, function($candidate) {
             json_decode($candidate);
             return json_last_error() === JSON_ERROR_NONE;
