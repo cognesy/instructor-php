@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\ApiClient\Utils\Debugger;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
@@ -43,7 +44,6 @@ trait HandlesStreamApiResponse
 
         try {
             $response = $this->connector()->send($request);
-
             $this->events->dispatch(new ApiStreamRequestSent(
                 uri: (string) $response->getPsrRequest()->getUri(),
                 method: $response->getPsrRequest()->getMethod(),
@@ -51,15 +51,7 @@ trait HandlesStreamApiResponse
                 body: (string) $response->getPsrRequest()->getBody(),
             ));
         } catch (Exception $exception) {
-            if ($request->requestConfig()->isDebug() && method_exists($exception, 'getResponse')) {
-                /** @var Response $response */
-                $response = $exception->getResponse();
-                if (!empty($response)) {
-                    Debugger::requestDebugger($response->getPendingRequest(), $response->getPsrRequest());
-                    // body cannot be accessed - see Saloon issue: https://github.com/saloonphp/saloon/issues/447
-                    Debugger::responseDebugger($response, $response->getPsrResponse(), $response->getPsrResponse()->getBody());
-                }
-            }
+            $this->tryDebugException($request, $exception);
             $this?->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
         }
@@ -87,10 +79,7 @@ trait HandlesStreamApiResponse
             $body,
         ));
 
-        if ($request->requestConfig()->isDebug()) {
-            Debugger::requestDebugger($response->getPendingRequest(), $response->getPsrRequest());
-            Debugger::responseDebugger($response, $response->getPsrResponse(), $body ?? '');
-        }
+        $this->tryDebug($request, $response, $body);
     }
 
     abstract protected function isDone(string $data): bool;

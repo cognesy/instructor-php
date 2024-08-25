@@ -23,7 +23,9 @@ class Debugger
             'method' => $psrRequest->getMethod(),
             'uri' => (string) $psrRequest->getUri(),
             'headers' => $headers,
+            //'body' => (string) $psrRequest->getBody(),
             'body' => (string) $psrRequest->getBody(),
+            '(body as JSON array)' => json_decode((string) $psrRequest->getBody()),
         ], 'INSTRUCTOR REQUEST (' . ($label ?? '') . ') ->');
     }
 
@@ -41,6 +43,7 @@ class Debugger
             'status' => $response->status(),
             'headers' => $headers,
             'body' => $body,
+            '(body as JSON array)' => json_decode($body),
         ], 'INSTRUCTOR RESPONSE (' . ($label ?? '') . ') ->');
     }
 

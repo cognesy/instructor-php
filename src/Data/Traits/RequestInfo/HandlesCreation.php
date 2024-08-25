@@ -24,6 +24,7 @@ trait HandlesCreation
         $toolDescription = '',
         $retryPrompt = '',
         $mode = Mode::Tools,
+        $cachedContext = [],
     ) : static {
         $data = new static();
         $data->messages = $messages;
@@ -39,6 +40,7 @@ trait HandlesCreation
         $data->toolDescription = $toolDescription;
         $data->retryPrompt = $retryPrompt;
         $data->mode = $mode;
+        $data->cachedContext = $cachedContext;
         return $data;
     }
 
@@ -57,6 +59,7 @@ trait HandlesCreation
             toolDescription: $data['toolDescription'] ?? '',
             retryPrompt: $data['retryPrompt'] ?? '',
             mode: $data['mode'] ?? Mode::Tools,
+            cachedContext: $data['cachedContext'] ?? [],
         );
     }
 }

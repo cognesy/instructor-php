@@ -35,6 +35,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     protected ClientType $clientType;
     protected array $jsonSchema = [];
     protected string $schemaName = '';
+    protected array $cachedContext = [];
 
     // BODY FIELDS
     protected string $model = '';
@@ -74,6 +75,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         $this->clientType = $this->getData('client_type', ClientType::fromRequestClass(static::class));
         $this->jsonSchema = $this->getData('json_schema', []);
         $this->schemaName = $this->getData('schema_name', '');
+        $this->cachedContext = $this->getData('cached_context', []);
     }
 
     protected function initBodyFields() : void {

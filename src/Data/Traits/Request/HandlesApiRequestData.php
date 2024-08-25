@@ -17,6 +17,7 @@ trait HandlesApiRequestData
                 'tool_choice' => $this->toolChoice() ?? [],
                 'json_schema' => $this->jsonSchema() ?? [],
                 'schema_name' => $this->schemaName() ?? '',
+                'cached_context' => $this->cachedContext ?? [],
             ]
         ));
     }

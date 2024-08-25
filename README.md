@@ -7,6 +7,8 @@ Structured data extraction in PHP, powered by LLMs. Designed for simplicity, tra
 
 Instructor is a library that allows you to extract structured, validated data from multiple types of inputs: text, images or OpenAI style chat sequence arrays. It is powered by Large Language Models (LLMs).
 
+Instructor simplifies LLM integration in PHP projects. It handles the complexity of extracting structured data from LLM outputs, so you can focus on building your application logic and iterate faster.
+
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
 
 ![image](./docs/images/concept.png)
@@ -17,17 +19,19 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 
 
 
+
 ## Feature highlights
 
 ### Core features
 
-- Get structured responses from LLM inference
+- Get structured responses from LLMs without writing boilerplate code
 - Validation of returned data
 - Automated retries in case of errors when LLM responds with invalid data
+- Integrate LLM support into your existing PHP code with minimal friction - no framework, no extensive code changes
 
 ### Flexible inputs
 
-- Process various types of input data: text, series of chat messages or images
+- Process various types of input data: text, series of chat messages or images using the same, simple API
 - 'Structured-to-structured' processing - provide object or array as an input and get object with the results of inference back
 - Demonstrate examples to improve the quality of inference
 
@@ -46,10 +50,12 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 ### Observability
 
 - Get detailed insight into internal processing via events
+- Debug mode to see the details of LLM API requests and responses
 
 ### Support for multiple LLMs / API providers
 
-- Use multiple LLM API providers (incl. OpenAI, Gemini, Anthropic, Cohere, Azure, Groq, Mistral, Fireworks AI, Together AI)
+- Easily switch between LLM providers
+- Support for most popular LLM APIs (incl. OpenAI, Gemini, Anthropic, Cohere, Azure, Groq, Mistral, Fireworks AI, Together AI)
 - OpenRouter support - access to 100+ language models
 - Use local models with Ollama
 

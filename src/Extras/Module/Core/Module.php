@@ -10,7 +10,7 @@ use Cognesy\Instructor\Instructor;
  * -------------------------------
  * We need a way to call some operation with arbitrary signature and one or more outputs.
  * We need to execute internal logic before and/or after the operation.
- * We want to block direct access to main execution method forward(), so it is not accidentally called.
+ * We want to block direct access to main execution method forward(), so it is not called directly.
  * The reason we don't want forward() to be called directly is because we need some pre- and post-processing.
  * We also want unified interface - arguments are always an array, outputs are always an array.
  * The reason we want unified interface is it will help us to use modules in a pipeline or as graph nodes.

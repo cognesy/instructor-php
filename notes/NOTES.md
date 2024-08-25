@@ -25,7 +25,6 @@ Catch up with the latest additions.
 - Better error messages
 - Documentation for logging
 - More modular design - serialization, validation, transformation should be a configurable pipeline
-- Add module observability via events - currently no access to this info
 - Rework Events so they have toArray() method, make __toString() use it
 - Role - should be enum, not string
 - String >> Array >> Class - for example: prompts (they should be classes)
@@ -37,7 +36,8 @@ Catch up with the latest additions.
 - PSR-11 container - finish, demo how to plug custom container
 - PSR-3 logger - finish, demo how to plug custom logger
 - Validators / Deserializers / Transformers - chain of objects, not a single object
-
+- Modules: Add module observability via events - currently no access to this info
+- Generate unstructured, then format to structured - to improve reasoning
 
 ## Brain dump
 

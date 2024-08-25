@@ -69,4 +69,9 @@ trait HandlesMutation
         $this->mode = $mode;
         return $this;
     }
+
+    public function withCachedContext(array $cachedContext) : static {
+        $this->cachedContext = $cachedContext;
+        return $this;
+    }
 }

@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Data\Messages;
 
 class Message {
     use Traits\Message\HandlesCreation;
+    use Traits\Message\HandlesMutation;
     use Traits\Message\HandlesAccess;
     use Traits\Message\HandlesTransformation;
 

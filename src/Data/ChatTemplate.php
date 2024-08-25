@@ -14,7 +14,8 @@ class ChatTemplate
     private array $defaultPrompts = [
         Mode::MdJson->value => "Respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
         Mode::Json->value => "Respond correctly with strict JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        Mode::Tools->value => "Extract correct and accurate data from the input using provided tools. Response must be JSON object following provided tool schema.\n<|json_schema|>\n",
+        Mode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
+        //Mode::Tools->value => "Extract correct and accurate data from the input using provided tools. Response must be JSON object following provided tool schema.\n<|json_schema|>\n",
     ];
 
     private ?Request $request;
@@ -40,30 +41,16 @@ class ChatTemplate
         return $this->withMetasections($this->script)
             ->select([
                 'system',
-                'pre-input', 'messages', 'input', 'post-input',
                 'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples', 'examples', 'post-examples',
+                'pre-examples',
+                    'examples',
+                    'pre-input', 'messages', 'input', 'post-input',
+                'post-examples',
                 'pre-retries', 'retries', 'post-retries'
             ])
             ->toArray(
-                context: ['json_schema' => $this->jsonSchema() ?? []]
+                context: ['json_schema' => $this->makeJsonSchema() ?? []]
             );
-    }
-
-    public function prompt() : string {
-        return $this->request->prompt() ?: $this->defaultPrompts[$this->request->mode()->value] ?? '';
-    }
-
-    public function retryPrompt() : string {
-        return $this->request->retryPrompt() ?: $this->defaultRetryPrompt;
-    }
-
-    public function system() : string {
-        return $this->request->system(); // ?: 'You are executor of complex language programs. Analyze input instructions, extract key information from provided inputs, and always generate a JSON output adhering to the provided schema.';
-    }
-
-    public function jsonSchema() : array {
-        return $this->request->responseModel()?->toJsonSchema();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
@@ -77,53 +64,48 @@ class ChatTemplate
 
         // GET DATA
         $messages = $this->normalizeMessages($request->messages());
-        $input = $request->input();
-        $examples = $request->examples();
-        $prompt = $this->prompt();
 
         // SYSTEM SECTION
-        $index = 0;
-        $script->section('system')->appendMessage(['role' => 'system', 'content' => $request->system()]);
-        foreach ($messages as $message) {
-            if ($message['role'] !== 'system') {
-                break;
-            }
-            $script->section('system')->appendMessage(['role' => 'system', 'content' => $message['content']]);
-            $index++;
+        $script->section('system')->appendMessages(
+            $this->makeSystem($messages, $request->system())
+        );
+        $script->section('messages')->appendMessages(
+            $this->makeMessages($messages)
+        );
+        $script->section('input')->appendMessages(
+            $this->makeInput($request->input())
+        );
+        $script->section('prompt')->appendMessage(
+            $this->makePrompt($this->request->prompt())
+        );
+        $script->section('examples')->appendMessages(
+            $this->makeExamples($request->examples())
+        );
+
+        return $this->filterEmptySections($script);
+    }
+
+    protected function makeCachedScript(array $cachedContext) : Script {
+        if (empty($cachedContext)) {
+            return new Script();
         }
 
-        // MESSAGES SECTION
-        $messagesSection = array_slice($messages, $index);
-        if (!empty($messagesSection)) {
-            $script->section('messages')->appendMessages($messagesSection);
-        }
-
-        // INPUT DATA SECTION
-        $inputMessages = Messages::fromInput($input);
-        if (!$this->isInputEmpty($inputMessages)) {
-            $script->section('input')->appendMessages($inputMessages);
-        }
-
-        // PROMPT SECTION
-        if (!empty($prompt)) {
-            $script->section('prompt')->appendMessage([
-                'role' => 'user',
-                'content' => $prompt
-            ]);
-        }
-
-        // EXAMPLES SECTION
-        if (!empty($examples)) {
-            foreach ($examples as $item) {
-                $example = match(true) {
-                    is_array($item) => Example::fromArray($item),
-                    is_string($item) => Example::fromJson($item),
-                    $item instanceof Example => $item,
-                    default => throw new Exception('Invalid example type'),
-                };
-                $script->section('examples')->appendMessage(Message::fromString($example->toString()));
-            }
-        }
+        $script = new Script();
+        $script->section('system')->appendMessages(
+            $this->makeSystem($cachedContext['messages'], $cachedContext['system'])
+        );
+        $script->section('messages')->appendMessages(
+            $this->makeMessages($cachedContext['messages'])
+        );
+        $script->section('input')->appendMessages(
+            $this->makeInput($cachedContext['input'])
+        );
+        $script->section('prompt')->appendMessage(
+            Message::fromString($cachedContext['prompt'])
+        );
+        $script->section('examples')->appendMessages(
+            $this->makeExamples($cachedContext['examples'])
+        );
         return $script;
     }
 
@@ -133,10 +115,12 @@ class ChatTemplate
             'content' => "INPUT:",
         ]);
 
-        $script->section('pre-prompt')->appendMessageIfEmpty([
-            'role' => 'user',
-            'content' => "TASK:",
-        ]);
+        if ($script->section('prompt')->notEmpty()) {
+            $script->section('pre-prompt')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "TASK:",
+            ]);
+        }
 
         if ($script->section('examples')->notEmpty()) {
             $script->section('pre-examples')->appendMessageIfEmpty([
@@ -171,20 +155,117 @@ class ChatTemplate
         return $messages;
     }
 
-    private function isInputEmpty(Message|Messages $inputMessages) : bool {
+    private function filterEmptySections(Script $script) : Script {
+        foreach ($script->sections() as $section) {
+            if ($this->isSectionEmpty($section->messages())) {
+                $script->removeSection($section->name());
+            }
+        }
+        return $script;
+    }
+
+    private function isSectionEmpty(Message|Messages $content) : bool {
         return match(true) {
-            $inputMessages instanceof Messages => $inputMessages->isEmpty(),
-            $inputMessages instanceof Message => $inputMessages->isEmpty() || $inputMessages->isNull(),
+            $content instanceof Messages => $content->isEmpty(),
+            $content instanceof Message => $content->isEmpty() || $content->isNull(),
             default => true,
         };
+    }
+
+    protected function makeRetryMessages(
+        array $messages,
+        string $jsonData,
+        array $errors
+    ) : array {
+        $retryFeedback = $this->makeRetryPrompt() . Arrays::flatten($errors, "; ");
+        $messages[] = ['role' => 'assistant', 'content' => $jsonData];
+        $messages[] = ['role' => 'user', 'content' => $retryFeedback];
+        return $messages;
+    }
+
+    protected function makeSystem(array $messages, string $system) : Messages {
+        $output = new Messages();
+
+        if (!empty($system)) {
+            $output->appendMessage(['role' => 'system', 'content' => $system]);
+        }
+
+        // EXTRACT SYSTEM ROLE FROM MESSAGES - until first non-system message
+        foreach ($messages as $message) {
+            if ($message['role'] !== 'system') {
+                break;
+            }
+            $output->appendMessage(['role' => 'system', 'content' => $message['content']]);
+        }
+
+        return $output;
+    }
+
+    protected function makeMessages(array $messages) : Messages {
+        $output = new Messages();
+        if (empty($messages)) {
+            return $output;
+        }
+        // skip system messages
+        $index = 0;
+        foreach ($messages as $message) {
+            if ($message['role'] !== 'system') {
+                break;
+            }
+            $index++;
+        }
+        $output->appendMessages(array_slice($messages, $index));
+        return $output;
+    }
+
+    protected function makeExamples(array $examples) : Messages {
+        $messages = new Messages();
+        if (empty($examples)) {
+            return $messages;
+        }
+        foreach ($examples as $item) {
+            $example = match(true) {
+                is_array($item) => Example::fromArray($item),
+                is_string($item) => Example::fromJson($item),
+                $item instanceof Example => $item,
+                default => throw new Exception('Invalid example type'),
+            };
+            $messages->appendMessages($example->toMessages());
+        }
+        return $messages;
+    }
+
+    protected function makePrompt(string $prompt) : Message {
+        return new Message(
+            role: 'user',
+            content: $prompt
+                ?: $this->defaultPrompts[$this->request->mode()->value]
+                ?? ''
+        );
+    }
+
+    protected function makeRetryPrompt() : string {
+        return $this->request->retryPrompt() ?: $this->defaultRetryPrompt;
+    }
+
+    protected function makeInput(array|object|string $input) : Messages {
+        if (empty($input)) {
+            return new Messages();
+        }
+        return Messages::fromInput($input);
+    }
+
+    protected function makeJsonSchema() : array {
+        return $this->request->responseModel()?->toJsonSchema();
     }
 
     private function isRequestEmpty(Request $request) : bool {
         return match(true) {
             !empty($request->messages()) => false,
             !empty($request->input()) => false,
-            !empty($request->examples()) => false,
             !empty($request->prompt()) => false,
+            !empty($request->system()) => false, // ?
+            !empty($request->examples()) => false, // ?
             default => true,
         };
     }
@@ -199,16 +280,5 @@ class ChatTemplate
                 [], $failedResponse->apiResponse()->content, $failedResponse->errors()
             )
         );
-    }
-
-    protected function makeRetryMessages(
-        array $messages,
-        string $jsonData,
-        array $errors
-    ) : array {
-        $retryFeedback = $this->retryPrompt() . Arrays::flatten($errors, "; ");
-        $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $retryFeedback];
-        return $messages;
     }
 }

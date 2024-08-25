@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Data\Messages\Traits\Message;
 
+use Cognesy\Instructor\Data\Messages\Message;
 use RuntimeException;
 
 trait HandlesTransformation
@@ -10,9 +11,37 @@ trait HandlesTransformation
     }
 
     public function toString() : string {
-        if ($this->isComposite()) {
-            throw new RuntimeException('Cannot convert composite message to string');
+        if (!$this->isComposite()) {
+            return $this->content;
         }
-        return $this->content;
+        // flatten composite message to text
+        $text = '';
+        foreach($this->content as $part) {
+            if ($part['type'] !== 'text') {
+                throw new RuntimeException('Message contains non-text parts and cannot be flattened to text');
+            }
+            $text .= $part['text'];
+        }
+        return $text;
+    }
+
+    public function toCompositeMessage() : Message {
+        return Message::fromArray($this->toCompositeArray());
+    }
+
+    public function toCompositeArray() : array {
+        if ($this->isComposite()) {
+            return [
+                'role' => $this->role,
+                'content' => $this->content,
+            ];
+        }
+        return [
+            'role' => $this->role,
+            'content' => [[
+                'type' => 'text',
+                'text' => $this->content,
+            ]]
+        ];
     }
 }

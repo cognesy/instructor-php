@@ -8,6 +8,7 @@ use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
+use RuntimeException;
 
 class Request
 {
@@ -40,6 +41,7 @@ class Request
         string $toolDescription,
         string $retryPrompt,
         Mode $mode,
+        array $cachedContext,
         CanCallApi $client,
         ModelFactory $modelFactory,
         ResponseModelFactory $responseModelFactory,
@@ -51,6 +53,7 @@ class Request
         $this->apiRequestFactory = $apiRequestFactory;
         $this->requestConfig = $requestConfig;
         $this->client = $client;
+        $this->cachedContext = $cachedContext;
 
         $this->options = $options;
         $this->maxRetries = $maxRetries;
@@ -58,10 +61,14 @@ class Request
 
         $this->input = $input;
         $this->messages = $this->normalizeMessages($messages);
-        $this->system = $system;
         $this->prompt = $prompt;
         $this->retryPrompt = $retryPrompt;
         $this->examples = $examples;
+        $this->system = $system;
+        if (!empty($this->system) && !empty($this->cachedContext['system'])) {
+            throw new RuntimeException('System is already set in cached context');
+            //unset($this->cachedContext['system']);
+        }
 
         $this->withModel($model);
         if (empty($this->option('max_tokens'))) {

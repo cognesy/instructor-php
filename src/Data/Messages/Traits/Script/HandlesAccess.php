@@ -6,6 +6,11 @@ use Cognesy\Instructor\Data\Messages\Section;
 
 trait HandlesAccess
 {
+    /** @return Section[] */
+    public function sections() : array {
+        return $this->sections;
+    }
+
     public function section(string $name) : Section {
         $index = $this->sectionIndex($name);
         if ($index === -1) {

@@ -57,7 +57,7 @@ echo "Time elapsed (no cache, default): $delta msec\n\n";
 $user2 = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-)->withCache()->get();
+)->withRequestCache()->get();
 
 $delta = Profiler::mark('cache 1st call')->mili();
 echo "Time elapsed (cache on, 1st call): $delta msec\n\n";
@@ -65,7 +65,7 @@ echo "Time elapsed (cache on, 1st call): $delta msec\n\n";
 $user3 = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-)->withCache()->get();
+)->withRequestCache()->get();
 
 $delta = Profiler::mark('cache 2nd call')->mili();
 echo "Time elapsed (cache on, 2nd call): $delta msec\n\n";
@@ -73,7 +73,7 @@ echo "Time elapsed (cache on, 2nd call): $delta msec\n\n";
 $user4 = $instructor->request(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-)->withCache(false)->get();
+)->withRequestCache(false)->get();
 
 $delta = Profiler::mark('cache 3rd call')->mili();
 echo "Time elapsed (cache turned off again): $delta msec\n\n";

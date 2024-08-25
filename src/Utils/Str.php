@@ -72,4 +72,26 @@ class Str
     public static function endsWith(string $url, string $string) : bool {
         return substr($url, -strlen($string)) === $string;
     }
+
+    public static function between(mixed $url, string $string, string $string1) : string {
+        $start = strpos($url, $string);
+        if ($start === false) {
+            return '';
+        }
+        $start += strlen($string);
+        $end = strpos($url, $string1, $start);
+        if ($end === false) {
+            return '';
+        }
+        return substr($url, $start, $end - $start);
+    }
+
+    public static function after(mixed $url, string $string) : string {
+        $start = strpos($url, $string);
+        if ($start === false) {
+            return '';
+        }
+        $start += strlen($string);
+        return substr($url, $start);
+    }
 }

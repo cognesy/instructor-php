@@ -18,22 +18,24 @@ class AnthropicApiRequest extends ApiRequest
         $system = Messages::fromArray($this->messages)
             ->forRoles(['system'])
             ->toString();
+
         $messages = Messages::fromArray($this->messages)
             ->exceptRoles(['system'])
             ->toNativeArray(
                 clientType: ClientType::fromRequestClass($this),
                 mergePerRole: true
             );
+
         $body = array_filter(
             array_merge(
                 $this->requestBody,
                 [
                     'model' => $this->model(),
+                    'max_tokens' => $this->maxTokens,
                     'system' => $system,
                     'messages' => $messages,
                     'tools' => $this->tools(),
                     'tool_choice' => $this->getToolChoice(),
-                    'max_tokens' => $this->maxTokens,
                 ],
             )
         );

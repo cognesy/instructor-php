@@ -30,29 +30,31 @@ class User {
     public string $name;
 }
 
+// CASE 1 - normal flow
+
 $instructor = (new Instructor)->withClient(new OpenAIClient(
     apiKey: Env::get('OPENAI_API_KEY'), //  . 'invalid', // intentionally invalid API key
     baseUri: Env::get('OPENAI_BASE_URI'),
 ));
 
-echo "Debugging request and response:\n\n";
+echo "\n### CASE 1.1 - Debugging sync request\n\n";
 $user = $instructor->withDebug()->respond(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
-    options: [ 'stream' => true ]
+    options: [ 'stream' => false ]
 );
 
 echo "\nResult:\n";
 dump($user);
 
-echo "Debugging request and response:\n\n";
+echo "\n### CASE 1.2 - Debugging streaming request\n\n";
 $user2 = $instructor->withDebug()->respond(
     messages: "Anna is 21 years old.",
     responseModel: User::class,
-    options: [ 'stream' => false ]
+    options: [ 'stream' => true ]
 );
 
-echo "\nResult 2:\n";
+echo "\nResult:\n";
 dump($user2);
 
 assert(isset($user->name));
@@ -64,5 +66,25 @@ assert(isset($user2->name));
 assert(isset($user2->age));
 assert($user2->name === 'Anna');
 assert($user2->age === 21);
+
+
+// CASE 2 - forcing API error via invalid API key
+
+$instructor = (new Instructor)->withClient(new OpenAIClient(
+    apiKey: Env::get('OPENAI_API_KEY') . 'invalid', // intentionally invalid API key
+    baseUri: Env::get('OPENAI_BASE_URI'),
+));
+
+echo "\n### CASE 2 - Debugging exception\n\n";
+try {
+    $user = $instructor->withDebug()->respond(
+        messages: "Jason is 25 years old.",
+        responseModel: User::class,
+        options: [ 'stream' => true ]
+    );
+} catch (Exception $e) {
+    echo "\nCaught it:\n";
+    dump($e);
+}
 ?>
 ```

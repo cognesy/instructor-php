@@ -19,6 +19,7 @@ trait HandlesSerialization
             'toolName' => $this->toolName,
             'toolDescription' => $this->toolDescription,
             'mode' => $this->mode->value,
+            'cachedContext' => $this->cachedContext,
         ];
     }
 }

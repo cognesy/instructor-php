@@ -19,13 +19,14 @@ class ResponseDeserializer
 
     public function __construct(
         private EventDispatcher $events,
-        /** @var CanDeserializeClass $deserializer */
         private array $deserializers,
     ) {}
 
     public function deserialize(string $json, ResponseModel $responseModel, string $toolName = null) : Result {
         $result = match(true) {
-            $responseModel->instance() instanceof CanDeserializeSelf => $this->deserializeSelf($json, $responseModel->instance(), $toolName),
+            $this->canDeserializeSelf($responseModel) => $this->deserializeSelf(
+                $json, $responseModel->instance(), $toolName
+            ),
             default => $this->deserializeAny($json, $responseModel)
         };
         $this->events->dispatch(match(true) {
@@ -36,6 +37,10 @@ class ResponseDeserializer
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
+
+    protected function canDeserializeSelf(ResponseModel $responseModel) : bool {
+        return $responseModel->instance() instanceof CanDeserializeSelf;
+    }
 
     protected function deserializeSelf(string $json, CanDeserializeSelf $response, string $toolName = null) : Result {
         $this->events->dispatch(new CustomResponseDeserializationAttempt($response, $json));

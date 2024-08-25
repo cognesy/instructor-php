@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Traits\Instructor;
 
-trait HandlesCaching
+trait HandlesRequestCaching
 {
-    public function cache() : bool {
+    public function isRequestCached() : bool {
         return $this->apiRequestConfig->isCached();
     }
 
-    public function withCache(bool $cache = true) : static {
+    public function withRequestCache(bool $cache = true) : static {
         $this->apiRequestConfig->withCache($cache);
         return $this;
     }

@@ -21,7 +21,9 @@ class RequestFactory
         protected EventDispatcher $events,
     ) {}
 
-    public function fromData(RequestInfo $data) : Request {
+    public function fromData(
+        RequestInfo $data,
+    ) : Request {
         return $this->create(
             messages: $data->messages ?? [],
             input: $data->input ?? [],
@@ -36,6 +38,7 @@ class RequestFactory
             toolDescription: $data->toolDescription ?? '',
             retryPrompt: $data->retryPrompt ?? '',
             mode: $data->mode ?? Mode::Tools,
+            cachedContext: $data->cachedContext ?? [],
         );
     }
 
@@ -53,6 +56,7 @@ class RequestFactory
         string $toolDescription = '',
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
+        array $cachedContext = [],
     ) : Request {
         return new Request(
             messages: $messages,
@@ -68,6 +72,7 @@ class RequestFactory
             toolDescription: $toolDescription,
             retryPrompt: $retryPrompt,
             mode: $mode,
+            cachedContext: $cachedContext,
             client: $this->clientFactory->getDefault(),
             modelFactory: $this->modelFactory,
             responseModelFactory: $this->responseModelFactory,

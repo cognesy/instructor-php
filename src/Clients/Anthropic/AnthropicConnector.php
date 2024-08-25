@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Anthropic;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
@@ -16,12 +15,12 @@ class AnthropicConnector extends ApiConnector
         return new HeaderAuthenticator($this->apiKey, 'x-api-key');
     }
 
-
     protected function defaultHeaders(): array {
         return [
             'content-type' => 'application/json',
             'accept' => 'application/json',
             'anthropic-version' => '2023-06-01',
+            'anthropic-beta' => 'prompt-caching-2024-07-31',
         ];
     }
 }

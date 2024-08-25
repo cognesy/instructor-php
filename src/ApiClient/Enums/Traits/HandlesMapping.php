@@ -13,27 +13,10 @@ use Cognesy\Instructor\Clients\Ollama\OllamaClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
+use Cognesy\Instructor\Utils\Str;
 
 trait HandlesMapping
 {
-    public function toNativeMessage(array $message) : array {
-        return match($this) {
-            self::Anthropic => ['role' => $this->mapRole($message['role']), 'content' => $message['content']],
-            //self::Anyscale => $message,
-            self::Azure => $message,
-            self::Cohere => ['role' => $this->mapRole($message['role']), 'message' => $message['content']],
-            self::Fireworks => $message,
-            self::Gemini => ['role' => $this->mapRole($message['role']), "parts" => [["text" => $message['content']]]],
-            self::Groq => $message,
-            self::Mistral => $message,
-            self::Ollama => $message,
-            self::OpenAI => $message,
-            self::OpenRouter => $message,
-            self::Together => $message,
-            self::OpenAICompatible => $message,
-        };
-    }
-
     public function toNativeMessages(string|array $messages) : array {
         if (is_string($messages)) {
             $messages = [['role' => 'user', 'content' => $messages]];
@@ -43,6 +26,24 @@ trait HandlesMapping
             $transformed[] = $this->toNativeMessage($message);
         }
         return $transformed;
+    }
+
+    public function toNativeMessage(array $message) : array {
+        return match($this) {
+            self::Anthropic => ['role' => $this->mapRole($message['role']), 'content' => $this->toAnthropicContent($message['content'])],
+            //self::Anyscale => $message,
+            self::Azure => $message,
+            self::Cohere => ['role' => $this->mapRole($message['role']), 'message' => $message['content']],
+            self::Fireworks => $message,
+            self::Gemini => ['role' => $this->mapRole($message['role']), "parts" => $this->toGeminiParts($message['content'])],
+            self::Groq => $message,
+            self::Mistral => $message,
+            self::Ollama => $message,
+            self::OpenAI => $message,
+            self::OpenRouter => $message,
+            self::Together => $message,
+            self::OpenAICompatible => $message,
+        };
     }
 
     public function toClientClass() : string {
@@ -85,6 +86,60 @@ trait HandlesMapping
             self::OpenRouter => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::Together => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
             self::OpenAICompatible => ['user' => 'user', 'assistant' => 'assistant', 'system' => 'system', 'tool' => 'tool'],
+        };
+    }
+
+    private function toAnthropicContent(string|array $content) : string|array {
+        if (is_string($content)) {
+            return $content;
+        }
+        // if content is array - process each part
+        $transformed = [];
+        foreach ($content as $contentPart) {
+            $transformed[] = $this->contentPartToAnthropic($contentPart);
+        }
+        return $transformed;
+    }
+
+    private function contentPartToAnthropic(array $contentPart) : array {
+        $type = $contentPart['type'] ?? 'text';
+        if ($type === 'image_url') {
+            $mimeType = Str::between($contentPart['image_url']['url'], 'data:', ';base64,');
+            $base64content = Str::after($contentPart['image_url']['url'], ';base64,');
+            $contentPart = [
+                'type' => 'image',
+                'source' => [
+                    'type' => 'base64',
+                    'media_type' => $mimeType,
+                    'data' => $base64content,
+                ],
+            ];
+        }
+        return $contentPart;
+    }
+
+    private function toGeminiParts(string|array $content) : array {
+        if (is_string($content)) {
+            return [["text" => $content]];
+        }
+        $transformed = [];
+        foreach ($content as $contentPart) {
+            $transformed[] = $this->contentPartToGemini($contentPart);
+        }
+        return $transformed;
+    }
+
+    private function contentPartToGemini(array $contentPart) : array {
+        $type = $contentPart['type'] ?? 'text';
+        return match($type) {
+            'text' => ['text' => $contentPart['text']],
+            'image_url' => [
+                'inlineData' => [
+                    'mimeType' => Str::between($contentPart['image_url']['url'], 'data:', ';base64,'),
+                    'data' => Str::after($contentPart['image_url']['url'], ';base64,'),
+                ],
+            ],
+            default => $contentPart,
         };
     }
 }

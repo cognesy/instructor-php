@@ -12,7 +12,7 @@ class OpenRouterClient extends ApiClient
 {
     use HandlesStreamData;
 
-    public string $defaultModel = 'openrouter:gpt-3.5-turbo';
+    public string $defaultModel = 'microsoft/phi-3.5-mini-128k-instruct';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(

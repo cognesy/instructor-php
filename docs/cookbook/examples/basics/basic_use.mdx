@@ -60,5 +60,7 @@ dump($user);
 
 assert(isset($user->name));
 assert(isset($user->age));
+assert($user->name === 'Jason');
+assert($user->age === 25);
 ?>
 ```

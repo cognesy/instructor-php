@@ -19,6 +19,7 @@ abstract class ApiClient implements CanCallApi
     use Traits\HandlesApiRequestFactory;
     use Traits\HandlesApiResponse;
     use Traits\HandlesAsyncApiResponse;
+    use Traits\HandlesDebug;
     use Traits\HandlesDefaultMaxTokens;
     use Traits\HandlesDefaultModel;
     use Traits\HandlesQueryParams;
@@ -40,7 +41,9 @@ abstract class ApiClient implements CanCallApi
         ApiRequestConfig $requestConfig = null,
         array            $data = [],
     ): static {
-        $this->apiRequest = $this->apiRequestFactory->makeRequest($this->getModeRequestClass(), $body, $endpoint, $method, $data);
+        $this->apiRequest = $this->apiRequestFactory->makeRequest(
+            $this->getModeRequestClass(), $body, $endpoint, $method, $data
+        );
         return $this;
     }
 

@@ -35,7 +35,6 @@ class MakeSubqueries extends Module
         $query = $callArgs['question'];
         $context = $callArgs['context'];
         $result = $this->makeSubqueries->predict(question: $query, context: $context);
-dd($result);
         return [
             'subqueries' => $result
         ];

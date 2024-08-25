@@ -8,6 +8,7 @@ trait HandlesPrompts
     private string $retryPrompt;
     private string $prompt = '';
     private string $system = '';
+    protected array $cachedContext = [];
 
     public function withPrompt(string $prompt) : self {
         $this->prompt = $prompt;
@@ -29,6 +30,10 @@ trait HandlesPrompts
 
     public function system() : string {
         return $this->system;
+    }
+
+    public function cachedContext() : array {
+        return $this->cachedContext;
     }
 
     public function toMessages() : array {

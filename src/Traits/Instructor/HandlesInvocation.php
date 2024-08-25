@@ -11,6 +11,7 @@ use Exception;
 trait HandlesInvocation
 {
     private RequestInfo $requestData;
+    private array $cachedContext = [];
 
     /**
      * Prepares Instructor for execution with provided request data
@@ -54,6 +55,24 @@ trait HandlesInvocation
             mode: $mode,
         );
         return $this->get();
+    }
+
+    // TODO: to be implemented
+    public function cacheContext(
+        string|array $messages = '',
+        string|array|object $input = '',
+        string $system = '',
+        string $prompt = '',
+        array $examples = [],
+    ) : ?self {
+        $this->cachedContext = [
+            'messages' => $messages,
+            'input' => $input,
+            'system' => $system,
+            'prompt' => $prompt,
+            'examples' => $examples,
+        ];
+        return $this;
     }
 
     /**

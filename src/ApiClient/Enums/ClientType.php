@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\ApiClient\Enums;
 enum ClientType : string
 {
     use Traits\HandlesCreation;
+    use Traits\HandlesAccess;
     use Traits\HandlesMapping;
 
     case Anthropic = 'anthropic';

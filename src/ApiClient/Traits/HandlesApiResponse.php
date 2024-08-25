@@ -9,7 +9,6 @@ use Cognesy\Instructor\Events\ApiClient\ApiRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestSent;
 use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
 use Exception;
-use Saloon\Exceptions\Request\RequestException;
 use Saloon\Http\Response;
 
 trait HandlesApiResponse
@@ -32,10 +31,7 @@ trait HandlesApiResponse
             $apiResponse->content,
         ));
 
-        if ($request->requestConfig()->isDebug()) {
-            Debugger::requestDebugger($response->getPendingRequest(), $response->getPsrRequest());
-            Debugger::responseDebugger($response, $response->getPsrResponse(), $apiResponse->content);
-        }
+        $this->tryDebug($request, $response, $apiResponse->content);
 
         return $apiResponse;
     }
@@ -52,14 +48,7 @@ trait HandlesApiResponse
                 body: (string) $response->getPsrRequest()->getBody(),
             ));
         } catch (Exception $exception) {
-            if ($request->requestConfig()->isDebug() && method_exists($exception, 'getResponse')) {
-                $response = $exception->getResponse();
-                if (!empty($response)) {
-                    Debugger::requestDebugger($response->getPendingRequest(), $response->getPsrRequest());
-                    // body cannot be accessed - see Saloon issue: https://github.com/saloonphp/saloon/issues/447
-                    Debugger::responseDebugger($response, $response->getPsrResponse(), $response->getPsrResponse()->getBody());
-                }
-            }
+            $this->tryDebugException($request, $exception);
             $this->events->dispatch(new ApiRequestErrorRaised($exception));
             throw $exception;
         }

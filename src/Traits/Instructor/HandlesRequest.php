@@ -28,7 +28,9 @@ trait HandlesRequest
         /** @var RequestHandler $requestHandler */
         $requestHandler = $this->config->get(CanHandleRequest::class);
         try {
-            $this->request = $this->requestFactory->fromData($this->requestData);
+            $this->request = $this->requestFactory->fromData(
+                $this->requestData->withCachedContext($this->cachedContext)
+            );
             return $requestHandler->respondTo($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
@@ -40,7 +42,9 @@ trait HandlesRequest
         /** @var StreamRequestHandler $streamHandler */
         $streamHandler = $this->config->get(CanHandleStreamRequest::class);
         try {
-            $this->request = $this->requestFactory->fromData($this->requestData);
+            $this->request = $this->requestFactory->fromData(
+                $this->requestData->withCachedContext($this->cachedContext)
+            );
             yield from $streamHandler->respondTo($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
@@ -52,7 +56,9 @@ trait HandlesRequest
         /** @var RawRequestHandler $requestHandler */
         $requestHandler = $this->config->get(RawRequestHandler::class);
         try {
-            $this->request = $this->requestFactory->fromData($this->requestData);
+            $this->request = $this->requestFactory->fromData(
+                $this->requestData->withCachedContext($this->cachedContext)
+            );
             return $requestHandler->respondTo($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
@@ -64,7 +70,9 @@ trait HandlesRequest
         /** @var RawStreamRequestHandler $streamHandler */
         $streamHandler = $this->config->get(RawStreamRequestHandler::class);
         try {
-            $this->request = $this->requestFactory->fromData($this->requestData);
+            $this->request = $this->requestFactory->fromData(
+                $this->requestData->withCachedContext($this->cachedContext)
+            );
             yield from $streamHandler->respondTo($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);

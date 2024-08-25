@@ -24,7 +24,7 @@ class Instructor {
     use Traits\HandlesEnv;
 
     use Traits\Instructor\HandlesApiClient;
-    use Traits\Instructor\HandlesCaching;
+    use Traits\Instructor\HandlesRequestCaching;
     use Traits\Instructor\HandlesConfig;
     use Traits\Instructor\HandlesDebug;
     use Traits\Instructor\HandlesErrors;
