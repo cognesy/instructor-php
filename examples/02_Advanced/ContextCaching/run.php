@@ -83,9 +83,7 @@ Let's start by asking the user to describe the project for a specific audience: 
 ```php
 <?php
 $project = $cached->respond(
-    messages: [
-        ['role' => 'user', 'content' => 'Describe the project - my audience is P&C insurance CIOs'],
-    ],
+    messages: 'Describe the project - my audience is P&C insurance CIOs',
     mode: Mode::Json,
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
@@ -102,9 +100,7 @@ which results in faster processing and lower costs.
 ```php
 <?php
 $project = $cached->respond(
-    messages: [
-        ['role' => 'user', 'content' => 'Describe the project - my audience is boutique CMS consulting company owner'],
-    ],
+    messages: 'Describe the project - my audience is boutique CMS consulting company owner',
     mode: Mode::Json,
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
