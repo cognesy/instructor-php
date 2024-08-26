@@ -36,10 +36,10 @@ class User {
 }
 
 class TokenCounter {
-    private int $input = 0;
-    private int $output = 0;
-    private int $cacheCreation = 0;
-    private int $cacheRead = 0;
+    public int $input = 0;
+    public int $output = 0;
+    public int $cacheCreation = 0;
+    public int $cacheRead = 0;
 
     public function add(ApiResponse|PartialApiResponse $response) {
         $this->input += $response->inputTokens;
@@ -74,7 +74,11 @@ $instructor = (new Instructor)
         responseModel: User::class,
 );
 echo "\nTEXT: $text\n";
+assert($counter->input > 0);
+assert($counter->output > 0);
 $counter->print();
+
+// Reset the counter
 $counter->reset();
 
 echo "\n\nCOUNTING TOKENS FOR STREAMED RESPONSE\n";
@@ -87,8 +91,8 @@ $instructor = (new Instructor)
         options: ['stream' => true, 'stream_options' => ['include_usage' => true]],
 );
 echo "\nTEXT: $text\n";
+assert($counter->input > 0);
+assert($counter->output > 0);
 $counter->print();
-$counter->reset();
-
 ?>
 ```
