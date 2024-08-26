@@ -3,7 +3,6 @@ namespace Cognesy\Instructor\ApiClient\Traits;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Utils\Debugger;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestSent;
@@ -25,11 +24,7 @@ trait HandlesApiResponse
         $response = $this->respondRaw($request);
         $apiResponse = $this->apiRequest->toApiResponse($response);
 
-        $this->events->dispatch(new ApiResponseReceived(
-            $response->status(),
-            $this->getRequestHeaders($response),
-            $apiResponse->content,
-        ));
+        $this->events->dispatch(new ApiResponseReceived($apiResponse));
 
         $this->tryDebug($request, $response, $apiResponse->content);
 

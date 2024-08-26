@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
-use Cognesy\Instructor\ApiClient\ModelParams;
+//use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
 use Cognesy\Instructor\Clients\FireworksAI\FireworksAIConnector;
 use Cognesy\Instructor\Configuration\Configuration;

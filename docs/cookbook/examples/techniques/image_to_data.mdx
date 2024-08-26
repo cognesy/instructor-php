@@ -1,5 +1,5 @@
 ---
-title: 'Image to data'
+title: 'Image to data (OpenAI)'
 docname: 'image_to_data'
 ---
 

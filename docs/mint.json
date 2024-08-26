@@ -156,7 +156,7 @@
                 "cookbook/examples/techniques/entity_relationships",
                 "cookbook/examples/techniques/handling_errors",
                 "cookbook/examples/techniques/image_to_data",
-                "cookbook/examples/techniques/image_to_data",
+                "cookbook/examples/techniques/image_to_data_anthropic",
                 "cookbook/examples/techniques/image_to_data",
                 "cookbook/examples/techniques/limiting_lists",
                 "cookbook/examples/techniques/restate_instructions",
@@ -174,6 +174,7 @@
                 "cookbook/examples/troubleshooting/debugging",
                 "cookbook/examples/troubleshooting/on_error",
                 "cookbook/examples/troubleshooting/on_event",
+                "cookbook/examples/troubleshooting/token_usage_events",
                 "cookbook/examples/troubleshooting/wiretap"
             ]
         },

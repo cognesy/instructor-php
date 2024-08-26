@@ -17,7 +17,7 @@ class MockLLM
         }
         $mockLLM->shouldReceive('createApiRequest')->andReturnUsing(fn() => new OpenAIApiRequest());
         $mockLLM->shouldReceive('getApiRequest')->andReturnUsing(fn() => new OpenAIApiRequest());
-        $mockLLM->shouldReceive('defaultModel')->andReturn('openai:gpt-4o');
+        $mockLLM->shouldReceive('defaultModel')->andReturn('gpt-4o-mini');
         $mockLLM->shouldReceive('defaultMaxTokens')->andReturn('1024');
         $mockLLM->shouldReceive('getModeRequestClass')->andReturn(OpenAIApiRequest::class);
         $mockLLM->shouldReceive('get')->andReturnUsing(...$list);

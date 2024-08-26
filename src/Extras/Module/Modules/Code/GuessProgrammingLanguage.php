@@ -11,7 +11,7 @@ use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 
 #[ModuleSignature('code -> language')]
 #[ModuleDescription("Identify the programming language of the code. Return only the language name.")]
-class GuessLanguage extends Prediction
+class GuessProgrammingLanguage extends Prediction
 {
 //    private Predictor $guessLanguage;
 //

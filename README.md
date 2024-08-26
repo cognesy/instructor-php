@@ -59,6 +59,11 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 - OpenRouter support - access to 100+ language models
 - Use local models with Ollama
 
+### Other capabilities
+
+- Developer friendly LLM context caching for reduced costs and faster inference (for Anthropic models)
+- Developer friendly image processing (for OpenAI, Anthropic and Gemini models)
+
 ### Documentation and examples
 
 - Learn more from growing documentation and 50+ cookbooks

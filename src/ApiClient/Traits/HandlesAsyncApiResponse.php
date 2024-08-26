@@ -32,11 +32,15 @@ trait HandlesAsyncApiResponse
     }
 
     protected function asyncRaw(ApiRequest $request, callable $onSuccess = null, callable $onError = null) : PromiseInterface {
-        $this?->events->dispatch(new ApiAsyncRequestInitiated($request));
+        $this?->events->dispatch(new ApiAsyncRequestInitiated($request->toArray()));
         $promise = $this->connector()->sendAsync($request);
         if (!empty($onSuccess)) {
             $promise->then(function (Response $response) use ($onSuccess) {
-                $this?->events->dispatch(new ApiAsyncResponseReceived($response));
+                $this?->events->dispatch(new ApiAsyncResponseReceived(
+                    $response->status(),
+                    $this->getRequestHeaders($response),
+                    $response->content(),
+                ));
                 $onSuccess($response);
             });
         }

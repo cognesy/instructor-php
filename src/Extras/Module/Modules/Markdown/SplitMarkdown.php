@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Module\Modules\Markdown;
 
 use Cognesy\Instructor\Extras\Module\Core\Module;

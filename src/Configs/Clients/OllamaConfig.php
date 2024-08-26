@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
-use Cognesy\Instructor\ApiClient\ModelParams;
+//use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\Clients\Ollama\OllamaClient;
 use Cognesy\Instructor\Clients\Ollama\OllamaConnector;
 use Cognesy\Instructor\Configuration\Configuration;

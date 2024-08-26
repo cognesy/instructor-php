@@ -15,6 +15,8 @@ class ApiResponse
         public ?ToolCalls $toolCalls = null,
         public int $inputTokens = 0,
         public int $outputTokens = 0,
+        public int $cacheCreationTokens = 0,
+        public int $cacheReadTokens = 0,
     ) {}
 
     public function getJson(): string {

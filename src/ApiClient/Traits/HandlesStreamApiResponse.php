@@ -2,19 +2,15 @@
 
 namespace Cognesy\Instructor\ApiClient\Traits;
 
-use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\ApiClient\Utils\Debugger;
 use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamConnected;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestSent;
-use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
+//use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
 use Exception;
 use Generator;
-use Saloon\Exceptions\Request\RequestException;
-use Saloon\Http\Response;
 
 trait HandlesStreamApiResponse
 {
@@ -27,7 +23,9 @@ trait HandlesStreamApiResponse
             if (empty($response) || $this->isDone($response)) {
                 continue;
             }
-            yield $this->apiRequest->toPartialApiResponse($response);
+            $partialApiResponse = $this->apiRequest->toPartialApiResponse($response);
+            $this->events->dispatch(new PartialApiResponseReceived($partialApiResponse));
+            yield $partialApiResponse;
         }
     }
 
@@ -73,11 +71,11 @@ trait HandlesStreamApiResponse
             yield $streamedData;
         }
 
-        $this?->events->dispatch(new ApiStreamResponseReceived(
-            $response->status(),
-            $this->getResponseHeaders($response),
-            $body,
-        ));
+//        $this?->events->dispatch(new ApiStreamResponseReceived(
+//            $response->status(),
+//            $this->getResponseHeaders($response),
+//            $body,
+//        ));
 
         $this->tryDebug($request, $response, $body);
     }

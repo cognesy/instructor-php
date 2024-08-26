@@ -15,48 +15,52 @@ trait HandlesResponse
         if (empty($decoded)) {
             throw new Exception('Response body empty or does not contain correct JSON: ' . $response->body());
         }
-        $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
-        $toolName = $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '';
-        $contentMsg = $decoded['choices'][0]['message']['content'] ?? '';
-        $contentFnArgs = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
-        $content = match(true) {
-            !empty($contentMsg) => $contentMsg,
-            !empty($contentFnArgs) => $contentFnArgs,
-            default => ''
-        };
-        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
-        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
         return new ApiResponse(
-            content: $content,
+            content: $this->getContent($decoded),
             responseData: $decoded,
-            toolName: $toolName,
-            finishReason: $finishReason,
+            toolName: $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '',
+            finishReason: $decoded['choices'][0]['finish_reason'] ?? '',
             toolCalls: null,
-            inputTokens: $inputTokens,
-            outputTokens: $outputTokens,
+            inputTokens: $decoded['usage']['prompt_tokens'] ?? 0,
+            outputTokens: $decoded['usage']['completion_tokens'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
         );
     }
 
     public function toPartialApiResponse(string $partialData) : PartialApiResponse {
         $decoded = Json::parse($partialData, default: []);
-        $finishReason = $decoded['choices'][0]['finish_reason'] ?? '';
-        $toolName = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
+        return new PartialApiResponse(
+            delta: $this->getDelta($decoded),
+            responseData: $decoded,
+            toolName: $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '',
+            finishReason: $decoded['choices'][0]['finish_reason'] ?? '',
+            inputTokens: $decoded['usage']['prompt_tokens'] ?? 0,
+            outputTokens: $decoded['usage']['completion_tokens'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////////////////////////////////
+
+    private function getContent(array $decoded): string {
+        $contentMsg = $decoded['choices'][0]['message']['content'] ?? '';
+        $contentFnArgs = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
+        return match(true) {
+            !empty($contentMsg) => $contentMsg,
+            !empty($contentFnArgs) => $contentFnArgs,
+            default => ''
+        };
+    }
+
+    private function getDelta(array $decoded): string {
         $deltaContent = $decoded['choices'][0]['delta']['content'] ?? '';
         $deltaFnArgs = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
-        $delta = match(true) {
+        return match(true) {
             !empty($deltaContent) => $deltaContent,
             !empty($deltaFnArgs) => $deltaFnArgs,
             default => ''
         };
-        $inputTokens = $decoded['usage']['prompt_tokens'] ?? 0;
-        $outputTokens = $decoded['usage']['completion_tokens'] ?? 0;
-        return new PartialApiResponse(
-            delta: $delta,
-            responseData: $decoded,
-            toolName: $toolName,
-            finishReason: $finishReason,
-            inputTokens: $inputTokens,
-            outputTokens: $outputTokens,
-        );
     }
 }

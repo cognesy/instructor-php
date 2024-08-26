@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Configs\Clients;
 
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
-use Cognesy\Instructor\ApiClient\ModelParams;
+//use Cognesy\Instructor\ApiClient\ModelParams;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIConnector;
 use Cognesy\Instructor\Configuration\Configuration;

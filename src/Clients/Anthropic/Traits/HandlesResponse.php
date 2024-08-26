@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Anthropic\Traits;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
@@ -11,36 +10,31 @@ trait HandlesResponse
 {
     public function toApiResponse(Response $response): ApiResponse {
         $decoded = Json::parse($response->body());
-        $content = $decoded['content'][0]['text'] ?? Json::encode($decoded['content'][0]['input']) ?? '';
-        $toolName = $decoded['content'][0]['name'] ?? '';
-        $finishReason = $decoded['stop_reason'] ?? '';
-        $inputTokens = $decoded['usage']['input_tokens'] ?? 0;
-        $outputTokens = $decoded['usage']['output_tokens'] ?? 0;
         return new ApiResponse(
-            content: $content,
+            content: $decoded['content'][0]['text'] ?? Json::encode($decoded['content'][0]['input']) ?? '',
             responseData: $decoded,
-            toolName: $toolName,
-            finishReason: $finishReason,
+            toolName: $decoded['content'][0]['name'] ?? '',
+            finishReason: $decoded['stop_reason'] ?? '',
             toolCalls: null,
-            inputTokens: $inputTokens,
-            outputTokens: $outputTokens,
+            inputTokens: $decoded['usage']['input_tokens'] ?? 0,
+            outputTokens: $decoded['usage']['output_tokens'] ?? 0,
+            cacheCreationTokens: $decoded['usage']['cache_creation_input_tokens'] ?? 0,
+            cacheReadTokens: $decoded['usage']['cache_read_input_tokens'] ?? 0,
         );
     }
 
     public function toPartialApiResponse(string $partialData) : PartialApiResponse {
         $decoded = Json::parse($partialData, default: []);
-        $delta = $decoded['delta']['text'] ?? $decoded['delta']['partial_json'] ?? '';
-        $toolName = $decoded['content_block']['name'] ?? '';
-        $inputTokens = $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0;
-        $outputTokens = $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['output_tokens'] ?? 0;
         $finishReason = $decoded['message']['stop_reason'] ?? $decoded['message']['stop_reason'] ?? '';
         return new PartialApiResponse(
-            delta: $delta,
+            delta: $decoded['delta']['text'] ?? $decoded['delta']['partial_json'] ?? '',
             responseData: $decoded,
-            toolName: $toolName,
+            toolName: $decoded['content_block']['name'] ?? '',
             finishReason: $finishReason,
-            inputTokens: $inputTokens,
-            outputTokens: $outputTokens,
+            inputTokens: $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0,
+            outputTokens: $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['output_tokens'] ?? 0,
+            cacheCreationTokens: $decoded['message']['usage']['cache_creation_input_tokens'] ?? $decoded['usage']['cache_creation_input_tokens'] ?? 0,
+            cacheReadTokens: $decoded['message']['usage']['cache_read_input_tokens'] ?? $decoded['usage']['cache_read_input_tokens'] ?? 0,
         );
     }
 }
