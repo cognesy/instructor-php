@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Clients\Gemini;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
@@ -9,17 +8,15 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class GeminiClient extends ApiClient
 {
-    use Traits\HandlesStreamData;
-
     public string $defaultModel = 'gemini-1.5-flash';
     public int $defaultMaxTokens = 4096;
 
     public function __construct(
-        protected $apiKey = '',
-        protected $baseUri = '',
-        protected $connectTimeout = 3,
-        protected $requestTimeout = 30,
-        protected $metadata = [],
+        protected string $apiKey = '',
+        protected string $baseUri = '',
+        protected int $connectTimeout = 3,
+        protected int $requestTimeout = 30,
+        protected array $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
     ) {

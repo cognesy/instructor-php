@@ -42,7 +42,7 @@ class User {
 }
 
 // Mistral instance params
-$yourApiKey = Env::get('FIREWORKSAI_API_KEY'); // set your own API key
+$yourApiKey = Env::get('FIREWORKS_API_KEY'); // set your own API key
 
 // Create instance of client initialized with custom parameters
 $client = new FireworksAIClient(

@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\ApiClient;
 
+use Saloon\Contracts\Authenticator;
+use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use Saloon\Traits\Plugins\HasTimeout;
@@ -45,5 +47,9 @@ class ApiConnector extends Connector
 
     public function defaultConfig(): array {
         return ['stream' => true];
+    }
+
+    protected function defaultAuth() : Authenticator {
+        return new TokenAuthenticator($this->apiKey);
     }
 }

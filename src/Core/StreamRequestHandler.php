@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
@@ -80,7 +80,7 @@ class StreamRequestHandler implements CanHandleStreamRequest
 
 
     protected function getStreamedResponses(Request $request) : Generator {
-        /** @var ApiClient $apiClient */
+        /** @var CanCallApi $apiClient */
         $apiClient = $request->client();
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");

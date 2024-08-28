@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\ApiClient\Requests;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
@@ -22,7 +21,6 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     use Traits\HandlesApiRequestCaching;
     use Traits\HandlesApiRequestConfig;
     use Traits\HandlesEndpoint;
-    use Traits\HandlesRequestBody;
     use Traits\HandlesTransformation;
 
     protected Method $method = Method::POST;
@@ -70,39 +68,15 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $this->requestBody['stream'] ?? false;
     }
 
-    protected function applyData() : void {
-        $this->mode = $this->getData('mode', Mode::MdJson);
-        $this->clientType = $this->getData('client_type', ClientType::fromRequestClass(static::class));
-        $this->jsonSchema = $this->getData('json_schema', []);
-        $this->schemaName = $this->getData('schema_name', '');
-        $this->cachedContext = $this->getData('cached_context', []);
+    public function toApiResponse(Response $response): ApiResponse {
+        return $this->clientType->toApiResponse($response);
     }
 
-    protected function initBodyFields() : void {
-        $this->model = $this->pullBodyField('model', $this->model());
-        $this->maxTokens = $this->pullBodyField('max_tokens', 1024);
-        $this->messages = $this->pullBodyField('messages', []);
-
-        // get tools and format
-        if ($this->mode->is(Mode::Tools)) {
-            $this->tools = $this->getData('tools', []);
-            $this->toolChoice = $this->getData('tool_choice', []);
-        } elseif ($this->mode->is(Mode::Json)) {
-            $this->responseFormat = [
-                'type' => 'json_object',
-                'schema' => $this->jsonSchema,
-            ];
-        } elseif ($this->mode->is(Mode::JsonSchema)) {
-            $this->responseFormat = [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $this->schemaName,
-                    'schema' => $this->jsonSchema,
-                ],
-            ];
-            $this->responseFormat['json_schema']['strict'] = true;
-        }
+    public function toPartialApiResponse(string $partialData): PartialApiResponse {
+        return $this->clientType->toPartialApiResponse($partialData);
     }
+
+    // SHARED ///////////////////////////////////////////////////////////////////////////////////////
 
     protected function defaultBody(): array {
         $body = array_filter(
@@ -129,16 +103,76 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $body;
     }
 
-    protected function getData(string $name, mixed $defaultValue) : mixed {
+    public function model() : string {
+        return $this->model;
+    }
+
+    public function messages(): array {
+        return $this->messages;
+    }
+
+    public function tools(): array {
+        return $this->tools;
+    }
+
+    public function getToolChoice(): string|array {
+        if (empty($this->tools)) {
+            return '';
+        }
+        return $this->toolChoice ?: 'auto';
+    }
+
+    protected function getResponseSchema() : array {
+        return $this->jsonSchema ?? [];
+    }
+
+    protected function getResponseFormat(): array {
+        return $this->responseFormat ?? [];
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////////////////////////////////
+
+    private function applyData() : void {
+        $this->mode = $this->getData('mode', Mode::MdJson);
+        $this->clientType = $this->getData('client_type', ClientType::fromRequestClass(static::class));
+        $this->jsonSchema = $this->getData('json_schema', []);
+        $this->schemaName = $this->getData('schema_name', '');
+        $this->cachedContext = $this->getData('cached_context', []);
+    }
+
+    private function initBodyFields() : void {
+        $this->model = $this->pullBodyField('model', $this->model());
+        $this->maxTokens = $this->pullBodyField('max_tokens', 1024);
+        $this->messages = $this->pullBodyField('messages', []);
+
+        // get tools and format
+        if ($this->mode->is(Mode::Tools)) {
+            $this->tools = $this->getData('tools', []);
+            $this->toolChoice = $this->getData('tool_choice', []);
+        } elseif ($this->mode->is(Mode::Json)) {
+            $this->responseFormat = [
+                'type' => 'json_object',
+                'schema' => $this->jsonSchema,
+            ];
+        } elseif ($this->mode->is(Mode::JsonSchema)) {
+            $this->responseFormat = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => $this->schemaName,
+                    'schema' => $this->jsonSchema,
+                ],
+            ];
+            $this->responseFormat['json_schema']['strict'] = true;
+        }
+    }
+
+    private function getData(string $name, mixed $defaultValue) : mixed {
         return $this->data[$name] ?? $defaultValue;
     }
 
-    protected function pullBodyField(string $name, mixed $default = null): mixed {
+    private function pullBodyField(string $name, mixed $default = null): mixed {
         $value = $this->requestBody[$name] ?? $default;
         unset($this->requestBody[$name]);
         return $value;
     }
-
-    abstract public function toApiResponse(Response $response): ApiResponse;
-    abstract public function toPartialApiResponse(string $partialData): PartialApiResponse;
 }

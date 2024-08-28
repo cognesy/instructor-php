@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Core\Factories;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
@@ -15,7 +14,6 @@ class RequestFactory
     public function __construct(
         protected ApiClientFactory $clientFactory,
         protected ResponseModelFactory $responseModelFactory,
-        protected ModelFactory $modelFactory,
         protected ApiRequestFactory $apiRequestFactory,
         protected ApiRequestConfig $requestConfig,
         protected EventDispatcher $events,
@@ -74,7 +72,6 @@ class RequestFactory
             mode: $mode,
             cachedContext: $cachedContext,
             client: $this->clientFactory->getDefault(),
-            modelFactory: $this->modelFactory,
             responseModelFactory: $this->responseModelFactory,
             apiRequestFactory: $this->apiRequestFactory,
             requestConfig: $this->requestConfig,

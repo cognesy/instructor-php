@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\ApiClient\Traits;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;

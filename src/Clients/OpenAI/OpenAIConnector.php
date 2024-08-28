@@ -3,9 +3,6 @@ namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiConnector;
 
-use Saloon\Contracts\Authenticator;
-use Saloon\Http\Auth\TokenAuthenticator;
-
 class OpenAIConnector extends ApiConnector
 {
     protected string $baseUrl = 'https://api.openai.com/v1';
@@ -22,10 +19,6 @@ class OpenAIConnector extends ApiConnector
     ) {
         parent::__construct($apiKey, $baseUrl, $connectTimeout, $requestTimeout, $metadata, $senderClass);
         $this->organization = $organization;
-    }
-
-    protected function defaultAuth() : Authenticator {
-        return new TokenAuthenticator($this->apiKey);
     }
 
     protected function defaultHeaders(): array {

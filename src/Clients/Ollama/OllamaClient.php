@@ -3,24 +3,20 @@ namespace Cognesy\Instructor\Clients\Ollama;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\ApiClient\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-
 class OllamaClient extends ApiClient
 {
-    use HandlesStreamData;
-
     public string $defaultModel = 'gemma2:2b';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(
-        protected $apiKey = '',
-        protected $baseUri = '',
-        protected $connectTimeout = 3,
-        protected $requestTimeout = 90,
-        protected $metadata = [],
+        protected string $apiKey = '',
+        protected string $baseUri = '',
+        protected int $connectTimeout = 3,
+        protected int $requestTimeout = 90,
+        protected array $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
     ) {

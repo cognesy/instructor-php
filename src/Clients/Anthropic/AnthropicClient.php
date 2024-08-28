@@ -6,20 +6,17 @@ use Cognesy\Instructor\ApiClient\ApiConnector;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-
 class AnthropicClient extends ApiClient
 {
-    use Traits\HandlesStreamData;
-
     public string $defaultModel = 'claude-3-5-sonnet-20240620';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(
-        protected $apiKey = '',
-        protected $baseUri = '',
-        protected $connectTimeout = 3,
-        protected $requestTimeout = 30,
-        protected $metadata = [],
+        protected string $apiKey = '',
+        protected string $baseUri = '',
+        protected int $connectTimeout = 3,
+        protected int $requestTimeout = 30,
+        protected array $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
     ) {
@@ -33,7 +30,6 @@ class AnthropicClient extends ApiClient
             senderClass: '',
         ));
     }
-
 
     public function getModeRequestClass(Mode $mode = null) : string {
         return AnthropicApiRequest::class;

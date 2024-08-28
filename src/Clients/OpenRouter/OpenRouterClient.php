@@ -3,24 +3,20 @@ namespace Cognesy\Instructor\Clients\OpenRouter;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\ApiClient\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-
 class OpenRouterClient extends ApiClient
 {
-    use HandlesStreamData;
-
     public string $defaultModel = 'microsoft/phi-3.5-mini-128k-instruct';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(
-        protected $apiKey = '',
-        protected $baseUri = '',
-        protected $connectTimeout = 3,
-        protected $requestTimeout = 30,
-        protected $metadata = [],
+        protected string $apiKey = '',
+        protected string $baseUri = '',
+        protected int $connectTimeout = 3,
+        protected int $requestTimeout = 30,
+        protected array $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
     ) {

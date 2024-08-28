@@ -49,4 +49,28 @@ trait HandlesApiResponse
         }
         return $response;
     }
+
+    protected function isStreamedRequest() : bool {
+        return $this->apiRequest->isStreamed();
+    }
+
+    protected function withStreaming(bool $streaming) : void {
+        $this->apiRequest->config()->add('stream', $streaming);
+    }
+
+    protected function getRequestHeaders(Response $response) : array {
+        $headers = [];
+        foreach ($response->getPsrRequest()->getHeaders() as $headerName => $value) {
+            $headers[$headerName] = implode(';', $value);
+        }
+        return $headers;
+    }
+
+    protected function getResponseHeaders(Response $response) : array {
+        $headers = [];
+        foreach ($response->getPsrResponse()->getHeaders() as $headerName => $value) {
+            $headers[$headerName] = implode(';', $value);
+        }
+        return $headers;
+    }
 }

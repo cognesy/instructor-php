@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Contracts;
 
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Enums\Mode;
@@ -24,4 +25,6 @@ interface CanCallApi
     public function defaultModel() : string;
 
     public function getModeRequestClass(Mode $mode) : string;
+
+    public function withApiRequest(ApiRequest $request) : static;
 }

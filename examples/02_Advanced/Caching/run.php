@@ -59,6 +59,8 @@ $user2 = $instructor->request(
     responseModel: User::class,
 )->withRequestCache()->get();
 
+eval(\Psy\sh());
+
 $delta = Profiler::mark('cache 1st call')->mili();
 echo "Time elapsed (cache on, 1st call): $delta msec\n\n";
 

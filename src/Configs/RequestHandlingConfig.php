@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Configs;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
@@ -9,24 +8,38 @@ use Cognesy\Instructor\ApiClient\RequestConfig\CacheConfig;
 use Cognesy\Instructor\ApiClient\RequestConfig\DebugConfig;
 use Cognesy\Instructor\Configuration\Configuration;
 use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
-use Cognesy\Instructor\Core\Factories\ModelFactory;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
+use Cognesy\Instructor\Utils\Env;
 
 class RequestHandlingConfig implements CanAddConfiguration
 {
     public function addConfiguration(Configuration $config): void {
+        $config->object(
+            class: ApiRequestFactory::class,
+            context: [
+                'requestConfig' => $config->reference(ApiRequestConfig::class),
+            ],
+        );
+
+        $config->object(
+            class: ApiClientFactory::class,
+            context: [
+                'configPath' => Env::get('INSTRUCTOR_CONFIG_PATH', '/../../../config/instructor.php'),
+                'events' => $config->reference(EventDispatcher::class),
+                'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
+            ],
+        );
 
         $config->object(
             class: RequestFactory::class,
             context: [
                 'clientFactory' => $config->reference(ApiClientFactory::class),
                 'responseModelFactory' => $config->reference(ResponseModelFactory::class),
-                'modelFactory' => $config->reference(ModelFactory::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
                 'requestConfig' => $config->reference(ApiRequestConfig::class),
                 'events' => $config->reference(EventDispatcher::class),

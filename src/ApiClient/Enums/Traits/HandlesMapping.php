@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Enums\Traits;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 //use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
@@ -63,24 +61,6 @@ trait HandlesMapping
             self::OpenRouter => OpenRouterClient::class,
             self::Together => TogetherAIClient::class,
             default => OpenAIClient::class,
-        };
-    }
-
-    public static function fromClient(CanCallApi $client) : ClientType {
-        return match(true) {
-            $client instanceof AnthropicClient => self::Anthropic,
-            //is AnyscaleClient => self::Anyscale,
-            $client instanceof AzureClient => self::Azure,
-            $client instanceof CohereClient => self::Cohere,
-            $client instanceof FireworksAIClient => self::Fireworks,
-            $client instanceof GeminiClient => self::Gemini,
-            $client instanceof GroqClient => self::Groq,
-            $client instanceof MistralClient => self::Mistral,
-            $client instanceof OllamaClient => self::Ollama,
-            $client instanceof OpenAIClient => self::OpenAI,
-            $client instanceof OpenRouterClient => self::OpenRouter,
-            $client instanceof TogetherAIClient => self::Together,
-            default => self::OpenAICompatible,
         };
     }
 

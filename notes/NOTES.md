@@ -17,14 +17,17 @@ Catch up with the latest additions.
 
 ## TODOs
 
-- Parallel tool calls
 - Multiple tools with tool selection
-- Modules: Add module observability via events - currently no access to this info
+- Parallel tool calls
 - Generate unstructured, then format to structured - to improve reasoning
 
 ### API Client
 
 - Clean up predefined models, prices, etc.
+
+### Addon: Modules
+
+- Modules: Add module observability via events - currently no access to this info
 
 ### Configuration
 

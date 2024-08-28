@@ -9,4 +9,9 @@ trait HandlesDefaultMaxTokens
     public function defaultMaxTokens() : int {
         return $this->defaultMaxTokens;
     }
+
+    public function withMaxTokens(int $maxTokens) : static {
+        $this->defaultMaxTokens = $maxTokens;
+        return $this;
+    }
 }

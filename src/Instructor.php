@@ -73,7 +73,6 @@ class Instructor {
         $this->requestFactory = $this->config->get(RequestFactory::class);
         $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
         $this->clientFactory = $this->config->get(ApiClientFactory::class);
-        $this->clientFactory->setDefault($this->config->get(CanCallApi::class));
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady($this->config));

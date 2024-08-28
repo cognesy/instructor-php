@@ -46,7 +46,8 @@
         "symfony/css-selector": "^7.1",
         "symfony/dom-crawler": "^7.1",
         "duzun/hquery": "^3.1",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "psy/psysh": "@stable"
     },
     "config": {
         "allow-plugins": {

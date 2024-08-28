@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient;
 
+use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\Enums\Mode;
@@ -26,10 +27,13 @@ abstract class ApiClient implements CanCallApi
     use Traits\HandlesStreamApiResponse;
     use Traits\ReadsStreamResponse;
 
+    protected ClientType $clientType;
+
     public function __construct(
         EventDispatcher $events = null,
     ) {
         $this->withEventDispatcher($events ?? new EventDispatcher('api-client'));
+        $this->clientType = ClientType::fromClientClass(static::class);
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

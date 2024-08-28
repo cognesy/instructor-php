@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Data\Request;
@@ -32,7 +32,7 @@ class RawRequestHandler implements CanHandleRequest
 
 
     protected function getApiResponse(Request $request) : ApiResponse {
-        /** @var ApiClient $apiClient */
+        /** @var CanCallApi $apiClient */
         $apiClient = $request->client();
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");

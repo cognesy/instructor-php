@@ -47,9 +47,9 @@ $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 $client = new OpenAIClient(
     apiKey: $yourApiKey,
     baseUri: 'https://api.openai.com/v1',
-    organization: '',
     connectTimeout: 3,
     requestTimeout: 30,
+    metadata: ['organization' => ''],
 );
 
 /// Get Instructor with the default client component overridden with your own

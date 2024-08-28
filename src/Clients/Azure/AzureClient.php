@@ -3,23 +3,16 @@ namespace Cognesy\Instructor\Clients\Azure;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\ApiClient\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-
 class AzureClient extends ApiClient
 {
-    use HandlesStreamData;
-
-    public string $defaultModel = 'gpt-3.5-turbo'; //'gpt-4-turbo-preview';
+    public string $defaultModel = 'gpt-3.5-turbo';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(
         protected string $apiKey = '',
-        protected string $resourceName = '',
-        protected string $deploymentId = '',
-        protected string $apiVersion = '',
         protected string $baseUri = '',
         protected int $connectTimeout = 3,
         protected int $requestTimeout = 30,
@@ -28,6 +21,11 @@ class AzureClient extends ApiClient
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
+
+        $resourceName = $metadata['resourceName'] ?? '';
+        $deploymentId = $metadata['deploymentId'] ?? '';
+        $apiVersion = $metadata['apiVersion'] ?? '';
+
         $this->withConnector($connector ?? new AzureConnector(
             apiKey: $apiKey,
             resourceName: $resourceName,

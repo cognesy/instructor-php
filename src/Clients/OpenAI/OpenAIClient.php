@@ -3,29 +3,28 @@ namespace Cognesy\Instructor\Clients\OpenAI;
 
 use Cognesy\Instructor\ApiClient\ApiClient;
 use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\ApiClient\Traits\HandlesStreamData;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 
 class OpenAIClient extends ApiClient
 {
-    use HandlesStreamData;
-
     public string $defaultModel = 'gpt-4o-mini';
     public int $defaultMaxTokens = 1024;
 
     public function __construct(
-        protected $apiKey = '',
-        protected $baseUri = '',
-        protected $organization = '',
-        protected $connectTimeout = 3,
-        protected $requestTimeout = 30,
-        protected $metadata = [],
+        protected string $apiKey = '',
+        protected string $baseUri = '',
+        protected int $connectTimeout = 3,
+        protected int $requestTimeout = 30,
+        protected array $metadata = [],
         EventDispatcher $events = null,
         ApiConnector $connector = null,
     ) {
         parent::__construct($events);
+
+        $organization = $metadata['organization'] ?? '';
+
         $this->withConnector($connector ?? new OpenAIConnector(
             apiKey: $apiKey,
             baseUrl: $baseUri,
@@ -36,7 +35,6 @@ class OpenAIClient extends ApiClient
             senderClass: '',
         ));
     }
-
 
     public function getModeRequestClass(Mode $mode = null) : string {
         return OpenAIApiRequest::class;

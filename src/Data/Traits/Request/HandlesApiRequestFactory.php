@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Data\Traits\Request;
 
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
@@ -19,7 +18,7 @@ trait HandlesApiRequestFactory
             requestClass: $requestClass,
             body: array_filter(array_merge(
                 ['messages' => $this->toMessages()],
-                ['model' => $this->modelName()],
+                ['model' => $this->model()],
                 $this->options(),
             )),
             endpoint: $this->endpoint(),

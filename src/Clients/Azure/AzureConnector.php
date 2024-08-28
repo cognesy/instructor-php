@@ -27,11 +27,9 @@ class AzureConnector extends ApiConnector
         $this->deploymentId = $deploymentId;
     }
 
-
     public function resolveBaseUrl(): string {
         return "https://{$this->resourceName}.{$this->baseUrl}/openai/deployments/{$this->deploymentId}";
     }
-
 
     protected function defaultAuth() : Authenticator {
         return new HeaderAuthenticator($this->apiKey, 'api-key');

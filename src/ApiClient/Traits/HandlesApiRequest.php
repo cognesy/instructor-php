@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\ApiClient\Traits;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Exception;
-use Saloon\Http\Response;
 
 trait HandlesApiRequest
 {
@@ -23,29 +22,5 @@ trait HandlesApiRequest
             $this->apiRequest->query()->set($this->queryParams);
         }
         return $this->apiRequest;
-    }
-
-    protected function isStreamedRequest() : bool {
-        return $this->apiRequest->isStreamed();
-    }
-
-    protected function withStreaming(bool $streaming) : void {
-        $this->apiRequest->config()->add('stream', $streaming);
-    }
-
-    protected function getRequestHeaders(Response $response) : array {
-        $headers = [];
-        foreach ($response->getPsrRequest()->getHeaders() as $headerName => $value) {
-            $headers[$headerName] = implode(';', $value);
-        }
-        return $headers;
-    }
-
-    protected function getResponseHeaders(Response $response) : array {
-        $headers = [];
-        foreach ($response->getPsrResponse()->getHeaders() as $headerName => $value) {
-            $headers[$headerName] = implode(';', $value);
-        }
-        return $headers;
     }
 }

@@ -43,15 +43,12 @@ function partialUpdate($partial) {
     // Clear the screen and move the cursor to the top
     echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
 
-    // Print explanation
-    echo "Waiting 250ms on every update received to make changes easier to observe...\n";
-
     // Display the partial object
     dump($partial);
 
     // Wait a bit before clearing the screen to make partial changes slower.
     // Don't use this in your application :)
-    usleep(250000);
+    //usleep(250000);
 }
 ?>
 ```

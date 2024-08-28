@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\ApiClient\Traits;
 
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
@@ -7,7 +6,6 @@ use Cognesy\Instructor\Events\ApiClient\ApiRequestErrorRaised;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamConnected;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestSent;
-//use Cognesy\Instructor\Events\ApiClient\ApiStreamResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
 use Exception;
 use Generator;
@@ -80,6 +78,11 @@ trait HandlesStreamApiResponse
         $this->tryDebug($request, $response, $body);
     }
 
-    abstract protected function isDone(string $data): bool;
-    abstract protected function getData(string $data): string;
+    protected function isDone(string $data): bool {
+        return $this->clientType->isDone($data);
+    }
+
+    protected function getData(string $data): string {
+        return $this->clientType->getData($data);
+    }
 }

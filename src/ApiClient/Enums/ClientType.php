@@ -3,9 +3,11 @@ namespace Cognesy\Instructor\ApiClient\Enums;
 
 enum ClientType : string
 {
-    use Traits\HandlesCreation;
     use Traits\HandlesAccess;
+    use Traits\HandlesCreation;
     use Traits\HandlesMapping;
+    use Traits\HandlesResponse;
+    use Traits\HandlesStreamData;
 
     case Anthropic = 'anthropic';
     //case Anyscale = 'anyscale';

@@ -9,4 +9,9 @@ trait HandlesDefaultModel
     public function defaultModel() : string {
         return $this->defaultModel;
     }
+
+    public function withModel(string $model) : static {
+        $this->defaultModel = $model;
+        return $this;
+    }
 }
