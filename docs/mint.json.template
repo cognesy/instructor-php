@@ -81,7 +81,7 @@
       ]
     },
     {
-      "group": "Advanced",
+      "group": "Advanced Features",
       "pages": [
         "/advanced/model_options",
         "/advanced/partials",
@@ -92,7 +92,7 @@
       ]
     },
     {
-      "group": "Practical techniques",
+      "group": "Practical Techniques",
       "pages": [
         "/techniques/prompting",
         "/techniques/classification",
@@ -120,7 +120,7 @@
       ]
     },
     {
-      "group": "Instructor Hub",
+      "group": "Cookbook",
       "pages": [
         "cookbook/introduction",
         "cookbook/contributing"
