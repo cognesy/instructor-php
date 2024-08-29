@@ -8,9 +8,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class GeminiClient extends ApiClient
 {
-    public string $defaultModel = 'gemini-1.5-flash';
-    public int $defaultMaxTokens = 4096;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

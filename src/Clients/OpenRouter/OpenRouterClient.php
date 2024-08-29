@@ -8,9 +8,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class OpenRouterClient extends ApiClient
 {
-    public string $defaultModel = 'microsoft/phi-3.5-mini-128k-instruct';
-    public int $defaultMaxTokens = 1024;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

@@ -1,10 +1,9 @@
 <?php
-
 namespace Cognesy\Instructor\ApiClient\Traits;
 
 trait HandlesDefaultMaxTokens
 {
-    public int $defaultMaxTokens = 512;
+    public int $defaultMaxTokens = 1024;
 
     public function defaultMaxTokens() : int {
         return $this->defaultMaxTokens;

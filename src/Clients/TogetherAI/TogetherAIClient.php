@@ -8,9 +8,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class TogetherAIClient extends ApiClient
 {
-    public string $defaultModel = 'mistralai/Mixtral-8x7B-Instruct-v0.1';
-    public int $defaultMaxTokens = 1024;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

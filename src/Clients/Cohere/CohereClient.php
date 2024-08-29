@@ -8,9 +8,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class CohereClient extends ApiClient
 {
-    public string $defaultModel = 'command-r';
-    public int $defaultMaxTokens = 1024;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

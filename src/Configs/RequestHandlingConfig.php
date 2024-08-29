@@ -14,7 +14,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
-use Cognesy\Instructor\Utils\Env;
+use Cognesy\Instructor\Utils\Settings;
 
 class RequestHandlingConfig implements CanAddConfiguration
 {
@@ -29,7 +29,6 @@ class RequestHandlingConfig implements CanAddConfiguration
         $config->object(
             class: ApiClientFactory::class,
             context: [
-                'configPath' => Env::get('INSTRUCTOR_CONFIG_PATH', '/../../../config/instructor.php'),
                 'events' => $config->reference(EventDispatcher::class),
                 'apiRequestFactory' => $config->reference(ApiRequestFactory::class),
             ],
@@ -66,7 +65,7 @@ class RequestHandlingConfig implements CanAddConfiguration
         $config->object(
             class: SchemaFactory::class,
             context: [
-                'useObjectReferences' => $_ENV['INSTRUCTOR_USE_OBJECT_REFERENCES'] ?? false,
+                'useObjectReferences' => Settings::get('useObjectReferences') ?? false,
             ]
         );
 
@@ -84,18 +83,18 @@ class RequestHandlingConfig implements CanAddConfiguration
         $config->object(
             class: CacheConfig::class,
             context: [
-                'enabled' => $_ENV['INSTRUCTOR_CACHE_ENABLED'] ?? false,
-                'expiryInSeconds' => $_ENV['INSTRUCTOR_CACHE_EXPIRY'] ?? 3600,
-                'cachePath' => $_ENV['INSTRUCTOR_CACHE_PATH'] ?? '/tmp/instructor/cache',
+                'enabled' => Settings::get('cache.enabled', false),
+                'expiryInSeconds' => Settings::get('cache.expiryInSeconds', 3600),
+                'cachePath' => Settings::get('cache.path', '/tmp/instructor/cache'),
             ]
         );
 
         $config->object(
             class: DebugConfig::class,
             context: [
-                'debug' => $_ENV['INSTRUCTOR_DEBUG'] ?? false,
-                'stopOnDebug' => $_ENV['INSTRUCTOR_STOP_ON_DEBUG'] ?? false,
-                'forceDebug' => $_ENV['INSTRUCTOR_FORCE_DEBUG'] ?? false,
+                'debug' => Settings::get('debug.enabled', false),
+                'stopOnDebug' => Settings::get('debug.stopOnDebug', false),
+                'forceDebug' => Settings::get('debug.forceDebug', false),
             ]
         );
 

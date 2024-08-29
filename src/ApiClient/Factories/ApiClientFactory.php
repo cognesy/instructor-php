@@ -4,21 +4,18 @@ namespace Cognesy\Instructor\ApiClient\Factories;
 use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
 class ApiClientFactory
 {
     protected CanCallApi $defaultClient;
-    protected array $config = [];
 
     public function __construct(
-        public string $configPath,
         public EventDispatcher $events,
         public ApiRequestFactory $apiRequestFactory,
     ) {
-        $this->config = $this->readConfig($this->configPath);
-
-        $defaultConnection = $this->config['defaultConnection'] ?? null;
+        $defaultConnection = Settings::get('defaultConnection');
         if (!$defaultConnection) {
             throw new InvalidArgumentException("No default client connection found");
         }
@@ -26,7 +23,7 @@ class ApiClientFactory
     }
 
     public function client(string $connection) : CanCallApi {
-        $clientConfig = $this->config['connections'][$connection] ?? null;
+        $clientConfig = Settings::get("connections.$connection");
         if (!$clientConfig) {
             throw new InvalidArgumentException("No client connection config found for '{$connection}'");
         }
@@ -59,9 +56,5 @@ class ApiClientFactory
         ))
             ->withModel($config['defaultModel'] ?? '')
             ->withMaxTokens($config['defaultMaxTokens'] ?? 1024);
-    }
-
-    protected function readConfig(string $configPath): array {
-        return require __DIR__ . $configPath;
     }
 }

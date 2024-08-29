@@ -9,9 +9,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class OpenAIClient extends ApiClient
 {
-    public string $defaultModel = 'gpt-4o-mini';
-    public int $defaultMaxTokens = 1024;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

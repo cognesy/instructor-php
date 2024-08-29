@@ -8,9 +8,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class FireworksAIClient extends ApiClient
 {
-    public string $defaultModel = 'accounts/fireworks/models/mixtral-8x7b-instruct';
-    public int $defaultMaxTokens = 1024;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

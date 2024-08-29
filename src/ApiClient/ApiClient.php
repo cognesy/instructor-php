@@ -8,6 +8,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
+use Cognesy\Instructor\Utils\Settings;
 use Saloon\Enums\Method;
 
 abstract class ApiClient implements CanCallApi
@@ -19,7 +20,6 @@ abstract class ApiClient implements CanCallApi
     use Traits\HandlesApiRequest;
     use Traits\HandlesApiRequestFactory;
     use Traits\HandlesApiResponse;
-    use Traits\HandlesAsyncApiResponse;
     use Traits\HandlesDebug;
     use Traits\HandlesDefaultMaxTokens;
     use Traits\HandlesDefaultModel;
@@ -34,6 +34,8 @@ abstract class ApiClient implements CanCallApi
     ) {
         $this->withEventDispatcher($events ?? new EventDispatcher('api-client'));
         $this->clientType = ClientType::fromClientClass(static::class);
+        $this->withMaxTokens(Settings::get("connections.{$this->clientType->value}.defaultMaxTokens", 1024));
+        $this->withModel(Settings::get("connections.{$this->clientType->value}.defaultModel", ''));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

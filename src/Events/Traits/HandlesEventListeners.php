@@ -4,8 +4,6 @@ namespace Cognesy\Instructor\Events\Traits;
 
 trait HandlesEventListeners
 {
-    use HandlesEvents;
-
     /**
      * Listens to all events
      *

@@ -3,10 +3,10 @@ use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Utils\Env;
 
 return [
-    'defaultConnection' => 'openai',
+    'useObjectReferences' => Env::get('INSTRUCTOR_USE_OBJECT_REFERENCES', false),
     'cache' => [
         'enabled' => Env::get('INSTRUCTOR_CACHE_ENABLED', false),
-        'expiry' => Env::get('INSTRUCTOR_CACHE_EXPIRY', 3600),
+        'expiryInSeconds' => Env::get('INSTRUCTOR_CACHE_EXPIRY', 3600),
         'path' => Env::get('INSTRUCTOR_CACHE_PATH', '/tmp/instructor/cache'),
     ],
     'debug' => [
@@ -14,8 +14,8 @@ return [
         'stopOnDebug' => Env::get('INSTRUCTOR_STOP_ON_DEBUG', false),
         'forceDebug' => Env::get('INSTRUCTOR_FORCE_DEBUG', false),
     ],
-    'useObjectReferences' => Env::get('INSTRUCTOR_USE_OBJECT_REFERENCES', false),
 
+    'defaultConnection' => 'openai',
     'connections' => [
         'anthropic' => [
             'clientType' => ClientType::Anthropic->value,
@@ -75,7 +75,7 @@ return [
             'clientType' => ClientType::Groq->value,
             'apiUrl' => Env::get('GROQ_API_URL', 'https://api.groq.com/openai/v1'),
             'apiKey' => Env::get('GROQ_API_KEY', ''),
-            'defaultModel' => Env::get('GROQ_DEFAULT_MODEL', 'llama3-8b-8192'),
+            'defaultModel' => Env::get('GROQ_DEFAULT_MODEL', 'gemma2-9b-it'),
             'defaultMaxTokens' => Env::get('GROQ_DEFAULT_MAX_TOKENS', 1024),
             'connectTimeout' => Env::get('GROQ_CONNECT_TIMEOUT', 3),
             'requestTimeout' => Env::get('GROQ_REQUEST_TIMEOUT', 30),
@@ -88,6 +88,15 @@ return [
             'defaultMaxTokens' => Env::get('MISTRAL_DEFAULT_MAX_TOKENS', 1024),
             'connectTimeout' => Env::get('MISTRAL_CONNECT_TIMEOUT', 3),
             'requestTimeout' => Env::get('MISTRAL_REQUEST_TIMEOUT', 30),
+        ],
+        'ollama' => [
+            'clientType' => ClientType::Ollama->value,
+            'apiUrl' => Env::get('OLLAMA_API_URL', 'http://localhost:11434/v1'),
+            'apiKey' => Env::get('OLLAMA_API_KEY', ''),
+            'defaultModel' => Env::get('OLLAMA_DEFAULT_MODEL', 'gemma2:2b'),
+            'defaultMaxTokens' => Env::get('OLLAMA_DEFAULT_MAX_TOKENS', 1024),
+            'connectTimeout' => Env::get('OLLAMA_CONNECT_TIMEOUT', 3),
+            'requestTimeout' => Env::get('OLLAMA_REQUEST_TIMEOUT', 30),
         ],
         'openai' => [
             'clientType' => ClientType::OpenAI->value,
@@ -105,7 +114,7 @@ return [
             'clientType' => ClientType::OpenRouter->value,
             'apiUrl' => Env::get('OPENROUTER_API_URL', 'https://api.openrouter.io/v1'),
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
-            'defaultModel' => Env::get('OPENROUTER_DEFAULT_MODEL', 'gpt-4o-mini'),
+            'defaultModel' => Env::get('OPENROUTER_DEFAULT_MODEL', 'microsoft/phi-3.5-mini-128k-instruct'),
             'defaultMaxTokens' => Env::get('OPENROUTER_DEFAULT_MAX_TOKENS', 1024),
             'connectTimeout' => Env::get('OPENROUTER_CONNECT_TIMEOUT', 3),
             'requestTimeout' => Env::get('OPENROUTER_REQUEST_TIMEOUT', 30),

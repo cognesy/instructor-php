@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Utils;
 
 use Dotenv\Dotenv;
-use Exception;
 
 class Env
 {

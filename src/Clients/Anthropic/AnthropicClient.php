@@ -8,9 +8,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 
 class AnthropicClient extends ApiClient
 {
-    public string $defaultModel = 'claude-3-5-sonnet-20240620';
-    public int $defaultMaxTokens = 1024;
-
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',

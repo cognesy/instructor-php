@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Events\Traits;
 
 use Cognesy\Instructor\Events\Event;
