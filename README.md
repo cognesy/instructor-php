@@ -62,7 +62,7 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 ### Other capabilities
 
 - Developer friendly LLM context caching for reduced costs and faster inference (for Anthropic models)
-- Developer friendly image processing (for OpenAI, Anthropic and Gemini models)
+- Developer friendly data extraction from images (for OpenAI, Anthropic and Gemini models)
 
 ### Documentation and examples
 
@@ -161,6 +161,62 @@ var_dump($person);
 ```
 > **NOTE:** Instructor supports classes / objects as response models. In case you want to extract simple types or enums, you need to wrap them in Scalar adapter - see section below: Extracting Scalar Values.
 >
+
+
+### Connecting to various LLM API providers
+
+Instructor allows you to define multiple API connections in `instructor.php` file.
+This is useful when you want to use different LLMs or API providers in your application.
+
+Default configuration file is located in `/config/instructor.php` in the root directory
+of Instructor codebase and contains a set of predefined connections to all LLM APIs
+supported out-of-the-box by Instructor.
+
+Config file defines connections to LLM APIs and their parameters. It also specifies
+the default connection to be used when calling Instructor without specifying
+the client connection.
+
+```php
+/* This is fragment of /config/instructor.php file */
+    'defaultConnection' => 'openai',
+    //...
+    'connections' => [
+        'anthropic' => [ ... ],
+        'cohere' => [ ... ],
+        'gemini' => [ ... ],
+        'ollama' => [
+            'clientType' => ClientType::Ollama->value,
+            'apiUrl' => Env::get('OLLAMA_API_URL', 'http://localhost:11434/v1'),
+            'apiKey' => Env::get('OLLAMA_API_KEY', ''),
+            'defaultModel' => Env::get('OLLAMA_DEFAULT_MODEL', 'gemma2:2b'),
+            'defaultMaxTokens' => Env::get('OLLAMA_DEFAULT_MAX_TOKENS', 1024),
+            'connectTimeout' => Env::get('OLLAMA_CONNECT_TIMEOUT', 3),
+            'requestTimeout' => Env::get('OLLAMA_REQUEST_TIMEOUT', 30),
+        ],
+    // ...
+```
+To customize the available connections you can either modify existing entries or
+add your own.
+
+Connecting to LLM API via predefined connection is as simple as calling `withClient`
+method with the connection name.
+
+```php
+<?php
+// ...
+$user = (new Instructor)
+    ->withClient('ollama')
+    ->respond(
+        messages: "His name is Jason and he is 28 years old.",
+        responseModel: Person::class,
+    );
+// ...
+```
+
+You can change the location of the configuration file for Instructor to use via
+`INSTRUCTOR_CONFIG_PATH` environment variable. You can use a copy of the default
+configuration file as a starting point.
+
 
 
 ### Structured-to-structured processing

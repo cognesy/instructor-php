@@ -20,6 +20,7 @@ Catch up with the latest additions.
 - Multiple tools with tool selection
 - Parallel tool calls
 - Generate unstructured, then format to structured - to improve reasoning
+- Evals!!!
 
 ### API Client
 

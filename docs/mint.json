@@ -45,8 +45,8 @@
             "url": "https://cognesy.com/blog"
         }
     ],
-    "navigation": [
-        {
+    "navigation": {
+        "0": {
             "group": "Get Started",
             "pages": [
                 "introduction",
@@ -54,14 +54,14 @@
                 "llm_providers"
             ]
         },
-        {
+        "1": {
             "group": "Concepts",
             "pages": [
                 "concepts/overview",
                 "concepts/why"
             ]
         },
-        {
+        "2": {
             "group": "Essentials",
             "pages": [
                 "essentials/installation",
@@ -74,7 +74,7 @@
                 "essentials/demonstrations"
             ]
         },
-        {
+        "4": {
             "group": "Practical techniques",
             "pages": [
                 "techniques/prompting",
@@ -82,10 +82,11 @@
                 "techniques/search"
             ]
         },
-        {
+        "5": {
             "group": "Internals",
             "pages": [
                 "internals/instructor",
+                "internals/configuration",
                 "internals/lifecycle",
                 "internals/response_models",
                 "internals/debugging",
@@ -94,7 +95,7 @@
                 "internals/configuration"
             ]
         },
-        {
+        "6": {
             "group": "More",
             "pages": [
                 "misc/philosophy",
@@ -102,14 +103,14 @@
                 "misc/help"
             ]
         },
-        {
+        "7": {
             "group": "Instructor Hub",
             "pages": [
                 "cookbook/introduction",
                 "cookbook/contributing"
             ]
         },
-        {
+        "8": {
             "group": "Basics",
             "pages": [
                 "cookbook/examples/basics/basic_use",
@@ -122,11 +123,12 @@
                 "cookbook/examples/basics/public_vs_private",
                 "cookbook/examples/basics/self_correction",
                 "cookbook/examples/basics/attributes",
+                "cookbook/examples/basics/using_config",
                 "cookbook/examples/basics/validation",
                 "cookbook/examples/basics/validation_multifield"
             ]
         },
-        {
+        "9": {
             "group": "Advanced",
             "pages": [
                 "cookbook/examples/advanced/caching",
@@ -144,7 +146,7 @@
                 "cookbook/examples/advanced/structures"
             ]
         },
-        {
+        "10": {
             "group": "Techniques",
             "pages": [
                 "cookbook/examples/techniques/arbitrary_properties",
@@ -168,7 +170,7 @@
                 "cookbook/examples/techniques/translate_ui_fields"
             ]
         },
-        {
+        "11": {
             "group": "Troubleshooting",
             "pages": [
                 "cookbook/examples/troubleshooting/debugging",
@@ -178,7 +180,7 @@
                 "cookbook/examples/troubleshooting/wiretap"
             ]
         },
-        {
+        "12": {
             "group": "LLM API Support",
             "pages": [
                 "cookbook/examples/api_support/anthropic",
@@ -194,7 +196,7 @@
                 "cookbook/examples/api_support/togetherai"
             ]
         }
-    ],
+    },
     "footerSocials": {
         "x": "https://x.com/ddebowczyk",
         "github": "https://github.com/cognesy/instructor-php",

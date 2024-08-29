@@ -42,7 +42,8 @@ var_dump($person);
 // Person {
 //     name: "Jason",
 //     age: 28
-// }    
+// }
+?>
 ```
 
 !!! note
@@ -56,12 +57,14 @@ var_dump($person);
 You can provide a string instead of an array of messages. This is useful when you want to extract data from a single block of text and want to keep your code simple.
 
 ```php
+<?php
 use Cognesy\Instructor\Instructor;
 
 $value = (new Instructor)->respond(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 );
+?>
 ```
 
 
@@ -71,6 +74,7 @@ You can call `request()` method to initiate Instructor with request data
 and then call `get()` to get the response.
 
 ```php
+<?php
 use Cognesy\Instructor\Instructor;
 
 $instructor = (new Instructor)->request(
@@ -79,6 +83,7 @@ $instructor = (new Instructor)->request(
 );
 
 $person = $instructor->get();
+?>
 ```
 
 
@@ -161,4 +166,3 @@ See [Streaming and partial updates](partials.md) for more information on how to 
 ## Extracting arguments for function call
 
 See [FunctionCall helper class](function_calls.md) for more information on how to extract arguments for callable objects.
-```

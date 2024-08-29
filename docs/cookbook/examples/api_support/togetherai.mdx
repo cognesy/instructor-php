@@ -47,7 +47,7 @@ class User {
 
 // Create instance of client initialized with custom parameters
 $client = new TogetherAIClient(
-    apiKey: Env::get('TOGETHERAI_API_KEY'),
+    apiKey: Env::get('TOGETHER_API_KEY'),
 );
 
 /// Get Instructor with the default client component overridden with your own
