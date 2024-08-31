@@ -13,7 +13,7 @@ trait HandlesApiRequestFactory
     }
 
     public function toApiRequest() : ApiRequest {
-        $requestClass = $this->client->getModeRequestClass($this->mode());
+        $requestClass = $this->clientType->toRequestClass($this->mode());
         return $this->apiRequestFactory->makeRequest(
             requestClass: $requestClass,
             body: array_filter(array_merge(

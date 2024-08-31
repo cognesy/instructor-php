@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\Instructor\Clients\Azure;
 
-use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\LLMConnector;
 
 use Saloon\Contracts\Authenticator;
 use Saloon\Http\Auth\HeaderAuthenticator;
 
-class AzureConnector extends ApiConnector
+class AzureConnector extends LLMConnector
 {
     protected string $baseUrl = 'openai.azure.com';
     protected string $resourceName;

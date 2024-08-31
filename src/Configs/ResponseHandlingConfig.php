@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Configs;
 
-use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
+use Cognesy\Instructor\Container\Container;
+use Cognesy\Instructor\Container\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
@@ -23,7 +23,7 @@ use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 
 class ResponseHandlingConfig implements CanAddConfiguration
 {
-    public function addConfiguration(Configuration $config): void {
+    public function addConfiguration(Container $config): void {
 
         $config->object(
             class: RawRequestHandler::class,

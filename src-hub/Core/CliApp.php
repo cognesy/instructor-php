@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\InstructorHub\Core;
 
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Utils\Cli\Color;
 
 abstract class CliApp {
@@ -9,7 +9,7 @@ abstract class CliApp {
     public string $name = "<app name>";
     public string $description = "<app description>";
 
-    public function __construct(Configuration $config) {
+    public function __construct(Container $config) {
         $this->commandProvider = $config->get(CommandProvider::class);
     }
 

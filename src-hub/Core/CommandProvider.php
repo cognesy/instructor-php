@@ -2,17 +2,17 @@
 
 namespace Cognesy\InstructorHub\Core;
 
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\Container;
 
 class CommandProvider
 {
-    private Configuration $config;
+    private Container $config;
     private array $commands;
     private array $commandInstances;
 
     public function __construct(
-        Configuration $config,
-        array $commands
+        Container $config,
+        array     $commands
     ) {
         if (empty($commands)) {
             throw new \Exception('No commands defined in ' . get_class($this));

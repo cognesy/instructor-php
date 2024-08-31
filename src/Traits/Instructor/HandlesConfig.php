@@ -2,21 +2,21 @@
 
 namespace Cognesy\Instructor\Traits\Instructor;
 
-use Cognesy\Instructor\Configuration\ComponentConfig;
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\ComponentConfig;
+use Cognesy\Instructor\Container\Container;
 
 trait HandlesConfig
 {
-    protected Configuration $config;
+    protected Container $config;
 
-    protected function setConfig(Configuration $config) : void {
+    protected function setConfig(Container $config) : void {
         $this->config = $config;
     }
 
     /**
      * Returns the current configuration
      */
-    public function config() : Configuration {
+    public function config() : Container {
         return $this->config;
     }
 

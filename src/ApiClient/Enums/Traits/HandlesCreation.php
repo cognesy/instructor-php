@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Enums\Traits;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicApiRequest;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 //use Cognesy\Instructor\Clients\Anyscale\AnyscaleApiRequest;
@@ -91,7 +91,7 @@ trait HandlesCreation
         };
     }
 
-    public static function fromClient(CanCallApi $client) : self {
+    public static function fromClient(CanCallLLM $client) : self {
         return match(true) {
             $client instanceof AnthropicClient => self::Anthropic,
             //is AnyscaleClient => self::Anyscale,

@@ -1,18 +1,30 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Enums\Traits;
 
+use Cognesy\Instructor\Clients\Anthropic\AnthropicApiRequest;
 use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 //use Cognesy\Instructor\Clients\Anyscale\AnyscaleClient;
+use Cognesy\Instructor\Clients\Azure\AzureApiRequest;
 use Cognesy\Instructor\Clients\Azure\AzureClient;
+use Cognesy\Instructor\Clients\Cohere\CohereApiRequest;
 use Cognesy\Instructor\Clients\Cohere\CohereClient;
+use Cognesy\Instructor\Clients\FireworksAI\FireworksAIApiRequest;
 use Cognesy\Instructor\Clients\FireworksAI\FireworksAIClient;
+use Cognesy\Instructor\Clients\Gemini\GeminiApiRequest;
 use Cognesy\Instructor\Clients\Gemini\GeminiClient;
+use Cognesy\Instructor\Clients\Groq\GroqApiRequest;
 use Cognesy\Instructor\Clients\Groq\GroqClient;
+use Cognesy\Instructor\Clients\Mistral\MistralApiRequest;
 use Cognesy\Instructor\Clients\Mistral\MistralClient;
+use Cognesy\Instructor\Clients\Ollama\OllamaApiRequest;
 use Cognesy\Instructor\Clients\Ollama\OllamaClient;
+use Cognesy\Instructor\Clients\OpenAI\OpenAIApiRequest;
 use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\OpenRouter\OpenRouterApiRequest;
 use Cognesy\Instructor\Clients\OpenRouter\OpenRouterClient;
 use Cognesy\Instructor\Clients\TogetherAI\TogetherAIClient;
+use Cognesy\Instructor\Clients\TogetherAI\TogetherApiRequest;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Str;
 
 trait HandlesMapping
@@ -61,6 +73,24 @@ trait HandlesMapping
             self::OpenRouter => OpenRouterClient::class,
             self::Together => TogetherAIClient::class,
             default => OpenAIClient::class,
+        };
+    }
+
+    public function toRequestClass(Mode $mode = null) : string {
+        return match($this) {
+            self::Anthropic => AnthropicApiRequest::class,
+            //self::Anyscale => AnyscaleApiRequest::class,
+            self::Azure => AzureApiRequest::class,
+            self::Cohere => CohereApiRequest::class,
+            self::Fireworks => FireworksAIApiRequest::class,
+            self::Gemini => GeminiApiRequest::class,
+            self::Groq => GroqApiRequest::class,
+            self::Mistral => MistralApiRequest::class,
+            self::Ollama => OllamaApiRequest::class,
+            self::OpenAI => OpenAIApiRequest::class,
+            self::OpenRouter => OpenRouterApiRequest::class,
+            self::Together => TogetherApiRequest::class,
+            default => OpenAIApiRequest::class,
         };
     }
 

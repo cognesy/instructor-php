@@ -1,21 +1,20 @@
 <?php
 namespace Cognesy\Instructor\Clients\Azure;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
-use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\ApiClient\LLMClient;
+use Cognesy\Instructor\ApiClient\LLMConnector;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class AzureClient extends ApiClient
+class AzureClient extends LLMClient
 {
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',
-        protected int $connectTimeout = 3,
-        protected int $requestTimeout = 30,
-        protected array $metadata = [],
-        EventDispatcher $events = null,
-        ApiConnector $connector = null,
+        protected int    $connectTimeout = 3,
+        protected int    $requestTimeout = 30,
+        protected array  $metadata = [],
+        EventDispatcher  $events = null,
+        LLMConnector     $connector = null,
     ) {
         parent::__construct($events);
 
@@ -34,10 +33,5 @@ class AzureClient extends ApiClient
             senderClass: '',
         ));
         $this->queryParams = ['api-version' => $apiVersion];
-    }
-
-
-    public function getModeRequestClass(Mode $mode = null) : string {
-        return AzureApiRequest::class;
     }
 }

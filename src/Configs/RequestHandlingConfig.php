@@ -6,8 +6,8 @@ use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\RequestConfig\CacheConfig;
 use Cognesy\Instructor\ApiClient\RequestConfig\DebugConfig;
-use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
+use Cognesy\Instructor\Container\Container;
+use Cognesy\Instructor\Container\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -18,7 +18,7 @@ use Cognesy\Instructor\Utils\Settings;
 
 class RequestHandlingConfig implements CanAddConfiguration
 {
-    public function addConfiguration(Configuration $config): void {
+    public function addConfiguration(Container $config): void {
         $config->object(
             class: ApiRequestFactory::class,
             context: [

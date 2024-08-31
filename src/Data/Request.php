@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
@@ -30,20 +30,20 @@ class Request
         string|array|object $input,
         string|array|object $responseModel,
         string $system,
-        string $prompt,
-        array $examples,
-        string $model,
-        int $maxRetries,
-        array $options,
-        string $toolName,
-        string $toolDescription,
-        string $retryPrompt,
-        Mode $mode,
-        array $cachedContext,
-        CanCallApi $client,
+        string               $prompt,
+        array                $examples,
+        string               $model,
+        int                  $maxRetries,
+        array                $options,
+        string               $toolName,
+        string               $toolDescription,
+        string               $retryPrompt,
+        Mode                 $mode,
+        array                $cachedContext,
+        CanCallLLM           $client,
         ResponseModelFactory $responseModelFactory,
-        ApiRequestFactory $apiRequestFactory,
-        ApiRequestConfig $requestConfig,
+        ApiRequestFactory    $apiRequestFactory,
+        ApiRequestConfig     $requestConfig,
     ) {
         $this->responseModelFactory = $responseModelFactory;
         $this->apiRequestFactory = $apiRequestFactory;

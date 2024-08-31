@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\ApiClient\Responses;
 
-use Cognesy\Instructor\Data\ToolCalls;
+use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class ApiResponse

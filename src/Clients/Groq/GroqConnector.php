@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Clients\Groq;
 
-use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\LLMConnector;
 
-class GroqConnector extends ApiConnector
+class GroqConnector extends LLMConnector
 {
     protected string $baseUrl = 'https://api.groq.com/openai/v1';
 }

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\Data\ToolCall;
+use Cognesy\Instructor\ApiClient\Data\ToolCall;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json\Json;
 

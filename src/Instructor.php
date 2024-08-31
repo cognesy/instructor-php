@@ -4,7 +4,7 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Configs\InstructorConfig;
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
@@ -40,7 +40,7 @@ class Instructor {
 
     public function __construct(
         EventDispatcher $events = null,
-        Configuration $config = null,
+        Container       $config = null,
     ) {
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
         $this->queueEvent(new InstructorStarted());
@@ -52,7 +52,7 @@ class Instructor {
         $this->events = $events ?? new EventDispatcher('instructor');
 
         // wire up core components
-        $this->config = $config ?? Configuration::fresh($this->events);
+        $this->config = $config ?? Container::fresh($this->events);
         $this->config->external(
             class: EventDispatcher::class,
             reference: $this->events

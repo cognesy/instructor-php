@@ -2,8 +2,8 @@
 
 namespace Cognesy\InstructorHub\Configs;
 
-use Cognesy\Instructor\Configuration\Configuration;
-use Cognesy\Instructor\Configuration\Contracts\CanAddConfiguration;
+use Cognesy\Instructor\Container\Container;
+use Cognesy\Instructor\Container\Contracts\CanAddConfiguration;
 
 use Cognesy\InstructorHub\Commands\GenerateDocs;
 use Cognesy\InstructorHub\Commands\ListAllExamples;
@@ -16,7 +16,7 @@ use Cognesy\InstructorHub\Services\Runner;
 
 class CommandConfig implements CanAddConfiguration
 {
-    public function addConfiguration(Configuration $config): void {
+    public function addConfiguration(Container $config): void {
 
         /// COMMANDS //////////////////////////////////////////////////////////////////
 

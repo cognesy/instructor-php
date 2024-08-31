@@ -83,6 +83,7 @@ class GeminiApiRequest extends ApiRequest
             "responseSchema" => match($this->mode) {
                 Mode::MdJson => '',
                 Mode::Json => $this->getResponseSchema(),
+                Mode::JsonSchema => $this->getResponseSchema(),
                 default => '',
             },
             "candidateCount" => 1,

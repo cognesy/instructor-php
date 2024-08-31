@@ -2,14 +2,14 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class InstructorReady extends Event
 {
     public function __construct(
-        public Configuration $config
+        public Container $config
     )
     {
         parent::__construct();

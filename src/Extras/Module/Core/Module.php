@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\Extras\Module\Contracts\CanInitiateModuleCall;
 use Cognesy\Instructor\Instructor;
 
@@ -36,7 +36,7 @@ abstract class Module implements CanInitiateModuleCall
 
     public function using(
         Instructor $instructor = null,
-        CanCallApi $client = null,
+        CanCallLLM $client = null,
     ) : static {
         foreach($this->predictors() as $predictor) {
             $predictor->using(instructor: $instructor, client: $client);

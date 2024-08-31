@@ -127,6 +127,7 @@
                 "cookbook/examples/basics/basic_use_mixin",
                 "cookbook/examples/basics/complex_extraction",
                 "cookbook/examples/basics/complex_extraction_claude",
+                "cookbook/examples/basics/complex_extraction_gemini",
                 "cookbook/examples/basics/maybe",
                 "cookbook/examples/basics/modes",
                 "cookbook/examples/basics/optional_fields",

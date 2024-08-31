@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Clients\OpenRouter;
 
-use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\LLMConnector;
 
-class OpenRouterConnector extends ApiConnector
+class OpenRouterConnector extends LLMConnector
 {
     protected string $baseUrl = 'https://openrouter.ai/api/v1';
 }

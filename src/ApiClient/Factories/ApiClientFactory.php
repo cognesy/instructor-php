@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\ApiClient\Factories;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Utils\Settings;
@@ -9,7 +9,7 @@ use InvalidArgumentException;
 
 class ApiClientFactory
 {
-    protected CanCallApi $defaultClient;
+    protected CanCallLLM $defaultClient;
 
     public function __construct(
         public EventDispatcher $events,
@@ -22,7 +22,7 @@ class ApiClientFactory
         $this->defaultClient = $this->client($defaultConnection);
     }
 
-    public function client(string $connection) : CanCallApi {
+    public function client(string $connection) : CanCallLLM {
         $clientConfig = Settings::get("connections.$connection");
         if (!$clientConfig) {
             throw new InvalidArgumentException("No client connection config found for '{$connection}'");
@@ -32,18 +32,18 @@ class ApiClientFactory
             ->withApiRequestFactory($this->apiRequestFactory);
     }
 
-    public function getDefault() : CanCallApi {
+    public function getDefault() : CanCallLLM {
         return $this->defaultClient;
     }
 
-    public function setDefault(CanCallApi $client) : self {
+    public function setDefault(CanCallLLM $client) : self {
         $this->defaultClient = $client;
         return $this;
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////
 
-    protected function getFromConfig(array $config): CanCallApi {
+    protected function getFromConfig(array $config): CanCallLLM {
         $clientType = ClientType::from($config['clientType']);
         $clientClass = $clientType->toClientClass();
         return (new $clientClass(

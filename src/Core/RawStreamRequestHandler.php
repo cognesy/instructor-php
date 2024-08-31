@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -33,7 +33,7 @@ class RawStreamRequestHandler implements CanHandleStreamRequest
      * @return Generator<string>
      */
     protected function getStreamedResponses(Request $request) : Generator {
-        /** @var CanCallApi $apiClient */
+        /** @var CanCallLLM $apiClient */
         $apiClient = $request->client();
         if ($apiClient === null) {
             throw new Exception("Request does not have an API client");

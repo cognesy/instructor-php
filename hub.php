@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Events\EventDispatcher;
 
 use Cognesy\InstructorHub\Configs\CommandConfig;
@@ -15,7 +15,7 @@ $loader->add('Cognesy\\InstructorHub\\', __DIR__ . '../src-hub/');
 
 // wire up core components
 $events = new EventDispatcher('hub');
-$config = Configuration::fresh($events)
+$config = Container::fresh($events)
     ->external(
         class: EventDispatcher::class,
         reference: $events

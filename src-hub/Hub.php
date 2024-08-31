@@ -2,7 +2,7 @@
 
 namespace Cognesy\InstructorHub;
 
-use Cognesy\Instructor\Configuration\Configuration;
+use Cognesy\Instructor\Container\Container;
 use Cognesy\InstructorHub\Core\CliApp;
 
 class Hub extends CliApp
@@ -10,7 +10,7 @@ class Hub extends CliApp
     public string $name = "Instructor for PHP";
     public string $description = " (^) Get structured outputs from LLMs";
 
-    public function __construct(Configuration $config)
+    public function __construct(Container $config)
     {
         parent::__construct($config);
     }

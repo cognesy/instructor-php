@@ -1,21 +1,20 @@
 <?php
 namespace Cognesy\Instructor\Clients\Mistral;
 
-use Cognesy\Instructor\ApiClient\ApiClient;
-use Cognesy\Instructor\ApiClient\ApiConnector;
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\ApiClient\LLMClient;
+use Cognesy\Instructor\ApiClient\LLMConnector;
 use Cognesy\Instructor\Events\EventDispatcher;
 
-class MistralClient extends ApiClient
+class MistralClient extends LLMClient
 {
     public function __construct(
         protected string $apiKey = '',
         protected string $baseUri = '',
-        protected int $connectTimeout = 3,
-        protected int $requestTimeout = 30,
-        protected array $metadata = [],
-        EventDispatcher $events = null,
-        ApiConnector $connector = null,
+        protected int    $connectTimeout = 3,
+        protected int    $requestTimeout = 30,
+        protected array  $metadata = [],
+        EventDispatcher  $events = null,
+        LLMConnector     $connector = null,
     ) {
         parent::__construct($events);
         $this->withConnector($connector ?? new MistralConnector(
@@ -26,10 +25,5 @@ class MistralClient extends ApiClient
             metadata: $metadata,
             senderClass: '',
         ));
-    }
-
-
-    public function getModeRequestClass(Mode $mode = null) : string {
-        return MistralApiRequest::class;
     }
 }

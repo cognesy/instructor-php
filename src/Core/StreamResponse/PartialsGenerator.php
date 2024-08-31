@@ -2,14 +2,14 @@
 
 namespace Cognesy\Instructor\Core\StreamResponse;
 
+use Cognesy\Instructor\ApiClient\Data\ToolCall;
+use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Core\StreamResponse\Traits\ValidatesPartialResponse;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\ToolCall;
-use Cognesy\Instructor\Data\ToolCalls;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;

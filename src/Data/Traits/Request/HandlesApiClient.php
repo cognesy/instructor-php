@@ -2,15 +2,15 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallApi;
+use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 
 trait HandlesApiClient
 {
-    private ?CanCallApi $client;
+    private ?CanCallLLM $client;
     private ClientType $clientType;
 
-    public function client() : ?CanCallApi {
+    public function client() : ?CanCallLLM {
         return $this->client;
     }
 
@@ -20,7 +20,7 @@ trait HandlesApiClient
 
     // INTERNAL //////////////////////////////////////////////////////////////////
 
-    protected function withClient(CanCallApi $client) : self {
+    protected function withClient(CanCallLLM $client) : self {
         $this->client = $client;
         return $this;
     }

@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Clients\OpenAI;
 
-use Cognesy\Instructor\ApiClient\ApiConnector;
+use Cognesy\Instructor\ApiClient\LLMConnector;
 
-class OpenAIConnector extends ApiConnector
+class OpenAIConnector extends LLMConnector
 {
     protected string $baseUrl = 'https://api.openai.com/v1';
     protected string $organization;
