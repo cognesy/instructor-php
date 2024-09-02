@@ -1,12 +1,12 @@
 ---
-title: 'Extraction of complex objects'
-docname: 'complex_extraction'
+title: 'Extraction of complex objects (Cohere)'
+docname: 'complex_extraction_cohere'
 ---
 
 ## Overview
 
 This is an example of extraction of a very complex structure from
-the provided text.
+the provided text with Cohere R models.
 
 ## Example
 
@@ -15,7 +15,7 @@ the provided text.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Clients\Cohere\CohereClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
@@ -88,7 +88,7 @@ class Stakeholder {
     /** Role of the stakeholder, if specified */
     public StakeholderRole $role = StakeholderRole::Other;
     /** Any details on the stakeholder, if specified - any mentions of company, organization, structure, group, team, function */
-    public ?string $details = '';
+    public string $details = '';
 }
 
 enum StakeholderRole: string {
@@ -98,12 +98,11 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$client = new OpenAIClient(
-    apiKey: Env::get('OPENAI_API_KEY'),
-    requestTimeout: 90,
+$client = new CohereClient(
+    apiKey: Env::get('COHERE_API_KEY'),
 );
 
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient($client)->withDebug();
 
 echo "PROJECT EVENTS:\n\n";
 
@@ -112,8 +111,8 @@ $events = $instructor
     ->request(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        model: 'gpt-4o',
-        mode: Mode::Tools,
+        model: 'command-r-plus-08-2024',
+        mode: Mode::JsonSchema,
         options: [
             'max_tokens' => 2048,
             'stream' => true,

@@ -57,7 +57,6 @@ trait HandlesInvocation
         return $this->get();
     }
 
-    // TODO: to be implemented
     public function cacheContext(
         string|array $messages = '',
         string|array|object $input = '',

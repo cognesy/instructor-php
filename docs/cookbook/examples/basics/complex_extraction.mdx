@@ -112,8 +112,8 @@ $events = $instructor
     ->request(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
-        model: 'gpt-4o-mini',
-        mode: Mode::Json,
+        model: 'gpt-4o',
+        mode: Mode::Tools,
         options: [
             'max_tokens' => 2048,
             'stream' => true,

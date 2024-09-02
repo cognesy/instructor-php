@@ -1,5 +1,5 @@
 ---
-title: 'Caching'
+title: 'Request caching'
 docname: 'caching'
 ---
 
