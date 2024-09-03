@@ -15,8 +15,6 @@ class Request
     use Traits\Request\HandlesApiRequestParams;
     use Traits\Request\HandlesExamples;
     use Traits\Request\HandlesMessages;
-    use Traits\Request\HandlesMode;
-    use Traits\Request\HandlesModel;
     use Traits\Request\HandlesPrompts;
     use Traits\Request\HandlesRetries;
     use Traits\Request\HandlesSchema;
