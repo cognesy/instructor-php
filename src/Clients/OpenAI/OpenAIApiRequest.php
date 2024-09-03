@@ -4,14 +4,13 @@ namespace Cognesy\Instructor\Clients\OpenAI;
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Enums\Mode;
-use Saloon\Enums\Method;
 
 class OpenAIApiRequest extends ApiRequest
 {
     public function __construct(
         array            $body = [],
         string           $endpoint = '',
-        Method           $method = Method::POST,
+        string           $method = 'POST',
         ApiRequestConfig $requestConfig = null,
         array            $data = [],
     ) {

@@ -46,13 +46,13 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     public function __construct(
         array $body = [],
         string $endpoint = '',
-        Method $method = Method::POST,
+        string $method = 'POST',
         ApiRequestConfig $requestConfig = null,
         array $data = [],
     ) {
         // set properties
         $this->endpoint = $endpoint;
-        $this->method = $method;
+        $this->method = Method::from($method);
         $this->requestBody = $body;
         $this->requestConfig = $requestConfig;
         $this->data = $data;

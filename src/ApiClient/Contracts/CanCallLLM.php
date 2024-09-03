@@ -5,13 +5,11 @@ namespace Cognesy\Instructor\ApiClient\Contracts;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Enums\Mode;
 use Generator;
-use Saloon\Enums\Method;
 
 interface CanCallLLM
 {
-    public function request(array $body, string $endpoint, Method $method): static;
+    public function request(array $body, string $endpoint, string $method): static;
     public function respond(ApiRequest $request) : ApiResponse;
     public function get() : ApiResponse;
     /** @return Generator<PartialApiResponse>  */

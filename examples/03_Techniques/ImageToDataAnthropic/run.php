@@ -17,7 +17,7 @@ information with data of vendor, items, subtotal, tax, tip, and total.
 
 Here's the image we're going to extract data from.
 
-![Receipt](images/receipt.png)
+![Receipt](/images/receipt.png)
 
 
 ## Example

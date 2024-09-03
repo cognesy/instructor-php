@@ -9,7 +9,6 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
 use Cognesy\Instructor\Utils\Settings;
-use Saloon\Enums\Method;
 
 abstract class LLMClient implements CanCallLLM
 {
@@ -43,7 +42,7 @@ abstract class LLMClient implements CanCallLLM
     public function request(
         array            $body,
         string           $endpoint = '',
-        Method           $method = Method::POST,
+        string           $method = 'POST',
         ApiRequestConfig $requestConfig = null,
         array            $data = [],
     ): static {

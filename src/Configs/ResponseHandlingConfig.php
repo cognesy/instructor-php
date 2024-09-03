@@ -8,6 +8,7 @@ use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
+use Cognesy\Instructor\Core\NewerRequestHandler;
 use Cognesy\Instructor\Core\RawRequestHandler;
 use Cognesy\Instructor\Core\RawStreamRequestHandler;
 use Cognesy\Instructor\Core\RequestHandler;

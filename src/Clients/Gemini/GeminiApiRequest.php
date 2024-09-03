@@ -8,7 +8,6 @@ use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\ApiClient\RequestBodyCompiled;
 use Cognesy\Instructor\Utils\Arrays;
-use Saloon\Enums\Method;
 
 class GeminiApiRequest extends ApiRequest
 {
@@ -18,7 +17,7 @@ class GeminiApiRequest extends ApiRequest
     public function __construct(
         array $body = [],
         string $endpoint = '',
-        Method $method = Method::POST,
+        string $method = 'POST',
         ApiRequestConfig $requestConfig = null,
         array $data = [],
     ) {

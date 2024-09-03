@@ -11,12 +11,8 @@ use Cognesy\Instructor\Enums\Mode;
 class Request
 {
     use Traits\Request\HandlesApiClient;
-    use Traits\Request\HandlesApiRequestConfig;
-    use Traits\Request\HandlesApiRequestData;
-    use Traits\Request\HandlesApiRequestEndpoint;
     use Traits\Request\HandlesApiRequestFactory;
-    use Traits\Request\HandlesApiRequestMethod;
-    use Traits\Request\HandlesApiRequestOptions;
+    use Traits\Request\HandlesApiRequestParams;
     use Traits\Request\HandlesExamples;
     use Traits\Request\HandlesMessages;
     use Traits\Request\HandlesMode;

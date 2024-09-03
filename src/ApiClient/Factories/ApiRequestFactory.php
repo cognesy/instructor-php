@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\ApiClient\Factories;
 
 use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
-use Saloon\Enums\Method;
 
 class ApiRequestFactory
 {
@@ -19,7 +18,7 @@ class ApiRequestFactory
         string $requestClass,
         array $body,
         string $endpoint = '',
-        Method $method = Method::POST,
+        string $method = 'POST',
         array $data = [],
     ): ApiRequest {
         $request = new $requestClass($body, $endpoint, $method, $this->requestConfig, $data);
