@@ -48,7 +48,7 @@ return [
             'clientType' => ClientType::Cohere->value,
             'apiUrl' => Env::get('COHERE_API_URL', 'https://api.cohere.ai/v1'),
             'apiKey' => Env::get('COHERE_API_KEY', ''),
-            'defaultModel' => Env::get('COHERE_DEFAULT_MODEL', 'cohere-r-plus'),
+            'defaultModel' => Env::get('COHERE_DEFAULT_MODEL', 'command-r-plus-08-2024'),
             'defaultMaxTokens' => Env::get('COHERE_DEFAULT_MAX_TOKENS', 1024),
             'connectTimeout' => Env::get('COHERE_CONNECT_TIMEOUT', 3),
             'requestTimeout' => Env::get('COHERE_REQUEST_TIMEOUT', 30),

@@ -1,0 +1,70 @@
+---
+title: 'Reflection Prompting'
+docname: 'reflection_prompting'
+---
+
+## Overview
+
+This implementation of Reflection Prompting with Instructor provides a structured way
+to encourage LLM to engage in more thorough and self-critical thinking processes,
+potentially leading to higher quality and more reliable outputs.
+
+
+## Example
+
+```php
+<?php
+$loader = require 'vendor/autoload.php';
+$loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
+
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Schema\Attributes\Instructions;
+
+class ReflectiveResponse {
+    #[Instructions('Is problem solvable and what domain expertise it requires')]
+    public string $assessment;
+
+    #[Instructions('Describe a persona who would be able to solve this problem, their skills and experience')]
+    public string $persona;
+
+    #[Instructions('Initial analysis and approach to the problem of the expert persona')]
+    public string $initialThinking;
+
+    /** @var string[] */
+    #[Instructions('Steps of reasoning leading to the final answer - how would the expert persona think through the problem')]
+    public array $chainOfThought;
+
+    #[Instructions('Critical examination of the reasoning process - what could go wrong, what are the assumptions')]
+    public string $reflection;
+
+    #[Instructions('Final answer after reflection')]
+    public string $finalOutput;
+
+    // Validation method to ensure thorough reflection
+    public function validate(): array {
+        $errors = [];
+        if (empty($this->reflection)) {
+            $errors[] = "Reflection is required for a thorough response.";
+        }
+        if (count($this->chainOfThought) < 2) {
+            $errors[] = "Please provide at least two steps in the chain of thought.";
+        }
+        return $errors;
+    }
+}
+
+$text = 'If a+|a|=0, try to prove that a<0';
+
+$solution = (new Instructor)->withClient('cohere')->respond(
+    prompt: $text,
+    responseModel: ReflectiveResponse::class,
+    mode: Mode::MdJson,
+    options: ['max_tokens' => 2048]
+);
+
+print("Problem:\n$text\n\n");
+dump($solution);
+
+?>
+```
