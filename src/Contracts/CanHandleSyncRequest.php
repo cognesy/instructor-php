@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\Request;
 
-interface CanHandleRequest
+interface CanHandleSyncRequest
 {
-    public function respondTo(Request $request) : mixed;
+    public function responseFor(Request $request) : mixed;
 }

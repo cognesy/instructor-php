@@ -2,13 +2,11 @@
 
 namespace Cognesy\Instructor\Traits\Instructor;
 
-use Cognesy\Instructor\Contracts\CanHandleRequest;
+use Cognesy\Instructor\Contracts\CanHandleSyncRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
 use Cognesy\Instructor\Core\RawRequestHandler;
-use Cognesy\Instructor\Core\RawStreamRequestHandler;
 use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Data\Request;
 use Throwable;
 
@@ -26,12 +24,12 @@ trait HandlesRequest
     protected function handleRequest() : mixed {
         $this->dispatchQueuedEvents();
         /** @var RequestHandler $requestHandler */
-        $requestHandler = $this->config->get(CanHandleRequest::class);
+        $requestHandler = $this->config->get(RequestHandler::class);
         try {
             $this->request = $this->requestFactory->fromData(
                 $this->requestData->withCachedContext($this->cachedContext)
             );
-            return $requestHandler->respondTo($this->request);
+            return $requestHandler->responseFor($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
@@ -39,13 +37,13 @@ trait HandlesRequest
 
     protected function handleStreamRequest() : Iterable {
         $this->dispatchQueuedEvents();
-        /** @var StreamRequestHandler $streamHandler */
-        $streamHandler = $this->config->get(CanHandleStreamRequest::class);
+        /** @var RequestHandler $requestHandler */
+        $requestHandler = $this->config->get(RequestHandler::class);
         try {
             $this->request = $this->requestFactory->fromData(
                 $this->requestData->withCachedContext($this->cachedContext)
             );
-            yield from $streamHandler->respondTo($this->request);
+            yield from $requestHandler->streamResponseFor($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
@@ -59,7 +57,7 @@ trait HandlesRequest
             $this->request = $this->requestFactory->fromData(
                 $this->requestData->withCachedContext($this->cachedContext)
             );
-            return $requestHandler->respondTo($this->request);
+            return $requestHandler->responseFor($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
         }
@@ -67,13 +65,13 @@ trait HandlesRequest
 
     protected function handleRawStreamRequest() : Iterable {
         $this->dispatchQueuedEvents();
-        /** @var RawStreamRequestHandler $streamHandler */
-        $streamHandler = $this->config->get(RawStreamRequestHandler::class);
+        /** @var RawRequestHandler $requestHandler */
+        $requestHandler = $this->config->get(RawRequestHandler::class);
         try {
             $this->request = $this->requestFactory->fromData(
                 $this->requestData->withCachedContext($this->cachedContext)
             );
-            yield from $streamHandler->respondTo($this->request);
+            yield from $requestHandler->streamResponseFor($this->request);
         } catch (Throwable $error) {
             return $this->handleError($error);
         }

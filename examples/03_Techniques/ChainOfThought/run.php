@@ -21,11 +21,13 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Schema\Attributes\Instructions;
 
 class Employee {
-    /** Think step by step to determine the correct year of employment. */
-    public string $chainOfThought;
+    #[Instructions('Think step by step to determine the correct year of employment.')]
+    public string $reasoning;
     public int $yearOfEmployment;
+    // ... other data fields of your employee class
 }
 
 $text = 'He was working here for 5 years. Now, in 2019, he is a manager.';

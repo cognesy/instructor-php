@@ -102,7 +102,7 @@ $client = new GeminiClient(
     apiKey: Env::get('GEMINI_API_KEY'),
 );
 
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('gemini');
 
 echo "PROJECT EVENTS:\n\n";
 

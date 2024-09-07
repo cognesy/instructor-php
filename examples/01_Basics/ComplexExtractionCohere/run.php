@@ -102,7 +102,7 @@ $client = new CohereClient(
     apiKey: Env::get('COHERE_API_KEY'),
 );
 
-$instructor = (new Instructor)->withClient($client)->withDebug();
+$instructor = (new Instructor)->withClient('cohere');
 
 echo "PROJECT EVENTS:\n\n";
 

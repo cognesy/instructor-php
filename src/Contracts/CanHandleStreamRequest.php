@@ -7,5 +7,5 @@ use Generator;
 
 interface CanHandleStreamRequest
 {
-    public function respondTo(Request $request) : mixed;
+    public function streamResponseFor(Request $request) : Generator;
 }

@@ -39,10 +39,10 @@ class LLMConnector extends Connector
     }
 
     protected function defaultHeaders(): array {
-        return [
+        return array_merge([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ];
+        ]);
     }
 
     public function defaultConfig(): array {

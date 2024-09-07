@@ -6,14 +6,11 @@ use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Container\Contracts\CanAddConfiguration;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
-use Cognesy\Instructor\Contracts\CanHandleRequest;
+use Cognesy\Instructor\Contracts\CanHandleSyncRequest;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
-use Cognesy\Instructor\Core\NewerRequestHandler;
 use Cognesy\Instructor\Core\RawRequestHandler;
-use Cognesy\Instructor\Core\RawStreamRequestHandler;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
-use Cognesy\Instructor\Core\StreamRequestHandler;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
@@ -34,18 +31,11 @@ class ResponseHandlingConfig implements CanAddConfiguration
         );
 
         $config->object(
-            class: RawStreamRequestHandler::class,
-            context: [
-                'events' => $config->reference(EventDispatcher::class),
-            ]
-        );
-
-        $config->object(
             class: RequestHandler::class,
-            name: CanHandleRequest::class,
             context: [
                 'events' => $config->reference(EventDispatcher::class),
                 'responseGenerator' => $config->reference(CanGenerateResponse::class),
+                'partialsGenerator' => $config->reference(CanGeneratePartials::class),
             ]
         );
 
@@ -57,16 +47,6 @@ class ResponseHandlingConfig implements CanAddConfiguration
                 'responseValidator' => $config->reference(ResponseValidator::class),
                 'responseTransformer' => $config->reference(ResponseTransformer::class),
                 'events' => $config->reference(EventDispatcher::class),
-            ]
-        );
-
-        $config->object(
-            class: StreamRequestHandler::class,
-            name: CanHandleStreamRequest::class,
-            context: [
-                'events' => $config->reference(EventDispatcher::class),
-                'responseGenerator' => $config->reference(CanGenerateResponse::class),
-                'partialsGenerator' => $config->reference(CanGeneratePartials::class),
             ]
         );
 

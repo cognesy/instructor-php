@@ -113,7 +113,7 @@ $client = new AnthropicClient(
 );
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('anthropic');
 
 echo "PROJECT EVENTS:\n\n";
 

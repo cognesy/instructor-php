@@ -45,7 +45,7 @@ $user = (new Instructor)
     ->respond(
         messages: $text,
         responseModel: UserDetails::class,
-        maxRetries: 3
+        maxRetries: 3,
     );
 
 print("\nOUTPUT:\n");
