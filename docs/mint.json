@@ -173,6 +173,7 @@
                 "cookbook/examples/techniques/image_to_data_anthropic",
                 "cookbook/examples/techniques/image_to_data_gemini",
                 "cookbook/examples/techniques/limiting_lists",
+                "cookbook/examples/techniques/reflection_prompting",
                 "cookbook/examples/techniques/restate_instructions",
                 "cookbook/examples/techniques/rewrite_instructions",
                 "cookbook/examples/techniques/search_query_expansion",
