@@ -5,6 +5,7 @@ namespace Cognesy\InstructorHub\Configs;
 use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Container\Contracts\CanAddConfiguration;
 
+use Cognesy\InstructorHub\Commands\ClearDocs;
 use Cognesy\InstructorHub\Commands\GenerateDocs;
 use Cognesy\InstructorHub\Commands\ListAllExamples;
 use Cognesy\InstructorHub\Commands\RunAllExamples;
@@ -27,6 +28,7 @@ class ServiceConfig implements CanAddConfiguration
                 'config' => $config,
                 'commands' => [
                     GenerateDocs::class,
+                    ClearDocs::class,
                     ListAllExamples::class,
                     RunAllExamples::class,
                     RunOneExample::class,

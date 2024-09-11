@@ -48,7 +48,8 @@ class Example
             '02_Advanced' => ['name' => 'advanced', 'title' => 'Advanced'],
             '03_Techniques' => ['name' => 'techniques', 'title' => 'Techniques'],
             '04_Troubleshooting' => ['name' => 'troubleshooting', 'title' => 'Troubleshooting'],
-            '05_APISupport' => ['name' => 'api_support', 'title' => 'LLM API Support']
+            '05_APISupport' => ['name' => 'api_support', 'title' => 'LLM API Support'],
+            '06_Extras' => ['name' => 'extras', 'title' => 'Extras'],
         ];
 
         return new Example(

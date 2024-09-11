@@ -5,6 +5,7 @@ namespace Cognesy\InstructorHub\Configs;
 use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Container\Contracts\CanAddConfiguration;
 
+use Cognesy\InstructorHub\Commands\ClearDocs;
 use Cognesy\InstructorHub\Commands\GenerateDocs;
 use Cognesy\InstructorHub\Commands\ListAllExamples;
 use Cognesy\InstructorHub\Commands\RunAllExamples;
@@ -22,6 +23,13 @@ class CommandConfig implements CanAddConfiguration
 
         $config->object(
             class: GenerateDocs::class,
+            context: [
+                'docGen' => $config->reference(MintlifyDocGenerator::class),
+            ],
+        );
+
+        $config->object(
+            class: ClearDocs::class,
             context: [
                 'docGen' => $config->reference(MintlifyDocGenerator::class),
             ],

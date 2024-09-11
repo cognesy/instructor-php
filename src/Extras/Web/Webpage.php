@@ -2,16 +2,20 @@
 
 namespace Cognesy\Instructor\Extras\Web;
 
+use Cognesy\Instructor\Contracts\CanProvideMessage;
+use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Extras\Web\Contracts\CanGetUrlContent;
 use Cognesy\Instructor\Extras\Web\Html\HtmlProcessor;
 use Cognesy\Instructor\Extras\Web\Scrapers\BasicReader;
-use Cognesy\Instructor\Extras\Web\Scrapers\JinaReader;
-use Cognesy\Instructor\Extras\Web\Scrapers\ScrapFly;
-use Cognesy\Instructor\Extras\Web\Scrapers\ScrapingBee;
+use Cognesy\Instructor\Extras\Web\Scrapers\BrowsershotDriver;
+use Cognesy\Instructor\Extras\Web\Scrapers\JinaReaderDriver;
+use Cognesy\Instructor\Extras\Web\Scrapers\ScrapFlyDriver;
+use Cognesy\Instructor\Extras\Web\Scrapers\ScrapingBeeDriver;
 use Cognesy\Instructor\Utils\Settings;
 use Exception;
+use Generator;
 
-class Webpage
+class Webpage implements CanProvideMessage
 {
     private CanGetUrlContent $scraper;
     private HtmlProcessor $htmlProcessor;
@@ -24,6 +28,12 @@ class Webpage
         $this->htmlProcessor = new HtmlProcessor();
     }
 
+    public static function withHtml(string $html) : Webpage {
+        $webpage = new Webpage();
+        $webpage->content = $html;
+        return $webpage;
+    }
+
     public static function withScraper(string $scraper = '') : Webpage {
         $scraper = $scraper ?: Settings::get('web', 'defaultScraper', 'none');
 
@@ -32,9 +42,10 @@ class Webpage
 
         $scraperObject = match($scraper) {
             'none' => new BasicReader(),
-            'jinareader' => new JinaReader($baseUrl, $apiKey),
-            'scrapfly' => new Scrapfly($baseUrl, $apiKey),
-            'scrapingbee' => new ScrapingBee($baseUrl, $apiKey),
+            'browsershot' => new BrowsershotDriver(),
+            'jinareader' => new JinaReaderDriver($baseUrl, $apiKey),
+            'scrapfly' => new ScrapFlyDriver($baseUrl, $apiKey),
+            'scrapingbee' => new ScrapingBeeDriver($baseUrl, $apiKey),
             default => throw new Exception("Unknown scraper requested: $scraper"),
         };
 
@@ -43,11 +54,38 @@ class Webpage
 
     public function get(string $url, array $options = []) : static {
         $this->content = $this->scraper->getContent($url, $options);
+        if ($options['cleanup'] ?? false) {
+            $this->content = $this->htmlProcessor->cleanup($this->content);
+        }
         return $this;
+    }
+
+    public function select(string $selector) : static {
+        $this->content = $this->htmlProcessor->select($this->content, $selector);
+        return $this;
+    }
+
+    /**
+     * @param string $selector CSS selector
+     * @param callable|null $fn Function to transform the selected item
+     * @return Generator<Webpage> a generator of Webpage objects
+     */
+    public function selectMany(string $selector, callable $fn = null) : Generator {
+        foreach ($this->htmlProcessor->selectMany($this->content, $selector) as $html) {
+            yield match($fn) {
+                null => Webpage::withHtml($html),
+                default => $fn(Webpage::withHtml($html)),
+            };
+        }
     }
 
     public function content() : string {
         return $this->content;
+    }
+
+    public function cleanup() : static {
+        $this->content = $this->htmlProcessor->cleanup($this->content);
+        return $this;
     }
 
     public function metadata(array $attributes = []) : array {
@@ -64,5 +102,9 @@ class Webpage
 
     public function asMarkdown() : string {
         return $this->htmlProcessor->toMarkdown($this->content);
+    }
+
+    public function toMessage(): Message {
+        return new Message(content: $this->asMarkdown());
     }
 }

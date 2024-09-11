@@ -7,7 +7,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 use Symfony\Component\DomCrawler\Crawler;
 
 class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
-    public function getMetadata(string $html, array $attributes): array {
+    public function getMetadata(string $html, array $attributes = []): array {
         // use Crawler to extract metadata
         $crawler = new Crawler($html);
         $metadata = [];
@@ -43,36 +43,52 @@ class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
 
     public function getBody(string $html) : string {
         $body = $this->cleanBodyTag($html);
-        $body = explode('<body>', $body)[1];
-        $body = explode('</body>', $body)[0];
+        $parts = explode('<body>', $body);
+        $body = $parts[1] ?? '';
+        $parts = explode('</body>', $body);
+        $body = $parts[0] ?? '';
         return $body;
     }
 
     public function toMarkdown(string $html) : string {
-        $html = $this->cleanup($html);
         return (new HtmlConverter)->convert($html);
     }
 
-    // INTERNAL /////////////////////////////////////////////////////////
+    public function select(string $html, string $selector) : string {
+        return (new Crawler($html))->filter($selector)->html();
+    }
 
-    protected function cleanup(string $page) : string {
-        $body = $this->getBody($page);
+    public function selectMany(string $html, string $selector) : array {
+        return (new Crawler($html))->filter($selector)->each(function (Crawler $node) {
+            return $node->html();
+        });
+    }
+
+    public function cleanup(
+        string $html,
+        array $removeTags = ['a', 'b', 'i', 'strong', 'pre', 'p', 'img', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot', 'caption'],
+        array $removeTagsWithContent = ['script', 'noscript', 'style', 'iframe', 'aside']
+    ) : string {
+        $body = $html;
 //        $body = match(true) {
 //            default => $this->extractContentByTier($body, $this->selectorTiers())
 //        };
-        $body = $this->removeTagsWithContent($body, ['script', 'noscript', 'style', 'iframe', 'aside']);
+        $body = $this->removeTagsWithContent($body, $removeTagsWithContent);
         $body = str_replace(array('</div>'), array(" </div><br>\n\n "), $body);
         $body = $this->addSpaces($body);
         // remove any non-basic html tags, leave only raw text
-        $body = $this->stripHtmlTags($body, ['a', 'b', 'i', 'strong', 'pre', 'p', 'img', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot', 'caption']);
+        $body = $this->stripHtmlTags($body, $removeTags);
         $body = $this->removeWhitespaceBeforeEndOfLine($body);
         $body = $this->removeWhitespaceBeforeBr($body);
         $body = $this->consolidateBrNewlines($body);
         $body = $this->consolidateBrs($body);
         $body = $this->replaceMultipleNewlines($body);
         $body = $this->replaceMultipleSpacesPreservePre($body);
+
         return $body;
     }
+
+    // INTERNAL /////////////////////////////////////////////////////////
 
     private function selectorTiers() : array {
         return [

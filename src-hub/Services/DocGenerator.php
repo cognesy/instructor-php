@@ -85,7 +85,8 @@ class DocGenerator
         if (!file_exists($targetPath)) {
             return false;
         }
-        unlink($targetPath);
+        //unlink($targetPath);
+        echo "unlink $targetPath\n";
         return true;
     }
 

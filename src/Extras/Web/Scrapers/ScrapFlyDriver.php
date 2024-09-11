@@ -9,14 +9,14 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
 
-class ScrapingBee implements CanGetUrlContent{
-    private string $apiKey;
+class ScrapFlyDriver implements CanGetUrlContent {
     private string $baseUrl;
+    private string $apiKey;
     private ClientInterface $client;
 
     public function __construct(string $baseUrl = '', string $apiKey = '') {
-        $this->baseUrl = $baseUrl ?: Env::get('SCRAPINGBEE_BASE_URI');
-        $this->apiKey = $apiKey ?: Env::get('SCRAPINGBEE_API_KEY');
+        $this->baseUrl = $baseUrl ?: Env::get('SCRAPFLY_BASE_URI');
+        $this->apiKey = $apiKey ?: Env::get('SCRAPFLY_API_KEY');
         $this->client = new Client();
     }
 
@@ -28,22 +28,28 @@ class ScrapingBee implements CanGetUrlContent{
     }
 
     public function getContent(string $url, array $options = []): string {
-        $renderJs = $options['render_js'] ?? true;
-        $apiUrl = $this->makeUrl($url, $renderJs);
+        $apiUrl = $this->makeUrl($url);
         $request = new Request('GET', $apiUrl);
+
         try {
             $response = $this->client->sendRequest($request);
-            return $response->getBody()->getContents();
+            $content = $response->getBody()->getContents();
+            $json = json_decode($content, true);
+            return $json['result']['content'];
         } catch (Exception $e) {
             throw new Exception('Error: ' . $e->getMessage());
         }
     }
 
-    private function makeUrl(string $url, bool $renderJs) : string {
+    // INTERNAL ///////////////////////////////////////////
+
+    private function makeUrl(string $url) : string {
         $fields = [
-            'api_key' => $this->apiKey,
+            'key' => $this->apiKey,
             'url' => $url,
-            'render_js' => $renderJs ? 'true' : 'false',
+            'render_js' => 'false',
+            'asp' => 'false',
+            'format' => 'raw',
         ];
         return $this->baseUrl . '?' . http_build_query($fields);
     }

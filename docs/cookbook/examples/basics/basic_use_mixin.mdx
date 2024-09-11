@@ -37,13 +37,21 @@ static public function infer(
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
+use Cognesy\Instructor\Extras\Mixin\HandlesInference;
 
 class User {
-    use HandlesSelfInference;
+    use HandlesInference;
 
     public int $age;
     public string $name;
+
+    protected function getInstructor() : \Cognesy\Instructor\Instructor {
+        return new \Cognesy\Instructor\Instructor();
+    }
+
+    protected function getResponseModel() : string|array|object {
+        return $this;
+    }
 }
 
 $user = User::infer("Jason is 25 years old and works as an engineer.");

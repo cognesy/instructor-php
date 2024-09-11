@@ -4,25 +4,26 @@ namespace Cognesy\InstructorHub\Commands;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
+use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 
 class ClearDocs extends Command
 {
     public string $name = "cleardocs";
     public string $description = "Clear all documentation";
+    public MintlifyDocGenerator $docGen;
 
     public function __construct(
-    )
-    {
+        MintlifyDocGenerator $docGen
+    ) {
+        $this->docGen = $docGen;
     }
 
     public function execute(array $params = [])
     {
-        $arg = $params[0] ?? '';
-        $refresh = $this->isRefresh($arg);
         $timeStart = microtime(true);
-        Cli::outln("Generating docs...", [Color::BOLD, Color::YELLOW]);
+        Cli::outln("Clearing all docs...", [Color::BOLD, Color::YELLOW]);
         try {
-            $this->docGen->makeDocs();
+            $this->docGen->clearDocs();
         } catch (\Exception $e) {
             Cli::outln("Error:", [Color::BOLD, Color::RED]);
             Cli::outln($e->getMessage(), Color::GRAY);
@@ -30,10 +31,5 @@ class ClearDocs extends Command
         }
         $time = round(microtime(true) - $timeStart, 2);
         Cli::outln("Done - in {$time} secs", [Color::BOLD, Color::YELLOW]);
-    }
-
-    private function isRefresh(string $arg): bool
-    {
-        return $arg === 'fresh';
     }
 }

@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Web\Scrapers;
 use Cognesy\Instructor\Extras\Web\Contracts\CanGetUrlContent;
 use Cognesy\Instructor\Utils\Env;
 
-class JinaReader implements CanGetUrlContent {
+class JinaReaderDriver implements CanGetUrlContent {
     private string $baseUrl;
     private string $apiKey;
 

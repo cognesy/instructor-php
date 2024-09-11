@@ -45,8 +45,8 @@
             "url": "https://cognesy.com/blog"
         }
     ],
-    "navigation": [
-        {
+    "navigation": {
+        "0": {
             "group": "Get Started",
             "pages": [
                 "introduction",
@@ -54,14 +54,14 @@
                 "llm_providers"
             ]
         },
-        {
+        "1": {
             "group": "Concepts",
             "pages": [
                 "concepts/overview",
                 "concepts/why"
             ]
         },
-        {
+        "2": {
             "group": "Essentials",
             "pages": [
                 "essentials/installation",
@@ -74,7 +74,7 @@
                 "essentials/demonstrations"
             ]
         },
-        {
+        "3": {
             "group": "Advanced Features",
             "pages": [
                 "advanced/model_options",
@@ -85,7 +85,7 @@
                 "advanced/modules"
             ]
         },
-        {
+        "4": {
             "group": "Practical Techniques",
             "pages": [
                 "techniques/prompting",
@@ -93,7 +93,7 @@
                 "techniques/search"
             ]
         },
-        {
+        "5": {
             "group": "Internals",
             "pages": [
                 "internals/instructor",
@@ -105,7 +105,7 @@
                 "internals/events"
             ]
         },
-        {
+        "6": {
             "group": "More",
             "pages": [
                 "misc/philosophy",
@@ -113,22 +113,62 @@
                 "misc/help"
             ]
         },
-        {
+        "7": {
             "group": "Instructor Hub",
             "pages": [
                 "cookbook/introduction",
                 "cookbook/contributing"
             ]
         },
-        {
+        "8": {
+            "group": "Extras",
+            "pages": [
+                "cookbook/examples/extras/complex_extraction",
+                "cookbook/examples/extras/complex_extraction_claude",
+                "cookbook/examples/extras/complex_extraction_cohere",
+                "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/image_to_data",
+                "cookbook/examples/extras/image_to_data_anthropic",
+                "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/transcription_to_tasks",
+                "cookbook/examples/extras/translate_ui_fields"
+            ]
+        },
+        "9": {
+            "group": "Extras",
+            "pages": [
+                "cookbook/examples/extras/complex_extraction",
+                "cookbook/examples/extras/complex_extraction_claude",
+                "cookbook/examples/extras/complex_extraction_cohere",
+                "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/image_to_data",
+                "cookbook/examples/extras/image_to_data_anthropic",
+                "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/transcription_to_tasks",
+                "cookbook/examples/extras/translate_ui_fields",
+                "cookbook/examples/extras/web_to_objects"
+            ]
+        },
+        "15": {
+            "group": "Extras",
+            "pages": [
+                "cookbook/examples/extras/complex_extraction",
+                "cookbook/examples/extras/complex_extraction_claude",
+                "cookbook/examples/extras/complex_extraction_cohere",
+                "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/image_to_data",
+                "cookbook/examples/extras/image_to_data_anthropic",
+                "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/transcription_to_tasks",
+                "cookbook/examples/extras/translate_ui_fields",
+                "cookbook/examples/extras/web_to_objects"
+            ]
+        },
+        "16": {
             "group": "Basics",
             "pages": [
                 "cookbook/examples/basics/basic_use",
                 "cookbook/examples/basics/basic_use_mixin",
-                "cookbook/examples/basics/complex_extraction",
-                "cookbook/examples/basics/complex_extraction_claude",
-                "cookbook/examples/basics/complex_extraction_cohere",
-                "cookbook/examples/basics/complex_extraction_gemini",
                 "cookbook/examples/basics/maybe",
                 "cookbook/examples/basics/modes",
                 "cookbook/examples/basics/optional_fields",
@@ -140,7 +180,7 @@
                 "cookbook/examples/basics/validation_multifield"
             ]
         },
-        {
+        "17": {
             "group": "Advanced",
             "pages": [
                 "cookbook/examples/advanced/caching",
@@ -158,7 +198,7 @@
                 "cookbook/examples/advanced/structures"
             ]
         },
-        {
+        "18": {
             "group": "Techniques",
             "pages": [
                 "cookbook/examples/techniques/arbitrary_properties",
@@ -169,21 +209,16 @@
                 "cookbook/examples/techniques/classification_multiclass",
                 "cookbook/examples/techniques/entity_relationships",
                 "cookbook/examples/techniques/handling_errors",
-                "cookbook/examples/techniques/image_to_data",
-                "cookbook/examples/techniques/image_to_data_anthropic",
-                "cookbook/examples/techniques/image_to_data_gemini",
                 "cookbook/examples/techniques/limiting_lists",
                 "cookbook/examples/techniques/reflection_prompting",
                 "cookbook/examples/techniques/restate_instructions",
                 "cookbook/examples/techniques/rewrite_instructions",
                 "cookbook/examples/techniques/search_query_expansion",
                 "cookbook/examples/techniques/component_reuse",
-                "cookbook/examples/techniques/component_reuse_cot",
-                "cookbook/examples/techniques/transcription_to_tasks",
-                "cookbook/examples/techniques/translate_ui_fields"
+                "cookbook/examples/techniques/component_reuse_cot"
             ]
         },
-        {
+        "19": {
             "group": "Troubleshooting",
             "pages": [
                 "cookbook/examples/troubleshooting/debugging",
@@ -193,7 +228,7 @@
                 "cookbook/examples/troubleshooting/wiretap"
             ]
         },
-        {
+        "20": {
             "group": "LLM API Support",
             "pages": [
                 "cookbook/examples/api_support/anthropic",
@@ -208,8 +243,23 @@
                 "cookbook/examples/api_support/openrouter",
                 "cookbook/examples/api_support/togetherai"
             ]
+        },
+        "21": {
+            "group": "Extras",
+            "pages": [
+                "cookbook/examples/extras/complex_extraction",
+                "cookbook/examples/extras/complex_extraction_claude",
+                "cookbook/examples/extras/complex_extraction_cohere",
+                "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/image_to_data",
+                "cookbook/examples/extras/image_to_data_anthropic",
+                "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/transcription_to_tasks",
+                "cookbook/examples/extras/translate_ui_fields",
+                "cookbook/examples/extras/web_to_objects"
+            ]
         }
-    ],
+    },
     "footerSocials": {
         "x": "https://x.com/ddebowczyk",
         "github": "https://github.com/cognesy/instructor-php",

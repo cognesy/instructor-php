@@ -18,6 +18,10 @@ trait HandlesSequenceable
         return $this->list;
     }
 
+    public function all() : array {
+        return $this->list;
+    }
+
     public function count(): int {
         return count($this->list);
     }

@@ -26,6 +26,16 @@ class MintlifyDocGenerator
         $this->view->renderUpdate(true);
     }
 
+    public function clearDocs() : void {
+        $this->view->renderHeader();
+        // get only subdirectories of mintlifyCookbookDir
+        $subdirs = array_filter(glob($this->mintlifyCookbookDir . '/*'), 'is_dir');
+        foreach ($subdirs as $subdir) {
+            $this->removeDir($subdir);
+        }
+        $this->view->renderUpdate(true);
+    }
+
     private function updateFiles() : void {
         //$this->removeDir($this->mintlifyCookbookDir . '/examples');
         $groups = $this->examples->getExampleGroups();
