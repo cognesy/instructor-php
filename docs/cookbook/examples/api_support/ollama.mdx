@@ -40,11 +40,8 @@ class User {
     public array $hobbies;
 }
 
-// Create instance of Ollama client with default settings
-$client = new OllamaClient();
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('ollama');
 
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",

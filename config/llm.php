@@ -32,12 +32,12 @@ return [
         ],
         'azure' => [
             'clientType' => ClientType::Azure->value,
-            'apiUrl' => Env::get('AZURE_OPENAI_BASE_URI', 'https://api.openai.com/v1'),
+            'apiUrl' => Env::get('AZURE_OPENAI_BASE_URI', 'openai.azure.com'),
             'apiKey' => Env::get('AZURE_OPENAI_API_KEY', ''),
             'metadata' => [
                 'apiVersion' => Env::get('AZURE_OPENAI_API_VERSION', '2023-03-15-preview'),
                 'resourceName' => Env::get('AZURE_OPENAI_RESOURCE_NAME', 'instructor-dev'),
-                'deploymentName' => Env::get('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o-mini'),
+                'deploymentId' => Env::get('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o-mini'),
             ],
             'defaultModel' => Env::get('AZURE_OPENAI_DEFAULT_MODEL', 'gpt-4o-mini'),
             'defaultMaxTokens' => Env::get('AZURE_OPENAI_DEFAULT_MAX_TOKENS', 1024),
@@ -112,7 +112,7 @@ return [
         ],
         'openrouter' => [
             'clientType' => ClientType::OpenRouter->value,
-            'apiUrl' => Env::get('OPENROUTER_API_URL', 'https://api.openrouter.io/v1'),
+            'apiUrl' => Env::get('OPENROUTER_API_URL', 'https://openrouter.ai/api/v1/'),
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
             'defaultModel' => Env::get('OPENROUTER_DEFAULT_MODEL', 'microsoft/phi-3.5-mini-128k-instruct'),
             'defaultMaxTokens' => Env::get('OPENROUTER_DEFAULT_MAX_TOKENS', 1024),

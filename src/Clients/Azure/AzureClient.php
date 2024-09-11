@@ -18,9 +18,9 @@ class AzureClient extends LLMClient
     ) {
         parent::__construct($events);
 
-        $resourceName = $metadata['resourceName'] ?? '';
-        $deploymentId = $metadata['deploymentId'] ?? '';
-        $apiVersion = $metadata['apiVersion'] ?? '';
+        $resourceName = $metadata['resourceName'] ?? throw new \InvalidArgumentException('Resource name is required');
+        $deploymentId = $metadata['deploymentId'] ?? throw new \InvalidArgumentException('Deployment ID is required');
+        $apiVersion = $metadata['apiVersion'] ?? throw new \InvalidArgumentException('API version is required');
 
         $this->withConnector($connector ?? new AzureConnector(
             apiKey: $apiKey,

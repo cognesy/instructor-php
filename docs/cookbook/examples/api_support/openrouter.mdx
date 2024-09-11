@@ -42,16 +42,8 @@ class User {
     public array $hobbies;
 }
 
-// OpenRouter client params
-$yourApiKey = Env::get('OPENROUTER_API_KEY'); // or your own value/source
-
-// Create instance of OpenAI client initialized with custom parameters
-$client = new OpenRouterClient(
-    apiKey: $yourApiKey,
-);
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('openrouter');
 
 $user = $instructor->withDebug()->respond(
         messages: "Jason (@jxnlco) is 25 years old. He is the admin of this project. He likes playing football and reading books.",

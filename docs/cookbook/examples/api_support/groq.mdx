@@ -45,13 +45,8 @@ class User {
 // Mistral instance params
 $yourApiKey = Env::get('GROQ_API_KEY'); // set your own API key
 
-// Create instance of client initialized with custom parameters
-$client = new GroqClient(
-    apiKey: $yourApiKey,
-);
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('groq');
 
 $user = $instructor
     ->respond(

@@ -37,18 +37,8 @@ class User {
     public array $hobbies;
 }
 
-/// Custom client parameters: base URI
-$client = (new AzureClient(
-    apiKey: Env::get('AZURE_OPENAI_API_KEY'), // set your own value/source
-    metadata: [
-        'resourceName' => Env::get('AZURE_OPENAI_RESOURCE_NAME'), // set your own value/source
-        'deploymentId' => Env::get('AZURE_OPENAI_DEPLOYMENT_NAME'), // set your own value/source
-        'apiVersion' => Env::get('AZURE_OPENAI_API_VERSION'), // set your own value/source
-    ]
-));
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('azure');
 
 // Call with your model name and preferred execution mode
 $user = $instructor->respond(

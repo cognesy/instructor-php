@@ -45,8 +45,8 @@
             "url": "https://cognesy.com/blog"
         }
     ],
-    "navigation": [
-        {
+    "navigation": {
+        "0": {
             "group": "Get Started",
             "pages": [
                 "introduction",
@@ -54,14 +54,14 @@
                 "llm_providers"
             ]
         },
-        {
+        "1": {
             "group": "Concepts",
             "pages": [
                 "concepts/overview",
                 "concepts/why"
             ]
         },
-        {
+        "2": {
             "group": "Essentials",
             "pages": [
                 "essentials/installation",
@@ -74,7 +74,7 @@
                 "essentials/demonstrations"
             ]
         },
-        {
+        "3": {
             "group": "Advanced Features",
             "pages": [
                 "advanced/model_options",
@@ -85,7 +85,7 @@
                 "advanced/modules"
             ]
         },
-        {
+        "4": {
             "group": "Practical Techniques",
             "pages": [
                 "techniques/prompting",
@@ -93,7 +93,7 @@
                 "techniques/search"
             ]
         },
-        {
+        "5": {
             "group": "Internals",
             "pages": [
                 "internals/instructor",
@@ -105,7 +105,7 @@
                 "internals/events"
             ]
         },
-        {
+        "6": {
             "group": "More",
             "pages": [
                 "misc/philosophy",
@@ -113,14 +113,14 @@
                 "misc/help"
             ]
         },
-        {
+        "7": {
             "group": "Instructor Hub",
             "pages": [
                 "cookbook/introduction",
                 "cookbook/contributing"
             ]
         },
-        {
+        "8": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",
@@ -134,7 +134,7 @@
                 "cookbook/examples/extras/translate_ui_fields"
             ]
         },
-        {
+        "9": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",
@@ -149,7 +149,7 @@
                 "cookbook/examples/extras/web_to_objects"
             ]
         },
-        {
+        "10": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",
@@ -164,7 +164,7 @@
                 "cookbook/examples/extras/web_to_objects"
             ]
         },
-        {
+        "11": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",
@@ -179,7 +179,22 @@
                 "cookbook/examples/extras/web_to_objects"
             ]
         },
-        {
+        "17": {
+            "group": "Extras",
+            "pages": [
+                "cookbook/examples/extras/complex_extraction",
+                "cookbook/examples/extras/complex_extraction_claude",
+                "cookbook/examples/extras/complex_extraction_cohere",
+                "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/image_to_data",
+                "cookbook/examples/extras/image_to_data_anthropic",
+                "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/transcription_to_tasks",
+                "cookbook/examples/extras/translate_ui_fields",
+                "cookbook/examples/extras/web_to_objects"
+            ]
+        },
+        "18": {
             "group": "Basics",
             "pages": [
                 "cookbook/examples/basics/basic_use",
@@ -195,7 +210,7 @@
                 "cookbook/examples/basics/validation_multifield"
             ]
         },
-        {
+        "19": {
             "group": "Advanced",
             "pages": [
                 "cookbook/examples/advanced/caching",
@@ -213,7 +228,7 @@
                 "cookbook/examples/advanced/structures"
             ]
         },
-        {
+        "20": {
             "group": "Techniques",
             "pages": [
                 "cookbook/examples/techniques/arbitrary_properties",
@@ -233,7 +248,7 @@
                 "cookbook/examples/techniques/component_reuse_cot"
             ]
         },
-        {
+        "21": {
             "group": "Troubleshooting",
             "pages": [
                 "cookbook/examples/troubleshooting/debugging",
@@ -243,7 +258,7 @@
                 "cookbook/examples/troubleshooting/wiretap"
             ]
         },
-        {
+        "22": {
             "group": "LLM API Support",
             "pages": [
                 "cookbook/examples/api_support/anthropic",
@@ -259,7 +274,7 @@
                 "cookbook/examples/api_support/togetherai"
             ]
         },
-        {
+        "23": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",
@@ -274,7 +289,7 @@
                 "cookbook/examples/extras/web_to_objects"
             ]
         }
-    ],
+    },
     "footerSocials": {
         "x": "https://x.com/ddebowczyk",
         "github": "https://github.com/cognesy/instructor-php",

@@ -46,13 +46,8 @@ class User {
     public array $hobbies;
 }
 
-// Create instance of client initialized with custom parameters
-$client = new CohereClient(
-    apiKey: Env::get('COHERE_API_KEY'),
-);
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('cohere');
 
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",

@@ -39,16 +39,8 @@ class User {
     public array $hobbies;
 }
 
-// Mistral instance params
-$yourApiKey = Env::get('GEMINI_API_KEY'); // set your own API key
-
-// Create instance of client initialized with custom parameters
-$client = new GeminiClient(
-    apiKey: $yourApiKey,
-);
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('gemini');
 
 $user = $instructor
     ->respond(

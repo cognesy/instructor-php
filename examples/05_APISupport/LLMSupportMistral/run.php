@@ -47,14 +47,8 @@ class User {
 // Mistral instance params
 $yourApiKey = Env::get('MISTRAL_API_KEY'); // set your own API key
 
-// Create instance of client initialized with custom parameters
-$client = new MistralClient(
-    apiKey: $yourApiKey,
-    baseUri: 'https://api.mistral.ai/v1',
-);
-
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withClient('mistral');
 
 $user = $instructor
     ->respond(
