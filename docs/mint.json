@@ -149,7 +149,7 @@
                 "cookbook/examples/extras/web_to_objects"
             ]
         },
-        "15": {
+        "10": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",
@@ -165,6 +165,21 @@
             ]
         },
         "16": {
+            "group": "Extras",
+            "pages": [
+                "cookbook/examples/extras/complex_extraction",
+                "cookbook/examples/extras/complex_extraction_claude",
+                "cookbook/examples/extras/complex_extraction_cohere",
+                "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/image_to_data",
+                "cookbook/examples/extras/image_to_data_anthropic",
+                "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/transcription_to_tasks",
+                "cookbook/examples/extras/translate_ui_fields",
+                "cookbook/examples/extras/web_to_objects"
+            ]
+        },
+        "17": {
             "group": "Basics",
             "pages": [
                 "cookbook/examples/basics/basic_use",
@@ -180,7 +195,7 @@
                 "cookbook/examples/basics/validation_multifield"
             ]
         },
-        "17": {
+        "18": {
             "group": "Advanced",
             "pages": [
                 "cookbook/examples/advanced/caching",
@@ -198,7 +213,7 @@
                 "cookbook/examples/advanced/structures"
             ]
         },
-        "18": {
+        "19": {
             "group": "Techniques",
             "pages": [
                 "cookbook/examples/techniques/arbitrary_properties",
@@ -218,7 +233,7 @@
                 "cookbook/examples/techniques/component_reuse_cot"
             ]
         },
-        "19": {
+        "20": {
             "group": "Troubleshooting",
             "pages": [
                 "cookbook/examples/troubleshooting/debugging",
@@ -228,7 +243,7 @@
                 "cookbook/examples/troubleshooting/wiretap"
             ]
         },
-        "20": {
+        "21": {
             "group": "LLM API Support",
             "pages": [
                 "cookbook/examples/api_support/anthropic",
@@ -244,7 +259,7 @@
                 "cookbook/examples/api_support/togetherai"
             ]
         },
-        "21": {
+        "22": {
             "group": "Extras",
             "pages": [
                 "cookbook/examples/extras/complex_extraction",

@@ -31,12 +31,10 @@ Commercial scrapers require API key, which can be set in the configuration file
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Web\Webpage;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Schema\Attributes\Instructions;
-
-$instructor = (new Instructor)->withClient('openai');
 
 class Company {
     public string $name = '';
@@ -50,22 +48,24 @@ class Company {
     public array $clients = [];
 }
 
-$content = Webpage::withScraper('none')
+$instructor = (new Instructor)->withClient('anthropic');
+
+$companyGen = Webpage::withScraper('none')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
     ->cleanup()
     ->select('.directory-providers__list')
-    ->asMarkdown();
+    ->selectMany('.provider-card', fn($item) => $item->asMarkdown());
 
-/** @var Sequence $companies */
-$companies = $instructor->request(
-        messages: $content,
-        responseModel: Sequence::of(Company::class),
-        model: 'gpt-4o-mini',
-        options: [
-            'max_tokens' => 4096,
-        ])
-    ->get();
+$companies = [];
+foreach($companyGen as $company) {
+    $company = $instructor->respond(
+        messages: $company,
+        responseModel: Company::class,
+        mode: Mode::Json
+    );
+    $companies[] = $company;
+    dump($company);
+}
 
-dump($companies->all());
 ?>
 ```
