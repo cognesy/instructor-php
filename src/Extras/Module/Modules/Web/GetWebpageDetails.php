@@ -3,10 +3,10 @@
 namespace Cognesy\Instructor\Extras\Module\Modules\Web;
 
 use Cognesy\Instructor\Extras\Module\Core\Module;
-use Cognesy\Instructor\Extras\Module\Modules\Web\Data\PageData;
-use Cognesy\Instructor\Extras\Module\Modules\Web\Utils\HtmlProcessor;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
+use Cognesy\Instructor\Extras\Web\Data\PageData;
+use Cognesy\Instructor\Extras\Web\Html\HtmlProcessor;
 
 #[ModuleSignature('url:string -> pageDetails:PageData')]
 #[ModuleDescription('Retrieve information from a webpage')]

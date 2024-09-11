@@ -11,7 +11,7 @@ it('supports HandlesExtraction mixin', function () {
     ]);
 
     $instructor = (new Instructor)->withClient($mockLLM);
-    $person = PersonWithMixin::extract(
+    $person = PersonWithMixin::infer(
         messages: "His name is Jason, he is 28 years old.",
         instructor: $instructor
     );

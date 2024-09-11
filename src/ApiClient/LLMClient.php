@@ -33,8 +33,8 @@ abstract class LLMClient implements CanCallLLM
     ) {
         $this->withEventDispatcher($events ?? new EventDispatcher('api-client'));
         $this->clientType = ClientType::fromClientClass(static::class);
-        $this->withMaxTokens(Settings::get("connections.{$this->clientType->value}.defaultMaxTokens", 1024));
-        $this->withModel(Settings::get("connections.{$this->clientType->value}.defaultModel", ''));
+        $this->withMaxTokens(Settings::get('llm', "connections.{$this->clientType->value}.defaultMaxTokens", 1024));
+        $this->withModel(Settings::get('llm', "connections.{$this->clientType->value}.defaultModel", ''));
     }
 
     /// PUBLIC API //////////////////////////////////////////////////////////////////////////////////////////

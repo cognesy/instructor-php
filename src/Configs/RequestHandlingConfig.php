@@ -65,7 +65,7 @@ class RequestHandlingConfig implements CanAddConfiguration
         $config->object(
             class: SchemaFactory::class,
             context: [
-                'useObjectReferences' => Settings::get('useObjectReferences') ?? false,
+                'useObjectReferences' => Settings::get('llm', 'useObjectReferences') ?? false,
             ]
         );
 
@@ -83,18 +83,18 @@ class RequestHandlingConfig implements CanAddConfiguration
         $config->object(
             class: CacheConfig::class,
             context: [
-                'enabled' => Settings::get('cache.enabled', false),
-                'expiryInSeconds' => Settings::get('cache.expiryInSeconds', 3600),
-                'cachePath' => Settings::get('cache.path', '/tmp/instructor/cache'),
+                'enabled' => Settings::get('llm', 'cache.enabled', false),
+                'expiryInSeconds' => Settings::get('llm', 'cache.expiryInSeconds', 3600),
+                'cachePath' => Settings::get('llm', 'cache.path', '/tmp/instructor/cache'),
             ]
         );
 
         $config->object(
             class: DebugConfig::class,
             context: [
-                'debug' => Settings::get('debug.enabled', false),
-                'stopOnDebug' => Settings::get('debug.stopOnDebug', false),
-                'forceDebug' => Settings::get('debug.forceDebug', false),
+                'debug' => Settings::get('llm', 'debug.enabled', false),
+                'stopOnDebug' => Settings::get('llm', 'debug.stopOnDebug', false),
+                'forceDebug' => Settings::get('llm', 'debug.forceDebug', false),
             ]
         );
 

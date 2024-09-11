@@ -1,29 +1,33 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Modules\Web\Utils;
+namespace Cognesy\Instructor\Extras\Web\Scrapers;
 
+use Cognesy\Instructor\Extras\Web\Contracts\CanGetUrlContent;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
 
-class ScrapFly {
+class ScrapFly implements CanGetUrlContent {
     private string $baseUrl;
     private string $apiKey;
     private ClientInterface $client;
 
-    public function __construct() {
-        $this->baseUrl = Env::get('SCRAPFLY_BASE_URI');
-        $this->apiKey = Env::get('SCRAPFLY_API_KEY');
+    public function __construct(string $baseUrl = '', string $apiKey = '') {
+        $this->baseUrl = $baseUrl ?: Env::get('SCRAPFLY_BASE_URI');
+        $this->apiKey = $apiKey ?: Env::get('SCRAPFLY_API_KEY');
         $this->client = new Client();
     }
 
-    public static function fromUrl(string $url) : string {
-        return (new self)->get($url);
+    public static function fromUrl(string $url, array $options = []) : string {
+        return (new self(
+            baseUrl: $options['base_url'] ?? '',
+            apiKey: $options['api_key'] ?? ''
+        ))->getContent($url, $options);
     }
 
-    private function get(string $url): string {
+    public function getContent(string $url, array $options = []): string {
         $apiUrl = $this->makeUrl($url);
         $request = new Request('GET', $apiUrl);
 

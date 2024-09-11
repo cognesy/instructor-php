@@ -15,7 +15,7 @@ class ApiClientFactory
         public EventDispatcher $events,
         public ApiRequestFactory $apiRequestFactory,
     ) {
-        $defaultConnection = Settings::get('defaultConnection');
+        $defaultConnection = Settings::get('llm', 'defaultConnection');
         if (!$defaultConnection) {
             throw new InvalidArgumentException("No default client connection found");
         }
@@ -23,7 +23,7 @@ class ApiClientFactory
     }
 
     public function client(string $connection) : CanCallLLM {
-        $clientConfig = Settings::get("connections.$connection");
+        $clientConfig = Settings::get('llm', "connections.$connection");
         if (!$clientConfig) {
             throw new InvalidArgumentException("No client connection config found for '{$connection}'");
         }

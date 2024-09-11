@@ -1,29 +1,34 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Modules\Web\Utils;
+namespace Cognesy\Instructor\Extras\Web\Scrapers;
 
+use Cognesy\Instructor\Extras\Web\Contracts\CanGetUrlContent;
 use Cognesy\Instructor\Utils\Env;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Client\ClientInterface;
 
-class ScrapingBee {
+class ScrapingBee implements CanGetUrlContent{
     private string $apiKey;
     private string $baseUrl;
     private ClientInterface $client;
 
-    public function __construct() {
-        $this->baseUrl = Env::get('SCRAPINGBEE_BASE_URI');
-        $this->apiKey = Env::get('SCRAPINGBEE_API_KEY');
+    public function __construct(string $baseUrl = '', string $apiKey = '') {
+        $this->baseUrl = $baseUrl ?: Env::get('SCRAPINGBEE_BASE_URI');
+        $this->apiKey = $apiKey ?: Env::get('SCRAPINGBEE_API_KEY');
         $this->client = new Client();
     }
 
-    public static function fromUrl(string $url, bool $renderJs = true) : string {
-        return (new self)->get($url, $renderJs);
+    public static function fromUrl(string $url, array $options = []) : string {
+        return (new self(
+            baseUrl: $options['base_url'] ?? '',
+            apiKey: $options['api_key'] ?? ''
+        ))->getContent($url, $options);
     }
 
-    private function get(string $url, bool $renderJs = true): string {
+    public function getContent(string $url, array $options = []): string {
+        $renderJs = $options['render_js'] ?? true;
         $apiUrl = $this->makeUrl($url, $renderJs);
         $request = new Request('GET', $apiUrl);
         try {

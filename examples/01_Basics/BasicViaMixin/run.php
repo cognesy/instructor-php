@@ -5,28 +5,28 @@ docname: 'basic_use_mixin'
 
 ## Overview
 
-Instructor provides `HandlesSelfExtraction` trait that you can use to enable
-extraction capabilities directly on class via static `extract()` method.
+Instructor provides `HandlesSelfInference` trait that you can use to enable
+extraction capabilities directly on class via static `infer()` method.
 
-`extract()` method returns an instance of the class with the data extracted
+`infer()` method returns an instance of the class with the data extracted
 using the Instructor.
 
-`extract()` method has following signature (you can also find it in the
-`CanSelfExtract` interface):
+`infer()` method has following signature (you can also find it in the
+`CanSelfInfer` interface):
 
 ```php
-static public function extract(
-    string|array $messages, // (required) The message(s) to extract data from
-    string $model = '',     // (optional) The model to use for extraction (otherwise - use default)
+static public function infer(
+    string|array $messages, // (required) The message(s) to infer data from
+    string $model = '',     // (optional) The model to use for inference (otherwise - use default)
     int $maxRetries = 2,    // (optional) The number of retries in case of validation failure
     array $options = [],    // (optional) Additional data to pass to the Instructor or LLM API
     array $examples = [],   // (optional) Examples to include in the prompt
     string $toolName = '',  // (optional) The name of the tool call - used to add semantic information for LLM
     string $toolDescription = '', // (optional) The description of the tool call - as above
-    string $prompt = '',    // (optional) The prompt to use for extraction
+    string $prompt = '',    // (optional) The prompt to use for inference
     string $retryPrompt = '', // (optional) The prompt to use in case of validation failure
-    Mode $mode = Mode::Tools, // (optional) The mode to use for extraction
-    Instructor $instructor = null // (optional) The Instructor instance to use for extraction
+    Mode $mode = Mode::Tools, // (optional) The mode to use for inference
+    Instructor $instructor = null // (optional) The Instructor instance to use for inference
 ) : static;
 ```
 
@@ -37,16 +37,24 @@ static public function extract(
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Mixin\HandlesSelfExtraction;
+use Cognesy\Instructor\Extras\Mixin\HandlesInference;
 
 class User {
-    use HandlesSelfExtraction;
+    use HandlesInference;
 
     public int $age;
     public string $name;
+
+    protected function getInstructor() : \Cognesy\Instructor\Instructor {
+        return new \Cognesy\Instructor\Instructor();
+    }
+
+    protected function getResponseModel() : string|array|object {
+        return $this;
+    }
 }
 
-$user = User::extract("Jason is 25 years old and works as an engineer.");
+$user = User::infer("Jason is 25 years old and works as an engineer.");
 
 dump($user);
 

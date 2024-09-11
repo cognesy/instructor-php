@@ -1,50 +1,40 @@
 # NOTES
 
-## Gaps or issues in docs or code
+# Partially done
 
-## Design decisions to revisit
+- Export configuration to user folder / use external configuration
+- Validators / Deserializers / Transformers - chain of objects, not a single object
+- API Client: Clean up predefined models, prices, etc.
 
-## Example ideas
-
-Examples to demonstrate use cases.
-
-## Other
-
-### Test coverage
-
-Catch up with the latest additions.
-
-
-## TODOs
+# TODOs
 
 - Multiple tools with tool selection
 - Parallel tool calls
 - Generate unstructured, then format to structured - to improve reasoning
+- Full control over generated prompt (access to Script object processing)
 - Evals!!!
 
-### API Client
+## API Client
 
-- Clean up predefined models, prices, etc.
+- Move to raw Guzzle or Httplug?
 
-### Addon: Modules
+## Addon: Modules
 
 - Modules: Add module observability via events - currently no access to this info
 
-### Configuration
+## Configuration
 
-- Export configuration to user folder / use external configuration
 - Examples how to override default configuration
 
-### Refactorings
+## Refactorings
 
 - More modular design - serialization, validation, transformation should be a configurable pipeline
-- Validators / Deserializers / Transformers - chain of objects, not a single object
 - Rework Events so they have toArray() method, make __toString() use it
-- Role - should be enum, not string
+- Role - should be enum, not string?
 - String >> Array >> Class - for example: prompts (they should be classes)
 - Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
 
-### Infrastructure
+## Infrastructure
 
 - Async mode
 - Fix cache mode
@@ -56,14 +46,37 @@ Catch up with the latest additions.
 - PSR-11 container - finish, demo how to plug custom container
 - PSR-3 logger - finish, demo how to plug custom logger
 
-### Partially done
+## Other
+
+- Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
+- Use LLM to generate Example based on the class - just render object to JSON + add schema as an explanation - this should give the model enough info to come up with something that makes sense
+- Extract APIClient to a separate package?
+- Foreign client support - OpenAI PHP, Amazon Bedrock SDK, etc. - via some kind of adapters?
+- example of integration with Laravel/Livewire
+
+
+
+
+# Partially done
 
 - Better API for image / audio inputs
 - Make system, prompt, script etc. available for configuration by user
+- How to track API rate limits across multiple requests / parallel executions
+- Make using DocBlocks optional - it may not always to be desired to pass this info to LLM
+- Add super detailed tests of Module core functionality - esp. around input/output mappings
 
 
 
-## Brain dump
+
+# Done
+
+> NOTE: Move notes here
+
+
+
+
+
+# Brain dump
 
 - Streaming JSON parser - https://github.com/kelunik/streaming-json
 - Retry - https://github.com/kelunik/retry
@@ -75,23 +88,15 @@ Catch up with the latest additions.
 - ValueError - https://www.php.net/manual/en/class.valueerror.php
 - Task runner - https://robo.li/
 - Hub >> Laravel Zero - https://laravel-zero.com/
-- Use LLM to generate Example based on the class - just render object to JSON + add schema as an explanation - this should give the model enough info to come up with something that makes sense
-- Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
-- Extract APIClient to a separate package?
-- example of integration with Laravel/Livewire
 - DSPy next steps: eval, optimize, compile
 - Add more modules: XoT, RAG, ReAct, etc.
 - RAG - how to handle multiple VDB providers?
 - Test validation in modules - provide an example
 - Parallel execution of modules (e.g. a la Laravel jobs?)
-- How to track API rate limits across multiple requests / parallel executions
 - Moderation endpoint support
-- Make using DocBlocks optional - it may not always to be desired to pass this info to LLM
 - Git/GitHub integration module to allow easy automation
 - Data mapping module(s) for easier data transformations
-- Add super detailed tests of Module core functionality - esp. around input/output mappings
 - How to handle dynamic module graph definition + visualization
-- Foreign client support - OpenAI PHP, Amazon Bedrock SDK, etc. - via some kind of adapters?
 - JSON Schema management for input/output definitions
 
 ## To research
@@ -113,3 +118,20 @@ Catch up with the latest additions.
 - Sparse task scheduler
 - Marker and sweeper
 - Actor model
+
+
+
+
+# Other
+
+## Gaps or issues in docs or code
+
+## Design decisions to revisit
+
+## Example ideas
+
+Examples to demonstrate use cases.
+
+## Test coverage
+
+Catch up with the latest additions.

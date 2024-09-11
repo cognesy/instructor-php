@@ -4,9 +4,9 @@ namespace Cognesy\Instructor\Extras\Module\Modules\Web;
 use Closure;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Modules\Text\SummarizeText;
-use Cognesy\Instructor\Extras\Module\Modules\Web\Data\PageSummary;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
+use Cognesy\Instructor\Extras\Web\Data\PageSummary;
 
 #[ModuleSignature('url:string -> summary:PageSummary')]
 #[ModuleDescription('Summarize a webpage')]

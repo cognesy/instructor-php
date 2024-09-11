@@ -1,24 +1,12 @@
 <?php
-namespace Cognesy\Instructor\Extras\Module\Modules\Web\Utils;
+namespace Cognesy\Instructor\Extras\Web\Html;
 
+use Cognesy\Instructor\Extras\Web\Contracts\CanConvertToMarkdown;
+use Cognesy\Instructor\Extras\Web\Contracts\CanProcessHtml;
 use League\HTMLToMarkdown\HtmlConverter;
 use Symfony\Component\DomCrawler\Crawler;
 
-class HtmlProcessor {
-    public function toMarkdown(string $page) : string {
-        $page = $this->cleanup($page);
-        return (new HtmlConverter)->convert($page);
-    }
-
-    public function getTitle(string $html) : string {
-        $crawler = new Crawler($html);
-        $node = $crawler->filter('title');
-        if ($node->count() === 0) {
-            return '';
-        }
-        return $node->text();
-    }
-
+class HtmlProcessor implements CanProcessHtml, CanConvertToMarkdown {
     public function getMetadata(string $html, array $attributes): array {
         // use Crawler to extract metadata
         $crawler = new Crawler($html);
@@ -42,6 +30,27 @@ class HtmlProcessor {
             }
         }
         return $filtered;
+    }
+
+    public function getTitle(string $html) : string {
+        $crawler = new Crawler($html);
+        $node = $crawler->filter('title');
+        if ($node->count() === 0) {
+            return '';
+        }
+        return $node->text();
+    }
+
+    public function getBody(string $html) : string {
+        $body = $this->cleanBodyTag($html);
+        $body = explode('<body>', $body)[1];
+        $body = explode('</body>', $body)[0];
+        return $body;
+    }
+
+    public function toMarkdown(string $html) : string {
+        $html = $this->cleanup($html);
+        return (new HtmlConverter)->convert($html);
     }
 
     // INTERNAL /////////////////////////////////////////////////////////
@@ -76,13 +85,6 @@ class HtmlProcessor {
 
     private function stripHtmlTags(string $html, array $allowed = []) : string {
         return strip_tags($html, $allowed);
-    }
-
-    private function getBody(string $page) : string {
-        $body = $this->cleanBodyTag($page);
-        $body = explode('<body>', $body)[1];
-        $body = explode('</body>', $body)[0];
-        return $body;
     }
 
     private function removeTagsWithContent(string $html, array $tags) : string {
@@ -164,10 +166,9 @@ class HtmlProcessor {
             if (strpos($tag, '<span') === 0 || strpos($tag, '</span') === 0) {
                 // If it's a span tag, return it unchanged
                 return $tag;
-            } else {
-                // Otherwise, add spaces around the tag
-                return ' ' . $tag . ' ';
             }
+            // Otherwise, add spaces around the tag
+            return ' ' . $tag . ' ';
         }, $body);
     }
 

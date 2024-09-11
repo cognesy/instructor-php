@@ -3,11 +3,11 @@ namespace Cognesy\Instructor\Extras\Module\Modules\Web;
 
 use Closure;
 use Cognesy\Instructor\Extras\Module\Core\Module;
-use Cognesy\Instructor\Extras\Module\Modules\Web\Utils\JinaReader;
-use Cognesy\Instructor\Extras\Module\Modules\Web\Utils\ScrapFly;
-use Cognesy\Instructor\Extras\Module\Modules\Web\Utils\ScrapingBee;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
+use Cognesy\Instructor\Extras\Web\Scrapers\JinaReader;
+use Cognesy\Instructor\Extras\Web\Scrapers\ScrapFly;
+use Cognesy\Instructor\Extras\Web\Scrapers\ScrapingBee;
 use Spatie\Browsershot\Browsershot;
 
 #[ModuleSignature('url:string -> content:string')]

@@ -2,11 +2,11 @@
 
 namespace Tests\Examples\Mixin;
 
-use Cognesy\Instructor\Extras\Mixin\HandlesSelfExtraction;
+use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
 
 class PersonWithMixin
 {
-    use HandlesSelfExtraction;
+    use HandlesSelfInference;
 
     public string $name;
     public int $age;

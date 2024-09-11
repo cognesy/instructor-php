@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Module\Modules\Web\Data;
+namespace Cognesy\Instructor\Extras\Web\Data;
 
 class PageData
 {

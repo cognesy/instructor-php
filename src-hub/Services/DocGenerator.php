@@ -45,6 +45,24 @@ class DocGenerator
         }
     }
 
+    public function clearDocs() : void {
+        $this->view->renderHeader();
+        $list = $this->examples->forEachExample(function(Example $example) {
+            $this->view->renderFile($example);
+            $success = $this->remove($example);
+            $this->view->renderResult($success);
+            if (!$success) {
+                throw new \Exception("Failed to remove example: {$example->name}");
+            }
+            return true;
+        });
+        $success = $this->updateIndex($list);
+        $this->view->renderUpdate($success);
+        if (!$success) {
+            throw new \Exception('Failed to update hub docs index');
+        }
+    }
+
     private function replaceAll(Example $example) : bool {
         // make target md filename - replace .php with .md,
         $newFileName = Str::snake($example->name).'.md';
@@ -58,10 +76,23 @@ class DocGenerator
         return $this->copy($example->runPath, $targetPath);
     }
 
+    private function remove(Example $example) : bool {
+        // make target md filename - replace .php with .md,
+        $newFileName = Str::snake($example->name).'.mdx';
+        $subdir = Str::snake(substr($example->group, 3));
+        $targetPath = $this->hubDocsDir . '/' . $subdir . '/' .$newFileName;
+        // remove example file from docs
+        if (!file_exists($targetPath)) {
+            return false;
+        }
+        unlink($targetPath);
+        return true;
+    }
+
     private function replaceNew(Example $example) : bool {
         // make target md filename - replace .php with .md,
         $subdir = Str::snake(substr($example->group, 3));
-        $newFileName = Str::snake($example->name).'.md';
+        $newFileName = Str::snake($example->name).'.mdx';
         $targetPath = $this->hubDocsDir . '/' . $subdir . '/' .$newFileName;
         // copy example file to docs
         if (file_exists($targetPath)) {

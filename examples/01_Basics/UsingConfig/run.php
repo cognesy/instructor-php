@@ -5,7 +5,7 @@ docname: 'using_config'
 
 ## Overview
 
-Instructor allows you to define multiple API connections in `instructor.php` file.
+Instructor allows you to define multiple API connections in `llm.php` file.
 This is useful when you want to use different LLMs or API providers in your application.
 
 Connecting to LLM API via predefined connection is as simple as calling `withClient`
@@ -13,13 +13,13 @@ method with the connection name.
 
 ### Configuration file
 
-Default configuration file is located in `/config/instructor.php` in the root directory
+Default LLM configuration file is located in `/config/llm.php` in the root directory
 of Instructor codebase.
 
 You can set the location of the configuration file via `INSTRUCTOR_CONFIG_PATH` environment
 variable. You can use a copy of the default configuration file as a starting point.
 
-Config file defines connections to LLM APIs and their parameters. It also specifies
+LLM config file defines connections to LLM APIs and their parameters. It also specifies
 the default connection to be used when calling Instructor without specifying the client
 connection.
 

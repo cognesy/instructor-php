@@ -165,11 +165,11 @@ var_dump($person);
 
 ### Connecting to various LLM API providers
 
-Instructor allows you to define multiple API connections in `instructor.php` file.
+Instructor allows you to define multiple API connections in `llm.php` file.
 This is useful when you want to use different LLMs or API providers in your application.
 
-Default configuration file is located in `/config/instructor.php` in the root directory
-of Instructor codebase and contains a set of predefined connections to all LLM APIs
+Default configuration is located in `/config/llm.php` in the root directory
+of Instructor codebase. It contains a set of predefined connections to all LLM APIs
 supported out-of-the-box by Instructor.
 
 Config file defines connections to LLM APIs and their parameters. It also specifies
@@ -177,7 +177,7 @@ the default connection to be used when calling Instructor without specifying
 the client connection.
 
 ```php
-/* This is fragment of /config/instructor.php file */
+/* This is fragment of /config/llm.php file */
     'defaultConnection' => 'openai',
     //...
     'connections' => [
@@ -213,9 +213,9 @@ $user = (new Instructor)
 // ...
 ```
 
-You can change the location of the configuration file for Instructor to use via
-`INSTRUCTOR_CONFIG_PATH` environment variable. You can use a copy of the default
-configuration file as a starting point.
+You can change the location of the configuration files for Instructor to use via
+`INSTRUCTOR_CONFIG_PATH` environment variable. You can use copies of the default
+configuration files as a starting point.
 
 
 

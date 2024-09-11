@@ -1,12 +1,13 @@
 <?php
+
 namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
-interface CanExtractSelf
+interface CanInfer
 {
-    static public function extract(
+    public function infer(
         string|array $messages = '',
         string|array|object $input = '',
         string $model = '',
@@ -14,7 +15,8 @@ interface CanExtractSelf
         array $options = [],
         array $examples = [],
         string $prompt = '',
+        string $retryPrompt = '',
         Mode $mode = Mode::Tools,
         Instructor $instructor = null,
-    ) : static;
+    ) : mixed;
 }
