@@ -56,7 +56,7 @@ class RespondWithFollowUp {
 }
 
 $response = (new RespondWithFollowUp)(
-    query: "Who was president of the U.S. when superconductivity was discovered?",
+    query: "Who succeeded the president of France ruling when Bulgaria joined EU?",
 );
 
 echo "Answer:\n";
