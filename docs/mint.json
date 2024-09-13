@@ -162,6 +162,7 @@
                 "cookbook/examples/prompting/clarify_ambiguity",
                 "cookbook/examples/prompting/define_style",
                 "cookbook/examples/prompting/emotional_stimuli",
+                "cookbook/examples/prompting/follow_up_questions",
                 "cookbook/examples/prompting/repeat_query",
                 "cookbook/examples/prompting/simulate_perspective"
             ]
