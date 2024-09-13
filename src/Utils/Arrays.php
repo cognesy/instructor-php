@@ -50,22 +50,12 @@ class Arrays
         return self::doFlatten($arrays, $separator);
     }
 
-    private static function doFlatten(array $arrays, string $separator): string {
-        $flat = '';
-        foreach ($arrays as $item) {
-            if (is_array($item)) {
-                $flattenedItem = self::doFlatten($item, $separator);
-                if ($flattenedItem !== '') {
-                    $flat .= $flattenedItem . $separator;
-                }
-            } else {
-                $trimmedItem = trim((string) $item);
-                if ($trimmedItem !== '') {
-                    $flat .= $trimmedItem . $separator;
-                }
-            }
+    static public function map(array $array, callable $callback): array {
+        $target = [];
+        foreach ($array as $key => $value) {
+            $target[$key] = $callback($value, $key);
         }
-        return rtrim($flat, $separator);
+        return $target;
     }
 
     static public function fromAny(mixed $anyValue): array {
@@ -97,5 +87,29 @@ class Arrays
             return $array;
         };
         return $remove($array, $keys);
+    }
+
+    static public function toBullets(array $array): string {
+        return implode("\n", array_map(fn($c) => " - {$c}\n", $array));
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////
+
+    private static function doFlatten(array $arrays, string $separator): string {
+        $flat = '';
+        foreach ($arrays as $item) {
+            if (is_array($item)) {
+                $flattenedItem = self::doFlatten($item, $separator);
+                if ($flattenedItem !== '') {
+                    $flat .= $flattenedItem . $separator;
+                }
+            } else {
+                $trimmedItem = trim((string) $item);
+                if ($trimmedItem !== '') {
+                    $flat .= $trimmedItem . $separator;
+                }
+            }
+        }
+        return rtrim($flat, $separator);
     }
 }

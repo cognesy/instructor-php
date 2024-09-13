@@ -9,6 +9,9 @@ You can create a wrapper class to hold either the result of an operation or an e
 This allows you to remain within a function call even if an error occurs, facilitating
 better error handling without breaking the code flow.
 
+> NOTE: Instructor offers a built-in Maybe wrapper class that you can use to handle errors.
+> See the example in Basics section for more details.
+
 ## Example
 
 ```php

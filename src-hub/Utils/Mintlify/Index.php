@@ -61,7 +61,7 @@ class Index
             'primaryTab' => $this->primaryTab,
             'tabs' => $this->tabs,
             'anchors' => $this->anchors,
-            'navigation' => $this->navigation->toArray(),
+            'navigation' => array_values($this->navigation->toArray()),
             'footerSocials' => $this->footerSocials,
             'analytics' => $this->analytics,
         ], fn($v) => !empty($v));

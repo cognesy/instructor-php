@@ -15,9 +15,11 @@ class Navigation
     }
 
     public function toArray() : array {
-        return array_map(function($group) {
-            return $group->toArray();
-        }, $this->groups);
+        $array = [];
+        foreach($this->groups as $group) {
+            $array[$group->group] = $group->toArray();
+        }
+        return $array;
     }
 
     public function removeGroups(array $names) : void {

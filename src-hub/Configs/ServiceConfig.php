@@ -60,6 +60,15 @@ class ServiceConfig implements CanAddConfiguration
                 'examples' => $config->reference(ExampleRepository::class),
                 'mintlifyCookbookDir' => __DIR__ . '/../../docs/cookbook',
                 'mintlifyIndexFile' => __DIR__ . '/../../docs/mint.json',
+                'dynamicGroups' => [
+                    'Basics',
+                    'Advanced',
+                    'Prompting',
+                    'Techniques',
+                    'Troubleshooting',
+                    'LLM API Support',
+                    'Extras'
+                ],
             ],
         );
     }

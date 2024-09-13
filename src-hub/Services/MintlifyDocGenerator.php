@@ -13,6 +13,7 @@ class MintlifyDocGenerator
         private ExampleRepository $examples,
         private string $mintlifyCookbookDir,
         private string $mintlifyIndexFile,
+        private array $dynamicGroups,
     ) {
         $this->view = new DocGenView;
     }
@@ -82,7 +83,7 @@ class MintlifyDocGenerator
         if ($index === false) {
             throw new \Exception("Failed to read hub index file");
         }
-        $index->navigation->removeGroups(['Basics', 'Advanced', 'Techniques', 'Troubleshooting', 'LLM API Support']);
+        $index->navigation->removeGroups($this->dynamicGroups);
         foreach ($exampleGroups as $exampleGroup) {
             $index->navigation->appendGroup($exampleGroup->toNavigationGroup());
         }

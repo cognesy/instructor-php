@@ -46,10 +46,11 @@ class Example
         $mapping = [
             '01_Basics' => ['name' => 'basics', 'title' => 'Basics'],
             '02_Advanced' => ['name' => 'advanced', 'title' => 'Advanced'],
-            '03_Techniques' => ['name' => 'techniques', 'title' => 'Techniques'],
-            '04_Troubleshooting' => ['name' => 'troubleshooting', 'title' => 'Troubleshooting'],
-            '05_APISupport' => ['name' => 'api_support', 'title' => 'LLM API Support'],
-            '06_Extras' => ['name' => 'extras', 'title' => 'Extras'],
+            '03_Prompting' => ['name' => 'prompting', 'title' => 'Prompting'],
+            '04_Techniques' => ['name' => 'techniques', 'title' => 'Techniques'],
+            '05_Troubleshooting' => ['name' => 'troubleshooting', 'title' => 'Troubleshooting'],
+            '06_APISupport' => ['name' => 'api_support', 'title' => 'LLM API Support'],
+            '07_Extras' => ['name' => 'extras', 'title' => 'Extras'],
         ];
 
         return new Example(
