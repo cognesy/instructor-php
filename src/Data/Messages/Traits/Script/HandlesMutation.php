@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
 use Cognesy\Instructor\Data\Messages\Script;
-use Cognesy\Instructor\Data\Messages\ScriptContext;
+use Cognesy\Instructor\Data\Messages\ScriptParameters;
 use Cognesy\Instructor\Data\Messages\Section;
 use Exception;
 
@@ -41,7 +41,7 @@ trait HandlesMutation
             }
             $this->appendSection($section);
         }
-        $this->mergeContext($script->context());
+        $this->mergeParameters($script->parameters());
         return $this;
     }
 
@@ -49,12 +49,12 @@ trait HandlesMutation
         foreach($script->sections as $section) {
             $this->mergeSection($section);
         }
-        $this->mergeContext($script->context());
+        $this->mergeParameters($script->parameters());
         return $this;
     }
 
-    public function mergeContext(array|ScriptContext $context) : static {
-        $this->context = $this->context()->merge($context);
+    public function mergeParameters(array|ScriptParameters $parameters) : static {
+        $this->parameters = $this->parameters()->merge($parameters);
         return $this;
     }
 

@@ -10,7 +10,7 @@ use Cognesy\Instructor\Events\Traits\HandlesEventListeners;
 use Cognesy\Instructor\Events\Traits\HandlesEvents;
 use Cognesy\Instructor\Utils\Settings;
 
-abstract class LLMClient implements CanCallLLM
+class LLMClient implements CanCallLLM
 {
     use HandlesEvents;
     use HandlesEventListeners;
@@ -31,8 +31,8 @@ abstract class LLMClient implements CanCallLLM
     public function __construct(
         EventDispatcher $events = null,
     ) {
-        $this->withEventDispatcher($events ?? new EventDispatcher('api-client'));
         $this->clientType = ClientType::fromClientClass(static::class);
+        $this->withEventDispatcher($events ?? new EventDispatcher('api-client'));
         $this->withMaxTokens(Settings::get('llm', "connections.{$this->clientType->value}.defaultMaxTokens", 1024));
         $this->withModel(Settings::get('llm', "connections.{$this->clientType->value}.defaultModel", ''));
     }

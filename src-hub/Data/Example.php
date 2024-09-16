@@ -9,6 +9,7 @@ class Example
 {
     public function __construct(
         public int    $index = 0,
+        public string $tab = '',
         public string $group = '',
         public string $groupTitle = '',
         public string $name = '',
@@ -30,7 +31,7 @@ class Example
     }
 
     public function toDocPath() : string {
-        return '/examples/' . $this->group . '/' . $this->docName;
+        return '/' . $this->tab . '/' . $this->group . '/' . $this->docName;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////
@@ -44,17 +45,24 @@ class Example
         $docName = $document->matter('docname') ?: Str::snake($name);
         $hasTitle = !empty($title);
         $mapping = [
-            '01_Basics' => ['name' => 'basics', 'title' => 'Basics'],
-            '02_Advanced' => ['name' => 'advanced', 'title' => 'Advanced'],
-            '03_Prompting' => ['name' => 'prompting', 'title' => 'Prompting'],
-            '04_Techniques' => ['name' => 'techniques', 'title' => 'Techniques'],
-            '05_Troubleshooting' => ['name' => 'troubleshooting', 'title' => 'Troubleshooting'],
-            '06_APISupport' => ['name' => 'api_support', 'title' => 'LLM API Support'],
-            '07_Extras' => ['name' => 'extras', 'title' => 'Extras'],
+            'A01_Basics' => ['tab' => 'examples', 'name' => 'basics', 'title' => 'Basics'],
+            'A02_Advanced' => ['tab' => 'examples', 'name' => 'advanced', 'title' => 'Advanced'],
+            'A03_Troubleshooting' => ['tab' => 'examples', 'name' => 'troubleshooting', 'title' => 'Troubleshooting'],
+            'A04_APISupport' => ['tab' => 'examples', 'name' => 'api_support', 'title' => 'LLM API Support'],
+            'A05_Extras' => ['tab' => 'examples', 'name' => 'extras', 'title' => 'Extras'],
+            'B01_ZeroShot' => ['tab' => 'prompting', 'name' => 'zero_shot', 'title' => 'Zero-Shot Prompting'],
+            'B02_FewShot' => ['tab' => 'prompting', 'name' => 'few_shot', 'title' => 'Few-Shot Prompting'],
+            'B03_ThoughtGen' => ['tab' => 'prompting', 'name' => 'thought_gen', 'title' => 'Thought Generation'],
+            'B04_Ensembling' => ['tab' => 'prompting', 'name' => 'ensembling', 'title' => 'Ensembling'],
+            'B05_SelfCriticism' => ['tab' => 'prompting', 'name' => 'self_criticism', 'title' => 'Self-Criticism'],
+            'B06_Decomposition' => ['tab' => 'prompting', 'name' => 'decomposition', 'title' => 'Decomposition'],
+            'B07_Misc' => ['tab' => 'prompting', 'name' => 'misc', 'title' => 'Miscellaneous'],
         ];
 
+        $tab = $mapping[$group]['tab'];
         return new Example(
             index: $index,
+            tab: $tab,
             group: $mapping[$group]['name'],
             groupTitle: $mapping[$group]['title'],
             name: $name,
@@ -63,7 +71,7 @@ class Example
             docName: $docName,
             content: $content,
             directory: $baseDir . $path,
-            relativePath: './examples/' . $path . '/run.php',
+            relativePath: './' . $tab . '/' . $path . '/run.php',
             runPath: $baseDir . $path . '/run.php',
         );
     }

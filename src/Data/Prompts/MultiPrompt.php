@@ -59,10 +59,10 @@ class MultiPrompt
         return $this->render($this->variants[$this->selected]);
     }
 
-    public function render(array $context = []) : string {
+    public function render(array $parameters = []) : string {
         return match(true) {
-            empty($context) => $this->variants[$this->selected],
-            default => (new TemplateUtil($context))->renderString($this->variants[$this->selected]),
+            empty($parameters) => $this->variants[$this->selected],
+            default => (new TemplateUtil($parameters))->renderString($this->variants[$this->selected]),
         };
     }
 }

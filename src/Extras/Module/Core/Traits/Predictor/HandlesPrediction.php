@@ -35,7 +35,7 @@ trait HandlesPrediction
         $this->requestInfo->prompt = match(true) {
             empty($this->requestInfo->prompt) => TemplateUtil::render(
                 template: $this->toTextTemplate(),
-                context: array_merge([
+                parameters: array_merge([
                     'instructions' => $this->instructions(),
                     'input' => $callArgs,
                 ])

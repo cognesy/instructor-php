@@ -16,35 +16,35 @@ trait HandlesConversion
     }
 
     /**
-     * @param array<string,mixed>|null $context
+     * @param array<string,mixed>|null $parameters
      * @return array<string,mixed>
      */
-    public function toArray(array $context = null) : array {
+    public function toArray(array $parameters = null) : array {
         return $this->renderMessages(
             messages: $this->messages()->toArray(),
-            context: $context
+            parameters: $parameters
         );
     }
 
     /**
      * @param ClientType $clientType
-     * @param array<string,mixed>|null $context
+     * @param array<string,mixed>|null $parameters
      * @return array<string,mixed>
      */
-    public function toNativeArray(ClientType $clientType, array $context = null) : array {
+    public function toNativeArray(ClientType $clientType, array $parameters = null) : array {
         $array = $this->renderMessages(
-            messages: $this->toArray($context),
-            context: $context,
+            messages: $this->toArray($parameters),
+            parameters: $parameters,
         );
         return $clientType->toNativeMessages($array);
     }
 
     /**
-     * @param array<string,mixed>|null $context
+     * @param array<string,mixed>|null $parameters
      * @param string $separator
      * @return array<string, mixed>
      */
-    public function toString(array $context = [], string $separator = "\n") : string {
+    public function toString(array $parameters = [], string $separator = "\n") : string {
         if ($this->hasComposites()) {
             throw new RuntimeException('Section contains composite messages and cannot be converted to string.');
         }
@@ -52,6 +52,6 @@ trait HandlesConversion
             array: $this->messages()->toArray(),
             callback: fn($carry, $message) => $carry . $message['content'] . $separator,
         );
-        return $this->renderString($text, $context);
+        return $this->renderString($text, $parameters);
     }
 }

@@ -30,7 +30,11 @@
     "tabs": [
         {
             "name": "Examples",
-            "url": "cookbook"
+            "url": "cookbook/examples"
+        },
+        {
+            "name": "Prompting",
+            "url": "cookbook/prompting"
         }
     ],
     "anchors": [
@@ -155,39 +159,6 @@
             ]
         },
         {
-            "group": "Prompting",
-            "pages": [
-                "cookbook/examples/prompting/assign_role",
-                "cookbook/examples/prompting/auto_refine",
-                "cookbook/examples/prompting/clarify_ambiguity",
-                "cookbook/examples/prompting/define_style",
-                "cookbook/examples/prompting/emotional_stimuli",
-                "cookbook/examples/prompting/follow_up_questions",
-                "cookbook/examples/prompting/repeat_query",
-                "cookbook/examples/prompting/simulate_perspective"
-            ]
-        },
-        {
-            "group": "Techniques",
-            "pages": [
-                "cookbook/examples/techniques/arbitrary_properties",
-                "cookbook/examples/techniques/arbitrary_properties_consistent",
-                "cookbook/examples/techniques/chain_of_summaries",
-                "cookbook/examples/techniques/chain_of_thought",
-                "cookbook/examples/techniques/classification",
-                "cookbook/examples/techniques/classification_multiclass",
-                "cookbook/examples/techniques/entity_relationships",
-                "cookbook/examples/techniques/handling_errors",
-                "cookbook/examples/techniques/limiting_lists",
-                "cookbook/examples/techniques/reflection_prompting",
-                "cookbook/examples/techniques/restate_instructions",
-                "cookbook/examples/techniques/rewrite_instructions",
-                "cookbook/examples/techniques/search_query_expansion",
-                "cookbook/examples/techniques/component_reuse",
-                "cookbook/examples/techniques/component_reuse_cot"
-            ]
-        },
-        {
             "group": "Troubleshooting",
             "pages": [
                 "cookbook/examples/troubleshooting/debugging",
@@ -220,12 +191,58 @@
                 "cookbook/examples/extras/complex_extraction_claude",
                 "cookbook/examples/extras/complex_extraction_cohere",
                 "cookbook/examples/extras/complex_extraction_gemini",
+                "cookbook/examples/extras/embeddings",
                 "cookbook/examples/extras/image_to_data",
                 "cookbook/examples/extras/image_to_data_anthropic",
                 "cookbook/examples/extras/image_to_data_gemini",
                 "cookbook/examples/extras/transcription_to_tasks",
                 "cookbook/examples/extras/translate_ui_fields",
                 "cookbook/examples/extras/web_to_objects"
+            ]
+        },
+        {
+            "group": "Zero-Shot Prompting",
+            "pages": [
+                "cookbook/prompting/zero_shot/assign_role",
+                "cookbook/prompting/zero_shot/auto_refine",
+                "cookbook/prompting/zero_shot/clarify_ambiguity",
+                "cookbook/prompting/zero_shot/define_style",
+                "cookbook/prompting/zero_shot/emotional_stimuli",
+                "cookbook/prompting/zero_shot/follow_up_questions",
+                "cookbook/prompting/zero_shot/repeat_query",
+                "cookbook/prompting/zero_shot/simulate_perspective"
+            ]
+        },
+        {
+            "group": "Few-Shot Prompting",
+            "pages": [
+                "cookbook/prompting/few_shot/in_context_examples"
+            ]
+        },
+        {
+            "group": "Thought Generation",
+            "pages": [
+                "cookbook/prompting/thought_gen/analogical_prompting"
+            ]
+        },
+        {
+            "group": "Miscellaneous",
+            "pages": [
+                "cookbook/prompting/misc/arbitrary_properties",
+                "cookbook/prompting/misc/arbitrary_properties_consistent",
+                "cookbook/prompting/misc/chain_of_summaries",
+                "cookbook/prompting/misc/chain_of_thought",
+                "cookbook/prompting/misc/classification",
+                "cookbook/prompting/misc/classification_multiclass",
+                "cookbook/prompting/misc/entity_relationships",
+                "cookbook/prompting/misc/handling_errors",
+                "cookbook/prompting/misc/limiting_lists",
+                "cookbook/prompting/misc/reflection_prompting",
+                "cookbook/prompting/misc/restate_instructions",
+                "cookbook/prompting/misc/rewrite_instructions",
+                "cookbook/prompting/misc/search_query_expansion",
+                "cookbook/prompting/misc/component_reuse",
+                "cookbook/prompting/misc/component_reuse_cot"
             ]
         }
     ],

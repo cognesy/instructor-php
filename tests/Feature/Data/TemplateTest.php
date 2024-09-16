@@ -1,21 +1,20 @@
 <?php
-
 use Cognesy\Instructor\Utils\TemplateUtil;
 
 test('it renders a simple string', function () {
     $template = 'Hello, <|name|>!';
-    $context = ['name' => 'John'];
+    $parameters = ['name' => 'John'];
 
-    $rendered = TemplateUtil::render($template, $context);
+    $rendered = TemplateUtil::render($template, $parameters);
 
     expect($rendered)->toBe('Hello, John!');
 });
 
 test('it handles missing keys gracefully', function () {
     $template = 'Hello, <|name|>! Your score is <|score|>.';
-    $context = ['name' => 'John'];
+    $parameters = ['name' => 'John'];
 
-    $rendered = TemplateUtil::render($template, $context);
+    $rendered = TemplateUtil::render($template, $parameters);
 
     expect($rendered)->toBe('Hello, John! Your score is .');
 });
@@ -25,9 +24,9 @@ test('it renders an array of messages', function () {
         ['role' => 'user', 'content' => 'Hello, <|name|>!'],
         ['role' => 'assistant', 'content' => 'Hi there, <|name|>!'],
     ];
-    $context = ['name' => 'John'];
+    $parameters = ['name' => 'John'];
 
-    $rendered = (new TemplateUtil($context))->renderMessages($messages);
+    $rendered = (new TemplateUtil($parameters))->renderMessages($messages);
 
     expect($rendered)->toBe([
         ['role' => 'user', 'content' => 'Hello, John!'],
@@ -40,9 +39,9 @@ test('it renders an array of objects', function () {
         ['content' => 'Hello, <|name|>!'],
         ['content' => 'Hi there, <|name|>!'],
     ];
-    $context = ['name' => 'John'];
+    $parameters = ['name' => 'John'];
 
-    $rendered = (new TemplateUtil($context))->renderArray($objects);
+    $rendered = (new TemplateUtil($parameters))->renderArray($objects);
 
     expect($rendered)->toBe([
         'Hello, John!',
@@ -52,13 +51,13 @@ test('it renders an array of objects', function () {
 
 test('it handles complex context values', function () {
     $template = 'Name: <|name|>, Age: <|age|>, Tags: <|tags|>';
-    $context = [
+    $parameters = [
         'name' => 'John',
         'age' => 30,
         'tags' => ['developer', 'musician'],
     ];
 
-    $rendered = TemplateUtil::render($template, $context);
+    $rendered = TemplateUtil::render($template, $parameters);
 
     expect($rendered)->toBe('Name: John, Age: 30, Tags: ["developer","musician"]');
 });

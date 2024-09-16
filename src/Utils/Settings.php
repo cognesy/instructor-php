@@ -24,4 +24,8 @@ class Settings
 
         return dot(self::$settings[$group])->get($key, $default);
     }
+
+    public static function has(string $group, string $key) : bool {
+        return dot(self::$settings[$group])->has($key);
+    }
 }

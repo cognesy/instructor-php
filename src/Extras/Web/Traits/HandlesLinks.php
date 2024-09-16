@@ -23,7 +23,13 @@ trait HandlesLinks
     }
 
     public function links() : array {
-        return $this->extractLinks($this->content);
+        if (!isset($this->content)) {
+            return [];
+        }
+        if (!isset($this->links)) {
+            $this->links = $this->extractLinks($this->content, $this->url);
+        }
+        return $this->links;
     }
 
     // INTERNAL ///////////////////////////////////////////////////////
@@ -37,7 +43,7 @@ trait HandlesLinks
                 title: strip_tags($matches['text'][$key]),
                 baseUrl: $baseUrl,
             );
-            if ($this->skip($link, $links)) {
+            if ($this->skipLink($link, $links)) {
                 continue;
             }
             $links[] = $link;
@@ -54,7 +60,7 @@ trait HandlesLinks
         return false;
     }
 
-    private function skip(Link $link, array $links = []) : bool {
+    private function skipLink(Link $link, array $links = []) : bool {
         return match(true) {
             empty($link->url) => true,
             Str::startsWith($link->url, '#') => true,

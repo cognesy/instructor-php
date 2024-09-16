@@ -9,19 +9,19 @@ use JetBrains\PhpStorm\Deprecated;
 
 #[Deprecated('Not used - may be removed in the future.')]
 class Prompt {
-    private array $context;
+    private array $parameters;
     private array $template;
 
     public function __construct(
         string|array $template = '',
-        array $context = [],
+        array $parameters = [],
     ) {
         $this->template = is_string($template) ? [$template] : $template;
-        $this->context = $context;
+        $this->parameters = $parameters;
     }
 
-    public static function render(string|array $template = '', array $context = []) : string {
-        return (new self($template, $context))->toRendered();
+    public static function render(string|array $template = '', array $parameters = []) : string {
+        return (new self($template, $parameters))->toRendered();
     }
 
     public static function fromJson(string $json) : self {
@@ -41,15 +41,15 @@ class Prompt {
         );
     }
 
-    public function withContext(array $context) : static {
-        $this->context = $context;
+    public function withParameters(array $parameters) : static {
+        $this->parameters = $parameters;
         return $this;
     }
 
     public function toRendered() : string {
         return TemplateUtil::render(
             template: $this->templateAsString() ?: $this->autoTemplate(),
-            context: $this->context
+            parameters: $this->parameters
         );
     }
 
@@ -76,11 +76,11 @@ class Prompt {
     }
 
     protected function autoTemplate() : string {
-        if (empty($this->context)) {
+        if (empty($this->parameters)) {
             return '';
         }
         $lines = [];
-        foreach ($this->context as $key => $value) {
+        foreach ($this->parameters as $key => $value) {
             $lines[] = strtoupper($key) . ":";
             $lines[] = "<|$key|>";
             $lines[] = "";

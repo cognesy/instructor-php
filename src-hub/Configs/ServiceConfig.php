@@ -64,10 +64,16 @@ class ServiceConfig implements CanAddConfiguration
                     'Basics',
                     'Advanced',
                     'Prompting',
-                    'Techniques',
                     'Troubleshooting',
                     'LLM API Support',
-                    'Extras'
+                    'Extras',
+                    'Zero-Shot Prompting',
+                    'Few-Shot Prompting',
+                    'Thought Generation',
+                    'Ensembling',
+                    'Self-Criticism',
+                    'Decomposition',
+                    'Miscellaneous',
                 ],
             ],
         );

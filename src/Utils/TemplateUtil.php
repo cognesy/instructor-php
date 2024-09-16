@@ -8,36 +8,36 @@ use InvalidArgumentException;
 
 class TemplateUtil
 {
-    private array $context = [];
-    private array $contextValues = [];
-    private array $contextKeys = [];
+    private array $parameters = [];
+    private array $parameterValues = [];
+    private array $parameterKeys = [];
     private bool $clearUnknownParams = true;
 
     public function __construct(
-        array $context = [],
-        bool $clearUnknownParams = true,
+        array $parameters = [],
+        bool  $clearUnknownParams = true,
     ) {
         $this->clearUnknownParams = $clearUnknownParams;
-        $this->context = $context;
-        if (empty($context)) {
+        $this->parameters = $parameters;
+        if (empty($parameters)) {
             return;
         }
         // remove keys starting with @ - these are used for section templates
-        $filteredContext = array_filter(
-            $context,
+        $filteredParameters = array_filter(
+            $parameters,
             fn($key) => substr($key, 0, 1) !== '@',
             ARRAY_FILTER_USE_KEY
         );
-        $materializedContext = $this->materializeContext($filteredContext);
-        $this->contextValues = array_values($materializedContext);
-        $this->contextKeys = array_map(
+        $materializedParameters = $this->materializeParameters($filteredParameters);
+        $this->parameterValues = array_values($materializedParameters);
+        $this->parameterKeys = array_map(
             fn($key) => $this->varPattern($key),
-            array_keys($materializedContext)
+            array_keys($materializedParameters)
         );
     }
 
-    public function getContext() : array {
-        return $this->context;
+    public function getParameters() : array {
+        return $this->parameters;
     }
 
     public static function cleanVarMarkers(string $template) : string {
@@ -46,11 +46,11 @@ class TemplateUtil
 
     public static function render(
         string $template,
-        array $context,
-        bool $clearUnknownParams = true,
+        array  $parameters,
+        bool   $clearUnknownParams = true,
     ) : string {
         return (new TemplateUtil(
-            $context,
+            $parameters,
             $clearUnknownParams
         ))->renderString($template);
     }
@@ -60,12 +60,12 @@ class TemplateUtil
         $keys = $this->findVars($template);
         if ($this->clearUnknownParams) {
             // find keys missing from $this->keys
-            $missingKeys = array_diff($keys, $this->contextKeys);
+            $missingKeys = array_diff($keys, $this->parameterKeys);
             // remove missing key strings from the template
             $template = str_replace($missingKeys, '', $template);
         }
         // render values
-        return str_replace($this->contextKeys, $this->contextValues, $template);
+        return str_replace($this->parameterKeys, $this->parameterValues, $template);
     }
 
     public function renderArray(
@@ -115,14 +115,14 @@ class TemplateUtil
 
     // INTERNAL //////////////////////////////////////////////////////////////////
 
-    private function materializeContext(array $context) : array {
+    private function materializeParameters(array $parameters) : array {
         // TODO: is there a way to consolidate value rendering?
-        $contextValues = [];
-        foreach ($context as $key => $value) {
+        $parameterValues = [];
+        foreach ($parameters as $key => $value) {
             $value = match (true) {
                 is_scalar($value) => $value,
                 is_array($value) => Json::encode($value),
-                is_callable($value) => $value($key, $context),
+                is_callable($value) => $value($key, $parameters),
                 is_object($value) && method_exists($value, 'toString') => $value->toString(),
                 is_object($value) && method_exists($value, 'toJson') => $value->toJson(),
                 is_object($value) && method_exists($value, 'toArray') => Json::encode($value->toArray()),
@@ -132,8 +132,8 @@ class TemplateUtil
                 is_object($value) => Json::encode($value),
                 default => $value,
             };
-            $contextValues[$key] = $value;
+            $parameterValues[$key] = $value;
         }
-        return $contextValues;
+        return $parameterValues;
     }
 }

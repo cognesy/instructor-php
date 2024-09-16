@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Data\Messages;
 
 class Script {
     use Traits\Script\HandlesAccess;
-    use Traits\Script\HandlesContext;
+    use Traits\Script\HandlesParameters;
     use Traits\Script\HandlesConversion;
     use Traits\Script\HandlesCreation;
     use Traits\Script\HandlesMutation;
@@ -16,6 +16,6 @@ class Script {
 
     public function __construct(Section ...$sections) {
         $this->sections = $sections;
-        $this->context = new ScriptContext(null);
+        $this->parameters = new ScriptParameters(null);
     }
 }

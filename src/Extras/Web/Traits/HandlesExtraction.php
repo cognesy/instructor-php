@@ -34,8 +34,8 @@ trait HandlesExtraction
     public function selectMany(string $selector, callable $fn = null) : Generator {
         foreach ($this->htmlProcessor->selectMany($this->content, $selector) as $html) {
             yield match($fn) {
-                null => Webpage::withHtml($html),
-                default => $fn(Webpage::withHtml($html)),
+                null => Webpage::withHtml($html, $this->url),
+                default => $fn(Webpage::withHtml($html, $this->url)),
             };
         }
     }

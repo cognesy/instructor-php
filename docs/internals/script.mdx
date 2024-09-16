@@ -18,7 +18,7 @@ The Script class serves as a flexible and dynamic container for managing, hydrat
 
  - Flexibility: Adapt and manage conversation structures for different LLM API providers.
  - Dynamic Reordering: Rearrange sections dynamically as needed.
- - Template Functionality: Use Script as a template for complex, multi-turn prompts with dynamic context fields.
+ - Template Functionality: Use Script as a template for complex, multi-turn prompts with dynamic parameters.
  - Multimodal Support: Include objects like images in chat entries for processing using LLM's multimodal capabilities.
 
 
@@ -66,21 +66,21 @@ $messages = $script->toMessages();
 
 ### Advanced Usage
 
-#### Dynamic Context Injection
+#### Dynamic Parameters Injection
 
 ```php
 <?php
-use Cognesy\Instructor\Data\Messages\ScriptContext;
+use Cognesy\Instructor\Data\Messages\ScriptParameters;
 
-// Create and set context
-$context = new ScriptContext(['userName' => 'John Doe']);
-$script->withContext($context);
+// Create and set parameters
+$parameters = new ScriptParameters(['userName' => 'John Doe']);
+$script->withParameters($parameters);
 
-// Set individual context variables
-$script->setContextVar('userRole', 'admin');
+// Set individual parameter
+$script->setParameter('userRole', 'admin');
 
-// Unset context variables
-$script->unsetContextVar('userRole');
+// Unset a parameter
+$script->unsetParameter('userRole');
 ```
 
 #### Rendering to Native Array Format
@@ -102,9 +102,9 @@ $nativeArray = $script->toNativeArray($clientType);
 $templateSection = new Section('template_section');
 $templateSection->appendMessages(Messages::fromString('Hello, {{userName}}!'));
 
-// Add section to Script and set context
+// Add section to Script and set parameters
 $script->appendSection($templateSection);
-$script->setContextVar('userName', 'John Doe');
+$script->setParameter('userName', 'John Doe');
 
 // Convert Script to Messages with template rendered
 $messages = $script->toMessages();
@@ -155,10 +155,10 @@ $reversedScript = $script->reverse();
 The Script class uses several internal traits to handle various aspects of its functionality:
 
  - HandlesAccess: Methods for accessing and querying sections.
- - HandlesContext: Methods for managing context variables.
+ - HandlesParameters: Methods for managing parameters.
  - HandlesConversion: Methods for converting Script to various formats.
  - HandlesCreation: Methods for creating Script instances from arrays or other Scripts.
- - HandlesMutation: Methods for mutating sections and context.
+ - HandlesMutation: Methods for mutating sections and parameters.
  - HandlesReordering: Methods for reordering and reversing sections.
  - HandlesTransformation: Methods for transforming Scripts into different structures.
 
@@ -168,7 +168,7 @@ The Script class uses several internal traits to handle various aspects of its f
 <?php
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
-use Cognesy\Instructor\Data\Messages\ScriptContext;
+use Cognesy\Instructor\Data\Messages\ScriptParameters;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 
 // Define sections
@@ -181,9 +181,9 @@ $qna = (new Section('qna'))
 // Create Script
 $script = new Script($intro, $qna);
 
-// Set dynamic context
-$context = new ScriptContext(['userName' => 'Alice']);
-$script->withContext($context);
+// Set dynamic parameters
+$parameters = new ScriptParameters(['userName' => 'Alice']);
+$script->withParams($parameters);
 
 // Convert to native format for OpenAI
 $nativeFormat = $script->toNativeArray(ClientType::OpenAI);

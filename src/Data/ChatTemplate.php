@@ -59,7 +59,7 @@ class ChatTemplate
                 'pre-retries', 'retries', 'post-retries'
             ])
             ->toArray(
-                context: ['json_schema' => $this->makeJsonSchema() ?? []],
+                parameters: ['json_schema' => $this->makeJsonSchema() ?? []],
             );
 
         return $output;

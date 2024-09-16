@@ -11,7 +11,7 @@ it('creates messages from script', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->withContext([
+    $script->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -47,7 +47,7 @@ it('selects sections from script', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->withContext([
+    $script->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -87,7 +87,7 @@ it('translates messages to native format - Cohere', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->withContext([
+    $script->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -121,7 +121,7 @@ it('translates messages to native format - Anthropic', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->withContext([
+    $script->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -155,7 +155,7 @@ it('translates messages to string', function () {
         new Section('section-1'),
         new Section('section-2'),
     );
-    $script->withContext([
+    $script->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
     ]);
@@ -180,7 +180,7 @@ it('supports section templates', function() {
         new Section('@section-2'),
         new Section('@section-3'),
     );
-    $script->withContext([
+    $script->withParams([
         'key-1' => 'value-1',
         'key-2' => 'value-2',
         'key-3' => 'value-3',
@@ -192,7 +192,7 @@ it('supports section templates', function() {
             ['role' => 'user', 'content' => 'content-3'],
             ['role' => 'user', 'content' => 'content-4 <|key-2|>'],
         ]),
-        '@section-3' => fn($context) => [
+        '@section-3' => fn($parameters) => [
             ['role' => 'user', 'content' => 'content-3'],
             ['role' => 'user', 'content' => 'content-4 <|key-3|>'],
         ],

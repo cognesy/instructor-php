@@ -27,7 +27,7 @@ trait HandlesCreation
 
     static public function clone(Script $script) : Script {
         $script = new Script(...$script->sections);
-        $script->withContext($script->context());
+        $script->withParams($script->parameters());
         return $script;
     }
 }

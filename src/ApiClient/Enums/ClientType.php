@@ -16,6 +16,7 @@ enum ClientType : string
     case Fireworks = 'fireworks';
     case Gemini = 'gemini';
     case Groq = 'groq';
+    case Jina = 'jina';
     case Mistral = 'mistral';
     case Ollama = 'ollama';
     case OpenAI = 'openai';

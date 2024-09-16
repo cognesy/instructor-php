@@ -13,13 +13,13 @@ trait HandlesConversion
      * @param array<string> $order
      * @return Messages
      */
-    public function toMessages(array $context = null) : Messages {
+    public function toMessages(array $parameters = null) : Messages {
         $messages = new Messages();
         foreach ($this->sections as $section) {
             $content = match(true) {
                 $section->isTemplate() => $this->fromTemplate(
                     name: $section->name(),
-                    context: $this->context()->merge($context)->toArray(),
+                    parameters: $this->parameters()->merge($parameters)->toArray(),
                 ) ?? $section->toMessages(),
                 default => $section->toMessages(),
             };
@@ -34,15 +34,15 @@ trait HandlesConversion
 
     /**
      * @param array<string> $order
-     * @param array<string,mixed>|null $context
+     * @param array<string,mixed>|null $parameters
      * @return array<string,string|array>
      */
-    public function toArray(array $context = null, bool $raw = false) : array {
+    public function toArray(array $parameters = null, bool $raw = false) : array {
         $array = $this->toMessages()->toArray();
         return match($raw) {
             false => $this->renderMessages(
                 messages: $array,
-                context: $this->context()->merge($context)->toArray()),
+                parameters: $this->parameters()->merge($parameters)->toArray()),
             true => $array,
         };
     }
@@ -50,15 +50,15 @@ trait HandlesConversion
     /**
      * @param ClientType $clientType
      * @param array<string> $order
-     * @param array<string,mixed>|null $context
+     * @param array<string,mixed>|null $parameters
      * @return array<string,mixed>
      */
-    public function toNativeArray(ClientType $clientType, array $context = null, bool $mergePerRole = false) : array {
+    public function toNativeArray(ClientType $clientType, array $parameters = null, bool $mergePerRole = false) : array {
         $array = $this->renderMessages(
             messages: $mergePerRole
                 ? $this->toSingleSection('merged')->toMergedPerRole()->toArray(raw: true)
                 : $this->toArray(raw: true),
-            context: $this->context()->merge($context)->toArray(),
+            parameters: $this->parameters()->merge($parameters)->toArray(),
         );
         return $clientType->toNativeMessages($array);
     }
@@ -66,10 +66,10 @@ trait HandlesConversion
     /**
      * @param array<string> $order
      * @param string $separator
-     * @param array<string,mixed>|null $context
+     * @param array<string,mixed>|null $parameters
      * @return string
      */
-    public function toString(string $separator = "\n", array $context = null) : string {
+    public function toString(string $separator = "\n", array $parameters = null) : string {
         if ($this->hasComposites()) {
             throw new RuntimeException('Script contains composite messages and cannot be converted to string.');
         }
@@ -83,29 +83,29 @@ trait HandlesConversion
         }
         return $this->renderString(
             template: $text,
-            context: $this->context()->merge($context)->toArray()
+            parameters: $this->parameters()->merge($parameters)->toArray()
         );
     }
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    protected function fromTemplate(string $name, ?array $context) : Messages {
-        if (empty($context)) {
+    protected function fromTemplate(string $name, ?array $parameters) : Messages {
+        if (empty($parameters)) {
             return new Messages();
         }
 
-        $source = $context[$name] ?? throw new Exception("Context does not have template value: $name");
+        $source = $parameters[$name] ?? throw new Exception("Parameter does not have value: $name");
 
-        // process value from context
+        // process parameter
         $values = match(true) {
-            is_callable($source) => $source($context),
+            is_callable($source) => $source($parameters),
             is_array($source) => Messages::fromArray($source),
             $source instanceof Messages => $source,
             is_string($source) => Messages::fromString($source),
             default => throw new Exception("Invalid template value: $name"),
         };
 
-        // process results of callable context value
+        // process results of callable parameter
         return match(true) {
             $values instanceof Messages => $values,
             is_array($values) => Messages::fromArray($values),
