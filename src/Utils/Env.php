@@ -27,6 +27,10 @@ class Env
 
     public static function get(mixed $key, mixed $default = null) : mixed
     {
+        $value = getenv($key);
+        if ($value !== false) {
+            return $value;
+        }
         if (!isset(self::$dotenv)) {
             self::load();
         }

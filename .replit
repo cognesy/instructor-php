@@ -1,0 +1,8 @@
+modules = ["php-8.2", "bash"]
+run = "./hub.sh run 1"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "./hub.sh run 1"]
