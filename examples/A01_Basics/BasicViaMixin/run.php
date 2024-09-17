@@ -37,10 +37,10 @@ static public function infer(
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Mixin\HandlesInference;
+use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
 
 class User {
-    use HandlesInference;
+    use HandlesSelfInference;
 
     public int $age;
     public string $name;
