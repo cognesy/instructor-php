@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Embeddings\Traits;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
@@ -7,7 +6,7 @@ use Cognesy\Instructor\Utils\Settings;
 use GuzzleHttp\Exception\GuzzleException;
 use InvalidArgumentException;
 
-trait HasClients
+trait HasConnectors
 {
     public function make(string|array $input, array $options = []) : array {
         if (is_string($input)) {
@@ -17,13 +16,13 @@ trait HasClients
             throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->maxInputs}");
         }
         return match ($this->clientType) {
-            ClientType::Azure => $this->getAzureOpenAIEmbedding($input, $options),
-            ClientType::Cohere => $this->getCohereEmbedding($input, $options),
-            ClientType::Gemini => $this->getGeminiEmbedding($input, $options),
-            ClientType::Mistral => $this->getMistralEmbedding($input, $options),
-            ClientType::OpenAI => $this->getOpenAIEmbedding($input, $options),
-            ClientType::Ollama => $this->getOllamaEmbedding($input, $options),
-            ClientType::Jina => $this->getJinaEmbedding($input, $options),
+            ClientType::Azure => $this->viaAzureOpenAI($input, $options),
+            ClientType::Cohere => $this->viaCohere($input, $options),
+            ClientType::Gemini => $this->viaGemini($input, $options),
+            ClientType::Mistral => $this->viaMistral($input, $options),
+            ClientType::OpenAI => $this->viaOpenAI($input, $options),
+            ClientType::Ollama => $this->viaOllama($input, $options),
+            ClientType::Jina => $this->viaJina($input, $options),
             default => throw new InvalidArgumentException("Unknown client: {$this->client}"),
         };
     }
@@ -43,7 +42,7 @@ trait HasClients
         $this->endpoint = Settings::get('embed', "connections.$client.endpoint");
     }
 
-    protected function getOpenAIEmbedding(array $input, array $options = []): array {
+    protected function viaOpenAI(array $input, array $options = []): array {
         $url = "{$this->apiUrl}{$this->endpoint}";
         $request = [
             'headers' => [
@@ -61,7 +60,7 @@ trait HasClients
         return array_map(fn($item) => $item['embedding'], $result['data']);
     }
 
-    protected function getAzureOpenAIEmbedding(array $input, array $options = []): array {
+    protected function viaAzureOpenAI(array $input, array $options = []): array {
         $url = "{$this->apiUrl}{$this->endpoint}";
         $request = [
             'headers' => [
@@ -82,7 +81,7 @@ trait HasClients
     /**
      * @throws GuzzleException
      */
-    protected function getCohereEmbedding(array $input, array $options = []): array {
+    protected function viaCohere(array $input, array $options = []): array {
         $url = "{$this->apiUrl}{$this->endpoint}";
         $options['input_type'] = $options['input_type'] ?? 'search_document';
         $request = [
@@ -105,7 +104,7 @@ trait HasClients
     /**
      * @throws GuzzleException
      */
-    protected function getGeminiEmbedding(array $input, array $options = []): array {
+    protected function viaGemini(array $input, array $options = []): array {
         $url = str_replace("{model}", $this->model, "{$this->apiUrl}{$this->endpoint}?key={$this->apiKey}");
         $request = [
             'headers' => [
@@ -124,7 +123,7 @@ trait HasClients
     /**
      * @throws GuzzleException
      */
-    protected function getMistralEmbedding(array $input, array $options = []): array {
+    protected function viaMistral(array $input, array $options = []): array {
         $url = "{$this->apiUrl}{$this->endpoint}";
         $request = [
             'headers' => [
@@ -145,7 +144,7 @@ trait HasClients
     /**
      * @throws GuzzleException
      */
-    protected function getOllamaEmbedding(array $input, array $options = []): array {
+    protected function viaOllama(array $input, array $options = []): array {
         $url = "{$this->apiUrl}{$this->endpoint}";
         $request = [
             'headers' => [
@@ -164,7 +163,7 @@ trait HasClients
     /**
      * @throws GuzzleException
      */
-    protected function getJinaEmbedding(array $input, array $options = []): array {
+    protected function viaJina(array $input, array $options = []): array {
         $url = "{$this->apiUrl}{$this->endpoint}";
         $dimensions = $options['dimensions'] ?? 128;
         $inputType = $options['input_type'] ?? 'document';

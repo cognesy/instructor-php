@@ -9,7 +9,7 @@ use GuzzleHttp\Client;
 class Embeddings
 {
     use Traits\HasFinders;
-    use Traits\HasClients;
+    use Traits\HasConnectors;
 
     protected Client $client;
     protected ClientType $clientType;

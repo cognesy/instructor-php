@@ -26,8 +26,8 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\ApiClient\Traits\PartialApiResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
+use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
 use Cognesy\Instructor\Instructor;
 
 class User {

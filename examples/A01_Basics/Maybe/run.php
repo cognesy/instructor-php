@@ -16,6 +16,7 @@ better error handling without breaking the code flow.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\Instructor;
 
@@ -26,12 +27,14 @@ class User
 }
 
 
-$text = 'We don\'t know anything about this guy.';
+$text = 'We have no information about our new developer.';
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = (new Instructor)->respond(
+$maybeUser = (new Instructor)->withDebug()->respond(
     messages: [['role' => 'user', 'content' => $text]],
-    responseModel: Maybe::is(User::class)
+    responseModel: Maybe::is(User::class),
+    model: 'gpt-4o-mini',
+    mode: Mode::MdJson,
 );
 
 echo "\nOUTPUT:\n";
