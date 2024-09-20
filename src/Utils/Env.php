@@ -38,7 +38,7 @@ class Env
     }
 
     public static function load() : void {
-        if (!isset(self::$paths) && !isset(self::$names)) {
+        if ([] === self::$paths && [] === self::$names) {
             return;
         }
         self::$dotenv = Dotenv::createImmutable(self::$paths, self::$names);
