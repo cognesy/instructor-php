@@ -69,7 +69,7 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
     }
 
     public function toApiResponse(Response $response): ApiResponse {
-        return $this->clientType->toApiResponse($response);
+        return $this->clientType->toApiResponse($response->body());
     }
 
     public function toPartialApiResponse(string $partialData): PartialApiResponse {

@@ -114,11 +114,19 @@ trait HasConnectors {
                 $parameters[] = array_filter([
                     'name' => $name,
                     'description' => $param['description'] ?? '',
-                    'type' => $this->toCohereType($param),
+                    'type' => match($param['type']) {
+                        'string' => 'str',
+                        'number' => 'float',
+                        'integer' => 'int',
+                        'boolean' => 'bool',
+                        'array' => throw new \Exception('Array type not supported by Cohere'),
+                        'object' => throw new \Exception('Object type not supported by Cohere'),
+                        default => throw new \Exception('Unknown type'),
+                    },
                     'required' => in_array($name, $this->tools['function']['parameters']['required']??[]),
                 ]);
             }
-            $cohereFormat[] = [
+            $tools[] = [
                 'name' => $tool['function']['name'],
                 'description' => $tool['function']['description'] ?? '',
                 'parameters_definitions' => $parameters,
@@ -135,12 +143,15 @@ trait HasConnectors {
                 'chat_history' => $chatHistory,
                 'message' => $messages,
                 'tools' => $tools,
-                'response_format' => $this->getResponseFormat(),
+                'response_format' => [
+                    'type' => 'json_object',
+                    'schema' => $this->jsonSchema,
+                ],
             ], $options)),
         ];
         $response = $this->client->post($url, $request);
-        $result = json_decode($response->getBody()->getContents(), true);
-        return $result['embeddings']['float'];
+        $result = $response->getBody()->getContents();
+        return $this->clientType->toApiResponse($result);
     }
 
     protected function viaFireworks(ApiRequest $apiRequest): array {

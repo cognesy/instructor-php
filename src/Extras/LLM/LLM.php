@@ -26,9 +26,9 @@ class LLM
 
     protected array $body;
     protected array $headers;
-    
+
     protected string $model = '';
-    protected int $maxTokens;
+    protected int $maxTokens = 1024;
     protected array $messages = [];
 
     protected array $tools;
