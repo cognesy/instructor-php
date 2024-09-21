@@ -1,6 +1,14 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM;
 
+use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
+use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\AzureOpenAIDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\CohereDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\GeminiDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\MistralDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 use GuzzleHttp\Client;
 use InvalidArgumentException;
 use Cognesy\Instructor\Enums\Mode;
@@ -10,64 +18,73 @@ use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 
 class LLM
 {
-    use Traits\HasConnectors;
-
     protected Client $client;
-    protected ClientType $clientType;
+    protected LLMConfig $config;
+    protected CanInfer $driver;
+
     protected Mode $mode;
-
-    protected int $connectTimeout;
-    protected int $requestTimeout;
-
-    protected string $apiUrl = '';
-    protected string $apiKey = '';
-    protected string $endpoint = '';
-    protected array $metadata = [];
-
     protected array $body;
     protected array $headers;
 
-    protected string $model = '';
-    protected int $maxTokens = 1024;
+    protected ApiRequest $apiRequest;
+    protected string $schemaName;
     protected array $messages = [];
-
     protected array $tools;
     protected array $toolChoice;
     protected array $responseFormat;
     protected array $jsonSchema;
-    protected string $schemaName;
     protected array $cachedContext;
+    protected array $options;
 
-
-    protected ApiRequest $apiRequest;
-
-    public function __construct()
-    {
+    public function __construct() {
         $this->client = new Client();
-        $client = Settings::get('embed', "defaultConnection");
-        $this->loadConfig($client);
+        $this->config = LLMConfig::load(Settings::get('llm', "defaultConnection"));
+        $this->driver = $this->getDriver($this->config->clientType);
     }
 
-    public function withClient(string $client): self
-    {
-        $this->loadConfig($client);
+    public function withConnection(string $connection): self {
+        $this->config = LLMConfig::load($connection);
+        $this->driver = $this->getDriver($this->config->clientType);
         return $this;
+    }
+
+    public function withModel(string $model): self {
+        $this->config->model = $model;
+        return $this;
+    }
+
+    public function infer(
+        string|array $messages = [],
+        string $model = '',
+        array $tools = [],
+        string|array $toolChoice = [],
+        array $responseFormat = [],
+        array $options = [],
+        Mode $mode = Mode::Text
+    ): ApiResponse {
+        if (is_string($messages)) {
+            $messages = [['role' => 'user', 'content' => $messages]];
+        }
+        return $this->driver->infer($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
     }
 
     // INTERNAL ///////////////////////////////////////
 
-    protected function loadConfig(string $client) : void {
-        if (!Settings::has('embed', "connections.$client")) {
-            throw new InvalidArgumentException("Unknown client: $client");
-        }
-        $this->clientType = ClientType::from(Settings::get('llm', "connections.$client.clientType"));
-        $this->apiKey = Settings::get('llm', "connections.$client.apiKey", '');
-        $this->model = Settings::get('llm', "connections.$client.defaultModel", '');
-        $this->metadata = Settings::get('llm', "connections.$client.metadata", 0);
-        $this->maxTokens = Settings::get('llm', "connections.$client.defaultMaxTokens", 1024);
-        $this->apiUrl = Settings::get('llm', "connections.$client.apiUrl");
-        $this->endpoint = Settings::get('llm', "connections.$client.endpoint");
-        $this->requestTimeout = Settings::get("llm", "connections.$client.requestTimeout", 3);
-        $this->connectTimeout = Settings::get(group: "llm", key: "connections.$client.requestTimeout", default: 30);
+    protected function getDriver(ClientType $clientType): CanInfer {
+        return match ($clientType) {
+            ClientType::Anthropic => new AnthropicDriver($this->client, $this->config),
+            ClientType::Azure => new AzureOpenAIDriver($this->client, $this->config),
+            ClientType::Cohere => new CohereDriver($this->client, $this->config),
+            ClientType::Fireworks => new OpenAIDriver($this->client, $this->config),
+            ClientType::Gemini => new GeminiDriver($this->client, $this->config),
+            ClientType::Groq => new OpenAIDriver($this->client, $this->config),
+            ClientType::Mistral => new MistralDriver($this->client, $this->config),
+            ClientType::Ollama => new OpenAIDriver($this->client, $this->config),
+            ClientType::OpenAI => new OpenAIDriver($this->client, $this->config),
+            ClientType::OpenAICompatible => new OpenAIDriver($this->client, $this->config),
+            ClientType::OpenRouter => new OpenAIDriver($this->client, $this->config),
+            ClientType::Together => new OpenAIDriver($this->client, $this->config),
+            default => throw new InvalidArgumentException("Unknown client: {$this->client}"),
+        };
     }
 }
