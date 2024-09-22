@@ -45,9 +45,6 @@ class Instructor {
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
         $this->queueEvent(new InstructorStarted());
 
-        // try loading .env (if paths are set)
-        Env::load();
-
         // main event dispatcher
         $this->events = $events ?? new EventDispatcher('instructor');
 
