@@ -14,27 +14,12 @@ use InvalidArgumentException;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Settings;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
-use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 
 class LLM
 {
     protected Client $client;
     protected LLMConfig $config;
     protected CanInfer $driver;
-
-    protected Mode $mode;
-    protected array $body;
-    protected array $headers;
-
-    protected ApiRequest $apiRequest;
-    protected string $schemaName;
-    protected array $messages = [];
-    protected array $tools;
-    protected array $toolChoice;
-    protected array $responseFormat;
-    protected array $jsonSchema;
-    protected array $cachedContext;
-    protected array $options;
 
     public function __construct() {
         $this->client = new Client();
@@ -50,6 +35,11 @@ class LLM
 
     public function withModel(string $model): self {
         $this->config->model = $model;
+        return $this;
+    }
+
+    public function withDriver(CanInfer $driver): self {
+        $this->driver = $driver;
         return $this;
     }
 
