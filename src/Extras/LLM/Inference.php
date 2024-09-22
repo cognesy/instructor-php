@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM;
 
+use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
 use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
@@ -15,7 +16,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Settings;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 
-class LLM
+class Inference
 {
     protected Client $client;
     protected LLMConfig $config;
@@ -43,7 +44,19 @@ class LLM
         return $this;
     }
 
-    public function infer(
+    public function fromApiRequest(ApiRequest $apiRequest) : ApiResponse {
+        return $this->create(
+            $apiRequest->messages(),
+            $apiRequest->model(),
+            $apiRequest->tools(),
+            $apiRequest->toolChoice(),
+            $apiRequest->responseFormat(),
+            $apiRequest->options(),
+            $apiRequest->mode()
+        );
+    }
+
+    public function create(
         string|array $messages = [],
         string $model = '',
         array $tools = [],

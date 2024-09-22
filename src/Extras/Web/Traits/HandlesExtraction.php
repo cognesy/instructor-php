@@ -28,14 +28,18 @@ trait HandlesExtraction
 
     /**
      * @param string $selector CSS selector
-     * @param callable|null $fn Function to transform the selected item
+     * @param callable|null $callback Function to transform the selected item
      * @return Generator<Webpage> a generator of Webpage objects
      */
-    public function selectMany(string $selector, callable $fn = null) : Generator {
+    public function selectMany(string $selector, callable $callback = null, int $limit = 0) : Generator {
+        $count = 0;
         foreach ($this->htmlProcessor->selectMany($this->content, $selector) as $html) {
-            yield match($fn) {
+            if ($limit > 0 && $count++ >= $limit) {
+                break;
+            }
+            yield match($callback) {
                 null => Webpage::withHtml($html, $this->url),
-                default => $fn(Webpage::withHtml($html, $this->url)),
+                default => $callback(Webpage::withHtml($html, $this->url)),
             };
         }
     }

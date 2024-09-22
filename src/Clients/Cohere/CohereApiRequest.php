@@ -23,7 +23,7 @@ class CohereApiRequest extends ApiRequest
                     'chat_history' => $chatHistory,
                     'message' => $messages,
                     'tools' => $this->tools(),
-                    'response_format' => $this->getResponseFormat(),
+                    'response_format' => $this->responseFormat(),
                 ],
             )
         );
@@ -55,18 +55,18 @@ class CohereApiRequest extends ApiRequest
         return $cohereFormat;
     }
 
-    public function getToolChoice(): string|array {
+    public function toolChoice(): string|array {
         return '';
     }
 
-    protected function getResponseFormat(): array {
+    public function responseFormat(): array {
         return [
             'type' => 'json_object',
-            'schema' => $this->getResponseSchema(),
+            'schema' => $this->responseSchema(),
         ];
     }
 
-    protected function getResponseSchema(): array {
+    public function responseSchema(): array {
         return $this->jsonSchema ?? [];
     }
 

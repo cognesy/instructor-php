@@ -32,7 +32,7 @@ class AnthropicApiRequest extends ApiRequest
                     'system' => $system,
                     'messages' => $messages,
                     'tools' => $this->tools(),
-                    'tool_choice' => $this->getToolChoice(),
+                    'tool_choice' => $this->toolChoice(),
                 ],
             )
         );
@@ -57,7 +57,7 @@ class AnthropicApiRequest extends ApiRequest
         return $anthropicFormat;
     }
 
-    public function getToolChoice(): string|array {
+    public function toolChoice(): string|array {
         return match(true) {
             empty($this->tools) => '',
             is_array($this->toolChoice) => [
@@ -73,11 +73,11 @@ class AnthropicApiRequest extends ApiRequest
         };
     }
 
-    protected function getResponseFormat(): array {
+    public function responseFormat(): array {
         return [];
     }
 
-    protected function getResponseSchema() : array {
+    public function responseSchema() : array {
         return $this->jsonSchema ?? [];
     }
 }

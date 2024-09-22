@@ -40,7 +40,7 @@ class User {
 $instructor = (new Instructor)->withClient('azure');
 
 // Call with your model name and preferred execution mode
-$user = $instructor->respond(
+$user = $instructor->withDebug()->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     examples: [[

@@ -7,6 +7,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
 use Cognesy\Instructor\Extras\LLM\LLMConfig;
 use GuzzleHttp\Client;
+use Psr\Http\Message\ResponseInterface;
 
 class CohereDriver implements CanInfer
 {
@@ -24,29 +25,43 @@ class CohereDriver implements CanInfer
         array $options = [],
         Mode $mode = Mode::Text,
     ) : ApiResponse {
-        $response = $this->client->post($this->getEndpointUrl(), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody(
-                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
-            ),
-        ]);
+        $response = $this->createResponse($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
         return $this->toResponse($response->getBody()->getContents());
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function getEndpointUrl() : string {
+    protected function createResponse(
+        array $messages = [],
+        string $model = '',
+        array $tools = [],
+        string|array $toolChoice = '',
+        array $responseFormat = [],
+        array $options = [],
+        Mode $mode = Mode::Text,
+    ) : ResponseInterface {
+        return $this->client->post($this->getEndpointUrl(), [
+            'headers' => $this->getRequestHeaders(),
+            'json' => $this->getRequestBody(
+                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
+            ),
+            'connect_timeout' => $this->config->connectTimeout ?? 3,
+            'timeout' => $this->config->requestTimeout ?? 30,
+        ]);
+    }
+
+    protected function getEndpointUrl() : string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }
 
-    private function getRequestHeaders() : array {
+    protected function getRequestHeaders() : array {
         return [
             'Authorization' => "Bearer {$this->config->apiKey}",
             'Content-Type' => 'application/json',
         ];
     }
 
-    private function getRequestBody(
+    protected function getRequestBody(
         array $messages = [],
         string $model = '',
         array $tools = [],
@@ -105,7 +120,7 @@ class CohereDriver implements CanInfer
         return $result;
     }
 
-    private function toCohereType(array $param) : string {
+    protected function toCohereType(array $param) : string {
         return match($param['type']) {
             'string' => 'str',
             'number' => 'float',

@@ -20,9 +20,11 @@ LLM providers access details can be found and modified via
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\LLM\LLM;
+use Cognesy\Instructor\Extras\LLM\Inference;
 
-$answer = (new LLM)->withConnection('together')->infer('What is capital of France?');
+$answer = (new Inference)
+    ->withConnection('together')
+    ->create('What is capital of France?');
 
 dump($answer);
 ?>

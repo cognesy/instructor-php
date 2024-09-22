@@ -9,15 +9,15 @@ class MistralApiRequest extends ApiRequest
         return $this->tools;
     }
 
-    public function getToolChoice(): string|array {
+    public function toolChoice(): string|array {
         return 'any';
     }
 
-    protected function getResponseFormat(): array {
+    public function responseFormat(): array {
         return ['type' => 'json_object'];
     }
 
-    protected function getResponseSchema(): array {
+    public function responseSchema(): array {
         return [];
     }
 }

@@ -92,11 +92,11 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         switch($this->mode) {
             case Mode::Tools:
                 $body['tools'] = $this->tools();
-                $body['tool_choice'] = $this->getToolChoice();
+                $body['tool_choice'] = $this->toolChoice();
                 break;
             case Mode::Json:
             case Mode::JsonSchema:
-                $body['response_format'] = $this->getResponseFormat();
+                $body['response_format'] = $this->responseFormat();
                 break;
         }
         $this->requestConfig()->events()->dispatch(new RequestBodyCompiled($body));
@@ -115,19 +115,27 @@ abstract class ApiRequest extends Request implements HasBody, Cacheable
         return $this->tools;
     }
 
-    public function getToolChoice(): string|array {
+    public function toolChoice(): string|array {
         if (empty($this->tools)) {
             return '';
         }
         return $this->toolChoice ?: 'auto';
     }
 
-    protected function getResponseSchema() : array {
+    public function responseSchema() : array {
         return $this->jsonSchema ?? [];
     }
 
-    protected function getResponseFormat(): array {
+    public function responseFormat(): array {
         return $this->responseFormat ?? [];
+    }
+
+    public function options(): array {
+        return $this->requestBody;
+    }
+
+    public function mode(): Mode {
+        return $this->mode;
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////////////////////////////////
