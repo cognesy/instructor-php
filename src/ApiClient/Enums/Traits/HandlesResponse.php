@@ -10,7 +10,11 @@ use Saloon\Http\Response;
 
 trait HandlesResponse
 {
-    public function toApiResponse(Response $response): ApiResponse {
+    public function toApiResponse(string $bodyData): ApiResponse {
+        $response = Json::parse($bodyData);
+        if (empty($response)) {
+            throw new Exception('Response body empty or does not contain correct JSON: ' . $bodyData);
+        }
         return match($this) {
             self::Anthropic => $this->toApiResponseAnthropic($response),
             self::Cohere => $this->toApiResponseCohere($response),
@@ -30,8 +34,7 @@ trait HandlesResponse
 
     // INTERNAL //////////////////////////////////////////////////////////////
 
-    protected function toApiResponseAnthropic(Response $response): ApiResponse {
-        $decoded = Json::parse($response->body());
+    protected function toApiResponseAnthropic(array $decoded): ApiResponse {
         return new ApiResponse(
             content: $decoded['content'][0]['text'] ?? Json::encode($decoded['content'][0]['input']) ?? '',
             responseData: $decoded,
@@ -60,8 +63,7 @@ trait HandlesResponse
         );
     }
 
-    protected function toApiResponseCohere(Response $response): ApiResponse {
-        $decoded = Json::parse($response->body());
+    protected function toApiResponseCohere(array $decoded): ApiResponse {
         return new ApiResponse(
             content: $decoded['text'] ?? '',
             responseData: $decoded,
@@ -89,8 +91,7 @@ trait HandlesResponse
         );
     }
 
-    protected function toApiResponseGemini(Response $response): ApiResponse {
-        $decoded = Json::parse($response->body());
+    protected function toApiResponseGemini(array $decoded): ApiResponse {
         return new ApiResponse(
             content: $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '',
             responseData: $decoded,
@@ -118,11 +119,7 @@ trait HandlesResponse
         );
     }
 
-    public function toApiResponseOpenAI(Response $response): ApiResponse {
-        $decoded = Json::parse($response->body());
-        if (empty($decoded)) {
-            throw new Exception('Response body empty or does not contain correct JSON: ' . $response->body());
-        }
+    public function toApiResponseOpenAI(array $decoded): ApiResponse {
         return new ApiResponse(
             content: $this->getContent($decoded),
             responseData: $decoded,

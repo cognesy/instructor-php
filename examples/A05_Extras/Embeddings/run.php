@@ -41,7 +41,12 @@ $documents = [
 
 $query = "technology news";
 
-$bestMatches = (new Embeddings)->withClient('openai')->findSimilar($query, $documents, 3);
+$bestMatches = (new Embeddings)->withConnection('openai')->findSimilar(
+    query: $query,
+    documents: $documents,
+    topK: 3
+);
+
 dump($bestMatches);
 ?>
 ```

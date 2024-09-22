@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\ApiClient\Traits;
+namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;

@@ -48,13 +48,13 @@ class Company {
     public array $clients = [];
 }
 
-$instructor = (new Instructor)->withClient('anthropic');
+$instructor = (new Instructor)->withClient('openai');
 
 $companyGen = Webpage::withScraper('none')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
     ->cleanup()
     ->select('.directory-providers__list')
-    ->selectMany('.provider-card', fn($item) => $item->asMarkdown());
+    ->selectMany(selector: '.provider-card', callback: fn($item) => $item->asMarkdown(), limit: 3);
 
 $companies = [];
 foreach($companyGen as $company) {

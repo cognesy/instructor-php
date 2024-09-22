@@ -15,11 +15,9 @@ the provided text.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Env;
 
 $report = <<<'EOT'
     [2021-09-01]

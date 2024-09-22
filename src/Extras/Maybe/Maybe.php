@@ -58,8 +58,8 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
             'type' => 'object',
             'x-php-class' => Maybe::class,
             'properties' => [
+                'hasValue' => ['type' => 'boolean', 'description' => 'True if value extracted, false if data not available'],
                 'value' => $schemaData,
-                'hasValue' => ['type' => 'boolean'],
                 'error' => ['type' => 'string', "description" => "Obligatory if no value extracted - provide reason"],
             ],
             'required' => ['hasValue'],

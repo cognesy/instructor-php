@@ -136,16 +136,16 @@ class ClassInfo {
     }
 
     public function enumBackingType() : string {
-        return !isset($this->reflectionEnum)
-            ? throw new \Exception("Not an enum")
-            : $this->reflectionEnum->getBackingType()?->getName();
+        return isset($this->reflectionEnum)
+            ? $this->reflectionEnum->getBackingType()?->getName()
+            : throw new \Exception("Not an enum");
     }
 
     /** @return string[]|int[] */
     public function enumValues() : array {
-        $enum = !isset($this->reflectionEnum)
-            ? throw new \Exception("Not an enum")
-            : $this->reflectionEnum;
+        $enum = isset($this->reflectionEnum)
+            ? $this->reflectionEnum
+            : throw new \Exception("Not an enum");
         $values = [];
         foreach ($enum->getCases() as $item) {
             $values[] = $item->getValue()->value;

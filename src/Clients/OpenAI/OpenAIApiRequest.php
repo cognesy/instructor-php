@@ -28,7 +28,7 @@ class OpenAIApiRequest extends ApiRequest
 
     // OVERRIDES /////////////////////////////////////////////////
 
-    protected function getResponseFormat(): array {
+    public function responseFormat(): array {
         if ($this->mode == Mode::Json) {
             return ['type' => 'json_object'];
         }

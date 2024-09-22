@@ -7,19 +7,19 @@ return [
     'connections' => [
         'azure' => [
             'clientType' => ClientType::Azure->value,
-            'apiUrl' => Env::get('AZURE_OPENAI_BASE_URI', 'openai.azure.com'),
-            'apiKey' => Env::get('AZURE_OPENAI_API_KEY', ''),
+            'apiUrl' => Env::get('AZURE_OPENAI_EMBED_BASE_URI', 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}'),
+            'apiKey' => Env::get('AZURE_OPENAI_EMBED_API_KEY', ''),
             'endpoint' => Env::get('AZURE_OPENAI_EMBED_ENDPOINT', '/embeddings'),
             'metadata' => [
-                'apiVersion' => Env::get('AZURE_OPENAI_API_VERSION', '2023-03-15-preview'),
-                'resourceName' => Env::get('AZURE_OPENAI_RESOURCE_NAME', 'instructor-dev'),
-                'deploymentId' => Env::get('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o-mini'),
+                'apiVersion' => Env::get('AZURE_OPENAI_EMBED_API_VERSION', '2023-05-15'),
+                'resourceName' => Env::get('AZURE_OPENAI_EMBED_RESOURCE_NAME', 'instructor-dev'),
+                'deploymentId' => Env::get('AZURE_OPENAI_EMBED_DEPLOYMENT_ID', 'text-embedding-3-small'),
             ],
             'defaultModel' => Env::get('AZURE_OPENAI_EMBED_MODEL', 'text-embedding-3-small'),
             'defaultDimensions' => Env::get('AZURE_OPENAI_EMBED_DIMENSIONS', 1536),
-            'maxInputs' => Env::get('AZURE_OPENAI_MAX_INPUTS', 16),
-            'connectTimeout' => Env::get('AZURE_OPENAI_CONNECT_TIMEOUT', 3),
-            'requestTimeout' => Env::get('AZURE_OPENAI_REQUEST_TIMEOUT', 30),
+            'maxInputs' => Env::get('AZURE_OPENAI_EMBED_MAX_INPUTS', 16),
+            'connectTimeout' => Env::get('AZURE_OPENAI_EMBED_CONNECT_TIMEOUT', 3),
+            'requestTimeout' => Env::get('AZURE_OPENAI_EMBED_REQUEST_TIMEOUT', 30),
         ],
         'cohere' => [
             'clientType' => ClientType::Cohere->value,

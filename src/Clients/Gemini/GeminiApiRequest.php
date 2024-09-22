@@ -53,21 +53,21 @@ class GeminiApiRequest extends ApiRequest
         return $this->tools;
     }
 
-    public function getToolChoice(): string|array {
+    public function toolChoice(): string|array {
         if (empty($this->tools)) {
             return '';
         }
         return $this->toolChoice ?: 'auto';
     }
 
-    protected function getResponseFormat(): array {
+    public function responseFormat(): array {
         return match($this->mode) {
             Mode::MdJson => ["text/plain"],
             default => ["application/json"],
         };
     }
 
-    protected function getResponseSchema() : array {
+    public function responseSchema() : array {
         return Arrays::removeRecursively($this->jsonSchema, [
             'title',
             'x-php-class',
@@ -75,14 +75,14 @@ class GeminiApiRequest extends ApiRequest
         ]);
     }
 
-    private function options() : array {
+    public function options() : array {
         return array_filter([
 //            "stopSequences" => $this->requestBody['stopSequences'] ?? [],
-            "responseMimeType" => $this->getResponseFormat()[0],
+            "responseMimeType" => $this->responseFormat()[0],
             "responseSchema" => match($this->mode) {
                 Mode::MdJson => '',
-                Mode::Json => $this->getResponseSchema(),
-                Mode::JsonSchema => $this->getResponseSchema(),
+                Mode::Json => $this->responseSchema(),
+                Mode::JsonSchema => $this->responseSchema(),
                 default => '',
             },
             "candidateCount" => 1,

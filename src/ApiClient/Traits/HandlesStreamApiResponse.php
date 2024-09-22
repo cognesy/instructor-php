@@ -7,6 +7,7 @@ use Cognesy\Instructor\Events\ApiClient\ApiStreamConnected;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestInitiated;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamRequestSent;
 use Cognesy\Instructor\Events\ApiClient\ApiStreamUpdateReceived;
+use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
 use Exception;
 use Generator;
 

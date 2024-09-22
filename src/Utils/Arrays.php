@@ -76,6 +76,9 @@ class Arrays
     }
 
     static public function removeRecursively(array $array, array $keys): array {
+        if (empty($array) || empty($keys)) {
+            return $array;
+        }
         $remove = function($array, $keys) use(&$remove) {
             foreach ($array as $key => $value) {
                 if (in_array($key, $keys)) {

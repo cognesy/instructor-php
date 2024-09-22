@@ -8,7 +8,7 @@ use Saloon\Http\Auth\HeaderAuthenticator;
 
 class AzureConnector extends LLMConnector
 {
-    protected string $baseUrl = 'openai.azure.com';
+    protected string $baseUrl = '';
     protected string $resourceName;
     protected string $deploymentId;
 
@@ -28,7 +28,21 @@ class AzureConnector extends LLMConnector
     }
 
     public function resolveBaseUrl(): string {
-        return "https://{$this->resourceName}.{$this->baseUrl}/openai/deployments/{$this->deploymentId}";
+        return str_replace(
+                search: array_map(fn($key) => "{".$key."}", array_keys($this->metadata)),
+                replace: array_values($this->metadata),
+                subject: "{$this->baseUrl}/chat/completions"
+            ) . $this->getUrlParams();
+    }
+
+    protected function getUrlParams(): string {
+        $params = array_filter([
+            'api-version' => $this->metadata['apiVersion'] ?? '',
+        ]);
+        if (!empty($params)) {
+            return '?' . http_build_query($params);
+        }
+        return '';
     }
 
     protected function defaultAuth() : Authenticator {
