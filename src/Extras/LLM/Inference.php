@@ -10,6 +10,7 @@ use Cognesy\Instructor\Extras\LLM\Drivers\CohereDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\GeminiDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\MistralDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Utils\Json\Json;
 use GuzzleHttp\Client;
 use InvalidArgumentException;
 use Cognesy\Instructor\Enums\Mode;
@@ -44,7 +45,7 @@ class Inference
         return $this;
     }
 
-    public function fromApiRequest(ApiRequest $apiRequest) : ApiResponse {
+    public function fromApiRequest(ApiRequest $apiRequest) : InferenceResponse {
         return $this->create(
             $apiRequest->messages(),
             $apiRequest->model(),
@@ -64,11 +65,16 @@ class Inference
         array $responseFormat = [],
         array $options = [],
         Mode $mode = Mode::Text
-    ): ApiResponse {
+    ): InferenceResponse {
         if (is_string($messages)) {
             $messages = [['role' => 'user', 'content' => $messages]];
         }
-        return $this->driver->infer($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
+        return new InferenceResponse(
+            response: $this->driver->infer($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode),
+            driver: $this->driver,
+            config: $this->config,
+            isStreamed: $options['stream'] ?? false
+        );
     }
 
     // INTERNAL ///////////////////////////////////////

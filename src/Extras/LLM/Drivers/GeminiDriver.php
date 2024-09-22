@@ -1,13 +1,14 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
 use Cognesy\Instructor\Extras\LLM\LLMConfig;
 use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Instructor\Utils\Json\Json;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 
@@ -26,21 +27,6 @@ class GeminiDriver implements CanInfer
         array $responseFormat = [],
         array $options = [],
         Mode $mode = Mode::Text,
-    ) : ApiResponse {
-        $response = $this->createResponse($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
-        return $this->toResponse($response->getBody()->getContents());
-    }
-
-    // INTERNAL /////////////////////////////////////////////
-
-    protected function createResponse(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
     ) : ResponseInterface {
         return $this->client->post($this->getEndpointUrl($model, $options), [
             'headers' => $this->getRequestHeaders(),
@@ -51,6 +37,46 @@ class GeminiDriver implements CanInfer
             'timeout' => $this->config->requestTimeout ?? 30,
         ]);
     }
+
+    public function toApiResponse(array $data): ApiResponse {
+        return new ApiResponse(
+            content: $data['candidates'][0]['content']['parts'][0]['text'] ?? '',
+            responseData: $data,
+            toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
+            finishReason: $data['candidates'][0]['finishReason'] ?? '',
+            toolCalls: $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '',
+            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
+            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    public function toPartialApiResponse(array $data) : PartialApiResponse {
+        return new PartialApiResponse(
+            delta: $data['candidates'][0]['content']['parts'][0]['text'] ?? $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '',
+            responseData: $data,
+            toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
+            finishReason: $data['candidates'][0]['finishReason'] ?? '',
+            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
+            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    public function isDone(string $data): bool {
+        return $data === '[DONE]';
+    }
+
+    public function getData(string $data): string {
+        if (str_starts_with($data, 'data:')) {
+            return trim(substr($data, 5));
+        }
+        return '';
+    }
+
+    // INTERNAL /////////////////////////////////////////////
 
     protected function getEndpointUrl(string $model = '', array $options = []): string {
         if ($options['stream'] ?? false) {
@@ -167,9 +193,5 @@ class GeminiDriver implements CanInfer
             'x-php-class',
             'additionalProperties',
         ]);
-    }
-
-    protected function toResponse(string $response) : ApiResponse {
-        return $this->config->clientType->toApiResponse($response);
     }
 }

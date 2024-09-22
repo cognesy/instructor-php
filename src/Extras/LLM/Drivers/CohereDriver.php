@@ -2,10 +2,12 @@
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
 use Cognesy\Instructor\Extras\LLM\LLMConfig;
+use Cognesy\Instructor\Utils\Json\Json;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 
@@ -24,21 +26,6 @@ class CohereDriver implements CanInfer
         array $responseFormat = [],
         array $options = [],
         Mode $mode = Mode::Text,
-    ) : ApiResponse {
-        $response = $this->createResponse($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
-        return $this->toResponse($response->getBody()->getContents());
-    }
-
-    // INTERNAL /////////////////////////////////////////////
-
-    protected function createResponse(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
     ) : ResponseInterface {
         return $this->client->post($this->getEndpointUrl(), [
             'headers' => $this->getRequestHeaders(),
@@ -49,6 +36,43 @@ class CohereDriver implements CanInfer
             'timeout' => $this->config->requestTimeout ?? 30,
         ]);
     }
+
+    public function toApiResponse(array $data): ApiResponse {
+        return new ApiResponse(
+            content: $data['text'] ?? '',
+            responseData: $data,
+            toolName: '',
+            finishReason: $data['finish_reason'] ?? '',
+            toolCalls: null,
+            inputTokens: $data['meta']['tokens']['input_tokens'] ?? 0,
+            outputTokens: $data['meta']['tokens']['output_tokens'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    public function toPartialApiResponse(array $data) : PartialApiResponse {
+        return new PartialApiResponse(
+            delta: $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '',
+            responseData: $data,
+            toolName: $data['tool_calls'][0]['name'] ?? '',
+            finishReason: $data['finish_reason'] ?? '',
+            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    public function isDone(string $data): bool {
+        return $data === '[DONE]';
+    }
+
+    public function getData(string $data): string {
+        return trim($data);
+    }
+
+    // INTERNAL /////////////////////////////////////////////
 
     protected function getEndpointUrl() : string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
@@ -130,9 +154,5 @@ class CohereDriver implements CanInfer
             'object' => throw new \Exception('Object type not supported by Cohere'),
             default => throw new \Exception('Unknown type'),
         };
-    }
-
-    protected function toResponse(string $response) : ApiResponse {
-        return $this->config->clientType->toApiResponse($response);
     }
 }

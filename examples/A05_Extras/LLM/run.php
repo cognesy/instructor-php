@@ -22,10 +22,13 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\LLM\Inference;
 
-$answer = (new Inference)
+$answerGen = (new Inference)
     ->withConnection('together')
-    ->create('What is capital of France?');
+    ->create(messages: 'What is capital of France?', options: ['stream' => true])
+    ->asStream();
 
-dump($answer);
+foreach ($answerGen as $answer) {
+    echo $answer;
+}
 ?>
 ```
