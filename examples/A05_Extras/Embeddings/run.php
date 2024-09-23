@@ -41,12 +41,17 @@ $documents = [
 
 $query = "technology news";
 
-$bestMatches = (new Embeddings)->withConnection('openai')->findSimilar(
-    query: $query,
-    documents: $documents,
-    topK: 3
-);
+$connections = ['openai', 'azure', 'jina', 'gemini', 'cohere', 'mistral', 'ollama'];
 
-dump($bestMatches);
+foreach($connections as $connection) {
+    $bestMatches = (new Embeddings)->withConnection('openai')->findSimilar(
+        query: $query,
+        documents: $documents,
+        topK: 3
+    );
+
+    echo "\n[$connection]\n";
+    dump($bestMatches);
+}
 ?>
 ```

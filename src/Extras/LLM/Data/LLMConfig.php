@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\LLM;
+namespace Cognesy\Instructor\Extras\LLM\Data;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Utils\Settings;
@@ -19,7 +19,22 @@ class LLMConfig
         public int $requestTimeout = 30,
         public string $model = '',
         public int $maxTokens = 1024,
-    ) {}
+        public ?DebugConfig $debug = null,
+    ) {
+        $this->debug ??= new DebugConfig();
+    }
+
+    public function debugEnabled() : bool {
+        return $this->debug->enabled;
+    }
+
+    public function debugSection(string $section) : bool {
+        return $this->debug->enabled && ($this->debug->$section ?? false);
+    }
+
+    public function debugHttpDetails() : bool {
+        return $this->debug->detailed && $this->debug->enabled;
+    }
 
     public static function load(string $connection) : LLMConfig {
         if (!Settings::has('llm', "connections.$connection")) {
@@ -36,6 +51,7 @@ class LLMConfig
             requestTimeout: Settings::get("llm", "connections.$connection.requestTimeout", 3),
             model: Settings::get('llm', "connections.$connection.defaultModel", ''),
             maxTokens: Settings::get('llm', "connections.$connection.defaultMaxTokens", 1024),
+            debug: DebugConfig::fromArray(Settings::get('llm', "debug")),
         );
     }
 }

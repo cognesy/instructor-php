@@ -5,38 +5,21 @@ use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
-use Cognesy\Instructor\Extras\LLM\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Arrays;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Utils\Str;
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
 
-class GeminiDriver implements CanInfer
+class GeminiDriver implements CanHandleInference
 {
+    use Traits\HandlesHttpClient;
+
     public function __construct(
         protected Client $client,
         protected LLMConfig $config
     ) {}
-
-    public function infer(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ResponseInterface {
-        return $this->client->post($this->getEndpointUrl($model, $options), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody(
-                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
-            ),
-            'connect_timeout' => $this->config->connectTimeout ?? 3,
-            'timeout' => $this->config->requestTimeout ?? 30,
-        ]);
-    }
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
@@ -44,7 +27,7 @@ class GeminiDriver implements CanInfer
             responseData: $data,
             toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            toolCalls: $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '',
+            toolCalls: null, //$data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '',
             inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
             outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
             cacheCreationTokens: 0,
@@ -78,16 +61,20 @@ class GeminiDriver implements CanInfer
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function getEndpointUrl(string $model = '', array $options = []): string {
-        if ($options['stream'] ?? false) {
-            $this->config->endpoint = '/models/{model}:streamGenerateContent?alt=sse';
+    protected function getEndpointUrl(InferenceRequest $request): string {
+        $urlParams = ['key' => $this->config->apiKey];
+
+        if ($request->options['stream'] ?? false) {
+            $this->config->endpoint = '/models/{model}:streamGenerateContent';
+            $urlParams['alt'] = 'sse';
         } else {
             $this->config->endpoint = '/models/{model}:generateContent';
         }
+
         return str_replace(
             search: "{model}",
-            replace: $model ?: $this->config->model,
-            subject: "{$this->config->apiUrl}{$this->config->endpoint}?key={$this->config->apiKey}");
+            replace: $request->model ?: $this->config->model,
+            subject: "{$this->config->apiUrl}{$this->config->endpoint}?" . http_build_query($urlParams));
     }
 
     protected function getRequestHeaders() : array {
@@ -115,7 +102,6 @@ class GeminiDriver implements CanInfer
             $request['tools'] = $this->toTools($tools);
             $request['tool_config'] = $this->toToolChoice($toolChoice);
         }
-
         return $request;
     }
 
@@ -128,12 +114,10 @@ class GeminiDriver implements CanInfer
     }
 
     private function toMessages(array $messages) : array {
-        return Messages::fromArray($messages)
+        return $this->toNativeContent(Messages::fromArray($messages)
             ->exceptRoles(['system'])
-            ->toNativeArray(
-                clientType: $this->config->clientType,
-                mergePerRole: true
-            );
+            //->toMergedPerRole()
+            ->toArray());
     }
 
     protected function toOptions(
@@ -142,7 +126,7 @@ class GeminiDriver implements CanInfer
         Mode $mode,
     ) : array {
         return array_filter([
-            "responseMimeType" => $this->toResponseFormat($mode),
+            //"responseMimeType" => $this->toResponseFormat($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
             "candidateCount" => 1,
             "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
@@ -193,5 +177,41 @@ class GeminiDriver implements CanInfer
             'x-php-class',
             'additionalProperties',
         ]);
+    }
+
+    public function toNativeContent(string|array $messages) : array {
+        if (is_string($messages)) {
+            return [["text" => $messages]];
+        }
+        $transformed = [];
+        foreach ($messages as $message) {
+            $transformed[] = [
+                'role' => $this->mapRole($message['role']),
+                'parts' => $this->contentPartToNative($message['content']),
+            ];
+        }
+        return $transformed;
+    }
+
+    protected function mapRole(string $role) : string {
+        $roles = ['user' => 'user', 'assistant' => 'model', 'system' => 'user', 'tool' => 'tool'];
+        return $roles[$role] ?? $role;
+    }
+
+    protected function contentPartToNative(string|array $contentPart) : array {
+        if (is_string($contentPart)) {
+            return [["text" => $contentPart]];
+        }
+        $type = $contentPart['type'] ?? 'text';
+        return match($type) {
+            'text' => ['text' => $contentPart['text']],
+            'image_url' => [
+                'inlineData' => [
+                    'mimeType' => Str::between($contentPart['image_url']['url'], 'data:', ';base64,'),
+                    'data' => Str::after($contentPart['image_url']['url'], ';base64,'),
+                ],
+            ],
+            default => $contentPart,
+        };
     }
 }

@@ -4,9 +4,11 @@ namespace Cognesy\Instructor\Extras\LLM;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
+use GuzzleHttp\Psr7\CachingStream;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -14,10 +16,10 @@ use Psr\Http\Message\StreamInterface;
 class InferenceResponse
 {
     public function __construct(
-        protected ResponseInterface $response,
-        protected CanInfer $driver,
-        protected LLMConfig $config,
-        protected bool $isStreamed = false,
+        protected ResponseInterface  $response,
+        protected CanHandleInference $driver,
+        protected LLMConfig          $config,
+        protected bool               $isStreamed = false,
     ) {}
 
     public function isStreamed() : bool {
@@ -43,8 +45,8 @@ class InferenceResponse
     /**
      * @return Generator<PartialApiResponse>
      */
-    public function asPartialApiResponses() : Generator {
-        $stream = $this->streamIterator($this->response->getBody());
+    public function toPartialApiResponses() : Generator {
+        $stream = $this->streamIterator($this->getCachingStream());
         foreach ($stream as $partialData) {
             yield $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
         }
@@ -53,14 +55,18 @@ class InferenceResponse
     /**
      * @return Generator<string>
      */
-    public function asStream() : Generator {
-        $stream = $this->asPartialApiResponses();
+    public function toStream() : Generator {
+        $stream = $this->toPartialApiResponses();
         foreach ($stream as $partialApiResponse) {
             yield $partialApiResponse->delta;
         }
     }
 
     // INTERNAL /////////////////////////////////////////////////
+
+    protected function getCachingStream() : StreamInterface {
+        return new CachingStream($this->response->getBody());
+    }
 
     /**
      * @return Generator<string>

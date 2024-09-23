@@ -5,37 +5,19 @@ use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
-use Cognesy\Instructor\Extras\LLM\LLMConfig;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
 
-class CohereDriver implements CanInfer
+class CohereDriver implements CanHandleInference
 {
+    use Traits\HandlesHttpClient;
+
     public function __construct(
         protected Client $client,
         protected LLMConfig $config
     ) {}
-
-    public function infer(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ResponseInterface {
-        return $this->client->post($this->getEndpointUrl(), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody(
-                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
-            ),
-            'connect_timeout' => $this->config->connectTimeout ?? 3,
-            'timeout' => $this->config->requestTimeout ?? 30,
-        ]);
-    }
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
@@ -74,7 +56,7 @@ class CohereDriver implements CanInfer
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function getEndpointUrl() : string {
+    protected function getEndpointUrl(InferenceRequest $request) : string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }
 

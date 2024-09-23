@@ -61,8 +61,11 @@ class Str
         ])->process($input);
     }
 
-    static public function contains(string $haystack, string $needle) : bool {
-        return strpos($haystack, $needle) !== false;
+    static public function contains(string $haystack, string $needle, bool $caseSensitive = true) : bool {
+        return match($caseSensitive) {
+            true => strpos($haystack, $needle) !== false,
+            false => stripos($haystack, $needle) !== false,
+        };
     }
 
     public static function startsWith(string $url, string $string) : bool {

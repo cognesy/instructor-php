@@ -21,14 +21,11 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Utils\Str;
 
-$answerGen = (new Inference)
-    ->withConnection('together')
-    ->create(messages: 'What is capital of France?', options: ['stream' => true])
-    ->asStream();
+$answer = (new Inference)->create('What is capital of France?')->toText();
 
-foreach ($answerGen as $answer) {
-    echo $answer;
-}
+assert(Str::contains($answer, 'Paris'));
+echo $answer;
 ?>
 ```

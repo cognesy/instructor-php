@@ -3,6 +3,14 @@ namespace Cognesy\Instructor\Utils\Cli;
 
 class Console
 {
+    public static function print(string $message, string|array $color = ''): void {
+        print(self::color($color, $message));
+    }
+
+    public static function println(string $message, string|array $color = ''): void {
+        print(self::color($color, $message) . PHP_EOL);
+    }
+
     public static function columns(array $columns, int $maxWidth): string {
         $maxWidth = max($maxWidth, 80);
         $message = '';
@@ -42,19 +50,16 @@ class Console
     }
 
     static private function color(string|array $color, string $output = '') : string {
-        if (!$color) {
+        if (empty($color)) {
             return $output;
         }
-        if (is_array($color)) {
-            $colorStr = implode('', $color);
-        } else {
-            $colorStr = $color;
-        }
-        // if no output, then just return the color
-        if (!$output) {
-            return $colorStr;
-        }
-        // if output, wrap the output in color and reset
-        return $colorStr . $output . Color::RESET;
+        $colorStr = match(true) {
+            is_array($color) => implode('', $color),
+            default => $color,
+        };
+        return match(true) {
+            empty($output) => $colorStr,
+            default => $colorStr . $output . Color::RESET,
+        };
     }
 }

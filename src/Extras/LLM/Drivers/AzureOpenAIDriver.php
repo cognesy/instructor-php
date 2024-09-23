@@ -3,11 +3,13 @@ namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
+use Cognesy\Instructor\Extras\LLM\InferenceRequest;
+
 class AzureOpenAIDriver extends OpenAIDriver
 {
     // INTERNAL /////////////////////////////////////////////
 
-    protected function getEndpointUrl(): string {
+    protected function getEndpointUrl(InferenceRequest $request): string {
         return str_replace(
                 search: array_map(fn($key) => "{".$key."}", array_keys($this->config->metadata)),
                 replace: array_values($this->config->metadata),

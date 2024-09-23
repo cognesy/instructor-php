@@ -4,37 +4,19 @@ namespace Cognesy\Instructor\Extras\LLM\Drivers;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
-use Cognesy\Instructor\Extras\LLM\LLMConfig;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
 
-class OpenAIDriver implements CanInfer
+class OpenAIDriver implements CanHandleInference
 {
+    use Traits\HandlesHttpClient;
+
     public function __construct(
         protected Client $client,
         protected LLMConfig $config
     ) {}
-
-    public function infer(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ResponseInterface {
-        return $this->client->post($this->getEndpointUrl(), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody(
-                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
-            ),
-            'connect_timeout' => $this->config->connectTimeout ?? 3,
-            'timeout' => $this->config->requestTimeout ?? 30,
-        ]);
-    }
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
@@ -77,7 +59,7 @@ class OpenAIDriver implements CanInfer
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function getEndpointUrl(): string {
+    protected function getEndpointUrl(InferenceRequest $request): string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }
 
@@ -107,17 +89,34 @@ class OpenAIDriver implements CanInfer
             $request['stream_options']['include_usage'] = true;
         }
 
+        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+
+        return $request;
+    }
+
+    protected function applyMode(
+        array $request,
+        Mode $mode,
+        array $tools,
+        string|array $toolChoice,
+        array $responseFormat
+    ) : array {
         switch($mode) {
             case Mode::Tools:
                 $request['tools'] = $tools;
                 $request['tool_choice'] = $toolChoice;
                 break;
             case Mode::Json:
+                $request['response_format'] = ['type' => 'json_object'];
+                break;
             case Mode::JsonSchema:
                 $request['response_format'] = $responseFormat;
                 break;
+            case Mode::Text:
+            case Mode::MdJson:
+                $request['response_format'] = ['type' => 'text'];
+                break;
         }
-
         return $request;
     }
 
@@ -139,5 +138,28 @@ class OpenAIDriver implements CanInfer
             !empty($deltaFnArgs) => $deltaFnArgs,
             default => ''
         };
+    }
+
+    protected function toNativeContent(string|array $content) : string|array {
+        if (is_string($content)) {
+            return $content;
+        }
+        // if content is array - process each part
+        $transformed = [];
+        foreach ($content as $contentPart) {
+            $transformed[] = $this->contentPartToNative($contentPart);
+        }
+        return $transformed;
+    }
+
+    protected function contentPartToNative(array $contentPart) : array {
+        $type = $contentPart['type'] ?? 'text';
+        if ($type === 'text') {
+            $contentPart = [
+                'type' => 'text',
+                'text' => $contentPart['text'],
+            ];
+        }
+        return $contentPart;
     }
 }
