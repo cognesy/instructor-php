@@ -18,6 +18,7 @@ class Webpage implements CanProvideMessage
     protected HtmlProcessor $htmlProcessor;
     protected string $content;
     protected string $url;
+    /** @var Link[] */
     protected array $links = [];
 
     public function __construct(

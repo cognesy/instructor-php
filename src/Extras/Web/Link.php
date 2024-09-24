@@ -4,19 +4,18 @@ namespace Cognesy\Instructor\Extras\Web;
 use Cognesy\Instructor\Utils\Str;
 
 class Link {
-    public string $url;
-    public string $title;
-    public bool $isInternal;
-    public string $domain;
+    readonly public string $url;
+    readonly public string $title;
+    readonly public bool $isInternal;
+    readonly public string $domain;
 
-    public function __construct(string $url, string $title, string $baseUrl = '') {
+    public function __construct(string $url, string $title = '', string $baseUrl = '') {
         $this->title = $title;
         $this->isInternal = $this->isInternal($baseUrl, $url);
-
-        $this->url = $url;
-        if ($this->isInternal($baseUrl, $url)) {
-            $this->url = Str::startsWith($url, '/') ? $baseUrl . $url : $url;
-        }
+        $this->url = match(true) {
+            $this->isInternal($baseUrl, $url) => Str::startsWith($url, '/') ? $baseUrl . $url : $url,
+            default => $url,
+        };
         $this->domain = $this->getDomain($this->url);
     }
 

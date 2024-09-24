@@ -91,10 +91,15 @@ class CohereDriver implements CanHandleInference
                 $request['tools'] = $this->toTools($tools);
                 break;
             case Mode::Json:
-            case Mode::JsonSchema:
                 $request['response_format'] = [
                     'type' => 'json_object',
                     'schema' => $responseFormat['schema'] ?? [],
+                ];
+                break;
+            case Mode::JsonSchema:
+                $request['response_format'] = [
+                    'type' => 'json_object',
+                    'schema' => $responseFormat['json_schema']['schema'] ?? [],
                 ];
                 break;
         }
@@ -107,8 +112,8 @@ class CohereDriver implements CanHandleInference
         foreach ($tools as $tool) {
             $parameters = [];
             foreach ($tool['function']['parameters']['properties'] as $name => $param) {
-                $parameters[] = array_filter([
-                    'name' => $name,
+                $parameters[$name] = array_filter([
+                    //'name' => $name,
                     'description' => $param['description'] ?? '',
                     'type' => $this->toCohereType($param),
                     'required' => in_array(
@@ -119,7 +124,7 @@ class CohereDriver implements CanHandleInference
             }
             $result[] = [
                 'name' => $tool['function']['name'],
-                'description' => $tool['function']['description'] ?? '',
+                'description' => $tool['function']['description'] ?? 'Extract data from context',
                 'parameters_definitions' => $parameters,
             ];
         }

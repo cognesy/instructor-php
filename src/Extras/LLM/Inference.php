@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\LLM;
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\LLM\Data\DebugConfig;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
@@ -26,18 +27,15 @@ use Psr\Http\Message\ResponseInterface;
 
 class Inference
 {
-    protected Client $client;
+    protected ?Client $client = null;
     protected LLMConfig $config;
     protected CanHandleInference $driver;
 
     public function __construct(string $connection = '') {
         $defaultConnection = $connection ?: Settings::get('llm', "defaultConnection");
         $this->config = LLMConfig::load($defaultConnection);
-        $this->client = match($this->config->debugEnabled()) {
-            false => new Client(),
-            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
-        };
-        $this->driver = $this->getDriver($this->config->clientType);
+        //$this->client = $this->makeClient();
+        //$this->driver = $this->getDriver($this->config->clientType);
     }
 
     public static function query(string $query, string $connection = '') : string {
@@ -47,13 +45,21 @@ class Inference
 
     public function withConfig(LLMConfig $config): self {
         $this->config = $config;
-        $this->driver = $this->getDriver($this->config->clientType);
+        return $this;
+    }
+
+    public function withDebug(bool $debug = true) : self {
+        $this->config->debug->enabled = $debug;
+        return $this;
+    }
+
+    public function withDebugConfig(DebugConfig $config) : self {
+        $this->config->debug = $config;
         return $this;
     }
 
     public function withConnection(string $connection): self {
         $this->config = LLMConfig::load($connection);
-        $this->driver = $this->getDriver($this->config->clientType);
         return $this;
     }
 
@@ -64,6 +70,11 @@ class Inference
 
     public function withDriver(CanHandleInference $driver): self {
         $this->driver = $driver;
+        return $this;
+    }
+
+    public function withClient(Client $client): self {
+        $this->client = $client;
         return $this;
     }
 
@@ -91,6 +102,7 @@ class Inference
         if (is_string($messages)) {
             $messages = [['role' => 'user', 'content' => $messages]];
         }
+        $this->driver = $this->driver ?? $this->getDriver($this->config->clientType);
         return new InferenceResponse(
             response: $this->driver->handle(new InferenceRequest($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode)),
             driver: $this->driver,
@@ -103,19 +115,19 @@ class Inference
 
     protected function getDriver(ClientType $clientType): CanHandleInference {
         return match ($clientType) {
-            ClientType::Anthropic => new AnthropicDriver($this->client, $this->config),
-            ClientType::Azure => new AzureOpenAIDriver($this->client, $this->config),
-            ClientType::Cohere => new CohereDriver($this->client, $this->config),
-            ClientType::Fireworks => new OpenAICompatibleDriver($this->client, $this->config),
-            ClientType::Gemini => new GeminiDriver($this->client, $this->config),
-            ClientType::Groq => new OpenAICompatibleDriver($this->client, $this->config),
-            ClientType::Mistral => new MistralDriver($this->client, $this->config),
-            ClientType::Ollama => new OpenAICompatibleDriver($this->client, $this->config),
-            ClientType::OpenAI => new OpenAIDriver($this->client, $this->config),
-            ClientType::OpenAICompatible => new OpenAICompatibleDriver($this->client, $this->config),
-            ClientType::OpenRouter => new OpenAICompatibleDriver($this->client, $this->config),
-            ClientType::Together => new OpenAICompatibleDriver($this->client, $this->config),
-            default => throw new InvalidArgumentException("Unknown client: {$this->client}"),
+            ClientType::Anthropic => new AnthropicDriver($this->makeClient(), $this->config),
+            ClientType::Azure => new AzureOpenAIDriver($this->makeClient(), $this->config),
+            ClientType::Cohere => new CohereDriver($this->makeClient(), $this->config),
+            ClientType::Fireworks => new OpenAICompatibleDriver($this->makeClient(), $this->config),
+            ClientType::Gemini => new GeminiDriver($this->makeClient(), $this->config),
+            ClientType::Groq => new OpenAICompatibleDriver($this->makeClient(), $this->config),
+            ClientType::Mistral => new MistralDriver($this->makeClient(), $this->config),
+            ClientType::Ollama => new OpenAICompatibleDriver($this->makeClient(), $this->config),
+            ClientType::OpenAI => new OpenAIDriver($this->makeClient(), $this->config),
+            ClientType::OpenAICompatible => new OpenAICompatibleDriver($this->makeClient(), $this->config),
+            ClientType::OpenRouter => new OpenAICompatibleDriver($this->makeClient(), $this->config),
+            ClientType::Together => new OpenAICompatibleDriver($this->makeClient(), $this->config),
+            default => throw new InvalidArgumentException("Client not supported: {$clientType->value}"),
         };
     }
 
@@ -172,5 +184,15 @@ class Inference
             Console::print(': ', [Color::WHITE]);
             Console::println(implode(' | ', $values), [Color::GRAY]);
         }
+    }
+
+    private function makeClient() : Client {
+        if (isset($this->client) && $this->config->debugEnabled()) {
+            throw new InvalidArgumentException("Guzzle does not allow to inject debugging stack into existing client. Turn off debug or use default client.");
+        }
+        return match($this->config->debugEnabled()) {
+            false => $this->client ?? new Client(),
+            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
+        };
     }
 }
