@@ -10,7 +10,10 @@ enum Mode : string
     case MdJson = 'markdown_json';
     case Text = 'text'; // unstructured text response
 
-    public function is(Mode $mode) : bool {
+    public function is(array|Mode $mode) : bool {
+        if (is_array($mode)) {
+            return in_array($this, $mode);
+        }
         return $this->value === $mode->value;
     }
 }

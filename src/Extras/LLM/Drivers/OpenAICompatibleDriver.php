@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\Enums\Mode;
 
-class MistralDriver extends OpenAIDriver
+class OpenAICompatibleDriver extends OpenAIDriver
 {
     // INTERNAL /////////////////////////////////////////////
 
@@ -22,17 +22,28 @@ class MistralDriver extends OpenAIDriver
             'messages' => $messages,
         ], $options));
 
+        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+
+        return $request;
+    }
+
+    protected function applyMode(
+        array $request,
+        Mode $mode,
+        array $tools,
+        string|array $toolChoice,
+        array $responseFormat
+    ) : array {
         switch($mode) {
             case Mode::Tools:
                 $request['tools'] = $tools;
-                $request['tool_choice'] = 'any';
+                $request['tool_choice'] = $toolChoice;
                 break;
             case Mode::Json:
             case Mode::JsonSchema:
-                $request['response_format'] = ['type' => 'json_object'];
+                $request['response_format'] = $responseFormat;
                 break;
         }
-
         return $request;
     }
 }

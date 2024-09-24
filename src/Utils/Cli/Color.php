@@ -28,6 +28,7 @@ class Color
     public const BG_MAGENTA   = "\033[45m";
     public const BG_CYAN      = "\033[46m";
     public const BG_WHITE     = "\033[47m";
+    //public const BG_RESET     = "\033[49m";
     public const BOLD         = "\033[1m";
     public const ITALICS      = "\033[3m";
     public const RESET        = "\033[0m";

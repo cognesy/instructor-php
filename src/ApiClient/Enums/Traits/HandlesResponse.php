@@ -6,7 +6,6 @@ use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Exception;
-use Saloon\Http\Response;
 
 trait HandlesResponse
 {
@@ -24,132 +23,129 @@ trait HandlesResponse
     }
 
     public function toPartialApiResponse(string $partialData): PartialApiResponse {
+        $response = Json::parse($partialData, default: []);
         return match($this) {
-            self::Anthropic => $this->toPartialApiResponseAnthropic($partialData),
-            self::Cohere => $this->toPartialApiResponseCohere($partialData),
-            self::Gemini => $this->toPartialApiResponseGemini($partialData),
-            default => $this->toPartialApiResponseOpenAI($partialData),
+            self::Anthropic => $this->toPartialApiResponseAnthropic($response),
+            self::Cohere => $this->toPartialApiResponseCohere($response),
+            self::Gemini => $this->toPartialApiResponseGemini($response),
+            default => $this->toPartialApiResponseOpenAI($response),
         };
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////
 
-    protected function toApiResponseAnthropic(array $decoded): ApiResponse {
+    protected function toApiResponseAnthropic(array $data): ApiResponse {
         return new ApiResponse(
-            content: $decoded['content'][0]['text'] ?? Json::encode($decoded['content'][0]['input']) ?? '',
-            responseData: $decoded,
-            toolName: $decoded['content'][0]['name'] ?? '',
-            finishReason: $decoded['stop_reason'] ?? '',
+            content: $data['content'][0]['text'] ?? Json::encode($data['content'][0]['input']) ?? '',
+            responseData: $data,
+            toolName: $data['content'][0]['name'] ?? '',
+            finishReason: $data['stop_reason'] ?? '',
             toolCalls: null,
-            inputTokens: $decoded['usage']['input_tokens'] ?? 0,
-            outputTokens: $decoded['usage']['output_tokens'] ?? 0,
-            cacheCreationTokens: $decoded['usage']['cache_creation_input_tokens'] ?? 0,
-            cacheReadTokens: $decoded['usage']['cache_read_input_tokens'] ?? 0,
+            inputTokens: $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['usage']['output_tokens'] ?? 0,
+            cacheCreationTokens: $data['usage']['cache_creation_input_tokens'] ?? 0,
+            cacheReadTokens: $data['usage']['cache_read_input_tokens'] ?? 0,
         );
     }
 
-    protected function toPartialApiResponseAnthropic(string $partialData) : PartialApiResponse {
-        $decoded = Json::parse($partialData, default: []);
-        $finishReason = $decoded['message']['stop_reason'] ?? $decoded['message']['stop_reason'] ?? '';
+    protected function toPartialApiResponseAnthropic(array $data) : PartialApiResponse {
+        $finishReason = $data['message']['stop_reason'] ?? $data['message']['stop_reason'] ?? '';
         return new PartialApiResponse(
-            delta: $decoded['delta']['text'] ?? $decoded['delta']['partial_json'] ?? '',
-            responseData: $decoded,
-            toolName: $decoded['content_block']['name'] ?? '',
+            delta: $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '',
+            responseData: $data,
+            toolName: $data['content_block']['name'] ?? '',
             finishReason: $finishReason,
-            inputTokens: $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0,
-            outputTokens: $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['output_tokens'] ?? 0,
-            cacheCreationTokens: $decoded['message']['usage']['cache_creation_input_tokens'] ?? $decoded['usage']['cache_creation_input_tokens'] ?? 0,
-            cacheReadTokens: $decoded['message']['usage']['cache_read_input_tokens'] ?? $decoded['usage']['cache_read_input_tokens'] ?? 0,
+            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['output_tokens'] ?? 0,
+            cacheCreationTokens: $data['message']['usage']['cache_creation_input_tokens'] ?? $data['usage']['cache_creation_input_tokens'] ?? 0,
+            cacheReadTokens: $data['message']['usage']['cache_read_input_tokens'] ?? $data['usage']['cache_read_input_tokens'] ?? 0,
         );
     }
 
-    protected function toApiResponseCohere(array $decoded): ApiResponse {
+    protected function toApiResponseCohere(array $data): ApiResponse {
         return new ApiResponse(
-            content: $decoded['text'] ?? '',
-            responseData: $decoded,
+            content: $data['text'] ?? '',
+            responseData: $data,
             toolName: '',
-            finishReason: $decoded['finish_reason'] ?? '',
+            finishReason: $data['finish_reason'] ?? '',
             toolCalls: null,
-            inputTokens: $decoded['meta']['tokens']['input_tokens'] ?? 0,
-            outputTokens: $decoded['meta']['tokens']['output_tokens'] ?? 0,
+            inputTokens: $data['meta']['tokens']['input_tokens'] ?? 0,
+            outputTokens: $data['meta']['tokens']['output_tokens'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    protected function toPartialApiResponseCohere(string $partialData) : PartialApiResponse {
-        $decoded = Json::parse($partialData, default: []);
+    protected function toPartialApiResponseCohere(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $decoded['text'] ?? $decoded['tool_calls'][0]['parameters'] ?? '',
-            responseData: $decoded,
-            toolName: $decoded['tool_calls'][0]['name'] ?? '',
-            finishReason: $decoded['finish_reason'] ?? '',
-            inputTokens: $decoded['message']['usage']['input_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0,
-            outputTokens: $decoded['message']['usage']['output_tokens'] ?? $decoded['usage']['input_tokens'] ?? 0,
+            delta: $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '',
+            responseData: $data,
+            toolName: $data['tool_calls'][0]['name'] ?? '',
+            finishReason: $data['finish_reason'] ?? '',
+            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    protected function toApiResponseGemini(array $decoded): ApiResponse {
+    protected function toApiResponseGemini(array $data): ApiResponse {
         return new ApiResponse(
-            content: $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '',
-            responseData: $decoded,
+            content: $data['candidates'][0]['content']['parts'][0]['text'] ?? '',
+            responseData: $data,
             toolName: '',
-            finishReason: $decoded['candidates'][0]['finishReason'] ?? '',
+            finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: null,
-            inputTokens: $decoded['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $decoded['usageMetadata']['candidatesTokenCount'] ?? 0,
+            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
+            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    protected function toPartialApiResponseGemini(string $partialData) : PartialApiResponse {
-        $decoded = Json::parse($partialData, default: []);
+    protected function toPartialApiResponseGemini(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '',
-            responseData: $decoded,
-            toolName: $decoded['tool_calls'][0]['name'] ?? '',
-            finishReason: $decoded['candidates'][0]['finishReason'] ?? '',
-            inputTokens: $decoded['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $decoded['usageMetadata']['candidatesTokenCount'] ?? 0,
+            delta: $data['candidates'][0]['content']['parts'][0]['text'] ?? '',
+            responseData: $data,
+            toolName: $data['tool_calls'][0]['name'] ?? '',
+            finishReason: $data['candidates'][0]['finishReason'] ?? '',
+            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
+            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    public function toApiResponseOpenAI(array $decoded): ApiResponse {
+    protected function toApiResponseOpenAI(array $data): ApiResponse {
         return new ApiResponse(
-            content: $this->getContent($decoded),
-            responseData: $decoded,
-            toolName: $decoded['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '',
-            finishReason: $decoded['choices'][0]['finish_reason'] ?? '',
+            content: $this->getContent($data),
+            responseData: $data,
+            toolName: $data['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '',
+            finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: null,
-            inputTokens: $decoded['usage']['prompt_tokens'] ?? 0,
-            outputTokens: $decoded['usage']['completion_tokens'] ?? 0,
+            inputTokens: $data['usage']['prompt_tokens'] ?? 0,
+            outputTokens: $data['usage']['completion_tokens'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    public function toPartialApiResponseOpenAI(string $partialData) : PartialApiResponse {
-        $decoded = Json::parse($partialData, default: []);
+    protected function toPartialApiResponseOpenAI(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $this->getDelta($decoded),
-            responseData: $decoded,
-            toolName: $decoded['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '',
-            finishReason: $decoded['choices'][0]['finish_reason'] ?? '',
-            inputTokens: $decoded['usage']['prompt_tokens'] ?? 0,
-            outputTokens: $decoded['usage']['completion_tokens'] ?? 0,
+            delta: $this->getDelta($data),
+            responseData: $data,
+            toolName: $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '',
+            finishReason: $data['choices'][0]['finish_reason'] ?? '',
+            inputTokens: $data['usage']['prompt_tokens'] ?? 0,
+            outputTokens: $data['usage']['completion_tokens'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    private function getContent(array $decoded): string {
-        $contentMsg = $decoded['choices'][0]['message']['content'] ?? '';
-        $contentFnArgs = $decoded['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
+    private function getContent(array $data): string {
+        $contentMsg = $data['choices'][0]['message']['content'] ?? '';
+        $contentFnArgs = $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {
             !empty($contentMsg) => $contentMsg,
             !empty($contentFnArgs) => $contentFnArgs,
@@ -157,9 +153,9 @@ trait HandlesResponse
         };
     }
 
-    private function getDelta(array $decoded): string {
-        $deltaContent = $decoded['choices'][0]['delta']['content'] ?? '';
-        $deltaFnArgs = $decoded['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
+    private function getDelta(array $data): string {
+        $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
+        $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {
             !empty($deltaContent) => $deltaContent,
             !empty($deltaFnArgs) => $deltaFnArgs,

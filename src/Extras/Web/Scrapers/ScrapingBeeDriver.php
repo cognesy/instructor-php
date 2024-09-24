@@ -20,13 +20,6 @@ class ScrapingBeeDriver implements CanGetUrlContent{
         $this->client = new Client();
     }
 
-    public static function fromUrl(string $url, array $options = []) : string {
-        return (new self(
-            baseUrl: $options['base_url'] ?? '',
-            apiKey: $options['api_key'] ?? ''
-        ))->getContent($url, $options);
-    }
-
     public function getContent(string $url, array $options = []): string {
         $renderJs = $options['render_js'] ?? true;
         $apiUrl = $this->makeUrl($url, $renderJs);

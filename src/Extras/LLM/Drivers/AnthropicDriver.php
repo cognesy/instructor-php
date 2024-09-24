@@ -2,56 +2,67 @@
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
-use Cognesy\Instructor\Extras\LLM\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\InferenceRequest;
+use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Utils\Str;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Psr\Http\Message\ResponseInterface;
 
-class AnthropicDriver implements CanInfer
+class AnthropicDriver implements CanHandleInference
 {
+    use Traits\HandlesHttpClient;
+
     public function __construct(
         protected Client $client,
         protected LLMConfig $config
     ) {}
 
-    public function infer(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ApiResponse {
-        $response = $this->createResponse($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
-        return $this->toResponse($response->getBody()->getContents());
+    public function toApiResponse(array $data): ApiResponse {
+        return new ApiResponse(
+            content: $data['content'][0]['text'] ?? Json::encode($data['content'][0]['input']) ?? '',
+            responseData: $data,
+            toolName: $data['content'][0]['name'] ?? '',
+            finishReason: $data['stop_reason'] ?? '',
+            toolCalls: null,
+            inputTokens: $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['usage']['output_tokens'] ?? 0,
+            cacheCreationTokens: $data['usage']['cache_creation_input_tokens'] ?? 0,
+            cacheReadTokens: $data['usage']['cache_read_input_tokens'] ?? 0,
+        );
+    }
+
+    public function toPartialApiResponse(array $data) : PartialApiResponse {
+        return new PartialApiResponse(
+            delta: $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '',
+            responseData: $data,
+            toolName: $data['content_block']['name'] ?? '',
+            finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
+            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['output_tokens'] ?? 0,
+            cacheCreationTokens: $data['message']['usage']['cache_creation_input_tokens'] ?? $data['usage']['cache_creation_input_tokens'] ?? 0,
+            cacheReadTokens: $data['message']['usage']['cache_read_input_tokens'] ?? $data['usage']['cache_read_input_tokens'] ?? 0,
+        );
+    }
+
+    public function isDone(string $data): bool {
+        return $data === 'event: message_stop';
+    }
+
+    public function getData(string $data): string {
+        if (str_starts_with($data, 'data:')) {
+            return trim(substr($data, 5));
+        }
+        return '';
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function createResponse(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ResponseInterface {
-        return $this->client->post($this->getEndpointUrl(), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody(
-                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
-            ),
-            'connect_timeout' => $this->config->connectTimeout ?? 3,
-            'timeout' => $this->config->requestTimeout ?? 30,
-        ]);
-    }
-
-    protected function getEndpointUrl() : string {
+    protected function getEndpointUrl(InferenceRequest $request) : string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }
 
@@ -83,22 +94,16 @@ class AnthropicDriver implements CanInfer
             'system' => Messages::fromArray($messages)
                 ->forRoles(['system'])
                 ->toString(),
-            'messages' => Messages::fromArray($messages)
+            'messages' => $this->toNativeContent(Messages::fromArray($messages)
                 ->exceptRoles(['system'])
-                ->toNativeArray(
-                    clientType: $this->config->clientType,
-                    mergePerRole: true
-                ),
+                ->toMergedPerRole()
+                ->toArray()
+            ),
         ], $options));
 
-        switch($mode) {
-            case Mode::Tools:
-                $request['tools'] = $this->toTools($tools);
-                $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
-                break;
-            case Mode::Json:
-            case Mode::JsonSchema:
-                break;
+        if ($mode->is(Mode::Tools)) {
+            $request['tools'] = $this->toTools($tools);
+            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
         }
 
         return $request;
@@ -132,7 +137,32 @@ class AnthropicDriver implements CanInfer
         };
     }
 
-    protected function toResponse(string $response) : ApiResponse {
-        return $this->config->clientType->toApiResponse($response);
+    protected function toNativeContent(string|array $content) : string|array {
+        if (is_string($content)) {
+            return $content;
+        }
+        // if content is array - process each part
+        $transformed = [];
+        foreach ($content as $contentPart) {
+            $transformed[] = $this->contentPartToNative($contentPart);
+        }
+        return $transformed;
+    }
+
+    protected function contentPartToNative(array $contentPart) : array {
+        $type = $contentPart['type'] ?? 'text';
+        if ($type === 'image_url') {
+            $mimeType = Str::between($contentPart['image_url']['url'], 'data:', ';base64,');
+            $base64content = Str::after($contentPart['image_url']['url'], ';base64,');
+            $contentPart = [
+                'type' => 'image',
+                'source' => [
+                    'type' => 'base64',
+                    'media_type' => $mimeType,
+                    'data' => $base64content,
+                ],
+            ];
+        }
+        return $contentPart;
     }
 }

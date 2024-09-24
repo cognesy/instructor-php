@@ -21,11 +21,11 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Utils\Str;
 
-$answer = (new Inference)
-    ->withConnection('together')
-    ->create('What is capital of France?');
+$answer = (new Inference)->create('What is capital of France?')->toText();
 
-dump($answer);
+assert(Str::contains($answer, 'Paris'));
+echo $answer;
 ?>
 ```

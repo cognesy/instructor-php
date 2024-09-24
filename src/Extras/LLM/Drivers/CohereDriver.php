@@ -2,55 +2,61 @@
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
+use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanInfer;
-use Cognesy\Instructor\Extras\LLM\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
 
-class CohereDriver implements CanInfer
+class CohereDriver implements CanHandleInference
 {
+    use Traits\HandlesHttpClient;
+
     public function __construct(
         protected Client $client,
         protected LLMConfig $config
     ) {}
 
-    public function infer(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ApiResponse {
-        $response = $this->createResponse($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
-        return $this->toResponse($response->getBody()->getContents());
+    public function toApiResponse(array $data): ApiResponse {
+        return new ApiResponse(
+            content: $data['text'] ?? '',
+            responseData: $data,
+            toolName: '',
+            finishReason: $data['finish_reason'] ?? '',
+            toolCalls: null,
+            inputTokens: $data['meta']['tokens']['input_tokens'] ?? 0,
+            outputTokens: $data['meta']['tokens']['output_tokens'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    public function toPartialApiResponse(array $data) : PartialApiResponse {
+        return new PartialApiResponse(
+            delta: $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '',
+            responseData: $data,
+            toolName: $data['tool_calls'][0]['name'] ?? '',
+            finishReason: $data['finish_reason'] ?? '',
+            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            cacheCreationTokens: 0,
+            cacheReadTokens: 0,
+        );
+    }
+
+    public function isDone(string $data): bool {
+        return $data === '[DONE]';
+    }
+
+    public function getData(string $data): string {
+        return trim($data);
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function createResponse(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : ResponseInterface {
-        return $this->client->post($this->getEndpointUrl(), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody(
-                $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode
-            ),
-            'connect_timeout' => $this->config->connectTimeout ?? 3,
-            'timeout' => $this->config->requestTimeout ?? 30,
-        ]);
-    }
-
-    protected function getEndpointUrl() : string {
+    protected function getEndpointUrl(InferenceRequest $request) : string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }
 
@@ -85,10 +91,15 @@ class CohereDriver implements CanInfer
                 $request['tools'] = $this->toTools($tools);
                 break;
             case Mode::Json:
-            case Mode::JsonSchema:
                 $request['response_format'] = [
                     'type' => 'json_object',
                     'schema' => $responseFormat['schema'] ?? [],
+                ];
+                break;
+            case Mode::JsonSchema:
+                $request['response_format'] = [
+                    'type' => 'json_object',
+                    'schema' => $responseFormat['json_schema']['schema'] ?? [],
                 ];
                 break;
         }
@@ -101,8 +112,8 @@ class CohereDriver implements CanInfer
         foreach ($tools as $tool) {
             $parameters = [];
             foreach ($tool['function']['parameters']['properties'] as $name => $param) {
-                $parameters[] = array_filter([
-                    'name' => $name,
+                $parameters[$name] = array_filter([
+                    //'name' => $name,
                     'description' => $param['description'] ?? '',
                     'type' => $this->toCohereType($param),
                     'required' => in_array(
@@ -113,7 +124,7 @@ class CohereDriver implements CanInfer
             }
             $result[] = [
                 'name' => $tool['function']['name'],
-                'description' => $tool['function']['description'] ?? '',
+                'description' => $tool['function']['description'] ?? 'Extract data from context',
                 'parameters_definitions' => $parameters,
             ];
         }
@@ -130,9 +141,5 @@ class CohereDriver implements CanInfer
             'object' => throw new \Exception('Object type not supported by Cohere'),
             default => throw new \Exception('Unknown type'),
         };
-    }
-
-    protected function toResponse(string $response) : ApiResponse {
-        return $this->config->clientType->toApiResponse($response);
     }
 }

@@ -14,13 +14,6 @@ class JinaReaderDriver implements CanGetUrlContent {
         $this->apiKey = $apiKey ?: Env::get('JINA_READER_API_KEY', '');
     }
 
-    public static function fromUrl(string $url, array $options = []) : string {
-        return (new self(
-            baseUrl: $options['base_url'] ?? '',
-            apiKey: $options['api_key'] ?? ''
-        ))->getContent($url, $options);
-    }
-
     public function getContent(string $url, array $options = []) : string {
         $url = $this->baseUrl . $url . '&api_key=' . $this->apiKey;
         return file_get_contents($url);
