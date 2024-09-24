@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Utils\Arrays;
 
 class OpenAICompatibleDriver extends OpenAIDriver
 {
@@ -36,14 +37,28 @@ class OpenAICompatibleDriver extends OpenAIDriver
     ) : array {
         switch($mode) {
             case Mode::Tools:
-                $request['tools'] = $tools;
+                $request['tools'] = $this->removeDisallowedEntries($tools);
                 $request['tool_choice'] = $toolChoice;
                 break;
             case Mode::Json:
-            case Mode::JsonSchema:
                 $request['response_format'] = $responseFormat;
+                break;
+            case Mode::JsonSchema:
+                $request['response_format'] = [
+                    'type' => 'json_object',
+                    'schema' => $responseFormat['json_schema']['schema'],
+                ];
                 break;
         }
         return $request;
+    }
+
+    protected function removeDisallowedEntries(array $jsonSchema) : array {
+        return Arrays::removeRecursively($jsonSchema, [
+            'title',
+            'description',
+            'x-php-class',
+            'additionalProperties',
+        ]);
     }
 }

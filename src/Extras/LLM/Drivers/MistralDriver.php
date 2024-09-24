@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Utils\Arrays;
 
 class MistralDriver extends OpenAIDriver
 {
@@ -24,7 +25,7 @@ class MistralDriver extends OpenAIDriver
 
         switch($mode) {
             case Mode::Tools:
-                $request['tools'] = $tools;
+                $request['tools'] = $this->removeDisallowedEntries($tools);
                 $request['tool_choice'] = 'any';
                 break;
             case Mode::Json:
@@ -34,5 +35,14 @@ class MistralDriver extends OpenAIDriver
         }
 
         return $request;
+    }
+
+    protected function removeDisallowedEntries(array $jsonSchema) : array {
+        return Arrays::removeRecursively($jsonSchema, [
+            'title',
+            'description',
+            'x-php-class',
+            'additionalProperties',
+        ]);
     }
 }

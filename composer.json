@@ -16,6 +16,7 @@
             "Tests\\": "tests/",
             "Examples\\": "examples/",
             "Cognesy\\InstructorHub\\": "src-hub/",
+            "Cognesy\\Evals\\": "evals/",
             "Cognesy\\Experimental\\": "experimental/"
         },
         "files": [
