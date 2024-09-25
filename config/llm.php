@@ -127,7 +127,7 @@ return [
             'apiUrl' => 'https://openrouter.ai/api/v1/',
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'microsoft/phi-3.5-mini-128k-instruct',
+            'defaultModel' => 'qwen/qwen-2.5-72b-instruct', //'microsoft/phi-3.5-mini-128k-instruct',
             'defaultMaxTokens' => 1024,
             'connectTimeout' => 3,
             'requestTimeout' => 30,

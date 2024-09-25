@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
+use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Enums\Mode;
@@ -24,7 +25,10 @@ class OpenAIDriver implements CanHandleInference
             responseData: $data,
             toolName: $data['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '',
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            toolCalls: null,
+            toolCalls: ToolCalls::fromArray(array_map(
+                callback: fn(array $call) => $call['function'] ?? [],
+                array: $data['choices'][0]['message']['tool_calls'] ?? []
+            )),
             inputTokens: $data['usage']['prompt_tokens'] ?? 0,
             outputTokens: $data['usage']['completion_tokens'] ?? 0,
             cacheCreationTokens: 0,

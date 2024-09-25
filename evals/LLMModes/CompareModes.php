@@ -26,12 +26,16 @@ class CompareModes {
             'type' => 'object',
             'description' => 'User data',
             'properties' => [
-                'answer' => [
+                'age' => [
+                    'type' => 'integer',
+                    'description' => 'Age',
+                ],
+                'name' => [
                     'type' => 'string',
-                    'description' => 'City',
+                    'description' => 'Name',
                 ],
             ],
-            'required' => ['answer'],
+            'required' => ['name', 'age'],
             'additionalProperties' => false,
         ];
     }
@@ -39,10 +43,10 @@ class CompareModes {
     private function tools() : array {
         return [[
             'type' => 'function',
-            'description' => 'answer',
             'function' => [
-                'name' => 'answer',
-                'parameters' => $this->schema,
+                'name' => 'store_user',
+                'description' => 'Save user data',
+                'parameters' => $this->schema(),
             ],
         ]];
     }
@@ -50,9 +54,10 @@ class CompareModes {
     private function responseFormatJsonSchema() : array {
         return [
             'type' => 'json_schema',
+            'description' => 'User data',
             'json_schema' => [
-                'name' => 'answer',
-                'schema' => $this->schema,
+                'name' => 'store_user',
+                'schema' => $this->schema(),
                 'strict' => true,
             ],
         ];
@@ -61,7 +66,7 @@ class CompareModes {
     private function responseFormatJson() : array {
         return [
             'type' => 'json_object',
-            'schema' => $this->schema,
+            'schema' => $this->schema(),
         ];
     }
 
@@ -69,7 +74,7 @@ class CompareModes {
         return [
             'type' => 'function',
             'function' => [
-                'name' => 'answer'
+                'name' => 'store_user'
             ]
         ];
     }
@@ -80,14 +85,14 @@ class CompareModes {
                 foreach ($streamingModes as $isStreamed) {
                     $this->before($mode, $connection, $isStreamed);
                     $evalResponse = $this->execute($connection, $mode, $isStreamed);
-                    $this->after($evalResponse->answer, $evalResponse->isCorrect, $evalResponse->timeElapsed);
+                    $this->after($evalResponse);
                 }
             }
         }
 
         if (!empty($this->exceptions)) {
             Console::println('');
-            Console::println(' EXCEPTIONS ', [Color::BG_RED, Color::YELLOW]);
+            Console::println(' EXCEPTIONS ', [Color::BG_MAGENTA, Color::WHITE, Color::BOLD]);
             foreach($this->exceptions as $key => $exception) {
                 $exLine = str_replace("\n", '\n', $exception);
                 echo Console::columns([
@@ -108,9 +113,10 @@ class CompareModes {
             $time = microtime(true);
             $answer = $this->callInferenceFor($this->query, $mode, $connection, $this->schema(), $isStreamed);
             $timeElapsed = microtime(true) - $time;
-            $isCorrect = ($this->evalFn)(new EvalRequest(
+            $evalRequest = new EvalRequest(
                 $answer, $this->query, $this->schema(), $mode, $connection, $isStreamed
-            ));
+            );
+            $isCorrect = ($this->evalFn)($evalRequest);
             $evalResponse = new EvalResponse(
                 id: $key,
                 answer: $answer,
@@ -127,9 +133,6 @@ class CompareModes {
                 timeElapsed: $timeElapsed,
                 exception: $e,
             );
-            Console::print('          ');
-            Console::print(' !!!! ', [Color::RED, Color::BG_BLACK]);
-            Console::println($this->exc2txt($e, 80), [Color::RED, Color::BG_BLACK]);
         }
         $this->responses[] = $evalResponse;
         return $evalResponse;
@@ -143,8 +146,7 @@ class CompareModes {
             Mode::MdJson => $this->forModeMdJson($query, $connection, $schema, $isStreamed),
             Mode::Text => $this->forModeText($query, $connection, $isStreamed),
         };
-        $answer = $this->getValue($inferenceResult, $isStreamed);
-        return $answer;
+        return $this->getValue($inferenceResult, $isStreamed);
     }
 
     private function getValue(InferenceResponse $response, bool $isStreamed) : string {
@@ -167,13 +169,29 @@ class CompareModes {
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
     }
 
-    private function after(string $answer, bool $isCorrect, float $timeElapsed) : void {
-        $answerLine = str_replace("\n", '\n', $answer);
-        echo Console::columns([
-            [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
-            [5, $isCorrect ? '  OK ' : ' FAIL', STR_PAD_RIGHT, $isCorrect ? [Color::BG_GREEN, Color::WHITE] : [Color::BG_RED, Color::WHITE]],
-            [60, ' '.$answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
-        ], 120);
+    private function after(EvalResponse $evalResponse) : void {
+        $answer = $evalResponse->answer;
+        $isCorrect = $evalResponse->isCorrect;
+        $timeElapsed = $evalResponse->timeElapsed;
+        $exception = $evalResponse->exception;
+
+        if ($exception) {
+            //Console::print('          ');
+            //Console::print(' !!!! ', [Color::RED, Color::BG_BLACK]);
+            //Console::println(, [Color::RED, Color::BG_BLACK]);
+            echo Console::columns([
+                [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
+                [5, ' !!!!', STR_PAD_RIGHT, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
+                [60, ' ' . $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
+            ], 120);
+        } else {
+            $answerLine = str_replace("\n", '\n', $answer);
+            echo Console::columns([
+                [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
+                [5, $isCorrect ? '  OK ' : ' FAIL', STR_PAD_RIGHT, $isCorrect ? [Color::BG_GREEN, Color::WHITE] : [Color::BG_RED, Color::WHITE]],
+                [60, ' ' . $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
+            ], 120);
+        }
         echo "\n";
     }
 

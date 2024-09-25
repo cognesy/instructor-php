@@ -38,7 +38,7 @@ class OpenAICompatibleDriver extends OpenAIDriver
         switch($mode) {
             case Mode::Tools:
                 $request['tools'] = $this->removeDisallowedEntries($tools);
-                $request['tool_choice'] = $toolChoice;
+                $request['tool_choice'] = 'auto';
                 break;
             case Mode::Json:
                 $request['response_format'] = $responseFormat;
@@ -56,7 +56,7 @@ class OpenAICompatibleDriver extends OpenAIDriver
     protected function removeDisallowedEntries(array $jsonSchema) : array {
         return Arrays::removeRecursively($jsonSchema, [
             'title',
-            'description',
+            //'description',
             'x-php-class',
             'additionalProperties',
         ]);

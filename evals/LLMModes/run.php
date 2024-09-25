@@ -9,31 +9,31 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-//    'anthropic',
-//    'azure',
-//    'cohere',
-//    'fireworks',
+    'anthropic',
+    'azure',
+    'cohere',
+    'fireworks',
     'gemini',
-//    'groq',
-//    'mistral',
-//    'ollama',
-//    'openai',
-//    'openrouter',
-//    'together'
+    'groq',
+    'mistral',
+    'ollama',
+    'openai',
+    'openrouter',
+    'together'
 ];
 
-$streamingModes = [false];
+$streamingModes = [true];
 $modes = [
     Mode::Text,
-    Mode::MdJson,
-    Mode::Json,
-    Mode::JsonSchema,
-    Mode::Tools,
+//    Mode::MdJson,
+//    Mode::Json,
+//    Mode::JsonSchema,
+//    Mode::Tools,
 ];
 
 (new CompareModes(
-    query: 'What is the capital of France?',
-    evalFn: fn(EvalRequest $er) => Str::contains($er->answer, 'Paris'),
+    query: 'Our user Jason is 28 yo. What is the name and age of the user?',
+    evalFn: fn(EvalRequest $er) => Str::contains($er->answer, ['28', 'Jason']),
     //debug: true,
 ))->executeAll(
     connections: $connections,

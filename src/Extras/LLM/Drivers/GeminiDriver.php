@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
+use Cognesy\Instructor\ApiClient\Data\ToolCall;
+use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
@@ -9,6 +11,7 @@ use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
 use GuzzleHttp\Client;
 
@@ -23,11 +26,16 @@ class GeminiDriver implements CanHandleInference
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
-            content: $data['candidates'][0]['content']['parts'][0]['text'] ?? '',
+            content: $data['candidates'][0]['content']['parts'][0]['text']
+                ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
+                ?? '',
             responseData: $data,
             toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            toolCalls: null, //$data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '',
+            toolCalls: ToolCalls::fromMapper(array_map(
+                callback: fn(array $call) => $call['functionCall'] ?? [],
+                array: $data['candidates'][0]['content']['parts'] ?? []
+            ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['args'] ?? ''])),
             inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
             outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
             cacheCreationTokens: 0,
@@ -37,7 +45,9 @@ class GeminiDriver implements CanHandleInference
 
     public function toPartialApiResponse(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $data['candidates'][0]['content']['parts'][0]['text'] ?? $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '',
+            delta: $data['candidates'][0]['content']['parts'][0]['text']
+                ?? $data['candidates'][0]['content']['parts'][0]['functionCall']['args']
+                ?? '',
             responseData: $data,
             toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
@@ -136,7 +146,7 @@ class GeminiDriver implements CanHandleInference
 
     protected function toTools(array $tools) : array {
         return ['function_declarations' => array_map(
-            callback: fn($function) => $this->removeDisallowedEntries($function['function']),
+            callback: fn($tool) => $this->removeDisallowedEntries($tool['function']),
             array: $tools
         )];
     }
@@ -164,7 +174,7 @@ class GeminiDriver implements CanHandleInference
 
     protected function toResponseSchema(array $responseFormat, Mode $mode) : array {
         return match($mode) {
-            Mode::MdJson => [],
+            Mode::MdJson => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
             Mode::Json => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
             Mode::JsonSchema => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
             default => [],

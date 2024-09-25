@@ -8,6 +8,26 @@ class ToolCalls
      */
     private array $toolCalls = [];
 
+    public function __construct(array $toolCalls = []) {
+        $this->toolCalls = $toolCalls;
+    }
+
+    public static function fromArray(array $toolCalls) : ToolCalls {
+        $list = [];
+        foreach ($toolCalls as $toolCall) {
+            $list[] = ToolCall::fromArray($toolCall);
+        }
+        return new ToolCalls($list);
+    }
+
+    public static function fromMapper(array $toolCalls, callable $mapper) : ToolCalls {
+        $list = [];
+        foreach ($toolCalls as $toolCall) {
+            $list[] = $mapper($toolCall);
+        }
+        return new ToolCalls($list);
+    }
+
     public function count() : int {
         return count($this->toolCalls);
     }

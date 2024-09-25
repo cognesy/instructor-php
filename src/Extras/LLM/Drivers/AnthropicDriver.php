@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
+use Cognesy\Instructor\ApiClient\Data\ToolCall;
+use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
@@ -28,7 +30,10 @@ class AnthropicDriver implements CanHandleInference
             responseData: $data,
             toolName: $data['content'][0]['name'] ?? '',
             finishReason: $data['stop_reason'] ?? '',
-            toolCalls: null,
+            toolCalls: ToolCalls::fromMapper(array_map(
+                callback: fn(array $call) => $call,
+                array: $data['content'] ?? []
+            ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['input'] ?? ''])),
             inputTokens: $data['usage']['input_tokens'] ?? 0,
             outputTokens: $data['usage']['output_tokens'] ?? 0,
             cacheCreationTokens: $data['usage']['cache_creation_input_tokens'] ?? 0,

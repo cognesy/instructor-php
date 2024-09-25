@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
+use Cognesy\Instructor\ApiClient\Data\ToolCall;
+use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
@@ -8,6 +10,8 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
+use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Utils\Str;
 use GuzzleHttp\Client;
 
 class CohereDriver implements CanHandleInference
@@ -21,11 +25,17 @@ class CohereDriver implements CanHandleInference
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
-            content: $data['text'] ?? '',
+            content: ($data['text'] ?? '') . (!empty($data['tool_calls'])
+                ? ("\n" . Json::encode($data['tool_calls']))
+                : ''
+            ),
             responseData: $data,
-            toolName: '',
+            toolName: $data['tool_calls'][0]['name'] ?? '',
             finishReason: $data['finish_reason'] ?? '',
-            toolCalls: null,
+            toolCalls: ToolCalls::fromMapper(
+                $data['tool_calls'] ?? [],
+                fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['parameters'] ?? ''])
+            ),
             inputTokens: $data['meta']['tokens']['input_tokens'] ?? 0,
             outputTokens: $data['meta']['tokens']['output_tokens'] ?? 0,
             cacheCreationTokens: 0,
@@ -113,19 +123,18 @@ class CohereDriver implements CanHandleInference
             $parameters = [];
             foreach ($tool['function']['parameters']['properties'] as $name => $param) {
                 $parameters[$name] = array_filter([
-                    //'name' => $name,
                     'description' => $param['description'] ?? '',
                     'type' => $this->toCohereType($param),
                     'required' => in_array(
                         needle: $name,
-                        haystack: $tools['function']['parameters']['required'] ?? [],
+                        haystack: $tool['function']['parameters']['required'] ?? [],
                     ),
                 ]);
             }
             $result[] = [
                 'name' => $tool['function']['name'],
-                'description' => $tool['function']['description'] ?? 'Extract data from context',
-                'parameters_definitions' => $parameters,
+                'description' => $tool['function']['description'] ?? '',
+                'parameterDefinitions' => $parameters,
             ];
         }
         return $result;

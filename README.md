@@ -253,7 +253,7 @@ $translation = (new Instructor)->respond(
 );
 
 assert($translation instanceof Email); // true
-dd($translation);
+dump($translation);
 // Email {
 //     address: "joe@gmail",
 //     subject: "Actualización de estado",

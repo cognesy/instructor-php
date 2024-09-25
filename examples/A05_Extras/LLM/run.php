@@ -23,7 +23,10 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
-$answer = (new Inference)->create('What is capital of France?')->toText();
+$answer = (new Inference)
+    ->withConnection('openai') // optional, default is set in /config/llm.php
+    ->create(messages: 'What is capital of France?')
+    ->toText();
 
 assert(Str::contains($answer, 'Paris'));
 echo $answer;
