@@ -38,7 +38,7 @@ class OpenAIDriver implements CanHandleInference
 
     public function toPartialApiResponse(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $this->getDelta($data),
+            delta: $this->makeDelta($data),
             responseData: $data,
             toolName: $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '',
             toolArgs: $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '',
@@ -174,12 +174,12 @@ class OpenAIDriver implements CanHandleInference
         };
     }
 
-    private function getDelta(array $data): string {
+    private function makeDelta(array $data): string {
         $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
         $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {
-            !empty($deltaContent) => $deltaContent,
-            !empty($deltaFnArgs) => $deltaFnArgs,
+            ('' !== $deltaContent) => $deltaContent,
+            ('' !== $deltaFnArgs) => $deltaFnArgs,
             default => ''
         };
     }

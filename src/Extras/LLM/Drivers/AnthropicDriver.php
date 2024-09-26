@@ -42,7 +42,7 @@ class AnthropicDriver implements CanHandleInference
 
     public function toPartialApiResponse(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '',
+            delta: $this->makeDelta($data),
             responseData: $data,
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
@@ -202,5 +202,9 @@ class AnthropicDriver implements CanHandleInference
 
     private function makeContent(array $data) : string {
         return $data['content'][0]['text'] ?? Json::encode($data['content'][0]['input']) ?? '';
+    }
+
+    private function makeDelta(array $data) : string {
+        return $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '';
     }
 }

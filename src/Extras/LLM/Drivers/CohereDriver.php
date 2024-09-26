@@ -40,7 +40,7 @@ class CohereDriver implements CanHandleInference
 
     public function toPartialApiResponse(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '',
+            delta: $this->makeDelta($data),
             responseData: $data,
             toolName: $data['tool_calls'][0]['name'] ?? '',
             toolArgs: Json::encode($data['tool_calls'][0]['parameters'] ?? []),
@@ -181,5 +181,9 @@ class CohereDriver implements CanHandleInference
             ? ("\n" . Json::encode($data['tool_calls']))
             : ''
         );
+    }
+
+    private function makeDelta(array $data) : string {
+        return $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '';
     }
 }

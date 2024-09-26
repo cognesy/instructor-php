@@ -95,10 +95,10 @@ class InferenceResponse
         }
 
         while (!$stream->eof()) {
-            if (($line = trim($this->readLine($stream))) === '') {
+            if ('' === ($line = trim($this->readLine($stream)))) {
                 continue;
             }
-            if (($data = $this->driver->getData($line)) === false) {
+            if (false === ($data = $this->driver->getData($line))) {
                 break;
             }
             yield $data;
@@ -112,7 +112,7 @@ class InferenceResponse
                 return $buffer;
             }
             $buffer .= $byte;
-            if ($byte === "\n") {
+            if ("\n" === $byte) {
                 break;
             }
         }

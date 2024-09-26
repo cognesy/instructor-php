@@ -42,9 +42,7 @@ class GeminiDriver implements CanHandleInference
 
     public function toPartialApiResponse(array $data) : PartialApiResponse {
         return new PartialApiResponse(
-            delta: $data['candidates'][0]['content']['parts'][0]['text']
-                ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
-                ?? '',
+            delta: $this->makeDelta($data),
             responseData: $data,
             toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
             toolArgs: Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? []),
@@ -244,6 +242,12 @@ class GeminiDriver implements CanHandleInference
     }
 
     private function makeContent(array $data) : string {
+        return $data['candidates'][0]['content']['parts'][0]['text']
+            ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
+            ?? '';
+    }
+
+    private function makeDelta(array $data): string {
         return $data['candidates'][0]['content']['parts'][0]['text']
             ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
             ?? '';

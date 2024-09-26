@@ -22,7 +22,7 @@ $connections = [
     'together'
 ];
 
-$streamingModes = [false, true];
+$streamingModes = [true];
 $modes = [
     Mode::Text,
     Mode::MdJson,
