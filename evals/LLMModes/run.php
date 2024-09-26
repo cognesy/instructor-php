@@ -22,18 +22,25 @@ $connections = [
     'together'
 ];
 
-$streamingModes = [true];
+$streamingModes = [false, true];
 $modes = [
     Mode::Text,
-//    Mode::MdJson,
-//    Mode::Json,
-//    Mode::JsonSchema,
-//    Mode::Tools,
+    Mode::MdJson,
+    Mode::Json,
+    Mode::JsonSchema,
+    Mode::Tools,
 ];
 
+//
+// NOT SUPPORTED BY PROVIDERS
+//
+// groq, Mode::JsonSchema, stream
+// groq, Mode::Json, stream
+// azure, Mode::JsonSchema, sync|stream
+
 (new CompareModes(
-    query: 'Our user Jason is 28 yo. What is the name and age of the user?',
-    evalFn: fn(EvalRequest $er) => Str::contains($er->answer, ['28', 'Jason']),
+    query: 'Our company ACME was founded in 2020. What is the name and founding year of the company?',
+    evalFn: fn(EvalRequest $er) => Str::contains($er->answer, ['2020', 'ACME']),
     //debug: true,
 ))->executeAll(
     connections: $connections,

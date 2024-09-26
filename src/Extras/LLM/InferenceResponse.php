@@ -26,47 +26,65 @@ class InferenceResponse
         return $this->isStreamed;
     }
 
-    public function toResponse() : ResponseInterface {
-        return $this->response;
-    }
-
-    public function toArray() : array {
-        return Json::parse($this->response->getBody()->getContents());
-    }
-
     public function toText() : string {
-        return $this->toApiResponse()->content;
+        return match($this->isStreamed) {
+            false => $this->toApiResponse()->content,
+            true => '', // TODO: FIX ME
+        };
     }
+
+    /**
+     * @return Generator<string>
+     */
+    public function stream() : Generator {
+        if (!$this->isStreamed) {
+            throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
+        }
+        foreach ($this->toPartialApiResponses() as $partialApiResponse) {
+            yield $partialApiResponse->delta;
+        }
+    }
+
+    // AS API RESPONSE OBJECTS //////////////////////////////////
 
     public function toApiResponse() : ApiResponse {
-        return $this->driver->toApiResponse($this->toArray());
+        return match($this->isStreamed) {
+            false => $this->driver->toApiResponse(Json::parse($this->response->getBody()->getContents())),
+            true => '', // TODO: FIX ME
+        };
     }
 
     /**
      * @return Generator<PartialApiResponse>
      */
     public function toPartialApiResponses() : Generator {
-        $stream = $this->streamIterator($this->getCachingStream());
+        $stream = $this->streamIterator($this->psrStream());
         foreach ($stream as $partialData) {
             yield $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
         }
     }
 
-    /**
-     * @return Generator<string>
-     */
-    public function toStream() : Generator {
-        $stream = $this->toPartialApiResponses();
-        foreach ($stream as $partialApiResponse) {
-            yield $partialApiResponse->delta;
-        }
+    // LOW LEVEL ACCESS /////////////////////////////////////////
+
+    public function asArray() : array {
+        return match($this->isStreamed) {
+            false => Json::parse($this->response->getBody()->getContents()),
+            true => $this->allStreamResponses(),
+        };
+    }
+
+    public function psrResponse() : ResponseInterface {
+        return $this->response;
+    }
+
+    public function psrStream(bool $asCachingStream = true) : StreamInterface {
+        return match($asCachingStream) {
+            false => $this->response->getBody(),
+            true => new CachingStream($this->response->getBody()),
+        };
     }
 
     // INTERNAL /////////////////////////////////////////////////
-
-    protected function getCachingStream() : StreamInterface {
-        return new CachingStream($this->response->getBody());
-    }
 
     /**
      * @return Generator<string>
@@ -75,15 +93,15 @@ class InferenceResponse
         if (!$this->isStreamed) {
             throw new InvalidArgumentException('Trying to read partial responses with no streaming');
         }
+
         while (!$stream->eof()) {
-            $line = trim($this->readLine($stream));
-            if (empty($line)) {
+            if (($line = trim($this->readLine($stream))) === '') {
                 continue;
             }
-            if ($this->driver->isDone($line)) {
+            if (($data = $this->driver->getData($line)) === false) {
                 break;
             }
-            yield $this->driver->getData($line);
+            yield $data;
         }
     }
 
@@ -99,5 +117,14 @@ class InferenceResponse
             }
         }
         return $buffer;
+    }
+
+    protected function allStreamResponses() : array {
+        $stream = $this->streamIterator($this->psrStream());
+        $content = [];
+        foreach ($stream as $partialData) {
+            $content[] = Json::parse($partialData);
+        }
+        return $content;
     }
 }

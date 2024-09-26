@@ -8,6 +8,7 @@ class PartialApiResponse
         public string $delta = '',
         public array  $responseData = [],
         public string $toolName = '',
+        public string $toolArgs = '',
         public string $finishReason = '',
         public int $inputTokens = 0,
         public int $outputTokens = 0,

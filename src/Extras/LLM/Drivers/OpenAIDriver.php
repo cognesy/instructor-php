@@ -8,6 +8,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
+use Cognesy\Instructor\Utils\Json\Json;
 use GuzzleHttp\Client;
 
 class OpenAIDriver implements CanHandleInference
@@ -21,14 +22,13 @@ class OpenAIDriver implements CanHandleInference
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
-            content: $this->getContent($data),
+            content: $this->makeContent($data),
             responseData: $data,
             toolName: $data['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '',
+            toolArgs: $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '',
+            toolsData: $this->mapToolsData($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            toolCalls: ToolCalls::fromArray(array_map(
-                callback: fn(array $call) => $call['function'] ?? [],
-                array: $data['choices'][0]['message']['tool_calls'] ?? []
-            )),
+            toolCalls: $this->makeToolCalls($data),
             inputTokens: $data['usage']['prompt_tokens'] ?? 0,
             outputTokens: $data['usage']['completion_tokens'] ?? 0,
             cacheCreationTokens: 0,
@@ -41,6 +41,7 @@ class OpenAIDriver implements CanHandleInference
             delta: $this->getDelta($data),
             responseData: $data,
             toolName: $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '',
+            toolArgs: $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '',
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             inputTokens: $data['usage']['prompt_tokens'] ?? 0,
             outputTokens: $data['usage']['completion_tokens'] ?? 0,
@@ -49,16 +50,15 @@ class OpenAIDriver implements CanHandleInference
         );
     }
 
-    public function isDone(string $data): bool {
-        return $data === '[DONE]';
-    }
-
-    public function getData(string $data): string {
-        if (str_starts_with($data, 'data:')) {
-            return trim(substr($data, 5));
+    public function getData(string $data): string|bool {
+        if (!str_starts_with($data, 'data:')) {
+            return '';
         }
-        // ignore event lines
-        return '';
+        $data = trim(substr($data, 5));
+        return match(true) {
+            $data === '[DONE]' => false,
+            default => $data,
+        };
     }
 
     // INTERNAL /////////////////////////////////////////////
@@ -93,12 +93,12 @@ class OpenAIDriver implements CanHandleInference
             $request['stream_options']['include_usage'] = true;
         }
 
-        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
-
-        return $request;
+        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
-    protected function applyMode(
+    // PRIVATE //////////////////////////////////////////////
+
+    private function applyMode(
         array $request,
         Mode $mode,
         array $tools,
@@ -124,26 +124,6 @@ class OpenAIDriver implements CanHandleInference
         return $request;
     }
 
-    protected function getContent(array $data): string {
-        $contentMsg = $data['choices'][0]['message']['content'] ?? '';
-        $contentFnArgs = $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
-        return match(true) {
-            !empty($contentMsg) => $contentMsg,
-            !empty($contentFnArgs) => $contentFnArgs,
-            default => ''
-        };
-    }
-
-    protected function getDelta(array $data): string {
-        $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
-        $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
-        return match(true) {
-            !empty($deltaContent) => $deltaContent,
-            !empty($deltaFnArgs) => $deltaFnArgs,
-            default => ''
-        };
-    }
-
     protected function toNativeContent(string|array $content) : string|array {
         if (is_string($content)) {
             return $content;
@@ -165,5 +145,42 @@ class OpenAIDriver implements CanHandleInference
             ];
         }
         return $contentPart;
+    }
+
+    private function makeToolCalls(array $data) : ToolCalls {
+        return ToolCalls::fromArray(array_map(
+            callback: fn(array $call) => $call['function'] ?? [],
+            array: $data['choices'][0]['message']['tool_calls'] ?? []
+        ));
+    }
+
+    private function mapToolsData(array $data) : array {
+        return array_map(
+            fn($tool) => [
+                'name' => $tool['function']['name'] ?? '',
+                'arguments' => Json::parse($tool['function']['arguments']) ?? '',
+            ],
+            $data['choices'][0]['message']['tool_calls'] ?? []
+        );
+    }
+
+    private function makeContent(array $data): string {
+        $contentMsg = $data['choices'][0]['message']['content'] ?? '';
+        $contentFnArgs = $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
+        return match(true) {
+            !empty($contentMsg) => $contentMsg,
+            !empty($contentFnArgs) => $contentFnArgs,
+            default => ''
+        };
+    }
+
+    private function getDelta(array $data): string {
+        $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
+        $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
+        return match(true) {
+            !empty($deltaContent) => $deltaContent,
+            !empty($deltaFnArgs) => $deltaFnArgs,
+            default => ''
+        };
     }
 }

@@ -23,12 +23,25 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
+// simplified API, default connection for convenient ad-hoc calls
+$answer = Inference::forMessages('What is capital of Germany');
+
+echo "USER: What is capital of Germany\n";
+echo "ASSISTANT: $answer\n";
+assert(Str::contains($answer, 'Berlin'));
+
+
+// regular API, allows to customize inference options
 $answer = (new Inference)
     ->withConnection('openai') // optional, default is set in /config/llm.php
-    ->create(messages: 'What is capital of France?')
+    ->create(
+        messages: [['role' => 'user', 'content' => 'What is capital of France']],
+        options: ['max_tokens' => 64]
+    )
     ->toText();
 
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
-echo $answer;
 ?>
 ```

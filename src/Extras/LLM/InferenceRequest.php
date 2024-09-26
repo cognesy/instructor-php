@@ -43,7 +43,7 @@ class InferenceRequest
             $this->responseFormat = [
                 'type' => 'json_schema',
                 'json_schema' => [
-                    'name' => $responseFormat['json_schema']['name'] ?? '',
+                    'name' => $responseFormat['json_schema']['name'] ?? 'schema',
                     'schema' => $responseFormat['json_schema']['schema'] ?? [],
                     'strict' => $responseFormat['json_schema']['strict'] ?? true,
                 ],

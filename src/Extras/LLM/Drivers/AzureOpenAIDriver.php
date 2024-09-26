@@ -7,7 +7,7 @@ use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 
 class AzureOpenAIDriver extends OpenAIDriver
 {
-    // INTERNAL /////////////////////////////////////////////
+    // OVERRIDES /////////////////////////////////////////////
 
     protected function getEndpointUrl(InferenceRequest $request): string {
         return str_replace(

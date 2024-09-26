@@ -11,6 +11,8 @@ class ApiResponse
         public string $content = '',
         public array  $responseData = [],
         public string $toolName = '',
+        public string $toolArgs = '',
+        public array $toolsData = [],
         public string $finishReason = '',
         public ?ToolCalls $toolCalls = null,
         public int $inputTokens = 0,
@@ -24,5 +26,23 @@ class ApiResponse
             return $this->toolCalls->first()->args ?? '';
         }
         return Json::find($this->content);
+    }
+
+    public static function fromPartialResponses(
+        array $partialResponses,
+        callable $toolCallsMapper = null
+    ) : ApiResponse {
+        $instance = new self();
+        $content = '';
+        foreach($partialResponses as $partialResponse) {
+            $content .= $partialResponse->delta;
+            $instance->inputTokens += $partialResponse->inputTokens;
+            $instance->outputTokens += $partialResponse->outputTokens;
+            $instance->cacheCreationTokens += $partialResponse->cacheCreationTokens;
+            $instance->cacheReadTokens += $partialResponse->cacheReadTokens;
+            $instance->finishReason = $partialResponse->finishReason;
+        }
+        $instance->content = $content;
+        return $instance;
     }
 }

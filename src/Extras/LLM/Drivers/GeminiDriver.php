@@ -26,16 +26,13 @@ class GeminiDriver implements CanHandleInference
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
-            content: $data['candidates'][0]['content']['parts'][0]['text']
-                ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
-                ?? '',
+            content: $this->makeContent($data),
             responseData: $data,
             toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
+            toolArgs: Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? []),
+            toolsData: $this->mapToolsData($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            toolCalls: ToolCalls::fromMapper(array_map(
-                callback: fn(array $call) => $call['functionCall'] ?? [],
-                array: $data['candidates'][0]['content']['parts'] ?? []
-            ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['args'] ?? ''])),
+            toolCalls: $this->makeToolCalls($data),
             inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
             outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
             cacheCreationTokens: 0,
@@ -46,10 +43,11 @@ class GeminiDriver implements CanHandleInference
     public function toPartialApiResponse(array $data) : PartialApiResponse {
         return new PartialApiResponse(
             delta: $data['candidates'][0]['content']['parts'][0]['text']
-                ?? $data['candidates'][0]['content']['parts'][0]['functionCall']['args']
+                ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
                 ?? '',
             responseData: $data,
             toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
+            toolArgs: Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? []),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
             outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
@@ -58,15 +56,15 @@ class GeminiDriver implements CanHandleInference
         );
     }
 
-    public function isDone(string $data): bool {
-        return $data === '[DONE]';
-    }
-
-    public function getData(string $data): string {
-        if (str_starts_with($data, 'data:')) {
-            return trim(substr($data, 5));
+    public function getData(string $data): string|bool {
+        if (!str_starts_with($data, 'data:')) {
+            return '';
         }
-        return '';
+        $data = trim(substr($data, 5));
+        return match(true) {
+            $data === '[DONE]' => false,
+            default => $data,
+        };
     }
 
     // INTERNAL /////////////////////////////////////////////
@@ -115,6 +113,8 @@ class GeminiDriver implements CanHandleInference
         return $request;
     }
 
+    // PRIVATE //////////////////////////////////////////////
+
     private function toSystem(array $messages) : array {
         $system = Messages::fromArray($messages)
             ->forRoles(['system'])
@@ -136,7 +136,7 @@ class GeminiDriver implements CanHandleInference
         Mode $mode,
     ) : array {
         return array_filter([
-            //"responseMimeType" => $this->toResponseFormat($mode),
+            "responseMimeType" => $this->toResponseMimeType($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
             "candidateCount" => 1,
             "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
@@ -164,10 +164,11 @@ class GeminiDriver implements CanHandleInference
         };
     }
 
-    protected function toResponseFormat(Mode $mode): string {
+    protected function toResponseMimeType(Mode $mode): string {
         return match($mode) {
             Mode::Text => "text/plain",
             Mode::MdJson => "text/plain",
+            Mode::Tools => "text/plain",
             default => "application/json",
         };
     }
@@ -223,5 +224,28 @@ class GeminiDriver implements CanHandleInference
             ],
             default => $contentPart,
         };
+    }
+
+    private function makeToolCalls(array $data) : ToolCalls {
+        return ToolCalls::fromMapper(array_map(
+            callback: fn(array $call) => $call['functionCall'] ?? [],
+            array: $data['candidates'][0]['content']['parts'] ?? []
+        ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['args'] ?? '']));
+    }
+
+    private function mapToolsData(array $data) : array {
+        return array_map(
+            fn($tool) => [
+                'name' => $tool['functionCall']['name'] ?? '',
+                'arguments' => $tool['functionCall']['args'] ?? '',
+            ],
+            $data['candidates'][0]['content']['parts'] ?? []
+        );
+    }
+
+    private function makeContent(array $data) : string {
+        return $data['candidates'][0]['content']['parts'][0]['text']
+            ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
+            ?? '';
     }
 }

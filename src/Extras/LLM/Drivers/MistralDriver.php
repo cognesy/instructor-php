@@ -6,7 +6,7 @@ use Cognesy\Instructor\Utils\Arrays;
 
 class MistralDriver extends OpenAIDriver
 {
-    // INTERNAL /////////////////////////////////////////////
+    // OVERRIDES /////////////////////////////////////////////
 
     protected function getRequestBody(
         array $messages = [],
@@ -23,6 +23,18 @@ class MistralDriver extends OpenAIDriver
             'messages' => $messages,
         ], $options));
 
+        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+    }
+
+    // PRIVATE //////////////////////////////////////////////
+
+    private function applyMode(
+        array $request,
+        Mode $mode,
+        array $tools,
+        string|array $toolChoice,
+        array $responseFormat
+    ) : array {
         switch($mode) {
             case Mode::Tools:
                 $request['tools'] = $this->removeDisallowedEntries($tools);
@@ -33,14 +45,13 @@ class MistralDriver extends OpenAIDriver
                 $request['response_format'] = ['type' => 'json_object'];
                 break;
         }
-
         return $request;
     }
 
-    protected function removeDisallowedEntries(array $jsonSchema) : array {
+    private function removeDisallowedEntries(array $jsonSchema) : array {
         return Arrays::removeRecursively($jsonSchema, [
             'title',
-            'description',
+            //'description',
             'x-php-class',
             'additionalProperties',
         ]);

@@ -24,18 +24,18 @@ class CompareModes {
     private function schema() : array {
         return $this->schema ?: [
             'type' => 'object',
-            'description' => 'User data',
+            'description' => 'Company data',
             'properties' => [
-                'age' => [
+                'year' => [
                     'type' => 'integer',
-                    'description' => 'Age',
+                    'description' => 'Founding year',
                 ],
                 'name' => [
                     'type' => 'string',
-                    'description' => 'Name',
+                    'description' => 'Company name',
                 ],
             ],
-            'required' => ['name', 'age'],
+            'required' => ['name', 'year'],
             'additionalProperties' => false,
         ];
     }
@@ -44,8 +44,8 @@ class CompareModes {
         return [[
             'type' => 'function',
             'function' => [
-                'name' => 'store_user',
-                'description' => 'Save user data',
+                'name' => 'store_company',
+                'description' => 'Save company data',
                 'parameters' => $this->schema(),
             ],
         ]];
@@ -54,9 +54,9 @@ class CompareModes {
     private function responseFormatJsonSchema() : array {
         return [
             'type' => 'json_schema',
-            'description' => 'User data',
+            'description' => 'Company data',
             'json_schema' => [
-                'name' => 'store_user',
+                'name' => 'store_company',
                 'schema' => $this->schema(),
                 'strict' => true,
             ],
@@ -74,17 +74,18 @@ class CompareModes {
         return [
             'type' => 'function',
             'function' => [
-                'name' => 'store_user'
+                'name' => 'store_company'
             ]
         ];
     }
 
     public function executeAll(array $connections, array $modes, array $streamingModes = [false, true]) : array {
-        foreach ($modes as $mode) {
-            foreach ($connections as $connection) {
-                foreach ($streamingModes as $isStreamed) {
+        foreach ($streamingModes as $isStreamed) {
+            foreach ($modes as $mode) {
+                foreach ($connections as $connection) {
                     $this->before($mode, $connection, $isStreamed);
                     $evalResponse = $this->execute($connection, $mode, $isStreamed);
+                    $this->responses[] = $evalResponse;
                     $this->after($evalResponse);
                 }
             }
@@ -134,7 +135,6 @@ class CompareModes {
                 exception: $e,
             );
         }
-        $this->responses[] = $evalResponse;
         return $evalResponse;
     }
 
@@ -154,7 +154,7 @@ class CompareModes {
             return $response->toText();
         }
         $answer = '';
-        foreach ($response->toStream() as $chunk) {
+        foreach ($response->stream() as $chunk) {
             $answer .= $chunk;
         }
         return $answer;

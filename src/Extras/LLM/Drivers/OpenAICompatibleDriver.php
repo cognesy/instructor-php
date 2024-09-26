@@ -6,7 +6,7 @@ use Cognesy\Instructor\Utils\Arrays;
 
 class OpenAICompatibleDriver extends OpenAIDriver
 {
-    // INTERNAL /////////////////////////////////////////////
+    // OVERRIDES /////////////////////////////////////////////
 
     protected function getRequestBody(
         array $messages = [],
@@ -23,10 +23,10 @@ class OpenAICompatibleDriver extends OpenAIDriver
             'messages' => $messages,
         ], $options));
 
-        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
-
-        return $request;
+        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
+
+    // OVERRIDES - HELPERS ///////////////////////////////////
 
     protected function applyMode(
         array $request,
