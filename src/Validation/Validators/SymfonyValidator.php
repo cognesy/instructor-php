@@ -14,8 +14,12 @@ class SymfonyValidator implements CanValidateObject
             ->addLoader(new AttributeLoader())
             ->getValidator();
 
-        $result = $validator->validate($dataObject);
-
+        try {
+            $result = $validator->validate($dataObject);
+        } catch (\Exception $e) {
+            return ValidationResult::make($errors, $e->getMessage());
+        }
+        
         $errors = [];
         foreach ($result as $error) {
             $path = $error->getPropertyPath();
