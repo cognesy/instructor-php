@@ -7,9 +7,9 @@ use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 
 class AzureOpenAIDriver extends OpenAIDriver
 {
-    // OVERRIDES /////////////////////////////////////////////
+    // REQUEST //////////////////////////////////////////////
 
-    protected function getEndpointUrl(InferenceRequest $request): string {
+    public function getEndpointUrl(InferenceRequest $request): string {
         return str_replace(
                 search: array_map(fn($key) => "{".$key."}", array_keys($this->config->metadata)),
                 replace: array_values($this->config->metadata),
@@ -27,7 +27,7 @@ class AzureOpenAIDriver extends OpenAIDriver
         return '';
     }
 
-    protected function getRequestHeaders(): array {
+    public function getRequestHeaders(): array {
         return [
             'Api-Key' => $this->config->apiKey,
             'Content-Type' => 'application/json',

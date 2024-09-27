@@ -14,7 +14,7 @@ class CompareModes {
     private array $responses = [];
 
     public function __construct(
-        private string $query,
+        private string|array $query,
         private Closure $evalFn,
         private array $schema = [],
         private int $maxTokens = 512,
@@ -138,26 +138,99 @@ class CompareModes {
         return $evalResponse;
     }
 
-    public function callInferenceFor(string $query, Mode $mode, string $connection, array $schema, bool $isStreamed) : string {
-        $inferenceResult = match($mode) {
+    public function callInferenceFor(string|array $query, Mode $mode, string $connection, array $schema, bool $isStreamed) : string {
+        $query = is_array($query) ? $query : [['role' => 'user', 'content' => $query]];
+        $inferenceResponse = match($mode) {
             Mode::Tools => $this->forModeTools($query, $connection, $schema, $isStreamed),
             Mode::JsonSchema => $this->forModeJsonSchema($query, $connection, $schema, $isStreamed),
             Mode::Json => $this->forModeJson($query, $connection, $schema, $isStreamed),
             Mode::MdJson => $this->forModeMdJson($query, $connection, $schema, $isStreamed),
             Mode::Text => $this->forModeText($query, $connection, $isStreamed),
         };
-        return $this->getValue($inferenceResult, $isStreamed);
+        return $inferenceResponse->toText();
     }
 
-    private function getValue(InferenceResponse $response, bool $isStreamed) : string {
-        if (!$isStreamed) {
-            return $response->toText();
-        }
-        $answer = '';
-        foreach ($response->stream() as $chunk) {
-            $answer .= $chunk;
-        }
-        return $answer;
+    private function forModeTools(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
+        return (new Inference)
+            ->withConnection($connection)
+            ->withDebug($this->debug)
+            ->create(
+                messages: $query,
+                tools: $this->tools(),
+                toolChoice: $this->toolChoice(),
+                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
+                mode: Mode::Tools,
+            );
+    }
+
+    private function forModeJsonSchema(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
+        return (new Inference)
+            ->withConnection($connection)
+            ->withDebug($this->debug)
+            ->create(
+                messages: array_merge($query, [
+                    ['role' => 'user', 'content' => 'Respond with correct JSON.'],
+                ]),
+                responseFormat: $this->responseFormatJsonSchema(),
+                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
+                mode: Mode::JsonSchema,
+            );
+    }
+
+    private function forModeJson(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
+        return (new Inference)
+            ->withConnection($connection)
+            ->withDebug($this->debug)
+            ->create(
+                messages: array_merge($query, [
+                    ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
+                    ['role' => 'user', 'content' => 'Respond with correct JSON.'],
+                ]),
+                responseFormat: $this->responseFormatJson(),
+                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
+                mode: Mode::Json,
+            );
+    }
+
+    private function forModeMdJson(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
+        return (new Inference)
+            ->withConnection($connection)
+            ->withDebug($this->debug)
+            ->create(
+                messages: array_merge($query, [
+                    ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
+                    ['role' => 'user', 'content' => 'Respond with correct JSON'],
+                    ['role' => 'user', 'content' => '```json'],
+                ]),
+                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
+                mode: Mode::MdJson,
+            );
+    }
+
+    private function forModeText(string|array $query, string $connection, bool $isStreamed) : InferenceResponse {
+        return (new Inference)
+            ->withConnection($connection)
+            ->withDebug($this->debug)
+            ->create(
+                messages: $query,
+                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
+                mode: Mode::Text,
+            );
+    }
+
+    private function timeFormat(float $time) : string {
+        return number_format($time, 2)
+            . ' sec';
+    }
+
+    private function exc2txt(Exception $e, int $maxLen) : string {
+        return ' '
+            . substr(str_replace("\n", '\n', $e->getMessage()), 0, $maxLen)
+            . '...';
+    }
+
+    private function makeKey(string $connection, Mode $mode, bool $isStreamed) : string {
+        return $connection.'::'.$mode->value.'::'.($isStreamed?'streamed':'sync');
     }
 
     private function before(Mode $mode, string $connection, bool $isStreamed) : void {
@@ -193,95 +266,5 @@ class CompareModes {
             ], 120);
         }
         echo "\n";
-    }
-
-    private function forModeTools(string $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
-        return (new Inference)
-            ->withConnection($connection)
-            ->withDebug($this->debug)
-            ->create(
-                messages: [
-                    ['role' => 'user', 'content' => $query]
-                ],
-                tools: $this->tools(),
-                toolChoice: $this->toolChoice(),
-                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
-                mode: Mode::Tools,
-            );
-    }
-
-    private function forModeJsonSchema(string $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
-        return (new Inference)
-            ->withConnection($connection)
-            ->withDebug($this->debug)
-            ->create(
-                messages: [
-                    ['role' => 'user', 'content' => $query],
-                    ['role' => 'user', 'content' => 'Respond with correct JSON.'],
-                ],
-                responseFormat: $this->responseFormatJsonSchema(),
-                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
-                mode: Mode::JsonSchema,
-            );
-    }
-
-    private function forModeJson(string $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
-        return (new Inference)
-            ->withConnection($connection)
-            ->withDebug($this->debug)
-            ->create(
-                messages: [
-                    ['role' => 'user', 'content' => $query],
-                    ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
-                    ['role' => 'user', 'content' => 'Respond with correct JSON.'],
-                ],
-                responseFormat: $this->responseFormatJson(),
-                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
-                mode: Mode::Json,
-            );
-    }
-
-    private function forModeMdJson(string $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
-        return (new Inference)
-            ->withConnection($connection)
-            ->withDebug($this->debug)
-            ->create(
-                messages: [
-                    ['role' => 'user', 'content' => $query],
-                    ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
-                    ['role' => 'user', 'content' => 'Respond with correct JSON'],
-                    ['role' => 'user', 'content' => '```json'],
-                ],
-                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
-                mode: Mode::MdJson,
-            );
-    }
-
-    private function forModeText(string $query, string $connection, bool $isStreamed) : InferenceResponse {
-        return (new Inference)
-            ->withConnection($connection)
-            ->withDebug($this->debug)
-            ->create(
-                messages: [
-                    ['role' => 'user', 'content' => $query],
-                ],
-                options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
-                mode: Mode::Text,
-            );
-    }
-
-    private function timeFormat(float $time) : string {
-        return number_format($time, 2)
-            . ' sec';
-    }
-
-    private function exc2txt(Exception $e, int $maxLen) : string {
-        return ' '
-            . substr(str_replace("\n", '\n', $e->getMessage()), 0, $maxLen)
-            . '...';
-    }
-
-    private function makeKey(string $connection, Mode $mode, bool $isStreamed) : string {
-        return $connection.'::'.$mode->value.'::'.($isStreamed?'streamed':'sync');
     }
 }

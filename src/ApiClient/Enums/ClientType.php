@@ -23,4 +23,5 @@ enum ClientType : string
     case OpenRouter = 'openrouter';
     case Together = 'together';
     case OpenAICompatible = 'openai-compatible';
+    case Unknown = 'unknown';
 }

@@ -1,14 +1,11 @@
 <?php
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use Cognesy\Instructor\Extras\Enums\HttpClientType;
 use Cognesy\Instructor\Utils\Env;
 
 return [
     'useObjectReferences' => false,
-    'cache' => [
-        'enabled' => false,
-        'expiryInSeconds' => 3600,
-        'path' => '/tmp/instructor/cache',
-    ],
+
     'debug' => [
         'enabled' => false,
         'http_trace' => false,
@@ -18,10 +15,17 @@ return [
         'response_headers' => false,
     ],
 
+    'cache' => [
+        'enabled' => false,
+        'expiryInSeconds' => 3600,
+        'path' => '/tmp/instructor/cache',
+    ],
+
     'defaultConnection' => 'openai',
     'connections' => [
         'anthropic' => [
             'clientType' => ClientType::Anthropic->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.anthropic.com/v1',
             'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
             'endpoint' => '/messages',
@@ -36,6 +40,7 @@ return [
         ],
         'azure' => [
             'clientType' => ClientType::Azure->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',
             'apiKey' => Env::get('AZURE_OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -51,6 +56,7 @@ return [
         ],
         'cohere' => [
             'clientType' => ClientType::Cohere->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.cohere.ai/v1',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/chat',
@@ -61,6 +67,7 @@ return [
         ],
         'fireworks' => [
             'clientType' => ClientType::Fireworks->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.fireworks.ai/inference/v1',
             'apiKey' => Env::get('FIREWORKS_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -71,6 +78,7 @@ return [
         ],
         'gemini' => [
             'clientType' => ClientType::Gemini->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/models/{model}:generateContent',
@@ -81,6 +89,7 @@ return [
         ],
         'groq' => [
             'clientType' => ClientType::Groq->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.groq.com/openai/v1',
             'apiKey' => Env::get('GROQ_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -91,6 +100,7 @@ return [
         ],
         'mistral' => [
             'clientType' => ClientType::Mistral->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.mistral.ai/v1',
             'apiKey' => Env::get('MISTRAL_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -101,16 +111,18 @@ return [
         ],
         'ollama' => [
             'clientType' => ClientType::Ollama->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'llama3.1:8b',//'gemma2:2b',
+            'defaultModel' => 'llama3.2:3b', //'gemma2:2b',
             'defaultMaxTokens' => 1024,
             'connectTimeout' => 3,
-            'requestTimeout' => 30,
+            'requestTimeout' => 60,
         ],
         'openai' => [
             'clientType' => ClientType::OpenAI->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -124,6 +136,7 @@ return [
         ],
         'openrouter' => [
             'clientType' => ClientType::OpenRouter->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://openrouter.ai/api/v1/',
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -134,6 +147,7 @@ return [
         ],
         'together' => [
             'clientType' => ClientType::Together->value,
+            'httpClient' => HttpClientType::Guzzle->value,
             'apiUrl' => 'https://api.together.xyz/v1',
             'apiKey' => Env::get('TOGETHER_API_KEY', ''),
             'endpoint' => '/chat/completions',

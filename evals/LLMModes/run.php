@@ -10,19 +10,19 @@ use Cognesy\Instructor\Utils\Str;
 
 $connections = [
     'anthropic',
-    'azure',
-    'cohere',
-    'fireworks',
-    'gemini',
-    'groq',
-    'mistral',
-    'ollama',
-    'openai',
-    'openrouter',
-    'together'
+//    'azure',
+//    'cohere',
+//    'fireworks',
+//    'gemini',
+//    'groq',
+//    'mistral',
+//    'ollama',
+//    'openai',
+//    'openrouter',
+//    'together'
 ];
 
-$streamingModes = [true];
+$streamingModes = [true, false];
 $modes = [
     Mode::Text,
     Mode::MdJson,
@@ -37,9 +37,13 @@ $modes = [
 // groq, Mode::JsonSchema, stream
 // groq, Mode::Json, stream
 // azure, Mode::JsonSchema, sync|stream
+//
 
 (new CompareModes(
-    query: 'Our company ACME was founded in 2020. What is the name and founding year of the company?',
+    query: [
+        ['role' => 'system', 'content' => 'Our company ACME was founded in 2020.'],
+        ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
+    ],
     evalFn: fn(EvalRequest $er) => Str::contains($er->answer, ['2020', 'ACME']),
     //debug: true,
 ))->executeAll(

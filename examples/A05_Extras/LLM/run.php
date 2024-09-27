@@ -43,5 +43,21 @@ $answer = (new Inference)
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
+
+// regular API, allows to customize inference options
+$stream = (new Inference)
+    ->withConnection('ollama') // optional, default is set in /config/llm.php
+    ->withDebug()
+    ->create(
+        messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
+        options: ['max_tokens' => 128, 'stream' => true]
+    )
+    ->stream();
+
+echo "USER: Describe capital of Brasil\n";
+echo "ASSISTANT: ";
+foreach ($stream as $delta) {
+    echo $delta;
+}
 ?>
 ```

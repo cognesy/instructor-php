@@ -6,9 +6,9 @@ use Cognesy\Instructor\Utils\Arrays;
 
 class MistralDriver extends OpenAIDriver
 {
-    // OVERRIDES /////////////////////////////////////////////
+    // REQUEST //////////////////////////////////////////////
 
-    protected function getRequestBody(
+    public function getRequestBody(
         array $messages = [],
         string $model = '',
         array $tools = [],

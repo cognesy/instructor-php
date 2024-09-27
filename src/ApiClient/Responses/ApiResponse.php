@@ -30,12 +30,15 @@ class ApiResponse
 
     public static function fromPartialResponses(
         array $partialResponses,
-        callable $toolCallsMapper = null
     ) : ApiResponse {
         $instance = new self();
         $content = '';
         foreach($partialResponses as $partialResponse) {
             $content .= $partialResponse->delta;
+            $instance->responseData[] = $partialResponse->responseData;
+            $instance->toolName = '';
+            $instance->toolArgs = '';
+            $instance->toolsData = [];
             $instance->inputTokens += $partialResponse->inputTokens;
             $instance->outputTokens += $partialResponse->outputTokens;
             $instance->cacheCreationTokens += $partialResponse->cacheCreationTokens;

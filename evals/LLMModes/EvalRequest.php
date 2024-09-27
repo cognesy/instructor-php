@@ -8,7 +8,7 @@ class EvalRequest
 {
     public function __construct(
         public string $answer = '',
-        public string $query = '',
+        public string|array $query = '',
         public array $schema = [],
         public Mode $mode = Mode::Text,
         public string $connection = '',

@@ -1,24 +1,78 @@
 <?php
+
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\ApiClient\Data\ToolCalls;
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
-use GuzzleHttp\Client;
+use Psr\Http\Message\ResponseInterface;
 
 class OpenAIDriver implements CanHandleInference
 {
-    use Traits\HandlesHttpClient;
-
     public function __construct(
-        protected Client $client,
+        protected CanHandleHttp $http,
         protected LLMConfig $config
     ) {}
+
+    // REQUEST //////////////////////////////////////////////
+
+    public function handle(InferenceRequest $request) : ResponseInterface {
+        return $this->http->handle(
+            url: $this->getEndpointUrl($request),
+            headers: $this->getRequestHeaders(),
+            body: $this->getRequestBody(
+                $request->messages,
+                $request->model,
+                $request->tools,
+                $request->toolChoice,
+                $request->responseFormat,
+                $request->options,
+                $request->mode,
+            ),
+            streaming: $request->options['stream'] ?? false,
+        );
+    }
+
+    public function getEndpointUrl(InferenceRequest $request): string {
+        return "{$this->config->apiUrl}{$this->config->endpoint}";
+    }
+
+    public function getRequestHeaders() : array {
+        return [
+            'Authorization' => "Bearer {$this->config->apiKey}",
+            'Content-Type' => 'application/json',
+        ];
+    }
+
+    public function getRequestBody(
+        array $messages = [],
+        string $model = '',
+        array $tools = [],
+        string|array $toolChoice = '',
+        array $responseFormat = [],
+        array $options = [],
+        Mode $mode = Mode::Text,
+    ) : array {
+        $request = array_filter(array_merge([
+            'model' => $model ?: $this->config->model,
+            'max_tokens' => $this->config->maxTokens,
+            'messages' => $messages,
+        ], $options));
+
+        if ($options['stream'] ?? false) {
+            $request['stream_options']['include_usage'] = true;
+        }
+
+        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+    }
+
+    // RESPONSE /////////////////////////////////////////////
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
@@ -59,41 +113,6 @@ class OpenAIDriver implements CanHandleInference
             $data === '[DONE]' => false,
             default => $data,
         };
-    }
-
-    // INTERNAL /////////////////////////////////////////////
-
-    protected function getEndpointUrl(InferenceRequest $request): string {
-        return "{$this->config->apiUrl}{$this->config->endpoint}";
-    }
-
-    protected function getRequestHeaders() : array {
-        return [
-            'Authorization' => "Bearer {$this->config->apiKey}",
-            'Content-Type' => 'application/json',
-        ];
-    }
-
-    protected function getRequestBody(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : array {
-        $request = array_filter(array_merge([
-            'model' => $model ?: $this->config->model,
-            'max_tokens' => $this->config->maxTokens,
-            'messages' => $messages,
-        ], $options));
-
-        if ($options['stream'] ?? false) {
-            $request['stream_options']['include_usage'] = true;
-        }
-
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
     // PRIVATE //////////////////////////////////////////////

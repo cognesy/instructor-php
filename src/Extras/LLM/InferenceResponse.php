@@ -4,23 +4,32 @@ namespace Cognesy\Instructor\Extras\LLM;
 
 use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Inference\InferenceResponseGenerated;
+use Cognesy\Instructor\Events\Inference\PartialInferenceResponseGenerated;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
-use GuzzleHttp\Psr7\CachingStream;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 class InferenceResponse
 {
+    protected EventDispatcher $events;
+    protected StreamReader $streamReader;
+
     public function __construct(
-        protected ResponseInterface  $response,
+        protected ResponseInterface $response,
         protected CanHandleInference $driver,
-        protected LLMConfig          $config,
-        protected bool               $isStreamed = false,
-    ) {}
+        protected LLMConfig $config,
+        protected bool $isStreamed = false,
+        ?EventDispatcher $events = null,
+    ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->streamReader = new StreamReader($config, $this->driver->getData(...), $this->events);
+    }
 
     public function isStreamed() : bool {
         return $this->isStreamed;
@@ -29,7 +38,7 @@ class InferenceResponse
     public function toText() : string {
         return match($this->isStreamed) {
             false => $this->toApiResponse()->content,
-            true => '', // TODO: FIX ME
+            true => $this->getStreamContent($this->toPartialApiResponses()),
         };
     }
 
@@ -48,27 +57,33 @@ class InferenceResponse
     // AS API RESPONSE OBJECTS //////////////////////////////////
 
     public function toApiResponse() : ApiResponse {
-        return match($this->isStreamed) {
-            false => $this->driver->toApiResponse(Json::parse($this->response->getBody()->getContents())),
-            true => '', // TODO: FIX ME
+        $response = match($this->isStreamed) {
+            false => $this->driver->toApiResponse($this->responseData()),
+            true => ApiResponse::fromPartialResponses($this->allPartialApiResponses()),
         };
+        $this->events->dispatch(new InferenceResponseGenerated($response));
+        return $response;
     }
 
     /**
      * @return Generator<PartialApiResponse>
      */
     public function toPartialApiResponses() : Generator {
-        $stream = $this->streamIterator($this->psrStream());
-        foreach ($stream as $partialData) {
-            yield $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
+        foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
+            $response = $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
+            $this->events->dispatch(new PartialInferenceResponseGenerated($response));
+            yield $response;
         }
     }
 
     // LOW LEVEL ACCESS /////////////////////////////////////////
 
+    /**
+     * @return array[]
+     */
     public function asArray() : array {
         return match($this->isStreamed) {
-            false => Json::parse($this->response->getBody()->getContents()),
+            false => $this->responseData(),
             true => $this->allStreamResponses(),
         };
     }
@@ -77,53 +92,42 @@ class InferenceResponse
         return $this->response;
     }
 
-    public function psrStream(bool $asCachingStream = true) : StreamInterface {
-        return match($asCachingStream) {
-            false => $this->response->getBody(),
-            true => new CachingStream($this->response->getBody()),
-        };
+    public function psrStream() : StreamInterface {
+        return $this->response->getBody();
     }
 
     // INTERNAL /////////////////////////////////////////////////
 
+    protected function responseData() : array {
+        return Json::parse($this->response->getBody()->getContents());
+    }
+
     /**
-     * @return Generator<string>
+     * @return array[]
      */
-    protected function streamIterator(StreamInterface $stream): Generator {
-        if (!$this->isStreamed) {
-            throw new InvalidArgumentException('Trying to read partial responses with no streaming');
-        }
-
-        while (!$stream->eof()) {
-            if ('' === ($line = trim($this->readLine($stream)))) {
-                continue;
-            }
-            if (false === ($data = $this->driver->getData($line))) {
-                break;
-            }
-            yield $data;
-        }
-    }
-
-    protected function readLine(StreamInterface $stream): string {
-        $buffer = '';
-        while (!$stream->eof()) {
-            if ('' === ($byte = $stream->read(1))) {
-                return $buffer;
-            }
-            $buffer .= $byte;
-            if ("\n" === $byte) {
-                break;
-            }
-        }
-        return $buffer;
-    }
-
     protected function allStreamResponses() : array {
-        $stream = $this->streamIterator($this->psrStream());
         $content = [];
-        foreach ($stream as $partialData) {
+        foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
             $content[] = Json::parse($partialData);
+        }
+        return $content;
+    }
+
+    /**
+     * @return PartialApiResponse[]
+     */
+    protected function allPartialApiResponses() : array {
+        $partialResponses = [];
+        foreach ($this->toPartialApiResponses() as $partialResponse) {
+            $partialResponses[] = $partialResponse;
+        }
+        return $partialResponses;
+    }
+
+    protected function getStreamContent(Generator $partialResponses) : string {
+        $content = '';
+        foreach ($partialResponses as $partialResponse) {
+            $content .= $partialResponse->delta;
         }
         return $content;
     }

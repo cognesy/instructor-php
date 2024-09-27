@@ -1,11 +1,12 @@
 <?php
-namespace Cognesy\Instructor\Extras\LLM\Traits;
+namespace Cognesy\Instructor\Extras\LLM\Http;
 
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -32,7 +33,7 @@ trait HandlesDebug
                     Console::println("[HTTP DEBUG]", $highlight);
                 }
             },
-            function ($request, $options, FulfilledPromise $response) {
+            function ($request, $options, FulfilledPromise|RejectedPromise $response) {
                 $response->then(function (ResponseInterface $response) {
                     $highlight = [Color::YELLOW];
                     if ($this->config->debugHttpDetails()) {
@@ -45,13 +46,14 @@ trait HandlesDebug
                         $this->printHeaders($response->getHeaders());
                         Console::println("[/RESPONSE HEADERS]", $highlight);
                     }
-                    if ($this->config->debugSection('responseBody')) {
-                        Console::println("[RESPONSE BODY]", $highlight);
-                        dump(json_decode((string) $response->getBody()));
-                        Console::println("[/RESPONSE BODY]", $highlight);
-                    }
+//                    if ($this->config->debugSection('responseBody')) {
+//                        Console::println("[RESPONSE BODY]", $highlight);
+//                        dump(json_decode((string) $response->getBody()));
+//                        $response->getBody()->seek(0);
+//                        Console::println("[/RESPONSE BODY]", $highlight);
+//                    }
                     Console::println("[/RESPONSE]", $highlight);
-                    $response->getBody()->seek(0);
+//                    $response->getBody()->seek(0);
                 });
             })
         );

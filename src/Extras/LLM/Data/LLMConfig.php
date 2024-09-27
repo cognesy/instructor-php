@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\LLM\Data;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use Cognesy\Instructor\Extras\Enums\HttpClientType;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
@@ -10,6 +11,7 @@ class LLMConfig
 {
     public function __construct(
         public ClientType $clientType = ClientType::OpenAICompatible,
+        public HttpClientType $httpClient = HttpClientType::Guzzle,
         public string $apiUrl = '',
         public string $apiKey = '',
         public string $endpoint = '',
@@ -43,6 +45,7 @@ class LLMConfig
 
         return new LLMConfig(
             clientType: ClientType::from(Settings::get('llm', "connections.$connection.clientType")),
+            httpClient: HttpClientType::from(Settings::get('llm', "connections.$connection.httpClient")),
             apiUrl: Settings::get('llm', "connections.$connection.apiUrl"),
             apiKey: Settings::get('llm', "connections.$connection.apiKey", ''),
             endpoint: Settings::get('llm', "connections.$connection.endpoint"),

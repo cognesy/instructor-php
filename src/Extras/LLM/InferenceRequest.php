@@ -20,7 +20,7 @@ class InferenceRequest
         string|array $toolChoice = [],
         array $responseFormat = [],
         array $options = [],
-        Mode $mode = Mode::Text
+        Mode $mode = Mode::Text,
     ) {
         $this->model = $model;
         $this->options = $options;

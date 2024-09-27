@@ -3,26 +3,27 @@ namespace Cognesy\Instructor\Extras\LLM;
 
 use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Inference\InferenceRequested;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\DebugConfig;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Utils\Settings;
-use GuzzleHttp\Client;
 
 class Inference
 {
-    use Traits\HandlesDebug;
     use Traits\HandlesDrivers;
 
-    protected ?Client $client = null;
+    protected ?CanHandleHttp $httpClient = null;
     protected LLMConfig $config;
     protected CanHandleInference $driver;
+    protected EventDispatcher $events;
 
-    public function __construct(string $connection = '') {
+    public function __construct(string $connection = '', EventDispatcher $events = null) {
+        $this->events = $events ?? new EventDispatcher();
         $defaultConnection = $connection ?: Settings::get('llm', "defaultConnection");
         $this->config = LLMConfig::load($defaultConnection);
-        //$this->client = $this->makeClient();
-        //$this->driver = $this->getDriver($this->config->clientType);
     }
 
     public static function forMessages(
@@ -78,8 +79,8 @@ class Inference
         return $this;
     }
 
-    public function withClient(Client $client): self {
-        $this->client = $client;
+    public function withHttpClient(CanHandleHttp $httpClient): self {
+        $this->httpClient = $httpClient;
         return $this;
     }
 
@@ -105,8 +106,10 @@ class Inference
         Mode $mode = Mode::Text
     ): InferenceResponse {
         $this->driver = $this->driver ?? $this->getDriver($this->config->clientType);
+        $request = new InferenceRequest($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
+        $this->events->dispatch(new InferenceRequested($request));
         return new InferenceResponse(
-            response: $this->driver->handle(new InferenceRequest($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode)),
+            response: $this->driver->handle($request),
             driver: $this->driver,
             config: $this->config,
             isStreamed: $options['stream'] ?? false

@@ -7,22 +7,80 @@ use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 
 class AnthropicDriver implements CanHandleInference
 {
-    use Traits\HandlesHttpClient;
-
     public function __construct(
-        protected Client $client,
+        protected CanHandleHttp $http,
         protected LLMConfig $config
     ) {}
+
+    // REQUEST //////////////////////////////////////////////
+
+    public function handle(InferenceRequest $request) : ResponseInterface {
+        return $this->http->handle(
+            url: $this->getEndpointUrl($request),
+            headers: $this->getRequestHeaders(),
+            body: $this->getRequestBody(
+                $request->messages,
+                $request->model,
+                $request->tools,
+                $request->toolChoice,
+                $request->responseFormat,
+                $request->options,
+                $request->mode,
+            ),
+            streaming: $request->options['stream'] ?? false,
+        );
+    }
+
+    public function getEndpointUrl(InferenceRequest $request) : string {
+        return "{$this->config->apiUrl}{$this->config->endpoint}";
+    }
+
+    public function getRequestHeaders() : array {
+        return array_filter([
+            'x-api-key' => $this->config->apiKey,
+            'content-type' => 'application/json',
+            'accept' => 'application/json',
+            'anthropic-version' => $this->config->metadata['apiVersion'] ?? '',
+            'anthropic-beta' => $this->config->metadata['beta'] ?? '',
+        ]);
+    }
+
+    public function getRequestBody(
+        array $messages = [],
+        string $model = '',
+        array $tools = [],
+        string|array $toolChoice = '',
+        array $responseFormat = [],
+        array $options = [],
+        Mode $mode = Mode::Text,
+    ) : array {
+        $request = array_filter(array_merge([
+            'model' => $model ?: $this->config->model,
+            'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
+            'system' => Messages::fromArray($messages)
+                ->forRoles(['system'])
+                ->toString(),
+            'messages' => $this->toNativeContent(Messages::fromArray($messages)
+                ->exceptRoles(['system'])
+                ->toMergedPerRole()
+                ->toArray()
+            ),
+        ], $options));
+
+        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+    }
+
+    // RESPONSE /////////////////////////////////////////////
 
     public function toApiResponse(array $data): ApiResponse {
         return new ApiResponse(
@@ -63,50 +121,6 @@ class AnthropicDriver implements CanHandleInference
             $data === 'event: message_stop' => false,
             default => $data,
         };
-    }
-
-    // INTERNAL /////////////////////////////////////////////
-
-    protected function getEndpointUrl(InferenceRequest $request) : string {
-        return "{$this->config->apiUrl}{$this->config->endpoint}";
-    }
-
-    private function getRequestHeaders() : array {
-        return array_filter([
-            'x-api-key' => $this->config->apiKey,
-            'content-type' => 'application/json',
-            'accept' => 'application/json',
-            'anthropic-version' => $this->config->metadata['apiVersion'] ?? '',
-            'anthropic-beta' => $this->config->metadata['beta'] ?? '',
-        ]);
-    }
-
-    /**
-     * @throws GuzzleException
-     */
-    protected function getRequestBody(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : array {
-        $request = array_filter(array_merge([
-            'model' => $model ?: $this->config->model,
-            'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
-            'system' => Messages::fromArray($messages)
-                ->forRoles(['system'])
-                ->toString(),
-            'messages' => $this->toNativeContent(Messages::fromArray($messages)
-                ->exceptRoles(['system'])
-                ->toMergedPerRole()
-                ->toArray()
-            ),
-        ], $options));
-
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
     // PRIVATE //////////////////////////////////////////////

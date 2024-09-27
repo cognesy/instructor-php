@@ -2,6 +2,8 @@
 namespace Cognesy\Instructor\Extras\LLM\Traits;
 
 use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use Cognesy\Instructor\Extras\Enums\HttpClientType;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\AzureOpenAIDriver;
@@ -10,8 +12,7 @@ use Cognesy\Instructor\Extras\LLM\Drivers\GeminiDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\MistralDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAICompatibleDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
-use GuzzleHttp\Client;
-use GuzzleHttp\HandlerStack;
+use Cognesy\Instructor\Extras\LLM\Http\GuzzleHttpClient;
 use InvalidArgumentException;
 
 trait HandlesDrivers
@@ -34,13 +35,10 @@ trait HandlesDrivers
         };
     }
 
-    protected function makeClient() : Client {
-        if (isset($this->client) && $this->config->debugEnabled()) {
-            throw new InvalidArgumentException("Guzzle does not allow to inject debugging stack into existing client. Turn off debug or use default client.");
-        }
-        return match($this->config->debugEnabled()) {
-            false => $this->client ?? new Client(),
-            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
+    protected function makeClient() : CanHandleHttp {
+        return match ($this->config->httpClient) {
+            HttpClientType::Guzzle => new GuzzleHttpClient($this->config),
+            default => throw new InvalidArgumentException("Client not supported: {$this->config->httpClient}"),
         };
     }
 }
