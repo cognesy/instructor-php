@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Script;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Exception;
 use RuntimeException;
@@ -45,22 +44,6 @@ trait HandlesConversion
                 parameters: $this->parameters()->merge($parameters)->toArray()),
             true => $array,
         };
-    }
-
-    /**
-     * @param ClientType $clientType
-     * @param array<string> $order
-     * @param array<string,mixed>|null $parameters
-     * @return array<string,mixed>
-     */
-    public function toNativeArray(ClientType $clientType, array $parameters = null, bool $mergePerRole = false) : array {
-        $array = $this->renderMessages(
-            messages: $mergePerRole
-                ? $this->toSingleSection('merged')->toMergedPerRole()->toArray(raw: true)
-                : $this->toArray(raw: true),
-            parameters: $this->parameters()->merge($parameters)->toArray(),
-        );
-        return $clientType->toNativeMessages($array);
     }
 
     /**

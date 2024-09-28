@@ -38,7 +38,7 @@ class User {
 }
 
 // Get Instructor object with client defined in config.php under 'connections/openai' key
-$instructor = (new Instructor)->withClient('openai');
+$instructor = (new Instructor)->withConnection('openai');
 
 // Call with custom model and execution mode
 $user = $instructor->respond(

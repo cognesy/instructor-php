@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Instructor;
@@ -11,7 +10,6 @@ trait HandlesParametrization
 {
     public function using(
         Instructor  $instructor = null,
-        CanCallLLM  $client = null,
         RequestInfo $requestInfo = null,
         Signature   $signature = null,
         string      $instructions = null,
@@ -20,7 +18,6 @@ trait HandlesParametrization
         string      $model = null,
     ) : static {
         $this->withInstructor($instructor);
-        $this->withClient($client);
         $this->withRequestInfo($requestInfo);
         $this->withSignature($signature);
         $this->withInstructions($instructions);
@@ -40,10 +37,7 @@ trait HandlesParametrization
     }
 
     public function withClient(?CanCallLLM $client) : static {
-        $this->instructor->withClient(match(true) {
-            !is_null($client) => $client,
-            default => $this->instructor->client(),
-        });
+        // TODO: fix me
         return $this;
     }
 

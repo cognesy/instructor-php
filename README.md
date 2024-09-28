@@ -205,7 +205,7 @@ method with the connection name.
 <?php
 // ...
 $user = (new Instructor)
-    ->withClient('ollama')
+    ->withConnection('ollama')
     ->respond(
         messages: "His name is Jason and he is 28 years old.",
         responseModel: Person::class,

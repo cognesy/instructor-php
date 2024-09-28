@@ -24,7 +24,7 @@ use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
 // simplified API, default connection for convenient ad-hoc calls
-$answer = Inference::forMessages('What is capital of Germany');
+$answer = Inference::text('What is capital of Germany');
 
 echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n";
@@ -46,8 +46,6 @@ assert(Str::contains($answer, 'Paris'));
 
 // regular API, allows to customize inference options
 $stream = (new Inference)
-    ->withConnection('ollama') // optional, default is set in /config/llm.php
-    ->withDebug()
     ->create(
         messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
         options: ['max_tokens' => 128, 'stream' => true]

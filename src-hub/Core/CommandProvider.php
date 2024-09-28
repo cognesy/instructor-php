@@ -2,22 +2,15 @@
 
 namespace Cognesy\InstructorHub\Core;
 
-use Cognesy\Instructor\Container\Container;
-
 class CommandProvider
 {
-    private Container $config;
     private array $commands;
     private array $commandInstances;
 
-    public function __construct(
-        Container $config,
-        array     $commands
-    ) {
+    public function __construct(array $commands) {
         if (empty($commands)) {
             throw new \Exception('No commands defined in ' . get_class($this));
         }
-        $this->config = $config;
         $this->commands = $commands;
     }
 
@@ -46,16 +39,9 @@ class CommandProvider
             return $this->commandInstances;
         }
         // instantiate all commands
-        foreach ($this->commands as $commandClass) {
-            [$name, $instance] = $this->createCommandInstance($commandClass);
-            $this->commandInstances[$name] = $instance;
+        foreach ($this->commands as $instance) {
+            $this->commandInstances[$instance->name] = $instance;
         }
         return $this->commandInstances;
-    }
-
-    private function createCommandInstance(string $commandClass) : array {
-        /** @var Command $instance */
-        $instance = $this->config->get($commandClass);
-        return [$instance->name, $instance];
     }
 }

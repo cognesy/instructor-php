@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Data\Traits\Request;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Str;
 
 trait HandlesSchema
@@ -32,6 +33,25 @@ trait HandlesSchema
 
     public function toolDescription() : string {
         return $this->responseModel ? $this->responseModel->toolDescription() : $this->toolDescription;
+    }
+
+    public function responseFormat() : array {
+        return match($this->mode()) {
+            Mode::Json => [
+                'type' => 'json_object',
+                'schema' => $this->jsonSchema(),
+            ],
+            Mode::JsonSchema => [
+                'type' => 'json_schema',
+                'description' => $this->defaultToolDescription,
+                'json_schema' => [
+                    'name' => $this->schemaName(),
+                    'schema' => $this->jsonSchema(),
+                    'strict' => true,
+                ],
+            ],
+            default => []
+        };
     }
 
     public function jsonSchema() : ?array {
@@ -63,14 +83,6 @@ trait HandlesSchema
         $name = str_replace('\\', '_', $name);
         return $name;
     }
-
-//    public function responseFormat() : string {
-//        return match($this->mode()) {
-//            Mode::Json => 'json_object',
-//            Mode::JsonSchema => 'json_schema',
-//            default => ''
-//        };
-//    }
 
     // INTERNAL ///////////////////////////////////////////////////////////////
 

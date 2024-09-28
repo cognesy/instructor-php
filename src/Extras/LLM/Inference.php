@@ -1,32 +1,45 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM;
 
-use Cognesy\Instructor\ApiClient\Requests\ApiRequest;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\InferenceRequested;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Debug\Debug;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\DebugConfig;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\AzureOpenAIDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\CohereDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\GeminiDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\MistralDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAICompatibleDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
 use Cognesy\Instructor\Utils\Settings;
+use InvalidArgumentException;
 
 class Inference
 {
-    use Traits\HandlesDrivers;
-
-    protected ?CanHandleHttp $httpClient = null;
     protected LLMConfig $config;
+
     protected CanHandleInference $driver;
+    protected CanHandleHttp $httpClient;
     protected EventDispatcher $events;
 
     public function __construct(string $connection = '', EventDispatcher $events = null) {
         $this->events = $events ?? new EventDispatcher();
+
         $defaultConnection = $connection ?: Settings::get('llm', "defaultConnection");
         $this->config = LLMConfig::load($defaultConnection);
+        $this->httpClient = HttpClient::make();
+        $this->driver = $this->makeDriver($this->config, $this->httpClient);
     }
 
-    public static function forMessages(
+    // STATIC //////////////////////////////////////////////////////////////////
+
+    public static function text(
         string|array $messages,
         string $connection = '',
         string $model = '',
@@ -43,18 +56,11 @@ class Inference
             ->toText();
     }
 
+    // PUBLIC //////////////////////////////////////////////////////////////////
+
     public function withConfig(LLMConfig $config): self {
         $this->config = $config;
-        return $this;
-    }
-
-    public function withDebug(bool $debug = true) : self {
-        $this->config->debug->enabled = $debug;
-        return $this;
-    }
-
-    public function withDebugConfig(DebugConfig $config) : self {
-        $this->config->debug = $config;
+        $this->driver = $this->makeDriver($this->config, $this->httpClient);
         return $this;
     }
 
@@ -63,6 +69,18 @@ class Inference
             return $this;
         }
         $this->config = LLMConfig::load($connection);
+        $this->driver = $this->makeDriver($this->config, $this->httpClient);
+        return $this;
+    }
+
+    public function withHttpClient(CanHandleHttp $httpClient): self {
+        $this->httpClient = $httpClient;
+        $this->driver = $this->makeDriver($this->config, $this->httpClient);
+        return $this;
+    }
+
+    public function withDriver(CanHandleInference $driver): self {
+        $this->driver = $driver;
         return $this;
     }
 
@@ -74,26 +92,9 @@ class Inference
         return $this;
     }
 
-    public function withDriver(CanHandleInference $driver): self {
-        $this->driver = $driver;
+    public function withDebug(bool $debug = true) : self {
+        Debug::setEnabled($debug);
         return $this;
-    }
-
-    public function withHttpClient(CanHandleHttp $httpClient): self {
-        $this->httpClient = $httpClient;
-        return $this;
-    }
-
-    public function fromApiRequest(ApiRequest $apiRequest) : InferenceResponse {
-        return $this->create(
-            $apiRequest->messages(),
-            $apiRequest->model(),
-            $apiRequest->tools(),
-            $apiRequest->toolChoice(),
-            $apiRequest->responseFormat(),
-            $apiRequest->options(),
-            $apiRequest->mode()
-        );
     }
 
     public function create(
@@ -105,7 +106,6 @@ class Inference
         array $options = [],
         Mode $mode = Mode::Text
     ): InferenceResponse {
-        $this->driver = $this->driver ?? $this->getDriver($this->config->clientType);
         $request = new InferenceRequest($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
         $this->events->dispatch(new InferenceRequested($request));
         return new InferenceResponse(
@@ -114,5 +114,26 @@ class Inference
             config: $this->config,
             isStreamed: $options['stream'] ?? false
         );
+    }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
+    protected function makeDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
+        return match ($config->providerType) {
+            LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient),
+            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient),
+            LLMProviderType::Cohere => new CohereDriver($config, $httpClient),
+            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient),
+            LLMProviderType::Mistral => new MistralDriver($config, $httpClient),
+            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient),
+            LLMProviderType::Fireworks,
+            LLMProviderType::Groq,
+            LLMProviderType::Ollama,
+            LLMProviderType::OpenAICompatible,
+            LLMProviderType::OpenRouter,
+            LLMProviderType::Together,
+            => new OpenAICompatibleDriver($config, $httpClient),
+            default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
+        };
     }
 }

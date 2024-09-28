@@ -48,7 +48,7 @@ class Company {
     public array $clients = [];
 }
 
-$instructor = (new Instructor)->withClient('anthropic');
+$instructor = (new Instructor)->withConnection('anthropic');
 
 $companyGen = Webpage::withScraper('none')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')

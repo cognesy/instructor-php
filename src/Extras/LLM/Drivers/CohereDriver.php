@@ -1,15 +1,16 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
-use Cognesy\Instructor\ApiClient\Data\ToolCall;
-use Cognesy\Instructor\ApiClient\Data\ToolCalls;
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\ToolCall;
+use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Psr\Http\Message\ResponseInterface;
@@ -17,14 +18,16 @@ use Psr\Http\Message\ResponseInterface;
 class CohereDriver implements CanHandleInference
 {
     public function __construct(
-        protected CanHandleHttp $http,
-        protected LLMConfig $config
-    ) {}
+        protected LLMConfig $config,
+        protected ?CanHandleHttp $httpClient = null,
+    ) {
+        $this->httpClient = $httpClient ?? HttpClient::make();
+    }
 
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : ResponseInterface {
-        return $this->http->handle(
+        return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody(

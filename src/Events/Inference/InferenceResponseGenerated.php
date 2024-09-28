@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Inference;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 
 class InferenceResponseGenerated extends Event
 {

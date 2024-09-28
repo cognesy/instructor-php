@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\InstructorHub\Core;
 
-use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Utils\Cli\Color;
 
 abstract class CliApp {
@@ -9,8 +8,8 @@ abstract class CliApp {
     public string $name = "<app name>";
     public string $description = "<app description>";
 
-    public function __construct(Container $config) {
-        $this->commandProvider = $config->get(CommandProvider::class);
+    public function __construct(CommandProvider $commandProvider) {
+        $this->commandProvider = $commandProvider;
     }
 
     public function run(int $argc, array $argv) : void {

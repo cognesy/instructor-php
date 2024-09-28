@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\LLM;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\InferenceResponseGenerated;
 use Cognesy\Instructor\Events\Inference\PartialInferenceResponseGenerated;
+use Cognesy\Instructor\Extras\Http\StreamReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
@@ -28,7 +28,7 @@ class InferenceResponse
         ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->streamReader = new StreamReader($config, $this->driver->getData(...), $this->events);
+        $this->streamReader = new StreamReader($this->driver->getData(...), $this->events);
     }
 
     public function isStreamed() : bool {
@@ -66,7 +66,7 @@ class InferenceResponse
     }
 
     /**
-     * @return Generator<PartialApiResponse>
+     * @return Generator<\Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse>
      */
     public function toPartialApiResponses() : Generator {
         foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
@@ -114,7 +114,7 @@ class InferenceResponse
     }
 
     /**
-     * @return PartialApiResponse[]
+     * @return \Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse[]
      */
     protected function allPartialApiResponses() : array {
         $partialResponses = [];

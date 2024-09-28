@@ -10,19 +10,23 @@ use Cognesy\Instructor\Utils\Str;
 
 $connections = [
     'anthropic',
-//    'azure',
-//    'cohere',
-//    'fireworks',
-//    'gemini',
-//    'groq',
-//    'mistral',
-//    'ollama',
-//    'openai',
-//    'openrouter',
-//    'together'
+    'azure',
+    'cohere',
+    'fireworks',
+    'gemini',
+    'groq',
+    'mistral',
+    'ollama',
+    'openai',
+    'openrouter',
+    'together'
 ];
 
-$streamingModes = [true, false];
+$streamingModes = [
+    true,
+    false
+];
+
 $modes = [
     Mode::Text,
     Mode::MdJson,

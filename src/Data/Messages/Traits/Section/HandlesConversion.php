@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Data\Messages\Traits\Section;
 
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Traits\RendersContent;
 use RuntimeException;
@@ -24,19 +23,6 @@ trait HandlesConversion
             messages: $this->messages()->toArray(),
             parameters: $parameters
         );
-    }
-
-    /**
-     * @param ClientType $clientType
-     * @param array<string,mixed>|null $parameters
-     * @return array<string,mixed>
-     */
-    public function toNativeArray(ClientType $clientType, array $parameters = null) : array {
-        $array = $this->renderMessages(
-            messages: $this->toArray($parameters),
-            parameters: $parameters,
-        );
-        return $clientType->toNativeMessages($array);
     }
 
     /**

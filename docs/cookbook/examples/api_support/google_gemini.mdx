@@ -39,7 +39,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$instructor = (new Instructor)->withClient('gemini');
+$instructor = (new Instructor)->withConnection('gemini');
 
 $user = $instructor
     ->respond(

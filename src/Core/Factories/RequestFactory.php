@@ -1,9 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Core\Factories;
 
-use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
-use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
-use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Enums\Mode;
@@ -12,10 +9,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 class RequestFactory
 {
     public function __construct(
-        protected ApiClientFactory $clientFactory,
         protected ResponseModelFactory $responseModelFactory,
-        protected ApiRequestFactory $apiRequestFactory,
-        protected ApiRequestConfig $requestConfig,
         protected EventDispatcher $events,
     ) {}
 
@@ -37,6 +31,7 @@ class RequestFactory
             retryPrompt: $data->retryPrompt ?? '',
             mode: $data->mode ?? Mode::Tools,
             cachedContext: $data->cachedContext ?? [],
+            connection: $data->connection ?? '',
         );
     }
 
@@ -55,6 +50,7 @@ class RequestFactory
         string $retryPrompt = '',
         Mode $mode = Mode::Tools,
         array $cachedContext = [],
+        string $connection = '',
     ) : Request {
         return new Request(
             messages: $messages,
@@ -71,10 +67,8 @@ class RequestFactory
             retryPrompt: $retryPrompt,
             mode: $mode,
             cachedContext: $cachedContext,
-            client: $this->clientFactory->getDefault(),
+            connection: $connection,
             responseModelFactory: $this->responseModelFactory,
-            apiRequestFactory: $this->apiRequestFactory,
-            requestConfig: $this->requestConfig,
         );
     }
 }

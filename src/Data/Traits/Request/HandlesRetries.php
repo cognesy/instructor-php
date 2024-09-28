@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Data\Response;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 
 trait HandlesRetries
 {

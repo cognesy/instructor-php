@@ -1,19 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-use Cognesy\Instructor\ApiClient\Factories\ApiRequestFactory;
-use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
 
 class Request
 {
-    use Traits\Request\HandlesApiClient;
-    use Traits\Request\HandlesApiRequestFactory;
-    use Traits\Request\HandlesApiRequestParams;
     use Traits\Request\HandlesExamples;
+    use Traits\Request\HandlesLLMClient;
     use Traits\Request\HandlesMessages;
     use Traits\Request\HandlesPrompts;
     use Traits\Request\HandlesRetries;
@@ -24,46 +18,37 @@ class Request
         string|array|object $input,
         string|array|object $responseModel,
         string $system,
-        string               $prompt,
-        array                $examples,
-        string               $model,
-        int                  $maxRetries,
-        array                $options,
-        string               $toolName,
-        string               $toolDescription,
-        string               $retryPrompt,
-        Mode                 $mode,
-        array                $cachedContext,
-        CanCallLLM           $client,
+        string $prompt,
+        array $examples,
+        string $model,
+        int $maxRetries,
+        array $options,
+        string $toolName,
+        string $toolDescription,
+        string $retryPrompt,
+        Mode $mode,
+        array $cachedContext,
+        string $connection,
         ResponseModelFactory $responseModelFactory,
-        ApiRequestFactory    $apiRequestFactory,
-        ApiRequestConfig     $requestConfig,
     ) {
         $this->responseModelFactory = $responseModelFactory;
-        $this->apiRequestFactory = $apiRequestFactory;
-        $this->requestConfig = $requestConfig;
-        $this->client = $client;
-        $this->clientType = ClientType::fromClient($client);
-        $this->cachedContext = $cachedContext;
 
+        $this->cachedContext = $cachedContext;
+        $this->connection = $connection;
         $this->options = $options;
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
-
         $this->input = $input;
-        $this->messages = $this->normalizeMessages($messages);
         $this->prompt = $prompt;
         $this->retryPrompt = $retryPrompt;
         $this->examples = $examples;
         $this->system = $system;
+        $this->model = $model;
 
-        $this->withModel($model);
-        if (empty($this->option('max_tokens'))) {
-            $this->setOption('max_tokens', $this->client->defaultMaxTokens());
-        }
-
+        $this->messages = $this->normalizeMessages($messages);
         $this->toolName = $toolName ?: $this->defaultToolName;
         $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
+
         $this->requestedSchema = $responseModel;
         if (!empty($this->requestedSchema)) {
             $this->responseModel = $this->responseModelFactory->fromAny(
@@ -76,5 +61,25 @@ class Request
 
     public function copy(array $messages) : self {
         return (clone $this)->withMessages($messages);
+    }
+
+    public function toArray() : array {
+        return [
+            'messages' => $this->messages,
+            'input' => $this->input,
+            'responseModel' => $this->responseModel,
+            'system' => $this->system,
+            'prompt' => $this->prompt,
+            'examples' => $this->examples,
+            'model' => $this->model,
+            'maxRetries' => $this->maxRetries,
+            'options' => $this->options,
+            'toolName' => $this->toolName(),
+            'toolDescription' => $this->toolDescription(),
+            'retryPrompt' => $this->retryPrompt,
+            'mode' => $this->mode(),
+            'cachedContext' => $this->cachedContext,
+            'connection' => $this->connection,
+        ];
     }
 }

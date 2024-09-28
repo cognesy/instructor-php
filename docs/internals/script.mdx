@@ -83,16 +83,6 @@ $script->setParameter('userRole', 'admin');
 $script->unsetParameter('userRole');
 ```
 
-#### Rendering to Native Array Format
-
-```php
-<?php
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
-
-// Render Script to native array format for a specific LLM client
-$clientType = ClientType::OpenAI;
-$nativeArray = $script->toNativeArray($clientType);
-```
 
 #### Using Templates within Sections
 
@@ -166,10 +156,7 @@ The Script class uses several internal traits to handle various aspects of its f
 
 ```php
 <?php
-use Cognesy\Instructor\Data\Messages\Script;
-use Cognesy\Instructor\Data\Messages\Section;
-use Cognesy\Instructor\Data\Messages\ScriptParameters;
-use Cognesy\Instructor\ApiClient\Enums\ClientType;
+use Cognesy\Instructor\Data\Messages\Script;use Cognesy\Instructor\Data\Messages\ScriptParameters;use Cognesy\Instructor\Data\Messages\Section;use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
 
 // Define sections
 $intro = (new Section('introduction'))
@@ -185,6 +172,4 @@ $script = new Script($intro, $qna);
 $parameters = new ScriptParameters(['userName' => 'Alice']);
 $script->withParams($parameters);
 
-// Convert to native format for OpenAI
-$nativeFormat = $script->toNativeArray(ClientType::OpenAI);
 ```

@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Events\ApiClient;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class ApiResponseReceived extends Event

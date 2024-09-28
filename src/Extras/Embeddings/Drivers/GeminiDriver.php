@@ -1,28 +1,31 @@
 <?php
-
 namespace Cognesy\Instructor\Extras\Embeddings\Drivers;
 
 use Cognesy\Instructor\Extras\Embeddings\Contracts\CanVectorize;
-use Cognesy\Instructor\Extras\Embeddings\EmbeddingsConfig;
+use Cognesy\Instructor\Extras\Embeddings\Data\EmbeddingsConfig;
+use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
-use Cognesy\Instructor\Extras\Embeddings\Vector;
-use GuzzleHttp\Client;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\HttpClient;
 
 class GeminiDriver implements CanVectorize
 {
     private int $inputCharacters = 0;
 
     public function __construct(
-        protected Client $client,
-        protected EmbeddingsConfig $config
-    ) {}
+        protected EmbeddingsConfig $config,
+        protected ?CanHandleHttp $httpClient = null,
+    ) {
+        $this->httpClient = $httpClient ?? HttpClient::make();
+    }
 
     public function vectorize(array $input, array $options = []): EmbeddingsResponse {
         $this->inputCharacters = $this->countCharacters($input);
-        $response = $this->client->post($this->getEndpointUrl(), [
-            'headers' => $this->getRequestHeaders(),
-            'json' => $this->getRequestBody($input, $options),
-        ]);
+        $response = $this->httpClient->handle(
+            $this->getEndpointUrl(),
+            $this->getRequestHeaders(),
+            $this->getRequestBody($input, $options),
+        );
         return $this->toResponse(json_decode($response->getBody()->getContents(), true));
     }
 

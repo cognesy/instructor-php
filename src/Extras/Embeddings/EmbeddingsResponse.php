@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Embeddings;
 
+use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
+
 class EmbeddingsResponse
 {
     public function __construct(

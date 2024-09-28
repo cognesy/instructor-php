@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\LLM\Contracts;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Psr\Http\Message\ResponseInterface;
 

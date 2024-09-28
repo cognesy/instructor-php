@@ -24,10 +24,10 @@ event listeners.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\ApiClient\Traits\PartialApiResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
 use Cognesy\Instructor\Instructor;
 
 class User {

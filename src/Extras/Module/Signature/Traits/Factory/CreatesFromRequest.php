@@ -31,7 +31,7 @@ trait CreatesFromRequest
     }
 
     private static function responseModel(RequestInfo $request) : ResponseModel {
-        self::responseModelFactory()->fromAny(
+        return self::responseModelFactory()->fromAny(
             requestedModel: $request->responseModel,
             toolName: $request->toolName,
             toolDescription: $request->toolDescription,

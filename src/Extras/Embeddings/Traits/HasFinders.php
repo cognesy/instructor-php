@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Embeddings\Traits;
 
-use Cognesy\Instructor\Extras\Embeddings\Vector;
+use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 
 trait HasFinders
 {

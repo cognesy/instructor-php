@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
 
 class Response {
     private array $messages;

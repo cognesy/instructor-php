@@ -21,7 +21,9 @@ This is useful for debugging the request and response when you are not getting t
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
@@ -32,10 +34,7 @@ class User {
 
 // CASE 1 - normal flow
 
-$instructor = (new Instructor)->withClient(new OpenAIClient(
-    apiKey: Env::get('OPENAI_API_KEY'), //  . 'invalid', // intentionally invalid API key
-    baseUri: Env::get('OPENAI_BASE_URI'),
-));
+$instructor = (new Instructor)->withConnection('openai');
 
 echo "\n### CASE 1.1 - Debugging sync request\n\n";
 $user = $instructor->withDebug()->respond(
@@ -68,12 +67,10 @@ assert($user2->name === 'Anna');
 assert($user2->age === 21);
 
 
-// CASE 2 - forcing API error via invalid API key
+// CASE 2 - forcing API error via empty LLM config
 
-$instructor = (new Instructor)->withClient(new OpenAIClient(
-    apiKey: Env::get('OPENAI_API_KEY') . 'invalid', // intentionally invalid API key
-    baseUri: Env::get('OPENAI_BASE_URI'),
-));
+$driver = new OpenAIDriver(new LLMConfig());
+$instructor = (new Instructor)->withDriver($driver);
 
 echo "\n### CASE 2 - Debugging exception\n\n";
 try {

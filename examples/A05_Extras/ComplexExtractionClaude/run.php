@@ -104,7 +104,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$instructor = (new Instructor)->withClient('anthropic');
+$instructor = (new Instructor)->withConnection('anthropic');
 
 echo "PROJECT EVENTS:\n\n";
 

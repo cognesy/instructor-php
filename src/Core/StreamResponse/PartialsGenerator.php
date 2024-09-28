@@ -2,10 +2,6 @@
 
 namespace Cognesy\Instructor\Core\StreamResponse;
 
-use Cognesy\Instructor\ApiClient\Data\ToolCall;
-use Cognesy\Instructor\ApiClient\Data\ToolCalls;
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Core\StreamResponse\Traits\ValidatesPartialResponse;
@@ -21,6 +17,10 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\ToolCall;
+use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Chain;
@@ -46,20 +46,25 @@ class PartialsGenerator implements CanGeneratePartials
     private bool $preventJsonSchema = false;
 
     public function __construct(
-        private EventDispatcher $events,
         private ResponseDeserializer $responseDeserializer,
         private ResponseTransformer $responseTransformer,
+        private EventDispatcher $events,
     ) {
         $this->toolCalls = new ToolCalls();
         $this->sequenceableHandler = new SequenceableHandler($events);
     }
 
+    /**
+     * @param Generator<PartialApiResponse> $stream
+     * @param ResponseModel $responseModel
+     * @return Generator<mixed>
+     */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable {
         // reset state
         $this->resetPartialResponse();
 
         // receive data
-        /** @var \Cognesy\Instructor\ApiClient\Responses\PartialApiResponse $partialResponse */
+        /** @var \Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response

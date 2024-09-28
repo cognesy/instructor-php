@@ -52,7 +52,7 @@ class ReflectiveResponse implements CanValidateSelf {
 }
 
 $problem = 'Solve the equation x+y=x-y';
-$solution = (new Instructor)->withClient('anthropic')->respond(
+$solution = (new Instructor)->withConnection('anthropic')->respond(
     messages: $problem,
     responseModel: ReflectiveResponse::class,
     mode: Mode::MdJson,

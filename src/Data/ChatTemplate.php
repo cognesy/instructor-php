@@ -32,9 +32,11 @@ class ChatTemplate
     }
 
     public function toMessages() : array {
-        $this->script = $this->makeScript($this->request)->mergeScript(
-            $this->makeCachedScript($this->request->cachedContext())
-        );
+        $this->script = $this
+            ->makeScript($this->request)
+            ->mergeScript(
+                $this->makeCachedScript($this->request->cachedContext())
+            );
 
         // Add retry messages if needed
         $this->addRetryMessages();

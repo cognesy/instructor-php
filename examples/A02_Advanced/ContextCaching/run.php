@@ -27,7 +27,6 @@ that we want to extract or generate based on README file.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\Anthropic\AnthropicClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Schema\Attributes\Description;
@@ -52,15 +51,6 @@ class Project {
 ?>
 ```
 
-Now we wil create Anthropic API client to process the content of README.md file.
-
-```php
-<?php
-$client = new AnthropicClient(
-    apiKey: Env::get('ANTHROPIC_API_KEY'),
-);
-?>
-```
 We read the content of the README.md file and cache the context, so it can be reused for
 multiple requests.
 
@@ -68,7 +58,7 @@ multiple requests.
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
-$cached = (new Instructor)->withClient($client)->cacheContext(
+$cached = (new Instructor)->withConnection('anthropic')->cacheContext(
     system: 'Your goal is to respond questions about the project described in the README.md file',
     prompt: 'Respond to the user with a description of the project with JSON using schema:\n<|json_schema|>',
     input: "# README.md\n\n" . $content,

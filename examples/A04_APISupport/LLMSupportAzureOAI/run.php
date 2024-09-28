@@ -37,7 +37,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$instructor = (new Instructor)->withClient('azure');
+$instructor = (new Instructor)->withConnection('azure');
 
 // Call with your model name and preferred execution mode
 $user = $instructor->withDebug()->respond(

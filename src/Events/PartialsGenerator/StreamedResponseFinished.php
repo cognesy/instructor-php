@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class StreamedResponseFinished extends Event

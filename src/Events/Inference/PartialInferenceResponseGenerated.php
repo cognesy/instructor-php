@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Inference;
 
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
 
 class PartialInferenceResponseGenerated extends Event
 {

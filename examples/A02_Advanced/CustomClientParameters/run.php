@@ -37,7 +37,7 @@ $client = new OpenAIClient(
 );
 
 // Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withDriver($client);
 
 // Call with custom model and execution mode
 $user = $instructor->respond(

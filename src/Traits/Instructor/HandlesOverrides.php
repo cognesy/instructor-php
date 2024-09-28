@@ -11,6 +11,10 @@ use Cognesy\Instructor\Validation\ResponseValidator;
 
 trait HandlesOverrides
 {
+    private ResponseDeserializer $responseDeserializer;
+    private ResponseValidator $responseValidator;
+    private ResponseTransformer $responseTransformer;
+
     // VALIDATORS //////////////////////////////////////////////////////////
 
     public function setValidator(CanValidateObject $validator) : static {
@@ -20,8 +24,7 @@ trait HandlesOverrides
 
     /** @param CanValidateObject[] $validators */
     public function setValidators(array $validators) : static {
-        $responseGenerator = $this->config->get(ResponseValidator::class);
-        $responseGenerator->setValidators($validators);
+        $this->responseValidator->setValidators($validators);
         return $this;
     }
 
@@ -32,8 +35,7 @@ trait HandlesOverrides
 
     /** @param CanValidateObject[] $validators */
     public function addValidators(array $validators) : static {
-        $responseGenerator = $this->config->get(ResponseValidator::class);
-        $responseGenerator->appendValidators($validators);
+        $this->responseValidator->appendValidators($validators);
         return $this;
     }
 
@@ -46,8 +48,7 @@ trait HandlesOverrides
 
     /** @param CanTransformObject[] $transformers */
     public function setTransformers(array $transformers) : static {
-        $responseGenerator = $this->config->get(ResponseTransformer::class);
-        $responseGenerator->setTransformers($transformers);
+        $this->responseTransformer->setTransformers($transformers);
         return $this;
     }
 
@@ -58,8 +59,7 @@ trait HandlesOverrides
 
     /** @param CanTransformObject[] $transformers */
     public function addTransformers(array $transformers) : static {
-        $responseGenerator = $this->config->get(ResponseTransformer::class);
-        $responseGenerator->appendTransformers($transformers);
+        $this->responseTransformer->appendTransformers($transformers);
         return $this;
     }
 
@@ -72,8 +72,7 @@ trait HandlesOverrides
 
     /** @param CanDeserializeClass[] $deserializers */
     public function setDeserializers(array $deserializers) : static {
-        $responseGenerator = $this->config->get(ResponseDeserializer::class);
-        $responseGenerator->setDeserializers($deserializers);
+        $this->responseDeserializer->setDeserializers($deserializers);
         return $this;
     }
 
@@ -84,8 +83,7 @@ trait HandlesOverrides
 
     /** @param CanDeserializeClass[] $deserializers */
     public function addDeserializers(array $deserializers) : static {
-        $responseGenerator = $this->config->get(ResponseDeserializer::class);
-        $responseGenerator->appendDeserializers($deserializers);
+        $this->responseDeserializer->appendDeserializers($deserializers);
         return $this;
     }
 }

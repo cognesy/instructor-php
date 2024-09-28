@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 use Cognesy\Instructor\Utils\Result\Result;
 
 interface CanGenerateResponse

@@ -41,7 +41,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$instructor = (new Instructor)->withClient('fireworks');
+$instructor = (new Instructor)->withConnection('fireworks');
 
 $user = $instructor
     ->respond(

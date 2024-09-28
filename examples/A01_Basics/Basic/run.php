@@ -42,7 +42,7 @@ class User {
     public string $name;
 }
 
-// Step 2: Get the text (or chat messages) you want to extract data from
+// Step 2: Get the text (or chat messages) you want to use as context
 $text = "Jason is 25 years old and works as an engineer.";
 print("Input text:\n");
 print($text . "\n\n");

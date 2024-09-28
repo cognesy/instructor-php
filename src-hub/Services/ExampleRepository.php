@@ -112,8 +112,8 @@ class ExampleRepository {
 
     private function getSubdirectories(string $path) : array {
         $fullPath = $this->baseDir . $path;
-        $files = scandir($fullPath);
-        $files = array_diff($files, array('.', '..'));
+        $files = scandir($fullPath) ?: [];
+        $files = array_diff($files, ['.', '..']);
         $directories = [];
         foreach ($files as $fileName) {
             if (is_dir($fullPath . '/' . $fileName)) {
@@ -136,7 +136,7 @@ class ExampleRepository {
 
     private function cleanStr(string $input, int $limit) : string {
         // remove any \n, \r, PHP tags, md hashes
-        $output = str_replace(array("\n", "\r", '<?php', '?>', '#'), array(' ', '', '', '', ''), $input);
+        $output = str_replace(["\n", "\r", '<?php', '?>', '#'], [' ', '', '', '', ''], $input);
         // remove leading and trailing spaces
         $output = trim($output);
         // remove double spaces

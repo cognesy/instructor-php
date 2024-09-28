@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
@@ -16,6 +14,9 @@ use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
 use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Extras\LLM\InferenceResponse;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
 use Generator;
@@ -29,9 +30,9 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
     protected ?ResponseModel $responseModel;
 
     public function __construct(
-        EventDispatcher $events,
         protected CanGenerateResponse $responseGenerator,
         protected CanGeneratePartials $partialsGenerator,
+        EventDispatcher $events,
     ) {
         $this->events = $events;
     }
@@ -87,39 +88,42 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         $this->errors = [];
     }
 
-    protected function getApiClient(Request $request): CanCallLLM {
-        /** @var CanCallLLM $apiClient */
-        $apiClient = $request->client();
-        if ($apiClient === null) {
-            throw new Exception("Request does not have an API client");
-        }
-        return $apiClient;
-    }
-
     protected function getApiResponse(Request $request) : ApiResponse {
-        $apiClient = $this->getApiClient($request);
-        $apiRequest = $request->toApiRequest();
         try {
-            $this->events->dispatch(new RequestSentToLLM($apiRequest));
-            $apiResponse = $apiClient->withApiRequest($apiRequest)->get();
+            $this->events->dispatch(new RequestSentToLLM($request));
+            $apiResponse = $this->makeInference($request)->toApiResponse();
         } catch (Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
+            $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));
             throw $e;
         }
         return $apiResponse;
     }
 
+    /**
+     * @param Request $request
+     * @return Generator<mixed>
+     */
     protected function getStreamedResponses(Request $request) : Generator {
-        $apiClient = $this->getApiClient($request);
-        $apiRequest = $request->toApiRequest();
         try {
-            $this->events->dispatch(new RequestSentToLLM($apiRequest));
-            $stream = $apiClient->withApiRequest($apiRequest)->stream();
+            $this->events->dispatch(new RequestSentToLLM($request));
+            $stream = $this->makeInference($request)->toPartialApiResponses();
             yield from $this->partialsGenerator->getPartialResponses($stream, $request->responseModel());
         } catch(Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($apiClient->getApiRequest(), $e->getMessage()));
+            $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));
             throw $e;
         }
+    }
+
+    protected function makeInference(Request $request) : InferenceResponse {
+        return (new Inference)->withConnection($request->connection())->create(
+            $request->messages(),
+            $request->model(),
+            $request->toolCallSchema(),
+            $request->toolChoice(),
+            $request->responseFormat(),
+            $request->options(),
+            $request->mode()
+        );
     }
 
     protected function processResponse(Request $request, ApiResponse $apiResponse, array $partialResponses) : Result {

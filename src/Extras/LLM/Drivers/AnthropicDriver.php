@@ -1,15 +1,16 @@
 <?php
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
-use Cognesy\Instructor\ApiClient\Data\ToolCall;
-use Cognesy\Instructor\ApiClient\Data\ToolCalls;
-use Cognesy\Instructor\ApiClient\Responses\ApiResponse;
-use Cognesy\Instructor\ApiClient\Responses\PartialApiResponse;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\ToolCall;
+use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
@@ -18,14 +19,16 @@ use Psr\Http\Message\ResponseInterface;
 class AnthropicDriver implements CanHandleInference
 {
     public function __construct(
-        protected CanHandleHttp $http,
-        protected LLMConfig $config
-    ) {}
+        protected LLMConfig $config,
+        protected ?CanHandleHttp $httpClient = null,
+    ) {
+        $this->httpClient = $httpClient ?? HttpClient::make();
+    }
 
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : ResponseInterface {
-        return $this->http->handle(
+        return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody(
@@ -70,7 +73,7 @@ class AnthropicDriver implements CanHandleInference
             'system' => Messages::fromArray($messages)
                 ->forRoles(['system'])
                 ->toString(),
-            'messages' => $this->toNativeContent(Messages::fromArray($messages)
+            'messages' => $this->toNativeMessages(Messages::fromArray($messages)
                 ->exceptRoles(['system'])
                 ->toMergedPerRole()
                 ->toArray()
@@ -167,6 +170,21 @@ class AnthropicDriver implements CanHandleInference
         };
     }
 
+    private function toNativeMessages(array $messages) : array {
+        return array_map(
+            fn($message) => [
+                'role' => $this->mapRole($message['role'] ?? 'user'),
+                'content' => $this->toNativeContent($message['content']),
+            ],
+            $messages
+        );
+    }
+
+    private function mapRole(string $role) : string {
+        $roles = ['user' => 'user', 'assistant' => 'assistant', 'system' => 'user', 'tool' => 'user'];
+        return $roles[$role] ?? $role;
+    }
+
     private function toNativeContent(string|array $content) : string|array {
         if (is_string($content)) {
             return $content;
@@ -182,20 +200,24 @@ class AnthropicDriver implements CanHandleInference
     private function contentPartToNative(array $contentPart) : array {
         $type = $contentPart['type'] ?? 'text';
         if ($type === 'image_url') {
-            $mimeType = Str::between($contentPart['image_url']['url'], 'data:', ';base64,');
-            $base64content = Str::after($contentPart['image_url']['url'], ';base64,');
-            $contentPart = [
-                'type' => 'image',
-                'source' => [
-                    'type' => 'base64',
-                    'media_type' => $mimeType,
-                    'data' => $base64content,
-                ],
-            ];
+            $contentPart = $this->toNativeImage($contentPart);
         }
         return $contentPart;
     }
 
+    private function toNativeImage(array $contentPart) : array {
+        $mimeType = Str::between($contentPart['image_url']['url'], 'data:', ';base64,');
+        $base64content = Str::after($contentPart['image_url']['url'], ';base64,');
+        $contentPart = [
+            'type' => 'image',
+            'source' => [
+                'type' => 'base64',
+                'media_type' => $mimeType,
+                'data' => $base64content,
+            ],
+        ];
+        return $contentPart;
+    }
     private function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromMapper(array_map(
             callback: fn(array $call) => $call,

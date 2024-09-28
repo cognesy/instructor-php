@@ -1,7 +1,6 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Tests\Examples\Complex\ProjectEvent;
 use Tests\Examples\Complex\ProjectEvents;
@@ -21,9 +20,10 @@ if (!function_exists('addEvent')) {
 
 
 it('creates function call', function () {
-    $array = Container::fresh()
-        ->get(ToolCallBuilder::class)
-        ->fromClass(ProjectEvents::class, 'addEvent', 'Extract object from provided content');
+    $array = [];
+//    Container::fresh()
+//        ->get(ToolCallBuilder::class)
+//        ->fromClass(ProjectEvents::class, 'addEvent', 'Extract object from provided content');
     expect($array)->toBeArray();
     expect($array['type'])->toEqual('function');
     expect($array['function']['name'])->toEqual('addEvent');

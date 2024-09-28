@@ -18,7 +18,7 @@ class ResponseValidator
 
     public function __construct(
         private EventDispatcher $events,
-        /** @var CanValidateObject[] $validators */
+        /** @var CanValidateObject[]|class-string[] $validators */
         private array $validators,
     ) {}
 
@@ -62,20 +62,3 @@ class ResponseValidator
         return ValidationResult::merge($results);
     }
 }
-
-//$chain = Chain::for($response)
-//    ->through(
-//        processors: array_map(
-//            fn($v) => fn($data) => $v->validate($data),
-//            array_merge($this->validators, [new SelfValidator])
-//        ),
-//        onNull: Chain::CONTINUE_ON_NULL
-//    )
-//    ->then(function($data) {
-//        $this->events->dispatch(match(true) {
-//            $validation->isInvalid() => new ResponseValidationFailed($validation),
-//            default => new ResponseValidated($validation)
-//        });
-//        return Result::success($data);
-//    });
-//return $chain->result();

@@ -35,7 +35,7 @@ class Library {
     public string $codeExample = '';
 }
 
-$instructor = (new Instructor)->withClient('openai');
+$instructor = (new Instructor)->withConnection('openai');
 
 $companyGen = Webpage::withScraper('none')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')

@@ -1,15 +1,23 @@
 <?php
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\ApiClient\Factories\ApiClientFactory;
-use Cognesy\Instructor\ApiClient\RequestConfig\ApiRequestConfig;
-use Cognesy\Instructor\Configs\InstructorConfig;
-use Cognesy\Instructor\Container\Container;
 use Cognesy\Instructor\Core\Factories\RequestFactory;
+use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
+use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\Response\ResponseGenerator;
+use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
-use Cognesy\Instructor\Utils\Env;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 
 /**
  * Main access point to Instructor.
@@ -22,9 +30,8 @@ class Instructor {
 
     use Traits\HandlesEnv;
 
-    use Traits\Instructor\HandlesApiClient;
+    use Traits\Instructor\HandlesClient;
     use Traits\Instructor\HandlesRequestCaching;
-    use Traits\Instructor\HandlesConfig;
     use Traits\Instructor\HandlesDebug;
     use Traits\Instructor\HandlesErrors;
     use Traits\Instructor\HandlesInvocation;
@@ -36,11 +43,9 @@ class Instructor {
 
     //private LoggerInterface $logger;
     //private EventLogger $eventLogger;
-    private ApiRequestConfig $apiRequestConfig;
 
     public function __construct(
         EventDispatcher $events = null,
-        Container       $config = null,
     ) {
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
         $this->queueEvent(new InstructorStarted());
@@ -48,29 +53,45 @@ class Instructor {
         // main event dispatcher
         $this->events = $events ?? new EventDispatcher('instructor');
 
-        // wire up core components
-        $this->config = $config ?? Container::fresh($this->events);
-        $this->config->external(
-            class: EventDispatcher::class,
-            reference: $this->events
-        );
-        $this->config->external(
-            class: Instructor::class,
-            reference: $this
-        );
-        $this->config->fromConfigProvider(new InstructorConfig());
-
         // wire up logging
         //$this->logger = $this->config->get(LoggerInterface::class);
         //$this->eventLogger = $this->config->get(EventLogger::class);
         //$this->events->wiretap($this->eventLogger->eventListener(...));
 
         // get other components from configuration
-        $this->requestFactory = $this->config->get(RequestFactory::class);
-        $this->apiRequestConfig = $this->config->get(ApiRequestConfig::class);
-        $this->clientFactory = $this->config->get(ApiClientFactory::class);
+        $schemaFactory = new SchemaFactory(
+            Settings::get('llm', 'useObjectReferences', false)
+        );
+
+        $this->requestFactory = new RequestFactory(
+            new ResponseModelFactory(
+                new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
+                $schemaFactory,
+                $this->events
+            ),
+            $this->events
+        );
+
+        $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
+        $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
+        $this->responseTransformer = new ResponseTransformer($this->events, []);
+
+        $this->requestHandler = new RequestHandler(
+            new ResponseGenerator(
+                $this->responseDeserializer,
+                $this->responseValidator,
+                $this->responseTransformer,
+                $this->events,
+            ),
+            new PartialsGenerator(
+                $this->responseDeserializer,
+                $this->responseTransformer,
+                $this->events,
+            ),
+            $this->events,
+        );
 
         // queue 'READY' event
-        $this->queueEvent(new InstructorReady($this->config));
+        $this->queueEvent(new InstructorReady());
     }
 }
