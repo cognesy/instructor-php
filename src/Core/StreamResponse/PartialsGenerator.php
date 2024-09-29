@@ -172,6 +172,7 @@ class PartialsGenerator implements CanGeneratePartials
 
     public function getCompleteResponse() : ApiResponse {
         $lastPartialResponse = $this->lastPartialResponse();
+        // TODO: fix me - it should use fromPartialResponses()
         return new ApiResponse(
             content: $this->responseText,
             responseData: [],

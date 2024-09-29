@@ -13,10 +13,8 @@ use Cognesy\Instructor\Utils\Settings;
 
 class Request
 {
-    use Traits\Request\HandlesExamples;
     use Traits\Request\HandlesLLMClient;
     use Traits\Request\HandlesMessages;
-    use Traits\Request\HandlesPrompts;
     use Traits\Request\HandlesRetries;
     use Traits\Request\HandlesSchema;
 

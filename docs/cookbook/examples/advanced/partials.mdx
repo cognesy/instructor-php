@@ -76,8 +76,8 @@ dump($user);
 
 assert(!empty($user->roles));
 assert(!empty($user->hobbies));
-assert($user->location == 'San Francisco');
+assert($user->location === 'San Francisco');
 assert($user->age == 25);
-assert($user->name == 'Jason');
+assert($user->name === 'Jason');
 ?>
 ```

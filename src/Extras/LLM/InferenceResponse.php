@@ -62,6 +62,7 @@ class InferenceResponse
             false => $this->driver->toApiResponse($this->responseData()),
             true => ApiResponse::fromPartialResponses($this->allPartialApiResponses()),
         };
+dump($response);
         $this->events->dispatch(new ApiResponseReceived($response));
         return $response;
     }

@@ -50,7 +50,7 @@ $user = $instructor->respond(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'claude-3-haiku-20240307',
-    mode: Mode::Json,
+    mode: Mode::Tools,
 );
 
 print("Completed response model:\n\n");

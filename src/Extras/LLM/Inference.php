@@ -92,7 +92,7 @@ class Inference
     }
 
     public function withDebug(bool $debug = true) : self {
-        Debug::setEnabled($debug);
+        Debug::setEnabled($debug); // TODO: fix me - debug should not be global, should be request specific
         return $this;
     }
 

@@ -9,29 +9,29 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-    'anthropic',
-    'azure',
-    'cohere',
+//    'anthropic',
+//    'azure',
+//    'cohere',
     'fireworks',
-    'gemini',
-    'groq',
-    'mistral',
-    'ollama',
-    'openai',
-    'openrouter',
-    'together'
+//    'gemini',
+//    'groq',
+//    'mistral',
+//    'ollama',
+//    'openai',
+//    'openrouter',
+//    'together'
 ];
 
 $streamingModes = [
-    true,
+//    true,
     false
 ];
 
 $modes = [
-    Mode::Text,
-    Mode::MdJson,
-    Mode::Json,
-    Mode::JsonSchema,
+//    Mode::Text,
+//    Mode::MdJson,
+//    Mode::Json,
+//    Mode::JsonSchema,
     Mode::Tools,
 ];
 
@@ -45,11 +45,11 @@ $modes = [
 
 (new CompareModes(
     query: [
-        ['role' => 'system', 'content' => 'Our company ACME was founded in 2020.'],
+        ['role' => 'system', 'content' => 'CONTEXT: Our company ACME was founded in 2020. YOUR GOAL: Extract the information from context based on user questions.'],
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
     evalFn: fn(EvalRequest $er) => Str::contains($er->answer, ['2020', 'ACME']),
-    //debug: true,
+    debug: true,
 ))->executeAll(
     connections: $connections,
     modes: $modes,

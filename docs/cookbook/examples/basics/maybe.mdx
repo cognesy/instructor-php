@@ -30,7 +30,7 @@ class User
 $text = 'We have no information about our new developer.';
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = (new Instructor)->withDebug()->respond(
+$maybeUser = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class),
     model: 'gpt-4o-mini',

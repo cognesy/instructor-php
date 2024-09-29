@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Core\Factories\RequestFactory;
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\Response\ResponseGenerator;
 use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
@@ -12,11 +10,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Extras\Debug\Debug;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Utils\Settings;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 
@@ -82,7 +76,7 @@ class Instructor {
     }
 
     public function withDebug(bool $debug = true) : static {
-        Debug::setEnabled($debug);
+        Debug::setEnabled($debug); // TODO: fix me - debug should not be global, should be request specific
         return $this;
     }
 }

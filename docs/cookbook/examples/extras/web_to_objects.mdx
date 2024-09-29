@@ -57,9 +57,9 @@ $companyGen = Webpage::withScraper('none')
     ->selectMany(selector: '.provider-card', callback: fn($item) => $item->asMarkdown(), limit: 3);
 
 $companies = [];
-foreach($companyGen as $company) {
+foreach($companyGen as $companyDiv) {
     $company = $instructor->respond(
-        messages: $company,
+        messages: $companyDiv,
         responseModel: Company::class,
         mode: Mode::Json
     );
@@ -67,5 +67,6 @@ foreach($companyGen as $company) {
     dump($company);
 }
 
+assert(count($companies) === 3);
 ?>
 ```
