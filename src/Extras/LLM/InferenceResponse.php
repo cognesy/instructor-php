@@ -101,7 +101,7 @@ class InferenceResponse
     // INTERNAL /////////////////////////////////////////////////
 
     protected function responseData() : array {
-        return Json::parse($this->response->getBody()->getContents());
+        return Json::parse($this->response->getBody()->getContents()) ?? [];
     }
 
     /**

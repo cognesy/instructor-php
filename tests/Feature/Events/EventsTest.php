@@ -29,7 +29,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
         '{"name": "Jason", "age":28}',
     ]);
     $events = new EventSink();
-    $person = (new Instructor)->withClient($mockLLM)
+    $person = (new Instructor)->withDriver($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
         ->respond(
@@ -82,7 +82,7 @@ it('handles events for simple case - validation failure', function ($event) use 
         '{"name": "J", "age":-28}',
     ]);
     $events = new EventSink();
-    $person = (new Instructor)->withClient($mockLLM)
+    $person = (new Instructor)->withDriver($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->onError(fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => $e->print())
@@ -133,7 +133,7 @@ it('handles events for custom case', function ($event) use ($text) {
         '{"age":28}'
     ]);
     $events = new EventSink();
-    $age = (new Instructor)->withClient($mockLLM)
+    $age = (new Instructor)->withDriver($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],

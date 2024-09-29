@@ -11,7 +11,7 @@ it('supports simple properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new Instructor)->withClient($mockLLM)->respond(
+    $person = (new Instructor)->withDriver($mockLLM)->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     );

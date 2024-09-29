@@ -14,7 +14,7 @@ $mockLLM = MockLLM::get([
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($mockLLM, $text) {
-    $instructor = (new Instructor)->withClient($mockLLM);
+    $instructor = (new Instructor)->withDriver($mockLLM);
     $person = $instructor->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -26,7 +26,7 @@ it('handles direct call', function () use ($mockLLM, $text) {
 
 it('handles onEvent()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withClient($mockLLM);
+    $instructor = (new Instructor)->withDriver($mockLLM);
     $person = $instructor->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -39,7 +39,7 @@ it('handles onEvent()', function () use ($mockLLM, $text) {
 
 it('handles wiretap()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withClient($mockLLM);
+    $instructor = (new Instructor)->withDriver($mockLLM);
     $person = $instructor->wiretap(fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -53,7 +53,7 @@ it('handles wiretap()', function () use ($mockLLM, $text) {
 it('handles onError()', function () use ($mockLLM, $text) {
     $events = new EventSink();
     $mockLLM = MockLLM::get(['']); // mock empty response - should cause deserialization error
-    $instructor = (new Instructor)->withClient($mockLLM);
+    $instructor = (new Instructor)->withDriver($mockLLM);
     $person = $instructor->onError(fn($e) => $events->onEvent($e))->respond(
         messages: '',
         responseModel: Person::class,
@@ -65,7 +65,7 @@ it('throws exception if no onError() provided', function () use ($mockLLM) {
     $thrownException = false;
     $mockLLM = MockLLM::get(['']); // mock empty response - should cause deserialization error
     try {
-        $instructor = (new Instructor)->withClient($mockLLM);
+        $instructor = (new Instructor)->withDriver($mockLLM);
         $person = $instructor->respond(
             messages: '',
             responseModel: Person::class,
