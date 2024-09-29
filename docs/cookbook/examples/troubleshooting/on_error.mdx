@@ -28,8 +28,9 @@ e.g. with an object with default values.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\Mistral\MistralClient;
 use Cognesy\Instructor\Events\Instructor\ErrorRaised;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
 
 class User
@@ -47,11 +48,11 @@ $logger = new class {
     }
 };
 
-// we will intentionally create an error by providing a wrong client credentials
-$client = new MistralClient('wrong-id', 'wrong-uri');
+// we will intentionally create an error by providing empty LLM config
+$driver = new OpenAIDriver(new LLMConfig());
 
 $user = (new Instructor)
-    ->withClient($client)
+    ->withDriver($driver)
     ->request(
         messages: "Jason is 28 years old",
         responseModel: User::class,

@@ -663,22 +663,21 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 
 ```php
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 
 // OpenAI auth params
 $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 
-// Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient(
-    $yourApiKey,
-    baseUri: 'https://api.openai.com/v1', // you can change base URI
-    connectTimeout: 3,
-    requestTimeout: 30,
+// Create instance of OpenAI driver initialized with custom parameters
+$driver = new OpenAIDriver(new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1', // you can change base URI
+    apiKey: $yourApiKey,
     metadata: ['organization' => ''],
-);
+));
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withDriver($driver);
 
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",

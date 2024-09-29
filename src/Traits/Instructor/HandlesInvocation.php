@@ -10,17 +10,6 @@ use Exception;
 
 trait HandlesInvocation
 {
-    private RequestInfo $requestData;
-    private array $cachedContext = [];
-
-    /**
-     * Prepares Instructor for execution with provided request data
-     */
-    public function withRequest(RequestInfo $requestData) : static {
-        $this->requestData = $requestData;
-        return $this;
-    }
-
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
      */

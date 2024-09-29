@@ -7,16 +7,16 @@ return [
 
     'scrapers' => [
         'jinareader' => [
-            'base_uri' => 'https://r.jina.ai/',
-            'api_key' => Env::get('JINAREADER_API_KEY', ''),
+            'baseUri' => 'https://r.jina.ai/',
+            'apiKey' => Env::get('JINAREADER_API_KEY', ''),
         ],
         'scrapfly' => [
-            'base_uri' => 'https://api.scrapfly.io/scrape',
-            'api_key' => Env::get('SCRAPFLY_API_KEY', ''),
+            'baseUri' => 'https://api.scrapfly.io/scrape',
+            'apiKey' => Env::get('SCRAPFLY_API_KEY', ''),
         ],
         'scrapingbee' => [
-            'base_uri' => 'https://app.scrapingbee.com/api/v1/',
-            'api_key' => Env::get('SCRAPINGBEE_API_KEY', ''),
+            'baseUri' => 'https://app.scrapingbee.com/api/v1/',
+            'apiKey' => Env::get('SCRAPINGBEE_API_KEY', ''),
         ],
     ]
 ];

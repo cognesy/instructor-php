@@ -28,13 +28,20 @@ class Inference
     protected CanHandleHttp $httpClient;
     protected EventDispatcher $events;
 
-    public function __construct(string $connection = '', EventDispatcher $events = null) {
+    public function __construct(
+        string $connection = '',
+        LLMConfig $config = null,
+        CanHandleHttp $httpClient = null,
+        CanHandleInference $driver = null,
+        EventDispatcher $events = null,
+    ) {
         $this->events = $events ?? new EventDispatcher();
 
-        $defaultConnection = $connection ?: Settings::get('llm', "defaultConnection");
-        $this->config = LLMConfig::load($defaultConnection);
-        $this->httpClient = HttpClient::make();
-        $this->driver = $this->makeDriver($this->config, $this->httpClient);
+        $this->httpClient = $httpClient ?? HttpClient::make();
+        $this->config = $config ?? LLMConfig::load(connection: $connection
+            ?: Settings::get('llm', "defaultConnection")
+        );
+        $this->driver = $driver ?? $this->makeDriver($this->config, $this->httpClient);
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
@@ -47,9 +54,9 @@ class Inference
     ) : string {
         return (new Inference)
             ->withConnection($connection)
-            ->withModel($model)
             ->create(
                 messages: $messages,
+                model: $model,
                 options: $options,
                 mode: Mode::Text,
             )
@@ -84,14 +91,6 @@ class Inference
         return $this;
     }
 
-    public function withModel(string $model): self {
-        if (empty($model)) {
-            return $this;
-        }
-        $this->config->model = $model;
-        return $this;
-    }
-
     public function withDebug(bool $debug = true) : self {
         Debug::setEnabled($debug);
         return $this;
@@ -112,7 +111,8 @@ class Inference
             response: $this->driver->handle($request),
             driver: $this->driver,
             config: $this->config,
-            isStreamed: $options['stream'] ?? false
+            isStreamed: $options['stream'] ?? false,
+            events: $this->events,
         );
     }
 

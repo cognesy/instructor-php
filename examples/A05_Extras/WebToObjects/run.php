@@ -67,5 +67,6 @@ foreach($companyGen as $company) {
     dump($company);
 }
 
+assert(count($companies) === 3);
 ?>
 ```

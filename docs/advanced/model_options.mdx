@@ -24,20 +24,18 @@ You can pass a custom configured instance of client to the Instructor. This allo
 ```php
 <?php
 use Cognesy\Instructor\Instructor;
-use Cognesy\Utils\Env;
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient(
+$driver = new OpenAIDriver(new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1', // you can change base URI
     apiKey: $yourApiKey,
-    baseUri: 'https://api.openai.com/v1',
-    connectTimeout: 3,
-    requestTimeout: 30,
     metadata: ['organization' => ''],
-);
+));
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withClient($client);
+$instructor = (new Instructor)->withDriver($driver);
 
 $person = $instructor->respond(
     messages: [['role' => 'user', 'content' => $text]],

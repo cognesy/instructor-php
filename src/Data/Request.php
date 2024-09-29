@@ -3,6 +3,13 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
+use Cognesy\Instructor\Utils\Settings;
 
 class Request
 {
@@ -12,6 +19,8 @@ class Request
     use Traits\Request\HandlesPrompts;
     use Traits\Request\HandlesRetries;
     use Traits\Request\HandlesSchema;
+
+    private EventDispatcher $events;
 
     public function __construct(
         string|array $messages,
@@ -29,12 +38,17 @@ class Request
         Mode $mode,
         array $cachedContext,
         string $connection,
-        ResponseModelFactory $responseModelFactory,
+        ?CanHandleHttp $httpClient,
+        ?CanHandleInference $driver,
+        EventDispatcher $events,
     ) {
-        $this->responseModelFactory = $responseModelFactory;
+        $this->events = $events;
+
+        $this->httpClient = $httpClient;
+        $this->driver = $driver;
+        $this->connection = $connection;
 
         $this->cachedContext = $cachedContext;
-        $this->connection = $connection;
         $this->options = $options;
         $this->maxRetries = $maxRetries;
         $this->mode = $mode;
@@ -51,16 +65,8 @@ class Request
 
         $this->requestedSchema = $responseModel;
         if (!empty($this->requestedSchema)) {
-            $this->responseModel = $this->responseModelFactory->fromAny(
-                $this->requestedSchema(),
-                $this->toolName(),
-                $this->toolDescription()
-            );
+            $this->responseModel = $this->makeResponseModel();
         }
-    }
-
-    public function copy(array $messages) : self {
-        return (clone $this)->withMessages($messages);
     }
 
     public function toArray() : array {
@@ -81,5 +87,21 @@ class Request
             'cachedContext' => $this->cachedContext,
             'connection' => $this->connection,
         ];
+    }
+
+    private function makeResponseModel() : ResponseModel {
+        $schemaFactory = new SchemaFactory(
+            Settings::get('llm', 'useObjectReferences', false)
+        );
+        $responseModelFactory = new ResponseModelFactory(
+            new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
+            $schemaFactory,
+            $this->events
+        );
+        return $responseModelFactory->fromAny(
+            $this->requestedSchema(),
+            $this->toolName(),
+            $this->toolDescription()
+        );
     }
 }

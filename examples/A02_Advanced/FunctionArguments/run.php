@@ -44,8 +44,8 @@ echo "\nExtracted arguments:\n";
 dump($args);
 
 assert(count($args) == 3);
-expect($args['name'] == 'Jason');
+expect($args['name'] === 'Jason');
 expect($args['age'] == 28);
-expect($args['country'] == 'Germany');
+expect($args['country'] === 'Germany');
 ?>
 ```

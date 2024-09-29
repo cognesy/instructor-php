@@ -11,6 +11,7 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
+use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
@@ -30,9 +31,6 @@ class Instructor {
 
     use Traits\HandlesEnv;
 
-    use Traits\Instructor\HandlesClient;
-    use Traits\Instructor\HandlesRequestCaching;
-    use Traits\Instructor\HandlesDebug;
     use Traits\Instructor\HandlesErrors;
     use Traits\Instructor\HandlesInvocation;
     use Traits\Instructor\HandlesOverrides;
@@ -59,18 +57,6 @@ class Instructor {
         //$this->events->wiretap($this->eventLogger->eventListener(...));
 
         // get other components from configuration
-        $schemaFactory = new SchemaFactory(
-            Settings::get('llm', 'useObjectReferences', false)
-        );
-
-        $this->requestFactory = new RequestFactory(
-            new ResponseModelFactory(
-                new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
-                $schemaFactory,
-                $this->events
-            ),
-            $this->events
-        );
 
         $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
@@ -93,5 +79,10 @@ class Instructor {
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());
+    }
+
+    public function withDebug(bool $debug = true) : static {
+        Debug::setEnabled($debug);
+        return $this;
     }
 }

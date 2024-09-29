@@ -143,7 +143,6 @@
         {
             "group": "Advanced",
             "pages": [
-                "cookbook/examples/advanced/caching",
                 "cookbook/examples/advanced/context_cache",
                 "cookbook/examples/advanced/custom_client",
                 "cookbook/examples/advanced/custom_prompts",
@@ -195,8 +194,10 @@
                 "cookbook/examples/extras/image_to_data",
                 "cookbook/examples/extras/image_to_data_anthropic",
                 "cookbook/examples/extras/image_to_data_gemini",
+                "cookbook/examples/extras/llm",
                 "cookbook/examples/extras/transcription_to_tasks",
                 "cookbook/examples/extras/translate_ui_fields",
+                "cookbook/examples/extras/web_crawler",
                 "cookbook/examples/extras/web_to_objects"
             ]
         },

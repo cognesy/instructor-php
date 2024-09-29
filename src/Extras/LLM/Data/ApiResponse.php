@@ -21,9 +21,6 @@ class ApiResponse
     ) {}
 
     public function getJson(): string {
-        if (!empty($this->toolCalls) && !$this->toolCalls->empty()) {
-            return $this->toolCalls->first()->args ?? '';
-        }
         return Json::find($this->content);
     }
 

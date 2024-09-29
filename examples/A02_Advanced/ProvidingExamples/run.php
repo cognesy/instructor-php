@@ -31,7 +31,7 @@ class User {
 
 echo "\nREQUEST:\n";
 $user = (new Instructor)
-    ->onEvent(RequestSentToLLM::class, fn($event)=>dump($event->request->body()))
+    ->onEvent(RequestSentToLLM::class, fn($event)=>dump($event->request->toMessages()))
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
@@ -51,5 +51,7 @@ $user = (new Instructor)
 
 echo "\nOUTPUT:\n";
 dump($user);
+assert($user->name === 'Jason');
+assert($user->age === 25);
 ?>
 ```

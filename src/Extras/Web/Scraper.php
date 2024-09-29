@@ -18,8 +18,8 @@ class Scraper
     public static function withDriver(string $scraper = '') : CanGetUrlContent {
         $scraper = $scraper ?: Settings::get('web', 'defaultScraper', 'none');
 
-        $baseUrl = Settings::get('web', 'scrapers'.$scraper.'.base_uri', '');
-        $apiKey = Settings::get('web', 'scrapers'.$scraper.'.api_key', '');
+        $baseUrl = Settings::get('web', 'scrapers'.$scraper.'.baseUri', '');
+        $apiKey = Settings::get('web', 'scrapers'.$scraper.'.apiKey', '');
 
         return match($scraper) {
             'none' => new BasicReader(),

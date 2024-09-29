@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\LLM;
 
+use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
+use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\InferenceResponseGenerated;
 use Cognesy\Instructor\Events\Inference\PartialInferenceResponseGenerated;
@@ -61,7 +63,7 @@ class InferenceResponse
             false => $this->driver->toApiResponse($this->responseData()),
             true => ApiResponse::fromPartialResponses($this->allPartialApiResponses()),
         };
-        $this->events->dispatch(new InferenceResponseGenerated($response));
+        $this->events->dispatch(new ApiResponseReceived($response));
         return $response;
     }
 
@@ -71,7 +73,7 @@ class InferenceResponse
     public function toPartialApiResponses() : Generator {
         foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
             $response = $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
-            $this->events->dispatch(new PartialInferenceResponseGenerated($response));
+            $this->events->dispatch(new PartialApiResponseReceived($response));
             yield $response;
         }
     }

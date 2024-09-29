@@ -11,12 +11,20 @@ use Psr\Http\Message\ResponseInterface;
 
 class Debug
 {
+    public static function enable() : void {
+        self::setEnabled(true);
+    }
+
+    public static function disable() : void {
+        self::setEnabled(false);
+    }
+
     public static function setEnabled(bool $debug = true) : void {
-        Settings::set('debug', 'enabled', $debug);
+        Settings::set('debug', 'http.enabled', $debug);
     }
 
     public static function isEnabled() : bool {
-        return Settings::get('debug', 'enabled', false);
+        return Settings::get('debug', 'http.enabled', false);
     }
 
     public static function isFlag(string $path) : bool {
@@ -24,7 +32,7 @@ class Debug
     }
 
     public static function tryDumpStream(string $line): void {
-        if (Debug::isFlag('http.response_stream')) {
+        if (Debug::isFlag('http.responseStream')) {
             $now = (new DateTimeImmutable)->format('H:i:s v') . 'ms';
             Console::print("\n[STREAM DATA]", [Color::DARK_YELLOW]);
             Console::print(" at ", [Color::DARK_GRAY]);
@@ -36,12 +44,12 @@ class Debug
     public static function tryDumpRequest(RequestInterface $request): void {
         $highlight = [Color::YELLOW];
         Console::println("[REQUEST]", $highlight);
-        if (Debug::isFlag('http.request_headers')) {
+        if (Debug::isFlag('http.requestHeaders')) {
             Console::println("[REQUEST HEADERS]", $highlight);
             self::printHeaders($request->getHeaders());
             Console::println("[/REQUEST HEADERS]", $highlight);
         }
-        if (Debug::isFlag('http.request_body')) {
+        if (Debug::isFlag('http.requestBody')) {
             Console::println("[REQUEST BODY]", $highlight);
             self::printBody((string) $request->getBody());
             Console::println("[/REQUEST BODY]", $highlight);
@@ -64,12 +72,12 @@ class Debug
             Console::println("");
         }
         Console::println("[RESPONSE]", $highlight);
-        if (Debug::isFlag('http.response_headers')) {
+        if (Debug::isFlag('http.responseHeaders')) {
             Console::println("[RESPONSE HEADERS]", $highlight);
             self::printHeaders($response->getHeaders());
             Console::println("[/RESPONSE HEADERS]", $highlight);
         }
-        if (Debug::isFlag('http.response_body') && $options['stream'] === false) {
+        if (Debug::isFlag('http.responseBody') && $options['stream'] === false) {
             Console::println("[RESPONSE BODY]", $highlight);
             self::printBody((string) $response->getBody());
             Console::println("[/RESPONSE BODY]", $highlight);

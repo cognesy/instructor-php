@@ -54,6 +54,14 @@ class PartialsGenerator implements CanGeneratePartials
         $this->sequenceableHandler = new SequenceableHandler($events);
     }
 
+    public function resetPartialResponse() : void {
+        $this->previousHash = '';
+        $this->responseText = '';
+        $this->responseJson = '';
+        $this->sequenceableHandler->reset();
+        $this->toolCalls->reset();
+    }
+
     /**
      * @param Generator<PartialApiResponse> $stream
      * @param ResponseModel $responseModel
@@ -160,14 +168,6 @@ class PartialsGenerator implements CanGeneratePartials
         }
         $this->previousHash = $currentHash;
         return $result;
-    }
-
-    public function resetPartialResponse() : void {
-        $this->previousHash = '';
-        $this->responseText = '';
-        $this->responseJson = '';
-        $this->sequenceableHandler->reset();
-        $this->toolCalls->reset();
     }
 
     public function getCompleteResponse() : ApiResponse {

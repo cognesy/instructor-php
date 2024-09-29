@@ -17,8 +17,9 @@ other LLMs which support OpenAI API.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\OpenAI\OpenAIClient;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 
@@ -28,16 +29,15 @@ class User {
 }
 
 // Create instance of OpenAI client initialized with custom parameters
-$client = new OpenAIClient(
-    apiKey: Env::get('OPENAI_API_KEY'),
-    baseUri: 'https://api.openai.com/v1',
-    connectTimeout: 3,
-    requestTimeout: 30,
-    metadata: ['organization' => ''],
+$driver = new OpenAIDriver(new LLMConfig(
+        apiUrl: 'https://api.openai.com/v1',
+        apiKey: Env::get('OPENAI_API_KEY'),
+        metadata: ['organization' => ''],
+    )
 );
 
 // Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withDriver($client);
+$instructor = (new Instructor)->withDriver($driver);
 
 // Call with custom model and execution mode
 $user = $instructor->respond(

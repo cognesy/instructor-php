@@ -13,7 +13,7 @@ class LLMConfig
         public string $endpoint = '',
         public array $queryParams = [],
         public array $metadata = [],
-        public string  $model = '',
+        public string $model = '',
         public int $maxTokens = 1024,
         public LLMProviderType $providerType = LLMProviderType::OpenAICompatible,
     ) {}

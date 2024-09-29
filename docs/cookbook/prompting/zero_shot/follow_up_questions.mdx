@@ -27,9 +27,9 @@ use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Schema\Attributes\Description;
 
 class FollowUp {
-    #[Description("The follow-up question")]
+    #[Description("Follow-up question")]
     public string $question;
-    #[Description("The answer to the follow-up question")]
+    #[Description("Answer to the follow-up question")]
     public string $answer;
 }
 

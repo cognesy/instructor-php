@@ -5,7 +5,9 @@ use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class RequestFactory
 {
     public function __construct(
@@ -69,6 +71,8 @@ class RequestFactory
             cachedContext: $cachedContext,
             connection: $connection,
             responseModelFactory: $this->responseModelFactory,
+            httpClient: $httpClient,
+            driver: $driver,
         );
     }
 }

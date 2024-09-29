@@ -27,11 +27,9 @@ Here's the image we're going to extract data from.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Clients\Gemini\GeminiClient;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Image\Image;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Env;
 
 class Vendor {
     public ?string $name = '';
@@ -55,11 +53,7 @@ class Receipt {
     public float $total;
 }
 
-$client = new GeminiClient(
-    apiKey: Env::get('GEMINI_API_KEY'),
-);
-
-$receipt = (new Instructor)->withClient($client)->respond(
+$receipt = (new Instructor)->withConnection('gemini')->respond(
     input: Image::fromFile(__DIR__ . '/receipt.png'),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',

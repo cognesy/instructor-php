@@ -209,7 +209,7 @@ class GeminiDriver implements CanHandleInference
         ]);
     }
 
-    public function toNativeMessages(string|array $messages) : array {
+    protected function toNativeMessages(string|array $messages) : array {
         if (is_string($messages)) {
             return [["text" => $messages]];
         }
@@ -217,7 +217,7 @@ class GeminiDriver implements CanHandleInference
         foreach ($messages as $message) {
             $transformed[] = [
                 'role' => $this->mapRole($message['role']),
-                'parts' => $this->contentPartToNative($message['content']),
+                'parts' => $this->contentPartsToNative($message['content']),
             ];
         }
         return $transformed;
@@ -228,13 +228,21 @@ class GeminiDriver implements CanHandleInference
         return $roles[$role] ?? $role;
     }
 
-    protected function contentPartToNative(string|array $contentPart) : array {
-        if (is_string($contentPart)) {
-            return [["text" => $contentPart]];
+    protected function contentPartsToNative(string|array $contentParts) : array {
+        if (is_string($contentParts)) {
+            return [["text" => $contentParts]];
         }
+        $transformed = [];
+        foreach ($contentParts as $contentPart) {
+            $transformed[] = $this->contentPartToNative($contentPart);
+        }
+        return $transformed;
+    }
+
+    protected function contentPartToNative(array $contentPart) : array {
         $type = $contentPart['type'] ?? 'text';
         return match($type) {
-            'text' => ['text' => $contentPart['text']],
+            'text' => ['text' => $contentPart['text'] ?? ''],
             'image_url' => [
                 'inlineData' => [
                     'mimeType' => Str::between($contentPart['image_url']['url'], 'data:', ';base64,'),

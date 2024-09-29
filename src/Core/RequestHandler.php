@@ -115,15 +115,22 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
     }
 
     protected function makeInference(Request $request) : InferenceResponse {
-        return (new Inference)->withConnection($request->connection())->create(
-            $request->messages(),
-            $request->model(),
-            $request->toolCallSchema(),
-            $request->toolChoice(),
-            $request->responseFormat(),
-            $request->options(),
-            $request->mode()
+        $inference = new Inference(
+            connection: $request->connection(),
+            httpClient: $request->httpClient(),
+            driver: $request->driver(),
+            events: $this->events,
         );
+        return $inference
+            ->create(
+                $request->toMessages(),
+                $request->model(),
+                $request->toolCallSchema(),
+                $request->toolChoice(),
+                $request->responseFormat(),
+                $request->options(),
+                $request->mode()
+            );
     }
 
     protected function processResponse(Request $request, ApiResponse $apiResponse, array $partialResponses) : Result {

@@ -49,7 +49,7 @@ $logger = new class {
 };
 
 // we will intentionally create an error by providing empty LLM config
-$driver = new OpenAIDriver(new LLMConfig(),);
+$driver = new OpenAIDriver(new LLMConfig());
 
 $user = (new Instructor)
     ->withDriver($driver)

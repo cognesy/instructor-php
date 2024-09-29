@@ -38,6 +38,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\Mixin\HandlesSelfInference;
+use Cognesy\Instructor\Instructor;
 
 class User {
     use HandlesSelfInference;
@@ -45,8 +46,8 @@ class User {
     public int $age;
     public string $name;
 
-    protected function getInstructor() : \Cognesy\Instructor\Instructor {
-        return new \Cognesy\Instructor\Instructor();
+    protected function getInstructor() : Instructor {
+        return new Instructor();
     }
 
     protected function getResponseModel() : string|array|object {

@@ -11,6 +11,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
+use GuzzleHttp\Psr7\CachingStream;
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -51,6 +52,11 @@ class GuzzleHttpClient implements CanHandleHttp
     }
 
     protected function addDebugStack(HandlerStack $stack) : HandlerStack {
+        // add caching stream to make response body rewindable
+        $stack->push(Middleware::mapResponse(function (ResponseInterface $response) {
+            return $response->withBody(new CachingStream($response->getBody()));
+        }));
+
         $stack->push(Middleware::tap(
             function (RequestInterface $request, $options) {
                 Debug::tryDumpRequest($request);
@@ -59,6 +65,8 @@ class GuzzleHttpClient implements CanHandleHttp
             function ($request, $options, FulfilledPromise|RejectedPromise $response) {
                 $response->then(function (ResponseInterface $response) use ($request, $options) {
                     Debug::tryDumpResponse($response, $options);
+                    // need to rewind body to read it again in main flow
+                    $response->getBody()->rewind();
                 });
             })
         );

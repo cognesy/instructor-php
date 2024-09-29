@@ -24,7 +24,6 @@ class RequestInfo
     public string $toolDescription;
     public Mode $mode;
     public array $cachedContext = [];
-    public string $connection = '';
 
     public function isStream() : bool {
         return $this->options['stream'] ?? false;

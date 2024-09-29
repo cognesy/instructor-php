@@ -6,10 +6,6 @@ use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesCreation
 {
-    public static function new() : static {
-        return new static();
-    }
-
     public static function with(
         $messages = '',
         $input = '',
@@ -25,7 +21,6 @@ trait HandlesCreation
         $retryPrompt = '',
         $mode = Mode::Tools,
         $cachedContext = [],
-        $connection = '',
     ) : static {
         $data = new static();
         $data->messages = $messages;
@@ -42,7 +37,6 @@ trait HandlesCreation
         $data->retryPrompt = $retryPrompt;
         $data->mode = $mode;
         $data->cachedContext = $cachedContext;
-        $data->connection = $connection;
         return $data;
     }
 
@@ -62,7 +56,6 @@ trait HandlesCreation
             retryPrompt: $data['retryPrompt'] ?? '',
             mode: $data['mode'] ?? Mode::Tools,
             cachedContext: $data['cachedContext'] ?? [],
-            connection: $data['connection'] ?? '',
         );
     }
 }

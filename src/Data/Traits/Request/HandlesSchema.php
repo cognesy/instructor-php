@@ -2,15 +2,12 @@
 
 namespace Cognesy\Instructor\Data\Traits\Request;
 
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Str;
 
 trait HandlesSchema
 {
-    private ResponseModelFactory $responseModelFactory;
-
     private string $defaultToolName = 'extracted_data';
     private string $defaultToolDescription = 'Function call based on user instructions.';
     private string $toolName;
@@ -28,11 +25,15 @@ trait HandlesSchema
     }
 
     public function toolName() : string {
-        return $this->responseModel ? $this->responseModel->toolName() : $this->toolName;
+        return $this->responseModel
+            ? $this->responseModel->toolName()
+            : $this->toolName;
     }
 
     public function toolDescription() : string {
-        return $this->responseModel ? $this->responseModel->toolDescription() : $this->toolDescription;
+        return $this->responseModel
+            ? $this->responseModel->toolDescription()
+            : $this->toolDescription;
     }
 
     public function responseFormat() : array {

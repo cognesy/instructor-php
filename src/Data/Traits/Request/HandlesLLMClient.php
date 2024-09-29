@@ -5,20 +5,27 @@ namespace Cognesy\Instructor\Data\Traits\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 
 trait HandlesLLMClient
 {
-    private string $connection;
-    private LLMConfig $config;
-    private CanHandleInference $driver;
-    private CanHandleHttp $httpClient;
+    private string $connection = '';
+    private ?CanHandleInference $driver = null;
+    private ?CanHandleHttp $httpClient = null;
+
     private Mode $mode;
     private string $model;
     private array $options = [];
 
     public function connection() : string {
-        return $this->connection;
+        return $this->connection ?? '';
+    }
+
+    public function driver() : ?CanHandleInference {
+        return $this->driver;
+    }
+
+    public function httpClient() : ?CanHandleHttp {
+        return $this->httpClient;
     }
 
     public function mode() : Mode {

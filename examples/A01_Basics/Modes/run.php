@@ -40,7 +40,7 @@ $text = "Jason is 25 years old and works as an engineer.";
 print("Input text:\n");
 print($text . "\n\n");
 
-$instructor = (new Instructor)->withDebug();
+$instructor = new Instructor;
 
 // CASE 1 - Mode::Tools
 print("\n1. Extracting structured data using LLM - Mode::Tools\n");
