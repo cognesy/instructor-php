@@ -94,6 +94,7 @@ class Debug
     }
 
     private static function printBody(string $body) : void {
+        /** @noinspection ForgottenDebugOutputInspection */
         dump(json_decode($body));
     }
 }

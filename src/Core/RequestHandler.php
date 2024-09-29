@@ -7,6 +7,7 @@ use Cognesy\Instructor\Contracts\CanHandleStreamRequest;
 use Cognesy\Instructor\Contracts\CanHandleSyncRequest;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
@@ -17,6 +18,7 @@ use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\LLM\InferenceResponse;
+use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
 use Generator;
@@ -92,6 +94,10 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         try {
             $this->events->dispatch(new RequestSentToLLM($request));
             $apiResponse = $this->makeInference($request)->toApiResponse();
+            $apiResponse->content = match($request->mode()) {
+                Mode::Text => $apiResponse->content,
+                default => Json::find($apiResponse->content),
+            };
         } catch (Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));
             throw $e;

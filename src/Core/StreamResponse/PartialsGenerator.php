@@ -146,7 +146,7 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJsonData,
         ResponseModel $responseModel,
     ) : Result {
-        return Chain::from(fn() => Json::fix($partialJsonData))
+        return Chain::from(fn() => Json::fix(Json::find($partialJsonData)))
             ->through(fn($jsonData) => $this->responseDeserializer->deserialize($jsonData, $responseModel, $this?->toolCalls->last()->name))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->result();

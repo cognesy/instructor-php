@@ -5,8 +5,6 @@ namespace Cognesy\Instructor\Extras\LLM;
 use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\Inference\InferenceResponseGenerated;
-use Cognesy\Instructor\Events\Inference\PartialInferenceResponseGenerated;
 use Cognesy\Instructor\Extras\Http\StreamReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
@@ -21,6 +19,7 @@ class InferenceResponse
 {
     protected EventDispatcher $events;
     protected StreamReader $streamReader;
+    protected string $responseContent = '';
 
     public function __construct(
         protected ResponseInterface $response,
@@ -101,7 +100,10 @@ class InferenceResponse
     // INTERNAL /////////////////////////////////////////////////
 
     protected function responseData() : array {
-        return Json::parse($this->response->getBody()->getContents()) ?? [];
+        if (empty($this->responseContent)) {
+            $this->responseContent = $this->response->getBody()->getContents();
+        }
+        return Json::parse($this->responseContent);
     }
 
     /**

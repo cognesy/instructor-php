@@ -11,7 +11,7 @@ use Throwable;
  * Original source: https://github.com/greghunt/partial-json/
  * License: MIT
  */
-class JsonParser
+class PartialJsonParser
 {
     private $parsers = [];
     private string $lastParseReminding = '';

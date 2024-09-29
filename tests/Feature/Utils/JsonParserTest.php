@@ -1,11 +1,11 @@
 <?php
 
-use Cognesy\Instructor\Utils\Json\JsonParser;
+use Cognesy\Instructor\Utils\Json\PartialJsonParser;
 
 test('can parse partial JSON', function ($data) {
     $json = $data[0];
     $result = $data[1];
-    $parsed = (new JsonParser())->parse($json, true);
+    $parsed = (new PartialJsonParser())->parse($json, true);
     expect($parsed)->toBe($result);
 })->with([
     [

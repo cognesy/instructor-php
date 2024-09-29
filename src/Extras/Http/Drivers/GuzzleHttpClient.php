@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Extras\Http\Drivers;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
@@ -22,14 +21,13 @@ class GuzzleHttpClient implements CanHandleHttp
 
     public function __construct(
         protected HttpClientConfig $config,
-        protected ?EventDispatcher $events = null,
+        protected ?Client $httpClient = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
         if (isset($this->httpClient) && Debug::isEnabled()) {
             throw new InvalidArgumentException("Guzzle does not allow to inject debugging stack into existing client. Turn off debug or use default client.");
         }
         $this->client = match(Debug::isEnabled()) {
-            false => new Client(),
+            false => $httpClient ?? new Client(),
             true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
         };
     }

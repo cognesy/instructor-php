@@ -904,9 +904,21 @@ To provide an essential functionality we needed here Instructor for PHP leverage
 
 Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal dependencies, should work with any framework of your choice.
 
- - [SaloonPHP](https://docs.saloon.dev/) - for handling communication with LLM API providers
- - [Symfony components](https://symfony.com/) - for validation, serialization and other utilities
+ - [Guzzle](https://docs.guzzlephp.org/)
+ - [Symfony components](https://symfony.com/)
+   * symfony/property-access
+   * symfony/property-info
+   * symfony/serializer
+   * symfony/type-info
+   * symfony/validator
+ - adbario/php-dot-notation
+ - phpdocumentor/reflection-docblock
+ - phpstan/phpdoc-parser
+ - vlucas/phpdotenv
 
+Additional dependencies are required for some extras:
+ - spatie/array-to-xml
+ - gioni06/gpt3-tokenizer
 
 ## TODOs
 

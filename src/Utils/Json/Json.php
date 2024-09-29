@@ -8,8 +8,7 @@ class Json
         if (empty($text)) {
             return '';
         }
-        $candidates = (new Json)->extractJSONStrings($text);
-        return empty($candidates) ? '' : $candidates[0];
+        return (new Json)->tryExtractJson($text);
     }
 
     public static function findPartial(string $text) : string {
@@ -25,7 +24,7 @@ class Json
     }
 
     public static function fix(string $text) : string {
-        return (new JsonParser)->fix($text);
+        return (new PartialJsonParser)->fix($text);
     }
 
     public static function parse(string $text, mixed $default = null) : mixed {
@@ -34,7 +33,7 @@ class Json
     }
 
     public static function parsePartial(string $text, bool $associative = true) : mixed {
-        return (new JsonParser)->parse($text, $associative);
+        return (new PartialJsonParser)->parse($text, $associative);
     }
 
     public static function encode(mixed $json, int $options = 0) : string {
@@ -43,16 +42,31 @@ class Json
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
+    private function tryExtractJson(string $text) : string {
+        // approach 1
+        $candidates = $this->extractJSONStrings($text);
+        $json = empty($candidates) ? '' : $candidates[0] ?? '';
+        if (!empty($json)) {
+            return $json;
+        }
+        // approach 2
+        $maybeJson = $this->naiveExtract($text);
+        $json = (new ResilientJsonParser($maybeJson))->parse();
+        if (!empty($json)) {
+            return json_encode($json);
+        }
+        // failed to find JSON
+        return '';
+    }
+
     private function naiveExtract(string $text) : string {
         if (empty($text)) {
             return '';
         }
-        $firstOpenBracket = strpos($text, '{');
-        if ($firstOpenBracket === false) {
+        if (($firstOpenBracket = strpos($text, '{')) === false) {
             return '';
         }
-        $lastCloseBracket = strrpos($text, '}');
-        if ($lastCloseBracket === false) {
+        if (($lastCloseBracket = strrpos($text, '}')) === false) {
             return '';
         }
         return substr($text, $firstOpenBracket, $lastCloseBracket - $firstOpenBracket + 1);
@@ -95,7 +109,6 @@ class Json
                 $currentCandidate .= $char;
             }
         }
-
         return $this->validateJSONStrings($candidates);
     }
 

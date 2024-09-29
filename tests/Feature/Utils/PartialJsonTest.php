@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\Json\JsonParser;
+use Cognesy\Instructor\Utils\Json\PartialJsonParser;
 
 it('can parse partial JSON', function () {
     $examples = [
@@ -11,7 +11,7 @@ it('can parse partial JSON', function () {
         '{"field-a":"str-1", "field-b":1, "field-c":["str-2", ' => ['field-a'=>'str-1', 'field-b'=>1, 'field-c'=>['str-2']],
         '{"field-a":"str-1", "field-b":1, "field-c":["str-2", 2, true]}' => ['field-a'=>'str-1', 'field-b'=>1, 'field-c'=>['str-2', 2, true]],
     ];
-    $parser = new JsonParser();
+    $parser = new PartialJsonParser();
 
     foreach ($examples as $src => $dest) {
         $partial = $parser->parse($src);
