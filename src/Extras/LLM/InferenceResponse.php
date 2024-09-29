@@ -103,7 +103,7 @@ class InferenceResponse
         if (empty($this->responseContent)) {
             $this->responseContent = $this->response->getBody()->getContents();
         }
-        return Json::parse($this->responseContent);
+        return Json::parse($this->responseContent) ?? [];
     }
 
     /**
