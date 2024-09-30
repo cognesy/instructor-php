@@ -82,8 +82,6 @@ class CohereV1Driver implements CanHandleInference
         return new ApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
-//            toolName: $data['tool_calls'][0]['name'] ?? '',
-//            toolArgs: Json::encode($data['tool_calls'][0]['parameters'] ?? []),
             toolsData: $this->mapToolsData($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -98,8 +96,8 @@ class CohereV1Driver implements CanHandleInference
         return new PartialApiResponse(
             delta: $this->makeDelta($data),
             responseData: $data,
-            toolName: $data['tool_calls'][0]['name'] ?? '',
-            toolArgs: Json::encode($data['tool_calls'][0]['parameters'] ?? []),
+            toolName: $this->makeToolNameDelta($data),
+            toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['response']['finish_reason'] ?? $data['delta']['finish_reason'] ?? '',
             inputTokens: $data['response']['meta']['tokens']['input_tokens'] ?? $data['delta']['tokens']['input_tokens'] ?? 0,
             outputTokens: $data['response']['meta']['tokens']['output_tokens'] ?? $data['delta']['tokens']['input_tokens'] ?? 0,
@@ -205,6 +203,28 @@ class CohereV1Driver implements CanHandleInference
     }
 
     private function makeDelta(array $data) : string {
+        if ($this->isStreamEnd($data)) {
+            return '';
+        }
         return $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '';
+    }
+
+    private function makeToolArgsDelta(array $data) : string {
+        if ($this->isStreamEnd($data)) {
+            return '';
+        }
+        $toolArgs = $data['tool_calls'][0]['parameters'] ?? '';
+        return ('' === $toolArgs) ? '' : Json::encode($toolArgs);
+    }
+
+    private function makeToolNameDelta(array $data) : string {
+        if ($this->isStreamEnd($data)) {
+            return '';
+        }
+        return $data['tool_calls'][0]['name'] ?? '';
+    }
+
+    private function isStreamEnd(array $data) : bool {
+        return 'stream_end' === ($data['event_type'] ?? '');
     }
 }

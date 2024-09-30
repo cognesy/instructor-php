@@ -10,29 +10,29 @@ use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-    'anthropic',
-    'azure',
-    'cohere2',
-    'fireworks',
-    'gemini',
-    'groq',
-    'mistral',
-    'ollama',
-    'openai',
-    'openrouter',
-    'together'
+//    'anthropic',
+//    'azure',
+    'cohere1',
+//    'fireworks',
+//    'gemini',
+//    'groq',
+//    'mistral',
+//    'ollama',
+//    'openai',
+//    'openrouter',
+//    'together'
 ];
 
 $streamingModes = [
     true,
-    false
+//    false
 ];
 
 $modes = [
-    Mode::Text,
-    Mode::MdJson,
-    Mode::Json,
-    Mode::JsonSchema,
+//    Mode::Text,
+//    Mode::MdJson,
+//    Mode::Json,
+//    Mode::JsonSchema,
     Mode::Tools,
 ];
 
@@ -57,8 +57,8 @@ function evalFn(EvalRequest $er) {
 
 function validateToolsData(array $data) : bool {
     return 'store_company' === ($data[0]['name'] ?? '')
-    && 'ACME' === $data[0]['arguments']['name'] ?? ''
-    && 2020 === $data[0]['arguments']['year'] ?? 0;
+        && 'ACME' === ($data[0]['arguments']['name'] ?? '')
+        && 2020 === ($data[0]['arguments']['year'] ?? 0);
 }
 
 (new CompareModes(

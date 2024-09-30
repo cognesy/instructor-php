@@ -9,8 +9,6 @@ class ApiResponse
     public function __construct(
         public string $content = '',
         public array  $responseData = [],
-//        public string $toolName = '', // TODO: remove
-//        public string $toolArgs = '', // TODO: remove
         public array $toolsData = [],
         public string $finishReason = '',
         public ?ToolCalls $toolCalls = null,
@@ -24,19 +22,49 @@ class ApiResponse
         return Json::find($this->content);
     }
 
-    public static function fromPartialResponses(
-        array $partialResponses,
-    ) : ApiResponse {
-        $instance = new self();
+    public static function fromPartialResponses(array $partialResponses) : ApiResponse {
+        return (new self)->makeInstance($partialResponses);
+    }
+
+    public function hasToolCalls() : bool {
+        return !empty($this->toolCalls);
+    }
+
+    // INTERNAL //////////////////////////////////////////////
+
+    private function makeInstance(array $partialResponses) : self {
         $content = '';
+        foreach($partialResponses as $partialResponse) {
+            if ($partialResponse === null) {
+                continue;
+            }
+            $content .= $partialResponse->delta;
+            $this->responseData[] = $partialResponse->responseData;
+            $this->inputTokens += $partialResponse->inputTokens;
+            $this->outputTokens += $partialResponse->outputTokens;
+            $this->cacheCreationTokens += $partialResponse->cacheCreationTokens;
+            $this->cacheReadTokens += $partialResponse->cacheReadTokens;
+            $this->finishReason = $partialResponse->finishReason;
+        }
+        $this->content = $content;
+
+        $tools = $this->makeTools($partialResponses);
+        if (!empty($tools)) {
+            $this->toolsData = $this->makeToolsData($tools);
+            $this->toolCalls = ToolCalls::fromArray($this->toolsData);
+        }
+        return $this;
+    }
+
+    private function makeTools(array $partialResponses) : array {
         $tools = [];
         $currentTool = '';
         foreach($partialResponses as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
-
-            if (('' !== $partialResponse->toolName ?? '') && ($currentTool !== $partialResponse->toolName ?? '')) {
+            if (('' !== $partialResponse->toolName ?? '')
+                && ($currentTool !== ($partialResponse->toolName ?? ''))) {
                 $currentTool = $partialResponse->toolName ?? '';
                 $tools[$currentTool] = '';
             }
@@ -45,32 +73,18 @@ class ApiResponse
                     $tools[$currentTool] .= $partialResponse->toolArgs ?? '';
                 }
             }
-
-            $content .= $partialResponse->delta;
-            $instance->responseData[] = $partialResponse->responseData;
-//            $instance->toolName .= $partialResponse->toolName;
-//            $instance->toolArgs .= $partialResponse->toolArgs;
-//            $instance->toolsData = [];
-            $instance->inputTokens += $partialResponse->inputTokens;
-            $instance->outputTokens += $partialResponse->outputTokens;
-            $instance->cacheCreationTokens += $partialResponse->cacheCreationTokens;
-            $instance->cacheReadTokens += $partialResponse->cacheReadTokens;
-            $instance->finishReason = $partialResponse->finishReason;
         }
+        return $tools;
+    }
 
-        if (!empty($tools)) {
-            $instance->toolsData = [];
-            foreach($tools as $tool => $args) {
-                $instance->toolsData[] = [
-                    'name' => $tool,
-                    'arguments' => Json::parse($args),
-                ];
-            }
-            $instance->toolCalls = ToolCalls::fromArray($instance->toolsData);
+    private function makeToolsData(array $tools) : array {
+        $data = [];
+        foreach($tools as $tool => $args) {
+            $data[] = [
+                'name' => $tool,
+                'arguments' => '' !== $args ? Json::parse($args) : [],
+            ];
         }
-
-        $instance->content = $content;
-
-        return $instance;
+        return $data;
     }
 }
