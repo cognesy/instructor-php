@@ -6,9 +6,10 @@ use Cognesy\Instructor\Utils\Cli\Console;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTimeImmutable;
+use JsonSerializable;
 use Psr\Log\LogLevel;
 
-class Event
+class Event implements JsonSerializable
 {
     public readonly string $eventId;
     public readonly DateTimeImmutable $createdAt;
@@ -55,6 +56,14 @@ class Event
 
     public function __toString(): string {
         return Json::encode($this->data, JSON_PRETTY_PRINT);
+    }
+
+    public function toArray(): array {
+        return json_decode(json_encode($this), true);
+    }
+
+    public function jsonSerialize() : array {
+        return get_object_vars($this);
     }
 
     /// PRIVATE ////////////////////////////////////////////////////////////////////////////////////////////////////

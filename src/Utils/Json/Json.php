@@ -28,6 +28,9 @@ class Json
     }
 
     public static function parse(string $text, mixed $default = null) : mixed {
+        if (empty($text)) {
+            return $default;
+        }
         $decoded = json_decode($text, true);
         return empty($decoded) ? $default : $decoded;
     }

@@ -43,19 +43,18 @@ class Debug
 
     public static function tryDumpRequest(RequestInterface $request): void {
         $highlight = [Color::YELLOW];
-        Console::println("[REQUEST]", $highlight);
         if (Debug::isFlag('http.requestHeaders')) {
             Console::println("[REQUEST HEADERS]", $highlight);
             self::printHeaders($request->getHeaders());
             Console::println("[/REQUEST HEADERS]", $highlight);
+            Console::println("");
         }
         if (Debug::isFlag('http.requestBody')) {
             Console::println("[REQUEST BODY]", $highlight);
             self::printBody((string) $request->getBody());
             Console::println("[/REQUEST BODY]", $highlight);
+            Console::println("");
         }
-        Console::println("[/REQUEST]", $highlight);
-        Console::println("");
     }
 
     public static function tryDumpTrace() {
@@ -71,18 +70,18 @@ class Debug
             Console::println("[/HTTP DEBUG]", $highlight);
             Console::println("");
         }
-        Console::println("[RESPONSE]", $highlight);
         if (Debug::isFlag('http.responseHeaders')) {
             Console::println("[RESPONSE HEADERS]", $highlight);
             self::printHeaders($response->getHeaders());
             Console::println("[/RESPONSE HEADERS]", $highlight);
+            Console::println("");
         }
         if (Debug::isFlag('http.responseBody') && $options['stream'] === false) {
             Console::println("[RESPONSE BODY]", $highlight);
             self::printBody((string) $response->getBody());
             Console::println("[/RESPONSE BODY]", $highlight);
+            Console::println("");
         }
-        Console::println("[/RESPONSE]", $highlight);
     }
 
     private static function printHeaders(array $headers) : void {

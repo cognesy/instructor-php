@@ -22,7 +22,7 @@ interface CanHandleInference
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array;
-    public function toApiResponse(array $data): ApiResponse;
-    public function toPartialApiResponse(array $data) : PartialApiResponse;
+    public function toApiResponse(array $data): ?ApiResponse;
+    public function toPartialApiResponse(array $data) : ?PartialApiResponse;
     public function getData(string $data): string|bool;
 }

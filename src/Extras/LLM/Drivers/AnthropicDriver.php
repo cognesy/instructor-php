@@ -85,12 +85,12 @@ class AnthropicDriver implements CanHandleInference
 
     // RESPONSE /////////////////////////////////////////////
 
-    public function toApiResponse(array $data): ApiResponse {
+    public function toApiResponse(array $data): ?ApiResponse {
         return new ApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolName: $data['content'][0]['name'] ?? '',
-            toolArgs: Json::encode($data['content'][0]['input'] ?? ''),
+//            toolName: $data['content'][0]['name'] ?? '',
+//            toolArgs: Json::encode($data['content'][0]['input'] ?? ''),
             toolsData: $this->mapToolsData($data),
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -101,7 +101,10 @@ class AnthropicDriver implements CanHandleInference
         );
     }
 
-    public function toPartialApiResponse(array $data) : PartialApiResponse {
+    public function toPartialApiResponse(array $data) : ?PartialApiResponse {
+        if (empty($data)) {
+            return null;
+        }
         return new PartialApiResponse(
             delta: $this->makeDelta($data),
             responseData: $data,
@@ -226,13 +229,12 @@ class AnthropicDriver implements CanHandleInference
     }
 
     private function mapToolsData(array $data) : array {
-        $tools = (($data['content']['type'] ?? '') === 'tool_use') ? $data['content'] : [];
         return array_map(
             fn($tool) => [
                 'name' => $tool['name'] ?? '',
                 'arguments' => $tool['input'] ?? '',
             ],
-            $tools
+            array_filter($data['content'] ?? [], fn($part) => 'tool_use' === ($part['type'] ?? ''))
         );
     }
 

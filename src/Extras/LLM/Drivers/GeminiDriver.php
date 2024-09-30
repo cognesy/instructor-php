@@ -91,12 +91,12 @@ class GeminiDriver implements CanHandleInference
 
     // RESPONSE /////////////////////////////////////////////
 
-    public function toApiResponse(array $data): ApiResponse {
+    public function toApiResponse(array $data): ?ApiResponse {
         return new ApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
-            toolArgs: Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? []),
+//            toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
+//            toolArgs: Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? []),
             toolsData: $this->mapToolsData($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -107,7 +107,10 @@ class GeminiDriver implements CanHandleInference
         );
     }
 
-    public function toPartialApiResponse(array $data) : PartialApiResponse {
+    public function toPartialApiResponse(array $data) : ?PartialApiResponse {
+        if (empty($data)) {
+            return null;
+        }
         return new PartialApiResponse(
             delta: $this->makeDelta($data),
             responseData: $data,

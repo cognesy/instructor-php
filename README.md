@@ -182,7 +182,7 @@ the client connection.
     //...
     'connections' => [
         'anthropic' => [ ... ],
-        'cohere' => [ ... ],
+        'cohere2' => [ ... ],
         'gemini' => [ ... ],
         'ollama' => [
             'clientType' => ClientType::Ollama->value,

@@ -2,9 +2,13 @@
 namespace Cognesy\Instructor\Extras\LLM;
 
 use Cognesy\Instructor\Enums\Mode;
+//use Cognesy\Instructor\Utils\Uuid;
 
 class InferenceRequest
 {
+//    public string $uuid = '';
+//    public array $metadata = [];
+
     public array $messages = [];
     public string $model = '';
     public array $tools = [];
@@ -21,7 +25,11 @@ class InferenceRequest
         array $responseFormat = [],
         array $options = [],
         Mode $mode = Mode::Text,
+//        array $metadata = [],
     ) {
+//        $this->uuid = Uuid::uuid4();
+//        $this->metadata = $metadata;
+
         $this->model = $model;
         $this->options = $options;
         $this->mode = $mode;
@@ -53,5 +61,19 @@ class InferenceRequest
             $this->toolChoice = [];
             $this->responseFormat = [];
         }
+    }
+
+    public function toArray() : array {
+        return [
+//            'uuid' => $this->uuid,
+//            'metadata' => $this->metadata,
+            'messages' => $this->messages,
+            'model' => $this->model,
+            'tools' => $this->tools,
+            'tool_choice' => $this->toolChoice,
+            'response_format' => $this->responseFormat,
+            'options' => $this->options,
+            'mode' => $this->mode->value,
+        ];
     }
 }

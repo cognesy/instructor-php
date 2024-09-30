@@ -56,7 +56,6 @@ class OpenAICompatibleDriver extends OpenAIDriver
     protected function removeDisallowedEntries(array $jsonSchema) : array {
         return Arrays::removeRecursively($jsonSchema, [
             'title',
-            //'description',
             'x-php-class',
             'additionalProperties',
         ]);

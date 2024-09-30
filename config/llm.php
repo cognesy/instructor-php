@@ -33,9 +33,17 @@ return [
             'defaultModel' => 'gpt-4o-mini',
             'defaultMaxTokens' => 1024,
         ],
-        'cohere' => [
-            'providerType' => LLMProviderType::Cohere->value,
+        'cohere1' => [
+            'providerType' => LLMProviderType::CohereV1->value,
             'apiUrl' => 'https://api.cohere.ai/v1',
+            'apiKey' => Env::get('COHERE_API_KEY', ''),
+            'endpoint' => '/chat',
+            'defaultModel' => 'command-r-plus-08-2024',
+            'defaultMaxTokens' => 1024,
+        ],
+        'cohere2' => [
+            'providerType' => LLMProviderType::CohereV2->value,
+            'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/chat',
             'defaultModel' => 'command-r-plus-08-2024',
@@ -87,7 +95,8 @@ return [
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
             'metadata' => [
-                'organization' => ''
+                'organization' => '',
+                'project' => '',
             ],
             'defaultModel' => 'gpt-4o-mini',
             'defaultMaxTokens' => 1024,

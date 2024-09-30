@@ -96,7 +96,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$instructor = (new Instructor)->withConnection('cohere');
+$instructor = (new Instructor)->withConnection('cohere1');
 
 echo "PROJECT EVENTS:\n\n";
 

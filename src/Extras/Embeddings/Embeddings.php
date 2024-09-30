@@ -74,7 +74,7 @@ class Embeddings
     protected function getDriver(EmbeddingsConfig $config, CanHandleHttp $httpClient) : CanVectorize {
         return match ($config->providerType) {
             LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient),
-            LLMProviderType::Cohere => new CohereDriver($config, $httpClient),
+            LLMProviderType::CohereV1 => new CohereDriver($config, $httpClient),
             LLMProviderType::Gemini => new GeminiDriver($config, $httpClient),
             LLMProviderType::Mistral => new OpenAIDriver($config, $httpClient),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient),

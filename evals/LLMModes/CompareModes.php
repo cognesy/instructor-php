@@ -48,10 +48,17 @@ class CompareModes {
         $key = $this->makeKey($connection, $mode, $isStreamed);
         try {
             $time = microtime(true);
-            $answer = $this->modes->callInferenceFor($this->query, $mode, $connection, $this->modes->schema(), $isStreamed);
+            $apiResponse = $this->modes->callInferenceFor($this->query, $mode, $connection, $this->modes->schema(), $isStreamed);
+            $answer = $apiResponse->content;
             $timeElapsed = microtime(true) - $time;
             $evalRequest = new EvalRequest(
-                $answer, $this->query, $this->modes->schema(), $mode, $connection, $isStreamed
+                answer: $answer,
+                query: $this->query,
+                schema: $this->modes->schema(),
+                mode: $mode,
+                connection: $connection,
+                isStreamed: $isStreamed,
+                response: $apiResponse,
             );
             $isCorrect = ($this->evalFn)($evalRequest);
             $evalResponse = new EvalResponse(
@@ -59,6 +66,8 @@ class CompareModes {
                 answer: $answer,
                 isCorrect: $isCorrect,
                 timeElapsed: $timeElapsed,
+                inputTokens: $apiResponse->inputTokens,
+                outputTokens: $apiResponse->outputTokens,
             );
         } catch(Exception $e) {
             $timeElapsed = microtime(true) - $time;

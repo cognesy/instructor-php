@@ -26,10 +26,11 @@ class GuzzleHttpClient implements CanHandleHttp
         if (isset($this->httpClient) && Debug::isEnabled()) {
             throw new InvalidArgumentException("Guzzle does not allow to inject debugging stack into existing client. Turn off debug or use default client.");
         }
-        $this->client = match(Debug::isEnabled()) {
-            false => $httpClient ?? new Client(),
-            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
-        };
+//        $this->client = match(Debug::isEnabled()) {
+//            false => $httpClient ?? new Client(),
+//            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
+//        };
+        $this->client = new Client(['handler' => $this->addDebugStack(HandlerStack::create())]);
     }
 
     public function handle(

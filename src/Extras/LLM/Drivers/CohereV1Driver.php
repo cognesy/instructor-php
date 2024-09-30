@@ -15,7 +15,7 @@ use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Psr\Http\Message\ResponseInterface;
 
-class CohereDriver implements CanHandleInference
+class CohereV1Driver implements CanHandleInference
 {
     public function __construct(
         protected LLMConfig $config,
@@ -82,8 +82,8 @@ class CohereDriver implements CanHandleInference
         return new ApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolName: $data['tool_calls'][0]['name'] ?? '',
-            toolArgs: Json::encode($data['tool_calls'][0]['parameters'] ?? []),
+//            toolName: $data['tool_calls'][0]['name'] ?? '',
+//            toolArgs: Json::encode($data['tool_calls'][0]['parameters'] ?? []),
             toolsData: $this->mapToolsData($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -100,9 +100,9 @@ class CohereDriver implements CanHandleInference
             responseData: $data,
             toolName: $data['tool_calls'][0]['name'] ?? '',
             toolArgs: Json::encode($data['tool_calls'][0]['parameters'] ?? []),
-            finishReason: $data['finish_reason'] ?? '',
-            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
-            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
+            finishReason: $data['response']['finish_reason'] ?? $data['delta']['finish_reason'] ?? '',
+            inputTokens: $data['response']['meta']['tokens']['input_tokens'] ?? $data['delta']['tokens']['input_tokens'] ?? 0,
+            outputTokens: $data['response']['meta']['tokens']['output_tokens'] ?? $data['delta']['tokens']['input_tokens'] ?? 0,
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );

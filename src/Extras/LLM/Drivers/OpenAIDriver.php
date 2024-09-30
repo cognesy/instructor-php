@@ -47,10 +47,14 @@ class OpenAIDriver implements CanHandleInference
     }
 
     public function getRequestHeaders() : array {
-        return [
+        $extras = [
+            "OpenAI-Organization" => $this->config->metadata['organization'] ?? '',
+            "OpenAI-Project" => $this->config->metadata['project'] ?? '',
+        ];
+        return array_merge([
             'Authorization' => "Bearer {$this->config->apiKey}",
             'Content-Type' => 'application/json',
-        ];
+        ], $extras);
     }
 
     public function getRequestBody(
@@ -77,31 +81,32 @@ class OpenAIDriver implements CanHandleInference
 
     // RESPONSE /////////////////////////////////////////////
 
-    public function toApiResponse(array $data): ApiResponse {
+    public function toApiResponse(array $data): ?ApiResponse {
         return new ApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolName: $data['choices'][0]['message']['tool_calls'][0]['function']['name'] ?? '',
-            toolArgs: $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '',
-            toolsData: $this->mapToolsData($data),
+            toolsData: $this->makeToolsData($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            inputTokens: $data['usage']['prompt_tokens'] ?? 0,
-            outputTokens: $data['usage']['completion_tokens'] ?? 0,
+            inputTokens: $this->makeInputTokens($data),
+            outputTokens: $this->makeOutputTokens($data),
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
     }
 
-    public function toPartialApiResponse(array $data) : PartialApiResponse {
+    public function toPartialApiResponse(array $data) : ?PartialApiResponse {
+        if (empty($data)) {
+            return null;
+        }
         return new PartialApiResponse(
             delta: $this->makeDelta($data),
             responseData: $data,
-            toolName: $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '',
-            toolArgs: $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '',
+            toolName: $this->makeToolNameDelta($data),
+            toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            inputTokens: $data['usage']['prompt_tokens'] ?? 0,
-            outputTokens: $data['usage']['completion_tokens'] ?? 0,
+            inputTokens: $this->makeInputTokens($data),
+            outputTokens: $this->makeOutputTokens($data),
             cacheCreationTokens: 0,
             cacheReadTokens: 0,
         );
@@ -146,29 +151,6 @@ class OpenAIDriver implements CanHandleInference
         return $request;
     }
 
-    protected function toNativeContent(string|array $content) : string|array {
-        if (is_string($content)) {
-            return $content;
-        }
-        // if content is array - process each part
-        $transformed = [];
-        foreach ($content as $contentPart) {
-            $transformed[] = $this->contentPartToNative($contentPart);
-        }
-        return $transformed;
-    }
-
-    protected function contentPartToNative(array $contentPart) : array {
-        $type = $contentPart['type'] ?? 'text';
-        if ($type === 'text') {
-            $contentPart = [
-                'type' => 'text',
-                'text' => $contentPart['text'],
-            ];
-        }
-        return $contentPart;
-    }
-
     private function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
             callback: fn(array $call) => $call['function'] ?? [],
@@ -176,7 +158,7 @@ class OpenAIDriver implements CanHandleInference
         ));
     }
 
-    private function mapToolsData(array $data) : array {
+    private function makeToolsData(array $data) : array {
         return array_map(
             fn($tool) => [
                 'name' => $tool['function']['name'] ?? '',
@@ -204,5 +186,25 @@ class OpenAIDriver implements CanHandleInference
             ('' !== $deltaFnArgs) => $deltaFnArgs,
             default => ''
         };
+    }
+
+    private function makeInputTokens(array $data): int {
+        return $data['usage']['prompt_tokens']
+            ?? $data['x_groq']['usage']['prompt_tokens']
+            ?? 0;
+    }
+
+    private function makeOutputTokens(array $data): int {
+        return $data['usage']['completion_tokens']
+            ?? $data['x_groq']['usage']['completion_tokens']
+            ?? 0;
+    }
+
+    private function makeToolNameDelta(array $data) : string {
+        return $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
+    }
+
+    private function makeToolArgsDelta(array $data) : string {
+        return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
     }
 }

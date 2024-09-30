@@ -3,6 +3,7 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
 
 class EvalRequest
 {
@@ -13,5 +14,6 @@ class EvalRequest
         public Mode $mode = Mode::Text,
         public string $connection = '',
         public bool $isStreamed = false,
+        public ?ApiResponse $response = null,
     ) {}
 }

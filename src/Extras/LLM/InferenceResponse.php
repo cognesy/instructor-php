@@ -62,7 +62,6 @@ class InferenceResponse
             false => $this->driver->toApiResponse($this->responseData()),
             true => ApiResponse::fromPartialResponses($this->allPartialApiResponses()),
         };
-dump($response);
         $this->events->dispatch(new ApiResponseReceived($response));
         return $response;
     }
@@ -73,6 +72,9 @@ dump($response);
     public function toPartialApiResponses() : Generator {
         foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
             $response = $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
+            if ($response === null) {
+                continue;
+            }
             $this->events->dispatch(new PartialApiResponseReceived($response));
             yield $response;
         }

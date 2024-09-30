@@ -24,8 +24,8 @@ return [
             'defaultDimensions' => 1536,
             'maxInputs' => 16,
         ],
-        'cohere' => [
-            'providerType' => LLMProviderType::Cohere->value,
+        'cohere1' => [
+            'providerType' => LLMProviderType::CohereV1->value,
             'apiUrl' => 'https://api.cohere.ai/v1',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',

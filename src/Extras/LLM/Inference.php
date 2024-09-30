@@ -11,7 +11,8 @@ use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\AzureOpenAIDriver;
-use Cognesy\Instructor\Extras\LLM\Drivers\CohereDriver;
+use Cognesy\Instructor\Extras\LLM\Drivers\CohereV1Driver;
+use Cognesy\Instructor\Extras\LLM\Drivers\CohereV2Driver;
 use Cognesy\Instructor\Extras\LLM\Drivers\GeminiDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\MistralDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAICompatibleDriver;
@@ -122,7 +123,8 @@ class Inference
         return match ($config->providerType) {
             LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient),
             LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient),
-            LLMProviderType::Cohere => new CohereDriver($config, $httpClient),
+            LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient),
+            LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient),
             LLMProviderType::Gemini => new GeminiDriver($config, $httpClient),
             LLMProviderType::Mistral => new MistralDriver($config, $httpClient),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient),
