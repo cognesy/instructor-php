@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Extras\Module\Core;
 
 use Closure;
 use Cognesy\Instructor\Data\RequestInfo;
+use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Instructor;
 
@@ -15,6 +16,9 @@ class Predictor
     use Traits\Predictor\HandlesPrediction;
 
     protected Instructor $instructor;
+    protected Inference $inference;
+    protected string $connection;
+
     protected RequestInfo $requestInfo;
     protected ?Signature $signature;
     protected Feedback $feedback;

@@ -36,10 +36,9 @@ abstract class Module implements CanInitiateModuleCall
 
     public function using(
         Instructor $instructor = null,
-        CanCallLLM $client = null,
     ) : static {
         foreach($this->predictors() as $predictor) {
-            $predictor->using(instructor: $instructor, client: $client);
+            $predictor->using(instructor: $instructor);
         }
         return $this;
     }

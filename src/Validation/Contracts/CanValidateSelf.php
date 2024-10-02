@@ -9,5 +9,9 @@ use Cognesy\Instructor\Validation\ValidationResult;
  */
 interface CanValidateSelf
 {
+    /**
+     * Validate self
+     * @return ValidationResult
+     */
     public function validate(): ValidationResult;
 }

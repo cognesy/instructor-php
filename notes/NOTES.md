@@ -53,7 +53,8 @@
 - Extract APIClient to a separate package?
 - Foreign client support - OpenAI PHP, Amazon Bedrock SDK, etc. - via some kind of adapters?
 - example of integration with Laravel/Livewire
-
+- Read rate limits from API responses
+- Rate limited API calls - wait for the limit to reset
 
 
 

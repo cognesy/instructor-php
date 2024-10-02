@@ -38,20 +38,9 @@ class FindSources extends Module
         foreach ($urls as $url) {
             $webpage = $this->getWebpageContent->for(url: $url);
             $markdown = $this->convertToMarkdown->for(html: $webpage);
-//            $split = $this->splitMarkdown->for(markdown: $markdown, source: $url);
-            $data[] = $markdown;
+            $split = $this->splitMarkdown->for(markdown: $markdown, source: $url);
+            $data[] = $split;
         }
-        //$documents = array_merge(...$data);
-        //$index = new BM25();
-        //$index->preprocess($data);
-        //$results = $index->search($query);
-        //$sources = [];
-        //foreach ($results as $result) {
-        //    $sources[] = $documents[$result];
-        //    if (count($sources) >= $topK) {
-        //        break;
-        //    }
-        //}
         return $data;
     }
 }

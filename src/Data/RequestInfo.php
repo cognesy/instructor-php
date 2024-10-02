@@ -28,4 +28,8 @@ class RequestInfo
     public function isStream() : bool {
         return $this->options['stream'] ?? false;
     }
+
+    public function toMessages() : array {
+        return $this->messages;
+    }
 }

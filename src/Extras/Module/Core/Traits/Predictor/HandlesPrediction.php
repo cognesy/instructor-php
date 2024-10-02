@@ -31,7 +31,7 @@ trait HandlesPrediction
 
     // INTERNAL ////////////////////////////////////////////////////////////
 
-    protected function predictText(array $callArgs) : mixed {
+    protected function predictText(array $callArgs) : string {
         $this->requestInfo->prompt = match(true) {
             empty($this->requestInfo->prompt) => TemplateUtil::render(
                 template: $this->toTextTemplate(),
@@ -42,7 +42,7 @@ trait HandlesPrediction
             ),
             default => $this->requestInfo->prompt,
         };
-        return $this->instructor->withRequest($this->requestInfo)->raw();
+        return $this->inference->create(messages: $this->requestInfo->prompt)->toText();
     }
 
     protected function predictStructure(array $callArgs) : mixed {

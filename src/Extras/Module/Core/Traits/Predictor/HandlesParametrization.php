@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
 use Cognesy\Instructor\Data\RequestInfo;
+use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Instructor;
 
@@ -36,8 +37,23 @@ trait HandlesParametrization
         return $this;
     }
 
-    public function withClient(?CanCallLLM $client) : static {
-        // TODO: fix me
+    public function withInference(?Inference $inference) : static {
+        $this->inference = match(true) {
+            !is_null($inference) => $inference,
+            !isset($this->inference) => new Inference(),
+            default => $this->inference,
+        };
+        return $this;
+    }
+
+    public function withConnection(string $connection) : static {
+        $this->connection = match(true) {
+            !empty($connection) => $connection,
+            !isset($this->connection) => '',
+            default => $this->connection,
+        };
+        $this->inference->withConnection($this->connection);
+        $this->instructor->withConnection($this->connection);
         return $this;
     }
 

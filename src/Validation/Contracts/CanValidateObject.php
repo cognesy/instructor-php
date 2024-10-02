@@ -10,9 +10,9 @@ use Cognesy\Instructor\Validation\ValidationResult;
 interface CanValidateObject
 {
     /**
-     * Validate response object
+     * Validate provided object
      * @param object $dataObject
-     * @return array
+     * @return ValidationResult
      */
-    public function validate(object $dataObject) : ?ValidationResult;
+    public function validate(object $dataObject) : ValidationResult;
 }

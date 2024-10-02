@@ -48,7 +48,8 @@
         "symfony/dom-crawler": "^7.1",
         "duzun/hquery": "^3.1",
         "ext-dom": "*",
-        "psy/psysh": "@stable"
+        "psy/psysh": "@stable",
+        "symfony/http-client": "^7.1"
     },
     "config": {
         "allow-plugins": {

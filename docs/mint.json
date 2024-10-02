@@ -137,7 +137,9 @@
                 "cookbook/examples/basics/attributes",
                 "cookbook/examples/basics/using_config",
                 "cookbook/examples/basics/validation",
-                "cookbook/examples/basics/validation_multifield"
+                "cookbook/examples/basics/custom_validation",
+                "cookbook/examples/basics/validation_multifield",
+                "cookbook/examples/basics/validation_with_llm"
             ]
         },
         {
@@ -146,7 +148,6 @@
                 "cookbook/examples/advanced/context_cache",
                 "cookbook/examples/advanced/custom_client",
                 "cookbook/examples/advanced/custom_prompts",
-                "cookbook/examples/advanced/custom_validation",
                 "cookbook/examples/advanced/structured_input",
                 "cookbook/examples/advanced/function_calls",
                 "cookbook/examples/advanced/partials",

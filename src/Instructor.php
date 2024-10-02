@@ -33,9 +33,6 @@ class Instructor {
     use Traits\Instructor\HandlesRequest;
     use Traits\Instructor\HandlesSequenceUpdates;
 
-    //private LoggerInterface $logger;
-    //private EventLogger $eventLogger;
-
     public function __construct(
         EventDispatcher $events = null,
     ) {
@@ -44,13 +41,6 @@ class Instructor {
 
         // main event dispatcher
         $this->events = $events ?? new EventDispatcher('instructor');
-
-        // wire up logging
-        //$this->logger = $this->config->get(LoggerInterface::class);
-        //$this->eventLogger = $this->config->get(EventLogger::class);
-        //$this->events->wiretap($this->eventLogger->eventListener(...));
-
-        // get other components from configuration
 
         $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
@@ -73,6 +63,10 @@ class Instructor {
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());
+    }
+
+    public static function using(string $connection) : Instructor {
+        return (new static)->withConnection($connection);
     }
 
     public function withDebug(bool $debug = true) : static {
