@@ -32,7 +32,10 @@ class User {
 $driver = new OpenAIDriver(new LLMConfig(
         apiUrl: 'https://api.openai.com/v1',
         apiKey: Env::get('OPENAI_API_KEY'),
+        endpoint: '/chat/completions',
         metadata: ['organization' => ''],
+        model: 'gpt-4o-mini',
+        maxTokens: 128,
     )
 );
 

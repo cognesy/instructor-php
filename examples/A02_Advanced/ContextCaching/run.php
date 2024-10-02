@@ -46,7 +46,7 @@ class Project {
     public array $applications;
     #[Description('Explain the purpose of the project and the domain specific problems it solves')]
     public string $description;
-    #[Description('Example code in Markdown demonstrating domain specific application of the library')]
+    #[Description('Example code as Markdown fragment, demonstrating domain specific application of the library')]
     public string $code;
 }
 ?>
@@ -93,7 +93,7 @@ which results in faster processing and lower costs.
 ```php
 <?php
 $project = $cached->respond(
-    messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
+    messages: "Describe the project in a way compelling to my audience: lead gen software vendor.",
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
     mode: Mode::Json,

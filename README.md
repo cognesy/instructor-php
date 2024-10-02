@@ -673,7 +673,10 @@ $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key
 $driver = new OpenAIDriver(new LLMConfig(
     apiUrl: 'https://api.openai.com/v1', // you can change base URI
     apiKey: $yourApiKey,
+    endpoint: '/chat/completions',
     metadata: ['organization' => ''],
+    model: 'gpt-4o-mini',
+    maxTokens: 128,
 ));
 
 /// Get Instructor with the default client component overridden with your own

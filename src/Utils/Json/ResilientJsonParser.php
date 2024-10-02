@@ -2,30 +2,32 @@
 
 namespace Cognesy\Instructor\Utils\Json;
 
+namespace Cognesy\Instructor\Utils\Json;
+
 class ResilientJsonParser
 {
     private string $input;
     private int $position = 0;
     private int $length;
-    private bool $inCodeBlock = false;
 
     public function __construct(string $input) {
-        $this->input = $input;
+        $this->input = trim($input);
         $this->length = strlen($input);
     }
 
-    // PUBLIC /////////////////////////////////////////////////////////////////
-
     public function parse(): mixed {
+        if (empty($this->input) || ($this->length === 0)) {
+            throw new \RuntimeException("Cannot parse an empty string");
+        }
         $this->skipWhitespace();
+        if ($this->position >= $this->length) {
+            throw new \RuntimeException("Input contains only whitespace");
+        }
         return $this->parseValue();
     }
 
-    // INTERNAL ////////////////////////////////////////////////////////////////
-
     private function parseValue(): mixed {
-        $char = $this->getCurrentChar();
-        return match ($char) {
+        return match ($this->getCurrentChar()) {
             '{' => $this->parseObject(),
             '[' => $this->parseArray(),
             '"' => $this->parseString(),
@@ -41,20 +43,21 @@ class ResilientJsonParser
         $this->consume('{');
         $this->skipWhitespace();
 
-        while ($this->getCurrentChar() !== '}') {
+        if ($this->getCurrentChar() === '}') {
+            $this->consume('}');
+            return $result;
+        }
+
+        do {
+            $this->skipWhitespace();
             $key = $this->parseString();
             $this->skipWhitespace();
             $this->consume(':');
             $this->skipWhitespace();
             $value = $this->parseValue();
             $result[$key] = $value;
-
             $this->skipWhitespace();
-            if ($this->getCurrentChar() === ',') {
-                $this->consume(',');
-                $this->skipWhitespace();
-            }
-        }
+        } while ($this->consumeIf(','));
 
         $this->consume('}');
         return $result;
@@ -65,87 +68,67 @@ class ResilientJsonParser
         $this->consume('[');
         $this->skipWhitespace();
 
-        while ($this->getCurrentChar() !== ']') {
-            $value = $this->parseValue();
-            $result[] = $value;
-
-            $this->skipWhitespace();
-            if ($this->getCurrentChar() === ',') {
-                $this->consume(',');
-                $this->skipWhitespace();
-            }
+        if ($this->getCurrentChar() === ']') {
+            $this->consume(']');
+            return $result;
         }
+
+        do {
+            $this->skipWhitespace();
+            $result[] = $this->parseValue();
+            $this->skipWhitespace();
+        } while ($this->consumeIf(','));
 
         $this->consume(']');
         return $result;
     }
 
-//    private function parseString(): string {
-//        $result = '';
-//        $this->consume('"');
-//
-//        while (true) {
-//            $char = $this->getCurrentChar();
-//            if ($char === '"' && $this->getPreviousChar() !== '\\') {
-//                break;
-//            }
-//            if ($char === "\n" || $char === "\r") {
-//                $result .= '\n';
-//                $this->position++;
-//            } elseif ($char === '\\') {
-//                $result .= $char . $this->getNextChar();
-//                $this->position += 2;
-//            } else {
-//                $result .= $char;
-//                $this->position++;
-//            }
-//        }
-//
-//        $this->consume('"');
-//        return $result;
-//    }
-
-    private function parseString(): string
-    {
-        $result = '';
+    private function parseString(): string {
         $this->consume('"');
-
-        while (true) {
-            $char = $this->getCurrentChar();
-            if ($char === '`' && $this->getNextChar() === '`' && $this->getNextNextChar() === '`') {
-                $this->inCodeBlock = !$this->inCodeBlock;
-                $result .= '```';
-                $this->position += 3;
-                continue;
-            }
-            if ($char === '"' && $this->getPreviousChar() !== '\\' && !$this->inCodeBlock) {
-                break;
-            }
-            if ($char === "\n" || $char === "\r") {
-                $result .= '\n';
+        $result = '';
+        while ($this->position < $this->length) {
+            $char = $this->input[$this->position];
+            if ($char === '"') {
                 $this->position++;
-            } elseif ($char === '\\') {
-                $result .= $char . $this->getNextChar();
-                $this->position += 2;
+                return $result;
+            }
+            if ($char === '\\') {
+                $this->position++;
+                if ($this->position >= $this->length) {
+                    throw new \RuntimeException("Unterminated string escape at position {$this->position}");
+                }
+                $escapeChar = $this->input[$this->position];
+                $result .= $this->parseEscapeChar($escapeChar);
             } else {
                 $result .= $char;
-                $this->position++;
             }
-        }
-
-        $this->consume('"');
-        return $result;
-    }
-
-    private function parseNumber(): float|int {
-        $start = $this->position;
-        while (preg_match('/[\d.+-e]/i', $this->getCurrentChar())) {
             $this->position++;
         }
-        $numberString = substr($this->input, $start, $this->position - $start);
-        return is_numeric($numberString)
-            ? $this->toNumber($numberString)
-            : 0;
+        throw new \RuntimeException("Unterminated string at position {$this->position}");
+    }
+
+    private function parseEscapeChar(string $char): string {
+        return match($char) {
+            '"' => '"',
+            '\\' => '\\',
+            '/' => '/',
+            'b' => "\b",
+            'f' => "\f",
+            'n' => "\n",
+            'r' => "\r",
+            't' => "\t",
+            'u' => $this->parseUnicodeEscape(),
+            default => throw new \RuntimeException("Invalid escape character '\\$char' at position {$this->position}")
+        };
+    }
+
+    private function parseUnicodeEscape(): string {
+        $hex = substr($this->input, $this->position + 1, 4);
+        if (strlen($hex) !== 4 || !ctype_xdigit($hex)) {
+            throw new \RuntimeException("Invalid Unicode escape sequence at position {$this->position}");
+        }
+        $this->position += 4;
+        return html_entity_decode("&#x$hex;", ENT_QUOTES, 'UTF-8');
     }
 
     private function parseTrue(): bool {
@@ -163,40 +146,67 @@ class ResilientJsonParser
         return null;
     }
 
+    private function parseNumber(): float|int {
+        $start = $this->position;
+        $allowedChars = '0123456789.eE+-';
+        $gotDecimalPoint = false;
+        $gotExponent = false;
+
+        while ($this->position < $this->length && strpos($allowedChars, $this->getCurrentChar()) !== false) {
+            $char = $this->getCurrentChar();
+            if ($char === '.') {
+                if ($gotDecimalPoint) {
+                    throw new \RuntimeException("Invalid number format: multiple decimal points at position {$this->position}");
+                }
+                $gotDecimalPoint = true;
+            } elseif ($char === 'e' || $char === 'E') {
+                if ($gotExponent) {
+                    throw new \RuntimeException("Invalid number format: multiple exponents at position {$this->position}");
+                }
+                $gotExponent = true;
+            }
+            $this->position++;
+        }
+
+        $numberString = substr($this->input, $start, $this->position - $start);
+        if (!is_numeric($numberString)) {
+            throw new \RuntimeException("Invalid number format at position $start");
+        }
+
+        return $this->toNumber($numberString);
+    }
+
     private function skipWhitespace(): void {
-        while ($this->position < $this->length && ctype_space($this->getCurrentChar())) {
+        while ($this->position < $this->length && preg_match('/\s/', $this->getCurrentChar())) {
             $this->position++;
         }
     }
 
     private function consume(string $expected): void {
-        $length = strlen($expected);
-        if (substr($this->input, $this->position, $length) !== $expected) {
+        $this->skipWhitespace();
+        if (substr($this->input, $this->position, strlen($expected)) !== $expected) {
             throw new \RuntimeException("Expected '$expected' at position {$this->position}");
         }
-        $this->position += $length;
+        $this->position += strlen($expected);
+    }
+
+    private function consumeIf(string $expected): bool {
+        $this->skipWhitespace();
+        if (substr($this->input, $this->position, strlen($expected)) === $expected) {
+            $this->position += strlen($expected);
+            return true;
+        }
+        return false;
     }
 
     private function getCurrentChar(): string {
         return $this->position < $this->length ? $this->input[$this->position] : '';
     }
 
-    private function getNextChar(): string {
-        return $this->position + 1 < $this->length ? $this->input[$this->position + 1] : '';
-    }
-
-    private function getPreviousChar(): string {
-        return $this->position > 0 ? $this->input[$this->position - 1] : '';
-    }
-
-    private function getNextNextChar(): string
-    {
-        return $this->position + 2 < $this->length ? $this->input[$this->position + 2] : '';
-    }
-
-    private function toNumber(float|int|string $numberString) : float|int {
-        return strpos($numberString, '.') !== false
-            ? (float) $numberString
-            : (int) $numberString;
+    private function toNumber(string $numberString): float|int {
+        if (strpos($numberString, '.') !== false || stripos($numberString, 'e') !== false) {
+            return (float) $numberString;
+        }
+        return (int) $numberString;
     }
 }
