@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Extras\LLM\Data\CachedContext;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Drivers\AnthropicDriver;
 use Cognesy\Instructor\Extras\LLM\Drivers\AzureOpenAIDriver;
@@ -28,6 +29,7 @@ class Inference
     protected CanHandleInference $driver;
     protected CanHandleHttp $httpClient;
     protected EventDispatcher $events;
+    protected CachedContext $cachedContext;
 
     public function __construct(
         string $connection = '',
@@ -97,6 +99,16 @@ class Inference
         return $this;
     }
 
+    public function withCachedContext(
+        string|array $messages = [],
+        array $tools = [],
+        string|array $toolChoice = [],
+        array $responseFormat = [],
+    ): self {
+        $this->cachedContext = new CachedContext($messages, $tools, $toolChoice, $responseFormat);
+        return $this;
+    }
+
     public function create(
         string|array $messages = [],
         string $model = '',
@@ -106,7 +118,9 @@ class Inference
         array $options = [],
         Mode $mode = Mode::Text
     ): InferenceResponse {
-        $request = new InferenceRequest($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
+        $request = new InferenceRequest(
+            $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode, $this->cachedContext ?? null
+        );
         $this->events->dispatch(new InferenceRequested($request));
         return new InferenceResponse(
             response: $this->driver->handle($request),

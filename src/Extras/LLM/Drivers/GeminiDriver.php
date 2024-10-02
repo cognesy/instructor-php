@@ -29,6 +29,7 @@ class GeminiDriver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : ResponseInterface {
+        $request = $this->withCachedContext($request);
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
@@ -283,5 +284,17 @@ class GeminiDriver implements CanHandleInference
         return $data['candidates'][0]['content']['parts'][0]['text']
             ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? [])
             ?? '';
+    }
+
+    private function withCachedContext(InferenceRequest $request): InferenceRequest {
+        if (!isset($request->cachedContext)) {
+            return $request;
+        }
+        $cloned = clone $request;
+        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
+        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
+        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
+        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
+        return $cloned;
     }
 }

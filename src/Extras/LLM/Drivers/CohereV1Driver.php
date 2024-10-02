@@ -27,6 +27,7 @@ class CohereV1Driver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : ResponseInterface {
+        $request = $this->withCachedContext($request);
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
@@ -226,5 +227,17 @@ class CohereV1Driver implements CanHandleInference
 
     private function isStreamEnd(array $data) : bool {
         return 'stream_end' === ($data['event_type'] ?? '');
+    }
+
+    private function withCachedContext(InferenceRequest $request): InferenceRequest {
+        if (!isset($request->cachedContext)) {
+            return $request;
+        }
+        $cloned = clone $request;
+        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
+        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
+        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
+        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
+        return $cloned;
     }
 }

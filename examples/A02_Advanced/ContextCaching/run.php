@@ -9,7 +9,11 @@ Instructor offers a simplified way to work with LLM providers' APIs supporting c
 (currently only Anthropic API), so you can focus on your business logic while still being
 able to take advantage of lower latency and costs.
 
-> **Note:** Context caching is only available for Anthropic API.
+> **Note 1:** Instructor supports context caching for Anthropic API and OpenAI API.
+
+> **Note 2:** Context caching is automatic for all OpenAI API calls. Read more
+> in the [OpenAI API documentation](https://platform.openai.com/docs/guides/prompt-caching).
+
 
 ## Example
 
@@ -46,7 +50,7 @@ class Project {
     public array $applications;
     #[Description('Explain the purpose of the project and the domain specific problems it solves')]
     public string $description;
-    #[Description('Example code as Markdown fragment, demonstrating domain specific application of the library')]
+    #[Description('Example code in Markdown demonstrating domain specific application of the library')]
     public string $code;
 }
 ?>
@@ -93,7 +97,7 @@ which results in faster processing and lower costs.
 ```php
 <?php
 $project = $cached->respond(
-    messages: "Describe the project in a way compelling to my audience: lead gen software vendor.",
+    messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
     mode: Mode::Json,

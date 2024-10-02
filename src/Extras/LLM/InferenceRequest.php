@@ -2,6 +2,8 @@
 namespace Cognesy\Instructor\Extras\LLM;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\LLM\Data\CachedContext;
+
 //use Cognesy\Instructor\Utils\Uuid;
 
 class InferenceRequest
@@ -16,6 +18,7 @@ class InferenceRequest
     public array $responseFormat = [];
     public array $options = [];
     public Mode $mode = Mode::Text;
+    public ?CachedContext $cachedContext;
 
     public function __construct(
         string|array $messages = [],
@@ -25,10 +28,9 @@ class InferenceRequest
         array $responseFormat = [],
         array $options = [],
         Mode $mode = Mode::Text,
-//        array $metadata = [],
+        ?CachedContext $cachedContext = null,
     ) {
-//        $this->uuid = Uuid::uuid4();
-//        $this->metadata = $metadata;
+        $this->cachedContext = $cachedContext;
 
         $this->model = $model;
         $this->options = $options;

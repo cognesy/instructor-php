@@ -28,6 +28,7 @@ class AnthropicDriver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : ResponseInterface {
+        $request = $this->withCachedContext($request);
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
@@ -244,5 +245,40 @@ class AnthropicDriver implements CanHandleInference
 
     private function makeDelta(array $data) : string {
         return $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '';
+    }
+
+    private function withCachedContext(InferenceRequest $request): InferenceRequest {
+        if (!isset($request->cachedContext)) {
+            return $request;
+        }
+
+        $cloned = clone $request;
+
+        $cloned->messages = empty($request->cachedContext->messages)
+            ? $request->messages
+            : array_merge($this->setCacheMarker($request->cachedContext->messages), $request->messages);
+        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
+        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
+        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
+        return $cloned;
+    }
+
+    private function setCacheMarker(array $messages): array {
+        $lastIndex = count($messages) - 1;
+        $lastMessage = $messages[$lastIndex];
+
+        if (is_array($lastMessage['content'])) {
+            $subIndex = count($lastMessage['content']) - 1;
+            $lastMessage['content'][$subIndex]['cache_control'] = ["type" => "ephemeral"];
+        } else {
+            $lastMessage['content'] = [[
+                'type' => $lastMessage['type'] ?? 'text',
+                'text' => $lastMessage['content'] ?? '',
+                'cache_control' => ["type" => "ephemeral"],
+            ]];
+        }
+
+        $messages[$lastIndex] = $lastMessage;
+        return $messages;
     }
 }

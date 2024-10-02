@@ -47,8 +47,6 @@ class CohereV2Driver extends OpenAIDriver
         return new ApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
-//            toolName: $data['message']['tool_calls'][0]['function']['name'] ?? '',
-//            toolArgs: $data['message']['tool_calls'][0]['function']['arguments'] ?? '',
             toolsData: $this->makeToolsData($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),

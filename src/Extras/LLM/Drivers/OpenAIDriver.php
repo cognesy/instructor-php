@@ -26,6 +26,7 @@ class OpenAIDriver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : ResponseInterface {
+        $request = $this->withCachedContext($request);
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
@@ -91,7 +92,7 @@ class OpenAIDriver implements CanHandleInference
             inputTokens: $this->makeInputTokens($data),
             outputTokens: $this->makeOutputTokens($data),
             cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
         );
     }
 
@@ -108,7 +109,7 @@ class OpenAIDriver implements CanHandleInference
             inputTokens: $this->makeInputTokens($data),
             outputTokens: $this->makeOutputTokens($data),
             cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
         );
     }
 
@@ -206,5 +207,18 @@ class OpenAIDriver implements CanHandleInference
 
     private function makeToolArgsDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
+    }
+
+    private function withCachedContext(InferenceRequest $request): InferenceRequest {
+        if (!isset($request->cachedContext)) {
+            return $request;
+        }
+
+        $cloned = clone $request;
+        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
+        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
+        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
+        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
+        return $cloned;
     }
 }
