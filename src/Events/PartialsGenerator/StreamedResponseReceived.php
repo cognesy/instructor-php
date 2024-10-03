@@ -2,13 +2,13 @@
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class StreamedResponseReceived extends Event
 {
     public function __construct(
-        public PartialApiResponse $response,
+        public PartialLLMApiResponse $response,
     ) {
         parent::__construct();
     }

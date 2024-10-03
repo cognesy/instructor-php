@@ -17,8 +17,8 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCall;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -63,7 +63,7 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     /**
-     * @param Generator<PartialApiResponse> $stream
+     * @param Generator<PartialLLMApiResponse> $stream
      * @param ResponseModel $responseModel
      * @return Generator<mixed>
      */
@@ -72,7 +72,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->resetPartialResponse();
 
         // receive data
-        /** @var \Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse $partialResponse */
+        /** @var \Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response
@@ -170,8 +170,8 @@ class PartialsGenerator implements CanGeneratePartials
         return $result;
     }
 
-    public function getCompleteResponse() : ApiResponse {
-        return ApiResponse::fromPartialResponses($this->partialResponses);
+    public function getCompleteResponse() : LLMApiResponse {
+        return LLMApiResponse::fromPartialResponses($this->partialResponses);
 //        $lastPartialResponse = $this->lastPartialResponse();
 //        // TODO: fix me - it should use fromPartialResponses()
 //        return new ApiResponse(
@@ -183,7 +183,7 @@ class PartialsGenerator implements CanGeneratePartials
 //        );
     }
 
-    public function lastPartialResponse() : PartialApiResponse {
+    public function lastPartialResponse() : PartialLLMApiResponse {
         $index = count($this->partialResponses) - 1;
         return $this->partialResponses[$index];
     }

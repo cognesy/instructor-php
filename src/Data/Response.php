@@ -2,23 +2,23 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 
 class Response {
     private array $messages;
-    private ApiResponse $apiResponse;
-    /** @var PartialApiResponse[] */
+    private LLMApiResponse $apiResponse;
+    /** @var PartialLLMApiResponse[] */
     private array $partialApiResponses;
     private array $errors;
     private mixed $returnedValue;
 
     public function __construct(
-        array $messages,
-        ApiResponse $apiResponse,
-        array $partialApiResponses = [],
-        array $errors = [],
-        mixed $returnedValue = null
+        array          $messages,
+        LLMApiResponse $apiResponse,
+        array          $partialApiResponses = [],
+        array          $errors = [],
+        mixed          $returnedValue = null
     ) {
         $this->messages = $messages;
         $this->apiResponse = $apiResponse;
@@ -35,7 +35,7 @@ class Response {
         return $this->messages;
     }
 
-    public function apiResponse() : ApiResponse {
+    public function apiResponse() : LLMApiResponse {
         return $this->apiResponse;
     }
 

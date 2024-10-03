@@ -3,12 +3,12 @@
 namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 
 class PartialInferenceResponseGenerated extends Event
 {
     public function __construct(
-        public PartialApiResponse $response,
+        public PartialLLMApiResponse $response,
     )
     {
         parent::__construct();

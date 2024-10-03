@@ -15,7 +15,7 @@ use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
 use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\LLM\InferenceResponse;
 use Cognesy\Instructor\Utils\Json\Json;
@@ -90,7 +90,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         $this->errors = [];
     }
 
-    protected function getApiResponse(Request $request) : ApiResponse {
+    protected function getApiResponse(Request $request) : LLMApiResponse {
         try {
             $this->events->dispatch(new RequestSentToLLM($request));
             $apiResponse = $this->makeInference($request)->toApiResponse();
@@ -139,7 +139,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
             );
     }
 
-    protected function processResponse(Request $request, ApiResponse $apiResponse, array $partialResponses) : Result {
+    protected function processResponse(Request $request, LLMApiResponse $apiResponse, array $partialResponses) : Result {
         $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
 
         // we have ApiResponse here - let's process it: deserialize, validate, transform
@@ -153,7 +153,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         return $processingResult;
     }
 
-    protected function processResult(Result $processingResult, Request $request, ApiResponse $apiResponse, array $partialResponses) : mixed {
+    protected function processResult(Result $processingResult, Request $request, LLMApiResponse $apiResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
             throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $this->errors));
@@ -169,7 +169,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         return $value;
     }
 
-    protected function handleError(Result $processingResult, Request $request, ApiResponse $apiResponse, array $partialResponses) : void {
+    protected function handleError(Result $processingResult, Request $request, LLMApiResponse $apiResponse, array $partialResponses) : void {
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
 

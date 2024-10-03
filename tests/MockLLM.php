@@ -2,7 +2,7 @@
 namespace Tests;
 
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 use Mockery;
 use Psr\Http\Message\MessageInterface;
@@ -62,7 +62,7 @@ class MockLLM
     }
 
     static private function makeFunc(string $json) {
-        return fn() => new ApiResponse(
+        return fn() => new LLMApiResponse(
             content: $json,
         );
     }

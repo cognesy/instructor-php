@@ -3,7 +3,7 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\LLM\InferenceResponse;
 
@@ -25,7 +25,7 @@ class Modes
         return $this->model->schema();
     }
 
-    public function callInferenceFor(string|array $query, Mode $mode, string $connection, array $schema, bool $isStreamed) : ApiResponse {
+    public function callInferenceFor(string|array $query, Mode $mode, string $connection, array $schema, bool $isStreamed) : LLMApiResponse {
         $query = is_array($query) ? $query : [['role' => 'user', 'content' => $query]];
         $inferenceResponse = match($mode) {
             Mode::Tools => $this->forModeTools($query, $connection, $schema, $isStreamed),

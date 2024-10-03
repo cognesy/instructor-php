@@ -2,13 +2,13 @@
 namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class ApiResponseReceived extends Event
 {
     public function __construct(
-        public ApiResponse $apiResponse,
+        public LLMApiResponse $apiResponse,
     ) {
         parent::__construct();
     }

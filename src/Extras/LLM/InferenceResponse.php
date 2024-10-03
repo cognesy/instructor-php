@@ -7,7 +7,7 @@ use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Http\StreamReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
@@ -57,17 +57,17 @@ class InferenceResponse
 
     // AS API RESPONSE OBJECTS //////////////////////////////////
 
-    public function toApiResponse() : ApiResponse {
+    public function toApiResponse() : LLMApiResponse {
         $response = match($this->isStreamed) {
             false => $this->driver->toApiResponse($this->responseData()),
-            true => ApiResponse::fromPartialResponses($this->allPartialApiResponses()),
+            true => LLMApiResponse::fromPartialResponses($this->allPartialApiResponses()),
         };
         $this->events->dispatch(new ApiResponseReceived($response));
         return $response;
     }
 
     /**
-     * @return Generator<\Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse>
+     * @return Generator<\Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse>
      */
     public function toPartialApiResponses() : Generator {
         foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
@@ -124,7 +124,7 @@ class InferenceResponse
     }
 
     /**
-     * @return \Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse[]
+     * @return \Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse[]
      */
     protected function allPartialApiResponses() : array {
         $partialResponses = [];

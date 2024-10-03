@@ -26,8 +26,8 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
 use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 use Cognesy\Instructor\Instructor;
 
 class User {
@@ -41,7 +41,7 @@ class TokenCounter {
     public int $cacheCreation = 0;
     public int $cacheRead = 0;
 
-    public function add(ApiResponse|PartialApiResponse $response) {
+    public function add(LLMApiResponse|PartialLLMApiResponse $response) {
         $this->input += $response->inputTokens;
         $this->output += $response->outputTokens;
         $this->cacheCreation += $response->cacheCreationTokens;

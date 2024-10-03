@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Extras\LLM\Contracts;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Psr\Http\Message\ResponseInterface;
 
@@ -22,7 +22,7 @@ interface CanHandleInference
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array;
-    public function toApiResponse(array $data): ?ApiResponse;
-    public function toPartialApiResponse(array $data) : ?PartialApiResponse;
+    public function toApiResponse(array $data): ?LLMApiResponse;
+    public function toPartialApiResponse(array $data) : ?PartialLLMApiResponse;
     public function getData(string $data): string|bool;
 }

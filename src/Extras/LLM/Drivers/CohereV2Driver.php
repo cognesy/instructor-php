@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json\Json;
@@ -43,8 +43,8 @@ class CohereV2Driver extends OpenAIDriver
 
     // RESPONSE //////////////////////////////////////////////
 
-    public function toApiResponse(array $data): ApiResponse {
-        return new ApiResponse(
+    public function toApiResponse(array $data): LLMApiResponse {
+        return new LLMApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
             toolsData: $this->makeToolsData($data),
@@ -57,11 +57,11 @@ class CohereV2Driver extends OpenAIDriver
         );
     }
 
-    public function toPartialApiResponse(array $data) : ?PartialApiResponse {
+    public function toPartialApiResponse(array $data) : ?PartialLLMApiResponse {
         if (empty($data)) {
             return null;
         }
-        return new PartialApiResponse(
+        return new PartialLLMApiResponse(
             delta: $this->makeDelta($data),
             responseData: $data,
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',

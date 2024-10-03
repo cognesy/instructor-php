@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data\Traits\Request;
 
 use Cognesy\Instructor\Data\Response;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 
 trait HandlesRetries
 {
@@ -52,19 +52,19 @@ trait HandlesRetries
     }
 
     public function setResponse(
-        array $messages,
-        ApiResponse $apiResponse,
-        array $partialApiResponses = [],
-        mixed $returnedValue = null
+        array          $messages,
+        LLMApiResponse $apiResponse,
+        array          $partialApiResponses = [],
+        mixed          $returnedValue = null
     ) {
         $this->response = new Response($messages, $apiResponse, $partialApiResponses, [], $returnedValue);
     }
 
     public function addFailedResponse(
-        array $messages,
-        ApiResponse $apiResponse,
-        array $partialApiResponses = [],
-        array $errors = [],
+        array          $messages,
+        LLMApiResponse $apiResponse,
+        array          $partialApiResponses = [],
+        array          $errors = [],
     ) {
         $this->failedResponses[] = new Response($messages, $apiResponse, $partialApiResponses, $errors, null);
     }

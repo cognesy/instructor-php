@@ -6,9 +6,9 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\ApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Extras\LLM\Data\PartialApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCall;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
@@ -86,8 +86,8 @@ class AnthropicDriver implements CanHandleInference
 
     // RESPONSE /////////////////////////////////////////////
 
-    public function toApiResponse(array $data): ?ApiResponse {
-        return new ApiResponse(
+    public function toApiResponse(array $data): ?LLMApiResponse {
+        return new LLMApiResponse(
             content: $this->makeContent($data),
             responseData: $data,
 //            toolName: $data['content'][0]['name'] ?? '',
@@ -102,11 +102,11 @@ class AnthropicDriver implements CanHandleInference
         );
     }
 
-    public function toPartialApiResponse(array $data) : ?PartialApiResponse {
+    public function toPartialApiResponse(array $data) : ?PartialLLMApiResponse {
         if (empty($data)) {
             return null;
         }
-        return new PartialApiResponse(
+        return new PartialLLMApiResponse(
             delta: $this->makeDelta($data),
             responseData: $data,
             toolName: $data['content_block']['name'] ?? '',
