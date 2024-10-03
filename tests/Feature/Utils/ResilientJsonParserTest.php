@@ -2,10 +2,6 @@
 
 use Cognesy\Instructor\Utils\Json\ResilientJsonParser;
 
-beforeEach(function () {
-    $this->parser = new ResilientJsonParser('');
-});
-
 test('parse empty object', function () {
     $result = (new ResilientJsonParser('{}'))->parse();
     expect($result)->toBe([]);
@@ -98,11 +94,13 @@ test('throw exception for invalid JSON structure', function () {
 });
 
 test('parse empty string', function () {
-    expect(fn() => (new ResilientJsonParser(''))->parse())->toThrow(\RuntimeException::class);
+    $result = (new ResilientJsonParser(''))->parse();
+    expect($result)->toBe('');
 });
 
 test('parse whitespace-only string', function () {
-    expect(fn() => (new ResilientJsonParser('   '))->parse())->toThrow(\RuntimeException::class);
+    $result = (new ResilientJsonParser('    '))->parse();
+    expect($result)->toBe('');
 });
 
 test('parse complex nested structure', function () {
@@ -157,3 +155,15 @@ test('parse deeply nested structure', function () {
         ]
     ]);
 });
+
+test('handles known ACME cases', function ($json, $result) {
+    expect((new ResilientJsonParser($json))->parse())->toMatchArray($result);
+})->with([
+    ['{"name":"ACME","year":2020}', ["name"=>"ACME","year"=>2020]],
+    ['{"name":"ACME","year":2020} Other text', ["name"=>"ACME","year"=>2020]],
+    ['{\n  "year": 2020,\n  "name": "ACME"\n}', ["name"=>"ACME","year"=>2020]],
+    ['{\n  "name": "ACME",\n  "year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
+    ['\n{\t  "name": "ACME",\n  "year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
+    ['{\n"name": "ACME",\n"year": 2020\n}\n```', ["name"=>"ACME","year"=>2020]],
+    ['\n{"year": 2020, "name": "ACME"}\n', ["name"=>"ACME","year"=>2020]],
+]);

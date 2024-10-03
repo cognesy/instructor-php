@@ -96,7 +96,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
             $apiResponse = $this->makeInference($request)->toApiResponse();
             $apiResponse->content = match($request->mode()) {
                 Mode::Text => $apiResponse->content,
-                default => Json::find($apiResponse->content),
+                default => Json::from($apiResponse->content)->toString(),
             };
         } catch (Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));

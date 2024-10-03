@@ -97,7 +97,7 @@ class PartialsGenerator implements CanGeneratePartials
             }
             $this->events->dispatch(new ChunkReceived($maybeArgumentChunk));
             $this->responseText .= $maybeArgumentChunk;
-            $this->responseJson = Json::findPartial($this->responseText);
+            $this->responseJson = Json::fromPartial($this->responseText)->toString();
             if (empty($this->responseJson)) {
                 continue;
             }
@@ -120,7 +120,7 @@ class PartialsGenerator implements CanGeneratePartials
         }
         // finalize last function call
         if ($this->toolCalls->count() > 0) {
-            $this->finalizeToolCall(Json::find($this->responseText), $responseModel->toolName());
+            $this->finalizeToolCall(Json::from($this->responseText)->toString(), $responseModel->toolName());
         }
         // finalize sequenceable
         $this->sequenceableHandler->finalize();
@@ -146,14 +146,8 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJsonData,
         ResponseModel $responseModel,
     ) : Result {
-//        dump('raw:', $partialJsonData);
-//        $found = Json::findPartial($partialJsonData);
-//        dump('found:', $found);
-//        $json = Json::fix($found);
-//        dump('fixed:', $json);
-
-        return Chain::from(fn() => Json::fix(Json::findPartial($partialJsonData)))
-            ->through(fn($jsonData) => $this->responseDeserializer->deserialize($jsonData, $responseModel, $this?->toolCalls->last()->name))
+        return Chain::from(fn() => Json::fromPartial($partialJsonData)->toString())
+            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this?->toolCalls->last()->name))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->result();
     }

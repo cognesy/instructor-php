@@ -45,8 +45,7 @@ trait ValidatesPartialResponse
 
     private function isJsonSchemaResponse(string $responseText) : bool {
         try {
-            $jsonFragment = Json::findPartial($responseText);
-            $decoded = Json::parsePartial($jsonFragment);
+            $decoded = Json::fromPartial($responseText)->toArray();
         } catch (Exception $e) {
             // also covers no JSON at all - which is fine, as some models will respond with text
             return false;
@@ -78,8 +77,7 @@ trait ValidatesPartialResponse
         }
         // ...detect matching response model
         try {
-            $jsonFragment = Json::findPartial($partialResponseText);
-            $decoded = Json::parsePartial($jsonFragment);
+            $decoded = Json::fromPartial($partialResponseText)->toArray();
             // we can try removing last item as it is likely to be still incomplete
             $decoded = Arrays::removeTail($decoded, 1);
         } catch (Exception $e) {

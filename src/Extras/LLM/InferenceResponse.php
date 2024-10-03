@@ -71,7 +71,10 @@ class InferenceResponse
      */
     public function toPartialApiResponses() : Generator {
         foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
-            $response = $this->driver->toPartialApiResponse(Json::parse($partialData, default: []));
+            if ($partialData === false) {
+                continue;
+            }
+            $response = $this->driver->toPartialApiResponse(Json::fromPartial($partialData)->toArray());
             if ($response === null) {
                 continue;
             }

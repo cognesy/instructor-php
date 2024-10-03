@@ -48,10 +48,10 @@ class OpenAIDriver implements CanHandleInference
     }
 
     public function getRequestHeaders() : array {
-        $extras = [
+        $extras = array_filter([
             "OpenAI-Organization" => $this->config->metadata['organization'] ?? '',
             "OpenAI-Project" => $this->config->metadata['project'] ?? '',
-        ];
+        ]);
         return array_merge([
             'Authorization' => "Bearer {$this->config->apiKey}",
             'Content-Type' => 'application/json',

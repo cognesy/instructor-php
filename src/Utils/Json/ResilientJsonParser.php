@@ -17,11 +17,11 @@ class ResilientJsonParser
 
     public function parse(): mixed {
         if (empty($this->input) || ($this->length === 0)) {
-            throw new \RuntimeException("Cannot parse an empty string");
+            return '';
         }
         $this->skipWhitespace();
         if ($this->position >= $this->length) {
-            throw new \RuntimeException("Input contains only whitespace");
+            return '';
         }
         return $this->parseValue();
     }
@@ -177,8 +177,20 @@ class ResilientJsonParser
     }
 
     private function skipWhitespace(): void {
-        while ($this->position < $this->length && preg_match('/\s/', $this->getCurrentChar())) {
-            $this->position++;
+        while ($this->position < $this->length) {
+            $char = $this->input[$this->position];
+            if (ctype_space($char)) {
+                $this->position++;
+            } elseif ($char === '\\' && $this->position + 1 < $this->length) {
+                $nextChar = $this->input[$this->position + 1];
+                if (in_array($nextChar, ['n', 'r', 't', 'f', 'b'])) {
+                    $this->position += 2;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
     }
 

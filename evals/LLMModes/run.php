@@ -6,33 +6,33 @@ $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 use Cognesy\Evals\LLMModes\CompareModes;
 use Cognesy\Evals\LLMModes\EvalRequest;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-//    'anthropic',
-//    'azure',
+    'azure',
     'cohere1',
-//    'fireworks',
-//    'gemini',
-//    'groq',
-//    'mistral',
-//    'ollama',
-//    'openai',
-//    'openrouter',
-//    'together'
+    'fireworks',
+    'gemini',
+    'groq',
+    'mistral',
+    'ollama',
+    'openai',
+    'openrouter',
+    'together',
 ];
 
 $streamingModes = [
+    false,
     true,
-//    false
 ];
 
 $modes = [
-//    Mode::Text,
-//    Mode::MdJson,
-//    Mode::Json,
-//    Mode::JsonSchema,
+    Mode::Text,
+    Mode::MdJson,
+    Mode::Json,
+    Mode::JsonSchema,
     Mode::Tools,
 ];
 
@@ -44,9 +44,10 @@ $modes = [
 // azure, Mode::JsonSchema, sync|stream
 //
 
+//Debug::enable();
+
 function evalFn(EvalRequest $er) {
-    $json = Json::find($er->answer) ?: '[]';
-    $decoded = json_decode($json, true) ?: [];
+    $decoded = Json::from($er->answer)->toArray();
     $isCorrect = match($er->mode) {
         Mode::Text => Str::contains($er->answer, ['ACME', '2020']),
         Mode::Tools => validateToolsData($er->response->toolsData),
@@ -65,6 +66,8 @@ function validateToolsData(array $data) : bool {
     query: [
         ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
         ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
+        //['role' => 'user', 'content' => 'EXAMPLE CONTEXT: Sony was established in 1946 by Akio Morita.'],
+        //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
     evalFn: fn(EvalRequest $er) => evalFn($er),

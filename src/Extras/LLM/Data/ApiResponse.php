@@ -19,7 +19,7 @@ class ApiResponse
     ) {}
 
     public function getJson(): string {
-        return Json::find($this->content);
+        return Json::from($this->content)->toString();
     }
 
     public static function fromPartialResponses(array $partialResponses) : ApiResponse {

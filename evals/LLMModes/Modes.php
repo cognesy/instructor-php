@@ -56,6 +56,7 @@ class Modes
             ->withDebug($this->debug)
             ->create(
                 messages: array_merge($query, [
+                    ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
                     ['role' => 'user', 'content' => 'Respond with correct JSON.'],
                 ]),
                 responseFormat: $this->model->responseFormatJsonSchema(),

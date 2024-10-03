@@ -26,7 +26,7 @@ return [
             'apiKey' => Env::get('AZURE_OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
             'metadata' => [
-                'apiVersion' => '2023-03-15-preview',
+                'apiVersion' => '2024-08-01-preview',
                 'resourceName' => 'instructor-dev',
                 'deploymentId' => 'gpt-4o-mini',
             ],

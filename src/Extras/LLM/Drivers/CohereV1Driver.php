@@ -204,14 +204,14 @@ class CohereV1Driver implements CanHandleInference
     }
 
     private function makeDelta(array $data) : string {
-        if ($this->isStreamEnd($data)) {
+        if (!$this->isStreamChunk($data)) {
             return '';
         }
-        return $data['text'] ?? $data['tool_calls'][0]['parameters'] ?? '';
+        return $data['tool_call_delta']['parameters'] ?? $data['text'] ?? '';
     }
 
     private function makeToolArgsDelta(array $data) : string {
-        if ($this->isStreamEnd($data)) {
+        if (!$this->isStreamChunk($data)) {
             return '';
         }
         $toolArgs = $data['tool_calls'][0]['parameters'] ?? '';
@@ -219,14 +219,14 @@ class CohereV1Driver implements CanHandleInference
     }
 
     private function makeToolNameDelta(array $data) : string {
-        if ($this->isStreamEnd($data)) {
+        if (!$this->isStreamChunk($data)) {
             return '';
         }
         return $data['tool_calls'][0]['name'] ?? '';
     }
 
-    private function isStreamEnd(array $data) : bool {
-        return 'stream_end' === ($data['event_type'] ?? '');
+    private function isStreamChunk(array $data) : bool {
+        return in_array(($data['event_type'] ?? ''), ['text-generation', 'tool-calls-chunk']);
     }
 
     private function withCachedContext(InferenceRequest $request): InferenceRequest {
