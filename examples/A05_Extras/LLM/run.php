@@ -5,7 +5,7 @@ docname: 'llm'
 
 ## Overview
 
-LLM class offers access to LLM APIs and convenient methods to execute
+`Inference` class offers access to LLM APIs and convenient methods to execute
 model inference, incl. chat completions, tool calling or JSON output
 generation.
 

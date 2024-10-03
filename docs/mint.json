@@ -197,6 +197,11 @@
                 "cookbook/examples/extras/image_to_data_anthropic",
                 "cookbook/examples/extras/image_to_data_gemini",
                 "cookbook/examples/extras/llm",
+                "cookbook/examples/extras/llm_json",
+                "cookbook/examples/extras/llm_json_schema",
+                "cookbook/examples/extras/llm_md_json",
+                "cookbook/examples/extras/llm_tools",
+                "cookbook/examples/extras/llm_json_schema",
                 "cookbook/examples/extras/transcription_to_tasks",
                 "cookbook/examples/extras/translate_ui_fields",
                 "cookbook/examples/extras/web_to_objects"

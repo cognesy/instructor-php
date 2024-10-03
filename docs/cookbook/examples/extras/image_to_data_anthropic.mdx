@@ -57,6 +57,7 @@ $receipt = (new Instructor)->withConnection('anthropic')->respond(
     input: Image::fromFile(__DIR__ . '/receipt.png'),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',
+    model: 'claude-3-5-sonnet-20240620',
     mode: Mode::Json,
     options: ['max_tokens' => 4096]
 );

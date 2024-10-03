@@ -72,7 +72,7 @@ $instructor = (new Instructor)
     ->respond(
         messages: $text,
         responseModel: User::class,
-);
+    );
 echo "\nTEXT: $text\n";
 assert($counter->input > 0);
 assert($counter->output > 0);

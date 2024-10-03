@@ -43,6 +43,10 @@ class InferenceResponse
         };
     }
 
+    public function toJson() : array {
+        return Json::from($this->toText())->toArray();
+    }
+
     /**
      * @return Generator<string>
      */

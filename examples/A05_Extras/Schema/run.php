@@ -1,0 +1,55 @@
+---
+title: 'Working directly with LLMs and JSON - JSON Schema mode'
+docname: 'llm_json_schema'
+---
+
+## Overview
+
+Instructor has a built-in support for generating JSON Schema from
+the classes or objects. This is useful as it helps you avoid writing
+the JSON Schema manually, which can be error-prone and time-consuming.
+
+## Example
+
+```php
+<?php
+$loader = require 'vendor/autoload.php';
+$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+
+use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+
+class City {
+    public string $name;
+    public int $population;
+    public int $founded;
+}
+
+$schema = (new SchemaFactory)->schema(City::class);
+
+// regular API, allows to customize inference options
+$data = (new Inference)
+    ->withConnection('openai')
+    ->create(
+        messages: [['role' => 'user', 'content' => 'What is capital of France? \
+        Respond with JSON data.']],
+        responseFormat: [
+            'type' => 'json_schema',
+            'description' => 'City data',
+            'json_schema' => [
+                'name' => 'city_data',
+                'schema' => $schema->toJsonSchema(),
+                'strict' => true,
+            ],
+        ],
+        options: ['max_tokens' => 64],
+        mode: Mode::JsonSchema,
+    )
+    ->toJson();
+
+echo "USER: What is capital of France\n";
+echo "ASSISTANT:\n";
+dump($data);
+
+?>
+```
