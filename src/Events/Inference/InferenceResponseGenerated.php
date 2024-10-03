@@ -3,12 +3,12 @@
 namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 
 class InferenceResponseGenerated extends Event
 {
     public function __construct(
-        public LLMApiResponse $response,
+        public LLMResponse $response,
     ) {
         parent::__construct();
     }

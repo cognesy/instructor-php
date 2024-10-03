@@ -54,7 +54,11 @@ $companyGen = Webpage::withScraper('none')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
     ->cleanup()
     ->select('.directory-providers__list')
-    ->selectMany(selector: '.provider-card', callback: fn($item) => $item->asMarkdown(), limit: 3);
+    ->selectMany(
+        selector: '.provider-card',
+        callback: fn($item) => $item->asMarkdown(),
+        limit: 3
+    );
 
 $companies = [];
 foreach($companyGen as $companyDiv) {

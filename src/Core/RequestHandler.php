@@ -15,7 +15,7 @@ use Cognesy\Instructor\Events\Request\RequestSentToLLM;
 use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
 use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\LLM\InferenceResponse;
 use Cognesy\Instructor\Utils\Json\Json;
@@ -47,12 +47,12 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
 
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
-            $apiResponse = $this->getApiResponse($request);
+            $llmResponse = $this->getLLMResponse($request);
             $partialResponses = [];
-            $processingResult = $this->processResponse($request, $apiResponse, $partialResponses);
+            $processingResult = $this->processResponse($request, $llmResponse, $partialResponses);
         }
 
-        $value = $this->processResult($processingResult, $request, $apiResponse, $partialResponses);
+        $value = $this->processResult($processingResult, $request, $llmResponse, $partialResponses);
 
         return $value;
     }
@@ -67,12 +67,12 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             yield from $this->getStreamedResponses($request);
 
-            $apiResponse = $this->partialsGenerator->getCompleteResponse();
+            $llmResponse = $this->partialsGenerator->getCompleteResponse();
             $partialResponses = $this->partialsGenerator->partialResponses();
-            $processingResult = $this->processResponse($request, $apiResponse, $partialResponses);
+            $processingResult = $this->processResponse($request, $llmResponse, $partialResponses);
         }
 
-        $value = $this->processResult($processingResult, $request, $apiResponse, $partialResponses);
+        $value = $this->processResult($processingResult, $request, $llmResponse, $partialResponses);
 
         yield $value;
     }
@@ -90,19 +90,19 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         $this->errors = [];
     }
 
-    protected function getApiResponse(Request $request) : LLMApiResponse {
+    protected function getLLMResponse(Request $request) : LLMResponse {
         try {
             $this->events->dispatch(new RequestSentToLLM($request));
-            $apiResponse = $this->makeInference($request)->toApiResponse();
-            $apiResponse->content = match($request->mode()) {
-                Mode::Text => $apiResponse->content,
-                default => Json::from($apiResponse->content)->toString(),
+            $llmResponse = $this->makeInference($request)->toLLMResponse();
+            $llmResponse->content = match($request->mode()) {
+                Mode::Text => $llmResponse->content,
+                default => Json::from($llmResponse->content)->toString(),
             };
         } catch (Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));
             throw $e;
         }
-        return $apiResponse;
+        return $llmResponse;
     }
 
     /**
@@ -112,7 +112,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
     protected function getStreamedResponses(Request $request) : Generator {
         try {
             $this->events->dispatch(new RequestSentToLLM($request));
-            $stream = $this->makeInference($request)->toPartialApiResponses();
+            $stream = $this->makeInference($request)->toPartialLLMResponses();
             yield from $this->partialsGenerator->getPartialResponses($stream, $request->responseModel());
         } catch(Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));
@@ -139,21 +139,21 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
             );
     }
 
-    protected function processResponse(Request $request, LLMApiResponse $apiResponse, array $partialResponses) : Result {
-        $this->events->dispatch(new ResponseReceivedFromLLM($apiResponse));
+    protected function processResponse(Request $request, LLMResponse $llmResponse, array $partialResponses) : Result {
+        $this->events->dispatch(new ResponseReceivedFromLLM($llmResponse));
 
-        // we have ApiResponse here - let's process it: deserialize, validate, transform
-        $processingResult = $this->responseGenerator->makeResponse($apiResponse, $this->responseModel);
+        // we have LLMResponse here - let's process it: deserialize, validate, transform
+        $processingResult = $this->responseGenerator->makeResponse($llmResponse, $this->responseModel);
 
         if ($processingResult->isFailure()) {
             // (3) retry - we have not managed to deserialize, validate or transform the response
-            $this->handleError($processingResult, $request, $apiResponse, $partialResponses);
+            $this->handleError($processingResult, $request, $llmResponse, $partialResponses);
         }
 
         return $processingResult;
     }
 
-    protected function processResult(Result $processingResult, Request $request, LLMApiResponse $apiResponse, array $partialResponses) : mixed {
+    protected function processResult(Result $processingResult, Request $request, LLMResponse $llmResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
             throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $this->errors));
@@ -162,19 +162,19 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         // get final value
         $value = $processingResult->unwrap();
         // store response
-        $request->setResponse($this->messages, $apiResponse, $partialResponses, $value); // TODO: tx messages to Scripts
+        $request->setResponse($this->messages, $llmResponse, $partialResponses, $value); // TODO: tx messages to Scripts
         // notify on response generation
         $this->events->dispatch(new ResponseGenerated($value));
 
         return $value;
     }
 
-    protected function handleError(Result $processingResult, Request $request, LLMApiResponse $apiResponse, array $partialResponses) : void {
+    protected function handleError(Result $processingResult, Request $request, LLMResponse $llmResponse, array $partialResponses) : void {
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
 
         // store failed response
-        $request->addFailedResponse($this->messages, $apiResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
+        $request->addFailedResponse($this->messages, $llmResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
         $this->retries++;
         if ($this->retries <= $request->maxRetries()) {
             $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $this->errors));

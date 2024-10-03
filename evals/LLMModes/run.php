@@ -6,7 +6,6 @@ $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 use Cognesy\Evals\LLMModes\CompareModes;
 use Cognesy\Evals\LLMModes\EvalRequest;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
 
@@ -24,8 +23,8 @@ $connections = [
 ];
 
 $streamingModes = [
-    false,
     true,
+    false,
 ];
 
 $modes = [
@@ -59,7 +58,7 @@ function evalFn(EvalRequest $er) {
 function validateToolsData(array $data) : bool {
     return 'store_company' === ($data[0]['name'] ?? '')
         && 'ACME' === ($data[0]['arguments']['name'] ?? '')
-        && 2020 === ($data[0]['arguments']['year'] ?? 0);
+        && 2020 === (int) ($data[0]['arguments']['year'] ?? 0);
 }
 
 (new CompareModes(

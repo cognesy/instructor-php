@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\LLM\Data;
 
 use Cognesy\Instructor\Utils\Json\Json;
 
-class LLMApiResponse
+class LLMResponse
 {
     public function __construct(
         public string $content = '',
@@ -22,7 +22,7 @@ class LLMApiResponse
         return Json::from($this->content)->toString();
     }
 
-    public static function fromPartialResponses(array $partialResponses) : LLMApiResponse {
+    public static function fromPartialResponses(array $partialResponses) : LLMResponse {
         return (new self)->makeInstance($partialResponses);
     }
 

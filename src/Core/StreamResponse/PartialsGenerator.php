@@ -17,8 +17,8 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCall;
 use Cognesy\Instructor\Extras\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -38,7 +38,6 @@ class PartialsGenerator implements CanGeneratePartials
     private string $responseText = '';
     private string $previousHash = '';
     private array $partialResponses = [];
-    // private PartialApiResponse $lastPartialResponse;
     private ToolCalls $toolCalls;
     private SequenceableHandler $sequenceableHandler;
     // options
@@ -63,7 +62,7 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     /**
-     * @param Generator<PartialLLMApiResponse> $stream
+     * @param Generator<PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
      * @return Generator<mixed>
      */
@@ -72,7 +71,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->resetPartialResponse();
 
         // receive data
-        /** @var \Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse $partialResponse */
+        /** @var \Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response
@@ -170,20 +169,11 @@ class PartialsGenerator implements CanGeneratePartials
         return $result;
     }
 
-    public function getCompleteResponse() : LLMApiResponse {
-        return LLMApiResponse::fromPartialResponses($this->partialResponses);
-//        $lastPartialResponse = $this->lastPartialResponse();
-//        // TODO: fix me - it should use fromPartialResponses()
-//        return new ApiResponse(
-//            content: $this->responseText,
-//            responseData: [],
-//            toolName: $lastPartialResponse->toolName ?? '',
-//            finishReason: $lastPartialResponse->finishReason ?? '',
-//            toolCalls: $this->toolCalls,
-//        );
+    public function getCompleteResponse() : LLMResponse {
+        return LLMResponse::fromPartialResponses($this->partialResponses);
     }
 
-    public function lastPartialResponse() : PartialLLMApiResponse {
+    public function lastPartialResponse() : PartialLLMResponse {
         $index = count($this->partialResponses) - 1;
         return $this->partialResponses[$index];
     }

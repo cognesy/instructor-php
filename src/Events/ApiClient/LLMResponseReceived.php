@@ -2,18 +2,18 @@
 namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
-class ApiResponseReceived extends Event
+class LLMResponseReceived extends Event
 {
     public function __construct(
-        public LLMApiResponse $apiResponse,
+        public LLMResponse $llmResponse,
     ) {
         parent::__construct();
     }
 
     public function __toString() : string {
-        return Json::encode($this->apiResponse);
+        return Json::encode($this->llmResponse);
     }
 }

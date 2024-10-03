@@ -2,27 +2,27 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 
 class Response {
     private array $messages;
-    private LLMApiResponse $apiResponse;
-    /** @var PartialLLMApiResponse[] */
-    private array $partialApiResponses;
+    private LLMResponse $llmResponse;
+    /** @var PartialLLMResponse[] */
+    private array $partialLLMResponses;
     private array $errors;
     private mixed $returnedValue;
 
     public function __construct(
-        array          $messages,
-        LLMApiResponse $apiResponse,
-        array          $partialApiResponses = [],
-        array          $errors = [],
-        mixed          $returnedValue = null
+        array       $messages,
+        LLMResponse $llmResponse,
+        array       $partialLLMResponses = [],
+        array       $errors = [],
+        mixed       $returnedValue = null
     ) {
         $this->messages = $messages;
-        $this->apiResponse = $apiResponse;
-        $this->partialApiResponses = $partialApiResponses;
+        $this->llmResponse = $llmResponse;
+        $this->partialLLMResponses = $partialLLMResponses;
         $this->errors = $errors;
         $this->returnedValue = $returnedValue;
     }
@@ -35,12 +35,12 @@ class Response {
         return $this->messages;
     }
 
-    public function apiResponse() : LLMApiResponse {
-        return $this->apiResponse;
+    public function llmResponse() : LLMResponse {
+        return $this->llmResponse;
     }
 
-    public function partialApiResponses() : array {
-        return $this->partialApiResponses;
+    public function partialLLMResponses() : array {
+        return $this->partialLLMResponses;
     }
 
     public function errors() : array {

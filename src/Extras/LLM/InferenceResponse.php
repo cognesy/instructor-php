@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\LLM;
 
-use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
-use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
+use Cognesy\Instructor\Events\ApiClient\LLMResponseReceived;
+use Cognesy\Instructor\Events\ApiClient\PartialLLMResponseReceived;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Http\StreamReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
@@ -38,8 +38,8 @@ class InferenceResponse
 
     public function toText() : string {
         return match($this->isStreamed) {
-            false => $this->toApiResponse()->content,
-            true => $this->getStreamContent($this->toPartialApiResponses()),
+            false => $this->toLLMResponse()->content,
+            true => $this->getStreamContent($this->toPartialLLMResponses()),
         };
     }
 
@@ -50,35 +50,35 @@ class InferenceResponse
         if (!$this->isStreamed) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
-        foreach ($this->toPartialApiResponses() as $partialApiResponse) {
-            yield $partialApiResponse->delta;
+        foreach ($this->toPartialLLMResponses() as $partialLLMResponse) {
+            yield $partialLLMResponse->delta;
         }
     }
 
     // AS API RESPONSE OBJECTS //////////////////////////////////
 
-    public function toApiResponse() : LLMApiResponse {
+    public function toLLMResponse() : LLMResponse {
         $response = match($this->isStreamed) {
-            false => $this->driver->toApiResponse($this->responseData()),
-            true => LLMApiResponse::fromPartialResponses($this->allPartialApiResponses()),
+            false => $this->driver->toLLMResponse($this->responseData()),
+            true => LLMResponse::fromPartialResponses($this->allPartialLLMResponses()),
         };
-        $this->events->dispatch(new ApiResponseReceived($response));
+        $this->events->dispatch(new LLMResponseReceived($response));
         return $response;
     }
 
     /**
-     * @return Generator<\Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse>
+     * @return Generator<\Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse>
      */
-    public function toPartialApiResponses() : Generator {
+    public function toPartialLLMResponses() : Generator {
         foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
             if ($partialData === false) {
                 continue;
             }
-            $response = $this->driver->toPartialApiResponse(Json::fromPartial($partialData)->toArray());
+            $response = $this->driver->toPartialLLMResponse(Json::fromPartial($partialData)->toArray());
             if ($response === null) {
                 continue;
             }
-            $this->events->dispatch(new PartialApiResponseReceived($response));
+            $this->events->dispatch(new PartialLLMResponseReceived($response));
             yield $response;
         }
     }
@@ -124,11 +124,11 @@ class InferenceResponse
     }
 
     /**
-     * @return \Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse[]
+     * @return \Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse[]
      */
-    protected function allPartialApiResponses() : array {
+    protected function allPartialLLMResponses() : array {
         $partialResponses = [];
-        foreach ($this->toPartialApiResponses() as $partialResponse) {
+        foreach ($this->toPartialLLMResponses() as $partialResponse) {
             $partialResponses[] = $partialResponse;
         }
         return $partialResponses;

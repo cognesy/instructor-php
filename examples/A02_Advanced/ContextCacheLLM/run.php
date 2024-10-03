@@ -45,7 +45,7 @@ $inference = (new Inference)->withConnection('anthropic')->withCachedContext(
 $response = $inference->create(
     messages: [['role' => 'user', 'content' => 'CTO of lead gen software vendor']],
     options: ['max_tokens' => 256],
-)->toApiResponse();
+)->toLLMResponse();
 
 print("----------------------------------------\n");
 print("\n# Summary for CTO of lead gen vendor\n");
@@ -60,7 +60,7 @@ assert(Str::contains($response->content, 'lead', false));
 $response2 = $inference->create(
     messages: [['role' => 'user', 'content' => 'CIO of insurance company']],
     options: ['max_tokens' => 256],
-)->toApiResponse();
+)->toLLMResponse();
 
 print("----------------------------------------\n");
 print("\n# Summary for CIO of insurance company\n");

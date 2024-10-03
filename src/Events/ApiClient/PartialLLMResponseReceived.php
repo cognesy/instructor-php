@@ -2,18 +2,18 @@
 namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
-class PartialApiResponseReceived extends Event
+class PartialLLMResponseReceived extends Event
 {
     public function __construct(
-        public PartialLLMApiResponse $partialApiResponse
+        public PartialLLMResponse $partialLLMResponse
     ) {
         parent::__construct();
     }
 
     public function __toString() : string {
-        return Json::encode($this->partialApiResponse);
+        return Json::encode($this->partialLLMResponse);
     }
 }

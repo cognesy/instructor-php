@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Events\ApiClient;
 
 use Cognesy\Instructor\Utils\Json\Json;
 
-class ApiStreamResponseReceived extends ApiResponseReceived
+class LLMStreamResponseReceived extends LLMResponseReceived
 {
     public function __construct(
         public int $status,

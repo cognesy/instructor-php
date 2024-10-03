@@ -6,8 +6,8 @@ docname: 'token_usage_events'
 ## Overview
 
 Some use cases require tracking the token usage of the API responses.
-Currently, this can be done by listening to the `ApiResponseReceived`
-and `PartialApiResponseReceived` events and summing the token usage
+Currently, this can be done by listening to the `LLMResponseReceived`
+and `PartialLLMResponseReceived` events and summing the token usage
 of the responses.
 
 Code below demonstrates how it can be implemented using Instructor
@@ -24,10 +24,10 @@ event listeners.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Events\ApiClient\ApiResponseReceived;
-use Cognesy\Instructor\Events\ApiClient\PartialApiResponseReceived;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMApiResponse;
+use Cognesy\Instructor\Events\ApiClient\LLMResponseReceived;
+use Cognesy\Instructor\Events\ApiClient\PartialLLMResponseReceived;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Instructor;
 
 class User {
@@ -41,7 +41,7 @@ class TokenCounter {
     public int $cacheCreation = 0;
     public int $cacheRead = 0;
 
-    public function add(LLMApiResponse|PartialLLMApiResponse $response) {
+    public function add(LLMResponse|PartialLLMResponse $response) {
         $this->input += $response->inputTokens;
         $this->output += $response->outputTokens;
         $this->cacheCreation += $response->cacheCreationTokens;
@@ -68,7 +68,7 @@ $counter = new TokenCounter();
 echo "COUNTING TOKENS FOR SYNC RESPONSE\n";
 $text = "Jason is 25 years old and works as an engineer.";
 $instructor = (new Instructor)
-    ->onEvent(ApiResponseReceived::class, fn($e) => $counter->add($e->apiResponse))
+    ->onEvent(LLMResponseReceived::class, fn(LLMResponseReceived $e) => $counter->add($e->llmResponse))
     ->respond(
         messages: $text,
         responseModel: User::class,
@@ -84,7 +84,7 @@ $counter->reset();
 echo "\n\nCOUNTING TOKENS FOR STREAMED RESPONSE\n";
 $text = "Anna is 19 years old.";
 $instructor = (new Instructor)
-    ->onEvent(PartialApiResponseReceived::class, fn($e) => $counter->add($e->partialApiResponse))
+    ->onEvent(PartialLLMResponseReceived::class, fn(PartialLLMResponseReceived $e) => $counter->add($e->partialLLMResponse))
     ->respond(
         messages: $text,
         responseModel: User::class,

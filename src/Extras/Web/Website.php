@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\Web;
 
+use Cognesy\Instructor\Extras\Web\Contracts\CanFilterContent;
 use Cognesy\Instructor\Extras\Web\Contracts\CanGetUrlContent;
+use Cognesy\Instructor\Extras\Web\Filters\NoFilter;
 
 class Website
 {
@@ -10,7 +12,7 @@ class Website
     protected string $scraperType;
     protected CanGetUrlContent $scraper;
     protected $count = 0;
-    protected $maxCount = 10;
+    protected $maxPages = 10;
 
     /** @var Webpage[] */
     protected array $pages = [];
@@ -19,26 +21,36 @@ class Website
     /** @var string[] */
     protected array $crawled = [];
 
-    public function __construct(string $rootUrl, string $scraper = '') {
+
+    public function __construct(string $rootUrl, int $maxPages = 10, string $scraper = '') {
         $this->rootUrl = $rootUrl;
         $this->queue[] = $rootUrl;
         $this->scraper = Scraper::withDriver($scraper);
+        $this->maxPages = $maxPages;
     }
 
-    public static function crawl(string $rootUrl) : Website {
+    public static function crawl(string $rootUrl, CanFilterContent $filter = null) : Website {
+        if (is_null($filter)) {
+            $filter = new NoFilter();
+        }
         $website = new Website($rootUrl);
-        $website->crawler();
+        $website->crawler($filter);
         return $website;
     }
 
     // INTERNAL ///////////////////////////////////////////////////////
 
-    protected function crawler() {
+    protected function crawler(CanFilterContent $filter) {
         while (!empty($this->queue) && $this->maxCountReached()) {
             $url = array_shift($this->queue);
             $this->crawled[] = $this->linkHash($url);
             $html = $this->scraper->getContent($url);
             $page = Webpage::withHtml($html, $url);
+
+            if (!$filter->filter($page->asMarkdown())) {
+                continue;
+            }
+
             foreach ($page->links() as $link) {
                 if ($this->canCrawl($link)) {
                     $this->queue[] = $link->url;
@@ -65,6 +77,6 @@ class Website
     }
 
     private function maxCountReached() : bool {
-        return $this->count < $this->maxCount;
+        return $this->count < $this->maxPages;
     }
 }

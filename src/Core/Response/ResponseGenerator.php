@@ -8,7 +8,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Utils\Chain;
 use Cognesy\Instructor\Utils\Json\Json;
@@ -26,7 +26,7 @@ class ResponseGenerator implements CanGenerateResponse
         private EventDispatcher $events,
     ) {}
 
-    public function makeResponse(LLMApiResponse $response, ResponseModel $responseModel) : Result {
+    public function makeResponse(LLMResponse $response, ResponseModel $responseModel) : Result {
         $result = Chain::from(fn() => $response->getJson())
             ->through(fn($responseJson) => match(true) {
                 empty($responseJson) => Result::failure('No JSON found in the response'),

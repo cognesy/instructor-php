@@ -2,7 +2,7 @@
 namespace Tests;
 
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\LLMApiResponse;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 use Mockery;
 use Psr\Http\Message\MessageInterface;
@@ -24,8 +24,8 @@ class MockLLM
         $mockLLM->shouldReceive('getEndpointUrl')->andReturn('');
         $mockLLM->shouldReceive('getRequestHeaders')->andReturn([]);
         $mockLLM->shouldReceive('getRequestBody')->andReturnUsing([]);
-        $mockLLM->shouldReceive('toApiResponse')->andReturnUsing(...$list);
-        $mockLLM->shouldReceive('toPartialApiResponse')->andReturn($mockLLM);
+        $mockLLM->shouldReceive('toLLMResponse')->andReturnUsing(...$list);
+        $mockLLM->shouldReceive('toPartialLLMResponse')->andReturn($mockLLM);
 
 
         $mockResponse->shouldReceive('__toString')->andReturn('');
@@ -62,7 +62,7 @@ class MockLLM
     }
 
     static private function makeFunc(string $json) {
-        return fn() => new LLMApiResponse(
+        return fn() => new LLMResponse(
             content: $json,
         );
     }

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\LLM\Data;
 
-class PartialLLMApiResponse
+class PartialLLMResponse
 {
     public function __construct(
         public string $delta = '',

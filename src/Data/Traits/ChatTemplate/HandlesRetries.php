@@ -27,7 +27,7 @@ trait HandlesRetries
         }
         $this->script->section('retries')->appendMessages(
             $this->makeRetryMessages(
-                [], $failedResponse->apiResponse()->content, $failedResponse->errors()
+                [], $failedResponse->llmResponse()->content, $failedResponse->errors()
             )
         );
     }
