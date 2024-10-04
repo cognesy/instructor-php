@@ -5,7 +5,7 @@ namespace Cognesy\Evals\LLMModes;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 
-class EvalRequest
+class EvalInput
 {
     public function __construct(
         public string       $answer = '',

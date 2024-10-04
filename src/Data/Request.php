@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Traits\Instructor;
 
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
 use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Enums\Mode;

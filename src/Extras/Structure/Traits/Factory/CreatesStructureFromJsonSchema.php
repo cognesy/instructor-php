@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Schema\Factories\SchemaConverter;
+use Cognesy\Instructor\Schema\Factories\JsonSchemaToSchema;
 //use Cognesy\Instructor\Extras\Structure\Field;
 //use Cognesy\Instructor\Extras\Structure\FieldFactory;
 //use Cognesy\Instructor\Schema\Data\TypeDetails;
@@ -14,7 +14,7 @@ trait CreatesStructureFromJsonSchema
     static public function fromJsonSchema(array $jsonSchema) : Structure {
         $name = $jsonSchema['title'] ?? '';
         $description = $jsonSchema['description'] ?? '';
-        $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema);
+        $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema);
         return self::fromSchema($name, $schema, $description);
 //        $fields = self::makeJsonSchemaFields($jsonSchema);
 //        return Structure::define($name, $fields, $description);

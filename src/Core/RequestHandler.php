@@ -65,7 +65,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
 
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
-            yield from $this->getStreamedResponses($request);
+            yield from $this->getStreamedLLMResponses($request);
 
             $llmResponse = $this->partialsGenerator->getCompleteResponse();
             $partialResponses = $this->partialsGenerator->partialResponses();
@@ -109,7 +109,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
      * @param Request $request
      * @return Generator<mixed>
      */
-    protected function getStreamedResponses(Request $request) : Generator {
+    protected function getStreamedLLMResponses(Request $request) : Generator {
         try {
             $this->events->dispatch(new RequestSentToLLM($request));
             $stream = $this->makeInference($request)->toPartialLLMResponses();
@@ -146,7 +146,7 @@ class RequestHandler implements CanHandleSyncRequest, CanHandleStreamRequest
         $processingResult = $this->responseGenerator->makeResponse($llmResponse, $this->responseModel);
 
         if ($processingResult->isFailure()) {
-            // (3) retry - we have not managed to deserialize, validate or transform the response
+            // retry - we have not managed to deserialize, validate or transform the response
             $this->handleError($processingResult, $request, $llmResponse, $partialResponses);
         }
 

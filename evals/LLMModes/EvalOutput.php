@@ -4,16 +4,16 @@ namespace Cognesy\Evals\LLMModes;
 
 use Exception;
 
-class EvalResponse
+class EvalOutput
 {
     public function __construct(
-        public string $id = '',
-        public string $answer = '',
-        public bool $isCorrect = false,
-        public float $timeElapsed = 0.0,
+        public string     $id = '',
+        public string     $notes = '',
+        public bool       $isCorrect = false,
+        public float      $timeElapsed = 0.0,
         public ?Exception $exception = null,
-        public int $inputTokens = 0,
-        public int $outputTokens = 0,
+        public int        $inputTokens = 0,
+        public int        $outputTokens = 0,
     ) {}
 
     public function totalTps() : float {

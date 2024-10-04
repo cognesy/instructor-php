@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;

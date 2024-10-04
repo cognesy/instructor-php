@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Schema\Factories\Traits\SchemaConverter;
+namespace Cognesy\Instructor\Schema\Factories\Traits\JsonSchemaToSchema;
 
 use Cognesy\Instructor\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Schema\Data\Schema\CollectionSchema;

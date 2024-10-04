@@ -18,8 +18,9 @@ class Display
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
     }
 
-    public function after(EvalResponse $evalResponse) : void {
-        $answer = $evalResponse->answer;
+    public function after(EvalOutput $evalResponse) : void {
+        $answer = $evalResponse->notes;
+        $answerLine = str_replace("\n", '\n', $answer);
         $isCorrect = $evalResponse->isCorrect;
         $timeElapsed = $evalResponse->timeElapsed;
         $tokensPerSec = $evalResponse->outputTps();
@@ -35,7 +36,6 @@ class Display
                 [60, ' ' . $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
             ], 120);
         } else {
-            $answerLine = str_replace("\n", '\n', $answer);
             echo Console::columns([
                 [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
                 [10, $this->tokensPerSecFormat($tokensPerSec), STR_PAD_LEFT, [Color::CYAN]],

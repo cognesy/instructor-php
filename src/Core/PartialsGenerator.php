@@ -1,10 +1,9 @@
 <?php
 
-namespace Cognesy\Instructor\Core\StreamResponse;
+namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Core\StreamResponse\Traits\ValidatesPartialResponse;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -31,7 +30,7 @@ use Generator;
 
 class PartialsGenerator implements CanGeneratePartials
 {
-    use ValidatesPartialResponse;
+    use Traits\ValidatesPartialResponse;
 
     // state
     private string $responseJson = '';
@@ -124,6 +123,8 @@ class PartialsGenerator implements CanGeneratePartials
         // finalize sequenceable
         $this->sequenceableHandler->finalize();
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////
 
     protected function handleDelta(
         string $partialJson,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core\StreamResponse;
+namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Events\EventDispatcher;

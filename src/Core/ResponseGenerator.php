@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Core\Response;
+namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\ResponseModel;
@@ -44,6 +44,8 @@ class ResponseGenerator implements CanGenerateResponse
             ->result();
         return $result;
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////
 
     protected function extractErrors(Result|Exception $result) : array {
         if ($result instanceof Exception) {

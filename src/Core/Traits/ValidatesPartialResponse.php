@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Core\StreamResponse\Traits;
+namespace Cognesy\Instructor\Core\Traits;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
@@ -28,7 +28,7 @@ trait ValidatesPartialResponse
             ->result();
     }
 
-    /// VALIDATIONS //////////////////////////////////////////////////////////////////
+    // INTERNAL ////////////////////////////////////////////////////////
 
     private function preventJsonSchemaResponse(bool $check, string $partialResponseText) : Result {
         if (!$check) {

@@ -14,9 +14,9 @@ use Exception;
  * Requires x-php-class field to contain the target class name for each
  * object and enum type.
  */
-class SchemaConverter
+class JsonSchemaToSchema
 {
-    use Traits\SchemaConverter\HandlesMakers;
+    use Traits\JsonSchemaToSchema\HandlesMakers;
 
     private $defaultToolName = 'extract_object';
     private $defaultToolDescription = 'Extract data from chat content';

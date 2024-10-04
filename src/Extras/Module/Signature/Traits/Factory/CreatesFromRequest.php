@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Factory;
 
-use Cognesy\Instructor\Core\Factories\ResponseModelFactory;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;

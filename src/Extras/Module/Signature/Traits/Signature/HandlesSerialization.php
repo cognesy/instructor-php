@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Signature;
 
-use Cognesy\Instructor\Schema\Factories\SchemaConverter;
+use Cognesy\Instructor\Schema\Factories\JsonSchemaToSchema;
 
 trait HandlesSerialization
 {
@@ -17,7 +17,7 @@ trait HandlesSerialization
     }
 
     public static function fromJson(array $data) : static {
-        $converter = new SchemaConverter;
+        $converter = new JsonSchemaToSchema;
         return new static(
             $converter->fromJsonSchema($data['input']),
             $converter->fromJsonSchema($data['output']),

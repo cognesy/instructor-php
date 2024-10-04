@@ -2,10 +2,10 @@
 namespace Tests;
 
 use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Factories\SchemaConverter;
+use Cognesy\Instructor\Schema\Factories\JsonSchemaToSchema;
 
 it('creates Schema object from JSON Schema array - required fields', function ($jsonSchema) {
-    $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
     expect($schema->required)->toBe([
         'stringProperty',
@@ -22,7 +22,7 @@ it('creates Schema object from JSON Schema array - required fields', function ($
 })->with('schema_converter_json');
 
 it('creates Schema object from JSON Schema array - scalar props', function ($jsonSchema) {
-    $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['stringProperty']->name)->toBe('stringProperty');
@@ -40,7 +40,7 @@ it('creates Schema object from JSON Schema array - scalar props', function ($jso
 })->with('schema_converter_json');
 
 it('creates Schema object from JSON Schema array - enum props', function ($jsonSchema) {
-    $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['enumProperty']->name)->toBe('enumProperty');
@@ -53,7 +53,7 @@ it('creates Schema object from JSON Schema array - enum props', function ($jsonS
 
 
 it('creates Schema object from JSON Schema array - object props', function ($jsonSchema) {
-    $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['objectProperty']->name)->toBe('objectProperty');
@@ -72,7 +72,7 @@ it('creates Schema object from JSON Schema array - object props', function ($jso
 
 
 it('creates Schema object from JSON Schema array - array props', function ($jsonSchema) {
-    $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['arrayProperty']->name)->toBe('arrayProperty');
@@ -81,7 +81,7 @@ it('creates Schema object from JSON Schema array - array props', function ($json
 })->with('schema_converter_json');
 
 it('creates Schema object from JSON Schema array - collection props', function ($jsonSchema) {
-    $schema = (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
 
     expect($schema->properties['collectionProperty']->name)->toBe('collectionProperty');
@@ -111,7 +111,7 @@ it('throws exception when object schema has empty properties array', function ()
         'type' => 'object',
         'properties' => [],
     ];
-    (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Object must have at least one property');
 
 it('throws exception when array schema is missing items field', function () {
@@ -124,7 +124,7 @@ it('throws exception when array schema is missing items field', function () {
             ],
         ],
     ];
-    (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Array must have items field');
 
 it('throws exception for invalid enum type', function () {
@@ -142,7 +142,7 @@ it('throws exception for invalid enum type', function () {
             ],
         ],
     ];
-    (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Nested array type must be either object, string, integer, number or boolean');
 
 it('throws exception when x-php-class is missing for enum', function () {
@@ -159,7 +159,7 @@ it('throws exception when x-php-class is missing for enum', function () {
             ],
         ],
     ];
-    (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Nested enum type needs x-php-class field')->skip('This should be supported by array type');
 
 it('throws exception when x-php-class is missing for object', function () {
@@ -175,7 +175,7 @@ it('throws exception when x-php-class is missing for object', function () {
             ],
         ],
     ];
-    (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Object must have x-php-class field with the target class name');
 
 it('throws exception for invalid type in nested schema', function () {
@@ -191,5 +191,5 @@ it('throws exception for invalid type in nested schema', function () {
             ],
         ],
     ];
-    (new SchemaConverter)->fromJsonSchema($jsonSchema, '', '');
+    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Nested array type must be either object, string, integer, number or boolean');

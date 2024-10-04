@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\Response\ResponseGenerator;
-use Cognesy\Instructor\Core\StreamResponse\PartialsGenerator;
+use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;

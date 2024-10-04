@@ -4,7 +4,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Evals\LLMModes\CompareModes;
-use Cognesy\Evals\LLMModes\EvalRequest;
+use Cognesy\Evals\LLMModes\EvalInput;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
@@ -45,7 +45,7 @@ $modes = [
 
 //Debug::enable();
 
-function evalFn(EvalRequest $er) {
+function evalFn(EvalInput $er) {
     $decoded = Json::from($er->answer)->toArray();
     $isCorrect = match($er->mode) {
         Mode::Text => Str::contains($er->answer, ['ACME', '2020']),
@@ -69,7 +69,7 @@ function validateToolsData(array $data) : bool {
         //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
-    evalFn: fn(EvalRequest $er) => evalFn($er),
+    evalFn: fn(EvalInput $er) => evalFn($er),
     //debug: true,
 ))->executeAll(
     connections: $connections,

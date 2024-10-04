@@ -44,14 +44,14 @@ class CompareModes {
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function execute(string $connection, Mode $mode, bool $isStreamed) : EvalResponse {
+    private function execute(string $connection, Mode $mode, bool $isStreamed) : EvalOutput {
         $key = $this->makeKey($connection, $mode, $isStreamed);
         try {
             $time = microtime(true);
             $llmResponse = $this->modes->callInferenceFor($this->query, $mode, $connection, $this->modes->schema(), $isStreamed);
             $answer = $llmResponse->content;
             $timeElapsed = microtime(true) - $time;
-            $evalRequest = new EvalRequest(
+            $evalRequest = new EvalInput(
                 answer: $answer,
                 query: $this->query,
                 schema: $this->modes->schema(),
@@ -61,9 +61,9 @@ class CompareModes {
                 response: $llmResponse,
             );
             $isCorrect = ($this->evalFn)($evalRequest);
-            $evalResponse = new EvalResponse(
+            $evalResponse = new EvalOutput(
                 id: $key,
-                answer: $answer,
+                notes: $answer,
                 isCorrect: $isCorrect,
                 timeElapsed: $timeElapsed,
                 inputTokens: $llmResponse->inputTokens,
@@ -72,9 +72,9 @@ class CompareModes {
         } catch(Exception $e) {
             $timeElapsed = microtime(true) - $time;
             $this->exceptions[$key] = $e;
-            $evalResponse = new EvalResponse(
+            $evalResponse = new EvalOutput(
                 id: $key,
-                answer: '',
+                notes: '',
                 isCorrect: false,
                 timeElapsed: $timeElapsed,
                 exception: $e,
