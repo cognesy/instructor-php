@@ -28,7 +28,6 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Extras\LLM\Inference;
 
-// regular API, allows to customize inference options
 $data = (new Inference)
     ->withConnection('openai')
     ->create(

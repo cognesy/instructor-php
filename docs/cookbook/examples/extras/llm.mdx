@@ -23,7 +23,9 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
-// simplified API, default connection for convenient ad-hoc calls
+
+
+// EXAMPLE 1: simplified API, default connection for convenient ad-hoc calls
 $answer = Inference::text('What is capital of Germany');
 
 echo "USER: What is capital of Germany\n";
@@ -31,7 +33,9 @@ echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Berlin'));
 
 
-// regular API, allows to customize inference options
+
+
+// EXAMPLE 2: regular API, allows to customize inference options
 $answer = (new Inference)
     ->withConnection('openai') // optional, default is set in /config/llm.php
     ->create(
@@ -44,7 +48,10 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 assert(Str::contains($answer, 'Paris'));
 
-// regular API, allows to customize inference options
+
+
+
+// EXAMPLE 3: streaming response
 $stream = (new Inference)
     ->create(
         messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],

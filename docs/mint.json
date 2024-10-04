@@ -202,6 +202,7 @@
                 "cookbook/examples/extras/llm_md_json",
                 "cookbook/examples/extras/llm_tools",
                 "cookbook/examples/extras/schema",
+                "cookbook/examples/extras/schema",
                 "cookbook/examples/extras/transcription_to_tasks",
                 "cookbook/examples/extras/translate_ui_fields",
                 "cookbook/examples/extras/web_to_objects"

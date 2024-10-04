@@ -6,8 +6,14 @@ docname: 'schema'
 ## Overview
 
 Instructor has a built-in support for generating JSON Schema from
-the classes or objects. This is useful as it helps you avoid writing
-the JSON Schema manually, which can be error-prone and time-consuming.
+dynamic objects with `Structure` class.
+
+This is useful when the data model is built during runtime or defined
+by your app users.
+
+`Structure` helps you flexibly design and modify data models that
+can change with every request or user input and allows you to generate
+JSON Schema for them.
 
 ## Example
 
@@ -16,16 +22,16 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Extras\LLM\Inference;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Instructor\Extras\Structure\Structure;
 
-class City {
-    public string $name;
-    public int $population;
-    public int $founded;
-}
-
-$schema = (new SchemaFactory)->schema(City::class);
+$city = Structure::define('city', [
+    Field::string('name', 'City name')->required(),
+    Field::int('population', 'City population')->required(),
+    Field::int('founded', 'Founding year')->required(),
+]);
 
 $data = (new Inference)
     ->withConnection('openai')
@@ -37,7 +43,7 @@ $data = (new Inference)
             'description' => 'City data',
             'json_schema' => [
                 'name' => 'city_data',
-                'schema' => $schema->toJsonSchema(),
+                'schema' => $city->toJsonSchema(),
                 'strict' => true,
             ],
         ],

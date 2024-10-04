@@ -5,7 +5,7 @@ trait HandlesOptionality
 {
     private bool $required = true;
 
-    public function required(bool $isRequired = false) : self {
+    public function required(bool $isRequired = true) : self {
         $this->required = $isRequired;
         return $this;
     }

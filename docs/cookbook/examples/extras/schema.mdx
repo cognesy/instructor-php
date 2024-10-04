@@ -27,7 +27,6 @@ class City {
 
 $schema = (new SchemaFactory)->schema(City::class);
 
-// regular API, allows to customize inference options
 $data = (new Inference)
     ->withConnection('openai')
     ->create(
