@@ -69,16 +69,22 @@ class Stream
             if (!($update instanceof Sequence)) {
                 throw new Exception('Expected a sequence update, got ' . get_class($update));
             }
+            // only yield if there's new element in sequence
             if ($update->count() > $lastSequenceCount) {
                 $lastSequenceCount = $update->count();
                 yield $lastSequence;
             }
             $lastSequence = $update;
         }
+        // yield last, fully updated sequence instance
         yield $lastSequence;
         $this->events->dispatch(new ResponseGenerated($lastSequence));
         $this->events->dispatch(new InstructorDone(['result' => $lastSequence]));
     }
+
+    // INTERNAL //////////////////////////////////////////////////////////////
+
+    // NOT YET AVAILABLE ////////////////////////////////////////////////////
 
     /**
      * Processes response stream and calls a callback for each update

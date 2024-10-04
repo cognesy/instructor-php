@@ -46,12 +46,12 @@ $logger = new class {
 };
 
 $user = (new Instructor)
+    ->onEvent(RequestSentToLLM::class, fn($event) => $logger->log($event))
+    ->onEvent(ResponseReceivedFromLLM::class, fn($event) => $logger->log($event))
     ->request(
         messages: "Jason is 28 years old",
         responseModel: User::class,
     )
-    ->onEvent(RequestSentToLLM::class, fn($event) => $logger->log($event))
-    ->onEvent(ResponseReceivedFromLLM::class, fn($event) => $logger->log($event))
     ->get();
 
 dump($user);

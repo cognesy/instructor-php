@@ -38,12 +38,12 @@ print("INPUT:\n$text\n\n");
 
 print("OUTPUT:\n");
 $list = (new Instructor)
+    ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->request(
         messages: $text,
         responseModel: Sequence::of(Person::class),
         options: ['stream' => true],
     )
-    ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
     ->get();
 
 

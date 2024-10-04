@@ -87,6 +87,10 @@ class Request
         ];
     }
 
+    public function isStream() : bool {
+        return $this->options['stream'] ?? false;
+    }
+
     private function makeResponseModel() : ResponseModel {
         $schemaFactory = new SchemaFactory(
             Settings::get('llm', 'useObjectReferences', false)

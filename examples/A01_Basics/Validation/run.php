@@ -36,13 +36,14 @@ class UserDetails
 }
 
 $caughtException = false;
-$user = (new Instructor)->request(
-    messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
-    responseModel: UserDetails::class,
-)->onError(function($e) use (&$caughtException) {
+try {
+    $user = (new Instructor)->request(
+        messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
+        responseModel: UserDetails::class,
+    )->get();
+} catch(Exception $e) {
     $caughtException = true;
-})->get();
-
+}
 
 dump($user);
 

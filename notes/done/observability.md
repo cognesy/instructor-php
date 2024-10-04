@@ -20,7 +20,7 @@ You can:
 This allows you plug in your preferred logging / monitoring system.
 
 - Performance - timestamps are available on events, which allows you to record performance of either full flow or individual steps.
-- Errors - can be done via onError()
+- Errors - can be done via onError() - has to be changed now
 - Validation errors - can be done via onEvent()
 - Generated data models - can be done via onEvent()
 

@@ -49,30 +49,3 @@ it('handles wiretap()', function () use ($mockLLM, $text) {
     expect($person->age)->toBe(28);
     expect($events->count())->toBeGreaterThan(1);
 });
-
-it('handles onError()', function () use ($mockLLM, $text) {
-    $events = new EventSink();
-    $mockLLM = MockLLM::get(['']); // mock empty response - should cause deserialization error
-    $instructor = (new Instructor)->withDriver($mockLLM);
-    $person = $instructor->onError(fn($e) => $events->onEvent($e))->respond(
-        messages: '',
-        responseModel: Person::class,
-    );
-    expect($events->count())->toBe(1);
-});
-
-it('throws exception if no onError() provided', function () use ($mockLLM) {
-    $thrownException = false;
-    $mockLLM = MockLLM::get(['']); // mock empty response - should cause deserialization error
-    try {
-        $instructor = (new Instructor)->withDriver($mockLLM);
-        $person = $instructor->respond(
-            messages: '',
-            responseModel: Person::class,
-        );
-    } catch (Throwable $e) {
-        expect($e)->toBeInstanceOf(Throwable::class);
-        $thrownException = true;
-    }
-    expect($thrownException)->toBeTrue();
-});

@@ -25,7 +25,6 @@ class Instructor {
 
     use Traits\HandlesEnv;
 
-    use Traits\Instructor\HandlesErrors;
     use Traits\Instructor\HandlesInvocation;
     use Traits\Instructor\HandlesOverrides;
     use Traits\Instructor\HandlesPartialUpdates;

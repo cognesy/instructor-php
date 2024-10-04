@@ -10,7 +10,6 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use JetBrains\PhpStorm\Deprecated;
-use Throwable;
 
 trait HandlesRequest
 {
@@ -59,30 +58,6 @@ trait HandlesRequest
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////////
-
-    protected function handleRequest() : mixed {
-        $this->dispatchQueuedEvents();
-        try {
-            $this->request = $this->requestFromData(
-                $this->requestData->withCachedContext($this->cachedContext)
-            );
-            return $this->requestHandler->responseFor($this->request);
-        } catch (Throwable $error) {
-            return $this->handleError($error);
-        }
-    }
-
-    protected function handleStreamRequest() : Iterable {
-        $this->dispatchQueuedEvents();
-        try {
-            $this->request = $this->requestFromData(
-                $this->requestData->withCachedContext($this->cachedContext)
-            );
-            yield from $this->requestHandler->streamResponseFor($this->request);
-        } catch (Throwable $error) {
-            return $this->handleError($error);
-        }
-    }
 
     protected function requestFromData(
         RequestInfo $data,

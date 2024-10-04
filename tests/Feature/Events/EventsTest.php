@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature;
 
-use Cognesy\Instructor\Events\Instructor\ErrorRaised;
+//use Cognesy\Instructor\Events\Instructor\ErrorRaised;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
@@ -82,15 +82,17 @@ it('handles events for simple case - validation failure', function ($event) use 
         '{"name": "J", "age":-28}',
     ]);
     $events = new EventSink();
+
+    // expect exception
+    $this->expectException(\Exception::class);
     $person = (new Instructor)->withDriver($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
-        ->onError(fn($e) => $events->onEvent($e))
-        //->wiretap(fn($e) => $e->print())
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
             maxRetries: 1,
         );
+
     expect($person)->toBeNull();
     expect($events->count())->toBeGreaterThan(0);
     expect($events->first())->toBeInstanceOf($event);
@@ -125,7 +127,7 @@ it('handles events for simple case - validation failure', function ($event) use 
     //[ResponseValidated::class],
     [ResponseValidationAttempt::class],
     [ResponseValidationFailed::class],
-    [ErrorRaised::class],
+    //[ErrorRaised::class],
 ]);
 
 it('handles events for custom case', function ($event) use ($text) {

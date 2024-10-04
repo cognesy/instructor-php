@@ -824,7 +824,6 @@ Instructor allows you to receive detailed information at every stage of request 
 
  * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
  * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
- * `(new Instructor)->onError(callable $callback)` method - receive callback on any uncaught error, so you can customize handling it, for example logging the error or using some fallback mechanism in an attempt to recover
 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
@@ -835,9 +834,7 @@ $instructor = (new Instructor)
     // see responses from LLM
     ->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
     // see all events in console-friendly format
-    ->wiretap(fn($event) => dump($event->toConsole()))
-    // log errors via your custom logger
-    ->onError(fn($request, $error) => $logger->log($error));
+    ->wiretap(fn($event) => dump($event->toConsole()));
 
 $instructor->respond(
     messages: "What is the population of Paris?",
