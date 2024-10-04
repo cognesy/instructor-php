@@ -1,6 +1,6 @@
 ---
-title: 'Generating JSON Schema from PHP classes'
-docname: 'schema'
+title: 'Generating JSON Schema dynamically'
+docname: 'schema_dynamic'
 ---
 
 ## Overview

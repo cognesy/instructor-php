@@ -1,12 +1,12 @@
 <?php
-namespace Cognesy\Instructor\Events\ApiClient;
+namespace Cognesy\Instructor\Events\LLMClient;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json\Json;
 use Exception;
 use Psr\Log\LogLevel;
 
-class ApiRequestErrorRaised extends Event
+class LLMRequestErrorRaised extends Event
 {
     public $logLevel = LogLevel::ERROR;
 

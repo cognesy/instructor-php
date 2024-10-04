@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Instructor\Events\ApiClient;
+namespace Cognesy\Instructor\Events\LLMClient;
 
 use Cognesy\Instructor\Events\Event;
 
-class ApiStreamUpdateReceived extends Event
+class LLMStreamUpdateReceived extends Event
 {
     public function __construct(
         public string $streamedData

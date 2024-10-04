@@ -1,10 +1,10 @@
 <?php
-namespace Cognesy\Instructor\Events\ApiClient;
+namespace Cognesy\Instructor\Events\LLMClient;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json\Json;
 
-class ApiStreamConnected extends Event
+class LLMStreamConnected extends Event
 {
     public function __construct(
         public int $status

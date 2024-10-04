@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Events\ApiClient;
+namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;

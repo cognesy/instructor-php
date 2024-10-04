@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Extras\LLM;
 
-use Cognesy\Instructor\Events\ApiClient\LLMResponseReceived;
-use Cognesy\Instructor\Events\ApiClient\PartialLLMResponseReceived;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
+use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
 use Cognesy\Instructor\Extras\Http\StreamReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
 use InvalidArgumentException;

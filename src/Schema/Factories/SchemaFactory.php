@@ -79,6 +79,19 @@ class SchemaFactory
         return $this->schemaMap->get($anyType);
     }
 
+    /**
+     * Creates schema for a property with provided parameters
+     * @param TypeDetails $type
+     * @param string $name
+     * @param string $description
+     * @return Schema
+     */
+    public function propertySchema(TypeDetails $type, string $name, string $description) : Schema {
+        return $this->makePropertySchema($type, $name, $description);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
     private function isAnyOf(string|object $anyType) : bool {
         return array_reduce(
             array: $this->warnOnInstancesOf,

@@ -29,7 +29,7 @@ trait HandlesTypeDetails
         };
 
         return match (true) {
-            $classInfo && ($type->type == TypeDetails::PHP_OBJECT) => new ObjectSchema(
+            $classInfo && ($type->type === TypeDetails::PHP_OBJECT) => new ObjectSchema(
                 type: $type,
                 name: $type->classOnly(),
                 description: $classInfo->getClassDescription(),
@@ -41,13 +41,13 @@ trait HandlesTypeDetails
                 name: $type->class,
                 description: $classInfo->getClassDescription(),
             ),
-            ($type->type == TypeDetails::PHP_COLLECTION) => new CollectionSchema(
+            ($type->type === TypeDetails::PHP_COLLECTION) => new CollectionSchema(
                 type: $type,
                 name: '',
                 description: '',
                 nestedItemSchema: $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
             ),
-            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+            ($type->type === TypeDetails::PHP_ARRAY) => new ArraySchema(
                 type: $type,
                 name: '',
                 description: ''
@@ -69,17 +69,17 @@ trait HandlesTypeDetails
      * @param string $description
      * @return \Cognesy\Instructor\Schema\Data\Schema\Schema
      */
-    public function makePropertySchema(TypeDetails $type, string $name, string $description): Schema {
+    protected function makePropertySchema(TypeDetails $type, string $name, string $description): Schema {
         return match (true) {
-            ($type->type == TypeDetails::PHP_OBJECT) => $this->makeObjectSchema($type, $name, $description),
-            ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
-            ($type->type == TypeDetails::PHP_COLLECTION) => new CollectionSchema(
+            ($type->type === TypeDetails::PHP_OBJECT) => $this->makeObjectSchema($type, $name, $description),
+            ($type->type === TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
+            ($type->type === TypeDetails::PHP_COLLECTION) => new CollectionSchema(
                 $type,
                 $name,
                 $description,
                 $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
             ),
-            ($type->type == TypeDetails::PHP_ARRAY) => new ArraySchema(
+            ($type->type === TypeDetails::PHP_ARRAY) => new ArraySchema(
                 $type,
                 $name,
                 $description
