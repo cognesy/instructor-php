@@ -101,7 +101,6 @@
             "group": "Internals",
             "pages": [
                 "internals/instructor",
-                "internals/component_config",
                 "internals/lifecycle",
                 "internals/response_models",
                 "internals/debugging",
@@ -202,7 +201,7 @@
                 "cookbook/examples/extras/llm_md_json",
                 "cookbook/examples/extras/llm_tools",
                 "cookbook/examples/extras/schema",
-                "cookbook/examples/extras/schema",
+                "cookbook/examples/extras/schema_dynamic",
                 "cookbook/examples/extras/transcription_to_tasks",
                 "cookbook/examples/extras/translate_ui_fields",
                 "cookbook/examples/extras/web_to_objects"
