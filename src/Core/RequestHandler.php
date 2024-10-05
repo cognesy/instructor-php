@@ -9,13 +9,11 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
-use Cognesy\Instructor\Events\Request\RequestSentToLLM;
-use Cognesy\Instructor\Events\Request\RequestToLLMFailed;
-use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\LLM\InferenceResponse;
 use Cognesy\Instructor\Stream;
@@ -52,7 +50,7 @@ class RequestHandler
         }
         $result = $this->responseFor($this->request);
         $this->events->dispatch(new InstructorDone(['result' => $result]));
-        return $result;
+        return $result->value();
     }
 
     /**
@@ -72,13 +70,12 @@ class RequestHandler
     /**
      * Generates response value
      */
-    protected function responseFor(Request $request) : mixed {
+    protected function responseFor(Request $request) : LLMResponse {
         $this->init();
 
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $llmResponse = $this->getInference($request)->toLLMResponse();
-
             $llmResponse->content = match($request->mode()) {
                 Mode::Text => $llmResponse->content,
                 default => Json::from($llmResponse->content)->toString(),
@@ -89,13 +86,13 @@ class RequestHandler
 
         $value = $this->finalizeResult($processingResult, $request, $llmResponse, $partialResponses);
 
-        return $value;
+        return $llmResponse->withValue($value);
     }
 
     /**
      * Yields response value versions based on streamed responses
      * @param Request $request
-     * @return Generator<mixed>
+     * @return Generator<PartialLLMResponse|LLMResponse>
      */
     protected function streamResponseFor(Request $request) : Generator {
         $this->init();
@@ -112,7 +109,7 @@ class RequestHandler
 
         $value = $this->finalizeResult($processingResult, $request, $llmResponse, $partialResponses);
 
-        yield $value;
+        yield $llmResponse->withValue($value);
     }
 
     protected function init() : void {
@@ -121,16 +118,6 @@ class RequestHandler
     }
 
     protected function getInference(Request $request) : InferenceResponse {
-        $this->events->dispatch(new RequestSentToLLM($request));
-        try {
-            return $this->makeInference($request);
-        } catch (Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($request, $e->getMessage()));
-            throw $e;
-        }
-    }
-
-    protected function makeInference(Request $request) : InferenceResponse {
         $inference = new Inference(
             connection: $this->connection,
             httpClient: $this->httpClient,
@@ -150,8 +137,6 @@ class RequestHandler
     }
 
     protected function processResponse(Request $request, LLMResponse $llmResponse, array $partialResponses) : Result {
-        $this->events->dispatch(new ResponseReceivedFromLLM($llmResponse));
-
         // we have LLMResponse here - let's process it: deserialize, validate, transform
         $processingResult = $this->responseGenerator->makeResponse($llmResponse, $request->responseModel());
 

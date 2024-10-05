@@ -20,7 +20,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Request\RequestSentToLLM;
+use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
 use Cognesy\Instructor\Instructor;
 
 class User {

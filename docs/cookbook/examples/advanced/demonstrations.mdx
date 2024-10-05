@@ -19,10 +19,7 @@ is expected to be a JSON object.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Request\RequestSentToLLM;
-use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Data\Example;use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;use Cognesy\Instructor\Instructor;
 
 class User {
     public int $age;

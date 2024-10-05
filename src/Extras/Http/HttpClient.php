@@ -48,7 +48,7 @@ class HttpClient
 
     private function makeDriver(HttpClientConfig $config) : CanHandleHttp {
         return match ($config->httpClientType) {
-            HttpClientType::Guzzle => new GuzzleHttpClient($config),
+            HttpClientType::Guzzle => new GuzzleHttpClient(config: $config, events: $this->events),
             default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType->value}"),
         };
     }

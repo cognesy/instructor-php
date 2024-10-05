@@ -121,7 +121,6 @@ class Inference
         $request = new InferenceRequest(
             $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode, $this->cachedContext ?? null
         );
-dump($request);
         $this->events->dispatch(new InferenceRequested($request));
         return new InferenceResponse(
             response: $this->driver->handle($request),

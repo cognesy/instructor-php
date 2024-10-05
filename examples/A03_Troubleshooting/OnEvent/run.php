@@ -26,8 +26,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Events\Request\RequestSentToLLM;
-use Cognesy\Instructor\Events\Request\ResponseReceivedFromLLM;
+use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
+use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Instructor;
 
 class User

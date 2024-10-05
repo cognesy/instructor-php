@@ -6,6 +6,8 @@ use Cognesy\Instructor\Utils\Json\Json;
 
 class LLMResponse
 {
+    private mixed $value = null;
+
     public function __construct(
         public string $content = '',
         public array  $responseData = [],
@@ -18,12 +20,36 @@ class LLMResponse
         public int $cacheReadTokens = 0,
     ) {}
 
-    public function getJson(): string {
-        return Json::from($this->content)->toString();
-    }
+    // STATIC ////////////////////////////////////////////////
 
     public static function fromPartialResponses(array $partialResponses) : LLMResponse {
         return (new self)->makeInstance($partialResponses);
+    }
+
+    // PUBLIC ////////////////////////////////////////////////
+
+    public function hasValue() : bool {
+        return $this->value !== null;
+    }
+
+    public function withValue(mixed $value) : self {
+        $this->value = $value;
+        return $this;
+    }
+
+    public function value() : mixed {
+        return $this->value;
+    }
+
+    public function hasContent() : bool {
+        return $this->content !== '';
+    }
+
+    public function json(): string {
+        if (!$this->hasContent()) {
+            return '';
+        }
+        return Json::from($this->content)->toString();
     }
 
     public function hasToolCalls() : bool {
@@ -32,7 +58,11 @@ class LLMResponse
 
     // INTERNAL //////////////////////////////////////////////
 
-    private function makeInstance(array $partialResponses) : self {
+    private function makeInstance(array $partialResponses = []) : self {
+        if (empty($partialResponses)) {
+            return $this;
+        }
+
         $content = '';
         foreach($partialResponses as $partialResponse) {
             if ($partialResponse === null) {

@@ -5,12 +5,14 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Exception;
 
 class Stream
 {
-    private mixed $lastUpdate = null;
+    private PartialLLMResponse|LLMResponse|null $lastUpdate = null;
 
     public function __construct(
         private Iterable $stream,
@@ -22,7 +24,7 @@ class Stream
      * current or final response from the stream
      */
     public function getLastUpdate() : mixed {
-        return $this->lastUpdate;
+        return $this->lastUpdate->value();
     }
 
     /**
@@ -36,23 +38,23 @@ class Stream
      * Returns a stream of partial updates
      */
     public function partials() : Iterable {
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            yield $update;
+        foreach ($this->stream as $partialResponse) {
+            $this->lastUpdate = $partialResponse;
+            $result = $partialResponse->value();
+            yield $result;
         }
-        $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
-        $this->events->dispatch(new InstructorDone(['result' => $this->lastUpdate]));
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone(['result' => $result]));
     }
 
     /**
      * Processes response stream and returns the final update
      */
     public function final() : mixed {
-        $result = null;
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $result = $update;
+        foreach ($this->stream as $partialResponse) {
+            $this->lastUpdate = $partialResponse;
         }
+        $result = $this->lastUpdate->value();
         $this->events->dispatch(new ResponseGenerated($result));
         $this->events->dispatch(new InstructorDone(['result' => $result]));
         return $result;
@@ -64,8 +66,9 @@ class Stream
     public function sequence() : Iterable {
         $lastSequence = null;
         $lastSequenceCount = 1;
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
+        foreach ($this->stream as $partialResponse) {
+            $this->lastUpdate = $partialResponse;
+            $update = $partialResponse->value();
             if (!($update instanceof Sequence)) {
                 throw new Exception('Expected a sequence update, got ' . get_class($update));
             }
@@ -90,9 +93,9 @@ class Stream
      * Processes response stream and calls a callback for each update
      */
     private function each(callable $callback) : void {
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $callback($update);
+        foreach ($this->stream as $partialResponse) {
+            $this->lastUpdate = $partialResponse;
+            $callback($partialResponse->value());
         }
         $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
         $this->events->dispatch(new InstructorDone(['result' => $this->lastUpdate]));
@@ -103,9 +106,9 @@ class Stream
      */
     private function map(callable $callback) : array {
         $result = [];
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $result[] = $callback($update);
+        foreach ($this->stream as $partialResponse) {
+            $this->lastUpdate = $partialResponse;
+            $result[] = $callback($partialResponse->value());
         }
         $this->events->dispatch(new ResponseGenerated($this->lastUpdate));
         $this->events->dispatch(new InstructorDone(['result' => $result]));
@@ -117,12 +120,12 @@ class Stream
      */
     private function flatMap(callable $callback, mixed $initial) : mixed {
         $result = $initial;
-        foreach ($this->stream as $update) {
-            $this->lastUpdate = $update;
-            $result = $callback($update, $result);
+        foreach ($this->stream as $partialResponse) {
+            $this->lastUpdate = $partialResponse;
+            $result = $callback($partialResponse->value(), $result);
         }
         $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone());
+        $this->events->dispatch(new InstructorDone($result));
         return $result;
     }
 }
