@@ -1,29 +1,20 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Utils\Settings;
 
 class Request
 {
-    use Traits\Request\HandlesLLMClient;
     use Traits\Request\HandlesMessages;
     use Traits\Request\HandlesRetries;
     use Traits\Request\HandlesSchema;
 
-    private EventDispatcher $events;
-
     public function __construct(
         string|array $messages,
         string|array|object $input,
-        string|array|object $responseModel,
+        string|array|object $requestedSchema,
+        ResponseModel $responseModel,
         string $system,
         string $prompt,
         array $examples,
@@ -35,17 +26,7 @@ class Request
         string $retryPrompt,
         Mode $mode,
         array $cachedContext,
-        string $connection,
-        ?CanHandleHttp $httpClient,
-        ?CanHandleInference $driver,
-        EventDispatcher $events,
     ) {
-        $this->events = $events;
-
-        $this->httpClient = $httpClient;
-        $this->driver = $driver;
-        $this->connection = $connection;
-
         $this->cachedContext = $cachedContext;
         $this->options = $options;
         $this->maxRetries = $maxRetries;
@@ -58,13 +39,11 @@ class Request
         $this->model = $model;
 
         $this->messages = $this->normalizeMessages($messages);
-        $this->toolName = $toolName ?: $this->defaultToolName;
-        $this->toolDescription = $toolDescription ?: $this->defaultToolDescription;
+        $this->toolName = $toolName ?: Settings::get('llm', 'defaultToolName');
+        $this->toolDescription = $toolDescription ?: Settings::get('llm', 'defaultToolDescription');
 
-        $this->requestedSchema = $responseModel;
-        if (!empty($this->requestedSchema)) {
-            $this->responseModel = $this->makeResponseModel();
-        }
+        $this->requestedSchema = $requestedSchema;
+        $this->responseModel = $responseModel;
     }
 
     public function toArray() : array {
@@ -83,27 +62,10 @@ class Request
             'retryPrompt' => $this->retryPrompt,
             'mode' => $this->mode(),
             'cachedContext' => $this->cachedContext,
-            'connection' => $this->connection,
         ];
     }
 
     public function isStream() : bool {
         return $this->options['stream'] ?? false;
-    }
-
-    private function makeResponseModel() : ResponseModel {
-        $schemaFactory = new SchemaFactory(
-            Settings::get('llm', 'useObjectReferences', false)
-        );
-        $responseModelFactory = new ResponseModelFactory(
-            new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
-            $schemaFactory,
-            $this->events
-        );
-        return $responseModelFactory->fromAny(
-            $this->requestedSchema(),
-            $this->toolName(),
-            $this->toolDescription()
-        );
     }
 }

@@ -65,7 +65,7 @@ class PartialsGenerator implements CanGeneratePartials
      * @param ResponseModel $responseModel
      * @return Generator<mixed>
      */
-    public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Iterable {
+    public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         // reset state
         $this->resetPartialResponse();
 
@@ -107,6 +107,11 @@ class PartialsGenerator implements CanGeneratePartials
                 continue;
             }
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
+
+//            yield new PartialProcessedResponse(
+//                result: $result,
+//                partialLLMResponse: $partialResponse,
+//            );
             yield $result->unwrap();
         }
         $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse()));

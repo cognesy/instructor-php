@@ -2,38 +2,41 @@
 
 namespace Cognesy\Instructor\Traits\Instructor;
 
-use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Data\RequestInfo;
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use JetBrains\PhpStorm\Deprecated;
 
 trait HandlesRequest
 {
-    private ResponseModelFactory $responseModelFactory;
-    private Request $request;
-    private RequestHandler $requestHandler;
-    private RequestInfo $requestData;
-    private array $cachedContext = [];
     private ?CanHandleInference $driver = null;
     private ?CanHandleHttp $httpClient = null;
-    private string $connection;
+    private string $connection = '';
+
+    private Request $request;
+    private array $cachedContext = [];
 
     // PUBLIC /////////////////////////////////////////////////////////////////////
 
-    public function getRequest() : Request {
-        return $this->request;
+    public function cacheContext(
+        string|array $messages = '',
+        string|array|object $input = '',
+        string $system = '',
+        string $prompt = '',
+        array $examples = [],
+    ) : ?self {
+        $this->cachedContext = [
+            'messages' => $messages,
+            'input' => $input,
+            'system' => $system,
+            'prompt' => $prompt,
+            'examples' => $examples,
+        ];
+        return $this;
     }
 
-    /**
-     * Prepares Instructor for execution with provided request data
-     */
-    public function withRequest(RequestInfo $requestData) : static {
-        $this->requestData = $requestData;
-        return $this;
+    public function getRequest() : Request {
+        return $this->request;
     }
 
     public function withDriver(CanHandleInference $driver) : self {
@@ -55,32 +58,5 @@ trait HandlesRequest
     public function withClient(string $client) : self {
         $this->connection = $client;
         return $this;
-    }
-
-    // INTERNAL ////////////////////////////////////////////////////////////////////
-
-    protected function requestFromData(
-        RequestInfo $data,
-    ) : Request {
-        return new Request(
-            messages: $data->messages ?? [],
-            input: $data->input ?? [],
-            responseModel: $data->responseModel ?? [],
-            system: $data->system ?? '',
-            prompt: $data->prompt ?? '',
-            examples: $data->examples ?? [],
-            model: $data->model ?? '',
-            maxRetries: $data->maxRetries ?? 0,
-            options: $data->options ?? [],
-            toolName: $data->toolName ?? '',
-            toolDescription: $data->toolDescription ?? '',
-            retryPrompt: $data->retryPrompt ?? '',
-            mode: $data->mode ?? Mode::Tools,
-            cachedContext: $data->cachedContext ?? [],
-            connection: $this->connection ?? '',
-            httpClient: $this->httpClient,
-            driver: $this->driver,
-            events: $this->events,
-        );
     }
 }

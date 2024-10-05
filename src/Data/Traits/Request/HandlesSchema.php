@@ -8,8 +8,6 @@ use Cognesy\Instructor\Utils\Str;
 
 trait HandlesSchema
 {
-    private string $defaultToolName = 'extracted_data';
-    private string $defaultToolDescription = 'Function call based on user instructions.';
     private string $toolName;
     private string $toolDescription;
 
@@ -44,7 +42,7 @@ trait HandlesSchema
             ],
             Mode::JsonSchema => [
                 'type' => 'json_schema',
-                'description' => $this->defaultToolDescription,
+                'description' => $this->toolDescription(),
                 'json_schema' => [
                     'name' => $this->schemaName(),
                     'schema' => $this->jsonSchema(),
@@ -83,12 +81,5 @@ trait HandlesSchema
         }
         $name = str_replace('\\', '_', $name);
         return $name;
-    }
-
-    // INTERNAL ///////////////////////////////////////////////////////////////
-
-    protected function withResponseModel(ResponseModel $responseModel) : static {
-        $this->responseModel = $responseModel;
-        return $this;
     }
 }

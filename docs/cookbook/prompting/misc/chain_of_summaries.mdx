@@ -70,7 +70,7 @@ $summaries = (new Instructor)
         messages: $report,
         responseModel: ChainOfSummaries::class,
         prompt: 'Generate a denser summary based on the provided content.',
-        toolTitle: 'summarizer',
+        toolName: 'summarizer',
         toolDescription: 'Generates a summary based on the provided content.',
         options: [
             'max_tokens' => 4096,

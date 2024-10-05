@@ -45,21 +45,6 @@ class Instructor {
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
-        $this->requestHandler = new RequestHandler(
-            new ResponseGenerator(
-                $this->responseDeserializer,
-                $this->responseValidator,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            new PartialsGenerator(
-                $this->responseDeserializer,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            $this->events,
-        );
-
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());
     }

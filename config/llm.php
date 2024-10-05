@@ -7,6 +7,13 @@ return [
     'useObjectReferences' => false,
     'defaultConnection' => 'openai',
 
+    'defaultToolName' => 'extracted_data',
+    'defaultToolDescription' => 'Function call based on user instructions.',
+    'defaultRetryPrompt' => "JSON generated incorrectly, fix following errors:\n",
+    'defaultMdJsonPrompt' => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
+    'defaultJsonPrompt' => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
+    'defaultToolsPrompt' => "Extract correct and accurate data from the input using provided tools.\n",
+
     'connections' => [
         'anthropic' => [
             'providerType' => LLMProviderType::Anthropic->value,

@@ -6,17 +6,16 @@ use Cognesy\Instructor\Enums\Mode;
 
 trait HandlesMessages
 {
-    private array $cachedContext = [];
-    private array $examples;
-    private string $examplesPrompt = "Examples:\n<|examples|>";
-    private string|array|object $input = '';
     private string|array $messages;
-    private Mode $mode;
     private string $model;
     private string $prompt = '';
     private string $retryPrompt;
     private string $system = '';
+    private string|array|object $input = '';
+    private array $examples;
+    private array $cachedContext = [];
     private array $options = [];
+    private Mode $mode;
 
     // PUBLIC /////////////////////////////////////////////////////////////////
 

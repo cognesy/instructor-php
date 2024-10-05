@@ -49,6 +49,7 @@ trait HandlesPrediction
         $this->requestInfo->input = $callArgs;
         $this->requestInfo->prompt = $this->instructions();
         $this->requestInfo->responseModel = StructureFactory::fromSignature('prediction', $this->signature);
+        // TODO: replace with new Instructor API call
         return $this->instructor->withRequest($this->requestInfo)->get();
     }
 

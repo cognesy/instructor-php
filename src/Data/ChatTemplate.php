@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Utils\Settings;
 
 class ChatTemplate
 {
@@ -12,19 +13,18 @@ class ChatTemplate
     use Traits\ChatTemplate\HandlesSections;
     use Traits\ChatTemplate\HandlesUtils;
 
-    private string $defaultRetryPrompt = "JSON generated incorrectly, fix following errors:\n";
-    private array $defaultPrompts = [
-        Mode::MdJson->value => "Respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
-        Mode::Json->value => "Respond correctly with strict JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        Mode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
-        //Mode::Tools->value => "Extract correct and accurate data from the input using provided tools. Response must be JSON object following provided tool schema.\n<|json_schema|>\n",
-    ];
+    private string $defaultRetryPrompt;
+    private array $defaultPrompts = [];
 
     private ?Request $request;
     private Script $script;
 
     public function __construct(Request $request = null) {
         $this->request = $request;
+        $this->defaultRetryPrompt = Settings::get('llm', 'defaultRetryPrompt');
+        $this->defaultPrompts[Mode::MdJson->value] = Settings::get('llm', 'defaultMdJsonPrompt');
+        $this->defaultPrompts[Mode::Json->value] = Settings::get('llm', 'defaultJsonPrompt');
+        $this->defaultPrompts[Mode::Tools->value] = Settings::get('llm', 'defaultToolsPrompt');
     }
 
     public static function fromRequest(Request $request) : static {
