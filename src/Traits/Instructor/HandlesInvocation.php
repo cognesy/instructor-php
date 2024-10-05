@@ -9,6 +9,9 @@ use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
+use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Extras\LLM\InferenceResponse;
+use Cognesy\Instructor\InstructorResponse;
 use Cognesy\Instructor\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
@@ -69,7 +72,7 @@ trait HandlesInvocation
         string              $toolDescription = '',
         string              $retryPrompt = '',
         Mode                $mode = Mode::Tools,
-    ) : RequestHandler {
+    ) : InstructorResponse {
         $this->queueEvent(new RequestReceived());
         $this->dispatchQueuedEvents();
 
@@ -98,7 +101,7 @@ trait HandlesInvocation
             cachedContext: $this->cachedContext ?? [],
         );
 
-        return new RequestHandler(
+        $requestHandler = new RequestHandler(
             request: $request,
             responseGenerator: new ResponseGenerator(
                 $this->responseDeserializer,
@@ -116,9 +119,34 @@ trait HandlesInvocation
             httpClient: $this->httpClient,
             events: $this->events,
         );
+
+        return new InstructorResponse(
+            request: $request,
+            requestHandler: $requestHandler,
+            events: $this->events,
+        );
     }
 
     // INTERNAL /////////////////////////////////////////////////
+
+    protected function getInference(Request $request) : InferenceResponse {
+        $inference = new Inference(
+            connection: $this->connection,
+            httpClient: $this->httpClient,
+            driver: $this->driver,
+            events: $this->events,
+        );
+        return $inference
+            ->create(
+                $request->toMessages(),
+                $request->model(),
+                $request->toolCallSchema(),
+                $request->toolChoice(),
+                $request->responseFormat(),
+                $request->options(),
+                $request->mode()
+            );
+    }
 
     private function makeResponseModel(
         string|array|object $requestedSchema,

@@ -6,7 +6,6 @@ use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
@@ -16,7 +15,6 @@ use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\LLM\InferenceResponse;
-use Cognesy\Instructor\Stream;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
@@ -39,40 +37,16 @@ class RequestHandler
         EventDispatcher $events,
     ) {
         $this->events = $events;
+        $this->retries = 0;
+        $this->errors = [];
     }
 
-    /**
-     * Executes the request and returns the response
-     */
-    public function get() : mixed {
-        if ($this->request->isStream()) {
-            return $this->stream()->final();
-        }
-        $result = $this->responseFor($this->request);
-        $this->events->dispatch(new InstructorDone(['result' => $result]));
-        return $result->value();
-    }
-
-    /**
-     * Executes the request and returns the response stream
-     */
-    public function stream() : Stream {
-        // TODO: do we need this? cannot we just turn streaming on?
-        if (!$this->request->isStream()) {
-            throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
-        }
-        $stream = $this->streamResponseFor($this->request);
-        return new Stream($stream, $this->events);
-    }
-
-    // INTERNAL //////////////////////////////////////////////////////////////
+    // PUBLIC //////////////////////////////////////////////////////////////
 
     /**
      * Generates response value
      */
-    protected function responseFor(Request $request) : LLMResponse {
-        $this->init();
-
+    public function responseFor(Request $request) : LLMResponse {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $llmResponse = $this->getInference($request)->toLLMResponse();
@@ -94,9 +68,7 @@ class RequestHandler
      * @param Request $request
      * @return Generator<PartialLLMResponse|LLMResponse>
      */
-    protected function streamResponseFor(Request $request) : Generator {
-        $this->init();
-
+    public function streamResponseFor(Request $request) : Generator {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $stream = $this->getInference($request)->toPartialLLMResponses();
@@ -112,10 +84,7 @@ class RequestHandler
         yield $llmResponse->withValue($value);
     }
 
-    protected function init() : void {
-        $this->retries = 0;
-        $this->errors = [];
-    }
+    // INTERNAL ///////////////////////////////////////////////////////////
 
     protected function getInference(Request $request) : InferenceResponse {
         $inference = new Inference(
