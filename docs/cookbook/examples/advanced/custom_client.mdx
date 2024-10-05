@@ -34,7 +34,7 @@ $driver = new OpenAIDriver(new LLMConfig(
         apiKey: Env::get('OPENAI_API_KEY'),
         endpoint: '/chat/completions',
         metadata: ['organization' => ''],
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         maxTokens: 128,
     )
 );

@@ -85,8 +85,7 @@
                 "advanced/partials",
                 "advanced/sequences",
                 "advanced/structures",
-                "advanced/function_calls",
-                "advanced/modules"
+                "advanced/function_calls"
             ]
         },
         {
@@ -162,7 +161,6 @@
             "group": "Troubleshooting",
             "pages": [
                 "cookbook/examples/troubleshooting/debugging",
-                "cookbook/examples/troubleshooting/on_error",
                 "cookbook/examples/troubleshooting/on_event",
                 "cookbook/examples/troubleshooting/token_usage_events",
                 "cookbook/examples/troubleshooting/wiretap"

@@ -44,12 +44,12 @@ class UserDetail
 }
 
 $user = (new Instructor)
+    ->wiretap(fn($event) => $event->print())
     ->request(
         messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Best regards, Tom"]],
         responseModel: UserDetail::class,
         options: ['stream' => true]
     )
-    ->wiretap(fn($event) => $event->print())
     ->get();
 
 dump($user);
