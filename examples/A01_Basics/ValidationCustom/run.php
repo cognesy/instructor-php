@@ -28,7 +28,7 @@ class UserDetails
     #[Assert\Callback]
     public function validateName(ExecutionContextInterface $context, mixed $payload) {
         if ($this->name !== strtoupper($this->name)) {
-            $context->buildViolation("Name must be in all uppercase letters.")
+            $context->buildViolation("Name must be all uppercase.")
                 ->atPath('name')
                 ->setInvalidValue($this->name)
                 ->addViolation();

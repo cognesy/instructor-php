@@ -41,13 +41,12 @@ try {
         messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
         responseModel: UserDetails::class,
     )->get();
+    dump($user);
 } catch(Exception $e) {
     $caughtException = true;
 }
 
-dump($user);
-
-assert($user === null);
+assert(!isset($user));
 assert($caughtException === true);
 ?>
 ```

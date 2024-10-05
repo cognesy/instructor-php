@@ -5,6 +5,19 @@ use Cognesy\Instructor\Utils\Arrays;
 
 trait HandlesRetries
 {
+    protected function addRetryMessages() : void {
+        $failedResponse = $this->request->lastFailedResponse();
+        if (!$failedResponse || !$this->request->hasLastResponseFailed()) {
+            return;
+        }
+        foreach($this->request->attempts() as $attempt) {
+            $messages = $this->makeRetryMessages(
+                [], $attempt->llmResponse()->content, $attempt->errors()
+            );
+            $this->script->section('retries')->appendMessages($messages);
+        }
+    }
+
     protected function makeRetryMessages(
         array $messages,
         string $jsonData,
@@ -18,17 +31,5 @@ trait HandlesRetries
 
     protected function makeRetryPrompt() : string {
         return $this->request->retryPrompt() ?: $this->defaultRetryPrompt;
-    }
-
-    protected function addRetryMessages() {
-        $failedResponse = $this->request->lastFailedResponse();
-        if (!$failedResponse || !$this->request->hasLastResponseFailed()) {
-            return;
-        }
-        $this->script->section('retries')->appendMessages(
-            $this->makeRetryMessages(
-                [], $failedResponse->llmResponse()->content, $failedResponse->errors()
-            )
-        );
     }
 }

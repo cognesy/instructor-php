@@ -70,7 +70,7 @@ class PartialsGenerator implements CanGeneratePartials
         $this->resetPartialResponse();
 
         // receive data
-        /** @var \Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse $partialResponse */
+        /** @var PartialLLMResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response
@@ -108,10 +108,6 @@ class PartialsGenerator implements CanGeneratePartials
             }
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
 
-//            yield new PartialProcessedResponse(
-//                result: $result,
-//                partialLLMResponse: $partialResponse,
-//            );
             yield $result->unwrap();
         }
         $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse()));
