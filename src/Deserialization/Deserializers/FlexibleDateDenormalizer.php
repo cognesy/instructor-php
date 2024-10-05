@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Deserialization\Deserializers;
 
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 
@@ -14,30 +15,32 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
             throw new NotNormalizableValueException('The data is not a string, it cannot be converted to a DateTime.');
         }
 
-        $date = $this->parseDate($data);
+        $output = $this->parseDate($data);
 
-        if ($date === false) {
+        if ($output === false) {
             throw new NotNormalizableValueException('The date string could not be parsed.');
         }
 
-        return $date;
+        return $output;
     }
 
     public function getSupportedTypes(?string $format): array {
         return [
-            DateTime::class => true,
+            DateTimeInterface::class => true,
             DateTimeImmutable::class => true,
+            DateTime::class => true,
         ];
     }
 
     public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool {
         return in_array($type, [
-            DateTime::class,
+            DateTimeInterface::class,
             DateTimeImmutable::class,
+            DateTime::class,
         ]);
     }
 
-    private function parseDate(string $dateString) {
+    private function parseDate(string $dateString) : DateTimeImmutable|DateTime|false {
         $formats = [
             'Y-m-d\TH:i:s.uP', // ISO8601 with microseconds
             'Y-m-d\TH:i:sP',   // ISO8601

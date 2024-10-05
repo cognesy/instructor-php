@@ -76,8 +76,8 @@ class SymfonyDeserializer implements CanDeserializeClass
             normalizers: [
                 new FlexibleDateDenormalizer(),
                 new BackedEnumNormalizer(),
-                new PropertyNormalizer(propertyTypeExtractor: $typeExtractor),
                 new ObjectNormalizer(propertyTypeExtractor: $typeExtractor),
+                new PropertyNormalizer(propertyTypeExtractor: $typeExtractor),
                 new GetSetMethodNormalizer(propertyTypeExtractor: $typeExtractor),
                 new ArrayDenormalizer(),
             ],
