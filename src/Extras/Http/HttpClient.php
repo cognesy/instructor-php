@@ -6,7 +6,9 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Enums\HttpClientType;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
-use Cognesy\Instructor\Extras\Http\Drivers\GuzzleHttpClient;
+use Cognesy\Instructor\Extras\Http\Drivers\GuzzleDriver;
+use Cognesy\Instructor\Extras\Http\Drivers\SymfonyDriver;
+use Cognesy\Instructor\Extras\Http\Drivers\SymfonyNyholmDriver;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
@@ -48,7 +50,8 @@ class HttpClient
 
     private function makeDriver(HttpClientConfig $config) : CanHandleHttp {
         return match ($config->httpClientType) {
-            HttpClientType::Guzzle => new GuzzleHttpClient(config: $config, events: $this->events),
+            HttpClientType::Guzzle => new GuzzleDriver(config: $config, events: $this->events),
+            HttpClientType::Symfony => new SymfonyDriver(config: $config, events: $this->events),
             default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType->value}"),
         };
     }

@@ -95,6 +95,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'llama3.2:3b', //'gemma2:2b',
             'defaultMaxTokens' => 1024,
+            'connectTimeout' => 30,
+            'requestTimeout' => 60,
         ],
         'openai' => [
             'providerType' => LLMProviderType::OpenAI->value,

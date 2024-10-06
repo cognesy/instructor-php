@@ -22,7 +22,6 @@ class LLMConfig
         if (!Settings::has('llm', "connections.$connection")) {
             throw new InvalidArgumentException("Unknown connection: $connection");
         }
-
         return new LLMConfig(
             apiUrl: Settings::get('llm', "connections.$connection.apiUrl"),
             apiKey: Settings::get('llm', "connections.$connection.apiKey", ''),

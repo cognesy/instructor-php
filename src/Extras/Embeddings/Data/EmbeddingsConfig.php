@@ -23,7 +23,6 @@ class EmbeddingsConfig
         if (!Settings::has('embed', "connections.$connection")) {
             throw new InvalidArgumentException("Unknown connection: $connection");
         }
-
         return new EmbeddingsConfig(
             apiUrl: Settings::get('embed', "connections.$connection.apiUrl"),
             apiKey: Settings::get('embed', "connections.$connection.apiKey", ''),

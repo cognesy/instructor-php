@@ -71,6 +71,8 @@ return [
             'defaultModel' => 'nomic-embed-text',
             'defaultDimensions' => 1024,
             'maxInputs' => 512,
+            'connectionTimeout' => 5,
+            'requestTimeout' => 30,
         ],
         'openai' => [
             'providerType' => LLMProviderType::OpenAI->value,

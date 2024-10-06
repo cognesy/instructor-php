@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\LLM\Drivers;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
@@ -15,7 +16,6 @@ use Cognesy\Instructor\Extras\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
-use Psr\Http\Message\ResponseInterface;
 
 class GeminiDriver implements CanHandleInference
 {
@@ -28,7 +28,7 @@ class GeminiDriver implements CanHandleInference
 
     // REQUEST //////////////////////////////////////////////
 
-    public function handle(InferenceRequest $request) : ResponseInterface {
+    public function handle(InferenceRequest $request) : CanHandleResponse {
         $request = $this->withCachedContext($request);
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),

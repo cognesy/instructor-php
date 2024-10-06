@@ -49,7 +49,12 @@
         "duzun/hquery": "^3.1",
         "ext-dom": "*",
         "psy/psysh": "@stable",
-        "symfony/http-client": "^7.1"
+        "symfony/http-client": "^7.1",
+        "php-http/discovery": "^1.20",
+        "psr/http-factory-implementation": "*",
+        "symfony/psr-http-message-bridge": "^7.1",
+        "nyholm/psr7": "^1.8",
+        "guzzlehttp/psr7": "^2.7"
     },
     "config": {
         "allow-plugins": {

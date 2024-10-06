@@ -5,31 +5,30 @@ namespace Cognesy\Instructor\Extras\LLM;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
 use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
-use Cognesy\Instructor\Extras\Http\StreamReader;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\IterableReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
 use InvalidArgumentException;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 
 class InferenceResponse
 {
     protected EventDispatcher $events;
-    protected StreamReader $streamReader;
+    protected IterableReader $reader;
     protected string $responseContent = '';
 
     public function __construct(
-        protected ResponseInterface $response,
+        protected CanHandleResponse $response,
         protected CanHandleInference $driver,
         protected LLMConfig $config,
         protected bool $isStreamed = false,
         ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->streamReader = new StreamReader($this->driver->getData(...), $this->events);
+        $this->reader = new IterableReader($this->driver->getData(...), $this->events);
     }
 
     public function isStreamed() : bool {
@@ -74,7 +73,7 @@ class InferenceResponse
      * @return Generator<\Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse>
      */
     public function toPartialLLMResponses() : Generator {
-        foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
+        foreach ($this->reader->stream($this->response->streamContents()) as $partialData) {
             if ($partialData === false) {
                 continue;
             }
@@ -99,19 +98,19 @@ class InferenceResponse
         };
     }
 
-    public function psrResponse() : ResponseInterface {
-        return $this->response;
-    }
-
-    public function psrStream() : StreamInterface {
-        return $this->response->getBody();
-    }
+//    public function psrResponse() : ResponseInterface {
+//        return $this->response;
+//    }
+//
+//    public function psrStream() : StreamInterface {
+//        return $this->response->getBody();
+//    }
 
     // INTERNAL /////////////////////////////////////////////////
 
     protected function responseData() : array {
         if (empty($this->responseContent)) {
-            $this->responseContent = $this->response->getBody()->getContents();
+            $this->responseContent = $this->response->getContents();
         }
         return Json::parse($this->responseContent) ?? [];
     }
@@ -121,7 +120,7 @@ class InferenceResponse
      */
     protected function allStreamResponses() : array {
         $content = [];
-        foreach ($this->streamReader->stream($this->psrStream()) as $partialData) {
+        foreach ($this->reader->stream($this->response->streamContents()) as $partialData) {
             $content[] = Json::parse($partialData);
         }
         return $content;

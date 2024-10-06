@@ -18,6 +18,7 @@ response is received.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Instructor;
 
@@ -66,11 +67,13 @@ $text = <<<TEXT
     TEXT;
 
 $user = (new Instructor)
+    ->withConnection('openai')
     ->onPartialUpdate(partialUpdate(...))
     ->request(
         messages: $text,
         responseModel: UserDetail::class,
-        options: ['stream' => true]
+        options: ['stream' => true],
+        mode: Mode::Json,
     )->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";

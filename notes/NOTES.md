@@ -1,5 +1,17 @@
 # NOTES
 
+## High priority
+
+- Logging via PSR-3
+- Schema abstraction layer - decouple names and descriptions from the model
+- Prompt optimization via TextGrad
+- Eval framework
+- Agents
+- Indexing to vector DB
+- CLI app
+- Fast/simple REST API server - compatible with OpenAI? 
+- Revise examples debugging - not sure if it works as expected (what does it demonstrate?)
+
 # Partially done
 
 - Export configuration to user folder / use external configuration
@@ -22,9 +34,6 @@
 
 - Modules: Add module observability via events - currently no access to this info
 
-## Configuration
-
-- Examples how to override default configuration
 
 ## Refactorings
 
@@ -37,7 +46,7 @@
 ## Infrastructure
 
 - Async mode
-- Fix cache mode
+- Fix response caching
 - Finish logging support
 - Document how to inject custom HTTP client
 - Better error messages
@@ -73,6 +82,9 @@
 
 > NOTE: Move notes here
 
+## Configuration
+
+- Examples how to override default configuration
 
 
 

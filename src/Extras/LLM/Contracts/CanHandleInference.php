@@ -3,14 +3,14 @@
 namespace Cognesy\Instructor\Extras\LLM\Contracts;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Extras\LLM\InferenceRequest;
-use Psr\Http\Message\ResponseInterface;
 
 interface CanHandleInference
 {
-    public function handle(InferenceRequest $request) : ResponseInterface;
+    public function handle(InferenceRequest $request) : CanHandleResponse;
     public function getEndpointUrl(InferenceRequest $request) : string;
     public function getRequestHeaders() : array;
     public function getRequestBody(

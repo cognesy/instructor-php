@@ -7,7 +7,9 @@ use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
 use Cognesy\Instructor\Events\HttpClient\RequestToLLMFailed;
 use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Extras\Debug\Debug;
+use Cognesy\Instructor\Extras\Http\Adapters\PsrResponse;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
 use Exception;
 use GuzzleHttp\Client;
@@ -20,7 +22,7 @@ use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class GuzzleHttpClient implements CanHandleHttp
+class GuzzleDriver implements CanHandleHttp
 {
     protected Client $client;
 
@@ -33,11 +35,10 @@ class GuzzleHttpClient implements CanHandleHttp
         if (isset($this->httpClient) && Debug::isEnabled()) {
             throw new InvalidArgumentException("Guzzle does not allow to inject debugging stack into existing client. Turn off debug or use default client.");
         }
-//        $this->client = match(Debug::isEnabled()) {
-//            false => $httpClient ?? new Client(),
-//            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
-//        };
-        $this->client = new Client(['handler' => $this->addDebugStack(HandlerStack::create())]);
+        $this->client = match(Debug::isEnabled()) {
+            false => $httpClient ?? new Client(),
+            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
+        };
     }
 
     public function handle(
@@ -46,7 +47,7 @@ class GuzzleHttpClient implements CanHandleHttp
         array $body,
         string $method = 'POST',
         bool $streaming = false
-    ) : ResponseInterface {
+    ) : CanHandleResponse {
         $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
         try {
             $response = $this->client->request($method, $url, [
@@ -57,12 +58,15 @@ class GuzzleHttpClient implements CanHandleHttp
                 'debug' => Debug::isFlag('http.trace') ?? false,
                 'stream' => $streaming,
             ]);
-            $this->events->dispatch(new ResponseReceivedFromLLM($response->getStatusCode()));
-            return $response;
         } catch (Exception $e) {
             $this->events->dispatch(new RequestToLLMFailed($url, $method, $headers, $body, $e->getMessage()));
             throw $e;
         }
+        $this->events->dispatch(new ResponseReceivedFromLLM($response->getStatusCode()));
+        return new PsrResponse(
+            response: $response,
+            stream: $response->getBody()
+        );
     }
 
     protected function addDebugStack(HandlerStack $stack) : HandlerStack {

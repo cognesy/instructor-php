@@ -6,33 +6,34 @@ $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 use Cognesy\Evals\LLMModes\CompareModes;
 use Cognesy\Evals\LLMModes\EvalInput;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-    'azure',
-    'cohere1',
-    'fireworks',
-    'gemini',
-    'groq',
-    'mistral',
+//    'azure',
+//    'cohere1',
+//    'fireworks',
+//    'gemini',
+//    'groq',
+//    'mistral',
     'ollama',
-    'openai',
-    'openrouter',
-    'together',
+//    'openai',
+//    'openrouter',
+//    'together',
 ];
 
 $streamingModes = [
     true,
-    false,
+//    false,
 ];
 
 $modes = [
     Mode::Text,
-    Mode::MdJson,
-    Mode::Json,
-    Mode::JsonSchema,
-    Mode::Tools,
+//    Mode::MdJson,
+//    Mode::Json,
+//    Mode::JsonSchema,
+//    Mode::Tools,
 ];
 
 //
@@ -43,7 +44,7 @@ $modes = [
 // azure, Mode::JsonSchema, sync|stream
 //
 
-//Debug::enable();
+Debug::enable();
 
 function evalFn(EvalInput $er) {
     $decoded = Json::from($er->answer)->toArray();
