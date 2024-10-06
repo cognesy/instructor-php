@@ -23,9 +23,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
-use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Env;
 
 class User {
     public int $age;

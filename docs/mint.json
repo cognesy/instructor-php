@@ -151,6 +151,7 @@
                 "cookbook/examples/advanced/function_calls",
                 "cookbook/examples/advanced/partials",
                 "cookbook/examples/advanced/demonstrations",
+                "cookbook/examples/advanced/scalars",
                 "cookbook/examples/advanced/sequences",
                 "cookbook/examples/advanced/streaming",
                 "cookbook/examples/advanced/structures"

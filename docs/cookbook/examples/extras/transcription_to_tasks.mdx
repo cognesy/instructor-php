@@ -32,7 +32,7 @@ enum Role : string {
 class Task {
     public string $title;
     public string $description;
-    public DateTime $dueDate;
+    public DateTimeImmutable $dueDate;
     public Role $owner;
     public TaskStatus $status;
 }
