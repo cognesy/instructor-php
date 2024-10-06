@@ -3,7 +3,7 @@
 use Cognesy\Instructor\Extras\Enums\HttpClientType;
 
 return [
-    'defaultClient' => 'symfony',
+    'defaultClient' => 'guzzle',
 
     'cache' => [
         'enabled' => false,
