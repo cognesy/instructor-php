@@ -26,9 +26,9 @@ class Inference
 {
     protected LLMConfig $config;
 
+    protected EventDispatcher $events;
     protected CanHandleInference $driver;
     protected CanHandleHttp $httpClient;
-    protected EventDispatcher $events;
     protected CachedContext $cachedContext;
 
     public function __construct(
@@ -39,11 +39,10 @@ class Inference
         EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-
-        $this->httpClient = $httpClient ?? HttpClient::make();
         $this->config = $config ?? LLMConfig::load(connection: $connection
             ?: Settings::get('llm', "defaultConnection")
         );
+        $this->httpClient = $httpClient ?? HttpClient::make($this->config->httpClient);
         $this->driver = $driver ?? $this->makeDriver($this->config, $this->httpClient);
     }
 
@@ -135,20 +134,20 @@ class Inference
 
     protected function makeDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
         return match ($config->providerType) {
-            LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient),
-            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient),
-            LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient),
-            LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient),
-            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient),
-            LLMProviderType::Mistral => new MistralDriver($config, $httpClient),
-            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient),
+            LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient, $this->events),
+            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient, $this->events),
+            LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient, $this->events),
+            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient, $this->events),
+            LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
+            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
             LLMProviderType::Fireworks,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,
             LLMProviderType::OpenAICompatible,
             LLMProviderType::OpenRouter,
             LLMProviderType::Together,
-            => new OpenAICompatibleDriver($config, $httpClient),
+            => new OpenAICompatibleDriver($config, $httpClient, $this->events),
             default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
         };
     }

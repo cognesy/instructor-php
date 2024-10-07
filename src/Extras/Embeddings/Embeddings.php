@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Embeddings;
 
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Embeddings\Contracts\CanVectorize;
 use Cognesy\Instructor\Extras\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Instructor\Extras\Embeddings\Drivers\AzureOpenAIDriver;
@@ -19,14 +20,24 @@ class Embeddings
 {
     use Traits\HasFinders;
 
+    protected EventDispatcher $events;
     protected EmbeddingsConfig $config;
     protected CanHandleHttp $httpClient;
     protected CanVectorize $driver;
 
-    public function __construct() {
-        $this->httpClient = HttpClient::make();
-        $this->config = EmbeddingsConfig::load(Settings::get('embed', "defaultConnection"));
-        $this->driver = $this->getDriver($this->config, $this->httpClient);
+    public function __construct(
+        string $connection = '',
+        EmbeddingsConfig $config = null,
+        CanHandleHttp $httpClient = null,
+        CanVectorize $driver = null,
+        EventDispatcher $events = null,
+    ) {
+        $this->events = $events ?? new EventDispatcher();
+        $this->config = $config ?? EmbeddingsConfig::load($connection
+            ?: Settings::get('embed', "defaultConnection")
+        );
+        $this->httpClient = $httpClient ?? HttpClient::make($this->config->httpClient);
+        $this->driver = $driver ?? $this->getDriver($this->config, $this->httpClient);
     }
 
     // PUBLIC ///////////////////////////////////////////////////

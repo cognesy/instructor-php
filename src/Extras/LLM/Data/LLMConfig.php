@@ -15,6 +15,7 @@ class LLMConfig
         public array $metadata = [],
         public string $model = '',
         public int $maxTokens = 1024,
+        public string $httpClient = '',
         public LLMProviderType $providerType = LLMProviderType::OpenAICompatible,
     ) {}
 
@@ -29,6 +30,7 @@ class LLMConfig
             metadata: Settings::get('llm', "connections.$connection.metadata", []),
             model: Settings::get('llm', "connections.$connection.defaultModel", ''),
             maxTokens: Settings::get('llm', "connections.$connection.defaultMaxTokens", 1024),
+            httpClient: Settings::get('llm', "connections.$connection.httpClient", ''),
             providerType: LLMProviderType::from(Settings::get('llm', "connections.$connection.providerType")),
         );
     }

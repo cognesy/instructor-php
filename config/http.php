@@ -19,7 +19,12 @@ return [
         ],
         'symfony' => [
             'httpClientType' => HttpClientType::Symfony->value,
-            'connectTimeout' => 90, // Symfony HttpClient does not allow to set connect timeout, set it to request timeout
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+        ],
+        'guzzle-ollama' => [
+            'httpClientType' => HttpClientType::Guzzle->value,
+            'connectTimeout' => 5,
             'requestTimeout' => 90,
         ],
     ]

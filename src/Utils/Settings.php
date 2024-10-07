@@ -24,6 +24,10 @@ class Settings
             self::$settings[$group] = dot(self::loadGroup($group));
         }
 
+        if ($default === null && !self::has($group, $key)) {
+            throw new Exception("Settings key not found: $key in group: $group and no default value provided");
+        }
+
         return self::$settings[$group]->get($key, $default);
     }
 

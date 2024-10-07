@@ -8,7 +8,6 @@ use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
 use Cognesy\Instructor\Extras\Http\Drivers\GuzzleDriver;
 use Cognesy\Instructor\Extras\Http\Drivers\SymfonyDriver;
-use Cognesy\Instructor\Extras\Http\Drivers\SymfonyNyholmDriver;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
@@ -19,13 +18,12 @@ class HttpClient
 
     public function __construct(string $client = '', EventDispatcher $events = null) {
         $this->events = $events ?? new EventDispatcher();
-
         $config = HttpClientConfig::load($client ?: Settings::get('http', "defaultClient"));
         $this->driver = $this->makeDriver($config);
     }
 
-    public static function make(string $client = '') : CanHandleHttp {
-        return (new self($client))->get();
+    public static function make(string $client = '', ?EventDispatcher $events = null) : CanHandleHttp {
+        return (new self($client, $events))->get();
     }
 
     public function withClient(string $name) : self {

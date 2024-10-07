@@ -9,13 +9,14 @@ use InvalidArgumentException;
 class EmbeddingsConfig
 {
     public function __construct(
-        public string           $apiUrl = '',
-        public string           $apiKey = '',
-        public string           $endpoint = '',
-        public string           $model = '',
-        public int              $dimensions = 0,
-        public int              $maxInputs = 0,
-        public array            $metadata = [],
+        public string $apiUrl = '',
+        public string $apiKey = '',
+        public string $endpoint = '',
+        public string $model = '',
+        public int $dimensions = 0,
+        public int $maxInputs = 0,
+        public array $metadata = [],
+        public string $httpClient = '',
         public ?LLMProviderType $providerType = null,
     ) {}
 
@@ -31,9 +32,8 @@ class EmbeddingsConfig
             dimensions: Settings::get('embed', "connections.$connection.defaultDimensions", 0),
             maxInputs: Settings::get('embed', "connections.$connection.maxInputs", 1),
             metadata: Settings::get('embed', "connections.$connection.metadata", []),
-            providerType: LLMProviderType::from(
-                Settings::get('embed', "connections.$connection.providerType")
-            ),
+            httpClient: Settings::get('embed', "connections.$connection.httpClient", ''),
+            providerType: LLMProviderType::from(Settings::get('embed', "connections.$connection.providerType")),
         );
     }
 }

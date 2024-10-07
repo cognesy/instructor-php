@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Extras\LLM\Drivers;
 
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
 use Cognesy\Instructor\Extras\Http\HttpClient;
@@ -22,7 +23,9 @@ class GeminiDriver implements CanHandleInference
     public function __construct(
         protected LLMConfig      $config,
         protected ?CanHandleHttp $httpClient = null,
+        protected ?EventDispatcher $events = null,
     ) {
+        $this->events = $events ?? new EventDispatcher();
         $this->httpClient = $httpClient ?? HttpClient::make();
     }
 

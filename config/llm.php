@@ -95,8 +95,7 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'llama3.2:3b', //'gemma2:2b',
             'defaultMaxTokens' => 1024,
-            'connectTimeout' => 30,
-            'requestTimeout' => 60,
+            'httpClient' => 'guzzle-ollama',
         ],
         'openai' => [
             'providerType' => LLMProviderType::OpenAI->value,

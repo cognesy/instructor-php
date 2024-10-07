@@ -42,8 +42,8 @@ class SymfonyDriver implements CanHandleHttp
                 options: [
                     'headers' => $headers,
                     'body' => is_array($body) ? json_encode($body) : $body,
-                    'timeout' => $this->config->requestTimeout ?? 5,
-                    'max_duration' => $this->config->connectTimeout ?? 30,
+                    'timeout' => $this->config->idleTimeout ?? 0,
+                    'max_duration' => $this->config->requestTimeout ?? 30,
                     'buffer' => !$streaming,
                 ]
             );
