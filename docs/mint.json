@@ -190,6 +190,7 @@
                 "cookbook/examples/extras/complex_extraction_cohere",
                 "cookbook/examples/extras/complex_extraction_gemini",
                 "cookbook/examples/extras/embeddings",
+                "cookbook/examples/extras/image_car_damage",
                 "cookbook/examples/extras/image_to_data",
                 "cookbook/examples/extras/image_to_data_anthropic",
                 "cookbook/examples/extras/image_to_data_gemini",
