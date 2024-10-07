@@ -8,7 +8,7 @@ use Cognesy\Instructor\Events\HttpClient\RequestToLLMFailed;
 use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Extras\Http\Adapters\SymfonyResponse;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
 use Exception;
 use Symfony\Component\HttpClient\HttpClient;
@@ -33,7 +33,7 @@ class SymfonyDriver implements CanHandleHttp
         array $body,
         string $method = 'POST',
         bool $streaming = false,
-    ): CanHandleResponse {
+    ): CanAccessResponse {
         $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
         try {
             $response = $this->client->request(

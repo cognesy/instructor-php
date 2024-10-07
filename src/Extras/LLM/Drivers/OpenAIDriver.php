@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\LLM\Drivers;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Extras\Http\HttpClient;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
@@ -28,7 +28,7 @@ class OpenAIDriver implements CanHandleInference
 
     // REQUEST //////////////////////////////////////////////
 
-    public function handle(InferenceRequest $request) : CanHandleResponse {
+    public function handle(InferenceRequest $request) : CanAccessResponse {
         $request = $this->withCachedContext($request);
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),

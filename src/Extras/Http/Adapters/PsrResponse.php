@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Http\Adapters;
 
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Generator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
-class PsrResponse implements CanHandleResponse
+class PsrResponse implements CanAccessResponse
 {
     private ResponseInterface $response;
     private StreamInterface $stream;
@@ -18,6 +18,14 @@ class PsrResponse implements CanHandleResponse
     ) {
         $this->response = $response;
         $this->stream = $stream;
+    }
+
+    public function getStatusCode(): int {
+        return $this->response->getStatusCode();
+    }
+
+    public function getHeaders(): array {
+        return $this->response->getHeaders();
     }
 
     public function getContents(): string {

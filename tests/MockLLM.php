@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
@@ -14,7 +14,7 @@ class MockLLM
 {
     static public function get(array $args) : CanHandleInference {
         $mockLLM = Mockery::mock(OpenAIDriver::class);
-        $mockResponse = Mockery::mock(CanHandleResponse::class, ResponseInterface::class, StreamInterface::class, MessageInterface::class);
+        $mockResponse = Mockery::mock(CanAccessResponse::class, ResponseInterface::class, StreamInterface::class, MessageInterface::class);
         $list = [];
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);

@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\LLM;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
 use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Extras\Http\IterableReader;
 use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
@@ -21,11 +21,11 @@ class InferenceResponse
     protected string $responseContent = '';
 
     public function __construct(
-        protected CanHandleResponse $response,
+        protected CanAccessResponse  $response,
         protected CanHandleInference $driver,
-        protected LLMConfig $config,
-        protected bool $isStreamed = false,
-        ?EventDispatcher $events = null,
+        protected LLMConfig          $config,
+        protected bool               $isStreamed = false,
+        ?EventDispatcher             $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->reader = new IterableReader($this->driver->getData(...), $this->events);

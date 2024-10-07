@@ -9,7 +9,7 @@ use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
 use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Extras\Http\Adapters\PsrResponse;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
 use Exception;
 use GuzzleHttp\Client;
@@ -47,7 +47,7 @@ class GuzzleDriver implements CanHandleHttp
         array $body,
         string $method = 'POST',
         bool $streaming = false
-    ) : CanHandleResponse {
+    ) : CanAccessResponse {
         $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
         try {
             $response = $this->client->request($method, $url, [

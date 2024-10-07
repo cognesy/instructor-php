@@ -4,12 +4,16 @@ namespace Cognesy\Instructor\Extras\Http\Contracts;
 
 use Generator;
 
-interface CanHandleResponse
+interface CanAccessResponse
 {
+    public function getStatusCode(): int;
+
+    public function getHeaders(): array;
+
     /**
      * Get the response
      *
-     * @return int
+     * @return string
      */
     public function getContents(): string;
 

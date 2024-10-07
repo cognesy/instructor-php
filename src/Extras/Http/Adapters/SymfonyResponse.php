@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Http\Adapters;
 
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleResponse;
+use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
 use Generator;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class SymfonyResponse implements CanHandleResponse
+class SymfonyResponse implements CanAccessResponse
 {
     private ResponseInterface $response;
     private HttpClientInterface $client;
@@ -18,6 +18,14 @@ class SymfonyResponse implements CanHandleResponse
     ) {
         $this->client = $client;
         $this->response = $response;
+    }
+
+    public function getStatusCode(): int {
+        return $this->response->getStatusCode();
+    }
+
+    public function getHeaders(): array {
+        return $this->response->getHeaders();
     }
 
     public function getContents(): string {
