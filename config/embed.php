@@ -71,7 +71,7 @@ return [
             'defaultModel' => 'nomic-embed-text',
             'defaultDimensions' => 1024,
             'maxInputs' => 512,
-            'httpClient' => 'guzzle-ollama',
+            'httpClient' => 'http-ollama',
         ],
         'openai' => [
             'providerType' => LLMProviderType::OpenAI->value,

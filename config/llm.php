@@ -93,9 +93,9 @@ return [
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'llama3.2:3b', //'gemma2:2b',
+            'defaultModel' => 'qwen2.5:0.5b', //'gemma2:2b',
             'defaultMaxTokens' => 1024,
-            'httpClient' => 'guzzle-ollama',
+            'httpClient' => 'http-ollama',
         ],
         'openai' => [
             'providerType' => LLMProviderType::OpenAI->value,

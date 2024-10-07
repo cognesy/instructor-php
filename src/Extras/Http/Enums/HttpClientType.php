@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Enums;
+namespace Cognesy\Instructor\Extras\Http\Enums;
 
 enum HttpClientType : string
 {

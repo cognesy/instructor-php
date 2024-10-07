@@ -15,6 +15,7 @@ class SymfonyResponse implements CanAccessResponse
     public function __construct(
         HttpClientInterface $client,
         ResponseInterface $response,
+        private float $connectTimeout = 1,
     ) {
         $this->client = $client;
         $this->response = $response;
@@ -29,11 +30,19 @@ class SymfonyResponse implements CanAccessResponse
     }
 
     public function getContents(): string {
+        // workaround to handle connect timeout: https://github.com/symfony/symfony/pull/57811
+        foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
+            if ($chunk->isTimeout() && !$this->response->getInfo('connect_time')) {
+                $this->response->cancel();
+                throw new \Exception('Connect timeout');
+            }
+            break;
+        }
         return $this->response->getContent();
     }
 
     public function streamContents(int $chunkSize = 1): Generator {
-        foreach ($this->client->stream($this->response) as $chunk) {
+        foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             yield $chunk->getContent();
         }
     }

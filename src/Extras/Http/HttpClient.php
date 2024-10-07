@@ -3,11 +3,11 @@
 namespace Cognesy\Instructor\Extras\Http;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Extras\Enums\HttpClientType;
 use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Extras\Http\Data\HttpClientConfig;
 use Cognesy\Instructor\Extras\Http\Drivers\GuzzleDriver;
 use Cognesy\Instructor\Extras\Http\Drivers\SymfonyDriver;
+use Cognesy\Instructor\Extras\Http\Enums\HttpClientType;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 

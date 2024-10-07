@@ -54,7 +54,8 @@ class SymfonyDriver implements CanHandleHttp
         $this->events->dispatch(new ResponseReceivedFromLLM($response->getStatusCode()));
         return new SymfonyResponse(
             client: $this->client,
-            response: $response
+            response: $response,
+            connectTimeout: $this->config->connectTimeout ?? 3,
         );
     }
 }

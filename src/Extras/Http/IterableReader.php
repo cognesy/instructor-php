@@ -59,7 +59,7 @@ class IterableReader
             return null;
         }
         $this->events->dispatch(new StreamDataReceived($line, $data));
-        return trim($data);
+        return $data;
     }
 
     protected function parse(string $line): string|bool {

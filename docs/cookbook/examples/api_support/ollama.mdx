@@ -22,6 +22,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Debug\Debug;
 use Cognesy\Instructor\Instructor;
 
 enum UserType : string {
@@ -43,6 +44,7 @@ class User {
 // See: /config/llm.php to check or change LLM client connection configuration details
 $instructor = (new Instructor)->withConnection('ollama');
 
+//Debug::enable();
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
@@ -53,7 +55,6 @@ $user = $instructor->respond(
         'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
         'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
     ]],
-    model: 'gemma2:2b',
     mode: Mode::Json,
 );
 

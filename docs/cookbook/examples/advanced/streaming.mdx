@@ -16,6 +16,7 @@ generated.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
 class UserRole
@@ -27,13 +28,13 @@ class UserRole
 
 class UserDetail
 {
-    public int $age;
-    public string $name;
-    public string $location;
+    public int $age = 0;
+    public string $name = '';
+    public string $location = '';
     /** @var UserRole[] */
-    public array $roles;
+    public array $roles = [];
     /** @var string[] */
-    public array $hobbies;
+    public array $hobbies = [];
 }
 
 // This function will be called every time a new token is received
@@ -62,10 +63,11 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$stream = (new Instructor)->request(
+$stream = (new Instructor)->withConnection('openai')->request(
     messages: $text,
     responseModel: UserDetail::class,
-    options: ['stream' => true]
+    options: ['stream' => true],
+    mode: Mode::Json,
 )->stream();
 
 foreach ($stream->partials() as $partial) {

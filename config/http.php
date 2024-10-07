@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Extras\Enums\HttpClientType;
+use Cognesy\Instructor\Extras\Http\Enums\HttpClientType;
 
 return [
     'defaultClient' => 'guzzle',
@@ -19,13 +19,15 @@ return [
         ],
         'symfony' => [
             'httpClientType' => HttpClientType::Symfony->value,
+            'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
         ],
-        'guzzle-ollama' => [
+        'http-ollama' => [
             'httpClientType' => HttpClientType::Guzzle->value,
-            'connectTimeout' => 5,
+            'connectTimeout' => 1,
             'requestTimeout' => 90,
+            'idleTimeout' => -1,
         ],
     ]
 ];

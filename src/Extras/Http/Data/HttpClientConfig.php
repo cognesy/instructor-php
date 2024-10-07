@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Http\Data;
 
-use Cognesy\Instructor\Extras\Enums\HttpClientType;
+use Cognesy\Instructor\Extras\Http\Enums\HttpClientType;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
@@ -12,7 +12,7 @@ class HttpClientConfig
         public HttpClientType $httpClientType = HttpClientType::Guzzle,
         public int $connectTimeout = 3,
         public int $requestTimeout = 30,
-        public int $idleTimeout = 0,
+        public int $idleTimeout = -1,
     ) {}
 
     public static function load(string $client) : HttpClientConfig {
