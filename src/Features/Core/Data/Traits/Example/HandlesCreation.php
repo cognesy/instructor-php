@@ -19,7 +19,7 @@ trait HandlesCreation
     }
 
     static public function fromJson(string $json) : self {
-        $data = Json::parse($json);
+        $data = Json::decode($json);
         if (!isset($data['input']) || !isset($data['output'])) {
             throw new Exception("Invalid JSON data for example - missing `input` or `output` fields");
         }

@@ -98,7 +98,7 @@ class CohereV1Driver implements CanHandleInference
 
     public function toPartialLLMResponse(array $data) : PartialLLMResponse {
         return new PartialLLMResponse(
-            delta: $this->makeDelta($data),
+            contentDelta: $this->makeContentDelta($data),
             responseData: $data,
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
@@ -206,7 +206,7 @@ class CohereV1Driver implements CanHandleInference
         );
     }
 
-    private function makeDelta(array $data) : string {
+    private function makeContentDelta(array $data) : string {
         if (!$this->isStreamChunk($data)) {
             return '';
         }

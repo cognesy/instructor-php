@@ -104,7 +104,7 @@ class OpenAIDriver implements CanHandleInference
             return null;
         }
         return new PartialLLMResponse(
-            delta: $this->makeDelta($data),
+            contentDelta: $this->makeContentDelta($data),
             responseData: $data,
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
@@ -166,7 +166,7 @@ class OpenAIDriver implements CanHandleInference
         return array_map(
             fn($tool) => [
                 'name' => $tool['function']['name'] ?? '',
-                'arguments' => Json::parse($tool['function']['arguments']) ?? '',
+                'arguments' => Json::decode($tool['function']['arguments']) ?? '',
             ],
             $data['choices'][0]['message']['tool_calls'] ?? []
         );
@@ -182,7 +182,7 @@ class OpenAIDriver implements CanHandleInference
         };
     }
 
-    private function makeDelta(array $data): string {
+    private function makeContentDelta(array $data): string {
         $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
         $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {

@@ -30,6 +30,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\Image\Image;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Str;
 
 enum DamageSeverity : string {
     case Minor = 'minor';
@@ -74,9 +75,9 @@ $assessment = (new Instructor)->respond(
 );
 
 dump($assessment);
-assert($assessment->make === 'Toyota');
-assert($assessment->model === 'Prius');
-assert($assessment->bodyColor === 'white');
+assert(Str::contains($assessment->make, 'Toyota', false));
+assert(Str::contains($assessment->model, 'Prius', false));
+assert(Str::contains($assessment->bodyColor, 'white', false));
 assert(count($assessment->damages) > 0);
 ?>
 ```

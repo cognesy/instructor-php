@@ -62,7 +62,7 @@ class CohereV2Driver extends OpenAIDriver
             return null;
         }
         return new PartialLLMResponse(
-            delta: $this->makeDelta($data),
+            contentDelta: $this->makeContentDelta($data),
             responseData: $data,
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
             toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
@@ -140,13 +140,13 @@ class CohereV2Driver extends OpenAIDriver
         return array_map(
             fn($tool) => [
                 'name' => $tool['function']['name'] ?? '',
-                'arguments' => Json::parse($tool['function']['arguments']) ?? '',
+                'arguments' => Json::decode($tool['function']['arguments']) ?? '',
             ],
             $data['message']['tool_calls'] ?? []
         );
     }
 
-    private function makeDelta(array $data): string {
+    private function makeContentDelta(array $data): string {
         $deltaContent = match(true) {
             ([] !== ($data['delta']['message']['content'] ?? [])) => $this->normalizeContent($data['delta']['message']['content']),
             default => '',

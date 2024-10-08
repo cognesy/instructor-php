@@ -24,7 +24,7 @@ class Stream
      * current or final response from the stream
      */
     public function getLastUpdate() : mixed {
-        return $this->lastUpdate->value();
+        return $this->lastUpdate->data();
     }
 
     /**
@@ -54,7 +54,7 @@ class Stream
         foreach ($this->stream as $partialResponse) {
             $this->lastUpdate = $partialResponse;
         }
-        $result = $this->lastUpdate->value();
+        $result = $this->lastUpdate->data();
         $this->events->dispatch(new ResponseGenerated($result));
         $this->events->dispatch(new InstructorDone(['result' => $result]));
         return $result;

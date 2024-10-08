@@ -116,7 +116,7 @@ class GeminiDriver implements CanHandleInference
             return null;
         }
         return new PartialLLMResponse(
-            delta: $this->makeDelta($data),
+            contentDelta: $this->makeContentDelta($data),
             responseData: $data,
             toolName: $this->makeToolName($data),
             toolArgs: $this->makeToolArgs($data),
@@ -283,7 +283,7 @@ class GeminiDriver implements CanHandleInference
             ?? '';
     }
 
-    private function makeDelta(array $data): string {
+    private function makeContentDelta(array $data): string {
         return $data['candidates'][0]['content']['parts'][0]['text']
             ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '')
             ?? '';

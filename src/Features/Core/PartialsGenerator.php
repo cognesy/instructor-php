@@ -89,7 +89,7 @@ class PartialsGenerator implements CanGeneratePartials
             }
 
             // situation 2: new delta
-            $maybeArgumentChunk = $partialResponse->delta;
+            $maybeArgumentChunk = $partialResponse->contentDelta;
             if (empty($maybeArgumentChunk)) {
                 continue;
             }
@@ -109,7 +109,7 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
 
             yield $partialResponse
-                ->withValue($result->unwrap())
+                ->withData($result->unwrap())
                 ->withContent($this->responseText);
         }
         $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse()));

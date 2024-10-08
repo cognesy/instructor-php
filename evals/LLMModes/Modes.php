@@ -34,7 +34,7 @@ class Modes
             Mode::MdJson => $this->forModeMdJson($query, $connection, $schema, $isStreamed),
             Mode::Text => $this->forModeText($query, $connection, $isStreamed),
         };
-        return $inferenceResponse->toLLMResponse();
+        return $inferenceResponse->asLLMResponse();
     }
 
     public function forModeTools(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {

@@ -25,7 +25,7 @@ class IterableReader
      * @param Generator<string> $stream
      * @return Generator<string>
      */
-    public function stream(Generator $stream): Generator {
+    public function toStreamEvents(Generator $stream): Generator {
         foreach ($this->readLines($stream) as $line) {
             $processedData = $this->processLine($line);
             if ($processedData !== null) {
@@ -33,6 +33,8 @@ class IterableReader
             }
         }
     }
+
+    // INTERNAL //////////////////////////////////////////////
 
     /**
      * @param Generator<string> $stream

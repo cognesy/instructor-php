@@ -115,13 +115,13 @@ describe('Json Class', function () {
 
     it('parses JSON using static parse method', function () {
         $validJson = '{"name": "John", "age": 30}';
-        $result = Json::parse($validJson);
+        $result = Json::decode($validJson);
         expect($result)->toBe(['name' => 'John', 'age' => 30]);
     });
 
     it('returns default value when parsing invalid JSON', function () {
         $invalidJson = '{"name": "John", "age": }';
-        $result = Json::parse($invalidJson, ['default' => true]);
+        $result = Json::decode($invalidJson, ['default' => true]);
         expect($result)->toBe(['default' => true]);
     });
 

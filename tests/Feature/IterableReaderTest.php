@@ -28,7 +28,7 @@ it('streams synthetic OpenAI streaming data correctly without parser', function 
         '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->stream($generator()));
+    $result = iterator_to_array($reader->toStreamEvents($generator()));
     expect($result)->toEqual($expected);
 });
 
@@ -48,7 +48,7 @@ it('processes synthetic OpenAI streaming data with a custom parser', function ()
         '{"ID": "CMPL-XYZ", "OBJECT": "TEXT_COMPLETION", "CHOICES": [{"TEXT": "WORLD!", "INDEX": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->stream($generator()));
+    $result = iterator_to_array($reader->toStreamEvents($generator()));
     expect($result)->toEqual($expected);
 });
 
@@ -86,7 +86,7 @@ it('skips empty lines correctly in synthetic OpenAI data', function () {
         '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->stream($generator()));
+    $result = iterator_to_array($reader->toStreamEvents($generator()));
     expect($result)->toEqual($expected);
 });
 
@@ -106,6 +106,6 @@ it('handles incomplete lines correctly in synthetic OpenAI data', function () {
         '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->stream($generator()));
+    $result = iterator_to_array($reader->toStreamEvents($generator()));
     expect($result)->toEqual($expected);
 });

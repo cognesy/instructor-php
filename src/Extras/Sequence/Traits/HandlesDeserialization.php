@@ -11,7 +11,7 @@ trait HandlesDeserialization
 
     public function fromJson(string $jsonData, string $toolName = null): static {
         $deserializer = $this->deserializer;
-        $data = Json::parse($jsonData);
+        $data = Json::decode($jsonData);
 
         // $data['properties']['list'] is workaround for models
         // which do not support JSON Schema tool calling natively

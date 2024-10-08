@@ -16,7 +16,7 @@ trait HandlesDeserialization
     protected bool $ignoreUnknownFields = true;
 
     public function fromJson(string $jsonData, string $toolName = null): static {
-        $data = Json::parse($jsonData);
+        $data = Json::decode($jsonData);
         return $this->fromArray($data);
     }
 

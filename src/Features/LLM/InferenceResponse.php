@@ -38,8 +38,8 @@ class InferenceResponse
 
     public function toText() : string {
         return match($this->isStreamed) {
-            false => $this->toLLMResponse()->content,
-            true => $this->getStreamContent($this->toPartialLLMResponses()),
+            false => $this->asLLMResponse()->content,
+            true => $this->finalResponse($this->asPartialLLMResponses())->content(),
         };
     }
 
@@ -48,20 +48,20 @@ class InferenceResponse
     }
 
     /**
-     * @return Generator<string>
+     * @return Generator<PartialLLMResponse>
      */
     public function stream() : Generator {
         if (!$this->isStreamed) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
-        foreach ($this->toPartialLLMResponses() as $partialLLMResponse) {
-            yield $partialLLMResponse->delta;
+        foreach ($this->asPartialLLMResponses() as $partialLLMResponse) {
+            yield $partialLLMResponse;
         }
     }
 
     // AS API RESPONSE OBJECTS //////////////////////////////////
 
-    public function toLLMResponse() : LLMResponse {
+    public function asLLMResponse() : LLMResponse {
         $response = match($this->isStreamed) {
             false => $this->driver->toLLMResponse($this->responseData()),
             true => LLMResponse::fromPartialResponses($this->allPartialLLMResponses()),
@@ -71,23 +71,30 @@ class InferenceResponse
     }
 
     /**
-     * @return Generator<\Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse>
+     * @return Generator<PartialLLMResponse>
      */
-    public function toPartialLLMResponses() : Generator {
-        foreach ($this->reader->stream($this->response->streamContents()) as $partialData) {
-            if ($partialData === false) {
+    public function asPartialLLMResponses() : Generator {
+        $content = '';
+        $finishReason = '';
+        foreach ($this->reader->toStreamEvents($this->response->streamContents()) as $streamEvent) {
+            if ($streamEvent === false) {
                 continue;
             }
-            $response = $this->driver->toPartialLLMResponse(Json::fromPartial($partialData)->toArray());
-            if ($response === null) {
+            $result = $this->driver->toPartialLLMResponse(Json::decode($streamEvent));
+            if ($result === null) {
                 continue;
             }
-            $this->events->dispatch(new PartialLLMResponseReceived($response));
-            yield $response;
+            if ($result->finishReason !== '') {
+                $finishReason = $result->finishReason;
+            }
+            $content .= $result->contentDelta;
+            $partialResponse = $result
+                ->withContent($content)
+                ->withFinishReason($finishReason);
+            $this->events->dispatch(new PartialLLMResponseReceived($partialResponse));
+            yield $partialResponse;
         }
     }
-
-    // LOW LEVEL ACCESS /////////////////////////////////////////
 
     /**
      * @return array[]
@@ -99,21 +106,13 @@ class InferenceResponse
         };
     }
 
-//    public function psrResponse() : ResponseInterface {
-//        return $this->response;
-//    }
-//
-//    public function psrStream() : StreamInterface {
-//        return $this->response->getBody();
-//    }
-
     // INTERNAL /////////////////////////////////////////////////
 
     protected function responseData() : array {
         if (empty($this->responseContent)) {
             $this->responseContent = $this->response->getContents();
         }
-        return Json::parse($this->responseContent) ?? [];
+        return Json::decode($this->responseContent) ?? [];
     }
 
     /**
@@ -121,8 +120,8 @@ class InferenceResponse
      */
     protected function allStreamResponses() : array {
         $content = [];
-        foreach ($this->reader->stream($this->response->streamContents()) as $partialData) {
-            $content[] = Json::parse($partialData);
+        foreach ($this->reader->toStreamEvents($this->response->streamContents()) as $partialData) {
+            $content[] = Json::decode($partialData);
         }
         return $content;
     }
@@ -132,17 +131,17 @@ class InferenceResponse
      */
     protected function allPartialLLMResponses() : array {
         $partialResponses = [];
-        foreach ($this->toPartialLLMResponses() as $partialResponse) {
+        foreach ($this->asPartialLLMResponses() as $partialResponse) {
             $partialResponses[] = $partialResponse;
         }
         return $partialResponses;
     }
 
-    protected function getStreamContent(Generator $partialResponses) : string {
-        $content = '';
+    protected function finalResponse(Generator $partialResponses) : PartialLLMResponse {
+        $lastPartial = null;
         foreach ($partialResponses as $partialResponse) {
-            $content .= $partialResponse->delta;
+            $lastPartial = $partialResponse;
         }
-        return $content;
+        return $lastPartial;
     }
 }

@@ -62,7 +62,7 @@ $stream = (new Inference)
 echo "USER: Describe capital of Brasil\n";
 echo "ASSISTANT: ";
 foreach ($stream as $delta) {
-    echo $delta;
+    echo $delta->contentDelta;
 }
 ?>
 ```

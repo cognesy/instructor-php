@@ -110,7 +110,7 @@ class AnthropicDriver implements CanHandleInference
             return null;
         }
         return new PartialLLMResponse(
-            delta: $this->makeDelta($data),
+            contentDelta: $this->makeContentDelta($data),
             responseData: $data,
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
@@ -246,7 +246,7 @@ class AnthropicDriver implements CanHandleInference
         return $data['content'][0]['text'] ?? Json::encode($data['content'][0]['input']) ?? '';
     }
 
-    private function makeDelta(array $data) : string {
+    private function makeContentDelta(array $data) : string {
         return $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '';
     }
 

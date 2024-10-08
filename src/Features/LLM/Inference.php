@@ -146,8 +146,7 @@ class Inference
             LLMProviderType::Ollama,
             LLMProviderType::OpenAICompatible,
             LLMProviderType::OpenRouter,
-            LLMProviderType::Together,
-            => new OpenAICompatibleDriver($config, $httpClient, $this->events),
+            LLMProviderType::Together => new OpenAICompatibleDriver($config, $httpClient, $this->events),
             default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
         };
     }

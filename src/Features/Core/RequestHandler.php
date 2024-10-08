@@ -49,7 +49,7 @@ class RequestHandler
     public function responseFor(Request $request) : LLMResponse {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
-            $llmResponse = $this->getInference($request)->toLLMResponse();
+            $llmResponse = $this->getInference($request)->asLLMResponse();
             $llmResponse->content = match($request->mode()) {
                 Mode::Text => $llmResponse->content,
                 default => Json::from($llmResponse->content)->toString(),
@@ -71,7 +71,7 @@ class RequestHandler
     public function streamResponseFor(Request $request) : Generator {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
-            $stream = $this->getInference($request)->toPartialLLMResponses();
+            $stream = $this->getInference($request)->asPartialLLMResponses();
             yield from $this->partialsGenerator->getPartialResponses($stream, $request->responseModel());
 
             $llmResponse = $this->partialsGenerator->getCompleteResponse();

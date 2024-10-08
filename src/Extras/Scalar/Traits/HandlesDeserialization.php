@@ -18,7 +18,7 @@ trait HandlesDeserialization
         }
         try {
             // decode JSON into array
-            $array = Json::parse($jsonData);
+            $array = Json::decode($jsonData);
         } catch (Exception $e) {
             throw new DeserializationException($e->getMessage(), $this->name, $jsonData);
         }

@@ -23,7 +23,7 @@ class LLMResponse
     // STATIC ////////////////////////////////////////////////
 
     public static function fromPartialResponses(array $partialResponses) : LLMResponse {
-        return (new self)->makeInstance($partialResponses);
+        return (new self)->makeFromPartialResponses($partialResponses);
     }
 
     // PUBLIC ////////////////////////////////////////////////
@@ -58,7 +58,11 @@ class LLMResponse
 
     // INTERNAL //////////////////////////////////////////////
 
-    private function makeInstance(array $partialResponses = []) : self {
+    /**
+     * @param PartialLLMResponse[] $partialResponses
+     * @return LLMResponse
+     */
+    private function makeFromPartialResponses(array $partialResponses = []) : self {
         if (empty($partialResponses)) {
             return $this;
         }
@@ -68,7 +72,7 @@ class LLMResponse
             if ($partialResponse === null) {
                 continue;
             }
-            $content .= $partialResponse->delta;
+            $content .= $partialResponse->contentDelta;
             $this->responseData[] = $partialResponse->responseData;
             $this->inputTokens += $partialResponse->inputTokens;
             $this->outputTokens += $partialResponse->outputTokens;
@@ -112,7 +116,7 @@ class LLMResponse
         foreach($tools as $tool => $args) {
             $data[] = [
                 'name' => $tool,
-                'arguments' => '' !== $args ? Json::parse($args) : [],
+                'arguments' => '' !== $args ? Json::decode($args) : [],
             ];
         }
         return $data;

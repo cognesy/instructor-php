@@ -16,6 +16,6 @@ class PartialInferenceResponseGenerated extends Event
 
     public function __toString(): string
     {
-        return $this->response->delta;
+        return $this->response->contentDelta;
     }
 }

@@ -60,8 +60,9 @@ $stream = (new Inference)
 
 echo "USER: Describe capital of Brasil\n";
 echo "ASSISTANT: ";
-foreach ($stream as $delta) {
-    echo $delta;
+foreach ($stream as $partial) {
+    echo $partial->contentDelta;
 }
+echo "\n";
 ?>
 ```
