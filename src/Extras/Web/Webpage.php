@@ -2,10 +2,10 @@
 namespace Cognesy\Instructor\Extras\Web;
 
 use Cognesy\Instructor\Contracts\CanProvideMessage;
-use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Extras\Web\Contracts\CanGetUrlContent;
 use Cognesy\Instructor\Extras\Web\Html\HtmlProcessor;
 use Cognesy\Instructor\Extras\Web\Scrapers\BasicReader;
+use Cognesy\Instructor\Utils\Messages\Message;
 
 class Webpage implements CanProvideMessage
 {

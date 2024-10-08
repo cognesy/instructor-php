@@ -1,12 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Modules\Search;
 
-use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Core\Predictor;
-use Cognesy\Instructor\Extras\Module\Modules\Prediction;
-use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
-use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
+use Cognesy\Instructor\Utils\Messages\Messages;
 
 //#[ModuleSignature('question, context -> list_of_subqueries:string[]')]
 //#[ModuleDescription('Generate relevant subqueries to extract context needed to answer provided question')]

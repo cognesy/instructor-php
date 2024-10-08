@@ -16,7 +16,7 @@ class ResponseTransformer
 
     public function __construct(
         private EventDispatcher $events,
-        /** @var \Cognesy\Instructor\Features\Transformation\Contracts\CanTransformObject[] $transformers */
+        /** @var CanTransformObject[] $transformers */
         private array $transformers = []
     ) {}
 

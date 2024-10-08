@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
-use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Features\Core\Data\RequestInfo;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Instructor;
 

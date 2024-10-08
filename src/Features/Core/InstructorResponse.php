@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
+use Cognesy\Instructor\Features\Core\Data\Request;
 use Exception;
 
 class InstructorResponse

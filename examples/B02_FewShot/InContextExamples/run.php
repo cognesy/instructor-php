@@ -22,9 +22,9 @@ We can implement SG-ICL using Instructor as seen below.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
+use Cognesy\Instructor\Features\Core\Data\Example;
 use Cognesy\Instructor\Instructor;
 
 enum ReviewSentiment : string {

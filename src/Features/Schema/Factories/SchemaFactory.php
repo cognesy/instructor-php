@@ -22,9 +22,9 @@ use Exception;
  */
 class SchemaFactory
 {
-    use \Cognesy\Instructor\Features\Schema\Factories\Traits\SchemaFactory\HandlesClassInfo;
-    use \Cognesy\Instructor\Features\Schema\Factories\Traits\SchemaFactory\HandlesFactoryMethods;
-    use \Cognesy\Instructor\Features\Schema\Factories\Traits\SchemaFactory\HandlesTypeDetails;
+    use Traits\SchemaFactory\HandlesClassInfo;
+    use Traits\SchemaFactory\HandlesFactoryMethods;
+    use Traits\SchemaFactory\HandlesTypeDetails;
 
     /** @var bool switches schema rendering between inlined or referenced object properties */
     protected bool $useObjectReferences;
@@ -81,10 +81,10 @@ class SchemaFactory
 
     /**
      * Creates schema for a property with provided parameters
-     * @param \Cognesy\Instructor\Features\Schema\Data\TypeDetails $type
+     * @param TypeDetails $type
      * @param string $name
      * @param string $description
-     * @return \Cognesy\Instructor\Features\Schema\Data\Schema\Schema
+     * @return Schema
      */
     public function propertySchema(TypeDetails $type, string $name, string $description) : Schema {
         return $this->makePropertySchema($type, $name, $description);

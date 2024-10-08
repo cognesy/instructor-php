@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\Request;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use JetBrains\PhpStorm\Deprecated;

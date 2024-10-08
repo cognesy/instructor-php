@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
@@ -9,6 +8,7 @@ use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
+use Cognesy\Instructor\Features\Core\Data\Request;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Data\Request;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Features\Core\Data\Request;
 use Psr\Log\LogLevel;
 use Throwable;
 

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Utils\Messages\Messages;
 
 interface CanProvideMessages
 {

@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Features\Core;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialJsonReceived;
@@ -15,6 +14,7 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
 use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
@@ -30,7 +30,7 @@ use Generator;
 
 class PartialsGenerator implements CanGeneratePartials
 {
-    use \Cognesy\Instructor\Features\Core\Traits\ValidatesPartialResponse;
+    use Traits\ValidatesPartialResponse;
 
     // state
     private string $responseJson = '';
@@ -61,9 +61,9 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     /**
-     * @param Generator<\Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse> $stream
+     * @param Generator<PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Generator<\Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse>
+     * @return Generator<PartialLLMResponse>
      */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         // reset state

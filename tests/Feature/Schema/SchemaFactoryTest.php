@@ -7,7 +7,7 @@ use Tests\Examples\ClassInfo\TestClassA;
 
 it('creates a schema from a class name', function () {
     $factory = new SchemaFactory();
-    /** @var \Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema $schema */
+    /** @var ObjectSchema $schema */
     $schema = $factory->schema(TestClassA::class);
 
     expect($schema)->toBeInstanceOf(ObjectSchema::class);

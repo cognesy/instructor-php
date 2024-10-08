@@ -7,7 +7,7 @@ use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 
 class ObjectSchema extends Schema
 {
-    use \Cognesy\Instructor\Features\Schema\Data\Traits\Schema\ProvidesPropertyAccess;
+    use Traits\Schema\ProvidesPropertyAccess;
 
     /** @var array<string, Schema> */
     public array $properties = []; // for objects OR empty

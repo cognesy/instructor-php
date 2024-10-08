@@ -13,7 +13,7 @@ trait HandlesResolvers
      * Create TypeDetails from type string
      *
      * @param string $anyType
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function fromTypeName(string $anyType) : TypeDetails {
         $normalized = $this->normalizeIfCollection($anyType);
@@ -51,7 +51,7 @@ trait HandlesResolvers
      * Create TypeDetails from object instance
      *
      * @param object $instance
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function fromValue(mixed $anyVar) : TypeDetails {
         $type = TypeDetails::getType($anyVar);

@@ -7,7 +7,7 @@ use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 class EmbeddingsResponse
 {
     public function __construct(
-        /** @var \Cognesy\Instructor\Features\Embeddings\Data\\Cognesy\Instructor\Extras\Embeddings\Data\Vector[] */
+        /** @var Vector[] */
         public array $vectors,
         public int $inputTokens,
         public int $outputTokens,

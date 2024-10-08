@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
-use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Module\Signature\SignatureFactory;
+use Cognesy\Instructor\Features\Core\Data\RequestInfo;
 use InvalidArgumentException;
 
 trait HandlesCreation

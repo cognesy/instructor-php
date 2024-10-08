@@ -12,7 +12,7 @@ interface CanValidateObject
     /**
      * Validate provided object
      * @param object $dataObject
-     * @return \Cognesy\Instructor\Features\Validation\ValidationResult
+     * @return ValidationResult
      */
     public function validate(object $dataObject) : ValidationResult;
 }

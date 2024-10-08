@@ -22,7 +22,7 @@ trait HandlesOverrides
         return $this;
     }
 
-    /** @param \Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject[] $validators */
+    /** @param CanValidateObject[] $validators */
     public function setValidators(array $validators) : static {
         $this->responseValidator->setValidators($validators);
         return $this;
@@ -33,7 +33,7 @@ trait HandlesOverrides
         return $this;
     }
 
-    /** @param \Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject[] $validators */
+    /** @param CanValidateObject[] $validators */
     public function addValidators(array $validators) : static {
         $this->responseValidator->appendValidators($validators);
         return $this;

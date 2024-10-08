@@ -16,7 +16,7 @@ use Exception;
  */
 class JsonSchemaToSchema
 {
-    use \Cognesy\Instructor\Features\Schema\Factories\Traits\JsonSchemaToSchema\HandlesMakers;
+    use Traits\JsonSchemaToSchema\HandlesMakers;
 
     private $defaultToolName = 'extract_object';
     private $defaultToolDescription = 'Extract data from chat content';

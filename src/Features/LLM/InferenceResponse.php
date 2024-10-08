@@ -10,6 +10,7 @@ use Cognesy\Instructor\Features\Http\IterableReader;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
 use InvalidArgumentException;
@@ -127,7 +128,7 @@ class InferenceResponse
     }
 
     /**
-     * @return \Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse[]
+     * @return PartialLLMResponse[]
      */
     protected function allPartialLLMResponses() : array {
         $partialResponses = [];

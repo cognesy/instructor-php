@@ -12,7 +12,7 @@ interface CanValidateValue
     /**
      * Validate provided value
      * @param mixed $dataValue
-     * @return \Cognesy\Instructor\Features\Validation\ValidationResult
+     * @return ValidationResult
      */
     public function validate(mixed $dataValue): ValidationResult;
 }

@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Image;
 
 use Cognesy\Instructor\Contracts\CanProvideMessages;
-use Cognesy\Instructor\Data\Messages\Messages;
+use Cognesy\Instructor\Utils\Messages\Messages;
 use Exception;
 
 class Image implements CanProvideMessages

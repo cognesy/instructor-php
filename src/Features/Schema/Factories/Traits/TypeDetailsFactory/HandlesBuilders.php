@@ -13,7 +13,7 @@ trait HandlesBuilders
      * Create TypeDetails for atom (scalar) type
      *
      * @param string $type
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function scalarType(string $type) : TypeDetails {
         if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
@@ -29,7 +29,7 @@ trait HandlesBuilders
      * Create TypeDetails for array type
      *
      * @param string $typeSpec
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function arrayType(string $typeSpec = '') : TypeDetails {
         if ($this->isArrayShape($typeSpec)) {
@@ -46,7 +46,7 @@ trait HandlesBuilders
      * Create TypeDetails for array type
      *
      * @param string $typeSpec
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function collectionType(string $typeSpec) : TypeDetails {
         $typeName = $this->getCollectionType($typeSpec);
@@ -67,7 +67,7 @@ trait HandlesBuilders
      * Create TypeDetails for array type
      *
      * @param string $typeSpec
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function arrayShapeType(string $typeSpec) : TypeDetails {
         throw new \Exception('Array shape type not supported yet');
@@ -77,7 +77,7 @@ trait HandlesBuilders
      * Create TypeDetails for object type
      *
      * @param string $typeName
-     * @return \Cognesy\Instructor\Features\Schema\Data\TypeDetails
+     * @return TypeDetails
      */
     public function objectType(string $typeName) : TypeDetails {
         if ((new ClassInfo($typeName))->isEnum()) {

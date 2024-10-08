@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class ResponseModelBuilt extends Event

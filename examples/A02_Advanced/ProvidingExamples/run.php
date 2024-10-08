@@ -19,9 +19,9 @@ is expected to be a JSON object.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
+use Cognesy\Instructor\Features\Core\Data\Example;
 use Cognesy\Instructor\Instructor;
 
 class User {

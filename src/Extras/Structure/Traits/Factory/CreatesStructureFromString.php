@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
 
+use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
 
@@ -23,7 +24,7 @@ trait CreatesStructureFromString
     }
 
     /** @param string[] $data */
-    /** @return \Cognesy\Instructor\Extras\Structure\Field[] */
+    /** @return Field[] */
     static private function makeFieldsFromStrings(array $items) : array {
         $fields = [];
         foreach ($items as $item) {

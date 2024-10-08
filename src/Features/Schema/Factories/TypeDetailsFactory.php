@@ -7,6 +7,6 @@ namespace Cognesy\Instructor\Features\Schema\Factories;
  */
 class TypeDetailsFactory
 {
-    use \Cognesy\Instructor\Features\Schema\Factories\Traits\TypeDetailsFactory\HandlesResolvers;
-    use \Cognesy\Instructor\Features\Schema\Factories\Traits\TypeDetailsFactory\HandlesBuilders;
+    use Traits\TypeDetailsFactory\HandlesResolvers;
+    use Traits\TypeDetailsFactory\HandlesBuilders;
 }

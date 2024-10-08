@@ -1,9 +1,9 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Data\Messages\Messages;
-use Cognesy\Instructor\Data\Messages\Script;
-use Cognesy\Instructor\Data\Messages\Section;
+use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Messages\Script;
+use Cognesy\Instructor\Utils\Messages\Section;
 
 it('creates messages from script', function () {
     $script = new Script(

@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;

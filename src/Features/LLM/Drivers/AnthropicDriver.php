@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Features\LLM\Drivers;
 
-use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
@@ -15,6 +14,7 @@ use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Utils\Messages\Messages;
 use Cognesy\Instructor\Utils\Str;
 
 class AnthropicDriver implements CanHandleInference

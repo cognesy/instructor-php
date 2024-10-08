@@ -26,8 +26,8 @@ trait HandlesClassInfo
     }
 
     /**
-     * @param \Cognesy\Instructor\Features\Schema\Utils\PropertyInfo $propertyInfo
-     * @return \Cognesy\Instructor\Features\Schema\Data\Schema\Schema
+     * @param PropertyInfo $propertyInfo
+     * @return Schema
      */
     public function fromPropertyInfo(PropertyInfo $propertyInfo) : Schema {
         return $this->makePropertySchema(
@@ -40,7 +40,7 @@ trait HandlesClassInfo
     /**
      * Gets all the property schemas of a class
      * @param ClassInfo $classInfo
-     * @return \Cognesy\Instructor\Features\Schema\Data\Schema\Schema[]
+     * @return Schema[]
      */
     protected function getPropertySchemas(ClassInfo $classInfo) : array {
         $properties = $classInfo->getProperties();

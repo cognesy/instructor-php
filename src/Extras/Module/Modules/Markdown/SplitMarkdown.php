@@ -13,7 +13,7 @@ class SplitMarkdown extends Module
         $this->splitter = new MarkdownSplitter();
     }
 
-    /** @return \Cognesy\Instructor\Extras\Module\Modules\Markdown\Data\Section[] */
+    /** @return Section[] */
     public function for(string $markdown, string $source): array {
         return ($this)(markdown: $markdown, source: $source)->get('sections');
     }

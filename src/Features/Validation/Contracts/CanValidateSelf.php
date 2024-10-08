@@ -11,7 +11,7 @@ interface CanValidateSelf
 {
     /**
      * Validate self
-     * @return \Cognesy\Instructor\Features\Validation\ValidationResult
+     * @return ValidationResult
      */
     public function validate(): ValidationResult;
 }

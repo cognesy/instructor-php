@@ -4,14 +4,14 @@ namespace Cognesy\Instructor\Features\Schema\Data\Schema;
 
 use Cognesy\Instructor\Features\Schema\Contracts\CanAcceptSchemaVisitor;
 use Cognesy\Instructor\Features\Schema\Contracts\CanVisitSchema;
-use Cognesy\Instructor\Features\Schema\Data\Traits\Schema\HandlesFactoryMethods;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Traits\Schema\ProvidesNoPropertyAccess;
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
 
 class Schema implements CanAcceptSchemaVisitor
 {
-    use \Cognesy\Instructor\Features\Schema\Data\Traits\Schema\ProvidesNoPropertyAccess;
-    use HandlesFactoryMethods;
+    use ProvidesNoPropertyAccess;
+    use Traits\Schema\HandlesFactoryMethods;
 
     public string $name = '';
     public string $description = '';

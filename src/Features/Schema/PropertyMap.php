@@ -21,7 +21,7 @@ class PropertyMap
     /**
      * Get the schema for a class property
      */
-    public function get(string $class, string $property) : \Cognesy\Instructor\Features\Schema\Data\Schema\Schema {
+    public function get(string $class, string $property) : Schema {
         return $this->map[$class][$property];
     }
 

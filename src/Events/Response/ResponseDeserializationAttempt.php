@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class ResponseDeserializationAttempt extends Event

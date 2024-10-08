@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Data\Request;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
+use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Core\InstructorResponse;
 use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\RequestHandler;

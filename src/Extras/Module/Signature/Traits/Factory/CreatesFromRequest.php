@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Factory;
 
-use Cognesy\Instructor\Data\RequestInfo;
-use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Features\Core\Data\RequestInfo;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;

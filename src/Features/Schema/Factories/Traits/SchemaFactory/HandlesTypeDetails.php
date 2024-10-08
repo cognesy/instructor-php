@@ -17,10 +17,10 @@ trait HandlesTypeDetails
     /**
      * Makes schema for top level item (depending on the type)
      *
-     * @param \Cognesy\Instructor\Features\Schema\Data\TypeDetails $type
+     * @param TypeDetails $type
      * @param string $name
      * @param string $description
-     * @return \Cognesy\Instructor\Features\Schema\Data\Schema\Schema
+     * @return Schema
      */
     protected function makeSchema(TypeDetails $type) : Schema {
         $classInfo = match(true) {
@@ -67,7 +67,7 @@ trait HandlesTypeDetails
      * @param TypeDetails $type
      * @param string $name
      * @param string $description
-     * @return \Cognesy\Instructor\Features\Schema\Data\Schema\Schema
+     * @return Schema
      */
     protected function makePropertySchema(TypeDetails $type, string $name, string $description): Schema {
         return match (true) {
