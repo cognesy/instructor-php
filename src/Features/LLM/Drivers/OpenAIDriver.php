@@ -99,8 +99,8 @@ class OpenAIDriver implements CanHandleInference
         );
     }
 
-    public function toPartialLLMResponse(array $data) : ?PartialLLMResponse {
-        if (empty($data)) {
+    public function toPartialLLMResponse(array|null $data) : ?PartialLLMResponse {
+        if ($data === null || empty($data)) {
             return null;
         }
         return new PartialLLMResponse(

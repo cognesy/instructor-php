@@ -111,7 +111,7 @@ return [
         ],
         'openrouter' => [
             'providerType' => LLMProviderType::OpenRouter->value,
-            'apiUrl' => 'https://openrouter.ai/api/v1/',
+            'apiUrl' => 'https://openrouter.ai/api/v1',
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
             'endpoint' => '/chat/completions',
             'defaultModel' => 'qwen/qwen-2.5-72b-instruct', //'microsoft/phi-3.5-mini-128k-instruct',

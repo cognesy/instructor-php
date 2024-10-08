@@ -57,7 +57,7 @@ class CohereV2Driver extends OpenAIDriver
         );
     }
 
-    public function toPartialLLMResponse(array $data) : ?PartialLLMResponse {
+    public function toPartialLLMResponse(array|null $data) : ?PartialLLMResponse {
         if (empty($data)) {
             return null;
         }
@@ -80,7 +80,7 @@ class CohereV2Driver extends OpenAIDriver
         }
         $data = trim(substr($data, 5));
         return match(true) {
-            $data === '"[DONE]"' => false,
+            $data === '[DONE]' => false,
             default => $data,
         };
     }

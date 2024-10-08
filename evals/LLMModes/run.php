@@ -12,6 +12,7 @@ use Cognesy\Instructor\Utils\Str;
 $connections = [
     'azure',
     'cohere1',
+    'cohere2',
     'fireworks',
     'gemini',
     'groq',

@@ -80,19 +80,21 @@ class InferenceResponse
             if ($streamEvent === false) {
                 continue;
             }
-            $result = $this->driver->toPartialLLMResponse(Json::decode($streamEvent));
-            if ($result === null) {
+            $data = Json::decode($streamEvent, []);
+            $partialResponse = $this->driver->toPartialLLMResponse($data);
+            if ($partialResponse === null) {
                 continue;
             }
-            if ($result->finishReason !== '') {
-                $finishReason = $result->finishReason;
+            if ($partialResponse->finishReason !== '') {
+                $finishReason = $partialResponse->finishReason;
             }
-            $content .= $result->contentDelta;
-            $partialResponse = $result
+            $content .= $partialResponse->contentDelta;
+            // add accumulated content and last finish reason
+            $enrichedResponse = $partialResponse
                 ->withContent($content)
                 ->withFinishReason($finishReason);
-            $this->events->dispatch(new PartialLLMResponseReceived($partialResponse));
-            yield $partialResponse;
+            $this->events->dispatch(new PartialLLMResponseReceived($enrichedResponse));
+            yield $enrichedResponse;
         }
     }
 
