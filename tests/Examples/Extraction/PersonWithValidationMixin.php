@@ -2,9 +2,9 @@
 
 namespace Tests\Examples\Extraction;
 
-use Cognesy\Instructor\Validation\Traits\ValidationMixin;
-use Cognesy\Instructor\Validation\ValidationError;
-use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Features\Validation\ValidationError;
+use Cognesy\Instructor\Features\Validation\ValidationResult;
 
 class PersonWithValidationMixin
 {

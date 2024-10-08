@@ -21,8 +21,8 @@ This is useful for debugging the request and response when you are not getting t
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
 
 class User {

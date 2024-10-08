@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use Symfony\Component\PropertyInfo\Type;
 
 test('creates TypeDetails from type string', function () {

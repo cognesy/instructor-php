@@ -16,8 +16,9 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Extras\LLM\Inference;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 
 class City {
     public string $name;

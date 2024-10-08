@@ -20,9 +20,9 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
+use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
-use Cognesy\Instructor\Validation\ValidationResult;
 
 class TextElementModel
 {

@@ -19,9 +19,9 @@ a manageable set of properties.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Validation\Traits\ValidationMixin;
-use Cognesy\Instructor\Validation\ValidationResult;
 
 class Property
 {

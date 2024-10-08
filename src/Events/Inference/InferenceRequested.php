@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\InferenceRequest;
+use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class InferenceRequested extends Event

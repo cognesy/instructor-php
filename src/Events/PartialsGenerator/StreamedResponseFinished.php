@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class StreamedResponseFinished extends Event

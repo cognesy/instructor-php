@@ -20,8 +20,8 @@ self-explain approach to generating the response.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
+use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Instructions;
 
 class Employee {
     #[Instructions('Think step by step to determine the correct year of employment.')]

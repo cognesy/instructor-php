@@ -1,10 +1,10 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Extras\Http\Contracts\CanAccessResponse;
-use Cognesy\Instructor\Extras\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
 use Mockery;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;

@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 
 trait HandlesFieldAccess
 {

@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Signature;
 
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 
 trait HandlesAccess
 {

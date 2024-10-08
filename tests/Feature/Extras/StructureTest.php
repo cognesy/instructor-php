@@ -4,7 +4,7 @@ namespace Tests\Feature\Extras;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 use DateTime;
 
 enum TestEnum : string {

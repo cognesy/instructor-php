@@ -3,8 +3,7 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 use BackedEnum;
-use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 
 trait HandlesSerialization
 {
@@ -20,7 +19,7 @@ trait HandlesSerialization
                 continue;
             }
             $data[$fieldName] = match(true) {
-                ($field->typeDetails()->class == Structure::class) => $value?->toArray(),
+                ($field->typeDetails()->class == \Cognesy\Instructor\Extras\Structure\Structure::class) => $value?->toArray(),
                 ($field->typeDetails()->type === TypeDetails::PHP_ENUM) => $value->value,
                 ($field->typeDetails()->type === TypeDetails::PHP_ARRAY) => $this->serializeArrayField($value),
                 ($field->typeDetails()->type === TypeDetails::PHP_COLLECTION) => $this->serializeArrayField($value),
@@ -37,7 +36,7 @@ trait HandlesSerialization
         // TODO: is there a way to consolidate value rendering?
         return match(true) {
             (method_exists($object, 'toArray')) => $object->toArray(),
-            ($object instanceof Structure) => $object->toArray(),
+            ($object instanceof \Cognesy\Instructor\Extras\Structure\Structure) => $object->toArray(),
             ($object instanceof \DateTime) => $object->format('Y-m-d H:i:s'),
             ($object instanceof \DateTimeImmutable) => $object->format('Y-m-d H:i:s'),
             (is_object($object) && ($object instanceof BackedEnum)) => $object->value,

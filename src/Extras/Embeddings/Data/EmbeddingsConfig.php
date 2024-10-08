@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Embeddings\Data;
 
-use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
+use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 

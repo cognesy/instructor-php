@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 
-use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Instructor\Features\Validation\ValidationResult;
 
 trait HandlesFieldValidation
 {

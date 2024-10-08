@@ -2,15 +2,15 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Factory;
 
-use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\RequestInfo;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
+use Cognesy\Instructor\Features\Core\ResponseModelFactory;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 
 trait CreatesFromRequest
 {

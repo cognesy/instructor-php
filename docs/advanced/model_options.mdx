@@ -23,9 +23,9 @@ You can pass a custom configured instance of client to the Instructor. This allo
 
 ```php
 <?php
+use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
 
 // Create instance of OpenAI client initialized with custom parameters
 $driver = new OpenAIDriver(new LLMConfig(

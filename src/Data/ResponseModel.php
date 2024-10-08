@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 
 class ResponseModel implements CanProvideJsonSchema
 {

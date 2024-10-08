@@ -1,9 +1,9 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
+// TODO: implement me
+
 use Tests\Examples\Complex\ProjectEvent;
-use Tests\Examples\Complex\ProjectEvents;
 
 if (!function_exists('addEvent')) {
     /**

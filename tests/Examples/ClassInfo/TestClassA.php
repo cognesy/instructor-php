@@ -2,7 +2,7 @@
 
 namespace Tests\Examples\ClassInfo;
 
-use Cognesy\Instructor\Schema\Attributes\Description;
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
 
 /**
  * Class description

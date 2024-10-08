@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits;
 
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 
 trait ConvertsToSignatureString
 {

@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Extras\Scalar\Traits;
 
-use Cognesy\Instructor\Extras\Scalar\ValueType;
 use BackedEnum;
-use ReflectionEnum;
+use Cognesy\Instructor\Extras\Scalar\ValueType;
 use Exception;
+use ReflectionEnum;
 
 trait HandlesEnumType
 {

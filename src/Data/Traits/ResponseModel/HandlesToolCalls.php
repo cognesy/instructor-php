@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Data\Traits\ResponseModel;
 
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 
 trait HandlesToolCalls
 {

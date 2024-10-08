@@ -28,8 +28,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Extras\Image\Image;
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
 
 enum DamageSeverity : string {
     case Minor = 'minor';

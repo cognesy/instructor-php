@@ -3,7 +3,7 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
 class EvalInput
 {

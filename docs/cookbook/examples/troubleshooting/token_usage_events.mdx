@@ -26,8 +26,8 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
 use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Instructor;
 
 class User {

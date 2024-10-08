@@ -1,10 +1,10 @@
 <?php
 
-use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Schema\Utils\ReferenceQueue;
+use Cognesy\Instructor\Features\Core\ResponseModelFactory;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
+use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Tests\Examples\ResponseModel\User;
 use Tests\Examples\ResponseModel\UserWithProvider;
 

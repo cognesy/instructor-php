@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
-use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
 
 trait ProvidesSchema
 {

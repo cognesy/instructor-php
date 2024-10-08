@@ -4,10 +4,10 @@ namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Factory;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Utils\ClassInfo;
-use Cognesy\Instructor\Schema\Utils\PropertyInfo;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Features\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Features\Schema\Utils\PropertyInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 trait CreatesFromClassMetadata

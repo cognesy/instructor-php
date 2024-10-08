@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits\ResponseModel;
 
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 
 trait HandlesSchema
 {

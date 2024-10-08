@@ -18,8 +18,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Extras\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Env;
 

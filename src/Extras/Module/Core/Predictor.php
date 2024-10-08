@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\Extras\Module\Core;
 
 use Closure;
 use Cognesy\Instructor\Data\RequestInfo;
-use Cognesy\Instructor\Extras\LLM\Inference;
 use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Instructor;
 
 class Predictor

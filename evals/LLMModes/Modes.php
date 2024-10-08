@@ -3,9 +3,9 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Extras\LLM\Inference;
-use Cognesy\Instructor\Extras\LLM\InferenceResponse;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\Instructor\Features\LLM\InferenceResponse;
 
 class Modes
 {

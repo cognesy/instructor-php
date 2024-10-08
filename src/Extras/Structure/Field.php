@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Structure;
 
-use Cognesy\Instructor\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 
 class Field {
     use Traits\Field\HandlesFieldDefinitions;

@@ -1,18 +1,15 @@
 <?php
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Core\PartialsGenerator;
-use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\ResponseGenerator;
-use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
-use Cognesy\Instructor\Extras\Debug\Debug;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
+use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Features\Validation\ResponseValidator;
+use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
+use Cognesy\Instructor\Utils\Debug\Debug;
 
 /**
  * Main access point to Instructor.
@@ -25,12 +22,12 @@ class Instructor {
 
     use Traits\HandlesEnv;
 
-    use Traits\Instructor\HandlesInvocation;
-    use Traits\Instructor\HandlesOverrides;
-    use Traits\Instructor\HandlesPartialUpdates;
-    use Traits\Instructor\HandlesQueuedEvents;
-    use Traits\Instructor\HandlesRequest;
-    use Traits\Instructor\HandlesSequenceUpdates;
+    use Traits\HandlesInvocation;
+    use Traits\HandlesOverrides;
+    use Traits\HandlesPartialUpdates;
+    use Traits\HandlesQueuedEvents;
+    use Traits\HandlesRequest;
+    use Traits\HandlesSequenceUpdates;
 
     public function __construct(
         EventDispatcher $events = null,

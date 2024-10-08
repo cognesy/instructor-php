@@ -2,10 +2,10 @@
 namespace Cognesy\Instructor\Extras\Structure;
 
 use Cognesy\Instructor\Contracts\CanProvideSchema;
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
 
 class Structure implements CanProvideSchema, CanDeserializeSelf, CanValidateSelf, CanTransformSelf
 {

@@ -27,8 +27,8 @@ A common critical thinking prompt is: "Let's think step by step."
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
 
 class Response {
     #[Description("Repeat user's query.")]

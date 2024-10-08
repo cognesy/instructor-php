@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Extras\Http\Enums\HttpClientType;
+use Cognesy\Instructor\Features\Http\Enums\HttpClientType;
 
 return [
     'defaultClient' => 'guzzle',

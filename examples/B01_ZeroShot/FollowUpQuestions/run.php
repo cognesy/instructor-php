@@ -23,8 +23,8 @@ Self-Ask is a technique which use a single prompt to:
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
 
 class FollowUp {
     #[Description("Follow-up question")]

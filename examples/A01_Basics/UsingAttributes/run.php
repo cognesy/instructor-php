@@ -15,9 +15,9 @@ context to the language model or to provide additional instructions to the model
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Schema\Attributes\Description;
-use Cognesy\Instructor\Schema\Attributes\Instructions;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract

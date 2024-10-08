@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Schema\Utils\ClassInfo;
-use Cognesy\Instructor\Schema\Utils\PropertyInfo;
+use Cognesy\Instructor\Features\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Features\Schema\Utils\PropertyInfo;
 use Symfony\Component\PropertyInfo\Type;
 use Tests\Examples\ClassInfo\EnumType;
 use Tests\Examples\ClassInfo\IntEnumType;

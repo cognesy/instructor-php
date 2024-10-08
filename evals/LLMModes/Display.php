@@ -5,6 +5,7 @@ namespace Cognesy\Evals\LLMModes;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
+use Cognesy\Instructor\Utils\Debug\Debug;
 use Exception;
 
 class Display
@@ -57,6 +58,9 @@ class Display
             ], 120);
             Console::println('');
             Console::println($exception->getMessage(), [Color::GRAY]);
+            if (Debug::isEnabled()) {
+                Console::println($exception->getTraceAsString(), [Color::DARK_GRAY]);
+            }
         }
         Console::println('');
     }

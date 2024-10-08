@@ -1,8 +1,8 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Factories\JsonSchemaToSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Features\Schema\Factories\JsonSchemaToSchema;
 
 it('creates Schema object from JSON Schema array - required fields', function ($jsonSchema) {
     $schema = (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');

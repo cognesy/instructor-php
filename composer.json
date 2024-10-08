@@ -20,6 +20,7 @@
             "Cognesy\\Experimental\\": "experimental/"
         },
         "files": [
+            "tests/Examples/Call/test_functions.php"
         ]
     },
     "authors": [
@@ -54,7 +55,8 @@
         "psr/http-factory-implementation": "*",
         "symfony/psr-http-message-bridge": "^7.1",
         "nyholm/psr7": "^1.8",
-        "guzzlehttp/psr7": "^2.7"
+        "guzzlehttp/psr7": "^2.7",
+        "twig/twig": "^3.0"
     },
     "config": {
         "allow-plugins": {

@@ -19,7 +19,9 @@ customize how LLM is instructed to process the input.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
+use Cognesy\Instructor\Instructor;
 
 class User {
     public int $age;

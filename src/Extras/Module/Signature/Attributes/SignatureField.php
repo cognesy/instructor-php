@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Module\Signature\Attributes;
 
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 
 abstract class SignatureField
 {

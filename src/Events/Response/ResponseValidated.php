@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Validation\ValidationResult;
 use Psr\Log\LogLevel;
 
 class ResponseValidated extends Event

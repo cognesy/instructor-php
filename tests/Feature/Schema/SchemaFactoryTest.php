@@ -1,13 +1,13 @@
 <?php
 
-use Cognesy\Instructor\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Instructor\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
+use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
 use Tests\Examples\ClassInfo\TestClassA;
 
 it('creates a schema from a class name', function () {
     $factory = new SchemaFactory();
-    /** @var ObjectSchema $schema */
+    /** @var \Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema $schema */
     $schema = $factory->schema(TestClassA::class);
 
     expect($schema)->toBeInstanceOf(ObjectSchema::class);

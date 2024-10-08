@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Utils\ClassInfo;
+use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Features\Schema\Utils\ClassInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 trait CreatesStructureFromClasses

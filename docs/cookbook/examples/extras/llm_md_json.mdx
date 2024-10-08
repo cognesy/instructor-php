@@ -26,7 +26,8 @@ to guide the model in generating the correct response.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Inference;
 
 $data = (new Inference)
     ->withConnection('openai')

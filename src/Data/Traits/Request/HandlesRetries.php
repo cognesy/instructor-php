@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data\Traits\Request;
 
 use Cognesy\Instructor\Data\Response;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
 trait HandlesRetries
 {

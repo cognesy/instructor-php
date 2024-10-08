@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class PartialLLMResponseReceived extends Event

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Cognesy\Instructor\Extras\Http\IterableReader;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\StreamDataReceived;
+use Cognesy\Instructor\Features\Http\IterableReader;
 use Mockery as Mock;
 
 beforeEach(function () {

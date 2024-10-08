@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Deserialization\Deserializers\BackedEnumNormalizer;
+use Cognesy\Instructor\Features\Deserialization\Deserializers\BackedEnumNormalizer;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Tests\Examples\Validators\MockBackedEnum;
 

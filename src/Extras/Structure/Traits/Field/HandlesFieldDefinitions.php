@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use DateTime;
 
 trait HandlesFieldDefinitions

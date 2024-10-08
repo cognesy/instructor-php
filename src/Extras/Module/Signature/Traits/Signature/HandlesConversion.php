@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Signature\Traits\Signature;
 
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 
 trait HandlesConversion
 {

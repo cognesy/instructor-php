@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
-use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Features\Validation\ValidationResult;
 
 trait HandlesValidation
 {

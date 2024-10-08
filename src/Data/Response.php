@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Extras\LLM\Data\PartialLLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 
 class Response {
     private array $messages;
-    private LLMResponse $llmResponse;
-    /** @var PartialLLMResponse[] */
+    private \Cognesy\Instructor\Features\LLM\Data\LLMResponse $llmResponse;
+    /** @var \Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse[] */
     private array $partialLLMResponses;
     private array $errors;
     private mixed $returnedValue;
@@ -35,7 +35,7 @@ class Response {
         return $this->messages;
     }
 
-    public function llmResponse() : LLMResponse {
+    public function llmResponse() : \Cognesy\Instructor\Features\LLM\Data\LLMResponse {
         return $this->llmResponse;
     }
 

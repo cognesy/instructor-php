@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Events\Event;
+use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class CustomResponseDeserializationAttempt extends Event

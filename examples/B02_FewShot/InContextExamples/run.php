@@ -42,7 +42,7 @@ class PredictSentiment {
     private int $n = 4;
 
     public function __invoke(string $review) : ReviewSentiment {
-        return (new Instructor)->withDebug()->respond(
+        return (new Instructor)->respond(
             messages: [
                 ['role' => 'user', 'content' => "Review: {$review}"],
             ],

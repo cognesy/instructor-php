@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data\Messages\Traits\Messages;
 
 use Cognesy\Instructor\Data\Messages\Message;
 use Cognesy\Instructor\Data\Messages\Messages;
-use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
 use RuntimeException;
 
 trait HandlesConversion

@@ -3,9 +3,8 @@ namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
 use Tests\Examples\Call\TestClass;
-require_once __DIR__.'/../../Examples/Call/test_functions.php';
-use function Tests\Examples\Call\testFunction;
-use function Tests\Examples\Call\variadicFunction;
+use function Tests\Examples\Call\{testFunction, variadicFunction};
+require_once __DIR__ . '/../../Examples/Call/test_functions.php';
 
 it('can process function by name', function () {
     $call = FunctionCall::fromFunctionName('Tests\Examples\Call\testFunction');

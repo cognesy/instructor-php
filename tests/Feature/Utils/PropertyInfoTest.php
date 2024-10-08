@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Schema\Attributes\Description;
-use Cognesy\Instructor\Schema\Utils\PropertyInfo;
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Instructor\Features\Schema\Utils\PropertyInfo;
 use Symfony\Component\PropertyInfo\Type;
 use Tests\Examples\ClassInfo\TestClassA;
 

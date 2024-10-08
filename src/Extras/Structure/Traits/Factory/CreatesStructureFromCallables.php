@@ -4,8 +4,8 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Instructor\Schema\Utils\FunctionInfo;
+use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Instructor\Features\Schema\Utils\FunctionInfo;
 use ReflectionFunction;
 
 trait CreatesStructureFromCallables

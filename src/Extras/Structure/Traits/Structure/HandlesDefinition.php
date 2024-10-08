@@ -2,8 +2,6 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\Structure;
 use Exception;
 
 trait HandlesDefinition
@@ -13,7 +11,7 @@ trait HandlesDefinition
         array|callable $fields,
         string $description = '',
     ) : self {
-        $structure = new Structure();
+        $structure = new \Cognesy\Instructor\Extras\Structure\Structure();
         $structure->name = $name;
         $structure->description = $description;
 
@@ -21,7 +19,7 @@ trait HandlesDefinition
             $fields = $fields($structure);
         }
 
-        /** @var Field[] $fields */
+        /** @var \Cognesy\Instructor\Extras\Structure\Field[] $fields */
         foreach ($fields as $field) {
             $fieldName = $field->name();
             if ($structure->has($fieldName)) {

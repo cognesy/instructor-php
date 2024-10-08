@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 
 test('returns correct string representation', function () {
     $stringType = new TypeDetails('string');

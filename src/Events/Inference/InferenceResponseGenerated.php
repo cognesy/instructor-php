@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Extras\LLM\Data\LLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
 class InferenceResponseGenerated extends Event
 {

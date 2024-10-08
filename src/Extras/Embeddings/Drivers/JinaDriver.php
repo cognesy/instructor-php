@@ -6,8 +6,8 @@ use Cognesy\Instructor\Extras\Embeddings\Contracts\CanVectorize;
 use Cognesy\Instructor\Extras\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Extras\Http\HttpClient;
+use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Features\Http\HttpClient;
 
 class JinaDriver implements CanVectorize
 {

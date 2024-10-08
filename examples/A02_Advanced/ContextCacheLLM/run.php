@@ -28,7 +28,7 @@ generating its summary for 2 target audiences.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\LLM\Inference;
+use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
 $content = file_get_contents(__DIR__ . '/../../../README.md');

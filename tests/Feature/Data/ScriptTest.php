@@ -4,7 +4,6 @@ namespace Tests;
 use Cognesy\Instructor\Data\Messages\Messages;
 use Cognesy\Instructor\Data\Messages\Script;
 use Cognesy\Instructor\Data\Messages\Section;
-use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
 
 it('creates messages from script', function () {
     $script = new Script(

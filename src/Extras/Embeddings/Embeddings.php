@@ -10,9 +10,9 @@ use Cognesy\Instructor\Extras\Embeddings\Drivers\CohereDriver;
 use Cognesy\Instructor\Extras\Embeddings\Drivers\GeminiDriver;
 use Cognesy\Instructor\Extras\Embeddings\Drivers\JinaDriver;
 use Cognesy\Instructor\Extras\Embeddings\Drivers\OpenAIDriver;
-use Cognesy\Instructor\Extras\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Extras\Http\HttpClient;
-use Cognesy\Instructor\Extras\LLM\Enums\LLMProviderType;
+use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Features\Http\HttpClient;
+use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 

@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Module\Signature;
 
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasInputSchema;
 use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
-use Cognesy\Instructor\Schema\Data\Schema\Schema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 
 /**
  * Signature represents a specification of the module - its input and output schemas, and a description.
