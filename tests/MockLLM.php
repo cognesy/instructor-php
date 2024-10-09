@@ -4,7 +4,6 @@ namespace Tests;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Mockery;
 
 class MockLLM
