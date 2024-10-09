@@ -1,18 +1,18 @@
 <?php
 
-namespace Cognesy\Instructor\Events\LLMClient;
+namespace Cognesy\Instructor\Events\Inference;
 
 use Cognesy\Instructor\Events\Event;
 
-class LLMStreamUpdateReceived extends Event
+class StreamDataParsed extends Event
 {
     public function __construct(
-        public string $streamedData
+        public string $content,
     ) {
         parent::__construct();
     }
 
     public function __toString(): string {
-        return $this->streamedData;
+        return $this->content;
     }
 }

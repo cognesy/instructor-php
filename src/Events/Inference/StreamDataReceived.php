@@ -7,13 +7,12 @@ use Cognesy\Instructor\Events\Event;
 class StreamDataReceived extends Event
 {
     public function __construct(
-        public string $raw,
-        public string $parsed,
+        public string $content,
     ) {
         parent::__construct();
     }
 
     public function __toString(): string {
-        return $this->raw;
+        return $this->content;
     }
 }

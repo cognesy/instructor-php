@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Features\LLM;
 
 use Closure;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Inference\StreamDataParsed;
 use Cognesy\Instructor\Events\Inference\StreamDataReceived;
 use Cognesy\Instructor\Utils\Debug\Debug;
 use Generator;
@@ -27,8 +28,10 @@ class EventStreamReader
      */
     public function eventsFrom(Generator $stream): Generator {
         foreach ($this->readLines($stream) as $line) {
+            $this->events->dispatch(new StreamDataReceived($line));
             $processedData = $this->processLine($line);
             if ($processedData !== null) {
+                $this->events->dispatch(new StreamDataParsed($processedData));
                 yield $processedData;
             }
         }
@@ -60,7 +63,6 @@ class EventStreamReader
         if (false === ($data = $this->parse($line))) {
             return null;
         }
-        $this->events->dispatch(new StreamDataReceived($line, $data));
         return $data;
     }
 

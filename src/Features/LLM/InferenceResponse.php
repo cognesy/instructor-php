@@ -59,7 +59,7 @@ class InferenceResponse
         return new InferenceStream($this->response, $this->driver, $this->config, $this->events);
     }
 
-    // AS API RESPONSE OBJECTS //////////////////////////////////
+    // AS API RESPONSE OBJECT ///////////////////////////////////
 
     public function response() : LLMResponse {
         $response = match($this->isStreamed) {
@@ -72,19 +72,14 @@ class InferenceResponse
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeLLMResponse() : LLMResponse {
-        $response = $this->driver->toLLMResponse($this->getResponseData());
+        $content = $this->getResponseContent();
+        $data = Json::decode($content) ?? [];
+        $response = $this->driver->toLLMResponse($data);
         $this->events->dispatch(new LLMResponseReceived($response));
         return $response;
     }
 
     // PRIVATE /////////////////////////////////////////////////
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function getResponseData() : array {
-        return Json::decode($this->getResponseContent()) ?? [];
-    }
 
     private function getResponseContent() : string {
         if (empty($this->responseContent)) {

@@ -7,7 +7,6 @@ use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
@@ -97,7 +96,7 @@ class InferenceStream
         $content = '';
         $finishReason = '';
         foreach ($this->getEventStream($stream) as $streamEvent) {
-            if ($streamEvent === false) {
+            if ($streamEvent === null || $streamEvent === '') {
                 continue;
             }
             $data = Json::decode($streamEvent, []);
@@ -123,7 +122,7 @@ class InferenceStream
     }
 
     /**
-     * @return Generator<string>
+     * @return Generator<string|null>
      */
     private function getEventStream(Generator $stream) : Generator {
         if (!$this->streamReceived) {
