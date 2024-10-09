@@ -14,7 +14,7 @@ $mockLLM = MockLLM::get([
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($mockLLM, $text) {
-    $instructor = (new Instructor)->withDriver($mockLLM);
+    $instructor = (new Instructor)->withHttpClient($mockLLM);
     $person = $instructor->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -26,7 +26,7 @@ it('handles direct call', function () use ($mockLLM, $text) {
 
 it('handles onEvent()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withDriver($mockLLM);
+    $instructor = (new Instructor)->withHttpClient($mockLLM);
     $person = $instructor->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
@@ -39,7 +39,7 @@ it('handles onEvent()', function () use ($mockLLM, $text) {
 
 it('handles wiretap()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withDriver($mockLLM);
+    $instructor = (new Instructor)->withHttpClient($mockLLM);
     $person = $instructor->wiretap(fn($e) => $events->onEvent($e))->respond(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,

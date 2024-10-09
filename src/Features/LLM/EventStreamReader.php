@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Features\Http;
+namespace Cognesy\Instructor\Features\LLM;
 
 use Closure;
 use Cognesy\Instructor\Events\EventDispatcher;
@@ -8,7 +8,7 @@ use Cognesy\Instructor\Events\Inference\StreamDataReceived;
 use Cognesy\Instructor\Utils\Debug\Debug;
 use Generator;
 
-class IterableReader
+class EventStreamReader
 {
     protected EventDispatcher $events;
     protected ?Closure $parser;
@@ -25,7 +25,7 @@ class IterableReader
      * @param Generator<string> $stream
      * @return Generator<string>
      */
-    public function toStreamEvents(Generator $stream): Generator {
+    public function eventsFrom(Generator $stream): Generator {
         foreach ($this->readLines($stream) as $line) {
             $processedData = $this->processLine($line);
             if ($processedData !== null) {

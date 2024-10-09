@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Features\Core;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Exception;
 
 class InstructorResponse
@@ -36,14 +37,23 @@ class InstructorResponse
     }
 
     /**
+     * Executes the request and returns LLM response object
+     */
+    public function response() : LLMResponse {
+        $response = $this->requestHandler->responseFor($this->request);
+        $this->events->dispatch(new InstructorDone(['result' => $response->value()]));
+        return $response;
+    }
+
+    /**
      * Executes the request and returns the response stream
      */
-    public function stream() : Stream {
+    public function stream() : InstructorStream {
         // TODO: do we need this? cannot we just turn streaming on?
         if (!$this->request->isStream()) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
         $stream = $this->requestHandler->streamResponseFor($this->request);
-        return new Stream($stream, $this->events);
+        return new InstructorStream($stream, $this->events);
     }
 }

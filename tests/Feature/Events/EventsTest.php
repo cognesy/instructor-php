@@ -29,7 +29,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
         '{"name": "Jason", "age":28}',
     ]);
     $events = new EventSink();
-    $person = (new Instructor)->withDriver($mockLLM)
+    $person = (new Instructor)->withHttpClient($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
         ->respond(
@@ -85,7 +85,7 @@ it('handles events for simple case - validation failure', function ($event) use 
 
     // expect exception
     $this->expectException(\Exception::class);
-    $person = (new Instructor)->withDriver($mockLLM)
+    $person = (new Instructor)->withHttpClient($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],
@@ -135,7 +135,7 @@ it('handles events for custom case', function ($event) use ($text) {
         '{"age":28}'
     ]);
     $events = new EventSink();
-    $age = (new Instructor)->withDriver($mockLLM)
+    $age = (new Instructor)->withHttpClient($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->respond(
             messages: [['role' => 'user', 'content' => $text]],

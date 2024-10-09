@@ -12,6 +12,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Messages;
@@ -98,10 +99,7 @@ class AnthropicDriver implements CanHandleInference
             toolsData: $this->mapToolsData($data),
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            inputTokens: $data['usage']['input_tokens'] ?? 0,
-            outputTokens: $data['usage']['output_tokens'] ?? 0,
-            cacheCreationTokens: $data['usage']['cache_creation_input_tokens'] ?? 0,
-            cacheReadTokens: $data['usage']['cache_read_input_tokens'] ?? 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -115,10 +113,7 @@ class AnthropicDriver implements CanHandleInference
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
-            inputTokens: $data['message']['usage']['input_tokens'] ?? $data['usage']['input_tokens'] ?? 0,
-            outputTokens: $data['message']['usage']['output_tokens'] ?? $data['usage']['output_tokens'] ?? 0,
-            cacheCreationTokens: $data['message']['usage']['cache_creation_input_tokens'] ?? $data['usage']['cache_creation_input_tokens'] ?? 0,
-            cacheReadTokens: $data['message']['usage']['cache_read_input_tokens'] ?? $data['usage']['cache_read_input_tokens'] ?? 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -283,5 +278,23 @@ class AnthropicDriver implements CanHandleInference
 
         $messages[$lastIndex] = $lastMessage;
         return $messages;
+    }
+
+    private function makeUsage(array $data) : Usage {
+        return new Usage(
+            inputTokens: $data['usage']['input_tokens']
+                ?? $data['message']['usage']['input_tokens']
+                ?? 0,
+            outputTokens: $data['usage']['output_tokens']
+                ?? $data['message']['usage']['output_tokens']
+                ?? 0,
+            cacheWriteTokens: $data['usage']['cache_creation_input_tokens']
+                ?? $data['message']['usage']['cache_creation_input_tokens']
+                ?? 0,
+            cacheReadTokens: $data['usage']['cache_read_input_tokens']
+                ?? $data['message']['usage']['cache_read_input_tokens']
+                ?? 0,
+            reasoningTokens: 0,
+        );
     }
 }

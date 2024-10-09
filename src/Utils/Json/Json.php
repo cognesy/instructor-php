@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Utils\Json;
 
+use JsonException;
+
 class Json
 {
     private string $json;
@@ -49,7 +51,14 @@ class Json
         if (empty($text)) {
             return $default;
         }
-        $decoded = json_decode($text, true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $decoded = json_decode($text, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            if ($default === null) {
+                throw $e;
+            }
+            return $default;
+        }
         return empty($decoded) ? $default : $decoded;
     }
 

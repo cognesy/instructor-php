@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\StreamDataReceived;
-use Cognesy\Instructor\Features\Http\IterableReader;
+use Cognesy\Instructor\Features\LLM\EventStreamReader;
 use Mockery as Mock;
 
 beforeEach(function () {
@@ -14,7 +14,7 @@ beforeEach(function () {
 });
 
 it('streams synthetic OpenAI streaming data correctly without parser', function () {
-    $reader = new IterableReader(events: $this->mockEventDispatcher);
+    $reader = new EventStreamReader(events: $this->mockEventDispatcher);
 
     $generator = function () {
         yield '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{';
@@ -28,13 +28,13 @@ it('streams synthetic OpenAI streaming data correctly without parser', function 
         '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->toStreamEvents($generator()));
+    $result = iterator_to_array($reader->eventsFrom($generator()));
     expect($result)->toEqual($expected);
 });
 
 it('processes synthetic OpenAI streaming data with a custom parser', function () {
     $parser = fn($line) => strtoupper($line);
-    $reader = new IterableReader(parser: $parser, events: $this->mockEventDispatcher);
+    $reader = new EventStreamReader(parser: $parser, events: $this->mockEventDispatcher);
 
     $generator = function () {
         yield '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{';
@@ -48,7 +48,7 @@ it('processes synthetic OpenAI streaming data with a custom parser', function ()
         '{"ID": "CMPL-XYZ", "OBJECT": "TEXT_COMPLETION", "CHOICES": [{"TEXT": "WORLD!", "INDEX": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->toStreamEvents($generator()));
+    $result = iterator_to_array($reader->eventsFrom($generator()));
     expect($result)->toEqual($expected);
 });
 
@@ -69,7 +69,7 @@ it('processes synthetic OpenAI streaming data with a custom parser', function ()
 //});
 
 it('skips empty lines correctly in synthetic OpenAI data', function () {
-    $reader = new IterableReader(events: $this->mockEventDispatcher);
+    $reader = new EventStreamReader(events: $this->mockEventDispatcher);
 
     $generator = function () {
         yield  "\n";
@@ -86,12 +86,12 @@ it('skips empty lines correctly in synthetic OpenAI data', function () {
         '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->toStreamEvents($generator()));
+    $result = iterator_to_array($reader->eventsFrom($generator()));
     expect($result)->toEqual($expected);
 });
 
 it('handles incomplete lines correctly in synthetic OpenAI data', function () {
-    $reader = new IterableReader(events: $this->mockEventDispatcher);
+    $reader = new EventStreamReader(events: $this->mockEventDispatcher);
 
     $generator = function () {
         yield '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{';
@@ -106,6 +106,6 @@ it('handles incomplete lines correctly in synthetic OpenAI data', function () {
         '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "world!", "index": 1}]}',
     ];
 
-    $result = iterator_to_array($reader->toStreamEvents($generator()));
+    $result = iterator_to_array($reader->eventsFrom($generator()));
     expect($result)->toEqual($expected);
 });

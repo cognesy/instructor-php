@@ -3,14 +3,14 @@
 namespace Cognesy\Instructor\Extras\Embeddings;
 
 use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 
 class EmbeddingsResponse
 {
     public function __construct(
         /** @var Vector[] */
         public array $vectors,
-        public int $inputTokens,
-        public int $outputTokens,
+        public ?Usage $usage,
     ) {}
 
     public function first() : Vector {
@@ -25,6 +25,10 @@ class EmbeddingsResponse
         return $this->vectors;
     }
 
+    public function usage() : Usage {
+        return $this->usage;
+    }
+
     /**
      * @param int $index
      * @return EmbeddingsResponse[]
@@ -32,14 +36,18 @@ class EmbeddingsResponse
     public function split(int $index) : array {
         return [
             new EmbeddingsResponse(
-                array_slice($this->vectors, 0, $index),
-                $this->inputTokens,
-                $this->outputTokens,
+                vectors: array_slice($this->vectors, 0, $index),
+                usage: new Usage(
+                    inputTokens: $this->usage()->inputTokens,
+                    outputTokens: $this->usage()->outputTokens,
+                ),
             ),
             new EmbeddingsResponse(
-                array_slice($this->vectors, $index),
-                0,
-                0,
+                vectors: array_slice($this->vectors, $index),
+                usage: new Usage(
+                    inputTokens: 0,
+                    outputTokens: 0,
+                ),
             ),
         ];
     }
@@ -52,6 +60,6 @@ class EmbeddingsResponse
     }
 
     public function totalTokens() : int {
-        return $this->inputTokens + $this->outputTokens;
+        return $this->usage()->total();
     }
 }

@@ -7,6 +7,7 @@ use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\HttpClient;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 
 class GeminiDriver implements CanVectorize
 {
@@ -64,12 +65,18 @@ class GeminiDriver implements CanVectorize
         }
         return new EmbeddingsResponse(
             vectors: $vectors,
-            inputTokens: $this->inputCharacters,
-            outputTokens: 0,
+            usage: $this->makeUsage($response),
         );
     }
 
     private function countCharacters(array $input) : int {
         return array_sum(array_map(fn($item) => strlen($item), $input));
+    }
+
+    private function makeUsage(array $response) : Usage {
+        return new Usage(
+            inputTokens: $this->inputCharacters,
+            outputTokens: 0,
+        );
     }
 }

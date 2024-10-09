@@ -6,6 +6,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json\Json;
 
@@ -50,10 +51,7 @@ class CohereV2Driver extends OpenAIDriver
             toolsData: $this->makeToolsData($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            inputTokens: $data['meta']['billed_units']['input_tokens'] ?? 0,
-            outputTokens: $data['meta']['billed_units']['output_tokens'] ?? 0,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -67,10 +65,7 @@ class CohereV2Driver extends OpenAIDriver
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
             toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
             finishReason: $data['delta']['finish_reason'] ?? '',
-            inputTokens: $data['delta']['usage']['billed_units']['input_tokens'] ?? 0,
-            outputTokens: $data['delta']['usage']['billed_units']['output_tokens'] ?? 0,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -161,5 +156,19 @@ class CohereV2Driver extends OpenAIDriver
 
     private function normalizeContent(array|string $content) : string {
         return is_array($content) ? $content['text'] : $content;
+    }
+
+    private function makeUsage(array $data) : Usage {
+        return new Usage(
+            inputTokens: $data['meta']['billed_units']['input_tokens']
+                ?? $data['delta']['usage']['billed_units']['input_tokens']
+                ?? 0,
+            outputTokens: $data['meta']['billed_units']['output_tokens']
+                ?? $data['delta']['usage']['billed_units']['output_tokens']
+                ?? 0,
+            cacheWriteTokens: 0,
+            cacheReadTokens: 0,
+            reasoningTokens: 0,
+        );
     }
 }

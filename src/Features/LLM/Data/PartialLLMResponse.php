@@ -6,7 +6,7 @@ use Cognesy\Instructor\Utils\Json\Json;
 
 class PartialLLMResponse
 {
-    private mixed $data = null; // data extracted from response or tool calls
+    private mixed $value = null; // data extracted from response or tool calls
     private string $content = '';
 
     public function __construct(
@@ -15,25 +15,22 @@ class PartialLLMResponse
         public string $toolName = '',
         public string $toolArgs = '',
         public string $finishReason = '',
-        public int    $inputTokens = 0,
-        public int    $outputTokens = 0,
-        public int    $cacheCreationTokens = 0,
-        public int    $cacheReadTokens = 0,
+        public ?Usage $usage = null,
     ) {}
 
     // PUBLIC ////////////////////////////////////////////////
 
-    public function hasData() : bool {
-        return $this->data !== null;
+    public function hasValue() : bool {
+        return $this->value !== null;
     }
 
-    public function withData(mixed $value) : self {
-        $this->data = $value;
+    public function withValue(mixed $value) : self {
+        $this->value = $value;
         return $this;
     }
 
-    public function data() : mixed {
-        return $this->data;
+    public function value() : mixed {
+        return $this->value;
     }
 
     public function hasContent() : bool {
@@ -42,11 +39,6 @@ class PartialLLMResponse
 
     public function withContent(string $content) : self {
         $this->content = $content;
-        return $this;
-    }
-
-    public function withFinishReason(string $finishReason) : self {
-        $this->finishReason = $finishReason;
         return $this;
     }
 
@@ -59,5 +51,14 @@ class PartialLLMResponse
             return '';
         }
         return Json::fromPartial($this->content)->toString();
+    }
+
+    public function withFinishReason(string $finishReason) : self {
+        $this->finishReason = $finishReason;
+        return $this;
+    }
+
+    public function usage() : Usage {
+        return $this->usage ?? new Usage();
     }
 }

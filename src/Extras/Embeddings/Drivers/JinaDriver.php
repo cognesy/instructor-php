@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\HttpClient;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 
 class JinaDriver implements CanVectorize
 {
@@ -60,6 +61,12 @@ class JinaDriver implements CanVectorize
                 fn($item) => new Vector(values: $item['embedding'], id: $item['index']),
                 $response['data']
             ),
+            usage: $this->makeUsage($response),
+        );
+    }
+
+    private function makeUsage(array $response) : Usage {
+        return new Usage(
             inputTokens: $response['usage']['prompt_tokens'] ?? 0,
             outputTokens: ($response['usage']['total_tokens'] ?? 0) - ($response['usage']['prompt_tokens'] ?? 0),
         );

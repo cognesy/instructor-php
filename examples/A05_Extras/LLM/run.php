@@ -56,7 +56,8 @@ $stream = (new Inference)
         messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
         options: ['max_tokens' => 128, 'stream' => true]
     )
-    ->stream();
+    ->stream()
+    ->responses();
 
 echo "USER: Describe capital of Brasil\n";
 echo "ASSISTANT: ";

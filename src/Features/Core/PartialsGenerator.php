@@ -109,7 +109,7 @@ class PartialsGenerator implements CanGeneratePartials
             $this->events->dispatch(new PartialJsonReceived($this->responseJson));
 
             yield $partialResponse
-                ->withData($result->unwrap())
+                ->withValue($result->unwrap())
                 ->withContent($this->responseText);
         }
         $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse()));

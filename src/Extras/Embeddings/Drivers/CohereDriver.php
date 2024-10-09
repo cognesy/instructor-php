@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\HttpClient;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 
 class CohereDriver implements CanVectorize
 {
@@ -57,8 +58,14 @@ class CohereDriver implements CanVectorize
         }
         return new EmbeddingsResponse(
             vectors: $vectors,
+            usage: $this->makeUsage($response),
+        );
+    }
+
+    private function makeUsage(array $response) : Usage {
+        return new Usage(
             inputTokens: $response['meta']['billed_units']['input_tokens'] ?? 0,
-            outputTokens: 0,
+            outputTokens: $response['meta']['billed_units']['output_tokens'] ?? 0,
         );
     }
 }

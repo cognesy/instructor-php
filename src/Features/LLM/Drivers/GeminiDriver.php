@@ -12,6 +12,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json\Json;
@@ -104,10 +105,7 @@ class GeminiDriver implements CanHandleInference
             toolsData: $this->mapToolsData($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -121,10 +119,7 @@ class GeminiDriver implements CanHandleInference
             toolName: $this->makeToolName($data),
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -308,5 +303,15 @@ class GeminiDriver implements CanHandleInference
     private function makeToolArgs(array $data) : string {
         $value = $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '';
         return is_array($value) ? Json::encode($value) : '';
+    }
+
+    private function makeUsage(array $data) : Usage {
+        return new Usage(
+            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
+            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
+            cacheWriteTokens: 0,
+            cacheReadTokens: 0,
+            reasoningTokens: 0,
+        );
     }
 }

@@ -7,6 +7,7 @@ use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\HttpClient;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 
 class AzureOpenAIDriver implements CanVectorize
 {
@@ -67,6 +68,12 @@ class AzureOpenAIDriver implements CanVectorize
                 callback: fn($item) => new Vector(values: $item['embedding'], id: $item['index']),
                 array: $response['data']
             ),
+            usage: $this->makeUsage($response),
+        );
+    }
+
+    protected function makeUsage(array $response): Usage {
+        return new Usage(
             inputTokens: $response['usage']['prompt_tokens'] ?? 0,
             outputTokens: ($response['usage']['total_tokens'] ?? 0) - ($response['usage']['prompt_tokens'] ?? 0),
         );

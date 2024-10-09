@@ -55,7 +55,7 @@ it('can process a closure task', function() {
 //        '{"user_name": "Jason", "user_age": 28}',
 //    ]);
 //
-//    $instructor = (new Instructor)->withDriver($mockLLM);
+//    $instructor = (new Instructor)->withHttpClient($mockLLM);
 //    $predict = new Transform(
 //        signature: 'text (email containing user data) -> user_name, user_age:int',
 //        instructor: $instructor
@@ -84,7 +84,7 @@ it('can process a closure task', function() {
 //
 //    $predict = new Transform(
 //        signature: EmailAnalysis::class,
-//        instructor: (new Instructor)->withDriver($mockLLM)
+//        instructor: (new Instructor)->withHttpClient($mockLLM)
 //    );
 //
 //    $analysis = $predict->withArgs(

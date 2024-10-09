@@ -14,11 +14,10 @@ class LLMResponse
         public array $toolsData = [],
         public string $finishReason = '',
         public ?ToolCalls $toolCalls = null,
-        public int $inputTokens = 0,
-        public int $outputTokens = 0,
-        public int $cacheCreationTokens = 0,
-        public int $cacheReadTokens = 0,
-    ) {}
+        public ?Usage $usage = null,
+    ) {
+        $this->usage = $usage ?? new Usage();
+    }
 
     // STATIC ////////////////////////////////////////////////
 
@@ -45,6 +44,10 @@ class LLMResponse
         return $this->content !== '';
     }
 
+    public function content() : string {
+        return $this->content;
+    }
+
     public function json(): string {
         if (!$this->hasContent()) {
             return '';
@@ -54,6 +57,10 @@ class LLMResponse
 
     public function hasToolCalls() : bool {
         return !empty($this->toolCalls);
+    }
+
+    public function usage() : Usage {
+        return $this->usage ?? new Usage();
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -74,10 +81,11 @@ class LLMResponse
             }
             $content .= $partialResponse->contentDelta;
             $this->responseData[] = $partialResponse->responseData;
-            $this->inputTokens += $partialResponse->inputTokens;
-            $this->outputTokens += $partialResponse->outputTokens;
-            $this->cacheCreationTokens += $partialResponse->cacheCreationTokens;
-            $this->cacheReadTokens += $partialResponse->cacheReadTokens;
+            $this->usage()->inputTokens += $partialResponse->usage()->inputTokens;
+            $this->usage()->outputTokens += $partialResponse->usage()->outputTokens;
+            $this->usage()->cacheWriteTokens += $partialResponse->usage()->cacheWriteTokens;
+            $this->usage()->cacheReadTokens += $partialResponse->usage()->cacheReadTokens;
+            $this->usage()->reasoningTokens += $partialResponse->usage()->reasoningTokens;
             $this->finishReason = $partialResponse->finishReason;
         }
         $this->content = $content;

@@ -12,6 +12,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Messages;
@@ -89,10 +90,7 @@ class CohereV1Driver implements CanHandleInference
             toolsData: $this->mapToolsData($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            inputTokens: $data['meta']['tokens']['input_tokens'] ?? 0,
-            outputTokens: $data['meta']['tokens']['output_tokens'] ?? 0,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -103,10 +101,7 @@ class CohereV1Driver implements CanHandleInference
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['response']['finish_reason'] ?? $data['delta']['finish_reason'] ?? '',
-            inputTokens: $data['response']['meta']['tokens']['input_tokens'] ?? $data['delta']['tokens']['input_tokens'] ?? 0,
-            outputTokens: $data['response']['meta']['tokens']['output_tokens'] ?? $data['delta']['tokens']['input_tokens'] ?? 0,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -242,5 +237,21 @@ class CohereV1Driver implements CanHandleInference
         $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
         $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
         return $cloned;
+    }
+
+    private function makeUsage(array $data) : Usage {
+        return new Usage(
+            inputTokens: $data['meta']['tokens']['input_tokens']
+                ?? $data['response']['meta']['tokens']['input_tokens']
+                ?? $data['delta']['tokens']['input_tokens']
+                ?? 0,
+            outputTokens: $data['meta']['tokens']['output_tokens']
+                ?? $data['response']['meta']['tokens']['output_tokens']
+                ?? $data['delta']['tokens']['input_tokens']
+                ?? 0,
+            cacheWriteTokens: 0,
+            cacheReadTokens: 0,
+            reasoningTokens: 0,
+        );
     }
 }

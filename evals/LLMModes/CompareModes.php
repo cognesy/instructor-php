@@ -66,8 +66,8 @@ class CompareModes {
                 notes: $answer,
                 isCorrect: $isCorrect,
                 timeElapsed: $timeElapsed,
-                inputTokens: $llmResponse->inputTokens,
-                outputTokens: $llmResponse->outputTokens,
+                inputTokens: $llmResponse->usage()->inputTokens,
+                outputTokens: $llmResponse->usage()->outputTokens,
             );
         } catch(Exception $e) {
             $timeElapsed = microtime(true) - $time;

@@ -12,6 +12,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 
@@ -92,10 +93,7 @@ class OpenAIDriver implements CanHandleInference
             toolsData: $this->makeToolsData($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            inputTokens: $this->makeInputTokens($data),
-            outputTokens: $this->makeOutputTokens($data),
-            cacheCreationTokens: 0,
-            cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -109,10 +107,7 @@ class OpenAIDriver implements CanHandleInference
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
-            inputTokens: $this->makeInputTokens($data),
-            outputTokens: $this->makeOutputTokens($data),
-            cacheCreationTokens: 0,
-            cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
+            usage: $this->makeUsage($data),
         );
     }
 
@@ -155,6 +150,19 @@ class OpenAIDriver implements CanHandleInference
         return $request;
     }
 
+    private function withCachedContext(InferenceRequest $request): InferenceRequest {
+        if (!isset($request->cachedContext)) {
+            return $request;
+        }
+
+        $cloned = clone $request;
+        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
+        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
+        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
+        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
+        return $cloned;
+    }
+
     private function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
             callback: fn(array $call) => $call['function'] ?? [],
@@ -192,18 +200,6 @@ class OpenAIDriver implements CanHandleInference
         };
     }
 
-    private function makeInputTokens(array $data): int {
-        return $data['usage']['prompt_tokens']
-            ?? $data['x_groq']['usage']['prompt_tokens']
-            ?? 0;
-    }
-
-    private function makeOutputTokens(array $data): int {
-        return $data['usage']['completion_tokens']
-            ?? $data['x_groq']['usage']['completion_tokens']
-            ?? 0;
-    }
-
     private function makeToolNameDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
     }
@@ -212,16 +208,17 @@ class OpenAIDriver implements CanHandleInference
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
     }
 
-    private function withCachedContext(InferenceRequest $request): InferenceRequest {
-        if (!isset($request->cachedContext)) {
-            return $request;
-        }
-
-        $cloned = clone $request;
-        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
-        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
-        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
-        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
-        return $cloned;
+    private function makeUsage(array $data): Usage {
+        return new Usage(
+            inputTokens: $data['usage']['prompt_tokens']
+                ?? $data['x_groq']['usage']['prompt_tokens']
+                ?? 0,
+            outputTokens: $data['usage']['completion_tokens']
+                ?? $data['x_groq']['usage']['completion_tokens']
+                ?? 0,
+            cacheWriteTokens: 0,
+            cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
+            reasoningTokens: 0,
+        );
     }
 }
