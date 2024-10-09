@@ -11,6 +11,11 @@ class Console
         print(self::color($color, $message) . PHP_EOL);
     }
 
+    public static function clearScreen(): void {
+        print("\033[2J\033[;H");
+        //echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
+    }
+
     public static function columns(array $columns, int $maxWidth): string {
         $maxWidth = max($maxWidth, 80);
         $message = '';
