@@ -34,7 +34,7 @@ class RunInstructor implements CanExecuteExperiment
         readonly public string              $model = '',
     ) {}
 
-    public static function executeFor(EvalInput $input) : self {
+    public static function fromEvalInput(EvalInput $input) : self {
         $instance = new RunInstructor(
             messages: $input->messages,
             responseModel: $input->schema,
@@ -46,10 +46,13 @@ class RunInstructor implements CanExecuteExperiment
             examples: [],
             model: '',
         );
-        $instance->instructorResponse = $instance->makeInstructorResponse();
-        $instance->llmResponse = $instance->instructorResponse->response();
-        $instance->answer = $instance->llmResponse->value();
         return $instance;
+    }
+
+    public function execute() : void {
+        $this->instructorResponse = $this->makeInstructorResponse();
+        $this->llmResponse = $this->instructorResponse->response();
+        $this->answer = $this->llmResponse->value();
     }
 
     public function getAnswer() : mixed {

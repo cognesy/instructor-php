@@ -15,14 +15,14 @@ class Evaluator {
     private Display $display;
     private string|array|object $schema;
     /** @var class-string */
-    private CanExecuteExperiment $executor;
+    private string $executor;
     private string|array $messages;
     private Closure $evalFn;
 
     public function __construct(
         string|array $messages,
         string|array|object $schema,
-        CanExecuteExperiment $executorClass,
+        string $executorClass,
         Closure $evalFn,
     ) {
         $this->messages = $messages;
@@ -74,11 +74,13 @@ class Evaluator {
 
             // execute and measure time
             $time = microtime(true);
-            /** @var CanExecuteExperiment $execution */
-            $execution = $this->executor->executeFor($evalInput);
-            $llmResponse = $execution->getLLMResponse();
+
+            /** @var CanExecuteExperiment $experiment */
+            $experiment = ($this->executor)::fromEvalInput($evalInput);
+            $experiment->execute();
+            $llmResponse = $experiment->getLLMResponse();
             $evalInput->withResponse($llmResponse);
-            $answer = $execution->getAnswer();
+
             $timeElapsed = microtime(true) - $time;
             $isCorrect = ($this->evalFn)($evalInput);
 

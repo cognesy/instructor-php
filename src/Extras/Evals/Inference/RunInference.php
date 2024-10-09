@@ -38,7 +38,7 @@ class RunInference implements CanExecuteExperiment
         $this->isStreamed = $isStreamed;
     }
 
-    public function executeFor(EvalInput $input) : self {
+    public static function fromEvalInput(EvalInput $input) : self {
         $instance = new RunInference(
             query: $input->messages,
             schema: $input->evalSchema(),
@@ -47,9 +47,12 @@ class RunInference implements CanExecuteExperiment
             isStreamed: $input->isStreamed,
             maxTokens: $input->maxTokens,
         );
-        $instance->response = $instance->makeLLMResponse();
-        $instance->answer = $instance->response->content();
         return $instance;
+    }
+
+    public function execute() : void {
+        $this->response = $this->makeLLMResponse();
+        $this->answer = $this->response->content();
     }
 
     public function getAnswer() : string {
