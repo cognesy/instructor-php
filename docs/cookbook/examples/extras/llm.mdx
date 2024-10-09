@@ -24,7 +24,6 @@ use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
 
-
 // EXAMPLE 1: simplified API, default connection for convenient ad-hoc calls
 $answer = Inference::text('What is capital of Germany');
 
@@ -57,12 +56,14 @@ $stream = (new Inference)
         messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
         options: ['max_tokens' => 128, 'stream' => true]
     )
-    ->stream();
+    ->stream()
+    ->responses();
 
 echo "USER: Describe capital of Brasil\n";
 echo "ASSISTANT: ";
-foreach ($stream as $delta) {
-    echo $delta->contentDelta;
+foreach ($stream as $partial) {
+    echo $partial->contentDelta;
 }
+echo "\n";
 ?>
 ```

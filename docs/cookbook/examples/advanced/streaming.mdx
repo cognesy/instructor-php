@@ -18,6 +18,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Cli\Console;
 
 class UserRole
 {
@@ -40,7 +41,7 @@ class UserDetail
 // This function will be called every time a new token is received
 function partialUpdate($partial) {
     // Clear the screen and move the cursor to the top
-    echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
+    Console::clearScreen();
 
     // Display the partial object
     dump($partial);

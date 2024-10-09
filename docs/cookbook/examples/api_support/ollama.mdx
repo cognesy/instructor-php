@@ -50,8 +50,8 @@ $user = $instructor->respond(
         'input' => 'Ive got email Frank - their developer. Asked to connect via Twitter @frankch. Btw, he plays on drums!',
         'output' => ['name' => 'Frank', 'role' => 'developer', 'hobbies' => ['playing drums'], 'username' => 'frankch', 'age' => null],
     ],[
-        'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
-        'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
+        'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @j90.',
+        'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'j90', 'age' => 30],
     ]],
     mode: Mode::Json,
 );
