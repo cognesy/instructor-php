@@ -66,7 +66,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         }
         $this->result = array_filter([
             'type' => 'object',
-            'title' => $schema->name,
+            'x-title' => $schema->name,
             'description' => $schema->description,
             'properties' => $propertyDefs,
             'required' => $schema->required,
@@ -78,7 +78,7 @@ class SchemaToJsonSchema implements CanVisitSchema
     public function handleDateTimeSchema(ObjectSchema $schema): void {
         $this->result = array_filter([
             'type' => 'string',
-            'title' => $schema->name,
+            'x-title' => $schema->name,
             'description' => $schema->description,
             'x-php-class' => $schema->typeDetails->class,
         ]);
@@ -124,7 +124,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         }
         $this->result = array_filter([
             'type' => 'object',
-            'title' => $schema->name,
+            'x-title' => $schema->name,
             'description' => $schema->description,
             'properties' => $propertyDefs,
             'required' => $schema->required,

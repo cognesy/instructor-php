@@ -50,7 +50,7 @@ class MistralDriver extends OpenAIDriver
 
     private function removeDisallowedEntries(array $jsonSchema) : array {
         return Arrays::removeRecursively($jsonSchema, [
-            'title',
+            'x-title',
             //'description',
             'x-php-class',
             'additionalProperties',

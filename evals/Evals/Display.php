@@ -1,7 +1,8 @@
 <?php
 
-namespace Cognesy\Evals\LLMModes;
+namespace Cognesy\Evals\Evals;
 
+use Cognesy\Evals\Evals\Data\EvalOutput;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;

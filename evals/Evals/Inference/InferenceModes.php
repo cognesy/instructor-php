@@ -1,28 +1,25 @@
 <?php
 
-namespace Cognesy\Evals\LLMModes;
+namespace Cognesy\Evals\Evals\Inference;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Features\LLM\InferenceResponse;
 
-class Modes
+class InferenceModes
 {
-    private Model $model;
+    private TaskSchema $schema;
     private int $maxTokens = 512;
-    private bool $debug;
 
     public function __construct(
         array $schema = [],
-        bool $debug = false,
     ) {
-        $this->model = new Model(schema: $schema);
-        $this->debug = $debug;
+        $this->schema = new TaskSchema(schema: $schema);
     }
 
     public function schema() : array {
-        return $this->model->schema();
+        return $this->schema->schema();
     }
 
     public function callInferenceFor(string|array $query, Mode $mode, string $connection, array $schema, bool $isStreamed) : LLMResponse {
@@ -40,11 +37,10 @@ class Modes
     public function forModeTools(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
-            ->withDebug($this->debug)
             ->create(
                 messages: $query,
-                tools: $this->model->tools(),
-                toolChoice: $this->model->toolChoice(),
+                tools: $this->schema->tools(),
+                toolChoice: $this->schema->toolChoice(),
                 options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
                 mode: Mode::Tools,
             );
@@ -53,13 +49,12 @@ class Modes
     public function forModeJsonSchema(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
-            ->withDebug($this->debug)
             ->create(
                 messages: array_merge($query, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
                     ['role' => 'user', 'content' => 'Respond with correct JSON.'],
                 ]),
-                responseFormat: $this->model->responseFormatJsonSchema(),
+                responseFormat: $this->schema->responseFormatJsonSchema(),
                 options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
                 mode: Mode::JsonSchema,
             );
@@ -68,13 +63,12 @@ class Modes
     public function forModeJson(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
-            ->withDebug($this->debug)
             ->create(
                 messages: array_merge($query, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
                     ['role' => 'user', 'content' => 'Respond with correct JSON.'],
                 ]),
-                responseFormat: $this->model->responseFormatJson(),
+                responseFormat: $this->schema->responseFormatJson(),
                 options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],
                 mode: Mode::Json,
             );
@@ -83,7 +77,6 @@ class Modes
     public function forModeMdJson(string|array $query, string $connection, array $schema, bool $isStreamed) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
-            ->withDebug($this->debug)
             ->create(
                 messages: array_merge($query, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema)],
@@ -98,7 +91,6 @@ class Modes
     public function forModeText(string|array $query, string $connection, bool $isStreamed) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
-            ->withDebug($this->debug)
             ->create(
                 messages: $query,
                 options: ['max_tokens' => $this->maxTokens, 'stream' => $isStreamed],

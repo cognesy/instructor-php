@@ -1,17 +1,19 @@
 <?php
 
-namespace Cognesy\Evals\LLMModes;
+namespace Cognesy\Evals\Evals\Inference;
 
-class Model
+class TaskSchema
 {
     public function __construct(
-        private array $schema = [],
+        private string $toolName = 'store_company',
+        private string $schemaDescription = 'Company data',
+        private array  $schema = [],
     ) {}
 
     public function schema() : array {
         return $this->schema ?: [
             'type' => 'object',
-            'description' => 'Company data',
+            'description' => $this->schemaDescription,
             'properties' => [
                 'year' => [
                     'type' => 'integer',
@@ -31,8 +33,8 @@ class Model
         return [[
             'type' => 'function',
             'function' => [
-                'name' => 'store_company',
-                'description' => 'Save company data',
+                'name' => $this->toolName,
+                'description' => $this->schemaDescription,
                 'parameters' => $this->schema(),
             ],
         ]];
@@ -41,9 +43,9 @@ class Model
     public function responseFormatJsonSchema() : array {
         return [
             'type' => 'json_schema',
-            'description' => 'Company data',
+            'description' => $this->schemaDescription,
             'json_schema' => [
-                'name' => 'store_company',
+                'name' => $this->schemaName,
                 'schema' => $this->schema(),
                 'strict' => true,
             ],
@@ -61,7 +63,7 @@ class Model
         return [
             'type' => 'function',
             'function' => [
-                'name' => 'store_company'
+                'name' => $this->toolName,
             ]
         ];
     }

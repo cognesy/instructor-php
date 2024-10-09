@@ -108,7 +108,7 @@ class CohereV2Driver extends OpenAIDriver
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
         return Arrays::removeRecursively($jsonSchema, [
-            'title',
+            'x-title',
             'x-php-class',
             'additionalProperties',
         ]);

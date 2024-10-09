@@ -188,7 +188,7 @@ it('creates structure from class', function() {
 
 it('creates structure from JSON Schema', function() {
     $jsonSchema = [
-        'title' => 'TestStructure',
+        'x-title' => 'TestStructure',
         'type' => 'object',
         'description' => 'Test structure',
         'properties' => [

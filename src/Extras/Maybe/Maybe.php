@@ -51,8 +51,8 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     public function toJsonSchema(): array {
         $schema = $this->schemaFactory->schema($this->class);
         $schemaData = (new SchemaToJsonSchema)->toArray($schema);
-        $schemaData['title'] = $this->name ?: TypeDetails::fromTypeName($this->class)->classOnly();
-        $schemaData['description'] = $this->description ?: "Correctly extracted values of ".$schemaData['title'];
+        $schemaData['x-title'] = $this->name ?: TypeDetails::fromTypeName($this->class)->classOnly();
+        $schemaData['description'] = $this->description ?: "Correctly extracted values of ".$schemaData['x-title'];
         $schemaData['x-php-class'] = $this->class;
         return [
             'type' => 'object',

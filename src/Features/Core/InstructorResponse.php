@@ -7,6 +7,7 @@ use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Features\Core\Data\Request;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Exception;
+use Generator;
 
 class InstructorResponse
 {
@@ -31,16 +32,16 @@ class InstructorResponse
         if ($this->request->isStream()) {
             return $this->stream()->final();
         }
-        $result = $this->requestHandler->responseFor($this->request);
-        $this->events->dispatch(new InstructorDone(['result' => $result]));
-        return $result->value();
+        $response = $this->getResponse();
+        $this->events->dispatch(new InstructorDone(['result' => $response]));
+        return $response->value();
     }
 
     /**
      * Executes the request and returns LLM response object
      */
     public function response() : LLMResponse {
-        $response = $this->requestHandler->responseFor($this->request);
+        $response = $this->getResponse();
         $this->events->dispatch(new InstructorDone(['result' => $response->value()]));
         return $response;
     }
@@ -53,7 +54,19 @@ class InstructorResponse
         if (!$this->request->isStream()) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
-        $stream = $this->requestHandler->streamResponseFor($this->request);
+        $stream = $this->getStream();
         return new InstructorStream($stream, $this->events);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function getResponse() : LLMResponse {
+        // TODO: this should be called only once and result stored
+        return $this->requestHandler->responseFor($this->request);
+    }
+
+    private function getStream() : Generator {
+        // TODO: this should be called only once and result stored
+        return $this->requestHandler->streamResponseFor($this->request);
     }
 }

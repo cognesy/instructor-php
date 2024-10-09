@@ -37,7 +37,7 @@ class JsonSchemaToSchema
         $factory = new TypeDetailsFactory();
         return new ObjectSchema(
             type: $factory->objectType($class),
-            name: $customName ?? ($jsonSchema['title'] ?? $this->defaultToolName),
+            name: $customName ?? ($jsonSchema['x-title'] ?? $this->defaultToolName),
             description: $customDescription ?? ($jsonSchema['description'] ?? $this->defaultToolDescription),
             properties: $this->makeProperties($jsonSchema['properties'] ?? []),
             required: $jsonSchema['required'] ?? [],

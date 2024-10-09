@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Evals\LLMModes;
+namespace Cognesy\Evals\Evals\Data;
 
 use Exception;
 

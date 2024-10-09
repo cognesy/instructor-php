@@ -96,7 +96,7 @@ it('can provide JSON schema of function call', function () {
             'boolParam' => ['type' => 'boolean'],
             'objectParam' => [
                 'type' => 'object',
-                'title' => 'objectParam',
+                'x-title' => 'objectParam',
                 'properties' => [
                     'intField' => ['type' => 'integer'],
                     'stringField' => ['type' => 'string'],
@@ -129,7 +129,7 @@ it('can provide OpenAI tool call format for function', function () {
                     'boolParam' => ['type' => 'boolean'],
                     'objectParam' => [
                         'type' => 'object',
-                        'title' => 'objectParam',
+                        'x-title' => 'objectParam',
                         'properties' => [
                             'intField' => ['type' => 'integer'],
                             'stringField' => ['type' => 'string'],

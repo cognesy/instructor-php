@@ -23,7 +23,7 @@ it('creates a schema from a class name with object references', function () {
     expect($json)->toBeArray();
     $expected = [
         'type' => 'object',
-        'title' => 'TestClassA',
+        'x-title' => 'TestClassA',
         'description' => 'Class description',
         'properties' => [
             'testProperty' => [

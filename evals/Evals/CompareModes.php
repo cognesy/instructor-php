@@ -1,7 +1,10 @@
 <?php
-namespace Cognesy\Evals\LLMModes;
+namespace Cognesy\Evals\Evals;
 
 use Closure;
+use Cognesy\Evals\Evals\Contracts\CanExecuteExperiment;
+use Cognesy\Evals\Evals\Data\EvalInput;
+use Cognesy\Evals\Evals\Data\EvalOutput;
 use Cognesy\Instructor\Enums\Mode;
 use Exception;
 
@@ -9,21 +12,28 @@ class CompareModes {
     private array $exceptions = [];
     private array $responses = [];
     private Display $display;
-    private Modes $modes;
+    private string|array|object $schema;
+    /** @var class-string */
+    private string $executor;
+    private string|array $messages;
+    private Closure $evalFn;
 
     public function __construct(
-        private string|array $query,
-        private Closure $evalFn,
-        array $schema = [],
-        bool $debug = false,
+        string|array $messages,
+        string|array|object $schema,
+        string       $executorClass,
+        Closure      $evalFn,
     ) {
+        $this->messages = $messages;
+        $this->schema = $schema;
+        $this->executor = $executorClass;
+        $this->evalFn = $evalFn;
         $this->display = new Display();
-        $this->modes = new Modes(schema: $schema, debug: $debug);
     }
 
     // PUBLIC //////////////////////////////////////////////////
 
-    public function executeAll(array $connections, array $modes, array $streamingModes = [false, true]) : array {
+    public function executeAll(array $connections, array $modes, array $streamingModes) : array {
         foreach ($streamingModes as $isStreamed) {
             foreach ($modes as $mode) {
                 foreach ($connections as $connection) {
@@ -34,11 +44,9 @@ class CompareModes {
                 }
             }
         }
-
         if (!empty($this->exceptions)) {
             $this->display->displayExceptions($this->exceptions);
         }
-
         return $this->responses;
     }
 
@@ -47,23 +55,26 @@ class CompareModes {
     private function execute(string $connection, Mode $mode, bool $isStreamed) : EvalOutput {
         $key = $this->makeKey($connection, $mode, $isStreamed);
         try {
-            $time = microtime(true);
-            $llmResponse = $this->modes->callInferenceFor($this->query, $mode, $connection, $this->modes->schema(), $isStreamed);
-            $answer = $llmResponse->content;
-            $timeElapsed = microtime(true) - $time;
-            $evalRequest = new EvalInput(
-                answer: $answer,
-                query: $this->query,
-                schema: $this->modes->schema(),
+            $evalInput = new EvalInput(
+                messages: $this->messages,
+                schema: $this->schema,
                 mode: $mode,
                 connection: $connection,
                 isStreamed: $isStreamed,
-                response: $llmResponse,
             );
-            $isCorrect = ($this->evalFn)($evalRequest);
+            // execute and measure time
+            $time = microtime(true);
+            /** @var CanExecuteExperiment $execution */
+            $execution = ($this->executor)::executeFor($evalInput);
+            $llmResponse = $execution->getLLMResponse();
+            $evalInput->withResponse($llmResponse);
+            $answer = $execution->getAnswer();
+            $timeElapsed = microtime(true) - $time;
+            $isCorrect = ($this->evalFn)($evalInput);
+
             $evalResponse = new EvalOutput(
                 id: $key,
-                notes: $answer,
+                notes: $llmResponse->content(),
                 isCorrect: $isCorrect,
                 timeElapsed: $timeElapsed,
                 inputTokens: $llmResponse->usage()->inputTokens,
