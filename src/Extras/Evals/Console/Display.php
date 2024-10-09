@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Evals\Evals;
+namespace Cognesy\Instructor\Extras\Evals\Console;
 
-use Cognesy\Evals\Evals\Data\EvalOutput;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Data\EvalOutput;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
 use Cognesy\Instructor\Utils\Debug\Debug;

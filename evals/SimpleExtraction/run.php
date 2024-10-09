@@ -1,10 +1,9 @@
 <?php
 
-use Cognesy\Evals\Evals\CompareModes;
-use Cognesy\Evals\Evals\Data\EvalInput;
-use Cognesy\Evals\Evals\Instructor\RunInstructor;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
+use Cognesy\Instructor\Extras\Evals\Evaluator;
+use Cognesy\Instructor\Extras\Evals\Instructor\RunInstructor;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -54,7 +53,7 @@ function evalFn(EvalInput $er) {
         && $person->foundingYear === 2020;
 }
 
-$outputs = (new CompareModes(
+$outputs = (new Evaluator(
     messages: [
         ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
         ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
@@ -65,7 +64,7 @@ $outputs = (new CompareModes(
     schema: Company::class,
     executorClass: RunInstructor::class,
     evalFn: fn(EvalInput $er) => evalFn($er),
-))->executeAll(
+))->execute(
     connections: $connections,
     modes: $modes,
     streamingModes: $streamingModes

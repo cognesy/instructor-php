@@ -1,10 +1,11 @@
 <?php
 
-namespace Cognesy\Evals\Evals\Inference;
+namespace Cognesy\Instructor\Extras\Evals\Inference;
 
-use Cognesy\Evals\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Evals\Evals\Data\EvalInput;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
+use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
+use Cognesy\Instructor\Extras\Evals\Data\EvalSchema;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
 class RunInference implements CanExecuteExperiment
@@ -21,25 +22,30 @@ class RunInference implements CanExecuteExperiment
 
     public function __construct(
         string|array $query,
-        array $schema,
+        EvalSchema $schema,
         Mode $mode,
         string $connection,
-        bool $isStreamed
+        bool $isStreamed,
+        int $maxTokens,
     ) {
         $this->query = $query;
-        $this->modes = new InferenceModes(schema: $schema);
+        $this->modes = new InferenceModes(
+            schema: $schema,
+            maxTokens: $maxTokens
+        );
         $this->mode = $mode;
         $this->connection = $connection;
         $this->isStreamed = $isStreamed;
     }
 
-    public static function executeFor(EvalInput $input) : self {
+    public function executeFor(EvalInput $input) : self {
         $instance = new RunInference(
             query: $input->messages,
-            schema: $input->schema,
+            schema: $input->evalSchema(),
             mode: $input->mode,
             connection: $input->connection,
-            isStreamed: $input->isStreamed
+            isStreamed: $input->isStreamed,
+            maxTokens: $input->maxTokens,
         );
         $instance->response = $instance->makeLLMResponse();
         $instance->answer = $instance->response->content();

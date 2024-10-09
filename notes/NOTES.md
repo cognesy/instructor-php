@@ -2,6 +2,7 @@
 
 ## High priority
 
+- Evals!!!
 - Logging via PSR-3
 - Schema abstraction layer - decouple names and descriptions from the model
 - Prompt optimization via TextGrad
@@ -11,24 +12,19 @@
 - CLI app
 - Fast/simple REST API server - compatible with OpenAI? 
 - Revise examples debugging - not sure if it works as expected (what does it demonstrate?)
-
-# Partially done
-
-- Export configuration to user folder / use external configuration
-- Validators / Deserializers / Transformers - chain of objects, not a single object
-- API Client: Clean up predefined models, prices, etc.
-
-# TODOs
-
 - Multiple tools with tool selection
 - Parallel tool calls
-- Generate unstructured, then format to structured - to improve reasoning
+- Export configuration to user folder / use external configuration
 - Full control over generated prompt (access to Script object processing)
-- Evals!!!
 
-## API Client
+## Low priority
 
-- Move to raw Guzzle or Httplug?
+- Batch API support (Gemini, OpenAI, Anthropic)
+- Gemini context caching
+- Generate unstructured, then format to structured - to improve reasoning
+
+
+# BACKLOG
 
 ## Addon: Modules
 
@@ -74,7 +70,8 @@
 - How to track API rate limits across multiple requests / parallel executions
 - Make using DocBlocks optional - it may not always to be desired to pass this info to LLM
 - Add super detailed tests of Module core functionality - esp. around input/output mappings
-
+- Validators / Deserializers / Transformers - chain of objects, not a single object
+- API Client: Clean up predefined models, prices, etc.
 
 
 

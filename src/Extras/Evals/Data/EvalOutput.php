@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Evals\Evals\Data;
+namespace Cognesy\Instructor\Extras\Evals\Data;
 
 use Exception;
 

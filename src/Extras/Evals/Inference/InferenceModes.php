@@ -1,35 +1,44 @@
 <?php
 
-namespace Cognesy\Evals\Evals\Inference;
+namespace Cognesy\Instructor\Extras\Evals\Inference;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Data\EvalSchema;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Features\LLM\InferenceResponse;
 
 class InferenceModes
 {
-    private TaskSchema $schema;
-    private int $maxTokens = 512;
+    private EvalSchema $schema;
+    private int $maxTokens;
 
     public function __construct(
-        array $schema = [],
+        EvalSchema $schema,
+        int $maxTokens,
     ) {
-        $this->schema = new TaskSchema(schema: $schema);
+        $this->schema = $schema;
+        $this->maxTokens = $maxTokens;
     }
 
     public function schema() : array {
         return $this->schema->schema();
     }
 
-    public function callInferenceFor(string|array $query, Mode $mode, string $connection, array $schema, bool $isStreamed) : LLMResponse {
-        $query = is_array($query) ? $query : [['role' => 'user', 'content' => $query]];
+    public function callInferenceFor(
+        string|array $messages,
+        Mode $mode,
+        string $connection,
+        array $schema,
+        bool $isStreamed
+    ) : LLMResponse {
+        $messages = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $inferenceResponse = match($mode) {
-            Mode::Tools => $this->forModeTools($query, $connection, $schema, $isStreamed),
-            Mode::JsonSchema => $this->forModeJsonSchema($query, $connection, $schema, $isStreamed),
-            Mode::Json => $this->forModeJson($query, $connection, $schema, $isStreamed),
-            Mode::MdJson => $this->forModeMdJson($query, $connection, $schema, $isStreamed),
-            Mode::Text => $this->forModeText($query, $connection, $isStreamed),
+            Mode::Tools => $this->forModeTools($messages, $connection, $schema, $isStreamed),
+            Mode::JsonSchema => $this->forModeJsonSchema($messages, $connection, $schema, $isStreamed),
+            Mode::Json => $this->forModeJson($messages, $connection, $schema, $isStreamed),
+            Mode::MdJson => $this->forModeMdJson($messages, $connection, $schema, $isStreamed),
+            Mode::Text => $this->forModeText($messages, $connection, $isStreamed),
         };
         return $inferenceResponse->response();
     }

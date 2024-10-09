@@ -1,28 +1,29 @@
 <?php
-namespace Cognesy\Evals\Evals;
+namespace Cognesy\Instructor\Extras\Evals;
 
 use Closure;
-use Cognesy\Evals\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Evals\Evals\Data\EvalInput;
-use Cognesy\Evals\Evals\Data\EvalOutput;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Console\Display;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
+use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
+use Cognesy\Instructor\Extras\Evals\Data\EvalOutput;
 use Exception;
 
-class CompareModes {
+class Evaluator {
     private array $exceptions = [];
     private array $responses = [];
     private Display $display;
     private string|array|object $schema;
     /** @var class-string */
-    private string $executor;
+    private CanExecuteExperiment $executor;
     private string|array $messages;
     private Closure $evalFn;
 
     public function __construct(
         string|array $messages,
         string|array|object $schema,
-        string       $executorClass,
-        Closure      $evalFn,
+        CanExecuteExperiment $executorClass,
+        Closure $evalFn,
     ) {
         $this->messages = $messages;
         $this->schema = $schema;
@@ -33,12 +34,16 @@ class CompareModes {
 
     // PUBLIC //////////////////////////////////////////////////
 
-    public function executeAll(array $connections, array $modes, array $streamingModes) : array {
+    public function execute(
+        array $connections,
+        array $modes,
+        array $streamingModes
+    ) : array {
         foreach ($streamingModes as $isStreamed) {
             foreach ($modes as $mode) {
                 foreach ($connections as $connection) {
                     $this->display->before($mode, $connection, $isStreamed);
-                    $evalResponse = $this->execute($connection, $mode, $isStreamed);
+                    $evalResponse = $this->executeSingle($connection, $mode, $isStreamed);
                     $this->responses[] = $evalResponse;
                     $this->display->after($evalResponse);
                 }
@@ -52,7 +57,11 @@ class CompareModes {
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function execute(string $connection, Mode $mode, bool $isStreamed) : EvalOutput {
+    private function executeSingle(
+        string $connection,
+        Mode $mode,
+        bool $isStreamed
+    ) : EvalOutput {
         $key = $this->makeKey($connection, $mode, $isStreamed);
         try {
             $evalInput = new EvalInput(
@@ -62,10 +71,11 @@ class CompareModes {
                 connection: $connection,
                 isStreamed: $isStreamed,
             );
+
             // execute and measure time
             $time = microtime(true);
             /** @var CanExecuteExperiment $execution */
-            $execution = ($this->executor)::executeFor($evalInput);
+            $execution = $this->executor->executeFor($evalInput);
             $llmResponse = $execution->getLLMResponse();
             $evalInput->withResponse($llmResponse);
             $answer = $execution->getAnswer();
@@ -95,6 +105,6 @@ class CompareModes {
     }
 
     private function makeKey(string $connection, Mode $mode, bool $isStreamed) : string {
-        return $connection.'::'.$mode->value.'::'.($isStreamed?'streamed':'sync');
+        return $connection.'::'.$mode->value.'::'.($isStreamed ? 'streamed' : 'sync');
     }
 }

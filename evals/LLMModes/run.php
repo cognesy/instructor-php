@@ -3,24 +3,25 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
-use Cognesy\Evals\Evals\CompareModes;
-use Cognesy\Evals\Evals\Data\EvalInput;
-use Cognesy\Evals\Evals\Inference\RunInference;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
+use Cognesy\Instructor\Extras\Evals\Data\EvalSchema;
+use Cognesy\Instructor\Extras\Evals\Evaluator;
+use Cognesy\Instructor\Extras\Evals\Inference\RunInference;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-    'azure',
-    'cohere1',
-    'cohere2',
-    'fireworks',
-    'gemini',
+//    'azure',
+//    'cohere1',
+//    'cohere2',
+//    'fireworks',
+//    'gemini',
     'groq',
-    'mistral',
-    'ollama',
-    'openai',
-    'openrouter',
-    'together',
+//    'mistral',
+//    'ollama',
+//    'openai',
+//    'openrouter',
+//    'together',
 ];
 
 $streamingModes = [
@@ -62,7 +63,28 @@ function validateToolsData(array $data) : bool {
 
 //Debug::enable();
 
-$outputs = (new CompareModes(
+$schema = new EvalSchema(
+    toolName: 'store_company',
+    toolDescription: 'Store company information',
+    schema: [
+        'type' => 'object',
+        'description' => 'Company information',
+        'properties' => [
+            'year' => [
+                'type' => 'integer',
+                'description' => 'Founding year',
+            ],
+            'name' => [
+                'type' => 'string',
+                'description' => 'Company name',
+            ],
+        ],
+        'required' => ['name', 'year'],
+        'additionalProperties' => false,
+    ]
+);
+
+$evaluator = new Evaluator(
     messages: [
         ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
         ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
@@ -70,10 +92,12 @@ $outputs = (new CompareModes(
         //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
-    schema: [],
+    schema: $schema,
     executorClass: RunInference::class,
-    evalFn: fn(EvalInput $er) => evalFn($er),
-))->executeAll(
+    evalFn: fn(EvalInput $evalInput) => evalFn($evalInput),
+);
+
+$outputs = $evaluator->execute(
     connections: $connections,
     modes: $modes,
     streamingModes: $streamingModes

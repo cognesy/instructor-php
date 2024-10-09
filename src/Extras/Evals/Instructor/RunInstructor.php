@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Evals\Evals\Instructor;
+namespace Cognesy\Instructor\Extras\Evals\Instructor;
 
-use Cognesy\Evals\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Evals\Evals\Data\EvalInput;
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
+use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
 use Cognesy\Instructor\Features\Core\InstructorResponse;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Instructor;
