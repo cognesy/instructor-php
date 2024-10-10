@@ -3,6 +3,8 @@ namespace Cognesy\Instructor\Utils\Cli;
 
 class Console
 {
+    const COLUMN_DIVIDER = ' ';
+
     public static function print(string $message, string|array $color = ''): void {
         print(self::color($color, $message));
     }
@@ -14,6 +16,12 @@ class Console
     public static function clearScreen(): void {
         print("\033[2J\033[;H");
         //echo chr(27).chr(91).'H'.chr(27).chr(91).'J';
+    }
+
+    public static function center(string $message, int $width, string|array $color = ''): string {
+        $message = self::color($color, $message);
+        $message = str_pad($message, $width, ' ', STR_PAD_BOTH);
+        return $message;
     }
 
     public static function columns(array $columns, int $maxWidth): string {
@@ -35,7 +43,7 @@ class Console
                     align: $row[2]??STR_PAD_RIGHT
                 );
             }
-            $message .= ' ';
+            $message .= self::COLUMN_DIVIDER;
         }
         return $message;
     }
@@ -49,8 +57,8 @@ class Console
                 ? '…'.substr($short,1)
                 : substr($short, 0, -1).'…';
         }
-        $output = str_pad($short, $chars, ' ', $align);
-        $output = self::color($color, $output);
+        $output = self::color($color, str_pad($short, $chars, ' ', $align));
+        $output .= Color::RESET;
         return $output;
     }
 

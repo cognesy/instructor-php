@@ -1,25 +1,28 @@
 <?php
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Combination;
 use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
 use Cognesy\Instructor\Extras\Evals\Evaluator;
 use Cognesy\Instructor\Extras\Evals\Instructor\RunInstructor;
+use Cognesy\Instructor\Extras\Evals\Mappings\ConnectionModes;
+use Cognesy\Instructor\Utils\Debug\Debug;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 $connections = [
-    'azure',
-    'cohere1',
+//    'azure',
+//    'cohere1',
     'cohere2',
-    'fireworks',
-    'gemini',
-    'groq',
-    'mistral',
-    'ollama',
-    'openai',
-    'openrouter',
-    'together',
+//    'fireworks',
+//    'gemini',
+//    'groq',
+//    'mistral',
+//    'ollama',
+//    'openai',
+//    'openrouter',
+//    'together',
 ];
 
 $streamingModes = [
@@ -34,17 +37,19 @@ $modes = [
     Mode::Tools,
 ];
 
-//$report = file_get_contents(__DIR__ . '/report.txt');
-//$examples = require 'examples.php';
-//$prompt = 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>';
-//$responseModel = Sequence::of(ProjectEvent::class);
+$combinations = Combination::generator(
+    mapping: ConnectionModes::class,
+    sources: [
+        'isStreaming' => $streamingModes,
+        'mode' => $modes,
+        'connection' => $connections,
+    ],
+);
 
 class Company {
     public string $name;
     public int $foundingYear;
 }
-
-//Debug::enable();
 
 function evalFn(EvalInput $er) {
     /** @var Person $decoded */
@@ -52,6 +57,13 @@ function evalFn(EvalInput $er) {
     return $person->name === 'ACME'
         && $person->foundingYear === 2020;
 }
+
+//Debug::enable();
+
+//$report = file_get_contents(__DIR__ . '/report.txt');
+//$examples = require 'examples.php';
+//$prompt = 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>';
+//$responseModel = Sequence::of(ProjectEvent::class);
 
 $outputs = (new Evaluator(
     messages: [
@@ -62,29 +74,8 @@ $outputs = (new Evaluator(
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
     schema: Company::class,
-    executorClass: RunInstructor::class,
+    runner: new RunInstructor(),
     evalFn: fn(EvalInput $er) => evalFn($er),
 ))->execute(
-    connections: $connections,
-    modes: $modes,
-    streamingModes: $streamingModes
+    combinations: $combinations
 );
-
-
-//$connection = 'gemini';
-//$mode = Mode::Json;
-//$withStreaming = false;
-//
-//$action = new ExtractData(
-//    messages: $input,
-//    responseModel: $responseModel,
-//    connection: $connection,
-//    mode: $mode,
-//    withStreaming: $withStreaming,
-//    prompt: $prompt,
-//    examples: $examples,
-//    model: 'gemini-1.5-pro',
-//);
-//
-//$response = $action();
-//dump($response->get()->all());

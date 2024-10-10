@@ -6,7 +6,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
 interface CanExecuteExperiment
 {
-    public static function fromEvalInput(EvalInput $input): self;
+    public function withEvalInput(EvalInput $input): self;
     public function execute(): void;
     public function getLLMResponse(): LLMResponse;
     public function getAnswer(): mixed;

@@ -13,9 +13,9 @@ class Display
 {
     public function before(Mode $mode, string $connection, bool $isStreamed) : void {
         echo Console::columns([
-            [14, $mode->value, STR_PAD_RIGHT, Color::YELLOW],
-            [12, $connection, STR_PAD_RIGHT, Color::WHITE],
-            [10, $isStreamed ? 'stream' : 'sync', STR_PAD_LEFT, $isStreamed ? Color::BLUE : Color::DARK_BLUE],
+            [10, $connection, STR_PAD_RIGHT, Color::WHITE],
+            [11, $mode->value, STR_PAD_RIGHT, Color::YELLOW],
+            [8, $isStreamed ? 'stream' : 'sync', STR_PAD_LEFT, $isStreamed ? Color::BLUE : Color::DARK_BLUE],
         ], 80);
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
     }
@@ -23,7 +23,7 @@ class Display
     public function after(EvalOutput $evalResponse) : void {
         $answer = $evalResponse->notes;
         $answerLine = str_replace("\n", '\n', $answer);
-        $isCorrect = $evalResponse->isCorrect;
+        $metric = $evalResponse->metric;
         $timeElapsed = $evalResponse->timeElapsed;
         $tokensPerSec = $evalResponse->outputTps();
         $exception = $evalResponse->exception;
@@ -34,14 +34,15 @@ class Display
             //Console::println(, [Color::RED, Color::BG_BLACK]);
             echo Console::columns([
                 [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
-                [5, ' !!!!', STR_PAD_RIGHT, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
+                [10, '', STR_PAD_LEFT, [Color::CYAN]],
+                [6, '!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
                 [60, ' ' . $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
             ], 120);
         } else {
             echo Console::columns([
                 [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
                 [10, $this->tokensPerSecFormat($tokensPerSec), STR_PAD_LEFT, [Color::CYAN]],
-                [5, $isCorrect ? '  OK ' : ' FAIL', STR_PAD_RIGHT, $isCorrect ? [Color::BG_GREEN, Color::WHITE] : [Color::BG_RED, Color::WHITE]],
+                [6, $metric->toString(), STR_PAD_BOTH, $metric->toCliColor()],
                 [60, ' ' . $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
             ], 120);
         }

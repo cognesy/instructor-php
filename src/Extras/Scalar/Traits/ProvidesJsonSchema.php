@@ -13,7 +13,6 @@ trait ProvidesJsonSchema
     public function toJsonSchema() : array {
         $name = $this->name;
         $array = [
-            'x-php-class' => Scalar::class,
             'type' => 'object',
             'properties' => [
                 $name => [
@@ -22,6 +21,7 @@ trait ProvidesJsonSchema
                     'type' => $this->type->toJsonType(),
                 ],
             ],
+            'x-php-class' => Scalar::class,
         ];
         if (!empty($this->options)) {
             /** @noinspection UnsupportedStringOffsetOperationsInspection */

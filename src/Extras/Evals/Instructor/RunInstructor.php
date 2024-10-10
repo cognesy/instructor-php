@@ -11,42 +11,36 @@ use Cognesy\Instructor\Instructor;
 
 class RunInstructor implements CanExecuteExperiment
 {
-    public $maxTokens = 4096;
-    public $toolName = '';
-    public $toolDescription = '';
-    public $retryPrompt = '';
-    public int $maxRetries = 0;
+    public string|array $messages = '';
+    public string|array|object $responseModel = [];
+    public string $connection = '';
+    public Mode $mode = Mode::Json;
+    public bool $withStreaming = false;
+    public int $maxTokens = 4096;
+    public string $toolName = '';
+    public string $toolDescription = '';
+
     public string $system = '';
+    public string $prompt = '';
+    public string|array|object $input = '';
+    public array $examples = [];
+    public string $model = '';
+    public string $retryPrompt = '';
+    public int $maxRetries = 0;
 
     private InstructorResponse $instructorResponse;
-    private mixed $answer;
     private LLMResponse $llmResponse;
+    private mixed $answer;
 
-    public function __construct(
-        readonly public string|array        $messages,
-        readonly public string|array|object $responseModel,
-        readonly public string              $connection,
-        readonly public Mode                $mode = Mode::Json,
-        readonly public bool                $withStreaming = false,
-        readonly public string              $prompt = '',
-        readonly public string|array|object $input = '',
-        readonly public array               $examples = [],
-        readonly public string              $model = '',
-    ) {}
-
-    public static function fromEvalInput(EvalInput $input) : self {
-        $instance = new RunInstructor(
-            messages: $input->messages,
-            responseModel: $input->schema,
-            connection: $input->connection,
-            mode: $input->mode,
-            withStreaming: $input->isStreamed,
-            prompt: '',
-            input: '',
-            examples: [],
-            model: '',
-        );
-        return $instance;
+    public function withEvalInput(EvalInput $input) : self {
+        $this->messages = $input->messages;
+        $this->responseModel = $input->responseSchema();
+        $this->connection = $input->connection;
+        $this->mode = $input->mode;
+        $this->withStreaming = $input->isStreamed;
+        //$this->toolName = $input->responseSchema()->toolName;
+        //$this->toolDescription = $input->responseSchema()->toolDescription;
+        return $this;
     }
 
     public function execute() : void {
@@ -66,7 +60,7 @@ class RunInstructor implements CanExecuteExperiment
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeInstructorResponse() : InstructorResponse {
-        $response = (new Instructor)
+        return (new Instructor)
             ->withConnection($this->connection)
             ->request(
                 messages: $this->messages,
@@ -86,7 +80,5 @@ class RunInstructor implements CanExecuteExperiment
                 retryPrompt: $this->retryPrompt,
                 mode: $this->mode,
             );
-        $this->instructorResponse = $response;
-        return $response;
     }
 }

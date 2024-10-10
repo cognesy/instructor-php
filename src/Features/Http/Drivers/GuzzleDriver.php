@@ -50,6 +50,7 @@ class GuzzleDriver implements CanHandleHttp
         bool $streaming = false
     ) : CanAccessResponse {
         $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
+        Debug::tryDumpUrl($url);
         try {
             $response = $this->client->request($method, $url, [
                 'headers' => $headers,

@@ -160,10 +160,10 @@ class CohereV2Driver extends OpenAIDriver
 
     private function makeUsage(array $data) : Usage {
         return new Usage(
-            inputTokens: $data['meta']['billed_units']['input_tokens']
+            inputTokens: $data['usage']['billed_units']['input_tokens']
                 ?? $data['delta']['usage']['billed_units']['input_tokens']
                 ?? 0,
-            outputTokens: $data['meta']['billed_units']['output_tokens']
+            outputTokens: $data['usage']['billed_units']['output_tokens']
                 ?? $data['delta']['usage']['billed_units']['output_tokens']
                 ?? 0,
             cacheWriteTokens: 0,

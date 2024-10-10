@@ -96,4 +96,14 @@ class Debug
         /** @noinspection ForgottenDebugOutputInspection */
         dump(json_decode($body));
     }
+
+    public static function tryDumpUrl(string $url) : void {
+        if (Debug::isFlag('http.requestUrl')) {
+            Console::println("");
+            Console::println("[REQUEST URL]", [Color::YELLOW]);
+            Console::println($url, [Color::GRAY]);
+            Console::println("[REQUEST /URL]", [Color::YELLOW]);
+            Console::println("");
+        }
+    }
 }

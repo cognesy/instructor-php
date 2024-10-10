@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Data;
 
-class EvalSchema
+use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
+
+class EvalSchema implements CanProvideJsonSchema
 {
     public function __construct(
         private string $toolName,
@@ -51,5 +53,9 @@ class EvalSchema
                 'name' => $this->toolName,
             ]
         ];
+    }
+
+    public function toJsonSchema(): array {
+        return $this->schema;
     }
 }

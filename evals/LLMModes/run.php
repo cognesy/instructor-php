@@ -4,24 +4,26 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Combination;
 use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
 use Cognesy\Instructor\Extras\Evals\Data\EvalSchema;
 use Cognesy\Instructor\Extras\Evals\Evaluator;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInference;
+use Cognesy\Instructor\Extras\Evals\Mappings\ConnectionModes;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
-//    'azure',
-//    'cohere1',
-//    'cohere2',
-//    'fireworks',
-//    'gemini',
+    'azure',
+    'cohere1',
+    'cohere2',
+    'fireworks',
+    'gemini',
     'groq',
-//    'mistral',
-//    'ollama',
-//    'openai',
-//    'openrouter',
-//    'together',
+    'mistral',
+    'ollama',
+    'openai',
+    'openrouter',
+    'together',
 ];
 
 $streamingModes = [
@@ -44,6 +46,15 @@ $modes = [
 // groq, Mode::Json, stream
 // azure, Mode::JsonSchema, sync|stream
 //
+
+$combinations = Combination::generator(
+    mapping: ConnectionModes::class,
+    sources: [
+        'isStreaming' => $streamingModes,
+        'mode' => $modes,
+        'connection' => $connections,
+    ],
+);
 
 function evalFn(EvalInput $er) {
     $decoded = json_decode($er->response->json(), true);
@@ -93,12 +104,13 @@ $evaluator = new Evaluator(
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
     schema: $schema,
-    executorClass: RunInference::class,
+    runner: new RunInference(),
     evalFn: fn(EvalInput $evalInput) => evalFn($evalInput),
 );
 
 $outputs = $evaluator->execute(
-    connections: $connections,
-    modes: $modes,
-    streamingModes: $streamingModes
+//    connections: $connections,
+//    modes: $modes,
+//    streamingModes: $streamingModes
+    combinations: $combinations
 );
