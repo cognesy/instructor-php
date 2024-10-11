@@ -2,8 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Console;
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Data\Experiment;
+use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
 use Cognesy\Instructor\Utils\Debug\Debug;
@@ -11,22 +10,26 @@ use Exception;
 
 class Display
 {
-    public function before(Mode $mode, string $connection, bool $isStreamed) : void {
+    public function before(Experiment $experiment) : void {
+        $connection = $experiment->connection;
+        $mode = $experiment->mode->value;
+        $streamed = $experiment->isStreamed;
+
         echo Console::columns([
             [10, $connection, STR_PAD_RIGHT, Color::WHITE],
-            [11, $mode->value, STR_PAD_RIGHT, Color::YELLOW],
-            [8, $isStreamed ? 'stream' : 'sync', STR_PAD_LEFT, $isStreamed ? Color::BLUE : Color::DARK_BLUE],
+            [11, $mode, STR_PAD_RIGHT, Color::YELLOW],
+            [8, $streamed ? 'stream' : 'sync', STR_PAD_LEFT, $streamed ? Color::BLUE : Color::DARK_BLUE],
         ], 80);
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
     }
 
-    public function after(Experiment $eval) : void {
-        $answer = $eval->notes;
+    public function after(Experiment $experiment) : void {
+        $answer = $experiment->notes;
         $answerLine = str_replace("\n", '\n', $answer);
-        $metric = $eval->metric;
-        $timeElapsed = $eval->timeElapsed;
-        $tokensPerSec = $eval->outputTps();
-        $exception = $eval->exception;
+        $metric = $experiment->metric;
+        $timeElapsed = $experiment->timeElapsed;
+        $tokensPerSec = $experiment->outputTps();
+        $exception = $experiment->exception;
 
         if ($exception) {
             //Console::print('          ');
@@ -35,7 +38,7 @@ class Display
             echo Console::columns([
                 [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
                 [10, '', STR_PAD_LEFT, [Color::CYAN]],
-                [6, '!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
+                [6, '!!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
                 [60, $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
             ], 120);
         } else {

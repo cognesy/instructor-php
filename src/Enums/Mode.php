@@ -11,9 +11,13 @@ enum Mode : string
     case Text = 'text'; // unstructured text response
 
     public function is(array|Mode $mode) : bool {
-        if (is_array($mode)) {
-            return in_array($this, $mode);
-        }
-        return $this->value === $mode->value;
+        return match(true) {
+            is_array($mode) => $this->isIn($mode),
+            default => $this->value === $mode->value,
+        };
+    }
+
+    public function isIn(array $modes) : bool {
+        return in_array($this, $modes);
     }
 }

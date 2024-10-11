@@ -1,11 +1,11 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Inference;
+namespace Cognesy\Instructor\Extras\Evals\Data;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanMapValues;
 
-class InferenceParams implements CanMapValues {
+class InferenceParamsCase implements CanMapValues {
     public string $connection;
     public bool $isStreaming;
     public Mode $mode;
@@ -16,5 +16,9 @@ class InferenceParams implements CanMapValues {
         $instance->connection = $values['connection'] ?? 'openai';
         $instance->isStreaming = $values['isStreaming'] ?? false;
         return $instance;
+    }
+
+    public function __toString() : string {
+        return $this->connection.'::'.$this->mode->value.'::'.($this->isStreaming ? 'streamed' : 'sync');
     }
 }

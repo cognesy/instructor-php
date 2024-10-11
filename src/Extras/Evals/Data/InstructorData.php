@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Data;
 
-class InstructorConfig
+class InstructorData
 {
     public function __construct(
         public string|array $messages = '',
@@ -10,7 +10,6 @@ class InstructorConfig
         public int $maxTokens = 512,
         public string $toolName = '',
         public string $toolDescription = '',
-
         public string $system = '',
         public string $prompt = '',
         public string|array|object $input = '',
@@ -19,4 +18,8 @@ class InstructorConfig
         public string $retryPrompt = '',
         public int $maxRetries = 0,
     ) {}
+
+    public function responseModel() : string|array|object {
+        return $this->responseModel;
+    }
 }

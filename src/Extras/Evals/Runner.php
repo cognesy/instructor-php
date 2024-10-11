@@ -1,103 +1,61 @@
 <?php
 namespace Cognesy\Instructor\Extras\Evals;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Console\Display;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Instructor\Extras\Evals\Data\Experiment;
-use Cognesy\Instructor\Extras\Evals\Data\ExperimentData;
-use Cognesy\Instructor\Extras\Evals\Inference\InferenceParams;
-use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Data\InferenceParamsCase;
 use Exception;
 use Generator;
 
 class Runner {
     private array $exceptions = [];
-    private array $responses = [];
+    private array $experiments = [];
     private Display $display;
-    private CanExecuteExperiment $runner;
-    private CanEvaluateExperiment $evaluation;
-
-    private ExperimentData $data;
+    private CanExecuteExperiment $executor;
+    private CanEvaluateExperiment $evaluator;
 
     public function __construct(
-        ExperimentData $data,
-        CanExecuteExperiment $runner,
-        CanEvaluateExperiment $evaluation,
+        CanExecuteExperiment  $executor,
+        CanEvaluateExperiment $evaluator,
     ) {
-        $this->data = $data;
-        $this->runner = $runner;
-        $this->evaluation = $evaluation;
+        $this->executor = $executor;
+        $this->evaluator = $evaluator;
         $this->display = new Display();
     }
 
     // PUBLIC //////////////////////////////////////////////////
 
     /**
-     * @param Generator<InferenceParams> $combinations
+     * @param Generator<InferenceParamsCase> $cases
      * @return array<Experiment>
      */
     public function execute(
-        Generator $combinations
+        Generator $cases
     ) : array {
-        foreach ($combinations as $params) {
-            $this->display->before($params->mode, $params->connection, $params->isStreaming);
-            $evaluation = $this->makeExperiment($params->connection, $params->mode, $params->isStreaming);
-            $evaluation = $this->executeExperiment($evaluation);
-            $this->responses[] = $evaluation;
-            $this->display->after($evaluation);
+        foreach ($cases as $case) {
+            $experiment = (new Experiment(
+                    id: (string) $case,
+                    connection: $case->connection,
+                    mode: $case->mode,
+                    isStreamed: $case->isStreaming,
+                ))
+                ->withExecutor($this->executor)
+                ->withEvaluator($this->evaluator);
+
+            $this->display->before($experiment);
+            try {
+                $experiment->execute();
+            } catch(Exception $e) {
+                $this->exceptions[$experiment->id] = $experiment->exception;
+            }
+            $this->executed[] = $experiment;
+            $this->display->after($experiment);
         }
 
         if (!empty($this->exceptions)) {
             $this->display->displayExceptions($this->exceptions);
         }
-        return $this->responses;
-    }
-
-    // INTERNAL /////////////////////////////////////////////////
-
-    private function executeExperiment(Experiment $experiment) : Experiment {
-        try {
-            // execute and measure time
-            $time = microtime(true);
-
-            $this->runner->execute($experiment);
-            $llmResponse = $this->runner->getLLMResponse();
-            $experiment->withResponse($llmResponse);
-
-            $timeElapsed = microtime(true) - $time;
-
-            $evalResponse = $experiment->withOutput(
-                notes: $llmResponse->content(),
-                metric: $this->evaluation->evaluate($experiment),
-                timeElapsed: $timeElapsed,
-                inputTokens: $llmResponse->usage()->inputTokens,
-                outputTokens: $llmResponse->usage()->outputTokens,
-            );
-        } catch(Exception $e) {
-            $timeElapsed = microtime(true) - $time;
-            $this->exceptions[$experiment->id] = $e;
-            $evalResponse = $experiment->withOutput(
-                notes: '',
-                metric: new BooleanCorrectness(false),
-                timeElapsed: $timeElapsed,
-                exception: $e,
-            );
-        }
-        return $evalResponse;
-    }
-
-    private function makeExperiment(string $connection, Mode $mode, bool $isStreamed) : Experiment {
-        return (new Experiment(
-            id: $this->makeKey($connection, $mode, $isStreamed),
-            connection: $connection,
-            mode: $mode,
-            isStreamed: $isStreamed,
-        ))->withExperimentData($this->data);
-    }
-
-    private function makeKey(string $connection, Mode $mode, bool $isStreamed) : string {
-        return $connection.'::'.$mode->value.'::'.($isStreamed ? 'streamed' : 'sync');
+        return $this->experiments;
     }
 }

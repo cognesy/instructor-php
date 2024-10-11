@@ -1,21 +1,27 @@
 <?php
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Data\InstructorData;
+use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInstructor;
+use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
 use Cognesy\Instructor\Extras\Evals\Runner;
-use Cognesy\Evals\SimpleExtraction\CompanyEval;
-use Cognesy\Evals\SimpleExtraction\Company;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-$cases = InferenceCases::except(
+$cases = InferenceCases::get(
     connections: [],
-    modes: [Mode::Text],
+    modes: [],
     stream: []
 );
+
+class Company {
+    public string $name;
+    public int $foundingYear;
+}
 
 $data = new InstructorData(
     messages: [
@@ -28,12 +34,27 @@ $data = new InstructorData(
     responseModel: Company::class,
 );
 
+class CompanyEval implements CanEvaluateExperiment
+{
+    public function evaluate(Experiment $experiment) : Metric {
+        /** @var Person $decoded */
+        $person = $experiment->response->value();
+        $result = $person->name === 'ACME'
+            && $person->foundingYear === 2020;
+        return new BooleanCorrectness($result);
+    }
+}
+
+//Debug::enable();
+
+//$report = file_get_contents(__DIR__ . '/report.txt');
+//$examples = require 'examples.php';
+//$prompt = 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>';
+//$responseModel = Sequence::of(ProjectEvent::class);
+
 $runner = new Runner(
     executor: new RunInstructor($data),
-    evaluator: new CompanyEval(expectations: [
-        'name' => 'ACME',
-        'foundingYear' => 2020
-    ]),
+    evaluator: new CompanyEval(),
 );
 
 $outputs = $runner->execute($cases);
