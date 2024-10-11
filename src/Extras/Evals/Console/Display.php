@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Evals\Console;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Data\EvalOutput;
+use Cognesy\Instructor\Extras\Evals\Data\Experiment;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
 use Cognesy\Instructor\Utils\Debug\Debug;
@@ -20,13 +20,13 @@ class Display
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
     }
 
-    public function after(EvalOutput $evalResponse) : void {
-        $answer = $evalResponse->notes;
+    public function after(Experiment $eval) : void {
+        $answer = $eval->notes;
         $answerLine = str_replace("\n", '\n', $answer);
-        $metric = $evalResponse->metric;
-        $timeElapsed = $evalResponse->timeElapsed;
-        $tokensPerSec = $evalResponse->outputTps();
-        $exception = $evalResponse->exception;
+        $metric = $eval->metric;
+        $timeElapsed = $eval->timeElapsed;
+        $tokensPerSec = $eval->outputTps();
+        $exception = $eval->exception;
 
         if ($exception) {
             //Console::print('          ');
@@ -36,14 +36,14 @@ class Display
                 [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
                 [10, '', STR_PAD_LEFT, [Color::CYAN]],
                 [6, '!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
-                [60, ' ' . $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
+                [60, $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
             ], 120);
         } else {
             echo Console::columns([
                 [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
                 [10, $this->tokensPerSecFormat($tokensPerSec), STR_PAD_LEFT, [Color::CYAN]],
                 [6, $metric->toString(), STR_PAD_BOTH, $metric->toCliColor()],
-                [60, ' ' . $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
+                [60, $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
             ], 120);
         }
         echo "\n";

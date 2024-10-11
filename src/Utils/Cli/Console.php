@@ -43,7 +43,7 @@ class Console
                     align: $row[2]??STR_PAD_RIGHT
                 );
             }
-            $message .= self::COLUMN_DIVIDER;
+            $message .= Color::RESET . self::COLUMN_DIVIDER;
         }
         return $message;
     }
@@ -57,9 +57,7 @@ class Console
                 ? '…'.substr($short,1)
                 : substr($short, 0, -1).'…';
         }
-        $output = self::color($color, str_pad($short, $chars, ' ', $align));
-        $output .= Color::RESET;
-        return $output;
+        return self::color($color, str_pad($short, $chars, ' ', $align));
     }
 
     static private function color(string|array $color, string $output = '') : string {

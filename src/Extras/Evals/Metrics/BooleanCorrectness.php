@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Evals\Metrics;
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Utils\Cli\Color;
 
-class BooleanMetric implements Metric
+class BooleanCorrectness implements Metric
 {
     public function __construct(private bool $value) {}
 

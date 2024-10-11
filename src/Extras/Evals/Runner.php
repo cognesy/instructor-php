@@ -1,54 +1,52 @@
 <?php
 namespace Cognesy\Instructor\Extras\Evals;
 
-use Closure;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Console\Display;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
-use Cognesy\Instructor\Extras\Evals\Data\EvalOutput;
-use Cognesy\Instructor\Extras\Evals\Mappings\ConnectionModes;
-use Cognesy\Instructor\Extras\Evals\Metrics\BooleanMetric;
+use Cognesy\Instructor\Extras\Evals\Data\Experiment;
+use Cognesy\Instructor\Extras\Evals\Data\ExperimentData;
+use Cognesy\Instructor\Extras\Evals\Inference\InferenceParams;
+use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
 use Exception;
 use Generator;
 
-class Evaluator {
+class Runner {
     private array $exceptions = [];
     private array $responses = [];
     private Display $display;
-    private string|array|object $schema;
     private CanExecuteExperiment $runner;
-    private string|array $messages;
-    private Closure $evalFn;
+    private CanEvaluateExperiment $evaluation;
+
+    private ExperimentData $data;
 
     public function __construct(
-        string|array         $messages,
-        string|array|object  $schema,
+        ExperimentData $data,
         CanExecuteExperiment $runner,
-        Closure              $evalFn,
+        CanEvaluateExperiment $evaluation,
     ) {
-        $this->messages = $messages;
-        $this->schema = $schema;
+        $this->data = $data;
         $this->runner = $runner;
-        $this->evalFn = $evalFn;
+        $this->evaluation = $evaluation;
         $this->display = new Display();
     }
 
     // PUBLIC //////////////////////////////////////////////////
 
     /**
-     * @param Generator<ConnectionModes> $combinations
-     * @return array
+     * @param Generator<InferenceParams> $combinations
+     * @return array<Experiment>
      */
     public function execute(
         Generator $combinations
     ) : array {
         foreach ($combinations as $params) {
             $this->display->before($params->mode, $params->connection, $params->isStreaming);
-            $evalInput = $this->makeEvalInput($params->connection, $params->mode, $params->isStreaming);
-            $evalResponse = $this->executeSingle($evalInput);
-            $this->responses[] = $evalResponse;
-            $this->display->after($evalResponse);
+            $evaluation = $this->makeExperiment($params->connection, $params->mode, $params->isStreaming);
+            $evaluation = $this->executeExperiment($evaluation);
+            $this->responses[] = $evaluation;
+            $this->display->after($evaluation);
         }
 
         if (!empty($this->exceptions)) {
@@ -59,34 +57,30 @@ class Evaluator {
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function executeSingle(EvalInput $evalInput) : EvalOutput {
+    private function executeExperiment(Experiment $experiment) : Experiment {
         try {
             // execute and measure time
             $time = microtime(true);
 
-            $this->runner->withEvalInput($evalInput);
-            $this->runner->execute();
+            $this->runner->execute($experiment);
             $llmResponse = $this->runner->getLLMResponse();
-            $evalInput->withResponse($llmResponse);
+            $experiment->withResponse($llmResponse);
 
             $timeElapsed = microtime(true) - $time;
-            $isCorrect = ($this->evalFn)($evalInput);
 
-            $evalResponse = new EvalOutput(
-                id: $evalInput->id,
+            $evalResponse = $experiment->withOutput(
                 notes: $llmResponse->content(),
-                metric: new BooleanMetric($isCorrect),
+                metric: $this->evaluation->evaluate($experiment),
                 timeElapsed: $timeElapsed,
                 inputTokens: $llmResponse->usage()->inputTokens,
                 outputTokens: $llmResponse->usage()->outputTokens,
             );
         } catch(Exception $e) {
             $timeElapsed = microtime(true) - $time;
-            $this->exceptions[$evalInput->id] = $e;
-            $evalResponse = new EvalOutput(
-                id: $evalInput->id,
+            $this->exceptions[$experiment->id] = $e;
+            $evalResponse = $experiment->withOutput(
                 notes: '',
-                metric: new BooleanMetric(false),
+                metric: new BooleanCorrectness(false),
                 timeElapsed: $timeElapsed,
                 exception: $e,
             );
@@ -94,15 +88,13 @@ class Evaluator {
         return $evalResponse;
     }
 
-    private function makeEvalInput(string $connection, Mode $mode, bool $isStreamed) : EvalInput {
-        return new EvalInput(
+    private function makeExperiment(string $connection, Mode $mode, bool $isStreamed) : Experiment {
+        return (new Experiment(
             id: $this->makeKey($connection, $mode, $isStreamed),
-            messages: $this->messages,
-            schema: $this->schema,
-            mode: $mode,
             connection: $connection,
+            mode: $mode,
             isStreamed: $isStreamed,
-        );
+        ))->withExperimentData($this->data);
     }
 
     private function makeKey(string $connection, Mode $mode, bool $isStreamed) : string {

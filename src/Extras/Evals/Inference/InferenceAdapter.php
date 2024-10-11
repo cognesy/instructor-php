@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Evals\Inference;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Data\EvalSchema;
+use Cognesy\Instructor\Extras\Evals\Data\InferenceSchema;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Features\LLM\InferenceResponse;
@@ -11,12 +11,12 @@ use Cognesy\Instructor\Features\LLM\InferenceResponse;
 class InferenceAdapter
 {
     public function callInferenceFor(
-        string|array $messages,
-        Mode $mode,
-        string $connection,
-        EvalSchema $evalSchema,
-        bool $isStreamed,
-        int $maxTokens,
+        string          $connection,
+        Mode            $mode,
+        bool            $isStreamed,
+        string|array    $messages,
+        InferenceSchema $evalSchema,
+        int             $maxTokens,
     ) : LLMResponse {
         $messages = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $options = [
@@ -33,7 +33,7 @@ class InferenceAdapter
         return $inferenceResponse->response();
     }
 
-    public function forModeTools(string $connection, string|array $messages, EvalSchema $schema, array $options) : InferenceResponse {
+    public function forModeTools(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
             ->create(
@@ -45,7 +45,7 @@ class InferenceAdapter
             );
     }
 
-    public function forModeJsonSchema(string $connection, string|array $messages, EvalSchema $schema, array $options) : InferenceResponse {
+    public function forModeJsonSchema(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
             ->create(
@@ -59,7 +59,7 @@ class InferenceAdapter
             );
     }
 
-    public function forModeJson(string $connection, string|array $messages, EvalSchema $schema, array $options) : InferenceResponse {
+    public function forModeJson(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
             ->create(
@@ -73,7 +73,7 @@ class InferenceAdapter
             );
     }
 
-    public function forModeMdJson(string $connection, string|array $messages, EvalSchema $schema, array $options) : InferenceResponse {
+    public function forModeMdJson(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->withConnection($connection)
             ->create(

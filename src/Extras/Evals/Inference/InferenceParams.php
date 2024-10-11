@@ -1,14 +1,14 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Mappings;
+namespace Cognesy\Instructor\Extras\Evals\Inference;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanMapValues;
 
-class ConnectionModes implements CanMapValues {
-    public Mode $mode;
+class InferenceParams implements CanMapValues {
     public string $connection;
     public bool $isStreaming;
+    public Mode $mode;
 
     public static function map(array $values) : static {
         $instance = new self();

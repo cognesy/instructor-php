@@ -1,12 +1,15 @@
 <?php
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Combination;
-use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
-use Cognesy\Instructor\Extras\Evals\Evaluator;
-use Cognesy\Instructor\Extras\Evals\Instructor\RunInstructor;
-use Cognesy\Instructor\Extras\Evals\Mappings\ConnectionModes;
-use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Data\Experiment;
+use Cognesy\Instructor\Extras\Evals\Data\ExperimentData;
+use Cognesy\Instructor\Extras\Evals\Inference\InferenceParams;
+use Cognesy\Instructor\Extras\Evals\Inference\RunInstructor;
+use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Runner;
+use Cognesy\Instructor\Extras\Evals\Utils\Combination;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -38,7 +41,7 @@ $modes = [
 ];
 
 $combinations = Combination::generator(
-    mapping: ConnectionModes::class,
+    mapping: InferenceParams::class,
     sources: [
         'isStreaming' => $streamingModes,
         'mode' => $modes,
@@ -51,12 +54,27 @@ class Company {
     public int $foundingYear;
 }
 
-function evalFn(EvalInput $er) {
-    /** @var Person $decoded */
-    $person = $er->response->value();
-    return $person->name === 'ACME'
-        && $person->foundingYear === 2020;
+class CompanyEval implements CanEvaluateExperiment
+{
+    public function evaluate(Experiment $experiment) : Metric {
+        /** @var Person $decoded */
+        $person = $experiment->response->value();
+        $result = $person->name === 'ACME'
+            && $person->foundingYear === 2020;
+        return new BooleanCorrectness($result);
+    }
 }
+
+$data = (new ExperimentData)->withInstructorConfig(
+    messages: [
+        ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
+        ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
+        //['role' => 'user', 'content' => 'EXAMPLE CONTEXT: Sony was established in 1946 by Akio Morita.'],
+        //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
+        ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
+    ],
+    responseModel: Company::class,
+);
 
 //Debug::enable();
 
@@ -65,17 +83,10 @@ function evalFn(EvalInput $er) {
 //$prompt = 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>';
 //$responseModel = Sequence::of(ProjectEvent::class);
 
-$outputs = (new Evaluator(
-    messages: [
-        ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
-        ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
-        //['role' => 'user', 'content' => 'EXAMPLE CONTEXT: Sony was established in 1946 by Akio Morita.'],
-        //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
-        ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
-    ],
-    schema: Company::class,
+$outputs = (new Runner(
+    data: $data,
     runner: new RunInstructor(),
-    evalFn: fn(EvalInput $er) => evalFn($er),
+    evaluation: new CompanyEval(),
 ))->execute(
     combinations: $combinations
 );

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Evals\Data;
 
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 
-class EvalSchema implements CanProvideJsonSchema
+class InferenceSchema implements CanProvideJsonSchema
 {
     public function __construct(
         private string $toolName,

@@ -4,12 +4,16 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Combination;
-use Cognesy\Instructor\Extras\Evals\Data\EvalInput;
-use Cognesy\Instructor\Extras\Evals\Data\EvalSchema;
-use Cognesy\Instructor\Extras\Evals\Evaluator;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Data\Experiment;
+use Cognesy\Instructor\Extras\Evals\Data\ExperimentData;
+use Cognesy\Instructor\Extras\Evals\Data\InferenceSchema;
+use Cognesy\Instructor\Extras\Evals\Inference\InferenceParams;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInference;
-use Cognesy\Instructor\Extras\Evals\Mappings\ConnectionModes;
+use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Runner;
+use Cognesy\Instructor\Extras\Evals\Utils\Combination;
 use Cognesy\Instructor\Utils\Str;
 
 $connections = [
@@ -48,7 +52,7 @@ $modes = [
 //
 
 $combinations = Combination::generator(
-    mapping: ConnectionModes::class,
+    mapping: InferenceParams::class,
     sources: [
         'isStreaming' => $streamingModes,
         'mode' => $modes,
@@ -56,46 +60,28 @@ $combinations = Combination::generator(
     ],
 );
 
-function evalFn(EvalInput $er) {
-    $decoded = json_decode($er->response->json(), true);
-    $isCorrect = match($er->mode) {
-        Mode::Text => Str::contains($er->response->content(), ['ACME', '2020']),
-        Mode::Tools => validateToolsData($er->response->toolsData),
-        default => ('ACME' === ($decoded['name'] ?? '') && 2020 === ($decoded['year'] ?? 0)),
-    };
-    return $isCorrect;
-}
+class CompanyEval implements CanEvaluateExperiment
+{
+    public function evaluate(Experiment $experiment) : Metric {
+        $decoded = json_decode($experiment->response->json(), true);
+        $isCorrect = match ($experiment->mode) {
+            Mode::Text => Str::contains($experiment->response->content(), ['ACME', '2020']),
+            Mode::Tools => $this->validateToolsData($experiment->response->toolsData),
+            default => ('ACME' === ($decoded['name'] ?? '') && 2020 === ($decoded['year'] ?? 0)),
+        };
+        return new BooleanCorrectness($isCorrect);
+    }
 
-function validateToolsData(array $data) : bool {
-    return 'store_company' === ($data[0]['name'] ?? '')
-        && 'ACME' === ($data[0]['arguments']['name'] ?? '')
-        && 2020 === (int) ($data[0]['arguments']['year'] ?? 0);
+    private function validateToolsData(array $data) : bool {
+        return 'store_company' === ($data[0]['name'] ?? '')
+            && 'ACME' === ($data[0]['arguments']['name'] ?? '')
+            && 2020 === (int) ($data[0]['arguments']['year'] ?? 0);
+    }
 }
 
 //Debug::enable();
 
-$schema = new EvalSchema(
-    toolName: 'store_company',
-    toolDescription: 'Store company information',
-    schema: [
-        'type' => 'object',
-        'description' => 'Company information',
-        'properties' => [
-            'year' => [
-                'type' => 'integer',
-                'description' => 'Founding year',
-            ],
-            'name' => [
-                'type' => 'string',
-                'description' => 'Company name',
-            ],
-        ],
-        'required' => ['name', 'year'],
-        'additionalProperties' => false,
-    ]
-);
-
-$evaluator = new Evaluator(
+$data = (new ExperimentData)->withInferenceConfig(
     messages: [
         ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
         ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
@@ -103,14 +89,34 @@ $evaluator = new Evaluator(
         //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
         ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
     ],
-    schema: $schema,
+    schema: new InferenceSchema(
+        toolName: 'store_company',
+        toolDescription: 'Store company information',
+        schema: [
+            'type' => 'object',
+            'description' => 'Company information',
+            'properties' => [
+                'year' => [
+                    'type' => 'integer',
+                    'description' => 'Founding year',
+                ],
+                'name' => [
+                    'type' => 'string',
+                    'description' => 'Company name',
+                ],
+            ],
+            'required' => ['name', 'year'],
+            'additionalProperties' => false,
+        ]
+    ),
+);
+
+$evaluator = new Runner(
+    data: $data,
     runner: new RunInference(),
-    evalFn: fn(EvalInput $evalInput) => evalFn($evalInput),
+    evaluation: new CompanyEval(),
 );
 
 $outputs = $evaluator->execute(
-//    connections: $connections,
-//    modes: $modes,
-//    streamingModes: $streamingModes
     combinations: $combinations
 );

@@ -1,12 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals;
+namespace Cognesy\Instructor\Extras\Evals\Utils;
 
 use ArrayIterator;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanMapValues;
+use Generator;
 use InvalidArgumentException;
 use Iterator;
-use Generator;
 
 /**
  * Class responsible for generating combinations of multiple iterables.
