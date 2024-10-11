@@ -7,7 +7,7 @@ use Cognesy\Instructor\Extras\Evals\Data\InstructorData;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInstructor;
 use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
-use Cognesy\Instructor\Extras\Evals\Runner;
+use Cognesy\Instructor\Extras\Evals\ExperimentSuite;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -52,7 +52,7 @@ class CompanyEval implements CanEvaluateExperiment
 //$prompt = 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>';
 //$responseModel = Sequence::of(ProjectEvent::class);
 
-$runner = new Runner(
+$runner = new ExperimentSuite(
     executor: new RunInstructor($data),
     evaluator: new CompanyEval(),
 );

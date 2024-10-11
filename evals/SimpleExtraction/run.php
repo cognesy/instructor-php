@@ -4,7 +4,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Data\InstructorData;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInstructor;
-use Cognesy\Instructor\Extras\Evals\Runner;
+use Cognesy\Instructor\Extras\Evals\ExperimentSuite;
 use Cognesy\Evals\SimpleExtraction\CompanyEval;
 use Cognesy\Evals\SimpleExtraction\Company;
 
@@ -28,12 +28,13 @@ $data = new InstructorData(
     responseModel: Company::class,
 );
 
-$runner = new Runner(
+$runner = new ExperimentSuite(
     executor: new RunInstructor($data),
     evaluator: new CompanyEval(expectations: [
         'name' => 'ACME',
         'foundingYear' => 2020
     ]),
+    cases: $cases,
 );
 
-$outputs = $runner->execute($cases);
+$outputs = $runner->execute();

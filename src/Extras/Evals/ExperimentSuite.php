@@ -8,20 +8,26 @@ use Cognesy\Instructor\Extras\Evals\Data\InferenceParamsCase;
 use Exception;
 use Generator;
 
-class Runner {
-    private array $exceptions = [];
-    private array $experiments = [];
+class ExperimentSuite {
     private Display $display;
+
     private CanExecuteExperiment $executor;
     private CanEvaluateExperiment $evaluator;
+    private Generator $cases;
+
+    private array $exceptions = [];
+    private array $experiments = [];
 
     public function __construct(
         CanExecuteExperiment  $executor,
         CanEvaluateExperiment $evaluator,
+        Generator $cases,
     ) {
+        $this->display = new Display();
+
         $this->executor = $executor;
         $this->evaluator = $evaluator;
-        $this->display = new Display();
+        $this->cases = $cases;
     }
 
     // PUBLIC //////////////////////////////////////////////////
@@ -30,10 +36,8 @@ class Runner {
      * @param Generator<InferenceParamsCase> $cases
      * @return array<Experiment>
      */
-    public function execute(
-        Generator $cases
-    ) : array {
-        foreach ($cases as $case) {
+    public function execute() : array {
+        foreach ($this->cases as $case) {
             $experiment = (new Experiment(
                     id: (string) $case,
                     connection: $case->connection,

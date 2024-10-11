@@ -7,7 +7,7 @@ use Cognesy\Instructor\Extras\Evals\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceData;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInference;
-use Cognesy\Instructor\Extras\Evals\Runner;
+use Cognesy\Instructor\Extras\Evals\ExperimentSuite;
 use Cognesy\Evals\LLMModes\CompanyEval;
 
 $cases = InferenceCases::except(
@@ -15,16 +15,6 @@ $cases = InferenceCases::except(
     modes: [],
     stream: []
 );
-
-//
-// NOT SUPPORTED BY PROVIDERS
-//
-// groq, Mode::JsonSchema, stream
-// groq, Mode::Json, stream
-// azure, Mode::JsonSchema, sync|stream
-//
-
-//Debug::enable();
 
 $data = new InferenceData(
     messages: [
@@ -56,12 +46,13 @@ $data = new InferenceData(
     ),
 );
 
-$runner = new Runner(
+$runner = new ExperimentSuite(
     executor: new RunInference($data),
     evaluator: new CompanyEval(expectations: [
         'name' => 'ACME',
         'foundingYear' => 2020
     ]),
+    cases: $cases,
 );
 
-$outputs = $runner->execute(cases: $cases);
+$outputs = $runner->execute();
