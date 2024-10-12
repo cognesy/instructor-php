@@ -37,6 +37,7 @@ class RunInstructor implements CanExecuteExperiment
                 maxRetries: $this->data->maxRetries,
                 options: [
                     'max_tokens' => $this->data->maxTokens,
+                    'temperature' => $this->data->temperature,
                     'stream' => $experiment->isStreamed,
                 ],
                 toolName: $this->data->toolName,

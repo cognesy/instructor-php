@@ -26,7 +26,7 @@ class Display
     public function after(Experiment $experiment) : void {
         $answer = $experiment->notes;
         $answerLine = str_replace("\n", '\n', $answer);
-        $metric = $experiment->metric;
+        $value = $experiment->aggregate;
         $timeElapsed = $experiment->timeElapsed;
         $tokensPerSec = $experiment->outputTps();
         $exception = $experiment->exception;
@@ -45,7 +45,7 @@ class Display
             echo Console::columns([
                 [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
                 [10, $this->tokensPerSecFormat($tokensPerSec), STR_PAD_LEFT, [Color::CYAN]],
-                [6, $metric->toString(), STR_PAD_BOTH, $metric->toCliColor()],
+                [6, $value->toString(), STR_PAD_BOTH, $value->toCliColor()],
                 [60, $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
             ], 120);
         }

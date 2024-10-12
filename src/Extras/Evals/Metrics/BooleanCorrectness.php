@@ -7,7 +7,14 @@ use Cognesy\Instructor\Utils\Cli\Color;
 
 class BooleanCorrectness implements Metric
 {
-    public function __construct(private bool $value) {}
+    public function __construct(
+        private bool $value,
+        private string $name = 'correct',
+    ) {}
+
+    public function name(): string {
+        return $this->name;
+    }
 
     public function value(): mixed {
         return $this->value;

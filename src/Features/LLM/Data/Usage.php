@@ -12,12 +12,30 @@ class Usage
         public int $reasoningTokens = 0,
     ) {}
 
+    public static function none() : Usage {
+        return new Usage();
+    }
+
     public function total() : int {
         return $this->inputTokens
             + $this->outputTokens
             + $this->cacheWriteTokens
             + $this->cacheReadTokens
             + $this->reasoningTokens;
+    }
+
+    public function input() : int {
+        return $this->inputTokens;
+    }
+
+    public function output() : int {
+        return $this->outputTokens
+            + $this->reasoningTokens;
+    }
+
+    public function cache() : int {
+        return $this->cacheWriteTokens
+            + $this->cacheReadTokens;
     }
 
     public function accumulate(Usage $usage) : void {

@@ -3,18 +3,14 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
+use Cognesy\Instructor\Extras\Evals\Aggregators\FirstMetric;
+use Cognesy\Instructor\Extras\Evals\Aggregators\SelectedMetric;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceData;
 use Cognesy\Instructor\Extras\Evals\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Inference\RunInference;
 use Cognesy\Instructor\Extras\Evals\ExperimentSuite;
 use Cognesy\Evals\LLMModes\CompanyEval;
-
-$cases = InferenceCases::except(
-    connections: [],
-    modes: [],
-    stream: []
-);
 
 $data = new InferenceData(
     messages: [
@@ -46,13 +42,18 @@ $data = new InferenceData(
     ),
 );
 
-$runner = new ExperimentSuite(
+$experiments = new ExperimentSuite(
+    cases: InferenceCases::except(
+        connections: [],
+        modes: [],
+        stream: [],
+    ),
     executor: new RunInference($data),
-    evaluator: new CompanyEval(expectations: [
+    evaluators: new CompanyEval(expectations: [
         'name' => 'ACME',
         'foundingYear' => 2020
     ]),
-    cases: $cases,
+    aggregator: new FirstMetric()
 );
 
-$outputs = $runner->execute();
+$outputs = $experiments->execute();

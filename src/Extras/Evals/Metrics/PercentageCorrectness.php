@@ -7,10 +7,17 @@ use Cognesy\Instructor\Utils\Cli\Color;
 
 class PercentageCorrectness implements Metric
 {
-    public function __construct(private float $value) {
+    public function __construct(
+        private string $name,
+        private float $value,
+    ) {
         if ($value < 0 || $value > 1) {
             throw new \Exception('Percentage value must be between 0 and 1');
         }
+    }
+
+    public function name(): string {
+        return $this->name;
     }
 
     public function value(): mixed {

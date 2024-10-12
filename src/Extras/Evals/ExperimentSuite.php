@@ -2,50 +2,57 @@
 namespace Cognesy\Instructor\Extras\Evals;
 
 use Cognesy\Instructor\Extras\Evals\Console\Display;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanAggregateValues;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Instructor\Extras\Evals\Data\InferenceParamsCase;
 use Exception;
 use Generator;
 
 class ExperimentSuite {
     private Display $display;
 
-    private CanExecuteExperiment $executor;
-    private CanEvaluateExperiment $evaluator;
     private Generator $cases;
+    private CanExecuteExperiment $executor;
+    /** @var CanEvaluateExperiment[] */
+    private array $evaluators;
+    private CanAggregateValues $aggregator;
 
     private array $exceptions = [];
     private array $experiments = [];
 
     public function __construct(
-        CanExecuteExperiment  $executor,
-        CanEvaluateExperiment $evaluator,
         Generator $cases,
+        CanExecuteExperiment $executor,
+        array|CanEvaluateExperiment $evaluators,
+        CanAggregateValues $aggregator,
     ) {
         $this->display = new Display();
 
-        $this->executor = $executor;
-        $this->evaluator = $evaluator;
         $this->cases = $cases;
+        $this->executor = $executor;
+        $this->evaluators = match (true) {
+            is_array($evaluators) => $evaluators,
+            default => [$evaluators],
+        };
+        $this->aggregator = $aggregator;
     }
 
     // PUBLIC //////////////////////////////////////////////////
 
     /**
-     * @param Generator<InferenceParamsCase> $cases
      * @return array<Experiment>
      */
     public function execute() : array {
         foreach ($this->cases as $case) {
             $experiment = (new Experiment(
-                    id: (string) $case,
+                    label: (string) $case,
                     connection: $case->connection,
                     mode: $case->mode,
                     isStreamed: $case->isStreaming,
                 ))
                 ->withExecutor($this->executor)
-                ->withEvaluator($this->evaluator);
+                ->withEvaluators($this->evaluators)
+                ->withAggregator($this->aggregator);
 
             $this->display->before($experiment);
             try {

@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Evals\Data;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanMapValues;
 
-class InferenceParamsCase implements CanMapValues {
+class InferenceCaseParams implements CanMapValues {
     public string $connection;
     public bool $isStreaming;
     public Mode $mode;

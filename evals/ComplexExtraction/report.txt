@@ -3,7 +3,7 @@ Acme Insurance project to implement SalesTech CRM solution is currently
 in RED status due to delayed delivery of document production system, led
 by 3rd party vendor - Alfatech. Customer (Acme) is discussing the resolution
 with the vendor. Due to dependencies it will result in delay of the
-ecommerce track by 2 sprints. System integrator (SysCorp) are working
+ecommerce track by 2 sprints. System integrator (SysCorp) is working
 to absorb some of the delay by deploying extra resources to speed up
 development when the doc production is done. Another issue is that the
 customer is not able to provide the test data for the ecommerce track.

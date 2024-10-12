@@ -23,6 +23,10 @@ class InferenceCases
         $this->stream = $stream;
     }
 
+    public static function all() : Generator {
+        return (new self)->initiateWithAll()->make();
+    }
+
     public static function except(
         array $connections = [],
         array $modes = [],
@@ -65,10 +69,6 @@ class InferenceCases
         return $instance->make();
     }
 
-    public static function all() : Generator {
-        return (new self)->initiateWithAll()->make();
-    }
-
     // INTERNAL //////////////////////////////////////////////////
 
     private function initiateWithAll() : self {
@@ -81,7 +81,7 @@ class InferenceCases
 
     private function make() : Generator {
         return Combination::generator(
-            mapping: InferenceParamsCase::class,
+            mapping: InferenceCaseParams::class,
             sources: [
                 'isStreaming' => $this->stream ?: $this->streamingModes(),
                 'mode' => $this->modes ?: $this->modes(),
@@ -91,20 +91,21 @@ class InferenceCases
     }
 
     private function connections() : array {
-//        return Settings::get('llm', 'connections', []);
-        return [
-            'azure',
-            'cohere1',
-            'cohere2',
-            'fireworks',
-            'gemini',
-            'groq',
-            'mistral',
-            'ollama',
-            'openai',
-            'openrouter',
-            'together',
-        ];
+        $connections = Settings::get('llm', 'connections', []);
+        return array_keys($connections);
+//        return [
+//            'azure',
+//            'cohere1',
+//            'cohere2',
+//            'fireworks',
+//            'gemini',
+//            'groq',
+//            'mistral',
+//            'ollama',
+//            'openai',
+//            'openrouter',
+//            'together',
+//        ];
     }
 
     private function streamingModes() : array {

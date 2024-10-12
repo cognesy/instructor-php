@@ -4,9 +4,11 @@ namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
+use Cognesy\Instructor\Extras\Evals\Data\Feedback;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Str;
 
 class CompanyEval implements CanEvaluateExperiment
@@ -17,13 +19,17 @@ class CompanyEval implements CanEvaluateExperiment
         $this->expectations = $expectations;
     }
 
-    public function evaluate(Experiment $experiment) : Metric {
+    public function evaluate(Experiment $experiment) : Evaluation {
         $isCorrect = match ($experiment->mode) {
             Mode::Text => $this->validateText($experiment),
             Mode::Tools => $this->validateToolsData($experiment),
             default => $this->validateDefault($experiment),
         };
-        return new BooleanCorrectness($isCorrect);
+        return new Evaluation(
+            metric: new BooleanCorrectness('is_correct', $isCorrect),
+            feedback: Feedback::none(),
+            usage: Usage::none(),
+        );
     }
 
     private function validateToolsData(Experiment $experiment) : bool {
