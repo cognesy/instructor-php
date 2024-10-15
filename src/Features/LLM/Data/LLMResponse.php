@@ -48,11 +48,12 @@ class LLMResponse
         return $this->content;
     }
 
-    public function json(): string {
-        if (!$this->hasContent()) {
-            return '';
-        }
-        return Json::from($this->content)->toString();
+    public function json(): Json {
+        return match(true) {
+            // TODO: what about tool calls?
+            $this->hasContent() => Json::from($this->content),
+            default => Json::none(),
+        };
     }
 
     public function hasToolCalls() : bool {

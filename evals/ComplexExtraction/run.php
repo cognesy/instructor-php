@@ -1,15 +1,14 @@
 <?php
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
-use Cognesy\Instructor\Extras\Evals\Data\InferenceCases;
-use Cognesy\Instructor\Extras\Evals\Data\InstructorData;
+use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Experiment;
-use Cognesy\Instructor\Extras\Evals\Inference\RunInstructor;
-use Cognesy\Instructor\Extras\Evals\ExperimentSuite;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
+use Cognesy\Instructor\Extras\Evals\Executors\RunInstructor;
 use Cognesy\Instructor\Extras\Evals\Metrics\PercentageCorrectness;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
@@ -22,7 +21,7 @@ class Company {
     public int $foundingYear;
 }
 
-class CompanyEval implements CanEvaluateExperiment
+class CompanyEval implements CanEvaluateExecution
 {
     public array $expectations;
 
@@ -30,10 +29,10 @@ class CompanyEval implements CanEvaluateExperiment
         $this->expectations = $expectations;
     }
 
-    public function evaluate(Experiment $experiment) : Evaluation {
+    public function evaluate(Execution $execution) : Evaluation {
         $expectedEvents = $this->expectations['events'];
         /** @var Sequence $events */
-        $events = $experiment->response->value();
+        $events = $execution->response->value();
         $result = ($expectedEvents - count($events->list)) / $expectedEvents;
         return new Evaluation(
             metric: new PercentageCorrectness('found', $result),
@@ -57,7 +56,7 @@ $data = new InstructorData(
     responseModel: Company::class,
 );
 
-$runner = new ExperimentSuite(
+$experiment = new Experiment(
     cases: InferenceCases::only(
         connections: ['openai', 'anthropic', 'gemini', 'cohere'],
         modes: [Mode::Tools],
@@ -67,4 +66,4 @@ $runner = new ExperimentSuite(
     evaluators: new CompanyEval(expectations: ['events' => 12]),
 );
 
-$outputs = $runner->execute();
+$outputs = $experiment->execute();

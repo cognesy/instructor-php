@@ -3,32 +3,45 @@
 namespace Cognesy\Instructor\Extras\Evals\Metrics;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Contracts\Unit;
+use Cognesy\Instructor\Extras\Evals\Units\CountUnit;
+use Cognesy\Instructor\Utils\Cli\Color;
 
 class MatchCount implements Metric
 {
+    private string $name;
+    private Unit $unit;
+
     public function __construct(
-        private string $name,
+        string $name,
         private int $matches,
         private int $total,
-    ) {}
-
-    public function name() : string {
-        return $this->name;
+    ) {
+        $this->name = $name;
+        $this->unit = new CountUnit();
     }
 
     public function value() : float {
-        return $this->matches / $this->total;
+        return $this->matches;
     }
 
-    public function toLoss() : float {
-        return 1 - $this->value();
+    public function name(): string {
+        return $this->name;
     }
 
-    public function toScore() : float {
-        return $this->value();
+    public function unit(): Unit {
+        return $this->unit;
     }
 
     public function toString(): string {
         return "{$this->matches}/{$this->total}";
+    }
+
+    public function toFloat(): float {
+        return $this->matches / $this->total;
+    }
+
+    public function toCliColor(): array {
+        return [Color::GRAY];
     }
 }

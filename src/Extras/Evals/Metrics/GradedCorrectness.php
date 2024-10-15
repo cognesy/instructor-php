@@ -4,31 +4,22 @@ namespace Cognesy\Instructor\Extras\Evals\Metrics;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Enums\CorrectnessGrade;
+use Cognesy\Instructor\Extras\Evals\Units\StringEnumUnit;
 
 class GradedCorrectness implements Metric
 {
-    public function __construct(
-        private string $name,
-        private CorrectnessGrade $grade,
-    ) {}
+    use Traits\HandlesMetric;
 
-    public function name(): string {
-        return $this->name;
+    public function __construct(
+        string $name,
+        CorrectnessGrade $value,
+    ) {
+        $this->name = $name;
+        $this->unit = new StringEnumUnit(CorrectnessGrade::class);
+        $this->value = $value;
     }
 
     public function value(): CorrectnessGrade {
-        return $this->grade;
-    }
-
-    public function toLoss() : float {
-        return 1 - $this->grade->toFloat();
-    }
-
-    public function toScore() : float {
-        return $this->grade->toFloat();
-    }
-
-    public function toString(): string {
-        return $this->grade->value;
+        return $this->value;
     }
 }

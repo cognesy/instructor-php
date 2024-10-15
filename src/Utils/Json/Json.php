@@ -14,6 +14,10 @@ class Json
 
     // NEW API ////////////////////////////////////////////////
 
+    public static function none() : self {
+        return new Json('');
+    }
+
     public static function from(string $text) : Json {
         if (empty(trim($text))) {
             return new Json('');

@@ -3,15 +3,15 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
-use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Str;
 
-class CompanyEval implements CanEvaluateExperiment
+class CompanyEval implements CanEvaluateExecution
 {
     private array $expectations;
 
@@ -19,11 +19,11 @@ class CompanyEval implements CanEvaluateExperiment
         $this->expectations = $expectations;
     }
 
-    public function evaluate(Experiment $experiment) : Evaluation {
-        $isCorrect = match ($experiment->mode) {
-            Mode::Text => $this->validateText($experiment),
-            Mode::Tools => $this->validateToolsData($experiment),
-            default => $this->validateDefault($experiment),
+    public function evaluate(Execution $execution) : Evaluation {
+        $isCorrect = match ($execution->mode) {
+            Mode::Text => $this->validateText($execution),
+            Mode::Tools => $this->validateToolsData($execution),
+            default => $this->validateDefault($execution),
         };
         return new Evaluation(
             metric: new BooleanCorrectness('is_correct', $isCorrect),
@@ -32,25 +32,27 @@ class CompanyEval implements CanEvaluateExperiment
         );
     }
 
-    private function validateToolsData(Experiment $experiment) : bool {
-        $data = $experiment->response->toolsData;
-        return 'store_company' === ($data[0]['name'] ?? '')
-            && 'ACME' === ($data[0]['arguments']['name'] ?? '')
-            && 2020 === (int) ($data[0]['arguments']['year'] ?? 0);
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function validateToolsData(Execution $execution) : bool {
+        $data = $execution->response->toolsData[0];
+        return 'store_company' === ($data['name'] ?? '')
+            && 'ACME' === ($data['arguments']['name'] ?? '')
+            && 2020 === (int) ($data['arguments']['year'] ?? 0);
     }
 
-    private function validateDefault(Experiment $experiment) : bool {
-        $decoded = json_decode($experiment->response->json(), true);
+    private function validateDefault(Execution $execution) : bool {
+        $decoded = $execution->response->json()->toArray();
         return $this->expectations['name'] === ($decoded['name'] ?? '')
-            && $this->expectations['foundingYear'] === ($decoded['year'] ?? 0);
+            && $this->expectations['year'] === ($decoded['year'] ?? 0);
     }
 
-    private function validateText(Experiment $experiment) : bool {
+    private function validateText(Execution $execution) : bool {
         return Str::contains(
-            $experiment->response->content(),
+            $execution->response->content(),
             [
                 $this->expectations['name'],
-                (string) $this->expectations['foundingYear']
+                (string) $this->expectations['year']
             ]
         );
     }

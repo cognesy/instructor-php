@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Data;
+namespace Cognesy\Instructor\Extras\Evals\Executors\Data;
 
 class InferenceData
 {

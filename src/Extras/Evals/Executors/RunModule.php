@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Inference;
+namespace Cognesy\Instructor\Extras\Evals\Executors;
 
 class RunModule
 {

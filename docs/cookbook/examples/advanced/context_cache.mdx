@@ -63,7 +63,7 @@ multiple requests.
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
-$cached = (new Instructor)->withConnection('openai')->cacheContext(
+$cached = (new Instructor)->withConnection('openai')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
     prompt: 'Respond to the user with a description of the project with JSON using schema:\n<|json_schema|>',

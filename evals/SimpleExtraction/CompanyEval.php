@@ -2,14 +2,14 @@
 
 namespace Cognesy\Evals\SimpleExtraction;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
-use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 
-class CompanyEval implements CanEvaluateExperiment
+class CompanyEval implements CanEvaluateExecution
 {
     private array $expectations;
 
@@ -17,10 +17,10 @@ class CompanyEval implements CanEvaluateExperiment
         $this->expectations = $expectations;
     }
 
-    public function evaluate(Experiment $experiment) : Evaluation {
-        $company = $experiment->response->value();
+    public function evaluate(Execution $execution) : Evaluation {
+        $company = $execution->response->value();
         $isCorrect = $company->name === $this->expectations['name']
-            && $company->foundingYear === $this->expectations['foundingYear'];
+            && $company->year === $this->expectations['year'];
         return new Evaluation(
             metric: new BooleanCorrectness('is_correct', $isCorrect),
             feedback: Feedback::none(),

@@ -1,7 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Data;
+namespace Cognesy\Instructor\Extras\Evals\Evaluators\Data;
 
+use Cognesy\Instructor\Extras\Evals\Data\ParameterFeedback;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 
 #[Description("The result of correctness evaluation.")]

@@ -2,8 +2,6 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Utils;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
-use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
 use InvalidArgumentException;
 use RuntimeException;
@@ -27,57 +25,6 @@ class ValueAggregation {
         $this->values = $values;
         $this->weights = $weights;
     }
-
-//    /**
-//     * Creates a ValueAggregation instance from an array of metrics.
-//     *
-//     * @param array<Metric> $metrics Array of metrics.
-//     * @param array<float> $weights Array of weights for each metric.
-//     * @param ValueAggregationMethod $method Aggregation method.
-//     * @return ValueAggregation The ValueAggregation instance.
-//     */
-//    public static function fromMetrics(
-//        array $metrics,
-//        array $weights = [],
-//        ValueAggregationMethod $method = ValueAggregationMethod::Mean,
-//    ): ValueAggregation {
-//        $aggregator = new ValueAggregation(
-//            values: [],
-//            weights: $weights,
-//            method: $method
-//        );
-//        foreach ($metrics as $metric) {
-//            $aggregator->add($metric->name(), $metric->value(), $metric->weight());
-//        }
-//        return $aggregator;
-//    }
-
-//    /**
-//     * Creates a ValueAggregation instance from an array of evaluations.
-//     * @param array<Evaluation> $evaluations
-//     * @param array<float> $weights
-//     * @param ValueAggregationMethod $method
-//     * @return ValueAggregation
-//     */
-//    public static function fromEvaluations(
-//        array $evaluations,
-//        array $weights = [],
-//        ValueAggregationMethod $method = ValueAggregationMethod::Mean,
-//    ) : ValueAggregation {
-//        $aggregator = new ValueAggregation(
-//            values: [],
-//            weights: $weights,
-//            method: $method
-//        );
-//        foreach ($evaluations as $evaluation) {
-//            $aggregator->add(
-//                name: $evaluation->metric()->name(),
-//                value: $evaluation->metric()->toLoss(),
-//                weight: $weights[$evaluation->metric()->name()] ?? 1.0
-//            );
-//        }
-//        return $aggregator;
-//    }
 
     /**
      * Adds a metric with an optional weight.

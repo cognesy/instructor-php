@@ -2,7 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Console;
 
-use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
+use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
 use Cognesy\Instructor\Utils\Debug\Debug;
@@ -10,10 +11,10 @@ use Exception;
 
 class Display
 {
-    public function before(Experiment $experiment) : void {
-        $connection = $experiment->connection;
-        $mode = $experiment->mode->value;
-        $streamed = $experiment->isStreamed;
+    public function before(Execution $execution) : void {
+        $connection = $execution->connection;
+        $mode = $execution->mode->value;
+        $streamed = $execution->isStreamed;
 
         echo Console::columns([
             [10, $connection, STR_PAD_RIGHT, Color::WHITE],
@@ -23,31 +24,12 @@ class Display
         Console::print('', [Color::GRAY, Color::BG_BLACK]);
     }
 
-    public function after(Experiment $experiment) : void {
-        $answer = $experiment->notes;
-        $answerLine = str_replace("\n", '\n', $answer);
-        $value = $experiment->aggregate;
-        $timeElapsed = $experiment->timeElapsed;
-        $tokensPerSec = $experiment->outputTps();
-        $exception = $experiment->exception;
-
+    public function after(Execution $execution) : void {
+        $exception = $execution->exception;
         if ($exception) {
-            //Console::print('          ');
-            //Console::print(' !!!! ', [Color::RED, Color::BG_BLACK]);
-            //Console::println(, [Color::RED, Color::BG_BLACK]);
-            echo Console::columns([
-                [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
-                [10, '', STR_PAD_LEFT, [Color::CYAN]],
-                [6, '!!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
-                [60, $this->exc2txt($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
-            ], 120);
+            $this->displayException($execution);
         } else {
-            echo Console::columns([
-                [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
-                [10, $this->tokensPerSecFormat($tokensPerSec), STR_PAD_LEFT, [Color::CYAN]],
-                [6, $value->toString(), STR_PAD_BOTH, $value->toCliColor()],
-                [60, $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]],
-            ], 120);
+            $this->displayResult($execution);
         }
         echo "\n";
     }
@@ -70,6 +52,52 @@ class Display
         Console::println('');
     }
 
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function displayResult(Execution $execution) : void {
+        $answer = $execution->notes;
+        $answerLine = str_replace("\n", '\n', $answer);
+        $timeElapsed = $execution->timeElapsed;
+        $tokensPerSec = $execution->outputTps();
+
+        $columns = array_merge([
+                [9, $this->timeFormat($timeElapsed), STR_PAD_LEFT, [Color::DARK_YELLOW]],
+                [10, $this->tokensPerSecFormat($tokensPerSec), STR_PAD_LEFT, [Color::CYAN]],
+            ],
+            $this->makeEvalColumns($execution),
+            [
+                [60, $answerLine, STR_PAD_RIGHT, [Color::WHITE, Color::BG_BLACK]]
+            ],
+        );
+
+        echo Console::columns($columns, 120);
+    }
+
+    private function makeEvalColumns(Execution $execution, int $maxCols = 3) : array {
+        $columns = [];
+        $count = 0;
+        foreach ($execution->evaluations as $evaluation) {
+            $value = $evaluation->metric;
+            $columns[] = [6, $value->toString(), STR_PAD_BOTH, $value->toCliColor()];
+            $count++;
+            if ($count >= $maxCols) {
+                break;
+            }
+        }
+        return $columns;
+    }
+
+    private function displayException(Execution $execution) : void {
+        $exception = $execution->exception;
+        echo Console::columns([
+            [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
+            [10, '', STR_PAD_LEFT, [Color::CYAN]],
+            [6, '!!!!', STR_PAD_BOTH, [Color::WHITE, COLOR::BOLD, Color::BG_MAGENTA]],
+            [60, $this->exceptionToText($exception, 80), STR_PAD_RIGHT, [Color::RED, Color::BG_BLACK]],
+        ], 120);
+    }
+
+
     private function timeFormat(float $time) : string {
         return number_format($time, 2)
             . ' sec';
@@ -80,7 +108,7 @@ class Display
             . ' t/s';
     }
 
-    private function exc2txt(Exception $e, int $maxLen) : string {
+    private function exceptionToText(Exception $e, int $maxLen) : string {
         return ' '
             . substr(str_replace("\n", '\n', $e->getMessage()), 0, $maxLen)
             . '...';

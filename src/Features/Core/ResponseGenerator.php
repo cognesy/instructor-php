@@ -27,7 +27,7 @@ class ResponseGenerator implements CanGenerateResponse
     ) {}
 
     public function makeResponse(LLMResponse $response, ResponseModel $responseModel) : Result {
-        $result = Chain::from(fn() => $response->json())
+        $result = Chain::from(fn() => $response->json()->toString())
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),
                 default => Result::success($responseJson)

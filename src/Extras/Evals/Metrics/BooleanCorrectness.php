@@ -3,29 +3,20 @@
 namespace Cognesy\Instructor\Extras\Evals\Metrics;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Units\BooleanUnit;
 use Cognesy\Instructor\Utils\Cli\Color;
 
 class BooleanCorrectness implements Metric
 {
+    use Traits\HandlesMetric;
+
     public function __construct(
-        private bool $value,
-        private string $name = 'correct',
-    ) {}
-
-    public function name(): string {
-        return $this->name;
-    }
-
-    public function value(): mixed {
-        return $this->value;
-    }
-
-    public function toLoss(): float {
-        return $this->value ? 0 : 1;
-    }
-
-    public function toScore(): float {
-        return $this->value ? 1 : 0;
+        bool $value,
+        string $name = 'correct',
+    ) {
+        $this->name = $name;
+        $this->unit = new BooleanUnit();
+        $this->value = $value;
     }
 
     public function toString(): string {

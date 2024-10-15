@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Inference;
+namespace Cognesy\Instructor\Extras\Evals\Executors;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Data\InferenceSchema;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Features\LLM\InferenceResponse;

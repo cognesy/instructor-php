@@ -2,58 +2,57 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExperiment;
+use Adbar\Dot;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
 use Cognesy\Instructor\Extras\Evals\Data\ParameterFeedback;
-use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Metrics\MatchCount;
+use Cognesy\Instructor\Extras\Evals\Utils\CompareNestedArrays;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 
-class ArrayMatchEval implements CanEvaluateExperiment
+class ArrayMatchEval implements CanEvaluateExecution
 {
     public function __construct(
         private string $name,
         private array $expected,
     ) {}
 
-    public function evaluate(Experiment $experiment): Evaluation {
-        $feedback = new Feedback();
-        $matches = 0;
-        $total = 0;
-        foreach($this->expected as $key => $expectedVal) {
-            $total++;
-
-            // TODO: this is not sufficient - need to handle nested arrays
-            $data = json_encode($experiment->response->json());
-            $actualVal = $data[$key] ?? null;
-
-            $varFeedback = $this->getFeedback($key, $expectedVal, $actualVal);
-            if ($varFeedback) {
-                $feedback->add($varFeedback);
-                continue;
-            }
-            $matches++;
-        }
-
+    public function evaluate(Execution $execution): Evaluation {
+        $data = $execution->response->json()->toArray();
+        $differences = (new CompareNestedArrays)->compare($this->expected, $data);
+        $total = count((new Dot($data))->flatten());
+        $matches = $total - count($differences);
         return new Evaluation(
             metric: new MatchCount(matches: $matches, total: $total, name: $this->name),
-            feedback: $feedback,
+            feedback: $this->makeFeedback($differences) ?? Feedback::none(),
             usage: Usage::none(),
         );
     }
 
     // INTERNAL /////////////////////////////////////////////////
 
+    private function makeFeedback(array $differences) : Feedback {
+        $feedback = new Feedback();
+        foreach($differences as $path => $diff) {
+            $varFeedback = $this->getFeedback($path, $diff['expected'], $diff['actual']);
+            if ($varFeedback) {
+                $feedback->add($varFeedback);
+            }
+        }
+        return $feedback;
+    }
+
     private function getFeedback(string $key, mixed $expectedVal, mixed $actualVal) : ?ParameterFeedback {
         return match(true) {
             ($expectedVal !== null) && ($actualVal === null) => new ParameterFeedback(
                 parameterName: $key,
-                feedback: "Expected param `$key`, but param not found in actual result"
+                feedback: "Expected `$key`, but param not found in result"
             ),
             ($actualVal !== $expectedVal) => new ParameterFeedback(
                 parameterName: $key,
-                feedback: "Expected value `$expectedVal`, but actual is `$actualVal`"
+                feedback: "Expected `$key` value `$expectedVal`, but actual is `$actualVal`"
             ),
             default => null,
         };

@@ -18,7 +18,7 @@ trait HandlesRequest
 
     // PUBLIC /////////////////////////////////////////////////////////////////////
 
-    public function cacheContext(
+    public function withCachedContext(
         string|array $messages = '',
         string|array|object $input = '',
         string $system = '',

@@ -1,15 +1,14 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Inference;
+namespace Cognesy\Instructor\Extras\Evals\Executors;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanExecuteExperiment;
-use Cognesy\Instructor\Extras\Evals\Data\InstructorData;
-use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanBeExecuted;
+use Cognesy\Instructor\Extras\Evals\Execution;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
 use Cognesy\Instructor\Features\Core\InstructorResponse;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Instructor;
 
-class RunInstructor implements CanExecuteExperiment
+class RunInstructor implements CanBeExecuted
 {
     private InstructorData $data;
 
@@ -17,15 +16,16 @@ class RunInstructor implements CanExecuteExperiment
         $this->data = $data;
     }
 
-    public function execute(Experiment $experiment) : LLMResponse {
-        return $this->makeInstructorResponse($experiment)->response();
+    public function execute(Execution $execution) : Execution {
+        $execution->response = $this->makeInstructorResponse($execution)->response();
+        return $execution;
     }
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function makeInstructorResponse(Experiment $experiment) : InstructorResponse {
+    private function makeInstructorResponse(Execution $execution) : InstructorResponse {
         return (new Instructor)
-            ->withConnection($experiment->connection)
+            ->withConnection($execution->connection)
             ->request(
                 messages: $this->data->messages,
                 input: $this->data->input,
@@ -38,12 +38,12 @@ class RunInstructor implements CanExecuteExperiment
                 options: [
                     'max_tokens' => $this->data->maxTokens,
                     'temperature' => $this->data->temperature,
-                    'stream' => $experiment->isStreamed,
+                    'stream' => $execution->isStreamed,
                 ],
                 toolName: $this->data->toolName,
                 toolDescription: $this->data->toolDescription,
                 retryPrompt: $this->data->retryPrompt,
-                mode: $experiment->mode,
+                mode: $execution->mode,
             );
     }
 }

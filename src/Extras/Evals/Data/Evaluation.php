@@ -17,6 +17,7 @@ class Evaluation
         public ?Metric $metric = null,
         public ?Feedback $feedback = null,
         public ?Usage $usage = null,
+        public array $metadata = [],
     ) {
         $this->id = Uuid::uuid4();
         $this->startedAt = new DateTime();
@@ -28,5 +29,14 @@ class Evaluation
 
     public function feedback() : Feedback {
         return $this->feedback;
+    }
+
+    public function meta(string $key, mixed $default = null) : mixed {
+        return $this->metadata[$key] ?? $default;
+    }
+
+    public function withMeta(string $key, mixed $value) : self {
+        $this->metadata[$key] = $value;
+        return $this;
     }
 }

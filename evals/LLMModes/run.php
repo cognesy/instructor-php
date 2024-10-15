@@ -3,14 +3,12 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
-use Cognesy\Instructor\Extras\Evals\Aggregators\FirstMetric;
-use Cognesy\Instructor\Extras\Evals\Aggregators\SelectedMetric;
-use Cognesy\Instructor\Extras\Evals\Data\InferenceCases;
-use Cognesy\Instructor\Extras\Evals\Data\InferenceData;
-use Cognesy\Instructor\Extras\Evals\Data\InferenceSchema;
-use Cognesy\Instructor\Extras\Evals\Inference\RunInference;
-use Cognesy\Instructor\Extras\Evals\ExperimentSuite;
 use Cognesy\Evals\LLMModes\CompanyEval;
+use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
+use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
+use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
 
 $data = new InferenceData(
     messages: [
@@ -42,7 +40,7 @@ $data = new InferenceData(
     ),
 );
 
-$experiments = new ExperimentSuite(
+$experiment = new Experiment(
     cases: InferenceCases::except(
         connections: [],
         modes: [],
@@ -51,9 +49,8 @@ $experiments = new ExperimentSuite(
     executor: new RunInference($data),
     evaluators: new CompanyEval(expectations: [
         'name' => 'ACME',
-        'foundingYear' => 2020
+        'year' => 2020
     ]),
-    aggregator: new FirstMetric()
 );
 
-$outputs = $experiments->execute();
+$outputs = $experiment->execute();
