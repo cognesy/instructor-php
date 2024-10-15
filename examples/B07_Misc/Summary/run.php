@@ -5,7 +5,7 @@ docname: 'chain_of_summaries'
 
 ## Overview
 
-This is an example of a simple summarization.
+This is an example of a simple summarization with keyword extraction.
 
 ## Example
 
@@ -14,10 +14,8 @@ This is an example of a simple summarization.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Debug\Debug;
 
 $report = <<<EOT
     [2021-09-01]
@@ -44,19 +42,17 @@ $report = <<<EOT
     EOT;
 
 class Summary {
+    #[Description('Project summary, not longer than 3 sentences')]
     public string $summary = '';
+    #[Description('5 most relevant keywords extracted from the summary')]
     public array $keywords = [];
 }
 
 $summary = (new Instructor)
     ->withConnection('openai')
-    ->withCachedContext(messages: $report)
     ->request(
+        input: $report,
         responseModel: Summary::class,
-        prompt: 'Create a condensed, 2-3 sentence summary of the project status',
-        options: [
-            'max_tokens' => 256,
-        ],
     )
     ->get();
 

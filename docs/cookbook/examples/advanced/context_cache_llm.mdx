@@ -31,12 +31,12 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
-$content = file_get_contents(__DIR__ . '/../../../README.md');
+$data = file_get_contents(__DIR__ . '/../../../README.md');
 
 $inference = (new Inference)->withConnection('anthropic')->withCachedContext(
     messages: [
         ['role' => 'user', 'content' => 'Here is content of README.md file'],
-        ['role' => 'user', 'content' => $content],
+        ['role' => 'user', 'content' => $data],
         ['role' => 'user', 'content' => 'Generate short, very domain specific pitch of the project described in README.md'],
         ['role' => 'assistant', 'content' => 'For whom do you want to generate the pitch?'],
     ],
@@ -49,13 +49,13 @@ $response = $inference->create(
 
 print("----------------------------------------\n");
 print("\n# Summary for CTO of lead gen vendor\n");
-print("  ($response->cacheReadTokens tokens read from cache)\n\n");
+print("  ({$response->usage()->cacheReadTokens} tokens read from cache)\n\n");
 print("----------------------------------------\n");
-print($response->content . "\n");
+print($response->content() . "\n");
 
-assert(!empty($response->content));
-assert(Str::contains($response->content, 'Instructor'));
-assert(Str::contains($response->content, 'lead', false));
+assert(!empty($response->content()));
+assert(Str::contains($response->content(), 'Instructor'));
+assert(Str::contains($response->content(), 'lead', false));
 
 $response2 = $inference->create(
     messages: [['role' => 'user', 'content' => 'CIO of insurance company']],
@@ -64,13 +64,13 @@ $response2 = $inference->create(
 
 print("----------------------------------------\n");
 print("\n# Summary for CIO of insurance company\n");
-print("  ($response2->cacheReadTokens tokens read from cache)\n\n");
+print("  ({$response2->usage()->cacheReadTokens} tokens read from cache)\n\n");
 print("----------------------------------------\n");
-print($response2->content . "\n");
+print($response2->content() . "\n");
 
-assert(!empty($response2->content));
-assert(Str::contains($response2->content, 'Instructor'));
-assert(Str::contains($response2->content, 'insurance', false));
+assert(!empty($response2->content()));
+assert(Str::contains($response2->content(), 'Instructor'));
+assert(Str::contains($response2->content(), 'insurance', false));
 //assert($response2->cacheReadTokens > 0);
 ?>
 ```

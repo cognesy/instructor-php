@@ -247,6 +247,7 @@
                 "cookbook/prompting/misc/restate_instructions",
                 "cookbook/prompting/misc/rewrite_instructions",
                 "cookbook/prompting/misc/search_query_expansion",
+                "cookbook/prompting/misc/chain_of_summaries",
                 "cookbook/prompting/misc/component_reuse",
                 "cookbook/prompting/misc/component_reuse_cot"
             ]
