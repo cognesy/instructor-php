@@ -1,11 +1,11 @@
 ---
-title: 'Summary with Keywords'
-docname: 'summary_with_keywords'
+title: 'Simple content summary'
+docname: 'summary_with_llm'
 ---
 
 ## Overview
 
-This is an example of a simple summarization with keyword extraction.
+This is an example of a simple summarization.
 
 ## Example
 
@@ -14,8 +14,7 @@ This is an example of a simple summarization with keyword extraction.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Features\LLM\Inference;
 
 $report = <<<EOT
     [2021-09-01]
@@ -41,20 +40,16 @@ $report = <<<EOT
     customer approval.
     EOT;
 
-class Summary {
-    #[Description('Project summary, not longer than 3 sentences')]
-    public string $summary = '';
-    #[Description('5 most relevant keywords extracted from the summary')]
-    public array $keywords = [];
-}
-
-$summary = (new Instructor)
+$summary = (new Inference)
     ->withConnection('openai')
-    ->request(
-        input: $report,
-        responseModel: Summary::class,
+    ->create(
+        messages: [
+            ['role' => 'user', 'content' => 'Content to summarize:'],
+            ['role' => 'user', 'content' => $report],
+            ['role' => 'user', 'content' => 'Concise summary of project report in 2-3 sentences:'],
+        ]
     )
-    ->get();
+    ->toText();
 
 dump($summary);
 ?>
