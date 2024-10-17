@@ -1,15 +1,17 @@
 <?php
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateMetric;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
+use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInstructor;
-use Cognesy\Instructor\Extras\Evals\Metrics\PercentageCorrectness;
+use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\PercentageCorrectness;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 
@@ -64,6 +66,11 @@ $experiment = new Experiment(
     ),
     executor: new RunInstructor($data),
     evaluators: new CompanyEval(expectations: ['events' => 12]),
+    aggregators: new AggregateMetric(
+        name: 'reliability',
+        metricName: 'is_correct',
+        method: ValueAggregationMethod::Mean,
+    ),
 );
 
 $outputs = $experiment->execute();

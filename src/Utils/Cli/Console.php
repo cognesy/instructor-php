@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Utils\Cli;
 
+use Cognesy\Instructor\Utils\Str;
+
 class Console
 {
     const COLUMN_DIVIDER = ' ';
@@ -11,6 +13,10 @@ class Console
 
     public static function println(string $message, string|array $color = ''): void {
         print(self::color($color, $message) . PHP_EOL);
+    }
+
+    public static function printColumns(array $columns, int $maxWidth, string $divider = ' '): void {
+        print(self::columns($columns, $maxWidth, $divider));
     }
 
     public static function clearScreen(): void {
@@ -24,7 +30,7 @@ class Console
         return $message;
     }
 
-    public static function columns(array $columns, int $maxWidth): string {
+    public static function columns(array $columns, int $maxWidth, string $divider = ' '): string {
         $maxWidth = max($maxWidth, 80);
         $message = '';
         foreach ($columns as $row) {
@@ -43,20 +49,22 @@ class Console
                     align: $row[2]??STR_PAD_RIGHT
                 );
             }
-            $message .= Color::RESET . self::COLUMN_DIVIDER;
+            $message .= Color::RESET;
+            $message .= $divider;
         }
         return $message;
     }
 
     static private function toColumn(int $chars, mixed $text, int $align, string|array $color = ''): string {
-        $short = ($align == STR_PAD_LEFT)
-            ? substr($text, -$chars)
-            : substr($text, 0, $chars);
-        if ($text != $short) {
-            $short = ($align == STR_PAD_LEFT)
-                ? '…'.substr($short,1)
-                : substr($short, 0, -1).'…';
-        }
+//        $short = ($align === STR_PAD_LEFT)
+//            ? substr($text, -$chars)
+//            : substr($text, 0, $chars);
+//        if ($text !== $short) {
+//            $short = ($align === STR_PAD_LEFT)
+//                ? '…'.substr($short,1)
+//                : substr($short, 0, -1).'…';
+//        }
+        $short = Str::limit($text, $chars, $align);
         return self::color($color, str_pad($short, $chars, ' ', $align));
     }
 
@@ -72,5 +80,9 @@ class Console
             empty($output) => $colorStr,
             default => $colorStr . $output . Color::RESET,
         };
+    }
+
+    static private function getWidth() : int {
+        return (int) exec('tput cols');
     }
 }

@@ -6,5 +6,6 @@ use Cognesy\Instructor\Extras\Evals\Experiment;
 
 interface CanMeasureExperiment
 {
-    public function evaluate(Experiment $experiment) : Metric;
+    public function name() : string;
+    public function measure(Experiment $experiment) : Metric;
 }

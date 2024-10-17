@@ -1,8 +1,9 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Metrics;
+namespace Cognesy\Instructor\Extras\Evals\Metrics\Generic;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Metrics\Traits;
 use Cognesy\Instructor\Extras\Evals\Units\PercentageUnit;
 
 class PercentageMetric implements Metric

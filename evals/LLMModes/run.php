@@ -4,6 +4,9 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Evals\LLMModes\CompanyEval;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateMetric;
+use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
@@ -41,16 +44,21 @@ $data = new InferenceData(
 );
 
 $experiment = new Experiment(
-    cases: InferenceCases::except(
-        connections: [],
-        modes: [],
-        stream: [],
+    cases: InferenceCases::only(
+        connections: ['openai'],
+        modes: [Mode::Tools, Mode::Text],
+        stream: [false],
     ),
     executor: new RunInference($data),
     evaluators: new CompanyEval(expectations: [
         'name' => 'ACME',
         'year' => 2020
     ]),
+    aggregators: new AggregateMetric(
+        name: 'reliability',
+        metricName: 'is_correct',
+        method: ValueAggregationMethod::Mean,
+    ),
 );
 
 $outputs = $experiment->execute();

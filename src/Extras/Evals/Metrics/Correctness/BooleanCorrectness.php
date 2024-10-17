@@ -1,8 +1,9 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Metrics;
+namespace Cognesy\Instructor\Extras\Evals\Metrics\Correctness;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Metrics\Traits;
 use Cognesy\Instructor\Extras\Evals\Units\BooleanUnit;
 use Cognesy\Instructor\Utils\Cli\Color;
 
@@ -11,8 +12,8 @@ class BooleanCorrectness implements Metric
     use Traits\HandlesMetric;
 
     public function __construct(
+        string $name,
         bool $value,
-        string $name = 'correct',
     ) {
         $this->name = $name;
         $this->unit = new BooleanUnit();

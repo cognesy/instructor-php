@@ -111,4 +111,24 @@ class Str
             default => $onFalse,
         };
     }
+
+    public static function limit(string $text, int $limit, string $end = '…', int $align = STR_PAD_RIGHT, bool $fit = true) : string {
+        $short = ($align === STR_PAD_LEFT)
+            ? substr($text, -$limit)
+            : substr($text, 0, $limit);
+
+        if ($text === $short) {
+            return $text;
+        }
+
+        if ($fit) {
+            return ($align === STR_PAD_LEFT)
+                ? $end . substr($short,1)
+                : substr($short, 0, -1) . $end;
+        }
+
+        return ($align === STR_PAD_LEFT)
+            ? $end . $short
+            : $short . $end;
+    }
 }

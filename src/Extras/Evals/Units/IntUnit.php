@@ -4,12 +4,11 @@ namespace Cognesy\Instructor\Extras\Evals\Units;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Unit;
 
-class BooleanUnit implements Unit
+class IntUnit implements Unit
 {
     public function __construct(
         private string $name = '',
-        private string $trueValue = 'yes',
-        private string $falseValue = 'no',
+        private string $symbol = '',
     ) {}
 
     public function name(): string {
@@ -17,16 +16,14 @@ class BooleanUnit implements Unit
     }
 
     public function isValid(mixed $value): bool {
-        return is_bool($value);
+        return is_int($value);
     }
 
     public function toString(mixed $value, array $format = []): string {
-        $trueValue = $format['true'] ?? $this->trueValue;
-        $falseValue = $format['false'] ?? $this->falseValue;
-        return $value ? $trueValue : $falseValue;
+        return $value . $this->symbol;
     }
 
     public function toFloat(mixed $value): float {
-        return $value ? 1.0 : 0.0;
+        return (float) $value;
     }
 }

@@ -12,15 +12,24 @@ class Evaluation
     readonly public string $id;
     public ?DateTime $startedAt = null;
     public float $timeElapsed = 0.0;
+    public ?Usage $usage = null;
+    public array $metadata = [];
+
+    public ?Metric $metric = null;
+    public ?Feedback $feedback = null;
 
     public function __construct(
-        public ?Metric $metric = null,
-        public ?Feedback $feedback = null,
-        public ?Usage $usage = null,
-        public array $metadata = [],
+        ?Metric $metric = null,
+        ?Feedback $feedback = null,
+        ?Usage $usage = null,
+        array $metadata = [],
     ) {
         $this->id = Uuid::uuid4();
         $this->startedAt = new DateTime();
+        $this->metric = $metric;
+        $this->feedback = $feedback;
+        $this->usage = $usage;
+        $this->metadata = $metadata;
     }
 
     public function metric() : Metric {
@@ -38,5 +47,9 @@ class Evaluation
     public function withMeta(string $key, mixed $value) : self {
         $this->metadata[$key] = $value;
         return $this;
+    }
+
+    public function hasMetric(string $metricName) : bool {
+        return $this->metric?->name() === $metricName;
     }
 }

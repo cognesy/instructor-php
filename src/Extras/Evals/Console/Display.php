@@ -2,21 +2,52 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Console;
 
-use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Execution;
+use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\Instructor\Utils\Cli\Console;
 use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Utils\Str;
 use Exception;
 
 class Display
 {
+    public function header(Experiment $experiment) : void {
+        Console::println('');
+        Console::printColumns([
+            [22, ' EXPERIMENT (' . Str::limit(text: $experiment->id, limit: 4, align: STR_PAD_LEFT, fit: false) . ") ", STR_PAD_RIGHT, [Color::BG_BLUE, Color::WHITE, Color::BOLD]],
+            [70, ' ', STR_PAD_LEFT, [Color::BG_GRAY, Color::DARK_GRAY]],
+            [30, ' ' . $experiment->startedAt->format('Y-m-d H:i:s') . ' ', STR_PAD_LEFT, [Color::BG_GRAY, Color::DARK_GRAY]],
+        ], 120, '');
+        Console::println('');
+        Console::println('');
+    }
+
+    public function footer(Experiment $experiment) {
+        Console::println('');
+        Console::printColumns([
+            [20, number_format($experiment->timeElapsed, 2) . ' sec ', STR_PAD_LEFT, [Color::BG_BLUE, Color::WHITE, Color::BOLD]],
+            [100, ' ' . $experiment->usage->toString() . ' ', STR_PAD_LEFT, [Color::BG_GRAY, Color::DARK_GRAY]],
+        ], 120, '');
+        Console::println('');
+        Console::println('');
+        Console::println('RESULTS:', [Color::WHITE, Color::BOLD]);
+        foreach ($experiment->results() as $metric) {
+            Console::printColumns([
+                [20, $metric->name(), STR_PAD_LEFT, [Color::DARK_GRAY]],
+                [20, $metric->toString(), STR_PAD_RIGHT, [Color::WHITE]],
+            ], 120);
+            Console::println('');
+        }
+        Console::println('');
+    }
+
     public function before(Execution $execution) : void {
         $connection = $execution->connection;
         $mode = $execution->mode->value;
         $streamed = $execution->isStreamed;
 
-        echo Console::columns([
+        Console::printColumns([
             [10, $connection, STR_PAD_RIGHT, Color::WHITE],
             [11, $mode, STR_PAD_RIGHT, Color::YELLOW],
             [8, $streamed ? 'stream' : 'sync', STR_PAD_LEFT, $streamed ? Color::BLUE : Color::DARK_BLUE],
@@ -39,7 +70,7 @@ class Display
         Console::println(' EXCEPTIONS ', [Color::BG_MAGENTA, Color::WHITE, Color::BOLD]);
         foreach($exceptions as $key => $exception) {
             $exLine = str_replace("\n", '\n', $exception);
-            echo Console::columns([
+            Console::printColumns([
                 [30, $key, STR_PAD_RIGHT, [Color::DARK_YELLOW]],
                 [100, $exLine, STR_PAD_RIGHT, [Color::WHITE]]
             ], 120);

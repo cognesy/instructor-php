@@ -7,7 +7,7 @@ use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\BooleanCorrectness;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Str;
 
@@ -26,7 +26,7 @@ class CompanyEval implements CanEvaluateExecution
             default => $this->validateDefault($execution),
         };
         return new Evaluation(
-            metric: new BooleanCorrectness('is_correct', $isCorrect),
+            metric: new BooleanCorrectness(name: 'is_correct', value: $isCorrect),
             feedback: Feedback::none(),
             usage: Usage::none(),
         );

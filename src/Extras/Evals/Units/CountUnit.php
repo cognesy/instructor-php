@@ -6,8 +6,13 @@ use Cognesy\Instructor\Extras\Evals\Contracts\Unit;
 
 class CountUnit implements Unit
 {
+    public function __construct(
+        private string $name = 'count',
+        private string $unit = 'unit',
+    ) {}
+
     public function name(): string {
-        return 'count';
+        return $this->name;
     }
 
     public function isValid(mixed $value): bool {
@@ -15,7 +20,7 @@ class CountUnit implements Unit
     }
 
     public function toString(mixed $value, array $format = []): string {
-        $unit = $format['unit'] ?? '';
+        $unit = $format['unit'] ?? $this->unit;
         $suffix = $unit ?: " $unit(s)";
         return number_format($value) . $suffix;
     }

@@ -18,22 +18,23 @@ class Execution
     /** @var CanEvaluateExecution[] */
     public array $evaluators;
 
+    public string $id = '';
+    public ?DateTime $startedAt = null;
+    public float $timeElapsed = 0.0;
+    public Usage $usage;
+
+    public string $label = '';
+    public string $notes = '';
+    /** @var Evaluation[] */
+    public array $evaluations = [];
+    public ?Exception $exception = null;
+
     // this needs to be generalized
     public string $connection = '';
     public Mode $mode = Mode::Json;
     public bool $isStreamed = false;
     public ?LLMResponse $response = null;
     // this needs to be generalized
-
-    public string $id = '';
-    public string $label = '';
-    public string $notes = '';
-    public ?DateTime $startedAt = null;
-    public float $timeElapsed = 0.0;
-    /** @var Evaluation[] */
-    public array $evaluations = [];
-    public Usage $usage;
-    public ?Exception $exception = null;
 
     public function __construct(
         string $label = '',
@@ -98,6 +99,10 @@ class Execution
             return 0;
         }
         return $this->usage->output() / $this->timeElapsed;
+    }
+
+    public function hasException() : bool {
+        return $this->exception !== null;
     }
 
     // INTERNAL /////////////////////////////////////////////////

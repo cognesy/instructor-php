@@ -45,4 +45,8 @@ class Usage
         $this->cacheReadTokens += $usage->cacheReadTokens;
         $this->reasoningTokens += $usage->reasoningTokens;
     }
+
+    public function toString() : string {
+        return "Tokens: {$this->total()} (i:{$this->inputTokens} o:{$this->outputTokens} c:{$this->cache()} r:{$this->reasoningTokens})";
+    }
 }

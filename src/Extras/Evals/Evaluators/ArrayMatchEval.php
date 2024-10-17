@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
 use Cognesy\Instructor\Extras\Evals\Data\ParameterFeedback;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\MatchCount;
+use Cognesy\Instructor\Extras\Evals\Metrics\Generic\MatchCount;
 use Cognesy\Instructor\Extras\Evals\Utils\CompareNestedArrays;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 

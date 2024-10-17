@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
 use Cognesy\Instructor\Extras\Evals\Evaluators\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\BooleanCorrectness;
 use Cognesy\Instructor\Instructor;
 
 class LLMBooleanCorrectnessEval implements CanEvaluateExecution
@@ -39,8 +39,8 @@ class LLMBooleanCorrectnessEval implements CanEvaluateExecution
 
         return new Evaluation(
             metric: new BooleanCorrectness(
+                name: $this->name,
                 value: $result->isCorrect,
-                name: $this->name
             ),
             feedback: new Feedback($result->feedback),
             usage: $request->response()->usage(),

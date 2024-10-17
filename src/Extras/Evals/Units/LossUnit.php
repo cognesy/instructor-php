@@ -6,8 +6,13 @@ use Cognesy\Instructor\Extras\Evals\Contracts\Unit;
 
 class LossUnit implements Unit
 {
+    public function __construct(
+        private string $name = 'loss',
+        private int $precision = 4,
+    ) {}
+
     public function name(): string {
-        return 'loss';
+        return $this->name;
     }
 
     public function isValid(mixed $value): bool {
@@ -15,7 +20,7 @@ class LossUnit implements Unit
     }
 
     public function toString(mixed $value, array $format = []): string {
-        $precision = $format['precision'] ?? 4;
+        $precision = $format['precision'] ?? $this->precision;
         return number_format($value, $precision);
     }
 

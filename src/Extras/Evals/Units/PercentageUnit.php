@@ -15,7 +15,7 @@ class PercentageUnit implements Unit
     }
 
     public function toString(mixed $value, array $format = []): string {
-        return number_format($value, $format['precision'] ?? 2) . '%';
+        return number_format($value * 100, $format['precision'] ?? 2) . '%';
     }
 
     public function toFloat(mixed $value): float {

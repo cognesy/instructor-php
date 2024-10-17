@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
 use Cognesy\Instructor\Extras\Evals\Evaluators\Data\GradedCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\GradedCorrectness;
+use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\GradedCorrectness;
 use Cognesy\Instructor\Instructor;
 
 class LLMGradedCorrectnessEval implements CanEvaluateExecution
