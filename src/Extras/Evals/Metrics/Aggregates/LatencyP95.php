@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Metrics;
+namespace Cognesy\Instructor\Extras\Evals\Metrics\Aggregates;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Metrics\Traits\HandlesMetric;

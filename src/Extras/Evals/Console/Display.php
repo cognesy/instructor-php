@@ -56,9 +56,8 @@ class Display
     }
 
     public function after(Execution $execution) : void {
-        $exception = $execution->exception;
-        if ($exception) {
-            $this->displayException($execution);
+        if ($execution->hasException()) {
+            $this->displayException($execution->exception());
         } else {
             $this->displayResult($execution);
         }
@@ -86,9 +85,9 @@ class Display
     // INTERNAL /////////////////////////////////////////////////
 
     private function displayResult(Execution $execution) : void {
-        $answer = $execution->notes;
+        $answer = $execution->notes();
         $answerLine = str_replace("\n", '\n', $answer);
-        $timeElapsed = $execution->timeElapsed;
+        $timeElapsed = $execution->timeElapsed();
         $tokensPerSec = $execution->outputTps();
 
         $columns = array_merge([
@@ -107,7 +106,7 @@ class Display
     private function makeEvalColumns(Execution $execution, int $maxCols = 3) : array {
         $columns = [];
         $count = 0;
-        foreach ($execution->evaluations as $evaluation) {
+        foreach ($execution->evaluations() as $evaluation) {
             $value = $evaluation->metric;
             $columns[] = [6, $value->toString(), STR_PAD_BOTH, $value->toCliColor()];
             $count++;
@@ -118,8 +117,7 @@ class Display
         return $columns;
     }
 
-    private function displayException(Execution $execution) : void {
-        $exception = $execution->exception;
+    private function displayException(Exception $exception) : void {
         echo Console::columns([
             [9, '', STR_PAD_LEFT, [Color::DARK_YELLOW]],
             [10, '', STR_PAD_LEFT, [Color::CYAN]],

@@ -3,6 +3,7 @@
 ## High priority
 
 - Evals!!!
+- Add 'Output' section to each example, generate it and include in docs, so reader can see what they can expect
 - Logging via PSR-3
 - Schema abstraction layer - decouple names and descriptions from the model
 - Prompt optimization via TextGrad

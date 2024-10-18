@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Executors;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanBeExecuted;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
 use Cognesy\Instructor\Features\Core\InstructorResponse;
 use Cognesy\Instructor\Instructor;
 
-class RunInstructor implements CanBeExecuted
+class RunInstructor implements CanRunExecution
 {
     private InstructorData $data;
 

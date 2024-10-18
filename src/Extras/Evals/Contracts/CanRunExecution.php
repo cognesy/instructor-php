@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Evals\Contracts;
 
 use Cognesy\Instructor\Extras\Evals\Execution;
 
-interface CanBeExecuted
+interface CanRunExecution
 {
     public function execute(Execution $execution): Execution;
 }

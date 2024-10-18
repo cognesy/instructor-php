@@ -4,36 +4,42 @@ namespace Cognesy\Instructor\Extras\Evals;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanBeExecuted;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
+use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
 use Exception;
 
 class Execution
 {
-    public CanBeExecuted $executor;
+    private CanRunExecution $executor;
     /** @var CanEvaluateExecution[] */
-    public array $evaluators;
+    private array $evaluators;
 
-    public string $id = '';
-    public ?DateTime $startedAt = null;
-    public float $timeElapsed = 0.0;
-    public Usage $usage;
+    private string $id;
+    private ?DateTime $startedAt = null;
+    private float $timeElapsed = 0.0;
+    private Usage $usage;
+    private array $metadata = [];
 
-    public string $label = '';
-    public string $notes = '';
+    private string $label;
+    private string $notes;
     /** @var Evaluation[] */
-    public array $evaluations = [];
-    public ?Exception $exception = null;
+    private array $evaluations = [];
+    private ?Exception $exception = null;
 
-    // this needs to be generalized
+    // this needs to be generalized - eval context (or hyperparams?)
     public string $connection = '';
     public Mode $mode = Mode::Json;
     public bool $isStreamed = false;
+    // more... - input
+    //  - output
+    //public DataMap $output;
     public ?LLMResponse $response = null;
+    private array $data = [];
     // this needs to be generalized
 
     public function __construct(
@@ -47,9 +53,59 @@ class Execution
         $this->connection = $connection;
         $this->mode = $mode;
         $this->isStreamed = $isStreamed;
+        //$this->output = new DataMap();
     }
 
-    public function withExecutor(CanBeExecuted $executor) : self {
+    public function id() : string {
+        return $this->id;
+    }
+
+    public function startedAt() : DateTime {
+        return $this->startedAt;
+    }
+
+    public function timeElapsed() : float {
+        return $this->timeElapsed;
+    }
+
+    public function usage() : Usage {
+        return $this->usage;
+    }
+
+    public function label() : string {
+        return $this->label;
+    }
+
+    public function notes() : string {
+        return $this->notes;
+    }
+
+    public function evaluations() : array {
+        return $this->evaluations;
+    }
+
+    public function hasEvaluations() : bool {
+        return count($this->evaluations) > 0;
+    }
+
+    public function exception() : Exception {
+        return $this->exception;
+    }
+
+    public function hasException() : bool {
+        return $this->exception !== null;
+    }
+
+    public function meta(string $key, mixed $default = null) : mixed {
+        return $this->metadata[$key] ?? $default;
+    }
+
+    public function withMeta(string $key, mixed $value) : self {
+        $this->metadata[$key] = $value;
+        return $this;
+    }
+
+    public function withExecutor(CanRunExecution $executor) : self {
         $this->executor = $executor;
         return $this;
     }
@@ -99,10 +155,6 @@ class Execution
             return 0;
         }
         return $this->usage->output() / $this->timeElapsed;
-    }
-
-    public function hasException() : bool {
-        return $this->exception !== null;
     }
 
     // INTERNAL /////////////////////////////////////////////////

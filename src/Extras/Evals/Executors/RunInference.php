@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Executors;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanBeExecuted;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
-class RunInference implements CanBeExecuted
+class RunInference implements CanRunExecution
 {
     private InferenceAdapter $inferenceAdapter;
     private InferenceData $data;
