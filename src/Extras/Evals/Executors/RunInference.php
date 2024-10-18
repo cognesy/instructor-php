@@ -10,15 +10,15 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 class RunInference implements CanRunExecution
 {
     private InferenceAdapter $inferenceAdapter;
-    private InferenceData $data;
+    private InferenceData $inferenceData;
 
     public function __construct(InferenceData $data) {
         $this->inferenceAdapter = new InferenceAdapter();
-        $this->data = $data;
+        $this->inferenceData = $data;
     }
 
     public function execute(Execution $execution) : Execution {
-        $execution->response = $this->makeLLMResponse($execution);
+        $execution->data()->set('response', $this->makeLLMResponse($execution));
         return $execution;
     }
 
@@ -26,12 +26,12 @@ class RunInference implements CanRunExecution
 
     private function makeLLMResponse(Execution $execution) : LLMResponse {
         return $this->inferenceAdapter->callInferenceFor(
-            connection: $execution->connection,
-            mode: $execution->mode,
-            isStreamed: $execution->isStreamed,
-            messages: $this->data->messages,
-            evalSchema: $this->data->inferenceSchema(),
-            maxTokens: $this->data->maxTokens,
+            connection: $execution->data()->get('connection'),
+            mode: $execution->data()->get('mode'),
+            isStreamed: $execution->data()->get('isStreamed'),
+            messages: $this->inferenceData->messages,
+            evalSchema: $this->inferenceData->inferenceSchema(),
+            maxTokens: $this->inferenceData->maxTokens,
         );
     }
 }

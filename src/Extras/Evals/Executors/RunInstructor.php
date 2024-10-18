@@ -10,14 +10,14 @@ use Cognesy\Instructor\Instructor;
 
 class RunInstructor implements CanRunExecution
 {
-    private InstructorData $data;
+    private InstructorData $instructorData;
 
     public function __construct(InstructorData $data) {
-        $this->data = $data;
+        $this->instructorData = $data;
     }
 
     public function execute(Execution $execution) : Execution {
-        $execution->response = $this->makeInstructorResponse($execution)->response();
+        $execution->data()->set('response', $this->makeInstructorResponse($execution)->response());
         return $execution;
     }
 
@@ -25,25 +25,25 @@ class RunInstructor implements CanRunExecution
 
     private function makeInstructorResponse(Execution $execution) : InstructorResponse {
         return (new Instructor)
-            ->withConnection($execution->connection)
+            ->withConnection($execution->data()->get('connection'))
             ->request(
-                messages: $this->data->messages,
-                input: $this->data->input,
-                responseModel: $this->data->responseModel(),
-                system: $this->data->system,
-                prompt: $this->data->prompt,
-                examples: $this->data->examples,
-                model: $this->data->model,
-                maxRetries: $this->data->maxRetries,
+                messages: $this->instructorData->messages,
+                input: $this->instructorData->input,
+                responseModel: $this->instructorData->responseModel(),
+                system: $this->instructorData->system,
+                prompt: $this->instructorData->prompt,
+                examples: $this->instructorData->examples,
+                model: $this->instructorData->model,
+                maxRetries: $this->instructorData->maxRetries,
                 options: [
-                    'max_tokens' => $this->data->maxTokens,
-                    'temperature' => $this->data->temperature,
-                    'stream' => $execution->isStreamed,
+                    'max_tokens' => $this->instructorData->maxTokens,
+                    'temperature' => $this->instructorData->temperature,
+                    'stream' => $execution->data()->get('isStreamed'),
                 ],
-                toolName: $this->data->toolName,
-                toolDescription: $this->data->toolDescription,
-                retryPrompt: $this->data->retryPrompt,
-                mode: $execution->mode,
+                toolName: $this->instructorData->toolName,
+                toolDescription: $this->instructorData->toolDescription,
+                retryPrompt: $this->instructorData->retryPrompt,
+                mode: $execution->data()->get('mode'),
             );
     }
 }

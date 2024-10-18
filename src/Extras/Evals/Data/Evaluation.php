@@ -9,11 +9,11 @@ use DateTime;
 
 class Evaluation
 {
-    readonly public string $id;
-    public ?DateTime $startedAt = null;
-    public float $timeElapsed = 0.0;
-    public ?Usage $usage = null;
-    public array $metadata = [];
+    readonly private string $id;
+    private ?DateTime $startedAt;
+    private float $timeElapsed = 0.0;
+    private ?Usage $usage;
+    private array $metadata;
 
     public ?Metric $metric = null;
     public ?Feedback $feedback = null;
@@ -32,6 +32,27 @@ class Evaluation
         $this->metadata = $metadata;
     }
 
+    public function id() : string {
+        return $this->id;
+    }
+
+    public function startedAt() : DateTime {
+        return $this->startedAt;
+    }
+
+    public function timeElapsed() : float {
+        return $this->timeElapsed;
+    }
+
+    public function withTimeElapsed(float $timeElapsed) : self {
+        $this->timeElapsed = $timeElapsed;
+        return $this;
+    }
+
+    public function usage() : Usage {
+        return $this->usage;
+    }
+
     public function metric() : Metric {
         return $this->metric;
     }
@@ -40,11 +61,11 @@ class Evaluation
         return $this->feedback;
     }
 
-    public function meta(string $key, mixed $default = null) : mixed {
+    public function metadata(string $key, mixed $default = null) : mixed {
         return $this->metadata[$key] ?? $default;
     }
 
-    public function withMeta(string $key, mixed $value) : self {
+    public function withMetadata(string $key, mixed $value) : self {
         $this->metadata[$key] = $value;
         return $this;
     }

@@ -20,7 +20,7 @@ class ArrayMatchEval implements CanEvaluateExecution
     ) {}
 
     public function evaluate(Execution $execution): Evaluation {
-        $data = $execution->response->json()->toArray();
+        $data = $execution->data()->get('response')?->json()->toArray();
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
         $total = count((new Dot($data))->flatten());
         $matches = $total - count($differences);

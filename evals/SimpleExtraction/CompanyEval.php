@@ -18,7 +18,7 @@ class CompanyEval implements CanEvaluateExecution
     }
 
     public function evaluate(Execution $execution) : Evaluation {
-        $company = $execution->response->value();
+        $company = $execution->data()->get('response')?->value();
         $isCorrect = ($this->expectations['name'] === ($company->name ?? null))
             && ($this->expectations['year'] === ($company->year ?? null));
         return new Evaluation(

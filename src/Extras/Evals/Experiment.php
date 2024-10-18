@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extras\Evals\Contracts\CanAggregateExperimentMetrics;
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
+use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
 use Exception;
@@ -22,11 +23,11 @@ class Experiment {
     /** @var CanAggregateExperimentMetrics[] */
     private array $aggregators;
 
-    readonly public string $id;
-    public ?DateTime $startedAt = null;
-    public float $timeElapsed = 0.0;
-    public ?Usage $usage = null;
-    public array $metadata = [];
+    readonly private string $id;
+    private ?DateTime $startedAt = null;
+    private float $timeElapsed = 0.0;
+    private ?Usage $usage = null;
+    private DataMap $data;
 
     /** @var Execution[] */
     private array $executions = [];
@@ -34,7 +35,7 @@ class Experiment {
     private array $exceptions = [];
 
     /** @var Metric[] */
-    public array $results;
+    private array $results;
 
     public function __construct(
         Generator                           $cases,
@@ -44,6 +45,7 @@ class Experiment {
     ) {
         $this->id = Uuid::uuid4();
         $this->display = new Display();
+        $this->data = new DataMap();
 
         $this->cases = $cases;
         $this->executor = $executor;
@@ -58,6 +60,26 @@ class Experiment {
     }
 
     // PUBLIC //////////////////////////////////////////////////
+
+    public function id() : string {
+        return $this->id;
+    }
+
+    public function startedAt() : DateTime {
+        return $this->startedAt;
+    }
+
+    public function timeElapsed() : float {
+        return $this->timeElapsed;
+    }
+
+    public function usage() : Usage {
+        return $this->usage;
+    }
+
+    public function data() : DataMap {
+        return $this->data;
+    }
 
     /**
      * @return Metric
@@ -116,15 +138,6 @@ class Experiment {
      */
     public function results() : array {
         return $this->results;
-    }
-
-    public function meta(string $key, mixed $default = null) : mixed {
-        return $this->metadata[$key] ?? $default;
-    }
-
-    public function withMeta(string $key, mixed $value) : self {
-        $this->metadata[$key] = $value;
-        return $this;
     }
 
     // INTERNAL /////////////////////////////////////////////////

@@ -6,7 +6,6 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
@@ -23,24 +22,11 @@ class Execution
     private ?DateTime $startedAt = null;
     private float $timeElapsed = 0.0;
     private Usage $usage;
-    private array $metadata = [];
+    private DataMap $data;
 
-    private string $label;
-    private string $notes;
     /** @var Evaluation[] */
     private array $evaluations = [];
     private ?Exception $exception = null;
-
-    // this needs to be generalized - eval context (or hyperparams?)
-    public string $connection = '';
-    public Mode $mode = Mode::Json;
-    public bool $isStreamed = false;
-    // more... - input
-    //  - output
-    //public DataMap $output;
-    public ?LLMResponse $response = null;
-    private array $data = [];
-    // this needs to be generalized
 
     public function __construct(
         string $label = '',
@@ -49,11 +35,11 @@ class Execution
         bool $isStreamed = false,
     ) {
         $this->id = Uuid::uuid4();
-        $this->label = $label;
-        $this->connection = $connection;
-        $this->mode = $mode;
-        $this->isStreamed = $isStreamed;
-        //$this->output = new DataMap();
+        $this->data = new DataMap();
+        $this->data->set('label', $label);
+        $this->data->set('connection', $connection);
+        $this->data->set('mode', $mode);
+        $this->data->set('isStreamed', $isStreamed);
     }
 
     public function id() : string {
@@ -72,14 +58,6 @@ class Execution
         return $this->usage;
     }
 
-    public function label() : string {
-        return $this->label;
-    }
-
-    public function notes() : string {
-        return $this->notes;
-    }
-
     public function evaluations() : array {
         return $this->evaluations;
     }
@@ -96,18 +74,32 @@ class Execution
         return $this->exception !== null;
     }
 
-    public function meta(string $key, mixed $default = null) : mixed {
-        return $this->metadata[$key] ?? $default;
+    public function data() : DataMap {
+        return $this->data;
     }
 
-    public function withMeta(string $key, mixed $value) : self {
-        $this->metadata[$key] = $value;
+    public function withData(DataMap $data) : self {
+        $this->data = $data;
         return $this;
     }
 
     public function withExecutor(CanRunExecution $executor) : self {
         $this->executor = $executor;
         return $this;
+    }
+
+    public function totalTps() : float {
+        if ($this->timeElapsed === 0) {
+            return 0;
+        }
+        return ($this->usage->total()) / $this->timeElapsed;
+    }
+
+    public function outputTps() : float {
+        if ($this->timeElapsed === 0) {
+            return 0;
+        }
+        return $this->usage->output() / $this->timeElapsed;
     }
 
     public function withEvaluators(array|CanEvaluateExecution $evaluator) : self {
@@ -131,30 +123,16 @@ class Execution
             $time = microtime(true);
             $this->executor->execute($this);
             $this->timeElapsed = microtime(true) - $time;
-            $this->usage = $this->response->usage();
-            $this->notes = $this->response->content();
+            $this->usage = $this->data()->get('response')?->usage();
+            $this->data()->set('notes', $this->data()->get('response')?->content());
 
             $this->evaluations = $this->evaluate();
         } catch(Exception $e) {
             $this->timeElapsed = microtime(true) - $time;
-            $this->notes = $e->getMessage();
+            $this->data()->set('notes', $e->getMessage());
             $this->exception = $e;
             throw $e;
         }
-    }
-
-    public function totalTps() : float {
-        if ($this->timeElapsed === 0) {
-            return 0;
-        }
-        return ($this->usage->total()) / $this->timeElapsed;
-    }
-
-    public function outputTps() : float {
-        if ($this->timeElapsed === 0) {
-            return 0;
-        }
-        return $this->usage->output() / $this->timeElapsed;
     }
 
     // INTERNAL /////////////////////////////////////////////////
@@ -171,7 +149,7 @@ class Execution
     private function makeEvaluation(CanEvaluateExecution $evaluator, Execution $execution) : Evaluation {
         $time = microtime(true);
         $evaluation = $evaluator->evaluate($execution);
-        $evaluation->timeElapsed = microtime(true) - $time;
+        $evaluation->withTimeElapsed(microtime(true) - $time);
         return $evaluation;
     }
 }

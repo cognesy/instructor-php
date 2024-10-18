@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Evals\Data;
 class Feedback
 {
     /** @var ParameterFeedback[] $items */
-    public array $items = [];
+    private array $items;
 
     public function __construct(
         string|array $items = []
