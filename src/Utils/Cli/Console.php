@@ -64,7 +64,7 @@ class Console
 //                ? '…'.substr($short,1)
 //                : substr($short, 0, -1).'…';
 //        }
-        $short = Str::limit($text, $chars, $align);
+        $short = Str::limit($text, $chars, '…', $align);
         return self::color($color, str_pad($short, $chars, ' ', $align));
     }
 
