@@ -23,7 +23,7 @@ class LLMBooleanCorrectnessEval implements CanEvaluateExecution
     }
 
     public function evaluate(Execution $execution) : Evaluation {
-        /** @var \Cognesy\Instructor\Extras\Evals\Evaluators\Data\BooleanCorrectnessAnalysis $result */
+        /** @var BooleanCorrectnessAnalysis $result */
         $request = $this->instructor->request(
             input: [
                 'expected_result' => $this->expected,

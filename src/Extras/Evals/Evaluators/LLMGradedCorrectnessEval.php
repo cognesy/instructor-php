@@ -41,7 +41,7 @@ class LLMGradedCorrectnessEval implements CanEvaluateExecution
         return new Evaluation(
             metric: new GradedCorrectness(
                 name: $this->name,
-                grade: $result->correctness,
+                value: $result->correctness,
             ),
             feedback: new Feedback($result->feedback),
             usage: $request->response()->usage(),

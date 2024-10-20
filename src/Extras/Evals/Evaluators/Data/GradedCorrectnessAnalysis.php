@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Evaluators\Data;
 
-use Cognesy\Instructor\Extras\Evals\Data\ParameterFeedback;
+use Cognesy\Instructor\Extras\Evals\Data\FeedbackItem;
 use Cognesy\Instructor\Extras\Evals\Enums\CorrectnessGrade;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 
@@ -14,6 +14,6 @@ class GradedCorrectnessAnalysis
     #[Description("Graded correctness of the result.")]
     public CorrectnessGrade $correctness;
     #[Description("If the result is incorrect - list of individual issues found in the actual result considering the expected values. Otherwise empty.")]
-    /** @var ParameterFeedback[] */
+    /** @var FeedbackItem[] */
     public array $feedback;
 }

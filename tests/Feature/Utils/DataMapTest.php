@@ -33,10 +33,16 @@ test('set method updates values correctly', function () {
     $this->dataMap->set('name', 'Jane Doe');
     $this->dataMap->set('address.zip', '12345');
     $this->dataMap->set('skills', ['coding', 'design']);
+    $this->dataMap->set('newValue', '654');
+    $this->dataMap->set('newArray.subValue', '432');
+    $this->dataMap->set('newArrayWithSubarray.subValue.subsubValue', '210');
 
     expect($this->dataMap->get('name'))->toBe('Jane Doe');
     expect($this->dataMap->get('address.zip'))->toBe('12345');
     expect($this->dataMap->get('skills')->toArray())->toBe(['coding', 'design']);
+    expect($this->dataMap->get('newValue'))->toBe('654');
+    expect($this->dataMap->get('newArray.subValue'))->toBe('432');
+    expect($this->dataMap->get('newArrayWithSubarray.subValue.subsubValue'))->toBe('210');
 });
 
 test('has method checks for key existence', function () {

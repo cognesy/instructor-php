@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Extras\Evals;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
@@ -29,17 +28,11 @@ class Execution
     private ?Exception $exception = null;
 
     public function __construct(
-        string $label = '',
-        string $connection = '',
-        Mode $mode = Mode::Json,
-        bool $isStreamed = false,
+        array $case,
     ) {
         $this->id = Uuid::uuid4();
         $this->data = new DataMap();
-        $this->data->set('label', $label);
-        $this->data->set('connection', $connection);
-        $this->data->set('mode', $mode);
-        $this->data->set('isStreamed', $isStreamed);
+        $this->data->set('case', $case);
     }
 
     public function id() : string {
@@ -72,6 +65,19 @@ class Execution
 
     public function hasException() : bool {
         return $this->exception !== null;
+    }
+
+    public function status() : string {
+        return $this->exception ? 'failed' : 'success';
+    }
+
+    public function get(string $key) : mixed {
+        return $this->data->get($key);
+    }
+
+    public function set(string $key, mixed $value) : self {
+        $this->data->set($key, $value);
+        return $this;
     }
 
     public function data() : DataMap {
@@ -123,13 +129,13 @@ class Execution
             $time = microtime(true);
             $this->executor->execute($this);
             $this->timeElapsed = microtime(true) - $time;
-            $this->usage = $this->data()->get('response')?->usage();
-            $this->data()->set('notes', $this->data()->get('response')?->content());
+            $this->usage = $this->get('response')?->usage();
+            $this->data()->set('output.notes', $this->get('response')?->content());
 
             $this->evaluations = $this->evaluate();
         } catch(Exception $e) {
             $this->timeElapsed = microtime(true) - $time;
-            $this->data()->set('notes', $e->getMessage());
+            $this->data()->set('output.notes', $e->getMessage());
             $this->exception = $e;
             throw $e;
         }

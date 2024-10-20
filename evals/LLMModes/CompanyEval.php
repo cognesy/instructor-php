@@ -20,7 +20,8 @@ class CompanyEval implements CanEvaluateExecution
     }
 
     public function evaluate(Execution $execution) : Evaluation {
-        $isCorrect = match ($execution->data()->get('mode')) {
+        $mode = $execution->get('case.mode');
+        $isCorrect = match ($mode) {
             Mode::Text => $this->validateText($execution),
             Mode::Tools => $this->validateToolsData($execution),
             default => $this->validateDefault($execution),
@@ -35,21 +36,22 @@ class CompanyEval implements CanEvaluateExecution
     // INTERNAL /////////////////////////////////////////////////
 
     private function validateToolsData(Execution $execution) : bool {
-        $data = $execution->data()->get('response')->toolsData[0];
+        $data = $execution->get('response')->toolsData[0];
         return 'store_company' === ($data['name'] ?? '')
             && 'ACME' === ($data['arguments']['name'] ?? '')
             && 2020 === (int) ($data['arguments']['year'] ?? 0);
     }
 
     private function validateDefault(Execution $execution) : bool {
-        $decoded = $execution->data()->get('response')?->json()->toArray();
+        $decoded = $execution->get('response')?->json()->toArray();
         return $this->expectations['name'] === ($decoded['name'] ?? '')
             && $this->expectations['year'] === ($decoded['year'] ?? 0);
     }
 
     private function validateText(Execution $execution) : bool {
+        $content = $execution->get('response')?->content();
         return Str::contains(
-            $execution->data()->get('response')?->content(),
+            $content,
             [
                 $this->expectations['name'],
                 (string) $this->expectations['year']

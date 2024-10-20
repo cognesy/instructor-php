@@ -5,7 +5,7 @@ use Closure;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Instructor\Extras\Web\Scraper;
+use Cognesy\Instructor\Utils\Web\Scraper;
 
 #[ModuleSignature('url:string -> content:string')]
 #[ModuleDescription('Retrieve the content of a URL')]

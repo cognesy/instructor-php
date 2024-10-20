@@ -43,9 +43,9 @@ class Display
     }
 
     public function before(Execution $execution) : void {
-        $connection = $execution->data()->get('connection');
-        $mode = $execution->data()->get('mode')->value;
-        $streamed = $execution->data()->get('isStreamed');
+        $connection = $execution->get('case.connection');
+        $mode = $execution->get('case.mode')->value;
+        $streamed = $execution->get('case.isStreamed');
 
         Console::printColumns([
             [10, $connection, STR_PAD_RIGHT, Color::WHITE],
@@ -85,7 +85,7 @@ class Display
     // INTERNAL /////////////////////////////////////////////////
 
     private function displayResult(Execution $execution) : void {
-        $answer = $execution->data()->get('notes');
+        $answer = $execution->get('output.notes');
         $answerLine = str_replace("\n", '\n', $answer);
         $timeElapsed = $execution->timeElapsed();
         $tokensPerSec = $execution->outputTps();

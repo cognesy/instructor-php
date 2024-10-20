@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\Evals\Data;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
+use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
 
@@ -13,7 +14,7 @@ class Evaluation
     private ?DateTime $startedAt;
     private float $timeElapsed = 0.0;
     private ?Usage $usage;
-    private array $metadata;
+    private DataMap $data;
 
     public ?Metric $metric = null;
     public ?Feedback $feedback = null;
@@ -29,7 +30,7 @@ class Evaluation
         $this->metric = $metric;
         $this->feedback = $feedback;
         $this->usage = $usage;
-        $this->metadata = $metadata;
+        $this->data = new DataMap($metadata);
     }
 
     public function id() : string {
@@ -53,21 +54,16 @@ class Evaluation
         return $this->usage;
     }
 
-    public function metric() : Metric {
-        return $this->metric;
+    public function data() : DataMap {
+        return $this->data;
     }
 
     public function feedback() : Feedback {
         return $this->feedback;
     }
 
-    public function metadata(string $key, mixed $default = null) : mixed {
-        return $this->metadata[$key] ?? $default;
-    }
-
-    public function withMetadata(string $key, mixed $value) : self {
-        $this->metadata[$key] = $value;
-        return $this;
+    public function metric() : Metric {
+        return $this->metric;
     }
 
     public function hasMetric(string $metricName) : bool {

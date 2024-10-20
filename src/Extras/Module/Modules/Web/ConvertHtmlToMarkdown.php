@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Module\Modules\Web;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Instructor\Extras\Web\Html\HtmlProcessor;
+use Cognesy\Instructor\Utils\Web\Html\HtmlProcessor;
 
 #[ModuleSignature('html:string -> markdown:string')]
 #[ModuleDescription('Convert HTML to Markdown')]

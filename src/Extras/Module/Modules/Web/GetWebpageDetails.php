@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 use Cognesy\Instructor\Extras\Web\Data\PageData;
-use Cognesy\Instructor\Extras\Web\Html\HtmlProcessor;
+use Cognesy\Instructor\Utils\Web\Html\HtmlProcessor;
 
 #[ModuleSignature('url:string -> pageDetails:PageData')]
 #[ModuleDescription('Retrieve information from a webpage')]

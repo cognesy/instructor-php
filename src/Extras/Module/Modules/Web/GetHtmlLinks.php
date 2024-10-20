@@ -4,8 +4,8 @@ namespace Cognesy\Instructor\Extras\Module\Modules\Web;
 use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Instructor\Extras\Web\Link;
 use Cognesy\Instructor\Utils\Str;
+use Cognesy\Instructor\Utils\Web\Link;
 
 #[ModuleSignature('html:string -> links:Link[]')]
 #[ModuleDescription('Extract links from HTML')]
@@ -44,7 +44,7 @@ class GetHtmlLinks extends Module
         $links = [];
         preg_match_all('/<a[^>]+href\s*=\s*([\'"])(?<href>.+?)\1[^>]*>(?<text>.*?)<\/a>/i', $page, $matches);
         foreach ($matches['href'] as $key => $href) {
-            $link = new Link();
+            $link = new \Cognesy\Instructor\Utils\Web\Link();
             $link->url = $href;
             $link->title = strip_tags($matches['text'][$key]);
             $link->isInternal = $this->isInternal($href, $baseUrl);

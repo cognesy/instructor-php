@@ -155,12 +155,12 @@ class Experiment {
     }
 
     private function makeExecution(mixed $case) : Execution {
-        return (new Execution(
-            label: (string) $case,
-            connection: $case->connection,
-            mode: $case->mode,
-            isStreamed: $case->isStreaming,
-        ))
+        $caseData = match(true) {
+            is_array($case) => $case,
+            method_exists($case, 'toArray') => $case->toArray(),
+            default => (array) $case,
+        };
+        return (new Execution(case: $caseData))
             ->withExecutor($this->executor)
             ->withEvaluators($this->evaluators);
     }

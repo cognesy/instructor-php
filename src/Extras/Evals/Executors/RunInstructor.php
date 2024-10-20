@@ -25,7 +25,7 @@ class RunInstructor implements CanRunExecution
 
     private function makeInstructorResponse(Execution $execution) : InstructorResponse {
         return (new Instructor)
-            ->withConnection($execution->data()->get('connection'))
+            ->withConnection($execution->get('case.connection'))
             ->request(
                 messages: $this->instructorData->messages,
                 input: $this->instructorData->input,
@@ -38,12 +38,12 @@ class RunInstructor implements CanRunExecution
                 options: [
                     'max_tokens' => $this->instructorData->maxTokens,
                     'temperature' => $this->instructorData->temperature,
-                    'stream' => $execution->data()->get('isStreamed'),
+                    'stream' => $execution->get('case.isStreamed'),
                 ],
                 toolName: $this->instructorData->toolName,
                 toolDescription: $this->instructorData->toolDescription,
                 retryPrompt: $this->instructorData->retryPrompt,
-                mode: $execution->data()->get('mode'),
+                mode: $execution->get('case.mode'),
             );
     }
 }

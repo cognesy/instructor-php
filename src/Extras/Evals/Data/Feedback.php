@@ -4,9 +4,12 @@ namespace Cognesy\Instructor\Extras\Evals\Data;
 
 class Feedback
 {
-    /** @var ParameterFeedback[] $items */
+    /** @var FeedbackItem[] $items */
     private array $items;
 
+    /**
+     * @param string|FeedbackItem[] $items
+     */
     public function __construct(
         string|array $items = []
     ) {
@@ -17,12 +20,12 @@ class Feedback
         return new static();
     }
 
-    /** @return ParameterFeedback[] */
+    /** @return FeedbackItem[] */
     public function items() : array {
         return $this->items;
     }
 
-    public function add(?ParameterFeedback $item) : static {
+    public function add(?FeedbackItem $item) : static {
         if (is_null($item)) {
             return $this;
         }
@@ -50,7 +53,7 @@ class Feedback
         return implode(
             separator: "\n",
             array: array_map(
-                callback: fn(ParameterFeedback $item) => $item->parameterName . ': ' . $item->feedback,
+                callback: fn(FeedbackItem $item) => $item->context . ': ' . $item->feedback,
                 array: $this->items
             ));
     }
@@ -59,7 +62,7 @@ class Feedback
 
     /**
      * @param array|string $items
-     * @return ParameterFeedback[]
+     * @return FeedbackItem[]
      */
     private function toFeedbackItems(array|string $items) : array {
         $feedbackItems = [];
@@ -70,7 +73,7 @@ class Feedback
             }
             $param = $item['parameterName'] ?? '';
             $feedback = $item['feedback'] ?? '';
-            $feedbackItems[] = new ParameterFeedback($param, $feedback);
+            $feedbackItems[] = new FeedbackItem($param, $feedback);
         }
         return $feedbackItems;
     }

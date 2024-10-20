@@ -34,7 +34,7 @@ class CompanyEval implements CanEvaluateExecution
     public function evaluate(Execution $execution) : Evaluation {
         $expectedEvents = $this->expectations['events'];
         /** @var Sequence $events */
-        $events = $execution->data()->get('response')?->value();
+        $events = $execution->get('response')?->value();
         $result = ($expectedEvents - count($events->list)) / $expectedEvents;
         return new Evaluation(
             metric: new PercentageCorrectness('found', $result),

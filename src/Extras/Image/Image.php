@@ -3,6 +3,8 @@
 namespace Cognesy\Instructor\Extras\Image;
 
 use Cognesy\Instructor\Contracts\CanProvideMessages;
+use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Instructor;
 use Cognesy\Instructor\Utils\Messages\Messages;
 use Exception;
 
@@ -61,6 +63,30 @@ class Image implements CanProvideMessages
 
     public function toImageUrl(): string {
         return $this->url ?: $this->base64bytes;
+    }
+
+    public function toData(
+        string|array|object $responseModel,
+        string $prompt,
+        string $connection = '',
+        string $model = '',
+        string $system = '',
+        array $examples = [],
+        int $maxRetries = 0,
+        array $options = [],
+        Mode $mode = Mode::Tools,
+    ) : mixed {
+        return (new Instructor)->withConnection($connection)->request(
+            input: $this,
+            responseModel: $responseModel,
+            system: $system,
+            prompt: $prompt,
+            examples: $examples,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            mode: $mode,
+        )->get();
     }
 
     public function getBase64Bytes(): string {

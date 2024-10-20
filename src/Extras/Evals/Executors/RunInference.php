@@ -26,9 +26,9 @@ class RunInference implements CanRunExecution
 
     private function makeLLMResponse(Execution $execution) : LLMResponse {
         return $this->inferenceAdapter->callInferenceFor(
-            connection: $execution->data()->get('connection'),
-            mode: $execution->data()->get('mode'),
-            isStreamed: $execution->data()->get('isStreamed'),
+            connection: $execution->get('case.connection'),
+            mode: $execution->get('case.mode'),
+            isStreamed: $execution->get('case.isStreaming'),
             messages: $this->inferenceData->messages,
             evalSchema: $this->inferenceData->inferenceSchema(),
             maxTokens: $this->inferenceData->maxTokens,

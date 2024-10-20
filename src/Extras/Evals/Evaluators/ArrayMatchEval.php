@@ -6,7 +6,8 @@ use Adbar\Dot;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
 use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
 use Cognesy\Instructor\Extras\Evals\Data\Feedback;
-use Cognesy\Instructor\Extras\Evals\Data\ParameterFeedback;
+use Cognesy\Instructor\Extras\Evals\Data\FeedbackItem;
+use Cognesy\Instructor\Extras\Evals\Enums\FeedbackCategory;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Metrics\Generic\MatchCount;
 use Cognesy\Instructor\Extras\Evals\Utils\CompareNestedArrays;
@@ -20,7 +21,7 @@ class ArrayMatchEval implements CanEvaluateExecution
     ) {}
 
     public function evaluate(Execution $execution): Evaluation {
-        $data = $execution->data()->get('response')?->json()->toArray();
+        $data = $execution->get('response')?->json()->toArray();
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
         $total = count((new Dot($data))->flatten());
         $matches = $total - count($differences);
@@ -44,15 +45,17 @@ class ArrayMatchEval implements CanEvaluateExecution
         return $feedback;
     }
 
-    private function getFeedback(string $key, mixed $expectedVal, mixed $actualVal) : ?ParameterFeedback {
+    private function getFeedback(string $key, mixed $expectedVal, mixed $actualVal) : ?FeedbackItem {
         return match(true) {
-            ($expectedVal !== null) && ($actualVal === null) => new ParameterFeedback(
-                parameterName: $key,
-                feedback: "Expected `$key`, but param not found in result"
+            ($expectedVal !== null) && ($actualVal === null) => new FeedbackItem(
+                context: $key,
+                feedback: "Expected `$key`, but param not found in result",
+                category: FeedbackCategory::Error
             ),
-            ($actualVal !== $expectedVal) => new ParameterFeedback(
-                parameterName: $key,
-                feedback: "Expected `$key` value `$expectedVal`, but actual is `$actualVal`"
+            ($actualVal !== $expectedVal) => new FeedbackItem(
+                context: $key,
+                feedback: "Expected `$key` value `$expectedVal`, but actual is `$actualVal`",
+                category: FeedbackCategory::Error
             ),
             default => null,
         };

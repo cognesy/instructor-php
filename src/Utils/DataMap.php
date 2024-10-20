@@ -14,14 +14,7 @@ use InvalidArgumentException;
 class DataMap implements JsonSerializable
 {
     /**
-     * Internal storage for data.
-     *
-     * @var array<TKey, TValue|self>
-     */
-    private array $data = [];
-
-    /**
-     * Dot notation handler.
+     * Dot object
      */
     private Dot $dot;
 
@@ -32,8 +25,7 @@ class DataMap implements JsonSerializable
      */
     public function __construct(array $data = [])
     {
-        $this->data = $data;
-        $this->dot = new Dot($this->data);
+        $this->dot = new Dot($data);
     }
 
     /**
@@ -65,10 +57,8 @@ class DataMap implements JsonSerializable
     {
         if ($value instanceof self) {
             $this->dot->set($key, $value->toArray());
-            $this->data[$key] = $value;
         } else {
             $this->dot->set($key, $value);
-            $this->data = $this->dot->all();
         }
 
         return $this;
@@ -98,13 +88,7 @@ class DataMap implements JsonSerializable
         if (!$this->has($key)) {
             throw new InvalidArgumentException("Key '{$key}' does not exist.");
         }
-
         $value = $this->dot->get($key);
-
-        if ($value instanceof self) {
-            return 'DataMap';
-        }
-
         return gettype($value);
     }
 
@@ -194,19 +178,7 @@ class DataMap implements JsonSerializable
      */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->data as $key => $value) {
-            if ($value instanceof self) {
-                $result[$key] = $value->toArray();
-            } elseif (is_callable($value)) {
-                $result[$key] = 'callable';
-            } else {
-                $result[$key] = $value;
-            }
-        }
-
-        return $result;
+        return $this->dot->all();
     }
 
     /**
@@ -217,17 +189,7 @@ class DataMap implements JsonSerializable
      */
     public static function fromArray(array $array): self
     {
-        $data = [];
-
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $data[$key] = self::fromArray($value);
-            } else {
-                $data[$key] = $value;
-            }
-        }
-
-        return new self($data);
+        return new self($array);
     }
 
     /**
@@ -237,7 +199,7 @@ class DataMap implements JsonSerializable
      */
     public function fields(): array
     {
-        return array_keys($this->data);
+        return array_keys($this->toArray());
     }
 
     /**
@@ -301,7 +263,7 @@ class DataMap implements JsonSerializable
     private function collectWildcardValues(string $path): array
     {
         $pathParts = explode('.', $path);
-        return $this->traverseWithWildcards($this->data, $pathParts);
+        return $this->traverseWithWildcards($this->toArray(), $pathParts);
     }
 
     /**
