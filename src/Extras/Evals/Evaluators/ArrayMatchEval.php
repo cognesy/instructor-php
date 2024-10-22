@@ -19,12 +19,6 @@ class ArrayMatchEval implements CanObserveExecution
     ) {}
 
     public function observe(Execution $execution) : Observation {
-        return $this->measure($execution);
-    }
-
-    // INTERNAL /////////////////////////////////////////////////
-
-    private function measure(Execution $execution) : Observation {
         $data = $execution->get('response')?->json()->toArray();
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
         $total = count((new Dot($data))->flatten());
@@ -41,6 +35,8 @@ class ArrayMatchEval implements CanObserveExecution
             ],
         );
     }
+
+    // INTERNAL /////////////////////////////////////////////////
 
     private function critique(Execution $execution): array {
         $data = $execution->get('response')?->json()->toArray();

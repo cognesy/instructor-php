@@ -3,16 +3,14 @@
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanCritiqueExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanMeasureExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Evaluators\Data\GradedCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
-use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\GradedCorrectness;
+use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Instructor;
 
-class LLMGradedCorrectnessEval implements CanMeasureExecution, CanCritiqueExecution
+class LLMGradedCorrectnessEval implements CanProvideExecutionObservations
 {
     private GradedCorrectnessAnalysis $result;
 
@@ -25,16 +23,37 @@ class LLMGradedCorrectnessEval implements CanMeasureExecution, CanCritiqueExecut
         $this->instructor = $instructor ?? new Instructor();
     }
 
-    public function critique(Execution $execution): Feedback {
-        $response = $this->call();
-        return new Feedback($response->feedback);
+    public function observations(Execution $subject): iterable {
+        return array_filter([
+            $this->measure($subject),
+            ...$this->critique($subject),
+        ]);
     }
 
-    public function measure(Execution $execution): Metric {
+    // INTERNAL /////////////////////////////////////////////////
+
+    public function critique(Execution $execution): array {
         $response = $this->call();
-        return new GradedCorrectness(
-            name: $this->name,
-            value: $response->correctness,
+        $feedback = new Feedback($response->feedback);
+        $observations = [];
+        foreach ($feedback->items() as $item) {
+            $observations[] = $item->toObservation([
+                'executionId' => $execution->id(),
+            ]);
+        }
+        return $observations;
+    }
+
+    public function measure(Execution $execution): Observation {
+        $response = $this->call();
+        return Observation::make(
+            type: 'metric',
+            key: $this->name,
+            value: $response->correctness->toFloat(),
+            metadata: [
+                'executionId' => $execution->id(),
+                'grade' => $response->correctness->value,
+            ],
         );
     }
 

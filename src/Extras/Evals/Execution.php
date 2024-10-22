@@ -3,11 +3,13 @@
 namespace Cognesy\Instructor\Extras\Evals;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExecution;
-use Cognesy\Instructor\Extras\Evals\Observers\Execution\ExecutionDuration;
-use Cognesy\Instructor\Extras\Evals\Observers\Execution\ExecutionTotalTokens;
+use Cognesy\Instructor\Extras\Evals\Observation\MakeObservations;
+use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
+use Cognesy\Instructor\Extras\Evals\Observers\ExecutionDuration;
+use Cognesy\Instructor\Extras\Evals\Observers\ExecutionTotalTokens;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
@@ -109,14 +111,14 @@ class Execution
             ->withSources($this->processors())
             ->only([
                 CanObserveExecution::class,
-                CanProvideObservations::class,
+                CanProvideExecutionObservations::class,
             ]);
 
         $summaries = MakeObservations::for($this)
             ->withSources($this->postprocessors)
             ->only([
                 CanSummarizeExecution::class,
-                CanProvideObservations::class,
+                CanProvideExecutionObservations::class,
             ]);
 
         $this->observations = array_filter(array_merge($observations, $summaries));

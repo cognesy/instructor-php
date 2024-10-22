@@ -3,30 +3,17 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanMeasureExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\BooleanCorrectness;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Utils\Str;
 
-class CompanyEval implements CanMeasureExecution, CanObserveExecution
+class CompanyEval implements CanObserveExecution
 {
     private array $expectations;
 
     public function __construct(array $expectations) {
         $this->expectations = $expectations;
-    }
-
-    public function measure(Execution $execution): Metric {
-        $mode = $execution->get('case.mode');
-        $isCorrect = match ($mode) {
-            Mode::Text => $this->validateText($execution),
-            Mode::Tools => $this->validateToolsData($execution),
-            default => $this->validateDefault($execution),
-        };
-        return new BooleanCorrectness(name: 'is_correct', value: $isCorrect);
     }
 
     public function observe(Execution $execution): Observation {

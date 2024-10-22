@@ -12,10 +12,6 @@ use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
-use Cognesy\Instructor\Extras\Evals\Observers\Execution\ExecutionDuration;
-use Cognesy\Instructor\Extras\Evals\Observers\Execution\ExecutionTotalTokens;
-use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentDuration;
-use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentTotalTokens;
 
 $data = new InferenceData(
     messages: [

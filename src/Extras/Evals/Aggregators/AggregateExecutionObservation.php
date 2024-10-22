@@ -2,15 +2,15 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Aggregators;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Observation;
-use Cognesy\Instructor\Extras\Evals\SelectObservations;
+use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
 use Cognesy\Instructor\Extras\Evals\Utils\NumberSeriesAggregator;
 use InvalidArgumentException;
 
-class AggregateExecutionObservation implements CanSummarizeExperiment
+class AggregateExecutionObservation implements CanObserveExperiment
 {
     public function __construct(
         private string $name = '',
@@ -26,7 +26,7 @@ class AggregateExecutionObservation implements CanSummarizeExperiment
         }
     }
 
-    public function summarize(Experiment $experiment): Observation {
+    public function observe(Experiment $experiment): Observation {
         return Observation::make(
             type: 'summary',
             key: $this->name,

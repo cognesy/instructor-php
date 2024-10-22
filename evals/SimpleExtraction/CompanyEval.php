@@ -2,12 +2,11 @@
 
 namespace Cognesy\Evals\SimpleExtraction;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanMeasureExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Observation;
 
-class CompanyEval implements CanMeasureExecution
+class CompanyEval implements CanObserveExecution
 {
     private array $expectations;
 
@@ -15,10 +14,19 @@ class CompanyEval implements CanMeasureExecution
         $this->expectations = $expectations;
     }
 
-    public function measure(Execution $execution): Metric {
+    public function observe(Execution $execution): Observation {
         $company = $execution->data()->get('response')?->value();
         $isCorrect = ($this->expectations['name'] === ($company->name ?? null))
             && ($this->expectations['year'] === ($company->year ?? null));
-        return new BooleanCorrectness(name: 'execution.is_correct', value: $isCorrect);
+
+        return Observation::make(
+            type: 'metric',
+            key: 'execution.is_correct',
+            value: $isCorrect,
+            metadata: [
+                'executionId' => $execution->id(),
+                'data' => $company->toArray(),
+            ],
+        );
     }
 }

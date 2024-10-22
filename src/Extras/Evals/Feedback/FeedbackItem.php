@@ -25,14 +25,14 @@ class FeedbackItem
         $this->category = $category;
     }
 
-    public function toObservation() : Observation {
+    public function toObservation(array $params) : Observation {
         return Observation::make(
             type: 'feedback',
             key: $this->context,
             value: $this->feedback,
-            metadata: [
+            metadata: array_merge([
                 'category' => $this->category,
-            ],
+            ], $params),
         );
     }
 }

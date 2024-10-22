@@ -3,16 +3,14 @@
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanCritiqueExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanMeasureExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Evaluators\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
-use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\BooleanCorrectness;
+use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Instructor;
 
-class LLMBooleanCorrectnessEval implements CanMeasureExecution, CanCritiqueExecution
+class LLMBooleanCorrectnessEval implements CanProvideExecutionObservations
 {
     private BooleanCorrectnessAnalysis $result;
 
@@ -25,28 +23,37 @@ class LLMBooleanCorrectnessEval implements CanMeasureExecution, CanCritiqueExecu
         $this->instructor = $instructor ?? new Instructor();
     }
 
-//    public function evaluate(Execution $execution) : Evaluation {
-//        /** @var BooleanCorrectnessAnalysis $result */
-//        return new Evaluation(
-//            metric: new BooleanCorrectness(
-//                name: $this->name,
-//                value: $result->isCorrect,
-//            ),
-//            feedback: new Feedback($result->feedback),
-//            usage: $request->response()->usage(),
-//        );
-//    }
-
-    public function critique(Execution $execution): Feedback {
-        $response = $this->call();
-        return new Feedback($response->feedback);
+    public function observations(Execution $subject): iterable {
+        return array_filter([
+            $this->measure($subject),
+            ...$this->critique($subject),
+        ]);
     }
 
-    public function measure(Execution $execution): Metric {
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function critique(Execution $execution): array {
         $response = $this->call();
-        return new BooleanCorrectness(
-            name: $this->name,
+        $feedback = new Feedback($response->feedback);
+        $observations = [];
+        foreach ($feedback->items() as $item) {
+            $observations[] = $item->toObservation([
+                'executionId' => $execution->id(),
+            ]);
+        }
+        return $observations;
+    }
+
+    private function measure(Execution $execution): Observation {
+        $response = $this->call();
+        return Observation::make(
+            type: 'metric',
+            key: $this->name,
             value: $response->isCorrect,
+            metadata: [
+                'executionId' => $execution->id(),
+                'unit' => 'boolean',
+            ],
         );
     }
 

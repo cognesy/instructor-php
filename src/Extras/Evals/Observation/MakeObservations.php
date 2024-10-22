@@ -1,12 +1,15 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals;
+namespace Cognesy\Instructor\Extras\Evals\Observation;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExperiment;
+use Cognesy\Instructor\Extras\Evals\Execution;
+use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Observation;
 use Exception;
 
 class MakeObservations
@@ -53,7 +56,7 @@ class MakeObservations
         $observations = [];
         foreach ($this->sources($this->sources, $types) as $source) {
             $observations[] = match(true) {
-                $source instanceof CanProvideObservations => $source->observations(),
+                $source instanceof CanProvideExecutionObservations => $source->observations(),
                 $source instanceof CanObserveExperiment => $this->wrapObservation($source->observe(...), $this->experiment),
                 $source instanceof CanSummarizeExperiment => $this->wrapObservation($source->summarize(...), $this->experiment),
                 $source instanceof CanObserveExecution => $this->wrapObservation($source->observe(...), $this->execution),

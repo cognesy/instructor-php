@@ -1,6 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals;
+namespace Cognesy\Instructor\Extras\Evals\Observation;
+
+use Cognesy\Instructor\Extras\Evals\Observation;
 
 class SelectObservations
 {

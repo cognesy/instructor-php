@@ -4,11 +4,13 @@ namespace Cognesy\Instructor\Extras\Evals;
 use Cognesy\Instructor\Extras\Evals\Console\Display;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExperiment;
-use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentDuration;
-use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentTotalTokens;
+use Cognesy\Instructor\Extras\Evals\Observation\MakeObservations;
+use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
+use Cognesy\Instructor\Extras\Evals\Observers\ExperimentDuration;
+use Cognesy\Instructor\Extras\Evals\Observers\ExperimentTotalTokens;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
@@ -113,7 +115,7 @@ class Experiment {
             ->only([
                 CanObserveExperiment::class,
                 CanObserveExecution::class,
-                CanProvideObservations::class,
+                CanProvideExecutionObservations::class,
             ]);
 
         // execute summarizers
@@ -123,7 +125,7 @@ class Experiment {
             ])
             ->only([
                 CanSummarizeExperiment::class,
-                CanProvideObservations::class,
+                CanProvideExecutionObservations::class,
             ]);
 
         $this->observations = array_filter(array_merge($observations, $summaries));
