@@ -1,6 +1,8 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Data;
+namespace Cognesy\Instructor\Extras\Evals\Feedback;
+
+use Cognesy\Instructor\Extras\Evals\Observation;
 
 class Feedback
 {
@@ -58,6 +60,17 @@ class Feedback
             ));
     }
 
+    /**
+     * @return Observation[]
+     */
+    public function toObservations() : array {
+        $observations = [];
+        foreach ($this->items as $item) {
+            $observations[] = $item->toObservation();
+        }
+        return $observations;
+    }
+
     // INTERNAL /////////////////////////////////////////////////
 
     /**
@@ -65,6 +78,9 @@ class Feedback
      * @return FeedbackItem[]
      */
     private function toFeedbackItems(array|string $items) : array {
+        if (empty($items)) {
+            return [];
+        }
         $feedbackItems = [];
         $items = is_array($items) ? $items : [$items];
         foreach ($items as $item) {

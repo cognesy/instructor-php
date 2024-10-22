@@ -2,6 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Contracts;
 
+use JetBrains\PhpStorm\Deprecated;
+
+#[Deprecated]
 interface Unit
 {
     // Returns the name of the unit

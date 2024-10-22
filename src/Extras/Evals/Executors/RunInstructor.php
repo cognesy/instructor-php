@@ -16,7 +16,7 @@ class RunInstructor implements CanRunExecution
         $this->instructorData = $data;
     }
 
-    public function execute(Execution $execution) : Execution {
+    public function run(Execution $execution) : Execution {
         $execution->data()->set('response', $this->makeInstructorResponse($execution)->response());
         return $execution;
     }

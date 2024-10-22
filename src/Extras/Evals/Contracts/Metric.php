@@ -2,7 +2,11 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Contracts;
 
-interface Metric
+use JetBrains\PhpStorm\Deprecated;
+use JsonSerializable;
+
+#[Deprecated]
+interface Metric extends JsonSerializable
 {
     public function name() : string;
     public function value() : mixed;

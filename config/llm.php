@@ -72,6 +72,14 @@ return [
             'defaultModel' => 'gemini-1.5-flash-latest',
             'defaultMaxTokens' => 1024,
         ],
+        'grok' => [
+            'providerType' => LLMProviderType::Grok->value,
+            'apiUrl' => 'https://api.x.ai/v1',
+            'apiKey' => Env::get('GROK_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'grok-beta',
+            'defaultMaxTokens' => 1024,
+        ],
         'groq' => [
             'providerType' => LLMProviderType::Groq->value,
             'apiUrl' => 'https://api.groq.com/openai/v1',

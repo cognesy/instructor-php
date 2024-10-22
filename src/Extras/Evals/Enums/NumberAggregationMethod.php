@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Enums;
 
-enum ValueAggregationMethod : string
+enum NumberAggregationMethod : string
 {
     case Min = 'min';
     case Max = 'max';

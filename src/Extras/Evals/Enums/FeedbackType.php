@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Enums;
 
-enum FeedbackCategory : string
+enum FeedbackType : string
 {
     case Error = 'Error';
     case Improvement = 'Improvement';

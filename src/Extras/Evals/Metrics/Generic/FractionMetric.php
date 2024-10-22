@@ -4,44 +4,34 @@ namespace Cognesy\Instructor\Extras\Evals\Metrics\Generic;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Contracts\Unit;
+use Cognesy\Instructor\Extras\Evals\Metrics\Traits\HandlesMetric;
 use Cognesy\Instructor\Extras\Evals\Units\CountUnit;
-use Cognesy\Instructor\Utils\Cli\Color;
 
-class MatchCount implements Metric
+class FractionMetric implements Metric
 {
+    use HandlesMetric;
+
     private string $name;
     private Unit $unit;
 
     public function __construct(
         string $name,
-        private int $matches,
-        private int $total,
+        private int $numerator,
+        private int $denominator,
     ) {
         $this->name = $name;
         $this->unit = new CountUnit();
     }
 
     public function value() : float {
-        return $this->matches;
-    }
-
-    public function name(): string {
-        return $this->name;
-    }
-
-    public function unit(): Unit {
-        return $this->unit;
+        return $this->numerator / $this->denominator;
     }
 
     public function toString(): string {
-        return "{$this->matches}/{$this->total}";
+        return "{$this->numerator}/{$this->denominator}";
     }
 
     public function toFloat(): float {
-        return $this->matches / $this->total;
-    }
-
-    public function toCliColor(): array {
-        return [Color::GRAY];
+        return $this->numerator / $this->denominator;
     }
 }

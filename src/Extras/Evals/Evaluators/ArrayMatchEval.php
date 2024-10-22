@@ -3,36 +3,54 @@
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
 use Adbar\Dot;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
-use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
-use Cognesy\Instructor\Extras\Evals\Data\Feedback;
-use Cognesy\Instructor\Extras\Evals\Data\FeedbackItem;
-use Cognesy\Instructor\Extras\Evals\Enums\FeedbackCategory;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
+use Cognesy\Instructor\Extras\Evals\Enums\FeedbackType;
 use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Metrics\Generic\MatchCount;
+use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
+use Cognesy\Instructor\Extras\Evals\Feedback\FeedbackItem;
+use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Extras\Evals\Utils\CompareNestedArrays;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
 
-class ArrayMatchEval implements CanEvaluateExecution
+class ArrayMatchEval implements CanObserveExecution
 {
     public function __construct(
         private string $name,
         private array $expected,
     ) {}
 
-    public function evaluate(Execution $execution): Evaluation {
+    public function observe(Execution $execution) : Observation {
+        return $this->measure($execution);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function measure(Execution $execution) : Observation {
         $data = $execution->get('response')?->json()->toArray();
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
         $total = count((new Dot($data))->flatten());
         $matches = $total - count($differences);
-        return new Evaluation(
-            metric: new MatchCount(matches: $matches, total: $total, name: $this->name),
-            feedback: $this->makeFeedback($differences) ?? Feedback::none(),
-            usage: Usage::none(),
+        return Observation::make(
+            type: 'metric',
+            key: $this->name,
+            value: $matches / $total,
+            metadata: [
+                'executionId' => $execution->id(),
+                'matchedFields' => $matches,
+                'totalFields' => $total,
+                'unit' => 'percentage',
+            ],
         );
     }
 
-    // INTERNAL /////////////////////////////////////////////////
+    private function critique(Execution $execution): array {
+        $data = $execution->get('response')?->json()->toArray();
+        $differences = (new CompareNestedArrays)->compare($this->expected, $data);
+        $feedback = $this->makeFeedback($differences) ?? Feedback::none();
+        return array_map(
+            callback: fn(Observation $observation) => $observation->withMetadata(['executionId' => $execution->id()]),
+            array: $feedback->toObservations()
+        );
+    }
 
     private function makeFeedback(array $differences) : Feedback {
         $feedback = new Feedback();
@@ -50,12 +68,12 @@ class ArrayMatchEval implements CanEvaluateExecution
             ($expectedVal !== null) && ($actualVal === null) => new FeedbackItem(
                 context: $key,
                 feedback: "Expected `$key`, but param not found in result",
-                category: FeedbackCategory::Error
+                category: FeedbackType::Error
             ),
             ($actualVal !== $expectedVal) => new FeedbackItem(
                 context: $key,
                 feedback: "Expected `$key` value `$expectedVal`, but actual is `$actualVal`",
-                category: FeedbackCategory::Error
+                category: FeedbackType::Error
             ),
             default => null,
         };

@@ -34,4 +34,18 @@ trait HandlesMetric
     public function toCliColor(): array {
         return [Color::GRAY];
     }
+
+    public function jsonSerialize(): array {
+        $customFields = $this->toArray();
+        return [
+            'type' => 'metric',
+            'key' => $this->name,
+            'value' => $this->value,
+            'metadata' => [
+                'class' => static::class,
+                'unit' => $unit,
+                'customFields' => $customFields,
+            ],
+        ];
+    }
 }

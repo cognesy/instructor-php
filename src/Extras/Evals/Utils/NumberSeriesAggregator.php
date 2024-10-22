@@ -2,29 +2,32 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Utils;
 
-use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
+use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use InvalidArgumentException;
 use RuntimeException;
 
-class ValueAggregator
+class NumberSeriesAggregator
 {
     private array $values;
     private array $params;
-    private ValueAggregationMethod $method;
+    private NumberAggregationMethod $method;
 
     /**
      * ValueAggregator constructor.
      *
      * @param array<float> $values The input values for aggregation.
      * @param array<string, mixed> $params Additional parameters for aggregation.
-     * @param ValueAggregationMethod $method Aggregation method.
+     * @param NumberAggregationMethod $method Aggregation method.
      */
     public function __construct(
         array $values = [],
         array $params = [],
-        ValueAggregationMethod $method = ValueAggregationMethod::Mean
+        NumberAggregationMethod $method = NumberAggregationMethod::Mean
     ) {
-        $this->setValues($values);
+        if (empty($values)) {
+            throw new InvalidArgumentException("Values array cannot be empty.");
+        }
+        $this->withValues($values);
         $this->method = $method;
         $this->params = $params;
     }
@@ -33,11 +36,10 @@ class ValueAggregator
      * Sets the values for aggregation.
      *
      * @param array $values
-     * @return void
+     * @return NumberSeriesAggregator
      * @throws InvalidArgumentException
      */
-    public function setValues(array $values): void
-    {
+    public function withValues(array $values): self {
         if (empty($values)) {
             throw new InvalidArgumentException("Values array cannot be empty.");
         }
@@ -50,38 +52,40 @@ class ValueAggregator
         }
 
         $this->values = $values;
+        return $this;
     }
 
     /**
      * Sets the aggregation method.
      *
-     * @param ValueAggregationMethod $method
-     * @return void
+     * @param NumberAggregationMethod $method
+     * @return NumberSeriesAggregator
      */
-    public function setMethod(ValueAggregationMethod $method): void
-    {
+    public function withMethod(NumberAggregationMethod $method): self {
         $this->method = $method;
+        return $this;
     }
 
     /**
      * Performs the aggregation based on the selected method.
      *
-     * @return float|array
+     * @return float|int
      * @throws RuntimeException
      */
     public function aggregate() : float {
         return match ($this->method) {
-            ValueAggregationMethod::Min => $this->min(),
-            ValueAggregationMethod::Max => $this->max(),
-            ValueAggregationMethod::Sum => $this->sum(),
-            ValueAggregationMethod::Mean => $this->mean(),
-            ValueAggregationMethod::Median => $this->median(),
-            ValueAggregationMethod::Variance => $this->variance(),
-            ValueAggregationMethod::StandardDeviation => $this->standardDeviation(),
-            ValueAggregationMethod::SumOfSquares => $this->sumOfSquares(),
-            ValueAggregationMethod::Range => $this->range(),
-            ValueAggregationMethod::GeometricMean => $this->geometricMean(),
-            ValueAggregationMethod::HarmonicMean => $this->harmonicMean(),
+            NumberAggregationMethod::Min => $this->min(),
+            NumberAggregationMethod::Max => $this->max(),
+            NumberAggregationMethod::Sum => $this->sum(),
+            NumberAggregationMethod::Mean => $this->mean(),
+            NumberAggregationMethod::Median => $this->median(),
+            NumberAggregationMethod::Variance => $this->variance(),
+            NumberAggregationMethod::StandardDeviation => $this->standardDeviation(),
+            NumberAggregationMethod::SumOfSquares => $this->sumOfSquares(),
+            NumberAggregationMethod::Range => $this->range(),
+            NumberAggregationMethod::GeometricMean => $this->geometricMean(),
+            NumberAggregationMethod::HarmonicMean => $this->harmonicMean(),
+            NumberAggregationMethod::Percentile => $this->percentile(),
             default => throw new RuntimeException("Unsupported aggregation method: {$this->method->value}"),
         };
     }
@@ -131,7 +135,7 @@ class ValueAggregator
      *
      * @return float
      */
-    private function median(): float
+    private function median(): float|int
     {
         $sorted = $this->values;
         sort($sorted);
@@ -232,8 +236,9 @@ class ValueAggregator
      */
     private function percentile(): float
     {
-        if (!($this->params['percentile'] ?? false)
-            || $this->params['percentile'] < 0
+        $this->params['percentile'] ??= 95;
+
+        if ($this->params['percentile'] < 0
             || $this->params['percentile'] > 100
         ) {
             throw new InvalidArgumentException("Invalid percentile value. Must be between 0 and 100.");

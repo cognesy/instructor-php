@@ -92,6 +92,11 @@ class DataMap implements JsonSerializable
         return gettype($value);
     }
 
+    public function merge(array $data): self {
+        $this->dot->merge($data);
+        return $this;
+    }
+
     /**
      * Magic getter.
      *
@@ -124,21 +129,6 @@ class DataMap implements JsonSerializable
     public function __isset(string $name): bool
     {
         return $this->has($name);
-    }
-
-    /**
-     * Magic call for dynamic methods.
-     *
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
-     *
-     * @throws InvalidArgumentException
-     */
-    public function __call(string $name, array $arguments): mixed
-    {
-        // Example: You can implement dynamic methods here if needed.
-        throw new InvalidArgumentException("Method '{$name}' does not exist.");
     }
 
     /**
@@ -210,7 +200,7 @@ class DataMap implements JsonSerializable
      *
      * @throws InvalidArgumentException If the path does not lead to an array or DataMap, or if wildcards are used incorrectly.
      */
-    public function map(?string $path = null): Map
+    public function toMap(?string $path = null): Map
     {
         if ($path === null) {
             // No path provided, return Map for the entire data

@@ -31,14 +31,7 @@ class Display
         ], 120, '');
         Console::println('');
         Console::println('');
-        Console::println('RESULTS:', [Color::WHITE, Color::BOLD]);
-        foreach ($experiment->results() as $metric) {
-            Console::printColumns([
-                [20, $metric->name(), STR_PAD_LEFT, [Color::DARK_GRAY]],
-                [20, $metric->toString(), STR_PAD_RIGHT, [Color::WHITE]],
-            ], 120);
-            Console::println('');
-        }
+        $this->displayObservations($experiment);
         Console::println('');
     }
 
@@ -106,9 +99,15 @@ class Display
     private function makeEvalColumns(Execution $execution, int $maxCols = 3) : array {
         $columns = [];
         $count = 0;
-        foreach ($execution->evaluations() as $evaluation) {
-            $value = $evaluation->metric;
-            $columns[] = [6, $value->toString(), STR_PAD_BOTH, $value->toCliColor()];
+        foreach ($execution->summaries() as $aggregate) {
+            $columns[] = [6, $metric->toString(), STR_PAD_BOTH, $metric->toCliColor()];
+            $count++;
+            if ($count >= $maxCols) {
+                break;
+            }
+        }
+        foreach ($execution->observations() as $observation) {
+            $columns[] = [6, $observation->value(), STR_PAD_BOTH, [Color::GRAY]];
             $count++;
             if ($count >= $maxCols) {
                 break;
@@ -141,5 +140,17 @@ class Display
         return ' '
             . substr(str_replace("\n", '\n', $e->getMessage()), 0, $maxLen)
             . '...';
+    }
+
+    private function displayObservations(Experiment $experiment)
+    {
+        Console::println('RESULTS:', [Color::WHITE, Color::BOLD]);
+        foreach ($experiment->observations() as $observation) {
+            Console::printColumns([
+                [20, $observation->key(), STR_PAD_LEFT, [Color::DARK_GRAY]],
+                [20, $observation->value(), STR_PAD_RIGHT, [Color::WHITE]],
+            ], 120);
+            Console::println('');
+        }
     }
 }

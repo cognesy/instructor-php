@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Evaluators\Data;
 
-use Cognesy\Instructor\Extras\Evals\Data\FeedbackItem;
 use Cognesy\Instructor\Extras\Evals\Enums\CorrectnessGrade;
+use Cognesy\Instructor\Extras\Evals\Feedback\FeedbackItem;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 
 #[Description("The result of correctness evaluation.")]

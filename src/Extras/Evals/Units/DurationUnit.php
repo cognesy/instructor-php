@@ -15,13 +15,13 @@ class DurationUnit implements Unit
     }
 
     public function toString(mixed $value, array $format = []): string {
-        $displayAs = $format['as'] ?? 'hours';
+        $displayAs = $format['as'] ?? 'seconds';
         // convert from microseconds
         return match($displayAs) {
-            'hours' => number_format($value / 3600000, $format['precision'] ?? 2) . ' hours',
-            'minutes' => number_format($value / 60000, $format['precision'] ?? 2) . ' minutes',
-            'seconds' => number_format($value / 1000, $format['precision'] ?? 2) . ' seconds',
-            'milliseconds' => number_format($value, $format['precision'] ?? 2) . ' milliseconds',
+            'hours' => number_format($value / 3600, $format['precision'] ?? 2) . ' hrs',
+            'minutes' => number_format($value / 60, $format['precision'] ?? 2) . ' min',
+            'seconds' => number_format($value, $format['precision'] ?? 2) . ' sec',
+            'milliseconds' => number_format($value * 1000, $format['precision'] ?? 2) . ' ms',
             default => throw new \InvalidArgumentException("Invalid displayAs format: $displayAs (expected 'hours', 'minutes', 'seconds' or 'milliseconds')"),
         };
     }

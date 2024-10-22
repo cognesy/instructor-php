@@ -3,8 +3,10 @@
 namespace Cognesy\Instructor\Extras\Evals\Contracts;
 
 use Cognesy\Instructor\Extras\Evals\Experiment;
+use JetBrains\PhpStorm\Deprecated;
 
-interface CanAggregateExperimentMetrics
+#[Deprecated]
+interface CanAggregateMetric
 {
     public function name() : string;
     public function aggregate(Experiment $experiment) : Metric;

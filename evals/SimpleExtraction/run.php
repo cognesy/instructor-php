@@ -3,8 +3,8 @@
 use Cognesy\Evals\SimpleExtraction\Company;
 use Cognesy\Evals\SimpleExtraction\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateMetric;
-use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExecutionObservation;
+use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
@@ -25,19 +25,29 @@ $data = new InstructorData(
 $experiment = new Experiment(
     cases: InferenceCases::only(
         connections: ['openai', 'anthropic'],
-        modes: [Mode::Tools, Mode::Json, Mode::MdJson],
-        stream: []
+        modes: [Mode::Tools],
+        stream: [false]
     ),
     executor: new RunInstructor($data),
-    evaluators: new CompanyEval(expectations: [
-        'name' => 'ACME',
-        'year' => 2020
-    ]),
-    aggregators: new AggregateMetric(
-        name: 'reliability',
-        metricName: 'is_correct',
-        method: ValueAggregationMethod::Mean,
-    ),
+    processors: [
+        new CompanyEval(expectations: [
+            'name' => 'ACME',
+            'year' => 2020
+        ]),
+    ],
+    postprocessors: [
+        new AggregateExecutionObservation(
+            name: 'experiment.reliability',
+            observationKey: 'execution.is_correct',
+            method: NumberAggregationMethod::Mean,
+        ),
+        new AggregateExecutionObservation(
+            name: 'latency',
+            observationKey: 'execution.timeElapsed',
+            params: ['percentile' => 95],
+            method: NumberAggregationMethod::Percentile,
+        ),
+    ],
 );
 
 $outputs = $experiment->execute();

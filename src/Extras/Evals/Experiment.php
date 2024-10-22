@@ -2,11 +2,13 @@
 namespace Cognesy\Instructor\Extras\Evals;
 
 use Cognesy\Instructor\Extras\Evals\Console\Display;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanAggregateExperimentMetrics;
-use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
-use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExperiment;
+use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentDuration;
+use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentTotalTokens;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
@@ -15,13 +17,16 @@ use Exception;
 use Generator;
 
 class Experiment {
+    private array $defaultProcessors = [
+        ExperimentDuration::class,
+        ExperimentTotalTokens::class,
+    ];
+
     private Display $display;
     private Generator $cases;
     private CanRunExecution $executor;
-    /** @var CanEvaluateExecution[] */
-    private array $evaluators;
-    /** @var CanAggregateExperimentMetrics[] */
-    private array $aggregators;
+    private array $processors;
+    private array $postprocessors;
 
     readonly private string $id;
     private ?DateTime $startedAt = null;
@@ -34,14 +39,14 @@ class Experiment {
     /** @var Exception[] */
     private array $exceptions = [];
 
-    /** @var Metric[] */
-    private array $results;
+    /** @var Observation[] */
+    private array $observations;
 
     public function __construct(
-        Generator                           $cases,
-        CanRunExecution                     $executor,
-        array|CanEvaluateExecution          $evaluators,
-        array|CanAggregateExperimentMetrics $aggregators,
+        Generator       $cases,
+        CanRunExecution $executor,
+        array|object    $processors,
+        array|object    $postprocessors,
     ) {
         $this->id = Uuid::uuid4();
         $this->display = new Display();
@@ -49,13 +54,13 @@ class Experiment {
 
         $this->cases = $cases;
         $this->executor = $executor;
-        $this->evaluators = match (true) {
-            is_array($evaluators) => $evaluators,
-            default => [$evaluators],
+        $this->processors = match (true) {
+            is_array($processors) => $processors,
+            default => [$processors],
         };
-        $this->aggregators = match (true) {
-            is_array($aggregators) => $aggregators,
-            default => [$aggregators],
+        $this->postprocessors = match (true) {
+            is_array($postprocessors) => $postprocessors,
+            default => [$postprocessors],
         };
     }
 
@@ -82,30 +87,48 @@ class Experiment {
     }
 
     /**
-     * @return Metric
+     * @return Observation[]
      */
     public function execute() : array {
         $this->startedAt = new DateTime();
-
         $this->display->header($this);
+
+        // execute cases
         foreach ($this->cases as $case) {
             $this->executeCase($case);
         }
-
         $this->usage = $this->accumulateUsage();
-
-        $this->results = [];
-        foreach ($this->aggregators as $aggregator) {
-            $this->results[$aggregator->name()] = $aggregator->aggregate($this);
-        }
-
         $this->timeElapsed = microtime(true) - $this->startedAt->getTimestamp();
         $this->display->footer($this);
-
         if (!empty($this->exceptions)) {
             $this->display->displayExceptions($this->exceptions);
         }
-        return $this->results;
+
+        // execute observers
+        $observations = MakeObservations::for($this)
+            ->withSources([
+                $this->processors,
+                $this->defaultProcessors,
+            ])
+            ->only([
+                CanObserveExperiment::class,
+                CanObserveExecution::class,
+                CanProvideObservations::class,
+            ]);
+
+        // execute summarizers
+        $summaries = MakeObservations::for($this)
+            ->withSources([
+                $this->postprocessors,
+            ])
+            ->only([
+                CanSummarizeExperiment::class,
+                CanProvideObservations::class,
+            ]);
+
+        $this->observations = array_filter(array_merge($observations, $summaries));
+
+        return $this->summaries();
     }
 
     /**
@@ -116,28 +139,48 @@ class Experiment {
     }
 
     /**
-     * @return Evaluation[]
+     * @return Observation[]
      */
-    public function evaluations(string $name) : array {
-        $evaluations = [];
-        foreach($this->executions as $execution) {
-            if ($execution->hasException()) {
-                continue;
-            }
-            foreach($execution->evaluations() as $evaluation) {
-                if ($evaluation->metric->name() === $name) {
-                    $evaluations[] = $evaluation;
-                }
-            }
-        }
-        return $evaluations;
+    public function metrics(string $name) : array {
+        return SelectObservations::from($this->observations)->withTypes(['metric'])->get($name);
     }
 
     /**
-     * @return Metric[]
+     * @return Observation[]
      */
-    public function results() : array {
-        return $this->results;
+    public function summaries() : array {
+        return SelectObservations::from($this->observations)->withTypes(['summary'])->all();
+    }
+
+    /**
+     * @return Observation[]
+     */
+    public function feedback() : array {
+        return SelectObservations::from($this->observations)->withTypes(['feedback'])->all();
+    }
+
+    /**
+     * @return Observation[]
+     */
+    public function observations() : array {
+        return $this->observations;
+    }
+
+    public function hasObservations() : bool {
+        return count($this->observations) > 0;
+    }
+
+    /**
+     * @return Observation[]
+     */
+    public function executionObservations() : array {
+        $observations = [];
+        foreach($this->executions as $execution) {
+            foreach($execution->observations() as $observation) {
+                $observations[] = $observation;
+            }
+        }
+        return $observations;
     }
 
     // INTERNAL /////////////////////////////////////////////////
@@ -162,7 +205,7 @@ class Experiment {
         };
         return (new Execution(case: $caseData))
             ->withExecutor($this->executor)
-            ->withEvaluators($this->evaluators);
+            ->withProcessors($this->processors);
     }
 
     private function accumulateUsage() : Usage {

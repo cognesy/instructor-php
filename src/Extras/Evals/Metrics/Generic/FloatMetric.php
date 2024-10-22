@@ -3,12 +3,12 @@
 namespace Cognesy\Instructor\Extras\Evals\Metrics\Generic;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
-use Cognesy\Instructor\Extras\Evals\Metrics\Traits;
+use Cognesy\Instructor\Extras\Evals\Metrics\Traits\HandlesMetric;
 use Cognesy\Instructor\Extras\Evals\Units\FloatUnit;
 
 class FloatMetric implements Metric
 {
-    use Traits\HandlesMetric;
+    use HandlesMetric;
 
     public function __construct(
         string $name,

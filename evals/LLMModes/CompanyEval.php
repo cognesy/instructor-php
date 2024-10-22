@@ -3,15 +3,15 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanEvaluateExecution;
-use Cognesy\Instructor\Extras\Evals\Data\Evaluation;
-use Cognesy\Instructor\Extras\Evals\Data\Feedback;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanMeasureExecution;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
+use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Metrics\Correctness\BooleanCorrectness;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
+use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Utils\Str;
 
-class CompanyEval implements CanEvaluateExecution
+class CompanyEval implements CanMeasureExecution, CanObserveExecution
 {
     private array $expectations;
 
@@ -19,17 +19,31 @@ class CompanyEval implements CanEvaluateExecution
         $this->expectations = $expectations;
     }
 
-    public function evaluate(Execution $execution) : Evaluation {
+    public function measure(Execution $execution): Metric {
         $mode = $execution->get('case.mode');
         $isCorrect = match ($mode) {
             Mode::Text => $this->validateText($execution),
             Mode::Tools => $this->validateToolsData($execution),
             default => $this->validateDefault($execution),
         };
-        return new Evaluation(
-            metric: new BooleanCorrectness(name: 'is_correct', value: $isCorrect),
-            feedback: Feedback::none(),
-            usage: Usage::none(),
+        return new BooleanCorrectness(name: 'is_correct', value: $isCorrect);
+    }
+
+    public function observe(Execution $execution): Observation {
+        $mode = $execution->get('case.mode');
+        $isCorrect = match ($mode) {
+            Mode::Text => $this->validateText($execution),
+            Mode::Tools => $this->validateToolsData($execution),
+            default => $this->validateDefault($execution),
+        };
+        return Observation::make(
+            type: 'metric',
+            key: 'execution.is_correct',
+            value: $isCorrect ? 1 : 0,
+            metadata: [
+                'executionId' => $execution->id(),
+                'unit' => 'boolean',
+            ],
         );
     }
 

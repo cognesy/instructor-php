@@ -142,6 +142,7 @@ class Inference
             LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
             LLMProviderType::Fireworks,
+            LLMProviderType::Grok,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,
             LLMProviderType::OpenAICompatible,

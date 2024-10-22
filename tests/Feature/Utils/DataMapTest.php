@@ -93,12 +93,12 @@ test('fields method returns correct keys', function () {
 });
 
 test('map method returns Aimeos\Map instance', function () {
-    $map = $this->dataMap->map();
+    $map = $this->dataMap->toMap();
     expect($map)->toBeInstanceOf(Map::class);
 });
 
 test('map method with path returns correct subset', function () {
-    $addressMap = $this->dataMap->map('address');
+    $addressMap = $this->dataMap->toMap('address');
     expect($addressMap)->toBeInstanceOf(Map::class);
     expect($addressMap->toArray())->toBe($this->testData['address']);
 });
@@ -107,7 +107,7 @@ test('map method with wildcard path returns array of Map instances', function ()
     $this->dataMap->set('users.user1.name', 'Alice');
     $this->dataMap->set('users.user2.name', 'Bob');
 
-    $userMaps = $this->dataMap->map('users.*');
+    $userMaps = $this->dataMap->toMap('users.*');
     expect($userMaps)->toBeArray();
     expect(count($userMaps))->toBe(2);
     expect($userMaps['users.user1'])->toBeInstanceOf(Map::class);

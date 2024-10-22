@@ -18,6 +18,14 @@ class InferenceCaseParams implements CanMapValues {
         return $instance;
     }
 
+    public function toArray() : array {
+        return [
+            'connection' => $this->connection,
+            'isStreaming' => $this->isStreaming,
+            'mode' => $this->mode,
+        ];
+    }
+
     public function __toString() : string {
         return $this->connection.'::'.$this->mode->value.'::'.($this->isStreaming ? 'streamed' : 'sync');
     }

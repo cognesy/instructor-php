@@ -5,5 +5,5 @@ use Cognesy\Instructor\Extras\Evals\Execution;
 
 interface CanRunExecution
 {
-    public function execute(Execution $execution): Execution;
+    public function run(Execution $execution): Execution;
 }

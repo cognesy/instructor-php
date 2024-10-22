@@ -17,7 +17,7 @@ class RunInference implements CanRunExecution
         $this->inferenceData = $data;
     }
 
-    public function execute(Execution $execution) : Execution {
+    public function run(Execution $execution) : Execution {
         $execution->data()->set('response', $this->makeLLMResponse($execution));
         return $execution;
     }

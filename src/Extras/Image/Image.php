@@ -61,6 +61,14 @@ class Image implements CanProvideMessages
         return Messages::fromArray($messages);
     }
 
+    public function toArray(): array {
+        return [
+            'url' => $this->url,
+            'mimeType' => $this->mimeType,
+            'base64bytes' => $this->base64bytes,
+        ];
+    }
+
     public function toImageUrl(): string {
         return $this->url ?: $this->base64bytes;
     }

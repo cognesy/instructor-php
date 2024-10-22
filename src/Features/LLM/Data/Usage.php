@@ -2,6 +2,8 @@
 
 namespace Cognesy\Instructor\Features\LLM\Data;
 
+use Cognesy\Instructor\Extras\Evals\Metrics\Generic\TokenCount;
+
 class Usage
 {
     public function __construct(
@@ -14,6 +16,16 @@ class Usage
 
     public static function none() : Usage {
         return new Usage();
+    }
+
+    public static function fromArray(array $value) : static {
+        return new Usage(
+            $value['input'] ?? 0,
+            $value['output'] ?? 0,
+            $value['cacheWrite'] ?? 0,
+            $value['cacheRead'] ?? 0,
+            $value['reasoning'] ?? 0,
+        );
     }
 
     public function total() : int {
@@ -48,5 +60,25 @@ class Usage
 
     public function toString() : string {
         return "Tokens: {$this->total()} (i:{$this->inputTokens} o:{$this->outputTokens} c:{$this->cache()} r:{$this->reasoningTokens})";
+    }
+
+    public function toMetrics() : array {
+        return [
+            new TokenCount('input', $this->input()),
+            new TokenCount('output', $this->output()),
+            new TokenCount('cache', $this->cache()),
+            new TokenCount('reasoning', $this->reasoningTokens),
+            new TokenCount('total', $this->total()),
+        ];
+    }
+
+    public function toArray() : array {
+        return [
+            'input' => $this->inputTokens,
+            'output' => $this->outputTokens,
+            'cacheWrite' => $this->cacheWriteTokens,
+            'cacheRead' => $this->cacheReadTokens,
+            'reasoning' => $this->reasoningTokens,
+        ];
     }
 }

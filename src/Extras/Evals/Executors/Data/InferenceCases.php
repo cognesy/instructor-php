@@ -79,6 +79,9 @@ class InferenceCases
         );
     }
 
+    /**
+     * @return Generator<array>
+     */
     private function make() : Generator {
         return Combination::generator(
             mapping: InferenceCaseParams::class,

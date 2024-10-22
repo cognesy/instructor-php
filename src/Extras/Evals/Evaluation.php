@@ -1,13 +1,16 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Data;
+namespace Cognesy\Instructor\Extras\Evals;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
+use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
 use DateTime;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class Evaluation
 {
     readonly private string $id;
@@ -20,16 +23,16 @@ class Evaluation
     public ?Feedback $feedback = null;
 
     public function __construct(
-        ?Metric $metric = null,
+        ?Metric   $metric = null,
         ?Feedback $feedback = null,
-        ?Usage $usage = null,
-        array $metadata = [],
+        ?Usage    $usage = null,
+        array     $metadata = [],
     ) {
         $this->id = Uuid::uuid4();
         $this->startedAt = new DateTime();
         $this->metric = $metric;
-        $this->feedback = $feedback;
-        $this->usage = $usage;
+        $this->feedback = $feedback ?? Feedback::none();
+        $this->usage = $usage ?? Usage::none();
         $this->data = new DataMap($metadata);
     }
 

@@ -2,19 +2,21 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Aggregators;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanAggregateExperimentMetrics;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanAggregateMetric;
 use Cognesy\Instructor\Extras\Evals\Contracts\Metric;
-use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
+use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Metrics\Generic\FloatMetric;
-use Cognesy\Instructor\Extras\Evals\Utils\ValueAggregator;
+use Cognesy\Instructor\Extras\Evals\Utils\NumberSeriesAggregator;
+use JetBrains\PhpStorm\Deprecated;
 
-class AggregateMetric implements CanAggregateExperimentMetrics
+#[Deprecated]
+class AggregateMetric implements CanAggregateMetric
 {
     public function __construct(
-        private string $name = '',
-        private string $metricName = '',
-        private ValueAggregationMethod $method = ValueAggregationMethod::Mean,
+        private string                  $name = '',
+        private string                  $metricName = '',
+        private NumberAggregationMethod $method = NumberAggregationMethod::Mean,
     ) {
         if (empty($name)) {
             throw new \InvalidArgumentException('Name cannot be empty');
@@ -30,11 +32,11 @@ class AggregateMetric implements CanAggregateExperimentMetrics
 
     public function aggregate(Experiment $experiment): Metric {
         $values = [];
-        foreach ($experiment->evaluations($this->metricName) as $evaluation) {
-            $values[] = $evaluation->metric->toFloat();
+        foreach ($experiment->metrics($this->metricName) as $metric) {
+            $values[] = $metric->toFloat();
         }
 
-        $aggregator = new ValueAggregator($values, [], $this->method);
+        $aggregator = new NumberSeriesAggregator($values, [], $this->method);
         return new FloatMetric(
             name: $this->name,
             value: $aggregator->aggregate()

@@ -5,13 +5,17 @@ $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Evals\LLMModes\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateMetric;
-use Cognesy\Instructor\Extras\Evals\Enums\ValueAggregationMethod;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExecutionObservation;
+use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
+use Cognesy\Instructor\Extras\Evals\Observers\Execution\ExecutionDuration;
+use Cognesy\Instructor\Extras\Evals\Observers\Execution\ExecutionTotalTokens;
+use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentDuration;
+use Cognesy\Instructor\Extras\Evals\Observers\Experiment\ExperimentTotalTokens;
 
 $data = new InferenceData(
     messages: [
@@ -50,15 +54,19 @@ $experiment = new Experiment(
         stream: [false],
     ),
     executor: new RunInference($data),
-    evaluators: new CompanyEval(expectations: [
-        'name' => 'ACME',
-        'year' => 2020
-    ]),
-    aggregators: new AggregateMetric(
-        name: 'reliability',
-        metricName: 'is_correct',
-        method: ValueAggregationMethod::Mean,
-    ),
+    processors: [
+        new CompanyEval(expectations: [
+            'name' => 'ACME',
+            'year' => 2020
+        ]),
+    ],
+    postprocessors: [
+        new AggregateExecutionObservation(
+            name: 'reliability',
+            observationKey: 'is_correct',
+            method: NumberAggregationMethod::Mean,
+        ),
+    ]
 );
 
 $outputs = $experiment->execute();

@@ -12,7 +12,7 @@ test('wildcard path "b.*.x" returns [1, 2]', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x');
+    $map = $dataMap->toMap('b.*.x');
 
     $result = $map->toArray();
 
@@ -28,7 +28,7 @@ test('wildcard path "b.*.x" returns [["x" => 1], ["x" => 2]]', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x');
+    $map = $dataMap->toMap('b.*.x');
 
     $result = $map->toArray();
 
@@ -47,7 +47,7 @@ test('wildcard path "b.*.x.x" returns [1, 2]', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x.x');
+    $map = $dataMap->toMap('b.*.x.x');
     $result = $map->toArray();
     expect($result)->toBe([1, 2]);
 });
@@ -61,7 +61,7 @@ test('wildcard path "b.*.x.*.x" returns empty map', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x.*.x');
+    $map = $dataMap->toMap('b.*.x.*.x');
     expect($map->isEmpty())->toBeTrue();
 });
 
@@ -74,7 +74,7 @@ test('wildcard path "b.*.x.*.x" returns [1, 2]', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x.*.x');
+    $map = $dataMap->toMap('b.*.x.*.x');
 
     $result = $map->toArray();
 
@@ -91,7 +91,7 @@ test('wildcard path "b.*.x.x" returns [1, 3] with mixed types', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x.x');
+    $map = $dataMap->toMap('b.*.x.x');
 
     $result = $map->toArray();
 
@@ -109,7 +109,7 @@ test('wildcard path "b.*.x.*.x" returns [1, 3] with mixed types', function () {
         ]
     ]);
 
-    $map = $dataMap->map('b.*.x.*.x');
+    $map = $dataMap->toMap('b.*.x.*.x');
 
     $result = $map->toArray();
 
@@ -124,7 +124,7 @@ test('wildcard path "b.*.x.*.y" returns empty Map', function () {
             ['x' => ['x' => 2]]
         ]
     ]);
-    $result = $dataMap->map('b.*.x.*.y');
+    $result = $dataMap->toMap('b.*.x.*.y');
 
     expect($result)->toBeInstanceOf(Map::class);
     expect($result->isEmpty())->toBeTrue();
@@ -138,7 +138,7 @@ test('wildcard path "a.*" when used on a scalar path returns empty Map', functio
             ['x' => 2]
         ]
     ]);
-    $result = $dataMap->map('a.*');
+    $result = $dataMap->toMap('a.*');
 
     expect($result)->toBeInstanceOf(Map::class);
     expect($result->isEmpty())->toBeTrue();
@@ -153,7 +153,7 @@ test('wildcard path "c.*.x" returns empty Map when path does not exist', functio
         ]
     ]);
 
-    $result = $dataMap->map('c.*.x');
+    $result = $dataMap->toMap('c.*.x');
 
     expect($result)->toBeInstanceOf(Map::class);
     expect($result->isEmpty())->toBeTrue();
@@ -191,7 +191,7 @@ test('wildcard path "departments.*.teams.*.members" appends a new member', funct
         ],
     ]);
 
-    $membersMap = $dataMap->map('departments.*.teams.*.members.*');
+    $membersMap = $dataMap->toMap('departments.*.teams.*.members.*');
     expect($membersMap)->toBeInstanceOf(Map::class);
     expect($membersMap->count())->toBe(6);
 
@@ -235,7 +235,7 @@ test('wildcard path "users.*.contact.email" returns all emails', function () {
         ],
     ]);
 
-    $map = $dataMap->map('users.*.contact.email');
+    $map = $dataMap->toMap('users.*.contact.email');
 
     $result = $map->toArray();
 
@@ -280,7 +280,7 @@ test('wildcard path "users.*.contact.phone" returns all phone numbers', function
         ],
     ]);
 
-    $map = $dataMap->map('users.*.contact.phone');
+    $map = $dataMap->toMap('users.*.contact.phone');
 
     $result = $map->toArray();
 
