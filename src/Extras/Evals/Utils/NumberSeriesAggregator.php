@@ -236,18 +236,20 @@ class NumberSeriesAggregator
      */
     private function percentile(): float
     {
-        $this->params['percentile'] ??= 95;
+        // Set the default percentile to 95 if not already provided
+        $this->params['percentile'] = $this->params['percentile'] ?? 95;
 
-        if ($this->params['percentile'] < 0
-            || $this->params['percentile'] > 100
-        ) {
+        // Validate percentile range
+        if ($this->params['percentile'] < 0 || $this->params['percentile'] > 100) {
             throw new InvalidArgumentException("Invalid percentile value. Must be between 0 and 100.");
         }
 
+        // Ensure values are sorted
         $sorted = $this->values;
         sort($sorted);
         $count = count($sorted);
 
+        // Handle edge cases for empty or single-element arrays
         if ($count === 0) {
             throw new InvalidArgumentException("Cannot calculate percentile of an empty array.");
         }
@@ -256,18 +258,22 @@ class NumberSeriesAggregator
             return $sorted[0];
         }
 
+        // Calculate the index based on the percentile
         $index = ($this->params['percentile'] / 100) * ($count - 1);
-        $floor = floor($index);
-        $ceil = ceil($index);
+        $floorIndex = (int) floor($index);
+        $ceilIndex = (int) ceil($index);
 
-        if ($floor == $ceil) {
-            return $sorted[$floor];
+        // If the floor and ceil index are the same, return the exact value
+        if ($floorIndex === $ceilIndex) {
+            return $sorted[$floorIndex];
         }
 
-        $lower = $sorted[$floor];
-        $upper = $sorted[$ceil];
-        $fraction = $index - $floor;
+        // Interpolate between the two surrounding values
+        $lowerValue = $sorted[$floorIndex];
+        $upperValue = $sorted[$ceilIndex];
+        $fraction = $index - $floorIndex;
 
-        return $lower + ($upper - $lower) * $fraction;
+        // Return the interpolated value
+        return $lowerValue + ($upperValue - $lowerValue) * $fraction;
     }
 }

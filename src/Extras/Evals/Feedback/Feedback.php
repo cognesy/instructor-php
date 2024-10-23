@@ -63,10 +63,10 @@ class Feedback
     /**
      * @return Observation[]
      */
-    public function toObservations() : array {
+    public function toObservations(array $params = []) : array {
         $observations = [];
         foreach ($this->items as $item) {
-            $observations[] = $item->toObservation();
+            $observations[] = $item->toObservation($params);
         }
         return $observations;
     }

@@ -45,6 +45,7 @@ class Execution
         $this->id = Uuid::uuid4();
         $this->data = new DataMap();
         $this->data->set('case', $case);
+        $this->usage = Usage::none();
     }
 
     public function id() : string {
@@ -91,7 +92,6 @@ class Execution
     }
 
     public function execute() : void {
-        // execute and measure time + usage
         $this->startedAt = new DateTime();
         $time = microtime(true);
         try {
@@ -102,31 +102,10 @@ class Execution
             $this->exception = $e;
             throw $e;
         }
-        $usage = $this->get('response')?->usage();
-        $this->data()->set('output.notes', $this->get('response')?->content());
         $this->timeElapsed = microtime(true) - $time;
-        $this->usage = $usage;
-
-        $observations = MakeObservations::for($this)
-            ->withSources([
-                $this->processors,
-                $this->defaultObservers,
-            ])
-            ->only([
-                CanObserveExecution::class,
-                CanProvideExecutionObservations::class,
-            ]);
-
-        $summaries = MakeObservations::for($this)
-            ->withSources([
-                $this->postprocessors
-            ])
-            ->only([
-                CanSummarizeExecution::class,
-                CanProvideExecutionObservations::class,
-            ]);
-
-        $this->observations = array_filter(array_merge($observations, $summaries));
+        $this->data()->set('output.notes', $this->get('response')?->content());
+        $this->usage = $this->get('response')?->usage() ?? Usage::none();
+        $this->observations = $this->makeObservations();
     }
 
     // HELPERS //////////////////////////////////////////////////
@@ -219,5 +198,28 @@ class Execution
 
     public function hasSummaries() : bool {
         return count($this->summaries()) > 0;
+    }
+
+    private function makeObservations() : array {
+        $observations = MakeObservations::for($this)
+            ->withSources([
+                $this->processors,
+                $this->defaultObservers,
+            ])
+            ->only([
+                CanObserveExecution::class,
+                CanProvideExecutionObservations::class,
+            ]);
+
+        $summaries = MakeObservations::for($this)
+            ->withSources([
+                $this->postprocessors
+            ])
+            ->only([
+                CanSummarizeExecution::class,
+                CanProvideExecutionObservations::class,
+            ]);
+
+        return array_filter(array_merge($observations, $summaries));
     }
 }

@@ -3,20 +3,31 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Utils\Str;
 
-class CompanyEval implements CanObserveExecution
+class CompanyEval implements CanProvideExecutionObservations
 {
+    private string $key;
     private array $expectations;
 
-    public function __construct(array $expectations) {
+    public function __construct(
+        string $key,
+        array $expectations
+    ) {
+        $this->key = $key;
         $this->expectations = $expectations;
     }
 
-    public function observe(Execution $execution): Observation {
+    public function observations(Execution $subject): iterable {
+        yield $this->correctness($subject);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
+    public function correctness(Execution $execution): Observation {
         $mode = $execution->get('case.mode');
         $isCorrect = match ($mode) {
             Mode::Text => $this->validateText($execution),
@@ -25,7 +36,7 @@ class CompanyEval implements CanObserveExecution
         };
         return Observation::make(
             type: 'metric',
-            key: 'execution.is_correct',
+            key: $this->key,
             value: $isCorrect ? 1 : 0,
             metadata: [
                 'executionId' => $execution->id(),
@@ -34,10 +45,8 @@ class CompanyEval implements CanObserveExecution
         );
     }
 
-    // INTERNAL /////////////////////////////////////////////////
-
     private function validateToolsData(Execution $execution) : bool {
-        $data = $execution->get('response')->toolsData[0];
+        $data = $execution->get('response')->toolsData[0] ?? [];
         return 'store_company' === ($data['name'] ?? '')
             && 'ACME' === ($data['arguments']['name'] ?? '')
             && 2020 === (int) ($data['arguments']['year'] ?? 0);

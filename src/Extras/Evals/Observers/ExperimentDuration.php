@@ -16,7 +16,8 @@ class ExperimentDuration implements CanObserveExperiment
             metadata: [
                 'experimentId' => $experiment->id(),
                 'unit' => 'seconds',
-                'format' => '%.2f sec',
+                'format' => '%.2f',
+                'aggregationMethod' => 'sum',
             ],
         );
     }

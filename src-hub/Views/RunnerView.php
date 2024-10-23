@@ -45,9 +45,9 @@ class RunnerView
     public function renderOutput(array $errors, float $timeElapsed) : void {
         Cli::grid([[1, ">", STR_PAD_RIGHT, Color::DARK_GRAY]]);
         if (!empty($errors)) {
-            Cli::grid([[7, "  ERROR", STR_PAD_RIGHT, [Color::WHITE, Color::BG_RED]]]);
+            Cli::grid([[8, "ERROR", STR_PAD_BOTH, [Color::WHITE, Color::BG_RED]]]);
         } else {
-            Cli::grid([[7, "OK  ", STR_PAD_LEFT, [Color::WHITE, Color::BG_GREEN]]]);
+            Cli::grid([[8, "OK", STR_PAD_BOTH, [Color::WHITE, Color::BG_GREEN]]]);
         }
         $this->printTimeElapsed($timeElapsed);
         Cli::outln();
@@ -82,7 +82,7 @@ class RunnerView
     }
 
     public function printTimeElapsed(float $totalTime) {
-        Cli::out(" (", [Color::DARK_GRAY, Color::BG_BLACK]);
+        Cli::out("(", [Color::DARK_GRAY, Color::BG_BLACK]);
         Cli::grid([[10, (round($totalTime, 2) . " sec"), STR_PAD_LEFT, Color::DARK_GRAY]]);
         Cli::out(")", [Color::DARK_GRAY]);
     }

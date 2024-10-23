@@ -45,6 +45,10 @@ class AggregateExperimentObservation implements CanObserveExperiment
             $experiment->executionObservations(),
         ])->withKey($this->observationKey)->get();
 
+        if (empty($observations)) {
+            throw new InvalidArgumentException("No observations found for key: {$this->observationKey}");
+        }
+
         $values = array_map(
             callback: fn($observation) => $observation->toFloat(),
             array: $observations,

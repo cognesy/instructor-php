@@ -7,11 +7,13 @@ use Cognesy\Evals\LLMModes\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExperimentObservation;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Instructor\Extras\Evals\Evaluators\ArrayMatchEval;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
+use Cognesy\Instructor\Utils\Debug\Debug;
 
 $data = new InferenceData(
     messages: [
@@ -44,22 +46,25 @@ $data = new InferenceData(
 );
 
 $experiment = new Experiment(
-    cases: InferenceCases::only(
-        connections: ['openai'],
-        modes: [Mode::Tools, Mode::Text],
-        stream: [false],
+    cases: InferenceCases::except(
+        connections: [],
+        modes: [Mode::Json, Mode::JsonSchema, Mode::Text, Mode::MdJson],
+        stream: [true],
     ),
     executor: new RunInference($data),
     processors: [
-        new CompanyEval(expectations: [
-            'name' => 'ACME',
-            'year' => 2020
-        ]),
+        new CompanyEval(
+            key: 'execution.is_correct',
+            expectations: [
+                'name' => 'ACME',
+                'year' => 2020
+            ]),
     ],
     postprocessors: [
         new AggregateExperimentObservation(
             name: 'experiment.reliability',
             observationKey: 'execution.is_correct',
+            params: ['unit' => 'fraction', 'format' => '%.2f'],
             method: NumberAggregationMethod::Mean,
         ),
     ]

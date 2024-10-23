@@ -44,11 +44,13 @@ class Display
     }
 
     public function before(Execution $execution) : void {
+        $id = Str::limit($execution->id(), 4, STR_PAD_LEFT);
         $connection = $execution->get('case.connection');
         $mode = $execution->get('case.mode')->value;
         $streamed = $execution->get('case.isStreamed');
 
         Console::printColumns([
+            [4, $id, STR_PAD_LEFT, Color::DARK_GRAY],
             [10, $connection, STR_PAD_RIGHT, Color::WHITE],
             [11, $mode, STR_PAD_RIGHT, Color::YELLOW],
             [8, $streamed ? 'stream' : 'sync', STR_PAD_LEFT, $streamed ? Color::BLUE : Color::DARK_BLUE],
@@ -90,16 +92,16 @@ class Display
         $answerLine = str_replace("\n", '\n', $answer);
         $timeElapsed = $execution->timeElapsed();
         $tokensPerSec = $execution->outputTps();
-        $isCorrect = SelectObservations::from($execution->observations())->withKeys(['execution.is_correct'])->sole()->value();
+        $isCorrect = $execution->hasException();
 
         $rowStatus = match($isCorrect) {
-            1 => 'OK',
-            0 => 'FAIL',
+            false => 'DONE',
+            true => 'FAIL',
             default => '????',
         };
         $cliColor = match($isCorrect) {
-            1 => [Color::BG_GREEN, Color::WHITE],
-            0 => [Color::BG_RED, Color::WHITE],
+            false => [Color::BG_GREEN, Color::WHITE],
+            true => [Color::BG_RED, Color::WHITE],
             default => [Color::BG_BLACK, Color::RED],
         };
 
@@ -142,18 +144,30 @@ class Display
     private function displayObservations(Experiment $experiment)
     {
         Console::println('SUMMARY:', [Color::WHITE, Color::BOLD]);
+        Console::printColumns([
+            [5, 'ID', STR_PAD_LEFT, [Color::DARK_YELLOW]],
+            [25, 'KEY', STR_PAD_LEFT, [Color::DARK_YELLOW]],
+            [10, 'VALUE', STR_PAD_LEFT, [Color::DARK_YELLOW]],
+            [10, 'UNIT', STR_PAD_RIGHT, [Color::DARK_YELLOW]],
+            [10, 'AGGR', STR_PAD_RIGHT, [Color::DARK_YELLOW]],
+            [$this->flex(5,25,10,10, 10), 'META', STR_PAD_RIGHT, [Color::DARK_YELLOW]],
+        ], $this->terminalWidth);
+
         foreach ($experiment->observations() as $observation) {
-            //$format = $observation->metadata()->get('format', '%s');
+            $id = Str::limit($observation->id(), 4, STR_PAD_LEFT);
             $value = $observation->value();
             $unit = $observation->metadata()->get('unit', '-');
-            $meta = Str::limit($observation->metadata()->except('experimentId')->toJson(), 60);
+            $format = $observation->metadata()->get('format', '%s');
+            $method = $observation->metadata()->get('aggregationMethod', '-');
+            $meta = Str::limit($observation->metadata()->except('experimentId', 'unit', 'format', 'aggregationMethod')->toJson(), 60);
 
             Console::printColumns([
-                [5, $observation->id(), STR_PAD_LEFT, [Color::DARK_GRAY]],
-                [25, $observation->key(), STR_PAD_LEFT, [Color::DARK_GRAY]],
-                [20, $value, STR_PAD_LEFT, [Color::WHITE]],
+                [5, $id, STR_PAD_LEFT, [Color::DARK_GRAY]],
+                [25, $observation->key(), STR_PAD_LEFT, [Color::GRAY]],
+                [10, sprintf($format, $value), STR_PAD_LEFT, [Color::WHITE]],
                 [10, $unit, STR_PAD_RIGHT, [Color::DARK_GRAY]],
-                [$this->flex(5,25,20,10), $meta, STR_PAD_RIGHT, [Color::GRAY]],
+                [10, $method, STR_PAD_RIGHT, [Color::DARK_GRAY]],
+                [$this->flex(5,25,10,10, 10), $meta, STR_PAD_RIGHT, [Color::GRAY]],
             ], $this->terminalWidth);
             Console::println('');
         }

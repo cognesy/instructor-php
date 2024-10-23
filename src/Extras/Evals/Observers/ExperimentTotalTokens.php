@@ -16,7 +16,8 @@ class ExperimentTotalTokens implements CanObserveExperiment
             metadata: [
                 'experimentId' => $experiment->id(),
                 'unit' => 'tokens',
-                'format' => '%d tokens',
+                'format' => '%d',
+                'aggregationMethod' => 'sum',
             ],
         );
     }

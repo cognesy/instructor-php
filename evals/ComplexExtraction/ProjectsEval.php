@@ -5,7 +5,6 @@ namespace Cognesy\Evals\ComplexExtraction;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Observation;
-use Cognesy\Instructor\Extras\Sequence\Sequence;
 
 class ProjectsEval implements CanObserveExecution
 {
@@ -20,16 +19,17 @@ class ProjectsEval implements CanObserveExecution
      */
     public function observe(Execution $execution): Observation {
         $expectedEvents = $this->expectations['events'];
-        /** @var Sequence $events */
+        /** @var ProjectEvents $events */
         $events = $execution->get('response')?->value();
-        $result = ($expectedEvents - count($events->list)) / $expectedEvents;
+        $result = ($expectedEvents - count($events->events)) / $expectedEvents;
         return Observation::make(
             type: 'metric',
-            key: 'execution.percentFound',
+            key: 'execution.fractionFound',
             value: $result,
             metadata: [
                 'executionId' => $execution->id(),
-                'unit' => 'percentage',
+                'unit' => 'fraction',
+                'format' => '%.2f',
             ],
         );
     }

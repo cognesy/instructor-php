@@ -8,9 +8,11 @@ use Cognesy\Instructor\Extras\Evals\Observation;
 
 class CompanyEval implements CanObserveExecution
 {
+    private string $key;
     private array $expectations;
 
-    public function __construct(array $expectations) {
+    public function __construct(string $key, array $expectations) {
+        $this->key = $key;
         $this->expectations = $expectations;
     }
 
@@ -21,11 +23,11 @@ class CompanyEval implements CanObserveExecution
 
         return Observation::make(
             type: 'metric',
-            key: 'execution.is_correct',
-            value: $isCorrect,
+            key: $this->key,
+            value: $isCorrect ? 1 : 0,
             metadata: [
                 'executionId' => $execution->id(),
-                'data' => $company->toArray(),
+                'data' => json_encode($company),
             ],
         );
     }

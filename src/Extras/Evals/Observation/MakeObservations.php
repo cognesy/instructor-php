@@ -45,7 +45,7 @@ class MakeObservations
 
     // INTERNAL ////////////////////////////////////////////////
 
-    public function observations(array $types = null) : array {
+    private function observations(array $types = null) : array {
         $observations = [];
         foreach ($this->sources($this->sources, $types) as $source) {
             $observations[] = match(true) {
@@ -57,8 +57,20 @@ class MakeObservations
                 default => throw new Exception('Invalid observation source: ' . get_class($source)),
             };
         }
-        // filter out empty items, then turn array<Observation[]> to Observation[]
-        return array_merge(...array_filter($observations));
+        return $this->getObservations($observations);
+    }
+
+    private function getObservations(iterable $sources) : array {
+        // filter out empty items and turn array<Observation[]> to Observation[]
+        $result = [];
+        foreach ($sources as $source) {
+            foreach ($source as $observation) {
+                if ($observation instanceof Observation) {
+                    $result[] = $observation;
+                }
+            }
+        }
+        return $result;
     }
 
     /**

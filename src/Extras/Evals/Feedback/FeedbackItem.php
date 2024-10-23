@@ -26,12 +26,15 @@ class FeedbackItem
     }
 
     public function toObservation(array $params) : Observation {
+        $key = $params['key'];
+        unset($params['key']);
         return Observation::make(
             type: 'feedback',
-            key: $this->context,
+            key: $key,
             value: $this->feedback,
             metadata: array_merge([
-                'category' => $this->category,
+                'category' => $this->category->value,
+                'context' => $this->context,
             ], $params),
         );
     }

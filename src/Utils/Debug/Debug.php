@@ -36,7 +36,7 @@ class Debug
             $now = (new DateTimeImmutable)->format('H:i:s v') . 'ms';
             Console::print("\n[STREAM DATA]", [Color::DARK_YELLOW]);
             Console::print(" at ", [Color::DARK_GRAY]);
-            Console::println("$now", [Color::DARK_WHITE]);
+            Console::println("$now", [Color::GRAY]);
             Console::println($line, [Color::DARK_GRAY]);
         }
     }
