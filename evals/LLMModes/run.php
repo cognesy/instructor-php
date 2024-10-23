@@ -5,7 +5,7 @@ $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Evals\LLMModes\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExecutionObservation;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExperimentObservation;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
@@ -57,9 +57,9 @@ $experiment = new Experiment(
         ]),
     ],
     postprocessors: [
-        new AggregateExecutionObservation(
-            name: 'reliability',
-            observationKey: 'is_correct',
+        new AggregateExperimentObservation(
+            name: 'experiment.reliability',
+            observationKey: 'execution.is_correct',
             method: NumberAggregationMethod::Mean,
         ),
     ]

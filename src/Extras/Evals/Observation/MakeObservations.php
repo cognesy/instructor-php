@@ -20,24 +20,17 @@ class MakeObservations
         private ?Execution $execution = null,
     ) {}
 
-//    public static function forExperiment(Experiment $experiment) : self {
-//        return new self(experiment: $experiment);
-//    }
-//
-//    public static function forExecution(Execution $execution) : self {
-//        return new self(execution: $execution);
-//    }
-
-    public function for(Experiment|Execution $subject) : self {
-        if ($subject instanceof Experiment) {
-            $this->experiment = $subject;
-        } else {
-            $this->execution = $subject;
-        }
-        return $this;
+    public static function for(Experiment|Execution $subject) : self {
+        return new self(
+            experiment: $subject instanceof Experiment ? $subject : null,
+            execution: $subject instanceof Execution ? $subject : null,
+        );
     }
 
     public function withSources(array $sources) : self {
+        if (is_array($sources[0] ?? null)) {
+            $sources = array_merge(...$sources);
+        }
         $this->sources = $sources;
         return $this;
     }
@@ -56,7 +49,7 @@ class MakeObservations
         $observations = [];
         foreach ($this->sources($this->sources, $types) as $source) {
             $observations[] = match(true) {
-                $source instanceof CanProvideExecutionObservations => $source->observations(),
+                $source instanceof CanProvideExecutionObservations => $source->observations($this->execution),
                 $source instanceof CanObserveExperiment => $this->wrapObservation($source->observe(...), $this->experiment),
                 $source instanceof CanSummarizeExperiment => $this->wrapObservation($source->summarize(...), $this->experiment),
                 $source instanceof CanObserveExecution => $this->wrapObservation($source->observe(...), $this->execution),

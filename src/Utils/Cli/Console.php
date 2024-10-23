@@ -82,7 +82,7 @@ class Console
         };
     }
 
-    static private function getWidth() : int {
+    public static function getWidth() : int {
         return (int) exec('tput cols');
     }
 }

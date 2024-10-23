@@ -10,7 +10,7 @@ use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
 use Cognesy\Instructor\Extras\Evals\Utils\NumberSeriesAggregator;
 use InvalidArgumentException;
 
-class AggregateExecutionObservation implements CanObserveExperiment
+class AggregateExperimentObservation implements CanObserveExperiment
 {
     public function __construct(
         private string $name = '',
@@ -40,14 +40,18 @@ class AggregateExecutionObservation implements CanObserveExperiment
     }
 
     private function calculate(Experiment $experiment) : float|int {
+        $observations = SelectObservations::from([
+            $experiment->observations(),
+            $experiment->executionObservations(),
+        ])->withKey($this->observationKey)->get();
+
+        $values = array_map(
+            callback: fn($observation) => $observation->toFloat(),
+            array: $observations,
+        );
+
         return (new NumberSeriesAggregator(
-            values: array_map(
-                callback: fn($observation) => $observation->toFloat(),
-                array: SelectObservations::from([
-                    $experiment->observations(),
-                    $experiment->executionObservations(),
-                ])->withKeys([$this->observationKey])->get(),
-            ),
+            values: $values,
             params: $this->params,
             method: $this->method)
         )->aggregate();

@@ -2,7 +2,7 @@
 
 use Cognesy\Evals\ComplexExtraction\ProjectsEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExecutionObservation;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExperimentObservation;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
@@ -33,7 +33,7 @@ $experiment = new Experiment(
         ),
     ],
     postprocessors: [
-        new AggregateExecutionObservation(
+        new AggregateExperimentObservation(
             name: 'reliability',
             observationKey: 'execution.percentFound',
             method: NumberAggregationMethod::Mean,

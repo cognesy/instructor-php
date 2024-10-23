@@ -27,8 +27,8 @@ class Experiment {
     private Display $display;
     private Generator $cases;
     private CanRunExecution $executor;
-    private array $processors;
-    private array $postprocessors;
+    private array $processors = [];
+    private array $postprocessors = [];
 
     readonly private string $id;
     private ?DateTime $startedAt = null;
@@ -42,7 +42,7 @@ class Experiment {
     private array $exceptions = [];
 
     /** @var Observation[] */
-    private array $observations;
+    private array $observations = [];
 
     public function __construct(
         Generator       $cases,
@@ -101,34 +101,13 @@ class Experiment {
         }
         $this->usage = $this->accumulateUsage();
         $this->timeElapsed = microtime(true) - $this->startedAt->getTimestamp();
+
+        $this->observations = $this->makeObservations();
+
         $this->display->footer($this);
         if (!empty($this->exceptions)) {
             $this->display->displayExceptions($this->exceptions);
         }
-
-        // execute observers
-        $observations = MakeObservations::for($this)
-            ->withSources([
-                $this->processors,
-                $this->defaultProcessors,
-            ])
-            ->only([
-                CanObserveExperiment::class,
-                CanObserveExecution::class,
-                CanProvideExecutionObservations::class,
-            ]);
-
-        // execute summarizers
-        $summaries = MakeObservations::for($this)
-            ->withSources([
-                $this->postprocessors,
-            ])
-            ->only([
-                CanSummarizeExperiment::class,
-                CanProvideExecutionObservations::class,
-            ]);
-
-        $this->observations = array_filter(array_merge($observations, $summaries));
 
         return $this->summaries();
     }
@@ -207,7 +186,8 @@ class Experiment {
         };
         return (new Execution(case: $caseData))
             ->withExecutor($this->executor)
-            ->withProcessors($this->processors);
+            ->withProcessors($this->processors)
+            ->withPostprocessors($this->postprocessors);
     }
 
     private function accumulateUsage() : Usage {
@@ -216,5 +196,32 @@ class Experiment {
             $usage->accumulate($execution->usage());
         }
         return $usage;
+    }
+
+    private function makeObservations() : array {
+        // execute observers
+        $observations = MakeObservations::for($this)
+            ->withSources([
+                $this->processors,
+                $this->defaultProcessors,
+            ])
+            ->only([
+                CanObserveExperiment::class,
+                CanObserveExecution::class,
+                CanProvideExecutionObservations::class,
+            ]);
+
+        // execute summarizers
+        $summaries = MakeObservations::for($this)
+            ->withSources([
+                $this->postprocessors,
+            ])
+            ->only([
+                CanSummarizeExperiment::class,
+                CanObserveExperiment::class,
+                CanProvideExecutionObservations::class,
+            ]);
+
+        return array_filter(array_merge($observations, $summaries));
     }
 }

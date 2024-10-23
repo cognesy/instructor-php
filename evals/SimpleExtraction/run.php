@@ -3,7 +3,7 @@
 use Cognesy\Evals\SimpleExtraction\Company;
 use Cognesy\Evals\SimpleExtraction\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExecutionObservation;
+use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExperimentObservation;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
@@ -36,12 +36,12 @@ $experiment = new Experiment(
         ]),
     ],
     postprocessors: [
-        new AggregateExecutionObservation(
+        new AggregateExperimentObservation(
             name: 'experiment.reliability',
             observationKey: 'execution.is_correct',
             method: NumberAggregationMethod::Mean,
         ),
-        new AggregateExecutionObservation(
+        new AggregateExperimentObservation(
             name: 'latency',
             observationKey: 'execution.timeElapsed',
             params: ['percentile' => 95],

@@ -11,7 +11,19 @@ class SelectObservations
     ) {}
 
     public static function from(array $sources) : self {
-        return new self(array_merge(...$sources));
+        if (is_array($sources[0] ?? null)) {
+            $sources = array_merge(...$sources);
+        }
+        return new self($sources);
+    }
+
+    public function withKey(string $key) : self {
+        return new SelectObservations(
+            array_filter(
+                $this->observations,
+                fn($observation) => $observation->key() === $key
+            )
+        );
     }
 
     public function withKeys(array $keys) : self {

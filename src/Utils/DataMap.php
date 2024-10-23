@@ -92,19 +92,13 @@ class DataMap implements JsonSerializable
         return gettype($value);
     }
 
-    public function merge(array $data): self {
-        $this->dot->merge($data);
-        return $this;
-    }
-
     /**
      * Magic getter.
      *
      * @param string $name
      * @return mixed
      */
-    public function __get(string $name): mixed
-    {
+    public function __get(string $name): mixed {
         return $this->get($name);
     }
 
@@ -115,8 +109,7 @@ class DataMap implements JsonSerializable
      * @param mixed $value
      * @return void
      */
-    public function __set(string $name, mixed $value): void
-    {
+    public function __set(string $name, mixed $value): void {
         $this->set($name, $value);
     }
 
@@ -126,8 +119,7 @@ class DataMap implements JsonSerializable
      * @param string $name
      * @return bool
      */
-    public function __isset(string $name): bool
-    {
+    public function __isset(string $name): bool {
         return $this->has($name);
     }
 
@@ -137,8 +129,7 @@ class DataMap implements JsonSerializable
      * @param int $options
      * @return string
      */
-    public function toJson(int $options = 0): string
-    {
+    public function toJson(int $options = 0): string {
         return json_encode($this->toArray(), $options);
     }
 
@@ -150,8 +141,7 @@ class DataMap implements JsonSerializable
      *
      * @throws InvalidArgumentException If the JSON is invalid.
      */
-    public static function fromJson(string $json): self
-    {
+    public static function fromJson(string $json): self {
         $data = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -166,8 +156,7 @@ class DataMap implements JsonSerializable
      *
      * @return array<TKey, mixed>
      */
-    public function toArray(): array
-    {
+    public function toArray(): array {
         return $this->dot->all();
     }
 
@@ -177,8 +166,7 @@ class DataMap implements JsonSerializable
      * @param array<TKey, mixed> $array
      * @return self
      */
-    public static function fromArray(array $array): self
-    {
+    public static function fromArray(array $array): self {
         return new self($array);
     }
 
@@ -187,9 +175,19 @@ class DataMap implements JsonSerializable
      *
      * @return array<TKey>
      */
-    public function fields(): array
-    {
+    public function fields(): array {
         return array_keys($this->toArray());
+    }
+
+    /**
+     * Merge data into the DataMap.
+     *
+     * @param array<TKey, mixed> $data
+     * @return self
+     */
+    public function merge(array $data): self {
+        $this->dot->merge($data);
+        return $this;
     }
 
     /**
@@ -200,8 +198,7 @@ class DataMap implements JsonSerializable
      *
      * @throws InvalidArgumentException If the path does not lead to an array or DataMap, or if wildcards are used incorrectly.
      */
-    public function toMap(?string $path = null): Map
-    {
+    public function toMap(?string $path = null): Map {
         if ($path === null) {
             // No path provided, return Map for the entire data
             $data = $this->toArray();
@@ -217,6 +214,42 @@ class DataMap implements JsonSerializable
         $collectedValues = $this->collectWildcardValues($path);
         return new Map($collectedValues);
     }
+
+    /**
+     * Specify data which should be serialized to JSON.
+     *
+     * @return mixed
+     */
+    public function jsonSerialize(): mixed {
+        return $this->toArray();
+    }
+
+    /**
+     * Get a subset of the DataMap.
+     *
+     * @param string ...$keys
+     * @return self
+     */
+    public function except(string ...$keys): self {
+        $data = $this->toArray();
+        foreach ($keys as $key) {
+            unset($data[$key]);
+        }
+        return new self($data);
+    }
+
+    /**
+     * Get a subset of the DataMap.
+     *
+     * @param string ...$keys
+     * @return self
+     */
+    public function only(string ...$keys): self {
+        $data = $this->toArray();
+        return new self(array_intersect_key($data, array_flip($keys)));
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
 
     /**
      * Collect values from the DataMap based on a path.
@@ -298,15 +331,5 @@ class DataMap implements JsonSerializable
         }
 
         return $collected;
-    }
-
-    /**
-     * Specify data which should be serialized to JSON.
-     *
-     * @return mixed
-     */
-    public function jsonSerialize(): mixed
-    {
-        return $this->toArray();
     }
 }

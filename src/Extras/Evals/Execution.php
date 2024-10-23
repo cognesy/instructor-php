@@ -25,8 +25,8 @@ class Execution
     ];
 
     private CanRunExecution $action;
-    private array $processors;
-    private array $postprocessors;
+    private array $processors = [];
+    private array $postprocessors = [];
 
     private string $id;
     private ?DateTime $startedAt = null;
@@ -108,14 +108,19 @@ class Execution
         $this->usage = $usage;
 
         $observations = MakeObservations::for($this)
-            ->withSources($this->processors())
+            ->withSources([
+                $this->processors,
+                $this->defaultObservers,
+            ])
             ->only([
                 CanObserveExecution::class,
                 CanProvideExecutionObservations::class,
             ]);
 
         $summaries = MakeObservations::for($this)
-            ->withSources($this->postprocessors)
+            ->withSources([
+                $this->postprocessors
+            ])
             ->only([
                 CanSummarizeExecution::class,
                 CanProvideExecutionObservations::class,
@@ -139,7 +144,7 @@ class Execution
 
     // HELPERS //////////////////////////////////////////////////
 
-    public function exception() : Exception {
+    public function exception() : ?Exception {
         return $this->exception;
     }
 
@@ -207,21 +212,12 @@ class Execution
      * @return Observation[]
      */
     public function summaries() : array {
-        return SelectObservations::from($this->observations)
+        return SelectObservations::from([$this->observations])
             ->withTypes(['summary'])
             ->all();
     }
 
     public function hasSummaries() : bool {
         return count($this->summaries()) > 0;
-    }
-
-    // INTERNAL /////////////////////////////////////////////////
-
-    /**
-     * @return Observation[]
-     */
-    private function processors() : array {
-        return array_merge($this->defaultObservers, $this->processors);
     }
 }
