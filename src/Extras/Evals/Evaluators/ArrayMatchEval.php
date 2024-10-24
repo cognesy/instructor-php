@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
 use Adbar\Dot;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Enums\FeedbackType;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
@@ -11,18 +11,40 @@ use Cognesy\Instructor\Extras\Evals\Feedback\FeedbackItem;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Extras\Evals\Utils\CompareNestedArrays;
 
-class ArrayMatchEval implements CanProvideExecutionObservations
+/**
+ * This class evaluates the match between expected and actual arrays
+ * and generates observations for precision, recall, and detailed feedback.
+ *
+ * @template T of Execution
+ */
+class ArrayMatchEval implements CanGenerateObservations
 {
     public function __construct(
         private array $expected,
     ) {}
 
-    public function observations(Execution $subject): iterable {
-        return [
-            $this->precision($subject, $this->analyse($subject)),
-            $this->recall($subject, $this->analyse($subject)),
-            ...$this->critique($subject),
-        ];
+    /**
+     * Checks if the provided subject is an instance of Execution.
+     *
+     * @param T $subject The subject to be checked.
+     * @return bool True if the subject is an instance of Execution, false otherwise.
+     */
+    public function accepts(mixed $subject): bool {
+        return $subject instanceof Execution;
+    }
+
+    /**
+     * Generates a series of observational metrics for the given subject.
+     *
+     * @param mixed $subject The subject to analyze.
+     * @return iterable<Observation> An iterable collection of observational metrics.
+     */
+    public function observations(mixed $subject): iterable {
+        $analysis = $this->analyse($subject);
+
+        yield $this->precision($subject, $analysis);
+        yield $this->recall($subject, $analysis);
+        yield from $this->critique($subject);
     }
 
     // INTERNAL /////////////////////////////////////////////////

@@ -2,43 +2,63 @@
 
 namespace Cognesy\Instructor\Extras\Evals\Observation;
 
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExperiment;
-use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Exception;
 
+/**
+ * Makes observations based on an observed subject and a set of observers.
+ */
 class MakeObservations
 {
     public function __construct(
-        private $sources = [],
-        private ?Experiment $experiment = null,
-        private ?Execution $execution = null,
+        private mixed $subject,
+        private array $observers = [],
     ) {}
 
-    public static function for(Experiment|Execution $subject) : self {
-        return new self(
-            experiment: $subject instanceof Experiment ? $subject : null,
-            execution: $subject instanceof Execution ? $subject : null,
-        );
+    /**
+     * Creates a new instance of the class with the given subject.
+     *
+     * @param mixed $subject The subject to be assigned to the new instance.
+     *
+     * @return self Returns a new instance of the class.
+     */
+    public static function for(mixed $subject) : self {
+        return new self(subject: $subject);
     }
 
-    public function withSources(array $sources) : self {
-        if (is_array($sources[0] ?? null)) {
-            $sources = array_merge(...$sources);
+    /**
+     * Sets the observers for the current instance.
+     *
+     * @param array $observers An array of observers to be assigned.
+     *
+     * @return self Returns the current instance with the updated observers.
+     */
+    public function withObservers(array $observers) : self {
+        if (is_array($observers[0] ?? null)) {
+            $observers = array_merge(...$observers);
         }
-        $this->sources = $sources;
+        $this->observers = $observers;
         return $this;
     }
 
+    /**
+     * Retrieves all observations from the current context.
+     *
+     * @return array List of all observations.
+     */
     public function all() : array {
         return $this->observations();
     }
 
+    /**
+     * Retrieves observations for the given types of observers.
+     *
+     * @param array $types List of observer types to generate the observations for.
+     * @return array List of observations.
+     */
     public function only(array $types) : array {
         return $this->observations($types);
     }
@@ -46,28 +66,24 @@ class MakeObservations
     // INTERNAL ////////////////////////////////////////////////
 
     private function observations(array $types = null) : array {
-        $observations = [];
-        foreach ($this->sources($this->sources, $types) as $source) {
-            $observations[] = match(true) {
-                $source instanceof CanProvideExecutionObservations => $source->observations($this->execution),
-                $source instanceof CanObserveExperiment => $this->wrapObservation($source->observe(...), $this->experiment),
-                $source instanceof CanSummarizeExperiment => $this->wrapObservation($source->summarize(...), $this->experiment),
-                $source instanceof CanObserveExecution => $this->wrapObservation($source->observe(...), $this->execution),
-                $source instanceof CanSummarizeExecution => $this->wrapObservation($source->summarize(...), $this->execution),
-                default => throw new Exception('Invalid observation source: ' . get_class($source)),
+        $sources = [];
+        foreach ($this->observers($this->observers, $types) as $observer) {
+            $sources[] = match(true) {
+                $observer instanceof CanGenerateObservations => $this->wrapGenerator($observer, $this->subject),
+                $observer instanceof CanObserveExperiment => $this->wrapObservation($observer->observe(...), $this->subject),
+                $observer instanceof CanObserveExecution => $this->wrapObservation($observer->observe(...), $this->subject),
+                default => throw new Exception('Invalid observation source: ' . get_class($observer)),
             };
         }
-        return $this->getObservations($observations);
+        return $this->getObservations($sources);
     }
 
     private function getObservations(iterable $sources) : array {
         // filter out empty items and turn array<Observation[]> to Observation[]
         $result = [];
-        foreach ($sources as $source) {
-            foreach ($source as $observation) {
-                if ($observation instanceof Observation) {
-                    $result[] = $observation;
-                }
+        foreach ($sources as $observer) {
+            foreach ($observer as $observation) {
+                $result[] = $observation;
             }
         }
         return $result;
@@ -76,39 +92,49 @@ class MakeObservations
     /**
      * @param callable $callback
      * @param object $subject
-     * @return Observation<array>
+     * @return iterable<Observation>
      */
-    private function wrapObservation(callable $callback, ?object $subject) : array {
-        if ($subject === null) {
-            return [];
+    private function wrapObservation(callable $callback, mixed $subject) : iterable {
+        if ($subject !== null) {
+            yield $callback($subject);
         }
-        return [$callback($subject)];
     }
 
-    private function sources(array $sources, array $types = null) : iterable {
-        $instances = $this->makeInstances($sources);
+    /**
+     * @param CanGenerateObservations $generator
+     * @param object $subject
+     * @return iterable<Observation>
+     */
+    private function wrapGenerator(CanGenerateObservations $generator, mixed $subject) : iterable {
+        if ($generator->accepts($subject)) {
+            yield from $generator->observations($subject);
+        }
+    }
+
+    private function observers(array $observers, array $types = null) : iterable {
+        $instances = $this->makeInstances($observers);
         return match(true) {
             empty($types) => $instances,
             default => array_filter($instances, fn($instance) => $this->isOneOf($instance, $types)),
         };
     }
 
-    private function makeInstances(array $sources) : array {
+    private function makeInstances(array $observers) : array {
         $instances = [];
-        foreach ($sources as $source) {
+        foreach ($observers as $observer) {
             $instances[] = match(true) {
-                is_string($source) => new $source,
-                is_object($source) => $source,
-                default => throw new Exception('Invalid observation source type: ' . gettype($source)),
+                is_string($observer) => new $observer,
+                is_object($observer) => $observer,
+                default => throw new Exception('Invalid observation source type: ' . gettype($observer)),
             };
         }
         return $instances;
     }
 
-    private function isOneOf(object $source, array $types) : bool {
+    private function isOneOf(object $observer, array $types) : bool {
         return array_reduce(
             array: $types,
-            callback: fn($carry, $type) => $carry || is_a($source, $type, true),
+            callback: fn($carry, $type) => $carry || is_a($observer, $type, true),
             initial: false
         );
     }

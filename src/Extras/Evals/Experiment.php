@@ -2,15 +2,15 @@
 namespace Cognesy\Instructor\Extras\Evals;
 
 use Cognesy\Instructor\Extras\Evals\Console\Display;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExperiment;
 use Cognesy\Instructor\Extras\Evals\Observation\MakeObservations;
 use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
-use Cognesy\Instructor\Extras\Evals\Observers\ExperimentDuration;
+use Cognesy\Instructor\Extras\Evals\Observers\DurationObserver;
 use Cognesy\Instructor\Extras\Evals\Observers\ExperimentFailureRate;
 use Cognesy\Instructor\Extras\Evals\Observers\ExperimentLatency;
-use Cognesy\Instructor\Extras\Evals\Observers\ExperimentTotalTokens;
+use Cognesy\Instructor\Extras\Evals\Observers\TokenUsageObserver;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
@@ -20,8 +20,8 @@ use Generator;
 
 class Experiment {
     private array $defaultProcessors = [
-        ExperimentDuration::class,
-        ExperimentTotalTokens::class,
+        DurationObserver::class,
+        TokenUsageObserver::class,
         ExperimentLatency::class,
         ExperimentFailureRate::class,
     ];
@@ -203,22 +203,23 @@ class Experiment {
     private function makeObservations() : array {
         // execute observers
         $observations = MakeObservations::for($this)
-            ->withSources([
+            ->withObservers([
                 $this->processors,
                 $this->defaultProcessors,
             ])
             ->only([
                 CanObserveExperiment::class,
+                CanGenerateObservations::class,
             ]);
 
         // execute summarizers
         $summaries = MakeObservations::for($this)
-            ->withSources([
+            ->withObservers([
                 $this->postprocessors,
             ])
             ->only([
-                CanSummarizeExperiment::class,
                 CanObserveExperiment::class,
+                CanGenerateObservations::class,
             ]);
 
         return array_filter(array_merge($observations, $summaries));

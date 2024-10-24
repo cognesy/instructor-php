@@ -2,14 +2,13 @@
 
 namespace Cognesy\Instructor\Extras\Evals;
 
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanSummarizeExecution;
 use Cognesy\Instructor\Extras\Evals\Observation\MakeObservations;
 use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
-use Cognesy\Instructor\Extras\Evals\Observers\ExecutionDuration;
-use Cognesy\Instructor\Extras\Evals\Observers\ExecutionTotalTokens;
+use Cognesy\Instructor\Extras\Evals\Observers\DurationObserver;
+use Cognesy\Instructor\Extras\Evals\Observers\TokenUsageObserver;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\DataMap;
 use Cognesy\Instructor\Utils\Uuid;
@@ -20,8 +19,8 @@ class Execution
 {
     /** @var CanObserveExecution[] */
     private array $defaultObservers = [
-        ExecutionDuration::class,
-        ExecutionTotalTokens::class,
+        DurationObserver::class,
+        TokenUsageObserver::class,
     ];
 
     private CanRunExecution $action;
@@ -202,22 +201,22 @@ class Execution
 
     private function makeObservations() : array {
         $observations = MakeObservations::for($this)
-            ->withSources([
+            ->withObservers([
                 $this->processors,
                 $this->defaultObservers,
             ])
             ->only([
                 CanObserveExecution::class,
-                CanProvideExecutionObservations::class,
+                CanGenerateObservations::class,
             ]);
 
         $summaries = MakeObservations::for($this)
-            ->withSources([
+            ->withObservers([
                 $this->postprocessors
             ])
             ->only([
-                CanSummarizeExecution::class,
-                CanProvideExecutionObservations::class,
+                CanObserveExecution::class,
+                CanGenerateObservations::class,
             ]);
 
         return array_filter(array_merge($observations, $summaries));

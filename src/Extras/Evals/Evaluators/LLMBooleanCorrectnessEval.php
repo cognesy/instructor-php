@@ -3,14 +3,14 @@
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Evaluators\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Instructor;
 
-class LLMBooleanCorrectnessEval implements CanProvideExecutionObservations
+class LLMBooleanCorrectnessEval implements CanGenerateObservations
 {
     private BooleanCorrectnessAnalysis $result;
 
@@ -23,11 +23,19 @@ class LLMBooleanCorrectnessEval implements CanProvideExecutionObservations
         $this->instructor = $instructor ?? new Instructor();
     }
 
-    public function observations(Execution $subject): iterable {
-        return array_filter([
-            $this->measure($subject),
-            ...$this->critique($subject),
-        ]);
+    public function accepts(mixed $subject): bool {
+        return $subject instanceof Execution;
+    }
+
+    /**
+     * Compiles an array of observations for the given subject by measuring and critiquing it.
+     *
+     * @param mixed $subject The subject to be observed.
+     * @return iterable<Observation> The set of observations gathered from measurement and critique.
+     */
+    public function observations(mixed $subject): iterable {
+        yield $this->measure($subject);
+        yield from $this->critique($subject);
     }
 
     // INTERNAL /////////////////////////////////////////////////

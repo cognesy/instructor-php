@@ -14,6 +14,10 @@ use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use DateTime;
 use DateTimeImmutable;
 
+/**
+ * Responsible for converting different schema types to their corresponding JSON schema representations.
+ * Provides methods to visit and convert various schema objects.
+ */
 class SchemaToJsonSchema implements CanVisitSchema
 {
     private array $result = [];

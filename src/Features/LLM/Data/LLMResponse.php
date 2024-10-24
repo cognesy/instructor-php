@@ -82,11 +82,7 @@ class LLMResponse
             }
             $content .= $partialResponse->contentDelta;
             $this->responseData[] = $partialResponse->responseData;
-            $this->usage()->inputTokens += $partialResponse->usage()->inputTokens;
-            $this->usage()->outputTokens += $partialResponse->usage()->outputTokens;
-            $this->usage()->cacheWriteTokens += $partialResponse->usage()->cacheWriteTokens;
-            $this->usage()->cacheReadTokens += $partialResponse->usage()->cacheReadTokens;
-            $this->usage()->reasoningTokens += $partialResponse->usage()->reasoningTokens;
+            $this->usage()->accumulate($partialResponse->usage);
             $this->finishReason = $partialResponse->finishReason;
         }
         $this->content = $content;

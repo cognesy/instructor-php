@@ -2,11 +2,27 @@
 
 namespace Cognesy\Instructor\Utils;
 
+/**
+ * A class for generating Universally Unique Identifiers (UUID).
+ *
+ * Goal: decouple Instructor main code from depending on specific UUID provider libraries
+ * and make it easier to switch providers.
+ */
 class Uuid {
+    /**
+     * Generates a random UUID (version 4) string.
+     *
+     * @return string A randomly generated UUID (version 4) string.
+     */
     public static function uuid4() : string {
         return self::fromRandomBytes();
     }
 
+    /**
+     * Generates a UUID using random bytes.
+     *
+     * @return string Generated UUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+     */
     private static function fromRandomBytes() : string {
         // generate uuid using random bytes
         $data = random_bytes(16);

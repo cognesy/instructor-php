@@ -8,7 +8,7 @@ use Cognesy\Instructor\Extras\Evals\Observation;
 interface CanObserveExecution
 {
     /**
-     * Summarize the experiment.
+     * Observe the experiment.
      *
      * @param Execution $execution
      * @return Observation

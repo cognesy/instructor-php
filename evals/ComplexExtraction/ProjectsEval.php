@@ -8,9 +8,11 @@ use Cognesy\Instructor\Extras\Evals\Observation;
 
 class ProjectsEval implements CanObserveExecution
 {
-    public array $expectations;
+    private string $key;
+    private array $expectations;
 
-    public function __construct(array $expectations) {
+    public function __construct(string $key, array $expectations) {
+        $this->key = $key;
         $this->expectations = $expectations;
     }
 
@@ -24,7 +26,7 @@ class ProjectsEval implements CanObserveExecution
         $result = ($expectedEvents - count($events->events)) / $expectedEvents;
         return Observation::make(
             type: 'metric',
-            key: 'execution.fractionFound',
+            key: $this->key,
             value: $result,
             metadata: [
                 'executionId' => $execution->id(),

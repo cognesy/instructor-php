@@ -37,17 +37,11 @@ class EmbeddingsResponse
         return [
             new EmbeddingsResponse(
                 vectors: array_slice($this->vectors, 0, $index),
-                usage: new Usage(
-                    inputTokens: $this->usage()->inputTokens,
-                    outputTokens: $this->usage()->outputTokens,
-                ),
+                usage: Usage::copy($this->usage()), // TODO: token split is arbitrary
             ),
             new EmbeddingsResponse(
                 vectors: array_slice($this->vectors, $index),
-                usage: new Usage(
-                    inputTokens: 0,
-                    outputTokens: 0,
-                ),
+                usage: new Usage(), // TODO: token split is arbitrary
             ),
         ];
     }

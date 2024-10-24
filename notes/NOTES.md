@@ -2,12 +2,14 @@
 
 ## High priority
 
-- Evals!!!
+- Evals / eval framework
+  * execution level correctness metric
+  * add input, output, etc. tokens default metrics
+  * simplify contracts - currently 5 (!) contracts for observations
 - Add 'Output' section to each example, generate it and include in docs, so reader can see what they can expect
 - Logging via PSR-3
 - Schema abstraction layer - decouple names and descriptions from the model
 - Prompt optimization via TextGrad
-- Eval framework
 - Agents
 - Indexing to vector DB
 - CLI app

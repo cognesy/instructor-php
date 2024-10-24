@@ -26,6 +26,16 @@ class Usage
         );
     }
 
+    public static function copy(Usage $usage) : static {
+        return new Usage(
+            inputTokens: $usage->inputTokens,
+            outputTokens: $usage->outputTokens,
+            cacheWriteTokens: $usage->cacheWriteTokens,
+            cacheReadTokens: $usage->cacheReadTokens,
+            reasoningTokens: $usage->reasoningTokens,
+        );
+    }
+
     public function total() : int {
         return $this->inputTokens
             + $this->outputTokens

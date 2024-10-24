@@ -218,7 +218,7 @@ class OpenAIDriver implements CanHandleInference
                 ?? 0,
             cacheWriteTokens: 0,
             cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
-            reasoningTokens: 0,
+            reasoningTokens: $data['usage']['prompt_tokens_details']['reasoning_tokens'] ?? 0,
         );
     }
 }

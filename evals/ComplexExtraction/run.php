@@ -5,12 +5,10 @@ use Cognesy\Evals\ComplexExtraction\ProjectEvents;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExperimentObservation;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
-use Cognesy\Instructor\Extras\Evals\Evaluators\ArrayMatchEval;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInstructor;
 use Cognesy\Instructor\Extras\Evals\Experiment;
-use Cognesy\Instructor\Utils\Debug\Debug;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
@@ -32,6 +30,7 @@ $experiment = new Experiment(
     executor: new RunInstructor($data),
     processors: [
         new ProjectsEval(
+            key: 'execution.fractionFound',
             expectations: ['events' => 12]
         ),
     ],

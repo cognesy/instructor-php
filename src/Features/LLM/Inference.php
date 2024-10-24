@@ -22,6 +22,11 @@ use Cognesy\Instructor\Utils\Debug\Debug;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
+/**
+ * Class Inference
+ *
+ * Handles LLM inference operations including configuration management, HTTP client handling, and event dispatching.
+ */
 class Inference
 {
     protected LLMConfig $config;
@@ -31,6 +36,17 @@ class Inference
     protected CanHandleHttp $httpClient;
     protected CachedContext $cachedContext;
 
+    /**
+     * Constructor for initializing dependencies and configurations.
+     *
+     * @param string $connection The connection string.
+     * @param LLMConfig|null $config Configuration object.
+     * @param CanHandleHttp|null $httpClient HTTP client handler.
+     * @param CanHandleInference|null $driver Inference handler.
+     * @param EventDispatcher|null $events Event dispatcher.
+     *
+     * @return void
+     */
     public function __construct(
         string $connection = '',
         LLMConfig $config = null,
@@ -48,6 +64,16 @@ class Inference
 
     // STATIC //////////////////////////////////////////////////////////////////
 
+    /**
+     * Generates a text response based on the provided messages and configuration.
+     *
+     * @param string|array $messages The input messages to process.
+     * @param string $connection The connection string.
+     * @param string $model The model identifier.
+     * @param array $options Additional options for the inference.
+     *
+     * @return string The generated text response.
+     */
     public static function text(
         string|array $messages,
         string $connection = '',
@@ -67,12 +93,26 @@ class Inference
 
     // PUBLIC //////////////////////////////////////////////////////////////////
 
+    /**
+     * Updates the configuration and reinitializes the driver.
+     *
+     * @param LLMConfig $config The configuration object to set.
+     *
+     * @return self
+     */
     public function withConfig(LLMConfig $config): self {
         $this->config = $config;
         $this->driver = $this->makeDriver($this->config, $this->httpClient);
         return $this;
     }
 
+    /**
+     * Sets the connection and updates the configuration and driver.
+     *
+     * @param string $connection The connection string to be used.
+     *
+     * @return self Returns the current instance with the updated connection.
+     */
     public function withConnection(string $connection): self {
         if (empty($connection)) {
             return $this;
@@ -82,22 +122,53 @@ class Inference
         return $this;
     }
 
+    /**
+     * Sets a custom HTTP client and updates the inference driver accordingly.
+     *
+     * @param CanHandleHttp $httpClient The custom HTTP client handler.
+     *
+     * @return self Returns the current instance for method chaining.
+     */
     public function withHttpClient(CanHandleHttp $httpClient): self {
         $this->httpClient = $httpClient;
         $this->driver = $this->makeDriver($this->config, $this->httpClient);
         return $this;
     }
 
+    /**
+     * Sets the driver for inference handling and returns the current instance.
+     *
+     * @param CanHandleInference $driver The inference handler to be set.
+     *
+     * @return self
+     */
     public function withDriver(CanHandleInference $driver): self {
         $this->driver = $driver;
         return $this;
     }
 
+    /**
+     * Enable or disable debugging for the current instance.
+     *
+     * @param bool $debug Whether to enable debug mode. Default is true.
+     *
+     * @return self
+     */
     public function withDebug(bool $debug = true) : self {
         Debug::setEnabled($debug); // TODO: fix me - debug should not be global, should be request specific
         return $this;
     }
 
+    /**
+     * Sets a cached context with provided messages, tools, tool choices, and response format.
+     *
+     * @param string|array $messages Messages to be cached in the context.
+     * @param array $tools Tools to be included in the cached context.
+     * @param string|array $toolChoice Tool choices for the cached context.
+     * @param array $responseFormat Format for responses in the cached context.
+     *
+     * @return self
+     */
     public function withCachedContext(
         string|array $messages = [],
         array $tools = [],
@@ -108,6 +179,19 @@ class Inference
         return $this;
     }
 
+    /**
+     * Creates an inference request and returns the inference response.
+     *
+     * @param string|array $messages The input messages for the inference.
+     * @param string $model The model to be used for the inference.
+     * @param array $tools The tools to be used for the inference.
+     * @param string|array $toolChoice The choice of tools for the inference.
+     * @param array $responseFormat The format of the response.
+     * @param array $options Additional options for the inference.
+     * @param Mode $mode The mode of operation for the inference.
+     *
+     * @return InferenceResponse The response from the inference request.
+     */
     public function create(
         string|array $messages = [],
         string $model = '',
@@ -132,6 +216,15 @@ class Inference
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
+    /**
+     * Creates and returns an appropriate driver instance based on the given configuration.
+     *
+     * @param LLMConfig $config Configuration object specifying the provider type and other necessary settings.
+     * @param CanHandleHttp $httpClient An HTTP client instance to handle HTTP requests.
+     *
+     * @return CanHandleInference A driver instance matching the specified provider type.
+     * @throws InvalidArgumentException If the provider type is not supported.
+     */
     protected function makeDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
         return match ($config->providerType) {
             LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient, $this->events),

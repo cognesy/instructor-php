@@ -3,12 +3,12 @@
 namespace Cognesy\Evals\LLMModes;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Utils\Str;
 
-class CompanyEval implements CanProvideExecutionObservations
+class CompanyEval implements CanGenerateObservations
 {
     private string $key;
     private array $expectations;
@@ -21,7 +21,11 @@ class CompanyEval implements CanProvideExecutionObservations
         $this->expectations = $expectations;
     }
 
-    public function observations(Execution $subject): iterable {
+    public function accepts(mixed $subject): bool {
+        return $subject instanceof Execution;
+    }
+
+    public function observations(mixed $subject): iterable {
         yield $this->correctness($subject);
     }
 

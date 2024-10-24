@@ -8,6 +8,12 @@ use Cognesy\Instructor\Extras\Evals\Observation;
 
 class ExperimentFailureRate implements CanObserveExperiment
 {
+    /**
+     * Observes the given experiment to record its failure rate and other related metrics.
+     *
+     * @param Experiment $experiment The experiment to observe.
+     * @return Observation The observation containing the experiment's failure rate and metadata.
+     */
     public function observe(Experiment $experiment): Observation {
         return Observation::make(
             type: 'metric',
@@ -16,7 +22,7 @@ class ExperimentFailureRate implements CanObserveExperiment
             metadata: [
                 'experimentId' => $experiment->id(),
                 'unit' => 'fraction',
-                'format' => '%d.2',
+                'format' => '%.2f',
                 'failed' => $this->metrics($experiment)->failed,
                 'total' => $this->metrics($experiment)->total,
                 'aggregationMethod' => 'mean',
@@ -24,6 +30,14 @@ class ExperimentFailureRate implements CanObserveExperiment
         );
     }
 
+    /**
+     * Calculates and returns the metrics for the given experiment, including
+     * failure rate, total executions, and failed executions.
+     *
+     * @param Experiment $experiment The experiment instance from which metrics are calculated.
+     *
+     * @return object An anonymous object containing failureRate, total, and failed properties.
+     */
     private function metrics(Experiment $experiment) : object {
         $executionCount = count($experiment->executions());
         $executionsFailed = array_reduce($experiment->executions(), function ($carry, $execution) {

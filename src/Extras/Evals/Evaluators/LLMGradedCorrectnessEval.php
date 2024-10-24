@@ -3,14 +3,14 @@
 namespace Cognesy\Instructor\Extras\Evals\Evaluators;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanProvideExecutionObservations;
+use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Evaluators\Data\GradedCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
 use Cognesy\Instructor\Extras\Evals\Observation;
 use Cognesy\Instructor\Instructor;
 
-class LLMGradedCorrectnessEval implements CanProvideExecutionObservations
+class LLMGradedCorrectnessEval implements CanGenerateObservations
 {
     private GradedCorrectnessAnalysis $result;
 
@@ -23,11 +23,13 @@ class LLMGradedCorrectnessEval implements CanProvideExecutionObservations
         $this->instructor = $instructor ?? new Instructor();
     }
 
-    public function observations(Execution $subject): iterable {
-        return array_filter([
-            $this->measure($subject),
-            ...$this->critique($subject),
-        ]);
+    public function accepts(mixed $subject): bool {
+        return $subject instanceof Execution;
+    }
+
+    public function observations(mixed $subject): iterable {
+        yield $this->measure($subject);
+        yield from $this->critique($subject);
     }
 
     // INTERNAL /////////////////////////////////////////////////
