@@ -17,7 +17,7 @@ location of the damage and the type of damage.
 
 Here's the image we're going to extract data from.
 
-![Receipt](/images/car-damage.jpg)
+![Car Photo](/images/car-damage.jpg)
 
 
 ## Example
@@ -27,7 +27,9 @@ Here's the image we're going to extract data from.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Image\Image;use Cognesy\Instructor\Features\Schema\Attributes\Description;use Cognesy\Instructor\Instructor;use Cognesy\Instructor\Utils\Str;
+use Cognesy\Instructor\Extras\Image\Image;
+use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Instructor\Utils\Str;
 
 enum DamageSeverity : string {
     case Minor = 'minor';
@@ -63,13 +65,14 @@ class DamageAssessment {
     public string $summary;
 }
 
-$assessment = (new Instructor)->respond(
-    input: Image::fromFile(__DIR__ . '/car-damage.jpg'),
-    responseModel: DamageAssessment::class,
-    prompt: 'Identify and assess each car damage location and severity separately.',
-    model: 'gpt-4o',
-    options: ['max_tokens' => 4096]
-);
+$assessment = Image::fromFile(__DIR__ . '/car-damage.jpg')
+    ->toData(
+        responseModel: DamageAssessment::class,
+        prompt: 'Identify and assess each car damage location and severity separately.',
+        connection: 'openai',
+        model: 'gpt-4o',
+        options: ['max_tokens' => 4096]
+    );
 
 dump($assessment);
 assert(Str::contains($assessment->make, 'Toyota', false));
