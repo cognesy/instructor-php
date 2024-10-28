@@ -85,6 +85,7 @@
                 "advanced/partials",
                 "advanced/sequences",
                 "advanced/structures",
+                "advanced/prompts",
                 "advanced/function_calls"
             ]
         },
