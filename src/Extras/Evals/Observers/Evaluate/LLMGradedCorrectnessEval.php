@@ -1,13 +1,13 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Evaluators;
+namespace Cognesy\Instructor\Extras\Evals\Observers\Evaluate;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
-use Cognesy\Instructor\Extras\Evals\Evaluators\Data\GradedCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
 use Cognesy\Instructor\Extras\Evals\Observation;
+use Cognesy\Instructor\Extras\Evals\Observers\Evaluate\Data\GradedCorrectnessAnalysis;
 use Cognesy\Instructor\Instructor;
 
 class LLMGradedCorrectnessEval implements CanGenerateObservations

@@ -112,7 +112,13 @@ class Str
         };
     }
 
-    public static function limit(string $text, int $limit, string $end = '…', int $align = STR_PAD_RIGHT, bool $fit = true) : string {
+    public static function limit(
+        string $text,
+        int    $limit,
+        string $cutMarker = '…',
+        int    $align = STR_PAD_RIGHT,
+        bool   $fit = true
+    ) : string {
         $short = ($align === STR_PAD_LEFT)
             ? substr($text, -$limit)
             : substr($text, 0, $limit);
@@ -121,14 +127,15 @@ class Str
             return $text;
         }
 
-        if ($fit) {
+        $cutLength = strlen($cutMarker);
+        if ($fit && $cutLength > 0) {
             return ($align === STR_PAD_LEFT)
-                ? $end . substr($short,1)
-                : substr($short, 0, -1) . $end;
+                ? $cutMarker . substr($short, $cutLength)
+                : substr($short, 0, -$cutLength) . $cutMarker;
         }
 
         return ($align === STR_PAD_LEFT)
-            ? $end . $short
-            : $short . $end;
+            ? $cutMarker . $short
+            : $short . $cutMarker;
     }
 }

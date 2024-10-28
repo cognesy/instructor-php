@@ -29,7 +29,7 @@ trait HandlesConversion
                 $role = $message['role'];
                 $content = [];
 
-                if (\Cognesy\Instructor\Utils\Messages\Message::becomesComposite($message)) {
+                if (Message::becomesComposite($message)) {
                     $merged->appendMessage($message);
                     continue;
                 }

@@ -1,13 +1,13 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Evaluators;
+namespace Cognesy\Instructor\Extras\Evals\Observers\Evaluate;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
-use Cognesy\Instructor\Extras\Evals\Evaluators\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Feedback\Feedback;
 use Cognesy\Instructor\Extras\Evals\Observation;
+use Cognesy\Instructor\Extras\Evals\Observers\Evaluate\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Instructor;
 
 class LLMBooleanCorrectnessEval implements CanGenerateObservations

@@ -7,6 +7,8 @@ class Message {
     use Traits\Message\HandlesAccess;
     use Traits\Message\HandlesTransformation;
 
+    public const DEFAULT_ROLE = 'user';
+
     /**
      * @param string $role
      * @param string|array<string|array> $content

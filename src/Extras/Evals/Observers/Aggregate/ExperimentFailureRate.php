@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Observers;
+namespace Cognesy\Instructor\Extras\Evals\Observers\Aggregate;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
 use Cognesy\Instructor\Extras\Evals\Experiment;
@@ -16,7 +16,7 @@ class ExperimentFailureRate implements CanObserveExperiment
      */
     public function observe(Experiment $experiment): Observation {
         return Observation::make(
-            type: 'metric',
+            type: 'summary',
             key: 'experiment.failureRate',
             value: $this->metrics($experiment)->failureRate,
             metadata: [

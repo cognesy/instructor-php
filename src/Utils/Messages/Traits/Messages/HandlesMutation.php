@@ -8,14 +8,14 @@ trait HandlesMutation
 {
     public function setMessage(string|array|Message $message) : static {
         $this->messages = match (true) {
-            is_string($message) => [\Cognesy\Instructor\Utils\Messages\Message::fromString($message)],
-            is_array($message) => [\Cognesy\Instructor\Utils\Messages\Message::fromArray($message)],
+            is_string($message) => [Message::fromString($message)],
+            is_array($message) => [Message::fromArray($message)],
             default => [$message],
         };
         return $this;
     }
 
-    public function appendMessage(array|\Cognesy\Instructor\Utils\Messages\Message $message) : static {
+    public function appendMessage(array|Message $message) : static {
         $this->messages[] = match (true) {
             is_array($message) => Message::fromArray($message),
             default => $message,

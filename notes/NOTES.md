@@ -4,8 +4,6 @@
 
 - Evals / eval framework
   * execution level correctness metric
-  * add input, output, etc. tokens default metrics
-  * simplify contracts - currently 5 (!) contracts for observations
 - Add 'Output' section to each example, generate it and include in docs, so reader can see what they can expect
 - Logging via PSR-3
 - Schema abstraction layer - decouple names and descriptions from the model
@@ -78,16 +76,6 @@
 
 
 
-# Done
-
-> NOTE: Move notes here
-
-## Configuration
-
-- Examples how to override default configuration
-
-
-
 
 # Brain dump
 
@@ -148,3 +136,19 @@ Examples to demonstrate use cases.
 ## Test coverage
 
 Catch up with the latest additions.
+
+
+
+# Done
+
+> NOTE: Move notes here
+
+## Configuration
+
+- Examples how to override default configuration
+
+## Evals
+
+- Simplify contracts - currently 5 (!) contracts for observations
+- Add input, output, etc. tokens default metrics
+

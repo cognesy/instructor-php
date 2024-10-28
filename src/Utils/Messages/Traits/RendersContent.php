@@ -21,7 +21,7 @@ trait RendersContent
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Instructor\Utils\Messages\Message $messages
+     * @param array<string,string|array>|Message $messages
      * @param array<string,mixed>|null $parameters
      * @return string
      */
@@ -33,7 +33,7 @@ trait RendersContent
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Instructor\Utils\Messages\Messages $messages
+     * @param array<string,string|array>|Messages $messages
      * @param array<string,mixed>|null $parameters
      * @return string
      */

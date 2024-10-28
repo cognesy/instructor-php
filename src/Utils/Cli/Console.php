@@ -44,7 +44,7 @@ class Console
                     $message .= self::color($color);
                 }
                 $message .= self::toColumn(
-                    chars: $row[0],
+                    width: $row[0],
                     text: $row[1],
                     align: $row[2]??STR_PAD_RIGHT
                 );
@@ -55,17 +55,14 @@ class Console
         return $message;
     }
 
-    static private function toColumn(int $chars, mixed $text, int $align, string|array $color = ''): string {
-//        $short = ($align === STR_PAD_LEFT)
-//            ? substr($text, -$chars)
-//            : substr($text, 0, $chars);
-//        if ($text !== $short) {
-//            $short = ($align === STR_PAD_LEFT)
-//                ? '…'.substr($short,1)
-//                : substr($short, 0, -1).'…';
-//        }
-        $short = Str::limit($text, $chars, '…', $align);
-        return self::color($color, str_pad($short, $chars, ' ', $align));
+    static private function toColumn(
+        int          $width,
+        mixed        $text,
+        int          $align,
+        string|array $color = ''
+    ): string {
+        $short = Str::limit(text: $text, limit: $width, align: $align);
+        return self::color($color, str_pad($short, $width, ' ', $align));
     }
 
     static private function color(string|array $color, string $output = '') : string {

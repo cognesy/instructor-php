@@ -10,8 +10,6 @@ use InvalidArgumentException;
 
 trait HandlesCreation
 {
-    public const DEFAULT_ROLE = 'user';
-
     public static function make(string $role, string|array $content) : static {
         return new static($role, $content);
     }

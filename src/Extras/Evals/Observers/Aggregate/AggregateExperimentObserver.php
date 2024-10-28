@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Aggregators;
+namespace Cognesy\Instructor\Extras\Evals\Observers\Aggregate;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExperiment;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
@@ -10,7 +10,7 @@ use Cognesy\Instructor\Extras\Evals\Observation\SelectObservations;
 use Cognesy\Instructor\Extras\Evals\Utils\NumberSeriesAggregator;
 use InvalidArgumentException;
 
-class AggregateExperimentObservation implements CanObserveExperiment
+class AggregateExperimentObserver implements CanObserveExperiment
 {
     public function __construct(
         private string $name = '',

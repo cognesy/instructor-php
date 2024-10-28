@@ -1,24 +1,11 @@
 {#
 ---
 description: Find country capital template for testing templates
-params:
+variables:
     country:
-        description: Country name
+        description: country name
         type: string
         default: France
 ---
 #}
-
-{# [assistant] #}
-You are a helpful assistant, respond to the user's questions in a concise manner.
-
-{# [user] #}
-What is the capital of France?
-
-{# [assistant] #}
-{{ ['name': 'Paris'] | json_encode() }}
-
-{# [user] #}
 What is the capital of {{ country }}?
-
-{# [assistant] #}

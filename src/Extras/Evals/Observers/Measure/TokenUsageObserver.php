@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Observers;
+namespace Cognesy\Instructor\Extras\Evals\Observers\Measure;
 
 use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Execution;

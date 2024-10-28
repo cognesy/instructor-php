@@ -38,6 +38,14 @@ trait HandlesTransformation
         return $messages;
     }
 
+    public function toRoleString() : string {
+        $text = '';
+        foreach ($this->messages as $message) {
+            $text .= $message->toRoleString() . "\n";
+        }
+        return $text;
+    }
+
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     private function mergeRolesFlat() : Messages {

@@ -74,7 +74,7 @@
                 "essentials/data_model",
                 "essentials/scalars",
                 "essentials/validation",
-                "essentials/prompts",
+                "essentials/customize_prompts",
                 "essentials/demonstrations"
             ]
         },

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Evals\Evaluators;
+namespace Cognesy\Instructor\Extras\Evals\Observers\Evaluate;
 
 use Adbar\Dot;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
@@ -21,12 +21,13 @@ class ArrayMatchEval implements CanGenerateObservations
 {
     public function __construct(
         private array $expected,
+        private array $metricNames = [],
     ) {}
 
     /**
      * Checks if the provided subject is an instance of Execution.
      *
-     * @param T $subject The subject to be checked.
+     * @param Execution $subject The subject to be checked.
      * @return bool True if the subject is an instance of Execution, false otherwise.
      */
     public function accepts(mixed $subject): bool {
@@ -68,7 +69,7 @@ class ArrayMatchEval implements CanGenerateObservations
         $precision = $analysis['true_positives'] / ($analysis['true_positives'] + $analysis['false_positives']);
         return Observation::make(
             type: 'metric',
-            key: 'execution.precision',
+            key: $this->metricNames['precision'] ?? 'execution.precision',
             value: $precision,
             metadata: [
                 'executionId' => $execution->id(),
@@ -83,7 +84,7 @@ class ArrayMatchEval implements CanGenerateObservations
         $recall = $analysis['true_positives'] / ($analysis['true_positives'] + $analysis['false_negatives']);
         return Observation::make(
             type: 'metric',
-            key: 'execution.recall',
+            key: $this->metricNames['recall'] ?? 'execution.recall',
             value: $recall,
             metadata: [
                 'executionId' => $execution->id(),
@@ -102,7 +103,7 @@ class ArrayMatchEval implements CanGenerateObservations
             callback: fn(Observation $observation) => $observation->withMetadata(['executionId' => $execution->id()]),
             array: $feedback->toObservations([
                 'executionId' => $execution->id(),
-                'key' => 'execution.field_feedback',
+                'key' => $this->metricNames['field_feedback'] ?? 'execution.field_feedback',
             ])
         );
     }

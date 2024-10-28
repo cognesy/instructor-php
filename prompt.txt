@@ -1,0 +1,868 @@
+Project Path: Prompt
+
+Source Tree:
+
+```
+Prompt
+├── Drivers
+│   ├── BladeDriver.php
+│   └── TwigDriver.php
+├── Contracts
+│   └── CanHandleTemplate.php
+├── Enums
+│   ├── FrontMatterFormat.php
+│   └── TemplateType.php
+├── PromptInfo.php
+├── Data
+│   └── PromptEngineConfig.php
+└── Prompt.php
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Drivers/BladeDriver.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt\Drivers;
+
+use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
+use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use eftec\bladeone\BladeOne;
+use Exception;
+
+/**
+ * Class BladeDriver
+ *
+ * Handles the rendering of Blade templates with custom file extensions and front matter support.
+ */
+class BladeDriver implements CanHandleTemplate
+{
+    private BladeOne $blade;
+
+    /**
+     * BladeDriver constructor.
+     *
+     * @param PromptEngineConfig $config The configuration for the prompt engine
+     */
+    public function __construct(
+        private PromptEngineConfig $config,
+    ) {
+        $views = __DIR__ . $this->config->resourcePath;
+        $cache = __DIR__ . $this->config->cachePath;
+        $extension = $this->config->extension;
+        $mode = $this->config->metadata['mode'] ?? BladeOne::MODE_AUTO;
+        $this->blade = new BladeOne($views, $cache, $mode);
+        $this->blade->setFileExtension($extension);
+    }
+
+    /**
+     * Renders a template file with the given parameters.
+     *
+     * @param string $name The name of the template file
+     * @param array $parameters The parameters to pass to the template
+     * @return string The rendered template
+     */
+    public function renderFile(string $name, array $parameters = []): string {
+        return $this->blade->run($name, $parameters);
+    }
+
+    /**
+     * Renders a template from a string with the given parameters.
+     *
+     * @param string $content The template content as a string
+     * @param array $parameters The parameters to pass to the template
+     * @return string The rendered template
+     */
+    public function renderString(string $content, array $parameters = []): string {
+        return $this->blade->runString($content, $parameters);
+    }
+
+    /**
+     * Gets the content of a template file.
+     *
+     * @param string $name
+     * @return string
+     */
+    public function getTemplateContent(string $name): string {
+        $templatePath = $this->blade->getTemplateFile($name);
+        if (!file_exists($templatePath)) {
+            throw new Exception("Template '$name' file does not exist: $templatePath");
+        }
+        return file_get_contents($templatePath);
+    }
+
+    /**
+     * Gets names of variables from a template content.
+     * @param string $content
+     * @return array
+     */
+    public function getVariableNames(string $content): array {
+        $variables = [];
+        preg_match_all('/{{\s*([$a-zA-Z0-9_]+)\s*}}/', $content, $matches);
+        foreach ($matches[1] as $match) {
+            $name = trim($match);
+            $name = str_starts_with($name, '$') ? substr($name, 1) : $name;
+            $variables[] = $name;
+        }
+        return array_unique($variables);
+    }
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Drivers/TwigDriver.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt\Drivers;
+
+use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
+use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Utils\Arrays;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+use Twig\Node\Expression\NameExpression;
+use Twig\Node\Node;
+use Twig\Source;
+
+/**
+ * Class TwigDriver
+ *
+ * Handles the rendering of Twig templates with custom file extensions and front matter support.
+ */
+class TwigDriver implements CanHandleTemplate
+{
+    private Environment $twig;
+
+    /**
+     * TwigDriver constructor.
+     *
+     * @param PromptEngineConfig $config The configuration for the prompt engine
+     */
+    public function __construct(
+        private PromptEngineConfig $config,
+    ) {
+        $paths = [__DIR__ . $this->config->resourcePath];
+        $extension = $this->config->extension;
+
+        $loader = new class(
+            paths: $paths,
+            fileExtension: $extension
+        ) extends FilesystemLoader {
+            private string $fileExtension;
+
+            /**
+             * Constructor for the custom FilesystemLoader.
+             *
+             * @param array $paths The paths where templates are stored
+             * @param string|null $rootPath The root path for templates
+             * @param string $fileExtension The file extension to use for templates
+             */
+            public function __construct(
+                $paths = [],
+                ?string $rootPath = null,
+                string $fileExtension = '',
+            ) {
+                parent::__construct($paths, $rootPath);
+                $this->fileExtension = $fileExtension;
+            }
+
+            /**
+             * Finds a template by its name and appends the file extension if not present.
+             *
+             * @param string $name The name of the template
+             * @param bool $throw Whether to throw an exception if the template is not found
+             * @return string The path to the template
+             */
+            protected function findTemplate(string $name, bool $throw = true): string {
+                if (pathinfo($name, PATHINFO_EXTENSION) === '') {
+                    $name .= $this->fileExtension;
+                }
+                return parent::findTemplate($name, $throw);
+            }
+        };
+
+        $this->twig = new Environment(
+            loader: $loader,
+            options: ['cache' => $this->config->cachePath],
+        );
+    }
+
+    /**
+     * Renders a template file with the given parameters.
+     *
+     * @param string $name The name of the template file
+     * @param array $parameters The parameters to pass to the template
+     * @return string The rendered template
+     */
+    public function renderFile(string $name, array $parameters = []): string {
+        return $this->twig->render($name, $parameters);
+    }
+
+    /**
+     * Renders a template from a string with the given parameters.
+     *
+     * @param string $content The template content as a string
+     * @param array $parameters The parameters to pass to the template
+     * @return string The rendered template
+     */
+    public function renderString(string $content, array $parameters = []): string {
+        return $this->twig->createTemplate($content)->render($parameters);
+    }
+
+    /**
+     * Gets the content of a template file.
+     *
+     * @param string $name
+     * @return string
+     */
+    public function getTemplateContent(string $name): string {
+        return $this->twig->getLoader()->getSourceContext($name)->getCode();
+    }
+
+    /**
+     * Gets names of variables used in a template content.
+     *
+     * @param string $content
+     * @return array
+     * @throws \Twig\Error\SyntaxError
+     */
+    public function getVariableNames(string $content): array {
+        // make Twig Source from content string
+        $source = new Source($content, 'template');
+        // Parse the template to get its AST
+        $parsedTemplate = $this->twig->parse($this->twig->tokenize($source));
+        // Collect variables
+        $variables = $this->findVariables($parsedTemplate);
+        // Remove duplicates
+        return array_unique($variables);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function findVariables(Node $node): array {
+        $variables = [];
+        // Check for variable nodes and add them to the list
+        if ($node instanceof NameExpression) {
+            $variables[] = $node->getAttribute('name');
+        }
+        // Recursively search in child nodes
+        foreach ($node as $child) {
+            $childVariables = $this->findVariables($child);
+            foreach ($childVariables as $variable) {
+                $variables[] = $variable;
+            }
+        }
+        return $variables;
+    }
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Contracts/CanHandleTemplate.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt\Contracts;
+
+/**
+ * Interface CanHandleTemplate
+ *
+ * Defines the methods that a class must implement to be able to handle templates.
+ */
+interface CanHandleTemplate
+{
+    /**
+     * Renders a template file with the given parameters.
+     *
+     * @param string $name The name of the template file
+     * @param array $parameters The parameters to pass to the template
+     * @return string The rendered template
+     */
+    public function renderFile(string $name, array $parameters = []) : string;
+
+    /**
+     * Renders a template from a string with the given parameters.
+     *
+     * @param string $content The template content as a string
+     * @param array $parameters The parameters to pass to the template
+     * @return string The rendered template
+     */
+    public function renderString(string $content, array $parameters = []) : string;
+
+    /**
+     * Gets the content of a template file.
+     *
+     * @param string $name The name of the template file
+     * @return string The content of the template file
+     */
+    public function getTemplateContent(string $name): string;
+
+    /**
+     * Gets names of variables used in template content.
+     *
+     * @param string $content The content of the template
+     * @return array Names of variables in the template
+     */
+    public function getVariableNames(string $content): array;
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Enums/FrontMatterFormat.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt\Enums;
+
+enum FrontMatterFormat : string
+{
+    case Yaml = 'yaml';
+    case Json = 'json';
+    case Toml = 'toml';
+    case None = 'none';
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Enums/TemplateType.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt\Enums;
+
+enum TemplateType : string
+{
+    case Twig = 'twig';
+    case Blade = 'blade';
+    case Unknown = 'unknown';
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/PromptInfo.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt;
+
+use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Enums\FrontMatterFormat;
+use InvalidArgumentException;
+use Webuni\FrontMatter\FrontMatter;
+use Webuni\FrontMatter\Processor\JsonProcessor;
+use Webuni\FrontMatter\Processor\TomlProcessor;
+use Webuni\FrontMatter\Processor\YamlProcessor;
+
+class PromptInfo
+{
+    private FrontMatter $engine;
+    private array $templateData;
+    private string $templateContent;
+
+    public function __construct(
+        string $content,
+        private ?PromptEngineConfig $config = null,
+    ) {
+        $startTag = $this->config->frontMatterTags[0] ?? '---';
+        $endTag = $this->config->frontMatterTags[1] ?? '---';
+        $format = $this->config->frontMatterFormat;
+        $this->engine = $this->makeEngine($format, $startTag, $endTag);
+
+        $document = $this->engine->parse($content);
+        $this->templateData = $document->getData();
+        $this->templateContent = $document->getContent();
+    }
+
+    public function field(string $name) : mixed {
+        return $this->templateData[$name] ?? null;
+    }
+
+    public function hasField(string $name) : bool {
+        return array_key_exists($name, $this->templateData);
+    }
+
+    public function data() : array {
+        return $this->templateData;
+    }
+
+    public function content() : string {
+        return $this->templateContent;
+    }
+
+    public function variables() : array {
+        return $this->field('variables') ?? [];
+    }
+
+    public function variableNames() : array {
+        return array_keys($this->variables());
+    }
+
+    public function hasVariables() : bool {
+        return $this->hasField('variables');
+    }
+
+    public function schema() : array {
+        return $this->field('schema') ?? [];
+    }
+
+    public function hasSchema() : bool {
+        return $this->hasField('schema');
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function makeEngine(FrontMatterFormat $format, string $startTag, string $endTag) : FrontMatter {
+        return match($format) {
+            FrontMatterFormat::Yaml => new FrontMatter(new YamlProcessor(), $startTag, $endTag),
+            FrontMatterFormat::Json => new FrontMatter(new JsonProcessor(), $startTag, $endTag),
+            FrontMatterFormat::Toml => new FrontMatter(new TomlProcessor(), $startTag, $endTag),
+            default => throw new InvalidArgumentException("Unknown front matter format: $format->value"),
+        };
+    }
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Data/PromptEngineConfig.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt\Data;
+
+use Cognesy\Instructor\Extras\Prompt\Enums\FrontMatterFormat;
+use Cognesy\Instructor\Extras\Prompt\Enums\TemplateType;
+use Cognesy\Instructor\Utils\Settings;
+use InvalidArgumentException;
+
+class PromptEngineConfig
+{
+    public function __construct(
+        public TemplateType $templateType = TemplateType::Twig,
+        public string $resourcePath = '',
+        public string $cachePath = '',
+        public string $extension = 'twig',
+        public array $frontMatterTags = [],
+        public FrontMatterFormat $frontMatterFormat = FrontMatterFormat::Yaml,
+        public array $metadata = [],
+    ) {}
+
+    public static function load(string $setting) : PromptEngineConfig {
+        if (!Settings::has('prompt', "settings.$setting")) {
+            throw new InvalidArgumentException("Unknown setting: $setting");
+        }
+        return new PromptEngineConfig(
+            templateType: TemplateType::from(Settings::get('prompt', "settings.$setting.templateType")),
+            resourcePath: Settings::get('prompt', "settings.$setting.resourcePath"),
+            cachePath: Settings::get('prompt', "settings.$setting.cachePath"),
+            extension: Settings::get('prompt', "settings.$setting.extension"),
+            metadata: Settings::get('prompt', "settings.$setting.metadata", []),
+        );
+    }
+}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/src/Extras/Prompt/Prompt.php`:
+
+```php
+<?php
+
+namespace Cognesy\Instructor\Extras\Prompt;
+
+use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
+use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Drivers\BladeDriver;
+use Cognesy\Instructor\Extras\Prompt\Drivers\TwigDriver;
+use Cognesy\Instructor\Extras\Prompt\Enums\TemplateType;
+use Cognesy\Instructor\Utils\Messages\Message;
+use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Instructor\Utils\Str;
+use Cognesy\Instructor\Utils\Xml;
+use InvalidArgumentException;
+
+class Prompt
+{
+    private CanHandleTemplate $driver;
+    private PromptEngineConfig $config;
+    private PromptInfo $promptInfo;
+
+    private string $templateContent;
+    private array $variableValues;
+    private string $rendered;
+
+    public function __construct(
+        string              $name = '',
+        string              $setting = '',
+        PromptEngineConfig  $config = null,
+        CanHandleTemplate   $driver = null,
+    ) {
+        $this->config = $config ?? PromptEngineConfig::load(
+            setting: $setting ?: Settings::get('prompt', "defaultSetting")
+        );
+        $this->driver = $driver ?? $this->makeDriver($this->config);
+        $this->templateContent = $name ? $this->load($name) : '';
+    }
+
+    public static function using(string $setting) : Prompt {
+        return new self(setting: $setting);
+    }
+
+    public static function get(string $name, string $setting = '') : Prompt {
+        return new self(name: $name, setting: $setting);
+    }
+
+    public static function text(string $name, array $variables, string $setting = '') : string {
+        return (new self(name: $name, setting: $setting))->withValues($variables)->toText();
+    }
+
+    public static function messages(string $name, array $variables, string $setting = '') : Messages {
+        return (new self(name: $name, setting: $setting))->withValues($variables)->toMessages();
+    }
+
+    public function withSetting(string $setting) : self {
+        $this->config = PromptEngineConfig::load($setting);
+        $this->driver = $this->makeDriver($this->config);
+        return $this;
+    }
+
+    public function withConfig(PromptEngineConfig $config) : self {
+        $this->config = $config;
+        $this->driver = $this->makeDriver($config);
+        return $this;
+    }
+
+    public function withDriver(CanHandleTemplate $driver) : self {
+        $this->driver = $driver;
+        return $this;
+    }
+
+    public function withTemplate(string $name) : self {
+        $this->templateContent = $this->load($name);
+        $this->promptInfo = new PromptInfo($this->templateContent, $this->config);
+        return $this;
+    }
+
+    public function withTemplateContent(string $content) : self {
+        $this->templateContent = $content;
+        $this->promptInfo = new PromptInfo($this->templateContent, $this->config);
+        return $this;
+    }
+
+    public function withValues(array $values) : self {
+        $this->variableValues = $values;
+        return $this;
+    }
+
+    public function toText() : string {
+        return $this->rendered();
+    }
+
+    public function toMessages() : Messages {
+        return $this->makeMessages($this->rendered());
+    }
+
+    public function toArray() : array {
+        return $this->toMessages()->toArray();
+    }
+
+    public function config() : PromptEngineConfig {
+        return $this->config;
+    }
+
+    public function params() : array {
+        return $this->variableValues;
+    }
+
+    public function template() : string {
+        return $this->templateContent;
+    }
+
+    public function variables() : array {
+        return $this->driver->getVariableNames($this->templateContent);
+    }
+
+    public function info() : PromptInfo {
+        return $this->promptInfo;
+    }
+
+    public function validationErrors() : array {
+        $infoVars = $this->info()->variableNames();
+        $templateVars = $this->variables();
+        $valueKeys = array_keys($this->variableValues);
+
+        $messages = [];
+        foreach($infoVars as $var) {
+            if (!in_array($var, $valueKeys)) {
+                $messages[] = "$var: variable defined in template info, but value not provided";
+            }
+            if (!in_array($var, $templateVars)) {
+                $messages[] = "$var: variable defined in template info, but not used";
+            }
+        }
+        foreach($valueKeys as $var) {
+            if (!in_array($var, $infoVars)) {
+                $messages[] = "$var: value provided, but not defined in template info";
+            }
+            if (!in_array($var, $templateVars)) {
+                $messages[] = "$var: value provided, but not used in template content";
+            }
+        }
+        foreach($templateVars as $var) {
+            if (!in_array($var, $infoVars)) {
+                $messages[] = "$var: variable used in template, but not defined in template info";
+            }
+            if (!in_array($var, $valueKeys)) {
+                $messages[] = "$var: variable used in template, but value not provided";
+            }
+        }
+        return $messages;
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////
+
+    private function rendered() : string {
+        if (!isset($this->rendered)) {
+            $rendered = $this->render($this->templateContent, $this->variableValues);
+            $this->rendered = $rendered;
+        }
+        return $this->rendered;
+    }
+
+    private function makeMessages(string $text) : Messages {
+        return match(true) {
+            $this->containsXml($text) && $this->hasRoles() => $this->makeMessagesFromXml($text),
+            default => Messages::fromString($text),
+        };
+    }
+
+    private function hasRoles() : string {
+        $roleStrings = [
+            '<user>', '<assistant>', '<system>'
+        ];
+        if (Str::contains($this->rendered(), $roleStrings)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function containsXml(string $text) : bool {
+        return preg_match('/<[^>]+>/', $text) === 1;
+    }
+
+    private function makeMessagesFromXml(string $text) : Messages {
+        $messages = new Messages();
+        $xml = Xml::from($text)->wrapped('chat')->toArray();
+        // TODO: validate
+        foreach ($xml as $key => $message) {
+            $messages->appendMessage(Message::make($key, $message));
+        }
+        return $messages;
+    }
+
+    private function makeDriver(PromptEngineConfig $config) : CanHandleTemplate {
+        return match($config->templateType) {
+            TemplateType::Twig => new TwigDriver($config),
+            TemplateType::Blade => new BladeDriver($config),
+            default => throw new InvalidArgumentException("Unknown driver: $config->templateType"),
+        };
+    }
+
+    private function load(string $path) : string {
+        return $this->driver->getTemplateContent($path);
+    }
+
+    private function render(string $template, array $parameters = []) : string {
+        return $this->driver->renderString($template, $parameters);
+    }
+}
+```
+
+Project Path: prompts
+
+Source Tree:
+
+```
+prompts
+├── twig
+│   ├── summary_struct.twig
+│   ├── summary.twig
+│   ├── capital.twig
+│   └── hello.twig
+└── blade
+    ├── capital.blade.php
+    └── hello.blade.php
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/prompts/twig/summary_struct.twig`:
+
+```twig
+[Action: {{input}}] [Noun: Analyze] [Modifier: Thoroughly] [Noun: Input_Text] [Goal: Generate_Essential_Questions] [Parameter: Number=5]
+
+[Given: Essential_Questions]
+[Action: {{input}}] [Noun: Formulate_Questions] [Modifier: To Capture] [Parameter: Themes=Core Meaning, Argument, Supporting_Ideas, Author_Purpose, Implications]
+[Action: Address] [Noun: Central_Theme]
+[Action: Identify] [Noun: Key_Supporting_Ideas]
+[Action: Highlight] [Noun: Important_Facts or Evidence]
+[Action: Reveal] [Noun: Author_Purpose or Perspective]
+[Action: Explore] [Noun: Significant_Implications or Conclusions]
+
+[Action: {{input}}] [Noun: Answer_Generated_Questions] [Modifier: Thoroughly] [Parameter: Detail=High]
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/prompts/twig/summary.twig`:
+
+```twig
+{#
+---
+description: Summarize input
+params:
+    input:
+        description: Input text to summarize
+        type: string
+    depth:
+        description: Depth of summarization (number of essential questions)
+        type: int
+        default: 5
+---
+#}
+
+1) Analyze the input and generate {{ depth }} essential questions that, when answered, capture the main points and core meaning of the text.
+2) When formulating your questions:
+ - Address the central theme or argument
+ - Identify key supporting ideas
+ - Highlight important facts or evidence
+ - Reveal the author's purpose or perspective
+ - Explore any significant implications or conclusions.
+3) Answer all of your generated questions one-by-one in detail.
+
+# INPUT
+{{ input }}
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/prompts/twig/capital.twig`:
+
+```twig
+{#
+---
+description: Find country capital template for testing templates
+variables:
+    country:
+        description: country name
+        type: string
+        default: France
+schema:
+    name: capital
+    properties:
+        name:
+            description: Capital of the country
+            type: string
+    required: [name]
+---
+#}
+<chat>
+    <system>
+        You are a helpful assistant, respond to the user's questions in a concise manner.
+        Respond with JSON object, follow the format: {{ json_schema }}
+    </system>
+
+    {# examples #}
+
+    <user>
+        What is the capital of France?
+    </user>
+
+    <assistant>
+        {{ ['name': 'Paris'] | json_encode() }}
+    </assistant>
+
+    {# /examples #}
+
+    <user>
+        What is the capital of {{ country }}?
+    </user>
+</chat>
+```
+
+`/home/ddebowczyk/projects/instructor-php/prompts/twig/hello.twig`:
+
+```twig
+{#---
+description: Hello world template for testing templates
+variables:
+    name:
+        description: Name of the person to greet
+        type: string
+        default: World
+---#}
+
+Hello, {{ name }}!
+```
+
+`/home/ddebowczyk/projects/instructor-php/prompts/blade/capital.blade.php`:
+
+```php
+{{--
+description: Find country capital template for testing templates
+variables:
+    country:
+        description: country name
+        type: string
+        default: France
+schema:
+    name: capital
+    properties:
+        name:
+            description: Capital of the country
+            type: string
+    required: [name]
+--}}
+<chat>
+    <system>
+        You are a helpful assistant, respond to the user's questions in a concise manner.
+    </system>
+
+    {{-- examples --}}
+
+    <user>
+        What is the capital of France?
+    </user>
+
+    <assistant>
+        {{ json_encode(['name' => 'Paris']) }}
+    </assistant>
+
+    {{-- /examples --}}
+
+    <user>
+        What is the capital of {{ $country }}?
+    </user>
+</chat>
+
+```
+
+`/home/ddebowczyk/projects/instructor-php/prompts/blade/hello.blade.php`:
+
+```php
+{{--
+description: Hello world template for testing templates
+variables:
+    name:
+        description: Name of the person to greet
+        type: string
+        default: World
+--}}
+
+Hello, {{ $name }}!
+```

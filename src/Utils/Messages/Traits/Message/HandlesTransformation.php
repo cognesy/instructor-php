@@ -25,23 +25,27 @@ trait HandlesTransformation
         return $text;
     }
 
+    public function toRoleString() : string {
+        return $this->role . ': ' . $this->toString();
+    }
+
     public function toCompositeMessage() : Message {
         return Message::fromArray($this->toCompositeArray());
     }
 
     public function toCompositeArray() : array {
-        if ($this->isComposite()) {
-            return [
+        return match($this->isComposite()) {
+            true => [
                 'role' => $this->role,
                 'content' => $this->content,
-            ];
-        }
-        return [
-            'role' => $this->role,
-            'content' => [[
-                'type' => 'text',
-                'text' => $this->content,
-            ]]
-        ];
+            ],
+            default => [
+                'role' => $this->role,
+                'content' => [[
+                    'type' => 'text',
+                    'text' => $this->content,
+                ]]
+            ]
+        };
     }
 }

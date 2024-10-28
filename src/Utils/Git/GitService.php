@@ -8,13 +8,11 @@ class GitService
 {
     protected string $repoPath;
 
-    public function __construct(string $repoPath)
-    {
+    public function __construct(string $repoPath) {
         $this->repoPath = $repoPath;
     }
 
-    public function runCommand(string $command): string
-    {
+    public function runCommand(string $command): string {
         $fullCommand = sprintf('cd %s && git %s', escapeshellarg($this->repoPath), $command);
         $output = shell_exec($fullCommand);
         if ($output === null) {

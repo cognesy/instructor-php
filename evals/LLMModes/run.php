@@ -5,15 +5,13 @@ $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Evals\LLMModes\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Aggregators\AggregateExperimentObservation;
 use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
-use Cognesy\Instructor\Extras\Evals\Evaluators\ArrayMatchEval;
-use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
-use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Extras\Evals\Experiment;
+use Cognesy\Instructor\Extras\Evals\Observers\Aggregate\AggregateExperimentObserver;
 
 $data = new InferenceData(
     messages: [
@@ -61,7 +59,7 @@ $experiment = new Experiment(
             ]),
     ],
     postprocessors: [
-        new AggregateExperimentObservation(
+        new AggregateExperimentObserver(
             name: 'experiment.reliability',
             observationKey: 'execution.is_correct',
             params: ['unit' => 'fraction', 'format' => '%.2f'],
