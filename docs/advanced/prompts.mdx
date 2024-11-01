@@ -198,7 +198,7 @@ For more flexible template loading, you can load templates by name or use a 'DSN
 
 ```php
 <?php
-// Load a template by name using default library (set in /config/prompt.php)
+// Load a template by name using specified library 'demo-blade'
 $prompt = Prompt::using('demo-blade')->withTemplate('hello');
 echo $prompt->template();
 
