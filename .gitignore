@@ -1,14 +1,48 @@
-.cache/
-.idea/
+# Composer dependency and autoload files
+composer.lock
+
+# Dependencies
+/vendor/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# Logs and debug files
+*.log
+*.cache
+
+# PHP server and error logs
+error_log
+.php_error.log
+php_errors.log
+
+# Node modules and build artifacts (if using Node or frontend tooling)
+node_modules/
+dist/
+build/
+
+# Python venvs
 .venv/
-.vscode/
-_docs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+/.idea/
+/.vscode/
+.cursorignore
+
+# PHPUnit, Pest, and other test result files
+.phpunit.result.cache
+/.phpunit.result.cache
+/tests/_output/
+/tests/_support/_generated/
+/coverage/
+
+# User-specific files (temporary, experimental, to be archived / removed)
 archived/
 experimental/*
-vendor/
-.cursorignore
-.env
-composer.lock
-php_errors.log
-phpstan.neon
-xdebug.log
+tmp/

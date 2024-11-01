@@ -1,0 +1,12 @@
+#!/bin/bash
+DIR="$(dirname "$0")"
+SCRIPT="$1"
+
+# Sanity check
+if [[ "$SCRIPT" =~ \.\. ]] || [[ ! "$SCRIPT" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "Invalid script name."
+    exit 1
+fi
+
+shift
+php "$DIR/../scripts/$SCRIPT.php" "$@"

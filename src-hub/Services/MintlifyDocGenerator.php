@@ -2,7 +2,7 @@
 
 namespace Cognesy\InstructorHub\Services;
 
-use Cognesy\InstructorHub\Utils\Mintlify\Index;
+use Cognesy\InstructorHub\Utils\Mintlify\MintlifyIndex;
 use Cognesy\InstructorHub\Views\DocGenView;
 
 class MintlifyDocGenerator
@@ -79,7 +79,7 @@ class MintlifyDocGenerator
 
     private function updateHubIndex(array $exampleGroups) : bool {
         // get the content of the hub index
-        $index = Index::fromFile($this->mintlifyIndexFile);
+        $index = MintlifyIndex::fromFile($this->mintlifyIndexFile);
         if ($index === false) {
             throw new \Exception("Failed to read hub index file");
         }

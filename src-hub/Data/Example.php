@@ -1,9 +1,7 @@
 <?php
 namespace Cognesy\InstructorHub\Data;
 
-use Cognesy\Instructor\Utils\Str;
 use Cognesy\InstructorHub\Utils\Mintlify\NavigationItem;
-use Spatie\YamlFrontMatter\YamlFrontMatter;
 
 class Example
 {
@@ -23,7 +21,7 @@ class Example
     ) {}
 
     public static function fromFile(string $baseDir, string $path, int $index = 0) : static {
-        return (new static)->loadExample($baseDir, $path, $index);
+        return static::loadExample($baseDir, $path, $index);
     }
 
     public function toNavigationItem() : NavigationItem {
@@ -36,14 +34,11 @@ class Example
 
     // INTERNAL ////////////////////////////////////////////////////////////////////
 
-    private function loadExample(string $baseDir, string $path, int $index = 0) : static {
+    private static function loadExample(string $baseDir, string $path, int $index = 0) : static {
         [$group, $name] = explode('/', $path, 2);
 
-        $document = YamlFrontMatter::parseFile($baseDir . $path . '/run.php');
-        $content = $document->body();
-        $title = $document->matter('title') ?: $this->getTitle($content);
-        $docName = $document->matter('docname') ?: Str::snake($name);
-        $hasTitle = !empty($title);
+        $info = ExampleInfo::fromFile($baseDir . $path . '/run.php', $name);
+
         $mapping = [
             'A01_Basics' => ['tab' => 'examples', 'name' => 'basics', 'title' => 'Basics'],
             'A02_Advanced' => ['tab' => 'examples', 'name' => 'advanced', 'title' => 'Advanced'],
@@ -66,40 +61,13 @@ class Example
             group: $mapping[$group]['name'],
             groupTitle: $mapping[$group]['title'],
             name: $name,
-            hasTitle: $hasTitle,
-            title: $title,
-            docName: $docName,
-            content: $content,
+            hasTitle: $info->hasTitle(),
+            title: $info->title,
+            docName: $info->docName,
+            content: $info->content,
             directory: $baseDir . $path,
             relativePath: './' . $tab . '/' . $path . '/run.php',
             runPath: $baseDir . $path . '/run.php',
         );
-    }
-
-    private function getTitle(string $content) : string {
-        $header = $this->findMdH1Line($content);
-        return $this->cleanStr($header, 60);
-    }
-
-    private function cleanStr(string $input, int $limit) : string {
-        // remove any \n, \r, PHP tags, md hashes
-        $output = str_replace(array("\n", "\r", '<?php', '?>', '#'), array(' ', '', '', '', ''), $input);
-        // remove leading and trailing spaces
-        $output = trim($output);
-        // remove double spaces
-        $output = preg_replace('/\s+/', ' ', $output);
-        // remove any ANSI codes
-        $output = preg_replace('/\e\[[\d;]*m/', '', $output);
-        return substr(trim($output), 0, $limit);
-    }
-
-    private function findMdH1Line(string $input) : string {
-        $lines = explode("\n", $input);
-        foreach ($lines as $line) {
-            if (substr($line, 0, 2) === '# ') {
-                return $line;
-            }
-        }
-        return '';
     }
 }

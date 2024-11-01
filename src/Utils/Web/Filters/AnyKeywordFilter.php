@@ -13,6 +13,6 @@ class AnyKeywordFilter implements CanFilterContent
     ) {}
 
     public function filter(string $content): bool {
-        return Str::contains($content, $this->keywords, $this->isCaseSensitive);
+        return Str::containsAll($content, $this->keywords, $this->isCaseSensitive);
     }
 }

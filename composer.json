@@ -4,6 +4,9 @@
     "keywords": ["llm", "language models", "inference", "ai", "genai", "openai", "anthropic", "cohere", "ollama", "structured output", "semantic processing", "automation", "data processing", "data extraction"],
     "type": "library",
     "license": "MIT",
+    "bin": [
+        "bin/instructor"
+    ],
     "autoload": {
         "psr-4": {
             "Cognesy\\Instructor\\": "src/"
@@ -15,9 +18,11 @@
         "psr-4": {
             "Tests\\": "tests/",
             "Examples\\": "examples/",
-            "Cognesy\\InstructorHub\\": "src-hub/",
             "Cognesy\\Evals\\": "evals/",
-            "Cognesy\\Experimental\\": "experimental/"
+            "Cognesy\\Experimental\\": "experimental/",
+            "Cognesy\\InstructorHub\\": "src-hub/",
+            "Cognesy\\Setup\\": "src-setup/",
+            "Cognesy\\Tell\\": "src-tell/"
         },
         "files": [
             "tests/Examples/Call/test_functions.php"
@@ -38,7 +43,6 @@
         "gioni06/gpt3-tokenizer": "^1.2",
         "guzzlehttp/psr7": "^2.7",
         "illuminate/database": "^11.10",
-        "illuminate/events": "^11.10",
         "league/html-to-markdown": "^5.1",
         "mockery/mockery": "^1.6",
         "nyholm/psr7": "^1.8",
@@ -47,10 +51,9 @@
         "phpstan/phpstan": "^1.11",
         "psr/http-factory-implementation": "*",
         "psy/psysh": "@stable",
-        "spatie/array-to-xml": "^3.3",
         "spatie/browsershot": "^4.1",
-        "spatie/php-structure-discoverer": "^2.1",
         "symfony/browser-kit": "^7.1",
+        "symfony/console": "^7.1",
         "symfony/css-selector": "^7.1",
         "symfony/dom-crawler": "^7.1",
         "symfony/http-client": "^7.1",
@@ -79,7 +82,6 @@
         "phpstan/phpdoc-parser": "^1.29",
         "psr/event-dispatcher": "^1.0",
         "psr/log": "^3.0",
-        "spatie/yaml-front-matter": "^2.0",
         "symfony/intl": "^7.1",
         "symfony/property-access": "^6.4 || ^7.0",
         "symfony/property-info": "^6.4 || ^7.0",
@@ -92,6 +94,6 @@
         "tests": "@php vendor/bin/pest",
         "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
         "psalm": "@php vendor/bin/psalm",
-        "hub": "@php ./hub.php"
+        "instructor": "bash ./bin/instructor"
     }
 }

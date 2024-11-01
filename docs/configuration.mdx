@@ -1,0 +1,72 @@
+---
+title: Configuration Path
+description: 'How to set up location of Instructor configuration directory for your project'
+---
+
+> To check how to publish configuration files to your project see [Setup](/setup) section.
+
+
+### Setting Configuration Path via `Settings` Class
+
+You can set Instructor configuration path using the `Settings::setPath()` method:
+
+```php
+<?php
+use Cognesy\Instructor\Utils\Settings;
+
+Settings::setPath('/path/to/config');
+?>
+```
+
+### Setting Configuration Path via Environment Variable
+
+You can set the path to Instructor's configuration directory in your `.env` file:
+
+```ini
+INSTRUCTOR_CONFIG_PATH='/path/to/config/'
+```
+
+
+
+## Configuration Location Resolution
+
+Instructor uses a configuration directory with a set of `.php` files to store its settings, e.g. LLM provider configurations.
+
+Instructor will look for its configuration location in the following order:
+- If static variable value `$path` in `Settings` class is set, it will use it,
+- If `INSTRUCTOR_CONFIG_PATH` environment variable is set, it will use its value,
+- Finally, it will default to the directory, which is bundled with Instructor package (under `/config`) and contains default set of configuration files.
+
+
+
+
+## Configuration Groups
+
+Instructor's configuration is organized into groups. Each group contains a set of settings that are related to a specific aspect of Instructor's functionality.
+
+> NOTE: Individual configuration files are documented in their related sections.
+
+Instructor comes with the following default settings groups:
+- `debug`: Debugging settings
+- `embed`: Embedding provider connections
+- `http`: HTTP client configurations
+- `llm`: LLM provider connections
+- `prompt`: Prompt libraries and their settings
+- `web`: Web service providers (e.g. scraper API configurations)
+
+Each group is stored in a separate file in the configuration directory. The file name corresponds to the group name.
+
+
+
+## `Settings` Class
+
+`Settings` class is the main entry point for telling Instructor where to look for its configuration. It allows you to set up path of Instructor's configuration directory and access Instructor settings.
+
+`Settings` class provides the following methods:
+- `setPath(string $path)`: Set the path to Instructor's configuration directory
+- `getPath(): string`: Get current path to Instructor's configuration directory
+- `has($group, $key): bool`: Check if a specific setting exists in Instructor's configuration
+- `get($group, $key, $default): mixed`: Get a specific setting from Instructor's configuration
+- `set($group, $key, $value)`: Set a specific setting in Instructor's configuration
+
+You won't usually need to use these methods directly, but they are used internally by Instructor to access configuration settings.

@@ -4,72 +4,90 @@ description: 'Start processing your data with LLMs in under 5 minutes'
 ---
 
 
-## Setup Your Development Environment
-
-Set up LLM provider API keys - create `.env` file in the root of your project and add the following:
-
-```env
-OPENAI_API_KEY=your-openai-api-key
-```
-
-> NOTE: You can get your LLM provider API key from the provider's dashboard, e.g.:
-> [OpenAI](https://platform.openai.com/)
-
-You can also use API key directly in your code - see [example](cookbook/examples/advanced/custom_client).
-
-
-
 ## Install Instructor with Composer
 
 Installing Instructor is simple. Run following command in your terminal, and you're on your way to a smoother data handling experience!
 
 ```bash
-composer install cognesy/instructor-php
+composer require cognesy/instructor-php
 ```
 
 
-## Basic example
+## Publish Instructor Files to Your Project
 
-This is a simple example demonstrating how Instructor retrieves structured information from provided text (or chat message sequence).
+Instructor comes with a set of configuration files and prompt templates that you can publish to your project directory. This will allow you to customize the library's behavior and use different prompt templates.
 
-Response model class is a plain PHP class with typehints specifying the types of fields of the object.
+```bash
+./vendor/bin/instructor publish
+```
 
-Create file `instructor-test.php` with the following content:
+This will publish following files to your chosen locations:
+- `.env`: Template for environment variables that contain API keys for external services, e.g. LLM providers
+- `config/`: Directory with Instructor configuration files
+- `prompts/`: Directory containing prompt templates
 
-```php
+
+
+## Set Up LLM Provider API Key(s)
+
+Open the `.env` file in your project directory and set up API keys for the LLM providers you plan to use. You can find the keys in the respective provider's dashboard.
+
+```ini
+# OpenAI (default provider)
+OPENAI_API_KEY='your-openai-api-key'
+```
+
+
+## Set Configuration Location
+
+Instructor uses a configuration directory to store its settings, e.g. LLM provider configurations. You can set the path to this directory in your `.env` file:
+
+```ini
+INSTRUCTOR_CONFIG_PATH='/path/to/your/config/dir/'
+```
+
+
+## Create a New PHP File
+
+In your project directory, create a new PHP file and require Composer's autoloader:
+
+```php instructor-test.php
 <?php
+// get the Composer autoloader
 $loader = require 'vendor/autoload.php';
+// add the Instructor namespace
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
 
 // Step 1: Define target data structure(s)
-class Person {
+class City {
     public string $name;
-    public int $age;
+    public string $country;
+    public int $population;
 }
 
-// Step 2: Provide content to process
-$text = "His name is Jason and he is 28 years old.";
-
-// Step 3: Use Instructor to run LLM inference
-$person = (new Instructor)->respond(
-    messages: $text,
-    responseModel: Person::class,
+// Step 2: Use Instructor to run LLM inference
+$city = (new Instructor)->withConnection('openai')->respond(
+    messages: 'What is the capital of France?',
+    responseModel: City::class,
 );
 
-// Step 4: Work with structured response data
-assert($person instanceof Person); // true
-assert($person->name === 'Jason'); // true
-assert($person->age === 28); // true
+// Step 3: Work with structured response data
+assert($city instanceof City); // true
+assert($city->name === 'Paris'); // true
+assert($city->country === 'France'); // true
+assert(is_int($city->population)); // true
 
-echo $person->name; // Jason
-echo $person->age; // 28
+echo $city->name; // Paris
+echo $city->country; // France
+echo $city->population; // 2140526
 
-var_dump($person);
-// Person {
-//     name: "Jason",
-//     age: 28
+var_dump($city);
+// City {
+//     name: "Paris"
+//     country: "France"
+//     population: 2140526
 // }
 ```
 
@@ -79,7 +97,12 @@ Now, you can run you example:
 php instructor-test.php
 ```
 
-> **NOTE:** Instructor supports classes / objects as response models. In case you want to extract
-> simple types like strings, integers, float, booleans or enums, you need to wrap them in Scalar adapter.
-> See section: Extracting Scalar Values.
 
+## Read More
+
+In most cases you will want to modify default configuration files distributed with Instructor.
+
+See following sections for more details:
+ - [Setup Instructions](setup) for more details on how to publish configuration files and additional Instructor resources
+ - [Environment Configuration](environment) for more details on setting up environment variables
+ - [Configuration Files](configuration) for detailed information on configuration options

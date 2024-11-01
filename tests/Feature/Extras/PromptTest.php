@@ -1,8 +1,35 @@
 <?php
 
+use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
 use Cognesy\Instructor\Extras\Prompt\Prompt;
 use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
 use Cognesy\Instructor\Utils\Messages\Messages;
+
+// RECOMMENDED, READING FRIENDLY SYNTAX
+
+it('can use "using->get->with" syntax', function () {
+    $prompt = Prompt::using('demo-twig')->get('hello')->with(['name' => 'World']);
+    expect($prompt->toText())->toBe('Hello, World!');
+    expect($prompt->toMessages()->toArray())->toBe([['role' => 'user', 'content' => 'Hello, World!']]);
+});
+
+it('can use short "make->with" syntax', function () {
+    $prompt = Prompt::make('demo-twig:hello')->with(['name' => 'World']);
+    expect($prompt->toText())->toBe('Hello, World!');
+    expect($prompt->toMessages()->toArray())->toBe([['role' => 'user', 'content' => 'Hello, World!']]);
+});
+
+it('can render the template using short syntax', function () {
+    $prompt = Prompt::text('demo-twig:hello', ['name' => 'World']);
+    expect($prompt)->toBe('Hello, World!');
+});
+
+it('can render the template to messages using short syntax', function () {
+    $messages = Prompt::messages('demo-twig:hello', ['name' => 'World']);
+    expect($messages->toArray())->toBe([['role' => 'user', 'content' => 'Hello, World!']]);
+});
+
+// OTHER METHOD CHECKS
 
 it('can be instantiated with default settings', function () {
     $prompt = new Prompt();
@@ -31,54 +58,71 @@ it('can set parameters for rendering', function () {
 });
 
 it('can load a template by name - Blade', function () {
-    $prompt = Prompt::using('blade')->withTemplate('hello');
+    $prompt = Prompt::using('demo-blade')->withTemplate('hello');
     expect($prompt->template())->toContain('Hello');
 });
 
-it('can render the template - Blade', function () {
-    $prompt = Prompt::using('blade')
+it('can render string template - Blade', function () {
+    $prompt = Prompt::using('demo-blade')
         ->withTemplateContent('Hello, {{ $name }}!')
         ->withValues(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
 });
 
 it('can find template variables - Blade', function () {
-    $prompt = Prompt::using('blade')
+    $prompt = Prompt::using('demo-blade')
         ->withTemplateContent('Hello, {{ $name }}!')
         ->withValues(['name' => 'World']);
     $variables = $prompt->variables();
     expect($variables)->toContain('name');
 });
 
-it('can convert rendered text to messages', function () {
-    $prompt = Prompt::using('blade')
-        ->withTemplateContent('Hello, {{ $name }}!')
-        ->withValues(['name' => 'World']);
+it('can convert template with chat markup to messages', function () {
+    $prompt = Prompt::using('demo-blade')
+        ->withTemplateContent('<system>You are helpful assistant.</system><user>Hello, {{ $name }}</user>')
+        ->withValues(['name' => 'assistant']);
     $messages = $prompt->toMessages();
     expect($messages)->toBeInstanceOf(Messages::class);
+    expect($messages->toString())->toContain('Hello, assistant');
+    expect($messages->toArray())->toHaveCount(2);
 });
 
 it('can load a template by name - Twig', function () {
-    $prompt = Prompt::using('twig')->withTemplate('hello');
+    $prompt = Prompt::using('demo-twig')->withTemplate('hello');
     expect($prompt->template())->toContain('Hello');
 });
 
-it('can render the template - Twig', function () {
-    $prompt = Prompt::using('twig')
+it('can render string template - Twig', function () {
+    $prompt = (new Prompt(library: 'demo-twig'))
         ->withTemplateContent('Hello, {{ name }}!')
         ->withValues(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');
 });
 
 it('can find template variables - Twig', function () {
-    $prompt = Prompt::using('twig')
+    $prompt = Prompt::using('demo-twig')
         ->withTemplateContent('Hello, {{ name }}!')
         ->withValues(['name' => 'World']);
     $variables = $prompt->variables();
     expect($variables)->toContain('name');
 });
 
-it('can render the template using short syntax', function () {
-    $prompt = Prompt::text(name: 'hello', variables: ['name' => 'World']);
-    expect($prompt)->toBe('Hello, World!');
+it('can create prompt from "in memory" config', function () {
+    $prompt = (new Prompt)
+        ->withConfig(new PromptEngineConfig(
+            templateEngine: TemplateEngine::Blade,
+            resourcePath: '',
+            cachePath: '/tmp/any',
+            extension: 'blade.php',
+            metadata: [],
+        ))
+        ->withTemplateContent('Hello, {{ $name }}!')
+        ->withValues(['name' => 'World']);
+    $messages = $prompt->toMessages();
+    expect($messages)->toBeInstanceOf(Messages::class);
+});
+
+it('can use DSN to load a template', function () {
+    $prompt = Prompt::fromDsn('demo-blade:hello')->with(['name' => 'World']);
+    expect($prompt->toText())->toBe('Hello, World!');
 });

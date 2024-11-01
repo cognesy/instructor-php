@@ -77,12 +77,12 @@ class TwigDriver implements CanHandleTemplate
     /**
      * Renders a template file with the given parameters.
      *
-     * @param string $name The name of the template file
+     * @param string $path The name of the template file
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
-    public function renderFile(string $name, array $parameters = []): string {
-        return $this->twig->render($name, $parameters);
+    public function renderFile(string $path, array $parameters = []): string {
+        return $this->twig->render($path, $parameters);
     }
 
     /**
@@ -99,11 +99,11 @@ class TwigDriver implements CanHandleTemplate
     /**
      * Gets the content of a template file.
      *
-     * @param string $name
+     * @param string $path
      * @return string
      */
-    public function getTemplateContent(string $name): string {
-        return $this->twig->getLoader()->getSourceContext($name)->getCode();
+    public function getTemplateContent(string $path): string {
+        return $this->twig->getLoader()->getSourceContext($path)->getCode();
     }
 
     /**

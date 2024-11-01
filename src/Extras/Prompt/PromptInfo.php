@@ -17,7 +17,7 @@ class PromptInfo
     private string $templateContent;
 
     public function __construct(
-        string $content,
+        string                      $content,
         private ?PromptEngineConfig $config = null,
     ) {
         $startTag = $this->config->frontMatterTags[0] ?? '---';

@@ -3,7 +3,9 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Utils\Env;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 trait HandlesEnv
 {
     /**

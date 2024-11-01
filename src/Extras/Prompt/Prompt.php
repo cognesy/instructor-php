@@ -4,20 +4,17 @@ namespace Cognesy\Instructor\Extras\Prompt;
 
 use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
 use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
-use Cognesy\Instructor\Extras\Prompt\Drivers\BladeDriver;
-use Cognesy\Instructor\Extras\Prompt\Drivers\TwigDriver;
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateType;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
-use Cognesy\Instructor\Utils\Settings;
 use Cognesy\Instructor\Utils\Str;
 use Cognesy\Instructor\Utils\Xml;
 use InvalidArgumentException;
 
 class Prompt
 {
-    private CanHandleTemplate $driver;
-    private PromptEngineConfig $config;
+    const DSN_SEPARATOR = ':';
+
+    private PromptLibrary $library;
     private PromptInfo $promptInfo;
 
     private string $templateContent;
@@ -25,61 +22,78 @@ class Prompt
     private string $rendered;
 
     public function __construct(
-        string              $name = '',
-        string              $setting = '',
-        PromptEngineConfig  $config = null,
-        CanHandleTemplate   $driver = null,
+        string             $path = '',
+        string             $library = '',
+        PromptEngineConfig $config = null,
+        CanHandleTemplate  $driver = null,
     ) {
-        $this->config = $config ?? PromptEngineConfig::load(
-            setting: $setting ?: Settings::get('prompt', "defaultSetting")
-        );
-        $this->driver = $driver ?? $this->makeDriver($this->config);
-        $this->templateContent = $name ? $this->load($name) : '';
+        $this->library = new PromptLibrary($library, $config, $driver);
+        $this->templateContent = $path ? $this->library->loadTemplate($path) : '';
     }
 
-    public static function using(string $setting) : Prompt {
-        return new self(setting: $setting);
+    public static function make(string $pathOrDsn) : Prompt {
+        return match(true) {
+            Str::contains($pathOrDsn, self::DSN_SEPARATOR) => self::fromDsn($pathOrDsn),
+            default => new self(path: $pathOrDsn),
+        };
     }
 
-    public static function get(string $name, string $setting = '') : Prompt {
-        return new self(name: $name, setting: $setting);
+    public static function using(string $library) : Prompt {
+        return new self(library: $library);
     }
 
-    public static function text(string $name, array $variables, string $setting = '') : string {
-        return (new self(name: $name, setting: $setting))->withValues($variables)->toText();
+    public static function text(string $pathOrDsn, array $variables) : string {
+        return self::make($pathOrDsn)->withValues($variables)->toText();
     }
 
-    public static function messages(string $name, array $variables, string $setting = '') : Messages {
-        return (new self(name: $name, setting: $setting))->withValues($variables)->toMessages();
+    public static function messages(string $pathOrDsn, array $variables) : Messages {
+        return self::make($pathOrDsn)->withValues($variables)->toMessages();
     }
 
-    public function withSetting(string $setting) : self {
-        $this->config = PromptEngineConfig::load($setting);
-        $this->driver = $this->makeDriver($this->config);
+    public static function fromDsn(string $dsn) : Prompt {
+        if (!Str::contains($dsn, self::DSN_SEPARATOR)) {
+            throw new InvalidArgumentException("Invalid DSN: $dsn - missing separator");
+        }
+        $parts = explode(self::DSN_SEPARATOR, $dsn, 2);
+        if (count($parts) !== 2) {
+            throw new InvalidArgumentException("Invalid DSN: `$dsn` - failed to parse");
+        }
+        return new self(path: $parts[1], library: $parts[0]);
+    }
+
+    public function withLibrary(string $library) : self {
+        $this->library->get($library);
         return $this;
     }
 
     public function withConfig(PromptEngineConfig $config) : self {
-        $this->config = $config;
-        $this->driver = $this->makeDriver($config);
+        $this->library->withConfig($config);
         return $this;
     }
 
     public function withDriver(CanHandleTemplate $driver) : self {
-        $this->driver = $driver;
+        $this->library->withDriver($driver);
         return $this;
     }
 
-    public function withTemplate(string $name) : self {
-        $this->templateContent = $this->load($name);
-        $this->promptInfo = new PromptInfo($this->templateContent, $this->config);
+    public function get(string $path) : self {
+        return $this->withTemplate($path);
+    }
+
+    public function withTemplate(string $path) : self {
+        $this->templateContent = $this->library->loadTemplate($path);
+        $this->promptInfo = new PromptInfo($this->templateContent, $this->library->config());
         return $this;
     }
 
     public function withTemplateContent(string $content) : self {
         $this->templateContent = $content;
-        $this->promptInfo = new PromptInfo($this->templateContent, $this->config);
+        $this->promptInfo = new PromptInfo($this->templateContent, $this->library->config());
         return $this;
+    }
+
+    public function with(array $values) : self {
+        return $this->withValues($values);
     }
 
     public function withValues(array $values) : self {
@@ -100,7 +114,7 @@ class Prompt
     }
 
     public function config() : PromptEngineConfig {
-        return $this->config;
+        return $this->library->config();
     }
 
     public function params() : array {
@@ -112,7 +126,7 @@ class Prompt
     }
 
     public function variables() : array {
-        return $this->driver->getVariableNames($this->templateContent);
+        return $this->library->getVariableNames($this->templateContent);
     }
 
     public function info() : PromptInfo {
@@ -156,7 +170,7 @@ class Prompt
 
     private function rendered() : string {
         if (!isset($this->rendered)) {
-            $rendered = $this->render($this->templateContent, $this->variableValues);
+            $rendered = $this->library->renderString($this->templateContent, $this->variableValues);
             $this->rendered = $rendered;
         }
         return $this->rendered;
@@ -164,16 +178,16 @@ class Prompt
 
     private function makeMessages(string $text) : Messages {
         return match(true) {
-            $this->containsXml($text) && $this->hasRoles() => $this->makeMessagesFromXml($text),
+            $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeMessagesFromXml($text),
             default => Messages::fromString($text),
         };
     }
 
-    private function hasRoles() : string {
+    private function hasChatRoles(string $text) : bool {
         $roleStrings = [
-            '<user>', '<assistant>', '<system>'
+            '<chat>', '<user>', '<assistant>', '<system>'
         ];
-        if (Str::contains($this->rendered(), $roleStrings)) {
+        if (Str::containsAny($text, $roleStrings)) {
             return true;
         }
         return false;
@@ -185,27 +199,14 @@ class Prompt
 
     private function makeMessagesFromXml(string $text) : Messages {
         $messages = new Messages();
-        $xml = Xml::from($text)->wrapped('chat')->toArray();
+        $xml = match(Str::contains($text, '<chat>')) {
+            true => Xml::from($text)->toArray(),
+            default => Xml::from($text)->wrapped('chat')->toArray(),
+        };
         // TODO: validate
         foreach ($xml as $key => $message) {
             $messages->appendMessage(Message::make($key, $message));
         }
         return $messages;
-    }
-
-    private function makeDriver(PromptEngineConfig $config) : CanHandleTemplate {
-        return match($config->templateType) {
-            TemplateType::Twig => new TwigDriver($config),
-            TemplateType::Blade => new BladeDriver($config),
-            default => throw new InvalidArgumentException("Unknown driver: $config->templateType"),
-        };
-    }
-
-    private function load(string $path) : string {
-        return $this->driver->getTemplateContent($path);
-    }
-
-    private function render(string $template, array $parameters = []) : string {
-        return $this->driver->renderString($template, $parameters);
     }
 }

@@ -2,19 +2,20 @@
 
 namespace Cognesy\InstructorHub\Utils\Mintlify;
 
-use Spatie\YamlFrontMatter\Document;
-use Spatie\YamlFrontMatter\YamlFrontMatter;
+use JetBrains\PhpStorm\Deprecated;
+use Webuni\FrontMatter\FrontMatter;
 
+#[Deprecated]
 class MdxFile
 {
-    private string $fullPath = '';
-    private string $basePath = '';
-    private string $fileName = '';
-    private string $extension = '';
-    private string $title = '';
-    private Document $document;
-
-    public function __construct() {}
+    public function __construct(
+        private string $title = '',
+        private string $content = '',
+        private string $fullPath = '',
+        private string $basePath = '',
+        private string $fileName = '',
+        private string $extension = '',
+    ) {}
 
     public function hasTitle() : bool {
         return $this->title !== '';
@@ -24,8 +25,8 @@ class MdxFile
         return $this->title;
     }
 
-    public function body() : string {
-        return $this->document->body();
+    public function content() : string {
+        return $this->content;
     }
 
     public function path() : string {
@@ -45,20 +46,41 @@ class MdxFile
     }
 
     public static function fromFile(string $path) : MdxFile {
-        $mdxFile = new MdxFile();
-        $mdxFile->fullPath = $path;
-        $mdxFile->basePath = dirname($path);
-        $mdxFile->fileName = basename($path);
-        $mdxFile->extension = pathinfo($path, PATHINFO_EXTENSION);
-        $mdxFile->document = YamlFrontMatter::parseFile($path);
-        $mdxFile->title = $mdxFile->document->matter('title');
-        return $mdxFile;
+        if (!file_exists($path)) {
+            throw new \Exception("Failed to Mintlify index file");
+        }
+        [$content, $data] = self::yamlFrontMatterFromFile($path);
+        return new MdxFile(
+            title: $data['title'] ?? '',
+            content: $content,
+            fullPath: $path,
+            basePath: dirname($path),
+            fileName: basename($path),
+            extension: pathinfo($path, PATHINFO_EXTENSION),
+        );
     }
 
     public static function fromString(string $content) : MdxFile {
-        $mdxFile = new MdxFile();
-        $mdxFile->document = YamlFrontMatter::parse($content);
-        $mdxFile->title = $mdxFile->document->matter('title');
-        return $mdxFile;
+        [$content, $data] = self::yamlFrontMatterFromString($content);
+        return new MdxFile(
+            title: $data['title'] ?? '',
+            content: $content,
+            fullPath: '',
+            basePath: '',
+            fileName: '',
+            extension: '',
+        );
+    }
+
+    private static function yamlFrontMatterFromFile(string $path) : array {
+        $content = file_get_contents($path);
+        return self::yamlFrontMatterFromString($content);
+    }
+
+    private static function yamlFrontMatterFromString(string $fileContent) : array {
+        $document = FrontMatter::createYaml()->parse($fileContent);
+        $content = $document->getContent();
+        $data = $document->getData();
+        return [$content, $data];
     }
 }

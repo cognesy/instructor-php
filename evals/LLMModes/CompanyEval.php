@@ -64,7 +64,7 @@ class CompanyEval implements CanGenerateObservations
 
     private function validateText(Execution $execution) : bool {
         $content = $execution->get('response')?->content();
-        return Str::contains(
+        return Str::containsAll(
             $content,
             [
                 $this->expectations['name'],

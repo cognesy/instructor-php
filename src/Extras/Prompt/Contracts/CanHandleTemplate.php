@@ -12,11 +12,11 @@ interface CanHandleTemplate
     /**
      * Renders a template file with the given parameters.
      *
-     * @param string $name The name of the template file
+     * @param string $path Library path of the template file
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
-    public function renderFile(string $name, array $parameters = []) : string;
+    public function renderFile(string $path, array $parameters = []) : string;
 
     /**
      * Renders a template from a string with the given parameters.
@@ -30,10 +30,10 @@ interface CanHandleTemplate
     /**
      * Gets the content of a template file.
      *
-     * @param string $name The name of the template file
+     * @param string $path Library path of the template file
      * @return string The content of the template file
      */
-    public function getTemplateContent(string $name): string;
+    public function getTemplateContent(string $path): string;
 
     /**
      * Gets names of variables used in template content.

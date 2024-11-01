@@ -35,12 +35,12 @@ class BladeDriver implements CanHandleTemplate
     /**
      * Renders a template file with the given parameters.
      *
-     * @param string $name The name of the template file
+     * @param string $path Library path of the template file
      * @param array $parameters The parameters to pass to the template
      * @return string The rendered template
      */
-    public function renderFile(string $name, array $parameters = []): string {
-        return $this->blade->run($name, $parameters);
+    public function renderFile(string $path, array $parameters = []): string {
+        return $this->blade->run($path, $parameters);
     }
 
     /**
@@ -57,13 +57,13 @@ class BladeDriver implements CanHandleTemplate
     /**
      * Gets the content of a template file.
      *
-     * @param string $name
-     * @return string
+     * @param string $path Library path of the template file
+     * @return string Raw content of the template file
      */
-    public function getTemplateContent(string $name): string {
-        $templatePath = $this->blade->getTemplateFile($name);
+    public function getTemplateContent(string $path): string {
+        $templatePath = $this->blade->getTemplateFile($path);
         if (!file_exists($templatePath)) {
-            throw new Exception("Template '$name' file does not exist: $templatePath");
+            throw new Exception("Template '$path' file does not exist: $templatePath");
         }
         return file_get_contents($templatePath);
     }

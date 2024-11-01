@@ -61,18 +61,33 @@ class Str
         ])->process($input);
     }
 
-    static public function contains(string $haystack, string|array $needle, bool $caseSensitive = true) : bool {
-        $needle = is_string($needle) ? [$needle] : $needle;
-        foreach($needle as $item) {
-            $result = match($caseSensitive) {
-                true => strpos($haystack, $item) !== false,
-                false => stripos($haystack, $item) !== false,
-            };
+    static public function contains(string $haystack, string $needle, bool $caseSensitive = true) : bool {
+        return match($caseSensitive) {
+            true => strpos($haystack, $needle) !== false,
+            false => stripos($haystack, $needle) !== false,
+        };
+    }
+
+    static public function containsAll(string $haystack, string|array $needles, bool $caseSensitive = true) : bool {
+        $needles = is_string($needles) ? [$needles] : $needles;
+        foreach($needles as $item) {
+            $result = Str::contains($haystack, $item, $caseSensitive);
             if (!$result) {
                 return false;
             }
         }
         return true;
+    }
+
+    static public function containsAny(string $haystack, string|array $needles, bool $caseSensitive = true) : bool {
+        $needles = is_string($needles) ? [$needles] : $needles;
+        foreach($needles as $item) {
+            $result = Str::contains($haystack, $item, $caseSensitive);
+            if ($result) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static function startsWith(string $url, string $string) : bool {
