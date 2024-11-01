@@ -43,21 +43,6 @@ class PublishCommand extends Command
         $this->filesystem = new Filesystem($this->noOp, $this->output);
         $this->envFile = new EnvFile($this->noOp, $this->output, $this->filesystem);
 
-        $missingOptions = [];
-        if (!$input->getOption('target-config-dir')) {
-            $missingOptions[] = '--target-config-dir';
-        }
-        if (!$input->getOption('target-prompts-dir')) {
-            $missingOptions[] = '--target-prompts-dir';
-        }
-        if (!$input->getOption('target-env-file')) {
-            $missingOptions[] = '--target-env-file';
-        }
-
-        if (!empty($missingOptions)) {
-            throw new InvalidArgumentException('Missing required options: ' . implode(', ', $missingOptions));
-        }
-
         // Ensure the command is run from the project root
         $projectRoot = getcwd();
         if (!file_exists($projectRoot . '/composer.json')) {
@@ -73,7 +58,11 @@ class PublishCommand extends Command
         $this->targetPromptsDir = $input->getOption('target-prompts-dir') ?? throw new InvalidArgumentException('Missing target-prompts-dir option');
         $this->targetEnvFile = $input->getOption('target-env-file') ?? throw new InvalidArgumentException('Missing target-env-file option');
 
-        $assets = $this->getAssets();
+        $assets = $this->getAssets($input);
+        if (empty($assets)) {
+            $this->output->out(" <gray>...</gray> <yellow>(!)</yellow> <red>No assets to publish</red>", 'error');
+            return Command::FAILURE;
+        }
 
         $this->output->out("");
         $this->output->out("Publishing Instructor assets...");
@@ -101,30 +90,6 @@ class PublishCommand extends Command
         }
     }
 
-    private function getAssets(): array {
-        return [
-            new ConfigurationsDirAsset(
-                __DIR__ . '/../config',
-                $this->targetConfigDir,
-                $this->filesystem,
-                $this->output,
-            ),
-            new PromptsDirAsset(
-                __DIR__ . '/../prompts',
-                $this->targetPromptsDir,
-                $this->filesystem,
-                $this->output,
-            ),
-            new EnvFileAsset(
-                __DIR__ . '/../.env-dist',
-                $this->targetEnvFile, $this->targetConfigDir,
-                $this->filesystem,
-                $this->output,
-                $this->envFile,
-            ),
-        ];
-    }
-
     private function handleError(string $context, Exception $e): void {
         $this->output->out(" <gray>...</gray> <yellow>(!)</yellow> <red>Error in</red> $context: " . $e->getMessage(), 'error');
 
@@ -135,5 +100,38 @@ class PublishCommand extends Command
             $this->output->out($e->getTraceAsString());
             $this->output->out("");
         }
+    }
+
+    private function getAssets(InputInterface $input) : array {
+        $assets = [];
+        if ($input->getOption('target-config-dir')) {
+            $assets[] = new ConfigurationsDirAsset(
+                __DIR__ . '/../config',
+                $this->targetConfigDir,
+                $this->filesystem,
+                $this->output,
+            );
+        }
+
+        if ($input->getOption('target-prompts-dir')) {
+            $assets[] = new PromptsDirAsset(
+                __DIR__ . '/../prompts',
+                $this->targetPromptsDir,
+                $this->filesystem,
+                $this->output,
+            );
+        }
+
+        if ($input->getOption('target-env-file')) {
+            $assets[] = new EnvFileAsset(
+                __DIR__ . '/../.env-dist',
+                $this->targetEnvFile, $this->targetConfigDir,
+                $this->filesystem,
+                $this->output,
+                $this->envFile,
+            );
+        }
+
+        return $assets;
     }
 }

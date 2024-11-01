@@ -2,16 +2,22 @@
 /docs/            export-ignore
 #/evals/           export-ignore # include this one with distribution
 #/examples/        export-ignore # include this one with distribution
+/.github/         export-ignore
 /notes/           export-ignore
 /tests/           export-ignore
-/.github/         export-ignore
 /.gitignore       export-ignore
 /.gitattributes   export-ignore
-/phpunit.xml      export-ignore
-/phpstan.neon     export-ignore
-/phpstan.neon.dist export-ignore
-/psalm.xml        export-ignore
+/.cursorignore    export-ignore
 /composer.lock    export-ignore
+/.replit          export-ignore
+/Doxyfile         export-ignore
+/mkdocs.yml.bak   export-ignore
+/phpunit.xml      export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/psalm.xml        export-ignore
+/mkdocs.yml       export-ignore
+/phpstan.neon     export-ignore
 *.md              export-ignore
 *.mdx             export-ignore
 
@@ -46,6 +52,7 @@
 
 # Ignore logs and temp files in exports (optional)
 *.log             export-ignore
+/temp/            export-ignore
 /tmp/             export-ignore
 /cache/           export-ignore
 *.bak             export-ignore
