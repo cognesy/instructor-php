@@ -43,6 +43,21 @@ class PublishCommand extends Command
         $this->filesystem = new Filesystem($this->noOp, $this->output);
         $this->envFile = new EnvFile($this->noOp, $this->output, $this->filesystem);
 
+        $missingOptions = [];
+        if (!$input->getOption('target-config-dir')) {
+            $missingOptions[] = '--target-config-dir';
+        }
+        if (!$input->getOption('target-prompts-dir')) {
+            $missingOptions[] = '--target-prompts-dir';
+        }
+        if (!$input->getOption('target-env-file')) {
+            $missingOptions[] = '--target-env-file';
+        }
+
+        if (!empty($missingOptions)) {
+            throw new InvalidArgumentException('Missing required options: ' . implode(', ', $missingOptions));
+        }
+
         // Ensure the command is run from the project root
         $projectRoot = getcwd();
         if (!file_exists($projectRoot . '/composer.json')) {
