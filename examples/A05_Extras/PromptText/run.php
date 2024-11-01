@@ -20,26 +20,32 @@ use Cognesy\Instructor\Extras\Prompt\Prompt;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
-// EXAMPLE 1: Simplfied API
+// EXAMPLE 1: Define prompt template inline (don't use files) and use short syntax
 
-// use default template language, prompt files are in /prompts/twig/<prompt>.twig
-$prompt = Prompt::text('capital', ['country' => 'Germany']);
-$answer = (new Inference)->create(messages: $prompt)->toText();
+$prompt = Prompt::twig()
+    ->from('What is capital of {{country}}')
+    ->with(['country' => 'Germany'])
+    ->toText();
+
+$answer = (new Inference)->create(
+    messages: $prompt
+)->toText();
 
 echo "EXAMPLE 1: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";
 echo "\n";
 assert(Str::contains($answer, 'Berlin'));
 
-// EXAMPLE 2: Define prompt template inline
 
-$prompt = Prompt::using('twig')
-    ->withTemplateContent('What is capital of {{country}}')
-    ->withValues(['country' => 'Germany'])
-    ->toText();
+// EXAMPLE 2: Use Prompt library to load prompt from file
+
+// use default template language, prompt files are in /prompts/twig/<prompt>.twig
+$prompt = Prompt::text(
+    pathOrDsn: 'demo-twig:capital',
+    variables: ['country' => 'Germany'],
+);
+
 $answer = (new Inference)->create(messages: $prompt)->toText();
-
-
 
 echo "EXAMPLE 2: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";

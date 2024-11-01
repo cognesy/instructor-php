@@ -31,4 +31,24 @@ class PromptEngineConfig
             metadata: Settings::get('prompt', "libraries.$library.metadata", []),
         );
     }
+
+    public static function twig(string $resourcePath = '', string $cachePath = '') : PromptEngineConfig {
+        $cachePath = $cachePath ?: '/tmp/instructor/twig';
+        return new PromptEngineConfig(
+            templateEngine: TemplateEngine::Twig,
+            resourcePath: $resourcePath,
+            cachePath: $cachePath,
+            extension: '.twig',
+        );
+    }
+
+    public static function blade(string $resourcePath = '', string $cachePath = '') : PromptEngineConfig {
+        $cachePath = $cachePath ?: '/tmp/instructor/blade';
+        return new PromptEngineConfig(
+            templateEngine: TemplateEngine::Blade,
+            resourcePath: $resourcePath,
+            cachePath: $cachePath,
+            extension: '.blade.php',
+        );
+    }
 }

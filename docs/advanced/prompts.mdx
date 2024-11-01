@@ -1,4 +1,9 @@
-## Prompts
+---
+title: Prompts
+description: 'Managing and rendering prompts in Instructor'
+---
+
+## Overview
 
 As your applications grow in complexity, your prompts may become large and complex, with multiple
 variables and metadata. Managing these prompts can become a challenge, especially when you need to
@@ -9,7 +14,7 @@ they are part of your codebase.
 multiple template engines (Twig, Blade), prompt metadata, variable injection, and validation.
 
 
-## Prompts
+## What are Prompts
 
 Prompts in Instructor are structured text templates that can be rendered to text or series of chat
 messages. As many of your prompts will be dynamically generated based on input data, you can
@@ -99,538 +104,129 @@ Instructor comes with 3 default prompt libraries:
  - `demo-twig` - demo prompts using Twig template engine,
  - `demo-blade` - demo prompts using Blade template engine.
 
-, for example specific to
-the modules, or features.
-
-You can also choose to keep dedicated prompt libraries for various LLMs.
 Instructor's Prompt library mechanism does not specify how you should organize or manage your prompts,
 but it provides a flexible way to do it in a way that suits your application.
 
+
 ## Using Prompts
 
-and can be referred to via `Prompt::using()` method.
+### Rendering a Simple Prompt
 
-
-
-# CONSIDER CONTENT BELOW AS DRAFT
-
----
-
-It supports multiple template engines (Twig, Blade), front matter, variable injection, and
-validation.
-
-The Prompt class helps:
-- Template-based prompts using Twig or Blade engines
-- Front matter for metadata and schema definitions
-- Variable injection and validation
-- Chat message formatting
-- Prompt validation and error checking
-
-
-### Quick Start
-
-Use default settings to create a prompt:
-
-```php
-use Cognesy\Instructor\Extras\Prompt\Prompt;
-
-// Create a simple prompt with variables
-$prompt = Prompt::text('hello', ['name' => 'World']);
-// Output: "Hello, World!"
-
-// Create a prompt with chat messages
-$messages = Prompt::messages('capital', ['country' => 'France']);
-// Output: Array of chat messages asking about France's capital
-```
-
-Both 'hello' and 'capital' prompts have been defined in the prompts directory,
-in '/prompts/twig/hello.twig' and '/prompts/twig/capital.twig' files respectively.
-
-`Prompt` class will use the default template engine to render
-them to text and chat messages.
-
-Default setting is defined in the `/config/prompt.php` file in the root
-directory of Instructor. Default setting uses Twig template engine, but
-you can change it to Blade (or, in the future, other supported engine).
-
-
-
-
-### Supported Template Engines
-
-#### Twig Templates
-
-Twig templates offer powerful templating features with clean syntax:
-
-```twig
-{# prompts/twig/hello.twig #}
-{#---
-description: Hello world template
-variables:
-    name:
-        description: Name to greet
-        type: string
-        default: World
----#}
-
-Hello, {{ name }}!
-```
-See [Twig documentation](https://twig.symfony.com/doc/3.x/templates.html) for more details.
-
-
-
-#### Blade Templates
-
-Blade templates provide Laravel-style syntax:
-
-```php
-{{-- prompts/blade/hello.blade.php --}}
-{{--
-description: Hello world template
-variables:
-    name:
-        description: Name to greet
-        type: string
-        default: World
---}}
-
-Hello, {{ $name }}!
-```
-See [Blade documentation](https://laravel.com/docs/11.x/blade) for more details.
-
-> NOTE: Instructor Prompt uses BladeOne engine, which is a standalone version
-> of Laravel Blade engine. Be aware that some features may differ from Laravel
-> Blade, but the syntax is mostly the same.
-
-
-
-
-
-### Configuration
-
-The prompt engine in Instructor can be configured using a configuration
-file or programmatically. This guide explains the configuration options
-and how to use them effectively.
-
-#### Custom Configuration Location
-
-You can specify a custom configuration location using environment variables:
-
-```bash
-INSTRUCTOR_CONFIG_PATH=/path/to/config
-```
-
-#### Basic Configuration
-
-Create a configuration file for your prompts:
-
-```php
-use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
-
-$config = new PromptEngineConfig(
-    templateEngine: TemplateEngine::Twig,
-    resourcePath: '/prompts/twig',
-    cachePath: '/cache/prompts',
-    extension: '.twig'
-);
-
-$prompt = new Prompt(config: $config);
-```
-
-#### Loading Configuration from Settings
-
-```php
-$prompt = Prompt::using('default');  // Loads default settings
-```
-
-
-
-
-
-### Using Prompts
-
-#### Loading Prompts from Files
-
-```php
-// Load a prompt template
-$prompt = Prompt::get('hello');
-
-// Render with variables
-$result = $prompt->withValues(['name' => 'John'])->toText();
-// Output: "Hello, John!"
-```
-
-#### Creating Prompts from Strings
-
-```php
-$prompt = new Prompt();
-$content = "Hello, {{ name }}!";
-$result = $prompt
-    ->withTemplateContent($content)
-    ->withValues(['name' => 'Jane'])
-    ->toText();
-// Output: "Hello, Jane!"
-```
-
-#### Rendering Chat Messages
-
-```php
-// Using a chat template
-$prompt = Prompt::get('capital');
-$messages = $prompt
-    ->withValues(['country' => 'France'])
-    ->toMessages();
-// Output: ChatMessages object with system/user/assistant messages
-```
-
-
-
-
-
-
-### Prompt Info (front matter)
-
-PromptInfo is a front matter that allows you to define metadata and schema for your prompts:
-
-```twig
-{#---
-description: Capital finder template
-variables:
-    country:
-        description: Country name
-        type: string
-        default: France
-schema:
-    name: capital
-    properties:
-        name:
-            description: Capital city name
-            type: string
-    required: [name]
----#}
-<chat>
-    <system>You are a helpful assistant.</system>
-    <user>What is the capital of {{ country }}?</user>
-</chat>
-```
-
-#### Accessing PromptInfo Data
-
-```php
-$prompt = Prompt::get('capital');
-$info = $prompt->info();
-
-echo $info->field('description');
-// Output: "Capital finder template"
-
-$variables = $info->variables();
-// Output: Array of variable definitions
-```
-
-
-
-
-
-
-### Working with Variables
-
-#### Defining Variables
-
-Variables can be defined in front matter:
-
-```yaml
-variables:
-    name:
-        description: User's name
-        type: string
-        default: Guest
-    age:
-        description: User's age
-        type: integer
-```
-
-#### Injecting Variables
-
-```php
-$prompt = Prompt::get('user_info');
-$result = $prompt->withValues([
-    'name' => 'John',
-    'age' => 25
-])->toText();
-```
-
-
-
-
-
-
-
-### Validation
-
-#### Validating Prompts
-
-The Prompt class includes built-in validation of prompts content:
-
-```php
-$prompt = Prompt::get('user_info');
-$errors = $prompt->validationErrors();
-
-if (!empty($errors)) {
-    foreach ($errors as $error) {
-        echo "Validation error: $error\n";
-    }
-}
-```
-
-#### Variable Validation
-
-```php
-// Check if all required variables are provided
-$prompt = Prompt::get('user_info');
-$prompt = $prompt->withValues(['name' => 'John']);
-$errors = $prompt->validationErrors();
-// Will show error if 'age' is required but not provided
-```
-
-
-
-
-
-
-
-
-
-
-
-
-### Example: Complete Usage
-
-Here's a complete example showing multiple features:
-
-```php
-// Define a prompt template
-$template = <<<TWIG
-{#---
-description: User greeting with preferences
-variables:
-    name:
-        description: User's name
-        type: string
-    preferences:
-        description: User's preferences
-        type: array
----#}
-<chat>
-    <system>You are a friendly assistant.</system>
-    <user>
-        Hello! My name is {{ name }} and I like {{ preferences|join(', ') }}.
-    </user>
-</chat>
-TWIG;
-
-// Create and configure prompt
-$prompt = new Prompt();
-$prompt->withTemplateContent($template)
-    ->withValues([
-        'name' => 'Alice',
-        'preferences' => ['reading', 'hiking', 'photography']
-    ]);
-
-// Validate
-if (!empty($prompt->validationErrors())) {
-    throw new Exception('Invalid prompt configuration');
-}
-
-// Get chat messages
-$messages = $prompt->toMessages();
-
-// Use with Instructor
-$response = (new Instructor)->respond(
-    messages: $messages,
-    responseModel: YourResponseModel::class
-);
-```
-
-
-
-
-
-### Configuration File
-
-By default, Instructor looks for prompt configuration in `config/prompt.php`.
-Here's how to set up and customize your prompt engine:
+To get started, you can create and render a simple prompt defined in the bundled library using the `Prompt::using` or `Prompt::make` methods. Here's how you can use them:
 
 ```php
 <?php
-return [
-    // Default configuration to use when none specified
-    'defaultSetting' => 'twig',
-
-    // Available configuration settings
-    'settings' => [
-        'twig' => [
-            'templateEngine' => 'twig',
-            'resourcePath' => '/../../../../prompts/twig',
-            'cachePath' => '/tmp/instructor/cache/twig',
-            'extension' => '.twig',
-            'frontMatterTags' => ['{#---', '---#}'],
-            'frontMatterFormat' => 'yaml',
-            'metadata' => [
-                'autoReload' => true,
-            ],
-        ],
-        'blade' => [
-            'templateEngine' => 'blade',
-            'resourcePath' => '/../../../../prompts/blade',
-            'cachePath' => '/tmp/instructor/cache/blade',
-            'extension' => '.blade.php',
-            'frontMatterTags' => ['{{--', '--}}'],
-            'frontMatterFormat' => 'yaml',
-        ],
-    ]
-];
-```
-
-#### Configuration Options
-
-Each configuration setting supports the following options:
-
-##### Core Settings
-
-| Option | Description | Example |
-|--------|-------------|---------|
-| `templateEngine` | Template engine to use ('twig' or 'blade') | `'twig'` |
-| `resourcePath` | Path to prompt template files | `'/prompts/twig'` |
-| `cachePath` | Path for compiled templates | `'/tmp/cache/twig'` |
-| `extension` | File extension for templates | `'.twig'` |
-
-##### Front Matter Settings
-
-| Option | Description | Example |
-|--------|-------------|---------|
-| `frontMatterTags` | Array of start and end tags for front matter | `['{#---', '---#}']` |
-| `frontMatterFormat` | Format of front matter ('yaml', 'json', 'toml') | `'yaml'` |
-
-##### Engine-Specific Settings
-
-| Option | Description | Example |
-|--------|-------------|---------|
-| `metadata` | Engine-specific configuration | `['autoReload' => true]` |
-
-#### Using Configurations
-
-##### Default Configuration
-
-The default configuration is specified by `defaultSetting` and is used when no specific configuration is provided:
-
-```php
 use Cognesy\Instructor\Extras\Prompt\Prompt;
 
-// Uses default configuration (twig in this case)
-$prompt = new Prompt('hello');
+// Basic example using "using->get->with" syntax
+$prompt = Prompt::using('demo-twig')->get('hello')->with(['name' => 'World']);
+
+echo $prompt->toText(); // Outputs: "Hello, World!"
+?>
 ```
-
-##### Specific Configuration
-
-You can specify which configuration to use:
+Or, using the shorthand `make()` syntax:
 
 ```php
-// Use Blade configuration
-$prompt = Prompt::using('blade')->withTemplate('hello');
+<?php
+$prompt = Prompt::make('demo-twig:hello')->with(['name' => 'World']);
 
-// Or with the constructor
-$prompt = new Prompt('hello', setting: 'blade');
+echo $prompt->toText(); // Outputs: "Hello, World!"
+?>
 ```
 
-#### Programmatic Configuration
+### Rendering a Chat Prompt
 
-You can also create configuration programmatically:
+The Prompt class can also render prompts directly as chat-style messages:
 
 ```php
+<?php
+$messages = Prompt::messages('demo-twig:hello', ['name' => 'World']);
+
+print_r($messages->toArray());
+// Outputs:
+// [
+//     ['role' => 'user', 'content' => 'Hello, World!']
+// ]
+?>
+```
+
+### Custom Configuration and Template Content
+
+If you need to customize the configuration or set the template content directly, you can do so with additional methods:
+
+```php
+<?php
 use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
 use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
-use Cognesy\Instructor\Extras\Prompt\Enums\FrontMatterFormat;
 
+// Setting custom configuration
 $config = new PromptEngineConfig(
     templateEngine: TemplateEngine::Twig,
-    resourcePath: '/path/to/prompts',
-    cachePath: '/path/to/cache',
+    resourcePath: '',
+    cachePath: '/tmp/cache',
     extension: '.twig',
-    frontMatterTags: ['{#---', '---#}'],
-    frontMatterFormat: FrontMatterFormat::Yaml,
-    metadata: [
-        'autoReload' => true,
-    ]
 );
 
-$prompt = new Prompt(config: $config);
+$prompt = new Prompt();
+$prompt->withConfig($config)
+       ->withTemplateContent('Hello, {{ name }}!')
+       ->withValues(['name' => 'World']);
+
+echo $prompt->toText(); // Outputs: "Hello, World!"
+?>
 ```
 
-#### Configuration Loading
+### Handling Template Variables
 
-When Instructor initializes, it follows this process to load configuration:
-
-1. Checks for configuration file at the default location
-2. Loads the default setting specified by `defaultSetting`
-3. Merges any user-provided configuration options
-
-#### Engine-Specific Features
-
-##### Twig Configuration
-
-Twig-specific settings in `metadata`:
+To check which variables are available in a prompt template:
 
 ```php
-'twig' => [
-    // ... other settings ...
-    'metadata' => [
-        'autoReload' => true, // Recompile templates when changed
-    ],
-]
+<?php
+$prompt = Prompt::using('demo-twig')
+    ->withTemplateContent('Hello, {{ name }}!')
+    ->withValues(['name' => 'World']);
+
+$variables = $prompt->variables();
+
+print_r($variables); // Outputs: ['name']
+?>
 ```
 
-##### Blade Configuration
+### Loading Templates by Name and Using DSNs
 
-Blade-specific settings can be added to metadata:
+For more flexible template loading, you can load templates by name or use a 'DSN-like' (Data Source Name) syntax:
 
 ```php
-'blade' => [
-    // ... other settings ...
-    'metadata' => [
-        'mode' => 'MODE_AUTO', // BladeOne mode
-    ],
-]
+<?php
+// Load a template by name using default library (set in /config/prompt.php)
+$prompt = Prompt::using('demo-blade')->withTemplate('hello');
+echo $prompt->template();
+
+// Load a template from specified library using DSN syntax
+$prompt = Prompt::fromDsn('demo-blade:hello')->with(['name' => 'World']);
+echo $prompt->toText(); // Outputs: "Hello, World!"
+?>
 ```
 
+### Converting to Messages with Markup
 
+The Prompt class also supports converting templates containing chat-specific markup into structured messages:
 
-
-
-
-
-
-
-
-
-
-## Best Practices
-
-
-1. **Prompt metadata**: Include descriptions and variable definitions
-```yaml
-description: Clear description of the prompt's purpose
-variables:
-    name:
-        description: Clear description of the variable
-        type: string
-        default: Default value if applicable
-```
-
-2. **Validation**: Validate prompts before using them in production
 ```php
-$prompt = Prompt::get('user_info');
-if (!empty($prompt->validationErrors())) {
-    throw new Exception('Prompt validation errors: ' . implode(', ', $prompt->validationErrors()));
-}
+<?php
+use Cognesy\Instructor\Utils\Messages\Messages;
+
+$prompt = Prompt::using('demo-blade')
+    ->withTemplateContent('<system>You are a helpful assistant.</system><user>Hello, {{ $name }}</user>')
+    ->withValues(['name' => 'assistant']);
+
+$messages = $prompt->toMessages();
+
+echo $messages->toArray();
+// Outputs:
+// [
+//     ['role' => 'system', 'content' => 'You are a helpful assistant.'],
+//     ['role' => 'user', 'content' => 'Hello, assistant']
+// ]
+?>
 ```

@@ -31,6 +31,14 @@ class Prompt
         $this->templateContent = $path ? $this->library->loadTemplate($path) : '';
     }
 
+    public static function twig() : self {
+        return new self(config: PromptEngineConfig::twig());
+    }
+
+    public static function blade() : self {
+        return new self(config: PromptEngineConfig::blade());
+    }
+
     public static function make(string $pathOrDsn) : Prompt {
         return match(true) {
             Str::contains($pathOrDsn, self::DSN_SEPARATOR) => self::fromDsn($pathOrDsn),
@@ -96,6 +104,10 @@ class Prompt
         return $this->withValues($values);
     }
 
+    public function from(string $string) : self {
+        $this->withTemplateContent($string);
+        return $this;
+    }
     public function withValues(array $values) : self {
         $this->variableValues = $values;
         return $this;

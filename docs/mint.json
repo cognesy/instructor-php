@@ -55,7 +55,7 @@
             "pages": [
                 "introduction",
                 "quickstart",
-                "llm_providers"
+                "setup"
             ]
         },
         {
@@ -104,8 +104,9 @@
                 "internals/lifecycle",
                 "internals/response_models",
                 "internals/debugging",
-                "internals/http",
-                "internals/events"
+                "internals/events",
+                "internals/environment",
+                "internals/configuration_path"
             ]
         },
         {
@@ -113,7 +114,8 @@
             "pages": [
                 "misc/philosophy",
                 "misc/contributing",
-                "misc/help"
+                "misc/help",
+                "misc/llm_providers"
             ]
         },
         {
