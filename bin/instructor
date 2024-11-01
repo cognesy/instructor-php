@@ -8,6 +8,7 @@ if ($argc < 2) {
     fwrite(STDERR, " Scripts:\n");
     fwrite(STDERR, "  setup - publish Instructor bundled assets to your project dir\n");
     fwrite(STDERR, "  hub - view and execute Instructor examples\n");
+    fwrite(STDERR, "\n");
     exit(1);
 }
 
