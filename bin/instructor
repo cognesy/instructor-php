@@ -1,12 +1,34 @@
-#!/bin/bash
-DIR="$(dirname "$0")"
-SCRIPT="$1"
+#!/usr/bin/env php
+<?php
+// Ensure script name is provided
+if ($argc < 2) {
+    fwrite(STDERR, "Usage: instructor <script> [args...]\n");
+    exit(1);
+}
 
-# Sanity check
-if [[ "$SCRIPT" =~ \.\. ]] || [[ ! "$SCRIPT" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-    echo "Invalid script name."
-    exit 1
-fi
+$script = $argv[1];
 
-shift
-php "$DIR/../scripts/$SCRIPT.php" "$@"
+// Sanity check: prevent directory traversal and ensure valid script name
+if (strpos($script, '..') !== false || !preg_match('/^[a-zA-Z0-9_-]+$/', $script)) {
+    fwrite(STDERR, "Invalid script name.\n");
+    exit(1);
+}
+
+// Determine the path to the script
+$binDir = __DIR__;
+$scriptPath = realpath($binDir . '/../scripts/' . $script . '.php');
+
+if (!$scriptPath || !file_exists($scriptPath)) {
+    fwrite(STDERR, "Script '$script' not found.\n");
+    exit(1);
+}
+
+// Remove the script name from arguments
+$args = array_slice($argv, 2);
+
+// Update $_SERVER['argv'] and $_SERVER['argc'] for the included script
+$_SERVER['argv'] = array_merge([$scriptPath], $args);
+$_SERVER['argc'] = count($_SERVER['argv']);
+
+// Include and execute the target script
+require $scriptPath;

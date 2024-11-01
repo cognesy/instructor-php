@@ -9,7 +9,9 @@
     ],
     "autoload": {
         "psr-4": {
-            "Cognesy\\Instructor\\": "src/"
+            "Cognesy\\Instructor\\": "src/",
+            "Cognesy\\InstructorHub\\": "src-hub/",
+            "Cognesy\\Setup\\": "src-setup/"
         },
         "files": [
         ]
@@ -20,8 +22,6 @@
             "Examples\\": "examples/",
             "Cognesy\\Evals\\": "evals/",
             "Cognesy\\Experimental\\": "experimental/",
-            "Cognesy\\InstructorHub\\": "src-hub/",
-            "Cognesy\\Setup\\": "src-setup/",
             "Cognesy\\Tell\\": "src-tell/"
         },
         "files": [
@@ -94,6 +94,6 @@
         "tests": "@php vendor/bin/pest",
         "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
         "psalm": "@php vendor/bin/psalm",
-        "instructor": "bash ./bin/instructor"
+        "instructor": "php ./bin/instructor"
     }
 }

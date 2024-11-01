@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Setup;
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/bootstrap.php';
 
 use Symfony\Component\Console\Application;
 
