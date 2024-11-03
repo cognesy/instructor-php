@@ -45,9 +45,9 @@ $data = new InferenceData(
 
 $experiment = new Experiment(
     cases: InferenceCases::except(
-        connections: [],
-        modes: [Mode::Json, Mode::JsonSchema, Mode::Text, Mode::MdJson],
-        stream: [true],
+        connections: ['ollama'],
+        modes: [],
+        stream: [],
     ),
     executor: new RunInference($data),
     processors: [

@@ -7,6 +7,7 @@ use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
+use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
@@ -21,6 +22,10 @@ class InferenceStream
     protected bool $streamReceived = false;
     protected array $streamEvents = [];
     protected LLMConfig $config;
+
+    protected array $llmResponses = [];
+    protected ?LLMResponse $finalLLMResponse = null;
+    protected ?PartialLLMResponse $lastPartialLLMResponse = null;
 
     public function __construct(
         CanAccessResponse $response,
@@ -56,24 +61,23 @@ class InferenceStream
     /**
      * Returns the last partial response for the stream.
      * It will contain accumulated content and finish reason.
-     * @return ?PartialLLMResponse
+     * @return ?LLMResponse
      */
-    public function final() : ?PartialLLMResponse {
-        return $this->finalResponse($this->stream);
+    public function final() : ?LLMResponse {
+        return $this->getFinalResponse($this->stream);
     }
 
     // INTERNAL //////////////////////////////////////////////
 
     /**
-     * @param Generator<PartialLLMResponse> $partialResponses
+     * @param Generator<string> $stream
      * @return ?PartialLLMResponse
      */
-    protected function finalResponse(Generator $partialResponses) : ?PartialLLMResponse {
-        $lastPartial = null;
-        foreach ($partialResponses as $partialResponse) {
-            $lastPartial = $partialResponse;
+    protected function getFinalResponse(Generator $stream) : ?LLMResponse {
+        if ($this->finalLLMResponse === null) {
+            foreach ($this->makePartialLLMResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
         }
-        return $lastPartial;
+        return $this->finalLLMResponse;
     }
 
     /**
@@ -81,11 +85,10 @@ class InferenceStream
      * @return PartialLLMResponse[]
      */
     protected function getAllPartialLLMResponses(Generator $stream) : array {
-        $partialResponses = [];
-        foreach ($this->makePartialLLMResponses($stream) as $partialResponse) {
-            $partialResponses[] = $partialResponse;
+        if ($this->finalLLMResponse === null) {
+            foreach ($this->makePartialLLMResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
         }
-        return $partialResponses;
+        return $this->llmResponses;
     }
 
     /**
@@ -95,30 +98,34 @@ class InferenceStream
     private function makePartialLLMResponses(Generator $stream) : Generator {
         $content = '';
         $finishReason = '';
+        $this->llmResponses = [];
+        $this->lastPartialLLMResponse = null;
+
         foreach ($this->getEventStream($stream) as $streamEvent) {
             if ($streamEvent === null || $streamEvent === '') {
                 continue;
             }
             $data = Json::decode($streamEvent, []);
-            $partialResponse = $this->makePartialLLMResponse($data);
+            $partialResponse = $this->driver->toPartialLLMResponse($data);
             if ($partialResponse === null) {
                 continue;
             }
+            $this->llmResponses[] = $partialResponse;
+
+            // add accumulated content and last finish reason
             if ($partialResponse->finishReason !== '') {
                 $finishReason = $partialResponse->finishReason;
             }
             $content .= $partialResponse->contentDelta;
-            // add accumulated content and last finish reason
             $enrichedResponse = $partialResponse
                 ->withContent($content)
                 ->withFinishReason($finishReason);
             $this->events->dispatch(new PartialLLMResponseReceived($enrichedResponse));
+
+            $this->lastPartialLLMResponse = $enrichedResponse;
             yield $enrichedResponse;
         }
-    }
-
-    private function makePartialLLMResponse(array $data) : ?PartialLLMResponse {
-        return $this->driver->toPartialLLMResponse($data);
+        $this->finalLLMResponse = LLMResponse::fromPartialResponses($this->llmResponses);
     }
 
     /**
