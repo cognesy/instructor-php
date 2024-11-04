@@ -58,7 +58,7 @@ class Inference
         $this->config = $config ?? LLMConfig::load(
             connection: $connection ?: Settings::get('llm', "defaultConnection")
         );
-        $this->httpClient = $httpClient ?? HttpClient::make($this->config->httpClient);
+        $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
         $this->driver = $driver ?? $this->makeDriver($this->config, $this->httpClient);
     }
 

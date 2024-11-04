@@ -24,7 +24,7 @@ class OpenAIDriver implements CanHandleInference
         protected ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make();
+        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
     }
 
     // REQUEST //////////////////////////////////////////////

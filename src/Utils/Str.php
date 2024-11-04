@@ -4,6 +4,10 @@ namespace Cognesy\Instructor\Utils;
 
 class Str
 {
+    static public function split(string $input, string $delimiter = ' ') : array {
+        return explode($delimiter, $input);
+    }
+
     static public function pascal(string $input) : string {
         // turn any case into pascal case
         $normalized = self::spaceSeparated($input);

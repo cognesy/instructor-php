@@ -86,7 +86,7 @@ class InferenceCases
         return Combination::generator(
             mapping: InferenceCaseParams::class,
             sources: [
-                'isStreaming' => $this->stream ?: $this->streamingModes(),
+                'isStreamed' => $this->stream ?: $this->streamingModes(),
                 'mode' => $this->modes ?: $this->modes(),
                 'connection' => $this->connections ?: $this->connections(),
             ],

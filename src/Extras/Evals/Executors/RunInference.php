@@ -28,7 +28,7 @@ class RunInference implements CanRunExecution
         return $this->inferenceAdapter->callInferenceFor(
             connection: $execution->get('case.connection'),
             mode: $execution->get('case.mode'),
-            isStreamed: $execution->get('case.isStreaming'),
+            isStreamed: $execution->get('case.isStreamed'),
             messages: $this->inferenceData->messages,
             evalSchema: $this->inferenceData->inferenceSchema(),
             maxTokens: $this->inferenceData->maxTokens,

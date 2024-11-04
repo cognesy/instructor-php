@@ -44,11 +44,7 @@ $data = new InferenceData(
 );
 
 $experiment = new Experiment(
-    cases: InferenceCases::except(
-        connections: ['ollama'],
-        modes: [],
-        stream: [],
-    ),
+    cases: InferenceCases::all(),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(

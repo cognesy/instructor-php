@@ -36,7 +36,7 @@ class Embeddings
         $this->config = $config ?? EmbeddingsConfig::load($connection
             ?: Settings::get('embed', "defaultConnection")
         );
-        $this->httpClient = $httpClient ?? HttpClient::make($this->config->httpClient);
+        $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
         $this->driver = $driver ?? $this->getDriver($this->config, $this->httpClient);
     }
 
@@ -84,13 +84,13 @@ class Embeddings
 
     protected function getDriver(EmbeddingsConfig $config, CanHandleHttp $httpClient) : CanVectorize {
         return match ($config->providerType) {
-            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient),
-            LLMProviderType::CohereV1 => new CohereDriver($config, $httpClient),
-            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient),
-            LLMProviderType::Mistral => new OpenAIDriver($config, $httpClient),
-            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient),
-            LLMProviderType::Ollama => new OpenAIDriver($config, $httpClient),
-            LLMProviderType::Jina => new JinaDriver($config, $httpClient),
+            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::CohereV1 => new CohereDriver($config, $httpClient, $this->events),
+            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient, $this->events),
+            LLMProviderType::Mistral => new OpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::Ollama => new OpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::Jina => new JinaDriver($config, $httpClient, $this->events),
             default => throw new InvalidArgumentException("Unknown client: {$config->providerType->value}"),
         };
     }

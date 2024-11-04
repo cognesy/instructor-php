@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Embeddings\Drivers;
 
+use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Extras\Embeddings\Contracts\CanVectorize;
 use Cognesy\Instructor\Extras\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
@@ -16,8 +17,10 @@ class GeminiDriver implements CanVectorize
     public function __construct(
         protected EmbeddingsConfig $config,
         protected ?CanHandleHttp $httpClient = null,
+        protected ?EventDispatcher $events = null,
     ) {
-        $this->httpClient = $httpClient ?? HttpClient::make();
+        $this->events = $events ?? new EventDispatcher();
+        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
     }
 
     public function vectorize(array $input, array $options = []): EmbeddingsResponse {
