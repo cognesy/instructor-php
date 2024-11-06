@@ -41,7 +41,15 @@ $documents = [
 
 $query = "technology news";
 
-$connections = ['azure', 'cohere1', 'gemini', 'jina', 'mistral', 'ollama', 'openai'];
+$connections = [
+    'azure',
+    'cohere1',
+    'gemini',
+    'jina',
+    'mistral',
+    //'ollama',
+    'openai'
+];
 
 foreach($connections as $connection) {
     $bestMatches = (new Embeddings)->withConnection($connection)->findSimilar(

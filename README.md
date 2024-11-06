@@ -177,22 +177,31 @@ the default connection to be used when calling Instructor without specifying
 the client connection.
 
 ```php
-/* This is fragment of /config/llm.php file */
+    // This is fragment of /config/llm.php file
     'defaultConnection' => 'openai',
     //...
     'connections' => [
         'anthropic' => [ ... ],
+        'azure' => [ ... ],
+        'cohere1' => [ ... ],
         'cohere2' => [ ... ],
+        'fireworks' => [ ... ],
         'gemini' => [ ... ],
+        'grok' => [ ... ],
+        'groq' => [ ... ],
+        'mistral' => [ ... ],
         'ollama' => [
-            'clientType' => ClientType::Ollama->value,
-            'apiUrl' => Env::get('OLLAMA_API_URL', 'http://localhost:11434/v1'),
+            'providerType' => LLMProviderType::Ollama->value,
+            'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
-            'defaultModel' => Env::get('OLLAMA_DEFAULT_MODEL', 'gemma2:2b'),
-            'defaultMaxTokens' => Env::get('OLLAMA_DEFAULT_MAX_TOKENS', 1024),
-            'connectTimeout' => Env::get('OLLAMA_CONNECT_TIMEOUT', 3),
-            'requestTimeout' => Env::get('OLLAMA_REQUEST_TIMEOUT', 30),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'qwen2.5:0.5b',
+            'defaultMaxTokens' => 1024,
+            'httpClient' => 'guzzle-ollama', // use custom HTTP client configuration
         ],
+        'openai' => [ ... ],
+        'openrouter' => [ ... ],
+        'together' => [ ... ],
     // ...
 ```
 To customize the available connections you can either modify existing entries or

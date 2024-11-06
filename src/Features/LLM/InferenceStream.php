@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Features\LLM;
 
+use Closure;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
@@ -26,6 +27,7 @@ class InferenceStream
     protected array $llmResponses = [];
     protected ?LLMResponse $finalLLMResponse = null;
     protected ?PartialLLMResponse $lastPartialLLMResponse = null;
+    protected ?Closure $onPartialResponse;
 
     public function __construct(
         CanAccessResponse $response,
@@ -65,6 +67,16 @@ class InferenceStream
      */
     public function final() : ?LLMResponse {
         return $this->getFinalResponse($this->stream);
+    }
+
+    /**
+     * Sets a callback to be called when a partial response is received.
+     *
+     * @param callable $callback
+     */
+    public function onPartialResponse(callable $callback) : self {
+        $this->onPartialResponse = $callback(...);
+        return $this;
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -123,6 +135,9 @@ class InferenceStream
             $this->events->dispatch(new PartialLLMResponseReceived($enrichedResponse));
 
             $this->lastPartialLLMResponse = $enrichedResponse;
+            if ($this->onPartialResponse !== null) {
+                ($this->onPartialResponse)($enrichedResponse);
+            }
             yield $enrichedResponse;
         }
         $this->finalLLMResponse = LLMResponse::fromPartialResponses($this->llmResponses);

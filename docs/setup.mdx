@@ -72,7 +72,7 @@ Instructor uses a configuration directory to store its settings, e.g. LLM provid
 
 You can set the path to this directory via `Settings::setPath('/path/to/config')` in your code.
 
-Put to make it easier you can just set the value in your `.env` file. `Settings` will pick it up automatically
+But to make it easier you can just set the value in your `.env` file. `Settings` will pick it up automatically
 from there. This way you don't have to set it in every script.
 
 ```ini .env
@@ -208,13 +208,13 @@ If .env doesn't exist, copy environment template:
 [ ! -f .env ] && cp vendor/cognesy/instructor-php/config/.env-dist .env
 ```
 
-Add required values to your .env:
+Add key values to your .env:
 ```ini
 # OpenAI API key
 OPENAI_API_KEY=your_api_key
 # Other API keys (if you use other LLM providers)
 # ...
 
-# Set up Instructor configuration path
+# Set up Instructor configuration path (optional)
 INSTRUCTOR_CONFIG_PATH=<path/to/config>
 ```

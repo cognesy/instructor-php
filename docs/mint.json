@@ -68,7 +68,6 @@
         {
             "group": "Essentials",
             "pages": [
-                "essentials/installation",
                 "essentials/usage",
                 "essentials/modes",
                 "essentials/data_model",
