@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Features\LLM;
 
 use Closure;
 use Cognesy\Instructor\Events\EventDispatcher;
+use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
 use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
@@ -27,7 +28,7 @@ class InferenceStream
     protected array $llmResponses = [];
     protected ?LLMResponse $finalLLMResponse = null;
     protected ?PartialLLMResponse $lastPartialLLMResponse = null;
-    protected ?Closure $onPartialResponse;
+    protected ?Closure $onPartialResponse = null;
 
     public function __construct(
         CanAccessResponse $response,
@@ -141,6 +142,7 @@ class InferenceStream
             yield $enrichedResponse;
         }
         $this->finalLLMResponse = LLMResponse::fromPartialResponses($this->llmResponses);
+        $this->events->dispatch(new LLMResponseReceived($this->finalLLMResponse));
     }
 
     /**
