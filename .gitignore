@@ -43,6 +43,8 @@ Thumbs.db
 /coverage/
 
 # User-specific files (temporary, experimental, to be archived / removed)
-archived/
-experimental/*
-tmp/
+/archived/
+/experimental/*
+/tmp/
+/temp/
+/prompts/misc/
