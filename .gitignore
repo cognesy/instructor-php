@@ -47,4 +47,5 @@ Thumbs.db
 /experimental/*
 /tmp/
 /temp/
-/prompts/misc/
+/prompts/misc/*
+/prompts/archive/*

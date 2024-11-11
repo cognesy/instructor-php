@@ -29,8 +29,7 @@ In your project directory, create a new PHP file `test-instructor.php`:
 
 ```php
 <?php
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+require __DIR__ . '/vendor/autoload.php';
 
 use Cognesy\Instructor\Instructor;
 

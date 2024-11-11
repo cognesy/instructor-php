@@ -197,7 +197,7 @@ class Prompt
 
     private function hasChatRoles(string $text) : bool {
         $roleStrings = [
-            '<chat>', '<user>', '<assistant>', '<system>'
+            '<chat>', '<user>', '<assistant>', '<system>', '<section>', '<message>'
         ];
         if (Str::containsAny($text, $roleStrings)) {
             return true;

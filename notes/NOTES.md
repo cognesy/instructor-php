@@ -17,6 +17,7 @@
 - Parallel tool calls
 - Export configuration to user folder / use external configuration
 - Full control over generated prompt (access to Script object processing)
+- Gemini OpenAI-style API
 
 ## Low priority
 
