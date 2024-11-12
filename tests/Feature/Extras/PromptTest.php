@@ -4,6 +4,7 @@ use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
 use Cognesy\Instructor\Extras\Prompt\Prompt;
 use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
 use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Messages\Script;
 
 // RECOMMENDED, READING FRIENDLY SYNTAX
 
@@ -78,13 +79,24 @@ it('can find template variables - Blade', function () {
 });
 
 it('can convert template with chat markup to messages', function () {
-    $prompt = Prompt::using('demo-blade')
-        ->withTemplateContent('<system>You are helpful assistant.</system><user>Hello, {{ $name }}</user>')
+    $prompt = Prompt::blade()
+        ->withTemplateContent('<chat><message role="system">You are helpful assistant.</message><message role="user">Hello, {{ $name }}</message></chat>')
         ->withValues(['name' => 'assistant']);
     $messages = $prompt->toMessages();
     expect($messages)->toBeInstanceOf(Messages::class);
     expect($messages->toString())->toContain('Hello, assistant');
     expect($messages->toArray())->toHaveCount(2);
+});
+
+it('can convert template with chat markup to script', function () {
+    $prompt = Prompt::blade()
+        ->withTemplateContent('<chat><section name="system"/><message role="system">You are helpful assistant.</message><section name="messages"/><message role="user">Hello, {{ $name }}</message></chat>')
+        ->withValues(['name' => 'assistant']);
+    $script = $prompt->toScript();
+    expect($script)->toBeInstanceOf(Script::class)
+        ->and($script->toString())->toContain('Hello, assistant')
+        ->and($script->hasSection('system'))->toBeTrue()
+        ->and($script->hasSection('messages'))->toBeTrue();
 });
 
 it('can load a template by name - Twig', function () {

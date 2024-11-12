@@ -48,8 +48,8 @@ for LLM chat APIs.
 
 ```twig
 <chat>
-    <system>You are a helpful assistant.</system>
-    <user>What is the capital of {{ country }}?</user>
+    <message role="system">You are a helpful assistant.</message>
+    <message role="user">What is the capital of {{ country }}?</message>
 </chat>
 ```
 
@@ -76,8 +76,8 @@ schema:
     required: [name]
 ---#}
 <chat>
-    <system>You are a helpful assistant.</system>
-    <user>What is the capital of {{ country }}?</user>
+    <message role="system">You are a helpful assistant.</message>
+    <message role="user">What is the capital of {{ country }}?</message>
 </chat>
 ```
 
@@ -176,6 +176,30 @@ echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
 ```
 
+### In Memory Prompts
+
+If you need to create an inline prompt (without saving it to a library), you can use following syntax:
+
+```php
+<?php
+$prompt = Prompt::twig() // or Prompt::blade() for Blade syntax
+    ->withTemplateContent('Hello, {{ name }}!')
+    ->withValues(['name' => 'World'])
+    ->toText();
+?>
+```
+
+There's shorter syntax for creating in-memory prompts:
+
+```php
+<?php
+$prompt = Prompt::twig() // or Prompt::blade() for Blade syntax
+    ->from('Hello, {{ name }}!')
+    ->with(['name' => 'World'])
+    ->toText();
+?>
+```
+
 ### Handling Template Variables
 
 To check which variables are available in a prompt template:
@@ -212,12 +236,22 @@ echo $prompt->toText(); // Outputs: "Hello, World!"
 
 The Prompt class also supports converting templates containing chat-specific markup into structured messages:
 
+Here is an example XML that can be used to generate a sequence of chat messages:
+```xml
+<chat>
+    <message role="system">You are a helpful assistant.</message>
+    <message role="user">Hello, {{ name }}</message>
+</chat>
+```
+
+And here is how you use `Prompt` class to convert XML template into a sequence of messages:
+
 ```php
 <?php
 use Cognesy\Instructor\Utils\Messages\Messages;
 
 $prompt = Prompt::using('demo-blade')
-    ->withTemplateContent('<system>You are a helpful assistant.</system><user>Hello, {{ $name }}</user>')
+    ->withTemplateContent('<chat><message role="system">You are a helpful assistant.</message><message role="user">Hello, {{ $name }}</message></chat>')
     ->withValues(['name' => 'assistant']);
 
 $messages = $prompt->toMessages();

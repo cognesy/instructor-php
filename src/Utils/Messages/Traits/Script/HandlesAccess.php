@@ -14,10 +14,11 @@ trait HandlesAccess
     public function section(string $name) : Section {
         $index = $this->sectionIndex($name);
         if ($index === -1) {
-            $this->createSection(new Section($name));
-            $index = $this->sectionIndex($name);
+            $section = $this->createSection($name);
+        } else {
+            $section = $this->sections[$index];
         }
-        return $this->sections[$index];
+        return $section;
     }
 
     public function sectionNames() : array {

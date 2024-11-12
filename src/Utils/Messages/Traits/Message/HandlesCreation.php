@@ -10,8 +10,8 @@ use InvalidArgumentException;
 
 trait HandlesCreation
 {
-    public static function make(string $role, string|array $content) : static {
-        return new static($role, $content);
+    public static function make(string $role, string|array $content) : Message {
+        return new Message($role, $content);
     }
 
     public static function fromString(string $content) : static {

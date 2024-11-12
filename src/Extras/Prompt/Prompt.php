@@ -6,8 +6,10 @@ use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
 use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Messages\Script;
 use Cognesy\Instructor\Utils\Str;
-use Cognesy\Instructor\Utils\Xml;
+use Cognesy\Instructor\Utils\Xml\Xml;
+use Cognesy\Instructor\Utils\Xml\XmlElement;
 use InvalidArgumentException;
 
 class Prompt
@@ -20,6 +22,7 @@ class Prompt
     private string $templateContent;
     private array $variableValues;
     private string $rendered;
+    private $tags = ['chat', 'message', 'content', 'section'];
 
     public function __construct(
         string             $path = '',
@@ -121,6 +124,10 @@ class Prompt
         return $this->makeMessages($this->rendered());
     }
 
+    public function toScript() : Script {
+        return $this->makeScript($this->rendered());
+    }
+
     public function toArray() : array {
         return $this->toMessages()->toArray();
     }
@@ -149,7 +156,107 @@ class Prompt
         $infoVars = $this->info()->variableNames();
         $templateVars = $this->variables();
         $valueKeys = array_keys($this->variableValues);
+        return $this->validateVariables($infoVars, $templateVars, $valueKeys);
+    }
 
+    // INTERNAL ///////////////////////////////////////////////////
+
+    private function rendered() : string {
+        if (!isset($this->rendered)) {
+            $rendered = $this->library->renderString($this->templateContent, $this->variableValues);
+            $this->rendered = $rendered;
+        }
+        return $this->rendered;
+    }
+
+    private function makeMessages(string $text) : Messages {
+        return match(true) {
+            $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeMessagesFromXml($text),
+            default => Messages::fromString($text),
+        };
+    }
+
+    private function makeScript(string $text) : Script {
+        return match(true) {
+            $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeScriptFromXml($text),
+            default => Messages::fromString($text),
+        };
+    }
+
+    private function hasChatRoles(string $text) : bool {
+        $roleStrings = [
+            '<chat>', '<message>', '<section>'
+        ];
+        if (Str::containsAny($text, $roleStrings)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function containsXml(string $text) : bool {
+        return preg_match('/<[^>]+>/', $text) === 1;
+    }
+
+    private function makeScriptFromXml(string $text) : Script {
+        $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
+        $script = new Script();
+        $section = $script->section('messages');
+        foreach ($xml->children() as $element) {
+            if ($element->tag() === 'section') {
+                $section = $script->section($element->attribute('name') ?? 'messages');
+                continue;
+            }
+            if ($element->tag() !== 'message') {
+                continue;
+            }
+            $section->appendMessage(Message::make(
+                role: $element->attribute('role', 'user'),
+                content: match(true) {
+                    $element->hasChildren() => $this->getMessageContent($element),
+                    default => $element->content(),
+                }
+            ));
+        }
+        return $script;
+    }
+
+    private function makeMessagesFromXml(string $text) : Messages {
+        $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
+        $messages = new Messages();
+        foreach ($xml->children() as $element) {
+            if ($element->tag() !== 'message') {
+                continue;
+            }
+            $messages->appendMessage(Message::make(
+                role: $element->attribute('role', 'user'),
+                content: match(true) {
+                    $element->hasChildren() => $this->getMessageContent($element),
+                    default => $element->content(),
+                }
+            ));
+        }
+        return $messages;
+    }
+
+    private function getMessageContent(XmlElement $element) : array {
+        $content = [];
+        foreach ($element->children() as $child) {
+            if ($child->tag() !== 'content') {
+                continue;
+            }
+            // check if content type is text, image or audio
+            $type = $child->attribute('type', 'text');
+            $content[] = match($type) {
+                'image' => ['type' => 'image_url', 'image_url' => ['url' => $child->content()]],
+                'audio' => ['type' => 'input_audio', 'input_audio' => ['data' => $child->content(), 'format' => $child->attribute('format', 'mp3')]],
+                'text' => ['type' => 'text', 'text' => $child->content()],
+                default => throw new InvalidArgumentException("Invalid content type: $type"),
+            };
+        }
+        return $content;
+    }
+
+    private function validateVariables(array $infoVars, array $templateVars, array $valueKeys) : array {
         $messages = [];
         foreach($infoVars as $var) {
             if (!in_array($var, $valueKeys)) {
@@ -174,50 +281,6 @@ class Prompt
             if (!in_array($var, $valueKeys)) {
                 $messages[] = "$var: variable used in template, but value not provided";
             }
-        }
-        return $messages;
-    }
-
-    // INTERNAL ///////////////////////////////////////////////////
-
-    private function rendered() : string {
-        if (!isset($this->rendered)) {
-            $rendered = $this->library->renderString($this->templateContent, $this->variableValues);
-            $this->rendered = $rendered;
-        }
-        return $this->rendered;
-    }
-
-    private function makeMessages(string $text) : Messages {
-        return match(true) {
-            $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeMessagesFromXml($text),
-            default => Messages::fromString($text),
-        };
-    }
-
-    private function hasChatRoles(string $text) : bool {
-        $roleStrings = [
-            '<chat>', '<user>', '<assistant>', '<system>', '<section>', '<message>'
-        ];
-        if (Str::containsAny($text, $roleStrings)) {
-            return true;
-        }
-        return false;
-    }
-
-    private function containsXml(string $text) : bool {
-        return preg_match('/<[^>]+>/', $text) === 1;
-    }
-
-    private function makeMessagesFromXml(string $text) : Messages {
-        $messages = new Messages();
-        $xml = match(Str::contains($text, '<chat>')) {
-            true => Xml::from($text)->toArray(),
-            default => Xml::from($text)->wrapped('chat')->toArray(),
-        };
-        // TODO: validate
-        foreach ($xml as $key => $message) {
-            $messages->appendMessage(Message::make($key, $message));
         }
         return $messages;
     }

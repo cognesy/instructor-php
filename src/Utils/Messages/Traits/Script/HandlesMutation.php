@@ -9,12 +9,13 @@ use Exception;
 
 trait HandlesMutation
 {
-    public function createSection(Section $section) : static {
-        if ($this->hasSection($section->name())) {
-            throw new Exception("Section with name '{$section->name()}' already exists - use mergeSection() instead.");
+    public function createSection(string $name) : Section {
+        if ($this->hasSection($name)) {
+            throw new Exception("Section with name '{$name()}' already exists - use mergeSection() instead.");
         }
+        $section = new Section($name);
         $this->appendSection($section);
-        return $this;
+        return $section;
     }
 
     public function appendSection(Section $section) : static {

@@ -10,8 +10,6 @@ use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\RequestHandler;
 use Cognesy\Instructor\Features\Core\ResponseGenerator;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
-use Cognesy\Instructor\Features\LLM\Inference;
-use Cognesy\Instructor\Features\LLM\InferenceResponse;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
@@ -128,25 +126,6 @@ trait HandlesInvocation
     }
 
     // INTERNAL /////////////////////////////////////////////////
-
-    protected function getInference(Request $request) : InferenceResponse {
-        $inference = new Inference(
-            connection: $this->connection,
-            httpClient: $this->httpClient,
-            driver: $this->driver,
-            events: $this->events,
-        );
-        return $inference
-            ->create(
-                $request->toMessages(),
-                $request->model(),
-                $request->toolCallSchema(),
-                $request->toolChoice(),
-                $request->responseFormat(),
-                $request->options(),
-                $request->mode()
-            );
-    }
 
     private function makeResponseModel(
         string|array|object $requestedSchema,
