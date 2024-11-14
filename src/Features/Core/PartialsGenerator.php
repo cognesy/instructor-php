@@ -150,7 +150,7 @@ class PartialsGenerator implements CanGeneratePartials
         ResponseModel $responseModel,
     ) : Result {
         return Chain::from(fn() => Json::fromPartial($partialJsonData)->toString())
-            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this?->toolCalls->last()->name))
+            ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->result();
     }
@@ -187,7 +187,7 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     protected function newToolCall(string $name) : ToolCall {
-        $newToolCall = $this->toolCalls->create($name);
+        $newToolCall = $this->toolCalls->add($name);
         $this->events->dispatch(new StreamedToolCallStarted($newToolCall));
         return $newToolCall;
     }

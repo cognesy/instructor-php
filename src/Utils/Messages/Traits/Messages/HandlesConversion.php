@@ -14,7 +14,7 @@ trait HandlesConversion
      */
     public static function asPerRoleArray(array $messages) : array {
         if (empty($messages)) {
-            return ['role' => 'system', 'content' => ''];
+            return ['role' => 'user', 'content' => ''];
         }
 
         $role = 'user';
@@ -41,6 +41,7 @@ trait HandlesConversion
             $merged->appendMessage(new Message(
                 role: $role,
                 content: implode("\n", array_filter($content)), // TODO: see above
+                metadata: $message['_metadata'],
             ));
         }
         return $merged->toArray();

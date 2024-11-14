@@ -6,6 +6,7 @@ use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Observation;
+use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Utils\Str;
 
 class CompanyEval implements CanGenerateObservations
@@ -50,10 +51,14 @@ class CompanyEval implements CanGenerateObservations
     }
 
     private function validateToolsData(Execution $execution) : bool {
-        $data = $execution->get('response')->toolsData[0] ?? [];
-        return 'store_company' === ($data['name'] ?? '')
-            && 'ACME' === ($data['arguments']['name'] ?? '')
-            && 2020 === (int) ($data['arguments']['year'] ?? 0);
+        /** @var ToolCall $toolCall */
+        $toolCall = $execution->get('response')->toolCalls?->first();
+        if (null === $toolCall) {
+            return false;
+        }
+        return 'store_company' === $toolCall->name()
+            && 'ACME' === $toolCall->stringValue('name')
+            && 2020 === $toolCall->intValue('year');
     }
 
     private function validateDefault(Execution $execution) : bool {

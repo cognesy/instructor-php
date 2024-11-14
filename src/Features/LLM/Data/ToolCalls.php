@@ -1,29 +1,42 @@
 <?php
 namespace Cognesy\Instructor\Features\LLM\Data;
 
+use InvalidArgumentException;
+
 class ToolCalls
 {
     /**
      * @var ToolCall[]
      */
-    private array $toolCalls = [];
+    private array $toolCalls;
 
+    /**
+     * @param ToolCall[] $toolCalls
+     */
     public function __construct(array $toolCalls = []) {
         $this->toolCalls = $toolCalls;
     }
 
     public static function fromArray(array $toolCalls) : ToolCalls {
         $list = [];
-        foreach ($toolCalls as $toolCall) {
-            $list[] = ToolCall::fromArray($toolCall);
+        foreach ($toolCalls as $key => $toolCall) {
+            $list[] = match(true) {
+                is_array($toolCall) => ToolCall::fromArray($toolCall),
+                is_object($toolCall) && $toolCall instanceof ToolCall => $toolCall,
+                is_string($toolCall) => new ToolCall($key, $toolCall),
+                default => throw new InvalidArgumentException('Cannot create ToolCall from provided data: ' . print_r($toolCall, true))
+            };
         }
         return new ToolCalls($list);
     }
 
     public static function fromMapper(array $toolCalls, callable $mapper) : ToolCalls {
         $list = [];
-        foreach ($toolCalls as $toolCall) {
-            $list[] = $mapper($toolCall);
+        foreach ($toolCalls as $item) {
+            $toolCall = $mapper($item);
+            if ($toolCall instanceof ToolCall) {
+                $list[] = $toolCall;
+            }
         }
         return new ToolCalls($list);
     }
@@ -47,6 +60,9 @@ class ToolCalls
         return empty($this->toolCalls);
     }
 
+    /**
+     * @return ToolCall[]
+     */
     public function all() : array {
         return $this->toolCalls;
     }
@@ -55,7 +71,7 @@ class ToolCalls
         $this->toolCalls = [];
     }
 
-    public function create(string $toolName, string $args = '') : ToolCall {
+    public function add(string $toolName, string $args = '') : ToolCall {
         $newToolCall = new ToolCall(
             name: $toolName,
             args: $args
@@ -67,20 +83,28 @@ class ToolCalls
     public function updateLast(string $responseJson, string $defaultName) : ToolCall {
         $last = $this->last();
         if (empty($last)) {
-            return $this->create($defaultName, $responseJson);
+            return $this->add($defaultName, $responseJson);
         }
-        $last->name = $last->name ?? $defaultName;
-        $last->args = $responseJson;
+        $last->withName($last->name() ?? $defaultName);
+        $last->withArgs($responseJson);
         return $this->last();
     }
 
     public function finalizeLast(string $responseJson, string $defaultName) : ToolCall {
         $last = $this->last();
         if (empty($last)) {
-            return $this->create($defaultName, $responseJson);
+            return $this->add($defaultName, $responseJson);
         }
-        $last->name = $last->name ?? $defaultName;
-        $last->args = $responseJson;
+        $last->withName($last->name() ?? $defaultName);
+        $last->withArgs($responseJson);
         return $this->last();
+    }
+
+    public function toArray() : array {
+        $list = [];
+        foreach ($this->toolCalls as $toolCall) {
+            $list[] = $toolCall->toArray();
+        }
+        return $list;
     }
 }

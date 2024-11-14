@@ -1,6 +1,4 @@
 <?php
-namespace Cognesy\Instructor\Extras\LLM\Drivers;
-
 namespace Cognesy\Instructor\Features\LLM\Drivers;
 
 use Cognesy\Instructor\Features\LLM\InferenceRequest;

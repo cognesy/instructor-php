@@ -31,7 +31,8 @@ class User {
 
 echo "\nREQUEST:\n";
 $user = (new Instructor)
-    ->onEvent(RequestSentToLLM::class, fn($event)=>dump($event->request->toMessages()))
+    // let's dump the request data to see how examples are used in requests
+    ->onEvent(RequestSentToLLM::class, fn($event) => dump($event))
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,

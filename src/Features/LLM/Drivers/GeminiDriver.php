@@ -100,9 +100,6 @@ class GeminiDriver implements CanHandleInference
         return new LLMResponse(
             content: $this->makeContent($data),
             responseData: $data,
-//            toolName: $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '',
-//            toolArgs: Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? []),
-            toolsData: $this->mapToolsData($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
@@ -116,6 +113,7 @@ class GeminiDriver implements CanHandleInference
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
             responseData: $data,
+            toolId: $data['candidates'][0]['id'] ?? '',
             toolName: $this->makeToolName($data),
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
@@ -145,10 +143,12 @@ class GeminiDriver implements CanHandleInference
     }
 
     private function toMessages(array $messages) : array {
-        return $this->toNativeMessages(Messages::fromArray($messages)
-            ->exceptRoles(['system'])
-            //->toMergedPerRole()
-            ->toArray());
+        return $this->toNativeMessages(
+            Messages::fromArray($messages)
+                ->exceptRoles(['system'])
+                //->toMergedPerRole()
+                ->toArray()
+        );
     }
 
     protected function toOptions(
@@ -172,16 +172,26 @@ class GeminiDriver implements CanHandleInference
         )];
     }
 
-    protected function toToolChoice(array $toolChoice): string|array {
+    protected function toToolChoice(string|array $toolChoice): string|array {
         return match(true) {
             empty($toolChoice) => ["function_calling_config" => ["mode" => "ANY"]],
+            is_string($toolChoice) => ["function_calling_config" => ["mode" => $this->mapToolChoice($toolChoice)]],
             is_array($toolChoice) => [
                 "function_calling_config" => array_filter([
-                    "mode" => "ANY",
+                    "mode" => $this->mapToolChoice($toolChoice['mode'] ?? "ANY"),
                     "allowed_function_names" => $toolChoice['function']['name'] ?? [],
                 ]),
             ],
             default => ["function_calling_config" => ["mode" => "ANY"]],
+        };
+    }
+
+    protected function mapToolChoice(string $choice) : string {
+        return match($choice) {
+            'auto' => 'AUTO',
+            'required' => 'ANY',
+            'none' => 'NONE',
+            default => 'ANY',
         };
     }
 
@@ -211,18 +221,69 @@ class GeminiDriver implements CanHandleInference
         ]);
     }
 
-    protected function toNativeMessages(string|array $messages) : array {
-        if (is_string($messages)) {
-            return [["text" => $messages]];
-        }
-        $transformed = [];
+    private function toNativeMessages(array $messages) : array {
+        $list = [];
         foreach ($messages as $message) {
-            $transformed[] = [
-                'role' => $this->mapRole($message['role']),
-                'parts' => $this->contentPartsToNative($message['content']),
-            ];
+            $nativeMessage = $this->mapMessage($message);
+            if (empty($nativeMessage)) {
+                continue;
+            }
+            $list[] = $nativeMessage;
         }
-        return $transformed;
+        return $list;
+    }
+
+    private function mapMessage(array $message) : array {
+        return match(true) {
+            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? []) => $this->toNativeToolCall($message),
+            ($message['role'] ?? '') === 'tool' => $this->toNativeToolResult($message),
+            default => $this->toNativeTextMessage($message),
+        };
+    }
+
+    private function toNativeTextMessage(array $message) : array {
+        return [
+            'role' => $this->mapRole($message['role'] ?? 'user'),
+            'parts' => $this->toNativeContentParts($message['content']),
+        ];
+    }
+
+    private function toNativeToolCall(array $message) : array {
+        return [
+            'role' => 'model',
+            'parts' => array_map(
+                callback: fn($call) => $this->toNativeToolCallPart($call),
+                array: $message['_metadata']['tool_calls'] ?? []
+            ),
+        ];
+    }
+
+    private function toNativeToolCallPart(array $call) : array {
+        return [
+            'functionCall' => [
+                'name' => $call['function']['name'] ?? '',
+                'args' => Json::from($call['function']['arguments'])->toArray() ?? [],
+            ]
+        ];
+    }
+
+    private function toNativeToolResult(array $message) : array {
+        $content = match(true) {
+            is_array($message['_metadata']['result'] ?? '') => Json::from($message['_metadata']['result'] ?? '')->toArray(),
+            default => $message['content'],
+        };
+        return [
+            'role' => 'user',
+            'parts' => [[
+                'functionResponse' => [
+                    'name' => $message['_metadata']['tool_name'] ?? '',
+                    'response' => [
+                        'name' => $message['_metadata']['tool_name'] ?? '',
+                        'content' => $content,
+                    ],
+                ],
+            ]],
+        ];
     }
 
     protected function mapRole(string $role) : string {
@@ -230,7 +291,7 @@ class GeminiDriver implements CanHandleInference
         return $roles[$role] ?? $role;
     }
 
-    protected function contentPartsToNative(string|array $contentParts) : array {
+    protected function toNativeContentParts(string|array $contentParts) : array {
         if (is_string($contentParts)) {
             return [["text" => $contentParts]];
         }
@@ -243,16 +304,25 @@ class GeminiDriver implements CanHandleInference
 
     protected function contentPartToNative(array $contentPart) : array {
         $type = $contentPart['type'] ?? 'text';
-        return match($type) {
-            'text' => ['text' => $contentPart['text'] ?? ''],
-            'image_url' => [
-                'inlineData' => [
-                    'mimeType' => Str::between($contentPart['image_url']['url'], 'data:', ';base64,'),
-                    'data' => Str::after($contentPart['image_url']['url'], ';base64,'),
-                ],
-            ],
+        return match(true) {
+            ($type === 'text') => $this->makeTextContentPart($contentPart),
+            ($type === 'image_url') => $this->makeImageUrlContentPart($contentPart),
+
             default => $contentPart,
         };
+    }
+
+    private function makeTextContentPart(array $contentPart) : array {
+        return ['text' => $contentPart['text'] ?? ''];
+    }
+
+    private function makeImageUrlContentPart(array $contentPart) : array {
+        return [
+            'inlineData' => [
+                'mimeType' => Str::between($contentPart['image_url']['url'], 'data:', ';base64,'),
+                'data' => Str::after($contentPart['image_url']['url'], ';base64,'),
+            ],
+        ];
     }
 
     private function makeToolCalls(array $data) : ToolCalls {
@@ -260,16 +330,6 @@ class GeminiDriver implements CanHandleInference
             callback: fn(array $call) => $call['functionCall'] ?? [],
             array: $data['candidates'][0]['content']['parts'] ?? []
         ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['args'] ?? '']));
-    }
-
-    private function mapToolsData(array $data) : array {
-        return array_map(
-            fn($tool) => [
-                'name' => $tool['functionCall']['name'] ?? '',
-                'arguments' => $tool['functionCall']['args'] ?? '',
-            ],
-            $data['candidates'][0]['content']['parts'] ?? []
-        );
     }
 
     private function makeContent(array $data) : string {

@@ -11,27 +11,37 @@ enum LLMFinishReason : string
     case Error = 'error';
     case Other = 'other';
 
+    public function equals(string|LLMFinishReason $reason) : bool {
+        return match(true) {
+            $reason instanceof LLMFinishReason => ($this->value === $reason->value),
+            is_string($reason) => ($this->value === $reason),
+            default => false,
+        };
+    }
+
     public static function fromText(string $text) : LLMFinishReason {
         return match ($text) {
-            'stop_sequence' => self::Stop,
+            'BLOCKLIST' => self::ContentFilter,
             'COMPLETE' => self::Stop,
-            'stop' => self::Stop,
-            'STOP' => self::Stop,
+            'error' => self::Error,
+            'FINISH_REASON_UNSPECIFIED' => self::Other,
+            'LANGUAGE' => self::ContentFilter,
+            'length' => self::Length,
+            'MALFORMED_FUNCTION_CALL' => self::Error,
             'max_tokens' => self::Length,
             'MAX_TOKENS' => self::Length,
-            'length' => self::Length,
             'model_length' => self::Length,
-            'SAFETY' => self::ContentFilter,
-            'RECITATION' => self::ContentFilter,
-            'LANGUAGE' => self::ContentFilter,
-            'BLOCKLIST' => self::ContentFilter,
-            'PROHIBITED_CONTENT' => self::ContentFilter,
-            'SPII' => self::ContentFilter,
-            'error' => self::Error,
-            'MALFORMED_FUNCTION_CALL' => self::Error,
-            'tool_calls' => self::ToolCalls,
-            'FINISH_REASON_UNSPECIFIED' => self::Other,
             'OTHER' => self::Other,
+            'PROHIBITED_CONTENT' => self::ContentFilter,
+            'RECITATION' => self::ContentFilter,
+            'SAFETY' => self::ContentFilter,
+            'SPII' => self::ContentFilter,
+            'stop' => self::Stop,
+            'STOP' => self::Stop,
+            'stop_sequence' => self::Stop,
+            'TOOL_CALL' => self::ToolCalls,
+            'tool_calls' => self::ToolCalls,
+            'tool_use' => self::ToolCalls,
             default => self::Other,
         };
     }

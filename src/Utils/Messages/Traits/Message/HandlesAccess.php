@@ -11,7 +11,9 @@ trait HandlesAccess
     }
 
     public static function hasRoleAndContent(array $message) : bool {
-        return isset($message['role'], $message['content']);
+        return isset($message['role']) && (
+            isset($message['content']) || isset($message['_metadata'])
+        );
     }
 
     public function role() : MessageRole {
@@ -23,7 +25,7 @@ trait HandlesAccess
     }
 
     public function isEmpty() : bool {
-        return empty($this->content);
+        return empty($this->content) && !$this->hasMeta();
     }
 
     public function isNull() : bool {
@@ -32,5 +34,33 @@ trait HandlesAccess
 
     public function isComposite() : bool {
         return is_array($this->content);
+    }
+
+    public function hasMeta(string $key = null) : bool {
+        return match(true) {
+            $key === null => !empty($this->metadata),
+            default => isset($this->metadata[$key]),
+        };
+    }
+
+    public function meta(string $key = null) : mixed {
+        return match(true) {
+            $key === null => $this->metadata,
+            default => $this->metadata[$key] ?? null,
+        };
+    }
+
+    public function metaKeys() : array {
+        return array_keys($this->metadata);
+    }
+
+    public function withMeta(array $metadata) : self {
+        $this->metadata = $metadata;
+        return $this;
+    }
+
+    public function withMetaValue(string $key, mixed $value) : self {
+        $this->metadata[$key] = $value;
+        return $this;
     }
 }

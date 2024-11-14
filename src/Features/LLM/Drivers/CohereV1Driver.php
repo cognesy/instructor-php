@@ -16,6 +16,7 @@ use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Str;
 
 class CohereV1Driver implements CanHandleInference
 {
@@ -68,15 +69,18 @@ class CohereV1Driver implements CanHandleInference
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array {
+        unset($options['parallel_tool_calls']);
+
         $system = '';
         $chatHistory = [];
+        $messages = $this->excludeUnderscoredKeys($messages);
 
-        $request = array_filter(array_merge([
+        $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
             'preamble' => $system,
             'chat_history' => $chatHistory,
             'message' => Messages::asString($messages),
-        ], $options));
+        ]), $options);
 
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
@@ -87,7 +91,7 @@ class CohereV1Driver implements CanHandleInference
         return new LLMResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolsData: $this->mapToolsData($data),
+            //: $this->map($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
@@ -98,6 +102,7 @@ class CohereV1Driver implements CanHandleInference
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
             responseData: $data,
+            toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['response']['finish_reason'] ?? $data['delta']['finish_reason'] ?? '',
@@ -184,16 +189,6 @@ class CohereV1Driver implements CanHandleInference
         );
     }
 
-    private function mapToolsData(array $data) : array {
-        return array_map(
-            fn($tool) => [
-                'name' => $tool['name'] ?? '',
-                'arguments' => $tool['parameters'] ?? '',
-            ],
-            $data['tool_calls'] ?? []
-        );
-    }
-
     private function makeContent(array $data) : string {
         return ($data['text'] ?? '') . (!empty($data['tool_calls'])
             ? ("\n" . Json::encode($data['tool_calls']))
@@ -208,12 +203,11 @@ class CohereV1Driver implements CanHandleInference
         return $data['tool_call_delta']['parameters'] ?? $data['text'] ?? '';
     }
 
-    private function makeToolArgsDelta(array $data) : string {
+    private function makeToolId(array $data) {
         if (!$this->isStreamChunk($data)) {
             return '';
         }
-        $toolArgs = $data['tool_calls'][0]['parameters'] ?? '';
-        return ('' === $toolArgs) ? '' : Json::encode($toolArgs);
+        return $data['tool_calls'][0]['id'] ?? '';
     }
 
     private function makeToolNameDelta(array $data) : string {
@@ -221,6 +215,14 @@ class CohereV1Driver implements CanHandleInference
             return '';
         }
         return $data['tool_calls'][0]['name'] ?? '';
+    }
+
+    private function makeToolArgsDelta(array $data) : string {
+        if (!$this->isStreamChunk($data)) {
+            return '';
+        }
+        $toolArgs = $data['tool_calls'][0]['parameters'] ?? '';
+        return ('' === $toolArgs) ? '' : Json::encode($toolArgs);
     }
 
     private function isStreamChunk(array $data) : bool {
@@ -253,5 +255,13 @@ class CohereV1Driver implements CanHandleInference
             cacheReadTokens: 0,
             reasoningTokens: 0,
         );
+    }
+
+    protected function excludeUnderscoredKeys(array $messages) : array {
+        $list = [];
+        foreach ($messages as $message) {
+            $list[] = array_filter($message, fn($value, $key) => !Str::startsWith($key, '_'), ARRAY_FILTER_USE_BOTH);
+        }
+        return $list;
     }
 }

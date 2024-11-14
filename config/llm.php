@@ -72,6 +72,14 @@ return [
             'defaultModel' => 'gemini-1.5-flash-latest',
             'defaultMaxTokens' => 1024,
         ],
+        'gemini-oai' => [
+            'providerType' => LLMProviderType::GeminiOAI->value,
+            'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta/openai',
+            'apiKey' => Env::get('GEMINI_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'gemini-1.5-flash',
+            'defaultMaxTokens' => 1024,
+        ],
         'grok' => [
             'providerType' => LLMProviderType::Grok->value,
             'apiUrl' => 'https://api.x.ai/v1',
@@ -101,7 +109,7 @@ return [
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'qwen2.5:0.5b', //'gemma2:2b',
+            'defaultModel' => 'qwen2.5-coder:3b', //'gemma2:2b',
             'defaultMaxTokens' => 1024,
             'httpClient' => 'http-ollama',
         ],

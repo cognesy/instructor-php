@@ -12,6 +12,7 @@ class PartialLLMResponse
     public function __construct(
         public string $contentDelta = '',
         public array  $responseData = [],
+        public string $toolId = '',
         public string $toolName = '',
         public string $toolArgs = '',
         public string $finishReason = '',

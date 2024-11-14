@@ -5,10 +5,10 @@ namespace Cognesy\Instructor\Features\LLM\Drivers;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Arrays;
-use Cognesy\Instructor\Utils\Json\Json;
 
 class CohereV2Driver extends OpenAIDriver
 {
@@ -23,11 +23,13 @@ class CohereV2Driver extends OpenAIDriver
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array {
-        $request = array_filter(array_merge([
+        unset($options['parallel_tool_calls']);
+
+        $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $messages,
-        ], $options));
+            'messages' => $this->toNativeMessages($messages),
+        ]), $options);
 
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
@@ -48,7 +50,6 @@ class CohereV2Driver extends OpenAIDriver
         return new LLMResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolsData: $this->makeToolsData($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
@@ -62,6 +63,7 @@ class CohereV2Driver extends OpenAIDriver
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
             responseData: $data,
+            toolId: $data['delta']['message']['tool_calls']['function']['id'] ?? '',
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
             toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
             finishReason: $data['delta']['finish_reason'] ?? '',
@@ -126,19 +128,22 @@ class CohereV2Driver extends OpenAIDriver
 
     private function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
-            callback: fn(array $call) => $call['function'] ?? [],
-            array: $data['message']['tool_calls'] ?? []
+            callback: fn(array $call) => $this->makeToolCall($call),
+            array: $data['message']['tool_calls'] ?? [],
         ));
     }
 
-    private function makeToolsData(array $data) : array {
-        return array_map(
-            fn($tool) => [
-                'name' => $tool['function']['name'] ?? '',
-                'arguments' => Json::decode($tool['function']['arguments']) ?? '',
-            ],
-            $data['message']['tool_calls'] ?? []
-        );
+    private function makeToolCall(array $data) : ?ToolCall {
+        if (empty($data)) {
+            return null;
+        }
+        if (!isset($data['function'])) {
+            return null;
+        }
+        if (!isset($data['id'])) {
+            return null;
+        }
+        return ToolCall::fromArray($data['function'] ?? [])->withId($data['id'] ?? '');
     }
 
     private function makeContentDelta(array $data): string {

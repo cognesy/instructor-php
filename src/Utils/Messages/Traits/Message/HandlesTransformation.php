@@ -7,7 +7,11 @@ use RuntimeException;
 trait HandlesTransformation
 {
     public function toArray() : array {
-        return ['role' => $this->role, 'content' => $this->content];
+        return array_filter([
+            'role' => $this->role,
+            'content' => $this->content,
+            '_metadata' => $this->metadata,
+        ]);
     }
 
     public function toString() : string {
@@ -30,22 +34,13 @@ trait HandlesTransformation
     }
 
     public function toCompositeMessage() : Message {
-        return Message::fromArray($this->toCompositeArray());
-    }
-
-    public function toCompositeArray() : array {
-        return match($this->isComposite()) {
-            true => [
-                'role' => $this->role,
-                'content' => $this->content,
-            ],
-            default => [
-                'role' => $this->role,
-                'content' => [[
-                    'type' => 'text',
-                    'text' => $this->content,
-                ]]
-            ]
-        };
+        return Message::fromArray([
+            'role' => $this->role,
+            'content' => match(true) {
+                $this->isComposite() => $this->content,
+                default => [['type' => 'text', 'text' => $this->content]]
+            },
+            '_metadata' => $this->metadata,
+        ]);
     }
 }

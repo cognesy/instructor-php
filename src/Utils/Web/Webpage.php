@@ -9,10 +9,10 @@ use Cognesy\Instructor\Utils\Web\Scrapers\BasicReader;
 
 class Webpage implements CanProvideMessage
 {
-    use \Cognesy\Instructor\Utils\Web\Traits\HandlesContent;
-    use \Cognesy\Instructor\Utils\Web\Traits\HandlesCreation;
-    use \Cognesy\Instructor\Utils\Web\Traits\HandlesExtraction;
-    use \Cognesy\Instructor\Utils\Web\Traits\HandlesLinks;
+    use Traits\HandlesContent;
+    use Traits\HandlesCreation;
+    use Traits\HandlesExtraction;
+    use Traits\HandlesLinks;
 
     protected CanGetUrlContent $scraper;
     protected HtmlProcessor $htmlProcessor;

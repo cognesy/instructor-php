@@ -24,7 +24,7 @@ trait HandlesCreation
         foreach ($messages as $message) {
             $instance->messages[] = match(true) {
                 is_string($message) => Message::fromString($message),
-                Message::hasRoleAndContent($message) => new Message($message['role'], $message['content']),
+                Message::hasRoleAndContent($message) => Message::fromArray($message),
                 default => throw new Exception('Invalid message array - missing role or content keys'),
             };
         }
@@ -58,7 +58,7 @@ trait HandlesCreation
         foreach ($messages as $message) {
             $normalized->appendMessage(match(true) {
                 is_array($message) => match(true) {
-                    Message::hasRoleAndContent($message) => new Message($message['role'], $message['content']),
+                    Message::hasRoleAndContent($message) => Message::fromArray($message),
                     default => throw new Exception('Invalid message array - missing role or content keys'),
                 },
                 is_string($message) => new Message('user', $message),

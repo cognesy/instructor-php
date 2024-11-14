@@ -34,6 +34,7 @@ class PartialJsonParser
 
         $this->onExtraToken = function ($text, $data, $reminding) {
             // we're just skipping extra tokens
+
             //$message = 'Parsed JSON with extra tokens: ' . Json::encode(['text' => $text, 'data' => $data, 'reminding' => $reminding]);
             //throw new JSONParsingException($message, $text);
         };

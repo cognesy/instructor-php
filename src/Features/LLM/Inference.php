@@ -14,6 +14,7 @@ use Cognesy\Instructor\Features\LLM\Drivers\AzureOpenAIDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV1Driver;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV2Driver;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiDriver;
+use Cognesy\Instructor\Features\LLM\Drivers\GrokDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\MistralDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatibleDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
@@ -232,10 +233,11 @@ class Inference
             LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient, $this->events),
             LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient, $this->events),
             LLMProviderType::Gemini => new GeminiDriver($config, $httpClient, $this->events),
+            LLMProviderType::Grok => new GrokDriver($config, $httpClient, $this->events),
             LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
             LLMProviderType::Fireworks,
-            LLMProviderType::Grok,
+            LLMProviderType::GeminiOAI,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,
             LLMProviderType::OpenAICompatible,

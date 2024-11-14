@@ -29,7 +29,8 @@ class User {
 }
 
 $instructor = (new Instructor)
-    ->onEvent(RequestSentToLLM::class, fn(RequestSentToLLM $event)=>dump($event->request->toMessages()));
+    // let's dump the request data to see how customized prompts look like in requests
+    ->onEvent(RequestSentToLLM::class, fn(RequestSentToLLM $event) => dump($event));
 
 print("\n# Request for Mode::Tools:\n\n");
 $user = $instructor

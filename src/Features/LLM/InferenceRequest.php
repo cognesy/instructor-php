@@ -4,8 +4,6 @@ namespace Cognesy\Instructor\Features\LLM;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\LLM\Data\CachedContext;
 
-//use Cognesy\Instructor\Utils\Uuid;
-
 class InferenceRequest
 {
 //    public string $uuid = '';

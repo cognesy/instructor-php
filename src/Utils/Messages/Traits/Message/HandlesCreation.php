@@ -6,7 +6,6 @@ use Cognesy\Instructor\Contracts\CanProvideMessage;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Utils\Text;
 use Exception;
-use InvalidArgumentException;
 
 trait HandlesCreation
 {
@@ -19,10 +18,11 @@ trait HandlesCreation
     }
 
     public static function fromArray(array $message) : static {
-        if (!self::hasRoleAndContent($message)) {
-            throw new InvalidArgumentException('Message array must contain "role" and "content" keys');
-        }
-        return new static($message['role'], $message['content']);
+        return new static(
+            role: $message['role'] ?? 'user',
+            content: $message['content'] ?? '',
+            metadata: $message['_metadata'] ?? [],
+        );
     }
 
     public static function fromContent(string $role, string|array $content) : static {

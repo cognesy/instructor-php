@@ -244,16 +244,42 @@ class Prompt
             if ($child->tag() !== 'content') {
                 continue;
             }
-            // check if content type is text, image or audio
             $type = $child->attribute('type', 'text');
             $content[] = match($type) {
-                'image' => ['type' => 'image_url', 'image_url' => ['url' => $child->content()]],
-                'audio' => ['type' => 'input_audio', 'input_audio' => ['data' => $child->content(), 'format' => $child->attribute('format', 'mp3')]],
-                'text' => ['type' => 'text', 'text' => $child->content()],
-                default => throw new InvalidArgumentException("Invalid content type: $type"),
+                'image' => $this->makeImageContent($child),
+                'audio' => $this->makeAudioContent($child),
+                default => $this->makeTextContent($child),
             };
         }
         return $content;
+    }
+
+    private function makeTextContent(XmlElement $child) : array {
+        $hasCacheControl = $child->attribute('cache', false);
+        return array_filter([
+            'type' => 'text',
+            'text' => $child->content(),
+            'cache_control' => $hasCacheControl ? ['type' => 'ephemeral'] : []
+        ]);
+    }
+
+    private function makeImageContent(XmlElement $child) : array {
+       return [
+           'type' => 'image_url',
+           'image_url' => [
+               'url' => $child->content()
+           ]
+       ];
+    }
+
+    private function makeAudioContent(XmlElement $child) : array {
+        return [
+            'type' => 'input_audio',
+            'input_audio' => [
+                'data' => $child->content(),
+                'format' => $child->attribute('format', 'mp3')
+            ]
+        ];
     }
 
     private function validateVariables(array $infoVars, array $templateVars, array $valueKeys) : array {

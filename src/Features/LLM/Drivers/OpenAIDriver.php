@@ -11,10 +11,11 @@ use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
+use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Utils\Str;
 
 class OpenAIDriver implements CanHandleInference
 {
@@ -71,11 +72,11 @@ class OpenAIDriver implements CanHandleInference
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array {
-        $request = array_filter(array_merge([
+        $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $messages,
-        ], $options));
+            'messages' => $this->toNativeMessages($messages),
+        ]), $options);
 
         if ($options['stream'] ?? false) {
             $request['stream_options']['include_usage'] = true;
@@ -90,7 +91,6 @@ class OpenAIDriver implements CanHandleInference
         return new LLMResponse(
             content: $this->makeContent($data),
             responseData: $data,
-            toolsData: $this->makeToolsData($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
@@ -104,6 +104,7 @@ class OpenAIDriver implements CanHandleInference
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
             responseData: $data,
+            toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
@@ -165,19 +166,22 @@ class OpenAIDriver implements CanHandleInference
 
     private function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
-            callback: fn(array $call) => $call['function'] ?? [],
+            callback: fn(array $call) => $this->makeToolCall($call),
             array: $data['choices'][0]['message']['tool_calls'] ?? []
         ));
     }
 
-    private function makeToolsData(array $data) : array {
-        return array_map(
-            fn($tool) => [
-                'name' => $tool['function']['name'] ?? '',
-                'arguments' => Json::decode($tool['function']['arguments']) ?? '',
-            ],
-            $data['choices'][0]['message']['tool_calls'] ?? []
-        );
+    private function makeToolCall(array $data) : ?ToolCall {
+        if (empty($data)) {
+            return null;
+        }
+        if (!isset($data['function'])) {
+            return null;
+        }
+        if (!isset($data['id'])) {
+            return null;
+        }
+        return ToolCall::fromArray($data['function'])?->withId($data['id']);
     }
 
     private function makeContent(array $data): string {
@@ -200,6 +204,10 @@ class OpenAIDriver implements CanHandleInference
         };
     }
 
+    private function makeToolId(array $data) : string {
+        return $data['choices'][0]['delta']['tool_calls'][0]['id'] ?? '';
+    }
+
     private function makeToolNameDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
     }
@@ -220,5 +228,40 @@ class OpenAIDriver implements CanHandleInference
             cacheReadTokens: $data['usage']['prompt_tokens_details']['cached_tokens'] ?? 0,
             reasoningTokens: $data['usage']['prompt_tokens_details']['reasoning_tokens'] ?? 0,
         );
+    }
+
+    protected function toNativeMessages(array $messages) : array {
+        $list = [];
+        foreach ($messages as $message) {
+            $nativeMessage = $this->mapMessage($message);
+            if (empty($nativeMessage)) {
+                continue;
+            }
+            $list[] = $nativeMessage;
+        }
+        return $list;
+    }
+
+    protected function mapMessage(array $message) : array {
+        return match(true) {
+            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? []) => $this->toNativeToolCall($message),
+            ($message['role'] ?? '') === 'tool' => $this->toNativeToolResult($message),
+            default => $message,
+        };
+    }
+
+    protected function toNativeToolCall(array $message) : array {
+        return [
+            'role' => 'assistant',
+            'tool_calls' => $message['_metadata']['tool_calls'] ?? [],
+        ];
+    }
+
+    protected function toNativeToolResult(array $message) : array {
+        return [
+            'role' => 'tool',
+            'tool_call_id' => $message['_metadata']['tool_call_id'] ?? '',
+            'content' => $message['content'] ?? '',
+        ];
     }
 }

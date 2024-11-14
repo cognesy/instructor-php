@@ -20,6 +20,8 @@ use Cognesy\Instructor\Utils\Str;
 
 class AnthropicDriver implements CanHandleInference
 {
+    private bool $parallelToolCalls = false;
+
     public function __construct(
         protected LLMConfig $config,
         protected ?CanHandleHttp $httpClient = null,
@@ -72,18 +74,22 @@ class AnthropicDriver implements CanHandleInference
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array {
-        $request = array_filter(array_merge([
+        $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
+        unset($options['parallel_tool_calls']);
+
+        $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
             'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
             'system' => Messages::fromArray($messages)
                 ->forRoles(['system'])
                 ->toString(),
-            'messages' => $this->toNativeMessages(Messages::fromArray($messages)
-                ->exceptRoles(['system'])
-                ->toMergedPerRole()
-                ->toArray()
+            'messages' => $this->toNativeMessages(
+                Messages::fromArray($messages)
+                    ->exceptRoles(['system'])
+                    //->toMergedPerRole()
+                    ->toArray()
             ),
-        ], $options));
+        ]), $options);
 
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
@@ -94,9 +100,6 @@ class AnthropicDriver implements CanHandleInference
         return new LLMResponse(
             content: $this->makeContent($data),
             responseData: $data,
-//            toolName: $data['content'][0]['name'] ?? '',
-//            toolArgs: Json::encode($data['content'][0]['input'] ?? ''),
-            toolsData: $this->mapToolsData($data),
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
@@ -110,6 +113,7 @@ class AnthropicDriver implements CanHandleInference
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
             responseData: $data,
+            toolId: $data['content_block']['id'] ?? '',
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
@@ -159,27 +163,55 @@ class AnthropicDriver implements CanHandleInference
     private function toToolChoice(string|array $toolChoice, array $tools) : array|string {
         return match(true) {
             empty($tools) => '',
+            empty($toolChoice) => [
+                'type' => 'auto',
+                'disable_parallel_tool_use' => !$this->parallelToolCalls,
+            ],
             is_array($toolChoice) => [
                 'type' => 'tool',
                 'name' => $toolChoice['function']['name'],
-            ],
-            empty($toolChoice) => [
-                'type' => 'auto',
+                'disable_parallel_tool_use' => !$this->parallelToolCalls,
             ],
             default => [
-                'type' => $toolChoice,
+                'type' => $this->mapToolChoice($toolChoice),
+                'disable_parallel_tool_use' => !$this->parallelToolCalls,
             ],
         };
     }
 
+    protected function mapToolChoice(string $choice) : string {
+        return match($choice) {
+            'auto' => 'auto',
+            'required' => 'any',
+            default => 'auto',
+        };
+    }
+
     private function toNativeMessages(array $messages) : array {
-        return array_map(
-            fn($message) => [
-                'role' => $this->mapRole($message['role'] ?? 'user'),
-                'content' => $this->toNativeContent($message['content']),
-            ],
-            $messages
-        );
+        $list = [];
+        foreach ($messages as $message) {
+            $nativeMessage = $this->mapMessage($message);
+            if (empty($nativeMessage)) {
+                continue;
+            }
+            $list[] = $nativeMessage;
+        }
+        return $list;
+    }
+
+    private function mapMessage(array $message) : array {
+        return match(true) {
+            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? []) => $this->toNativeToolCall($message),
+            ($message['role'] ?? '') === 'tool' => $this->toNativeToolResult($message),
+            default => $this->toNativeTextMessage($message),
+        };
+    }
+
+    private function toNativeTextMessage(array $message) : array {
+        return [
+            'role' => $this->mapRole($message['role'] ?? 'user'),
+            'content' => $this->toNativeContent($message['content']),
+        ];
     }
 
     private function mapRole(string $role) : string {
@@ -201,10 +233,18 @@ class AnthropicDriver implements CanHandleInference
 
     private function contentPartToNative(array $contentPart) : array {
         $type = $contentPart['type'] ?? 'text';
-        if ($type === 'image_url') {
-            $contentPart = $this->toNativeImage($contentPart);
-        }
-        return $contentPart;
+        return match($type) {
+            'text' => $this->toNativeTextContent($contentPart),
+            'image_url' => $this->toNativeImage($contentPart),
+            default => $contentPart,
+        };
+    }
+
+    private function toNativeTextContent(array $contentPart) : array {
+        return [
+            'type' => 'text',
+            'text' => $contentPart['text'] ?? '',
+        ];
     }
 
     private function toNativeImage(array $contentPart) : array {
@@ -220,21 +260,42 @@ class AnthropicDriver implements CanHandleInference
         ];
         return $contentPart;
     }
+
+    private function toNativeToolCall(array $message) : array {
+        return [
+            'role' => 'assistant',
+            'content' => [[
+                'type' => 'tool_use',
+                'id' => $message['_metadata']['tool_calls'][0]['id'] ?? '',
+                'name' => $message['_metadata']['tool_calls'][0]['function']['name'] ?? '',
+                'input' => Json::from($message['_metadata']['tool_calls'][0]['function']['arguments'] ?? '')->toArray(),
+            ]]
+        ];
+    }
+
+    private function toNativeToolResult(array $message) : array {
+        return [
+            'role' => 'user',
+            'content' => [[
+                'type' => 'tool_result',
+                'tool_use_id' => $message['_metadata']['tool_call_id'] ?? '',
+                'content' => $message['content'] ?? '',
+                //'is_error' => false,
+            ]]
+        ];
+    }
+
     private function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromMapper(array_map(
             callback: fn(array $call) => $call,
-            array: $data['content'] ?? []
-        ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['input'] ?? '']));
-    }
-
-    private function mapToolsData(array $data) : array {
-        return array_map(
-            fn($tool) => [
-                'name' => $tool['name'] ?? '',
-                'arguments' => $tool['input'] ?? '',
-            ],
-            array_filter($data['content'] ?? [], fn($part) => 'tool_use' === ($part['type'] ?? ''))
-        );
+            array: array_filter(
+                array: $data['content'] ?? [],
+                callback: fn($part) => 'tool_use' === ($part['type'] ?? ''))
+        ), fn($call) => ToolCall::fromArray([
+            'id' => $call['id'] ?? '',
+            'name' => $call['name'] ?? '',
+            'arguments' => $call['input'] ?? ''
+        ]));
     }
 
     private function makeContent(array $data) : string {
@@ -296,5 +357,13 @@ class AnthropicDriver implements CanHandleInference
                 ?? 0,
             reasoningTokens: 0,
         );
+    }
+
+    protected function excludeUnderscoredKeys(array $messages) : array {
+        $list = [];
+        foreach ($messages as $message) {
+            $list[] = array_filter($message, fn($value, $key) => !Str::startsWith($key, '_'), ARRAY_FILTER_USE_BOTH);
+        }
+        return $list;
     }
 }

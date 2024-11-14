@@ -94,34 +94,34 @@ class Str
         return false;
     }
 
-    public static function startsWith(string $url, string $string) : bool {
-        return substr($url, 0, strlen($string)) === $string;
+    public static function startsWith(string $text, string $prefix) : bool {
+        return substr($text, 0, strlen($prefix)) === $prefix;
     }
 
-    public static function endsWith(string $url, string $string) : bool {
-        return substr($url, -strlen($string)) === $string;
+    public static function endsWith(string $text, string $suffix) : bool {
+        return substr($text, -strlen($suffix)) === $suffix;
     }
 
-    public static function between(mixed $url, string $string, string $string1) : string {
-        $start = strpos($url, $string);
+    public static function between(mixed $text, string $firstNeedle, string $nextNeedle) : string {
+        $start = strpos($text, $firstNeedle);
         if ($start === false) {
             return '';
         }
-        $start += strlen($string);
-        $end = strpos($url, $string1, $start);
+        $start += strlen($firstNeedle);
+        $end = strpos($text, $nextNeedle, $start);
         if ($end === false) {
             return '';
         }
-        return substr($url, $start, $end - $start);
+        return substr($text, $start, $end - $start);
     }
 
-    public static function after(mixed $url, string $string) : string {
-        $start = strpos($url, $string);
+    public static function after(mixed $text, string $needle) : string {
+        $start = strpos($text, $needle);
         if ($start === false) {
             return '';
         }
-        $start += strlen($string);
-        return substr($url, $start);
+        $start += strlen($needle);
+        return substr($text, $start);
     }
 
     public static function when(bool $condition, string $onTrue, string $onFalse) : string {

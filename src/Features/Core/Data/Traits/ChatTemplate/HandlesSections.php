@@ -21,7 +21,7 @@ trait HandlesSections
             if ($message['role'] !== 'system') {
                 break;
             }
-            $output->appendMessage(['role' => 'system', 'content' => $message['content']]);
+            $output->appendMessage($message);
         }
 
         return $output;

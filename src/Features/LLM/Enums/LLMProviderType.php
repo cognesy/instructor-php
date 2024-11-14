@@ -10,6 +10,7 @@ enum LLMProviderType : string
     case CohereV2 = 'cohere2';
     case Fireworks = 'fireworks';
     case Gemini = 'gemini';
+    case GeminiOAI = 'gemini-oai';
     case Grok = 'grok';
     case Groq = 'groq';
     case Jina = 'jina';

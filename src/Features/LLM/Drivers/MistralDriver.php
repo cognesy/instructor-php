@@ -17,11 +17,13 @@ class MistralDriver extends OpenAIDriver
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array {
-        $request = array_filter(array_merge([
+        unset($options['parallel_tool_calls']);
+
+        $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $messages,
-        ], $options));
+            'messages' => $this->toNativeMessages($messages),
+        ]), $options);
 
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
@@ -38,7 +40,7 @@ class MistralDriver extends OpenAIDriver
         switch($mode) {
             case Mode::Tools:
                 $request['tools'] = $this->removeDisallowedEntries($tools);
-                $request['tool_choice'] = 'any';
+                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
                 break;
             case Mode::Json:
             case Mode::JsonSchema:
@@ -46,6 +48,18 @@ class MistralDriver extends OpenAIDriver
                 break;
         }
         return $request;
+    }
+
+    private function toToolChoice(array $tools, array|string $toolChoice) : array|string {
+        return match(true) {
+            empty($tools) => '',
+            empty($toolChoice) => 'auto',
+            is_array($toolChoice) => [
+                'type' => 'function',
+                'name' => $toolChoice['function']['name'],
+            ],
+            default => $toolChoice,
+        };
     }
 
     private function removeDisallowedEntries(array $jsonSchema) : array {

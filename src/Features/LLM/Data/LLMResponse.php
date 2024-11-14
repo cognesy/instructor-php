@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Features\LLM\Data;
 
+use Cognesy\Instructor\Features\LLM\Enums\LLMFinishReason;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class LLMResponse
@@ -11,7 +12,6 @@ class LLMResponse
     public function __construct(
         public string $content = '',
         public array  $responseData = [],
-        public array $toolsData = [],
         public string $finishReason = '',
         public ?ToolCalls $toolCalls = null,
         public ?Usage $usage = null,
@@ -57,11 +57,19 @@ class LLMResponse
     }
 
     public function hasToolCalls() : bool {
-        return !empty($this->toolCalls);
+        return !$this->toolCalls?->empty();
     }
 
     public function usage() : Usage {
         return $this->usage ?? new Usage();
+    }
+
+    public function toolCalls() : ToolCalls {
+        return $this->toolCalls ?? new ToolCalls();
+    }
+
+    public function finishReason() : LLMFinishReason {
+        return LLMFinishReason::fromText($this->finishReason);
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -89,8 +97,7 @@ class LLMResponse
 
         $tools = $this->makeTools($partialResponses);
         if (!empty($tools)) {
-            $this->toolsData = $this->makeToolsData($tools);
-            $this->toolCalls = ToolCalls::fromArray($this->toolsData);
+            $this->toolCalls = ToolCalls::fromArray($tools);
         }
         return $this;
     }
@@ -114,16 +121,5 @@ class LLMResponse
             }
         }
         return $tools;
-    }
-
-    private function makeToolsData(array $tools) : array {
-        $data = [];
-        foreach($tools as $tool => $args) {
-            $data[] = [
-                'name' => $tool,
-                'arguments' => '' !== $args ? Json::decode($args) : [],
-            ];
-        }
-        return $data;
     }
 }

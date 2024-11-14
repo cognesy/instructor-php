@@ -52,7 +52,7 @@ class RequestHandler
             $llmResponse = $this->getInference($request)->response();
             $llmResponse->content = match($request->mode()) {
                 Mode::Text => $llmResponse->content,
-                Mode::Tools => $llmResponse->toolCalls->first()?->args
+                Mode::Tools => $llmResponse->toolCalls()->first()?->argsAsJson()
                     ?? $llmResponse->content // fallback if no tool calls - some LLMs return just a string
                     ?? '',
                 default => Json::from($llmResponse->content)->toString(),
