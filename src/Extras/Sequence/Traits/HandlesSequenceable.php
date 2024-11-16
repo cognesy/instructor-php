@@ -41,4 +41,12 @@ trait HandlesSequenceable
         $count = count($this->list);
         return $this->list[$count - 1];
     }
+
+    public function push(mixed $item) : void {
+        $this->list[] = $item;
+    }
+
+    public function pop() : mixed {
+        return array_pop($this->list);
+    }
 }

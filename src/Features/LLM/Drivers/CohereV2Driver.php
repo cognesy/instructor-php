@@ -31,6 +31,10 @@ class CohereV2Driver extends OpenAIDriver
             'messages' => $this->toNativeMessages($messages),
         ]), $options);
 
+        if (!empty($tools)) {
+            $request['tools'] = $this->removeDisallowedEntries($tools);
+        }
+
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
@@ -92,9 +96,9 @@ class CohereV2Driver extends OpenAIDriver
         array $responseFormat
     ) : array {
         switch($mode) {
-            case Mode::Tools:
-                $request['tools'] = $this->removeDisallowedEntries($tools);
-                break;
+//            case Mode::Tools:
+//                $request['tools'] = $this->removeDisallowedEntries($tools);
+//                break;
             case Mode::Json:
                 $request['response_format'] = $responseFormat;
                 break;

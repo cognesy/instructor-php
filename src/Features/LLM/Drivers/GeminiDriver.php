@@ -87,10 +87,16 @@ class GeminiDriver implements CanHandleInference
             'generationConfig' => $this->toOptions($options, $responseFormat, $mode),
         ]);
 
-        if ($mode == Mode::Tools) {
+//        if ($mode == Mode::Tools) {
+//            $request['tools'] = $this->toTools($tools);
+//            $request['tool_config'] = $this->toToolChoice($toolChoice);
+//        }
+
+        if (!empty($tools)) {
             $request['tools'] = $this->toTools($tools);
             $request['tool_config'] = $this->toToolChoice($toolChoice);
         }
+
         return $request;
     }
 
@@ -200,17 +206,21 @@ class GeminiDriver implements CanHandleInference
             Mode::Text => "text/plain",
             Mode::MdJson => "text/plain",
             Mode::Tools => "text/plain",
+            Mode::Json => "application/json",
+            Mode::JsonSchema => "application/json",
             default => "application/json",
         };
     }
 
     protected function toResponseSchema(array $responseFormat, Mode $mode) : array {
-        return match($mode) {
-            Mode::MdJson => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-            Mode::Json => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-            Mode::JsonSchema => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-            default => [],
-        };
+        return $this->removeDisallowedEntries($responseFormat['schema'] ?? []);
+//        return match($mode) {
+//            Mode::MdJson => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
+//            Mode::Json => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
+//            Mode::JsonSchema => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
+//            //Mode::Custom => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
+//            default => [],
+//        };
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {

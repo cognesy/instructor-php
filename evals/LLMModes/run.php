@@ -44,7 +44,7 @@ $data = new InferenceData(
 );
 
 $experiment = new Experiment(
-    cases: InferenceCases::all(),
+    cases: InferenceCases::only(['grok'], [Mode::Tools, Mode::Json, Mode::JsonSchema, Mode::MdJson, Mode::Text], [true, false]),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(

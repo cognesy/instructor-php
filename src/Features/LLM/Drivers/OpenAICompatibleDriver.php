@@ -23,6 +23,11 @@ class OpenAICompatibleDriver extends OpenAIDriver
             'messages' => $this->toNativeMessages($messages),
         ]), $options);
 
+        if (!empty($tools)) {
+            $request['tools'] = $this->removeDisallowedEntries($tools);
+            $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
+        }
+
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
@@ -36,12 +41,12 @@ class OpenAICompatibleDriver extends OpenAIDriver
         array $responseFormat
     ) : array {
         switch($mode) {
-            case Mode::Tools:
-                $request['tools'] = $this->removeDisallowedEntries($tools);
-                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
-                break;
+//            case Mode::Tools:
+//                $request['tools'] = $this->removeDisallowedEntries($tools);
+//                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
+//                break;
             case Mode::Json:
-                $request['response_format'] = $responseFormat;
+                $request['response_format'] = [ "type" => "json_object" ];
                 break;
             case Mode::JsonSchema:
                 $request['response_format'] = [
@@ -49,6 +54,10 @@ class OpenAICompatibleDriver extends OpenAIDriver
                     'schema' => $responseFormat['json_schema']['schema'],
                 ];
                 break;
+//            case Mode::Custom:
+//                $request['tools'] = $this->removeDisallowedEntries($tools);
+//                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
+//                $request['response_format'] = $responseFormat;
         }
         return $request;
     }
@@ -67,7 +76,9 @@ class OpenAICompatibleDriver extends OpenAIDriver
             empty($toolChoice) => 'auto',
             is_array($toolChoice) => [
                 'type' => 'function',
-                'name' => $toolChoice['function']['name'],
+                'function' => [
+                    'name' => $toolChoice['function']['name'],
+                ]
             ],
             default => $toolChoice,
         };

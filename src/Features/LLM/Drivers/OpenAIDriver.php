@@ -82,6 +82,11 @@ class OpenAIDriver implements CanHandleInference
             $request['stream_options']['include_usage'] = true;
         }
 
+        if (!empty($tools)) {
+            $request['tools'] = $tools;
+            $request['tool_choice'] = $toolChoice;
+        }
+
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
@@ -133,10 +138,10 @@ class OpenAIDriver implements CanHandleInference
         array $responseFormat
     ) : array {
         switch($mode) {
-            case Mode::Tools:
-                $request['tools'] = $tools;
-                $request['tool_choice'] = $toolChoice;
-                break;
+//            case Mode::Tools:
+//                $request['tools'] = $tools;
+//                $request['tool_choice'] = $toolChoice;
+//                break;
             case Mode::Json:
                 $request['response_format'] = ['type' => 'json_object'];
                 break;
@@ -147,6 +152,10 @@ class OpenAIDriver implements CanHandleInference
             case Mode::MdJson:
                 $request['response_format'] = ['type' => 'text'];
                 break;
+//            case Mode::Custom:
+//                $request['tools'] = $tools;
+//                $request['tool_choice'] = $toolChoice;
+//                $request['response_format'] = $responseFormat;
         }
         return $request;
     }

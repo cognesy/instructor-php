@@ -18,7 +18,6 @@ use Cognesy\Instructor\Utils\Debug\Debug;
  *
  * @uses Events\Traits\HandlesEvents
  * @uses Events\Traits\HandlesEventListeners
- * @uses Traits\HandlesEnv
  * @uses Traits\HandlesInvocation
  * @uses Traits\HandlesOverrides
  * @uses Traits\HandlesPartialUpdates
@@ -29,8 +28,6 @@ use Cognesy\Instructor\Utils\Debug\Debug;
 class Instructor {
     use Events\Traits\HandlesEvents;
     use Events\Traits\HandlesEventListeners;
-
-    use Traits\HandlesEnv;
 
     use Traits\HandlesInvocation;
     use Traits\HandlesOverrides;

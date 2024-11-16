@@ -160,12 +160,17 @@ class PartialsGenerator implements CanGeneratePartials
             return $result;
         }
         $partialObject = $result->unwrap();
+        if ($partialObject === null) {
+            return Result::failure('Null object returned');
+        }
+
         // we only want to send partial response if it's different from the previous one
         $currentHash = hash('xxh3', Json::encode($partialObject));
         if ($this->previousHash == $currentHash) {
             return Result::failure('No changes detected');
         }
         $this->events->dispatch(new PartialResponseGenerated($partialObject));
+
         if (($partialObject instanceof Sequenceable)) {
             $this->sequenceableHandler->update($partialObject);
         }

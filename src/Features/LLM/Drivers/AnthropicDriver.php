@@ -91,7 +91,14 @@ class AnthropicDriver implements CanHandleInference
             ),
         ]), $options);
 
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+        if (!empty($tools)) {
+            $request['tools'] = $this->toTools($tools);
+            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
+        }
+
+        // return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+
+        return $request;
     }
 
     // RESPONSE /////////////////////////////////////////////
@@ -134,19 +141,19 @@ class AnthropicDriver implements CanHandleInference
 
     // PRIVATE //////////////////////////////////////////////
 
-    private function applyMode(
-        array $request,
-        Mode $mode,
-        array $tools,
-        string|array $toolChoice,
-        array $responseFormat
-    ) : array {
-        if ($mode->is(Mode::Tools)) {
-            $request['tools'] = $this->toTools($tools);
-            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
-        }
-        return $request;
-    }
+//    private function applyMode(
+//        array $request,
+//        Mode $mode,
+//        array $tools,
+//        string|array $toolChoice,
+//        array $responseFormat
+//    ) : array {
+//        if ($mode->is(Mode::Tools)) {
+//            $request['tools'] = $this->toTools($tools);
+//            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
+//        }
+//        return $request;
+//    }
 
     private function toTools(array $tools) : array {
         $result = [];
@@ -160,9 +167,9 @@ class AnthropicDriver implements CanHandleInference
         return $result;
     }
 
-    private function toToolChoice(string|array $toolChoice, array $tools) : array|string {
+    private function toToolChoice(string|array $toolChoice, array $tools) : array {
         return match(true) {
-            empty($tools) => '',
+            empty($tools) => [],
             empty($toolChoice) => [
                 'type' => 'auto',
                 'disable_parallel_tool_use' => !$this->parallelToolCalls,

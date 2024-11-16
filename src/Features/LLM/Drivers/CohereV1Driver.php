@@ -82,6 +82,10 @@ class CohereV1Driver implements CanHandleInference
             'message' => Messages::asString($messages),
         ]), $options);
 
+        if (!empty($tools)) {
+            $request['tools'] = $this->toTools($tools);
+        }
+
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
@@ -128,9 +132,9 @@ class CohereV1Driver implements CanHandleInference
         array $responseFormat
     ) : array {
         switch($mode) {
-            case Mode::Tools:
-                $request['tools'] = $this->toTools($tools);
-                break;
+//            case Mode::Tools:
+//                $request['tools'] = $this->toTools($tools);
+//                break;
             case Mode::Json:
                 $request['response_format'] = [
                     'type' => 'json_object',
@@ -143,6 +147,13 @@ class CohereV1Driver implements CanHandleInference
                     'schema' => $responseFormat['json_schema']['schema'] ?? [],
                 ];
                 break;
+//            case Mode::Custom:
+//                $request['tools'] = $this->toTools($tools);
+//                $request['response_format'] = [
+//                    'type' => 'json_object',
+//                    'schema' => $responseFormat['schema'] ?? $responseFormat['json_schema']['schema'] ?? [],
+//                ];
+//                break;
         }
         return $request;
     }
