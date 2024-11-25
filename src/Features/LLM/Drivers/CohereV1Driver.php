@@ -32,20 +32,20 @@ class CohereV1Driver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : CanAccessResponse {
-        $request = $this->withCachedContext($request);
+        $request = $request->withCacheApplied();
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody(
-                $request->messages,
-                $request->model,
-                $request->tools,
-                $request->toolChoice,
-                $request->responseFormat,
-                $request->options,
-                $request->mode,
+                $request->messages(),
+                $request->model(),
+                $request->tools(),
+                $request->toolChoice(),
+                $request->responseFormat(),
+                $request->options(),
+                $request->mode(),
             ),
-            streaming: $request->options['stream'] ?? false,
+            streaming: $request->options()['stream'] ?? false,
         );
     }
 
@@ -73,7 +73,6 @@ class CohereV1Driver implements CanHandleInference
 
         $system = '';
         $chatHistory = [];
-        $messages = $this->excludeUnderscoredKeys($messages);
 
         $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
@@ -94,23 +93,23 @@ class CohereV1Driver implements CanHandleInference
     public function toLLMResponse(array $data): LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
-            responseData: $data,
             //: $this->map($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
     public function toPartialLLMResponse(array $data) : PartialLLMResponse {
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
-            responseData: $data,
             toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['response']['finish_reason'] ?? $data['delta']['finish_reason'] ?? '',
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -132,9 +131,6 @@ class CohereV1Driver implements CanHandleInference
         array $responseFormat
     ) : array {
         switch($mode) {
-//            case Mode::Tools:
-//                $request['tools'] = $this->toTools($tools);
-//                break;
             case Mode::Json:
                 $request['response_format'] = [
                     'type' => 'json_object',
@@ -147,13 +143,6 @@ class CohereV1Driver implements CanHandleInference
                     'schema' => $responseFormat['json_schema']['schema'] ?? [],
                 ];
                 break;
-//            case Mode::Custom:
-//                $request['tools'] = $this->toTools($tools);
-//                $request['response_format'] = [
-//                    'type' => 'json_object',
-//                    'schema' => $responseFormat['schema'] ?? $responseFormat['json_schema']['schema'] ?? [],
-//                ];
-//                break;
         }
         return $request;
     }
@@ -238,18 +227,6 @@ class CohereV1Driver implements CanHandleInference
 
     private function isStreamChunk(array $data) : bool {
         return in_array(($data['event_type'] ?? ''), ['text-generation', 'tool-calls-chunk']);
-    }
-
-    private function withCachedContext(InferenceRequest $request): InferenceRequest {
-        if (!isset($request->cachedContext)) {
-            return $request;
-        }
-        $cloned = clone $request;
-        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
-        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
-        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
-        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
-        return $cloned;
     }
 
     private function makeUsage(array $data) : Usage {

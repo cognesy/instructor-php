@@ -57,7 +57,7 @@ trait HandlesFieldDefinitions
         $factory = new TypeDetailsFactory();
         $type = $factory->objectType(Structure::class);
         $result = new Field($name, $description, $type);
-        $result->value = Structure::define($name, $fields, $description);
+        $result->set(Structure::define($name, $fields, $description));
         return $result;
     }
 

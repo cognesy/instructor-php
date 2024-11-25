@@ -3,19 +3,12 @@
 namespace Cognesy\Instructor\Extras\Structure;
 
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use Exception;
-use Symfony\Component\PropertyInfo\Type;
 
 class FieldFactory
 {
     public static function fromTypeName(string $name, string $typeName, string $description = ''): Field {
         $typeDetails = TypeDetails::fromTypeName($typeName);
-        return FieldFactory::fromTypeDetails($name, $typeDetails, $description);
-    }
-
-    public static function fromPropertyInfoType(string $name, Type $type, string $description = ''): Field {
-        $typeDetails = TypeDetailsFactory::fromPropertyInfo($type);
         return FieldFactory::fromTypeDetails($name, $typeDetails, $description);
     }
 

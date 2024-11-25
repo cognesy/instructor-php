@@ -87,10 +87,10 @@ class TemplateUtil
 
         // skip rendering if content is an array - it may contain non-text data
         if (is_array($normalized->content())) {
-            return ['role' => $normalized->role(), 'content' => $normalized->content()];
+            return ['role' => $normalized->role()->value, 'content' => $normalized->content()];
         }
 
-        return ['role' => $normalized->role(), 'content' => $this->renderString($normalized->content())];
+        return ['role' => $normalized->role()->value, 'content' => $this->renderString($normalized->content())];
     }
 
     public function renderMessages(array|Messages $messages) : array {

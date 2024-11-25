@@ -96,7 +96,7 @@ class Inference
     // PUBLIC //////////////////////////////////////////////////////////////////
 
     /**
-     * Updates the configuration and reinitializes the driver.
+     * Updates the configuration and re-initializes the driver.
      *
      * @param LLMConfig $config The configuration object to set.
      *
@@ -184,6 +184,24 @@ class Inference
     /**
      * Creates an inference request and returns the inference response.
      *
+     * @param InferenceRequest $request The inference request object.
+     *
+     * @return InferenceResponse The response from the inference request.
+     */
+    public function withRequest(InferenceRequest $request): InferenceResponse {
+        $this->events->dispatch(new InferenceRequested($request));
+        return new InferenceResponse(
+            response: $this->driver->handle($request),
+            driver: $this->driver,
+            config: $this->config,
+            isStreamed: $request->options['stream'] ?? false,
+            events: $this->events,
+        );
+    }
+
+    /**
+     * Creates an inference request and returns the inference response.
+     *
      * @param string|array $messages The input messages for the inference.
      * @param string $model The model to be used for the inference.
      * @param array $tools The tools to be used for the inference.
@@ -203,17 +221,16 @@ class Inference
         array $options = [],
         Mode $mode = Mode::Text
     ): InferenceResponse {
-        $request = new InferenceRequest(
-            $messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode, $this->cachedContext ?? null
-        );
-        $this->events->dispatch(new InferenceRequested($request));
-        return new InferenceResponse(
-            response: $this->driver->handle($request),
-            driver: $this->driver,
-            config: $this->config,
-            isStreamed: $options['stream'] ?? false,
-            events: $this->events,
-        );
+        return $this->withRequest(new InferenceRequest(
+            messages: $messages,
+            model: $model,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            responseFormat: $responseFormat,
+            options: $options,
+            mode: $mode,
+            cachedContext: $this->cachedContext ?? null
+        ));
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////

@@ -26,7 +26,7 @@ class GrokDriver extends OpenAICompatibleDriver
         switch($mode) {
             case Mode::Json:
             case Mode::JsonSchema:
-                // $request['response_format'] = [ "type" => "json_object" ]; // not supported by Grok
+                $request['response_format'] = []; // not supported by Grok
                 break;
         }
         return $request;

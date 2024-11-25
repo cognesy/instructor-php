@@ -10,11 +10,11 @@ class LLMResponse
     private mixed $value = null;
 
     public function __construct(
-        public string $content = '',
-        public array  $responseData = [],
-        public string $finishReason = '',
-        public ?ToolCalls $toolCalls = null,
-        public ?Usage $usage = null,
+        private string $content = '',
+        private string $finishReason = '',
+        private ?ToolCalls $toolCalls = null,
+        private ?Usage $usage = null,
+        private array  $responseData = [],
     ) {
         $this->usage = $usage ?? new Usage();
     }
@@ -48,6 +48,11 @@ class LLMResponse
         return $this->content;
     }
 
+    public function withContent(string $content) : self {
+        $this->content = $content;
+        return $this;
+    }
+
     public function json(): Json {
         return match(true) {
             // TODO: what about tool calls?
@@ -57,7 +62,7 @@ class LLMResponse
     }
 
     public function hasToolCalls() : bool {
-        return !$this->toolCalls?->empty();
+        return !($this->toolCalls?->empty() ?? true);
     }
 
     public function usage() : Usage {
@@ -70,6 +75,20 @@ class LLMResponse
 
     public function finishReason() : LLMFinishReason {
         return LLMFinishReason::fromText($this->finishReason);
+    }
+
+    public function responseData() : array {
+        return $this->responseData;
+    }
+
+    public function toArray() : array {
+        return [
+            'content' => $this->content,
+            'responseData' => $this->responseData,
+            'finishReason' => $this->finishReason,
+            'toolCalls' => $this->toolCalls?->toArray() ?? [],
+            'usage' => $this->usage->toArray(),
+        ];
     }
 
     // INTERNAL //////////////////////////////////////////////

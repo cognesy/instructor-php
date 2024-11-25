@@ -44,7 +44,10 @@ trait CreatesStructureFromCallables
                 true => $typeDetailsFactory->collectionType($parameter->getType()),
                 default => $typeDetailsFactory->fromTypeName($parameter->getType())
             };
-            $arguments[] = FieldFactory::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)->optional($isOptional);
+            $defaultValue = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null;
+            $arguments[] = FieldFactory::fromTypeDetails($parameterName, $typeDetails, $parameterDescription)
+                ->optional($isOptional)
+                ->withDefaultValue($defaultValue);
         }
         return $arguments;
     }

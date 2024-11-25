@@ -33,18 +33,18 @@ class GeminiDriver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : CanAccessResponse {
-        $request = $this->withCachedContext($request);
+        $request = $request->withCacheApplied();
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody(
-                $request->messages,
-                $request->model,
-                $request->tools,
-                $request->toolChoice,
-                $request->responseFormat,
-                $request->options,
-                $request->mode,
+                $request->messages(),
+                $request->model(),
+                $request->tools(),
+                $request->toolChoice(),
+                $request->responseFormat(),
+                $request->options(),
+                $request->mode(),
             ),
             streaming: $request->options['stream'] ?? false,
         );
@@ -87,11 +87,6 @@ class GeminiDriver implements CanHandleInference
             'generationConfig' => $this->toOptions($options, $responseFormat, $mode),
         ]);
 
-//        if ($mode == Mode::Tools) {
-//            $request['tools'] = $this->toTools($tools);
-//            $request['tool_config'] = $this->toToolChoice($toolChoice);
-//        }
-
         if (!empty($tools)) {
             $request['tools'] = $this->toTools($tools);
             $request['tool_config'] = $this->toToolChoice($toolChoice);
@@ -105,10 +100,10 @@ class GeminiDriver implements CanHandleInference
     public function toLLMResponse(array $data): ?LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
-            responseData: $data,
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -118,12 +113,12 @@ class GeminiDriver implements CanHandleInference
         }
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
-            responseData: $data,
             toolId: $data['candidates'][0]['id'] ?? '',
             toolName: $this->makeToolName($data),
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -214,13 +209,6 @@ class GeminiDriver implements CanHandleInference
 
     protected function toResponseSchema(array $responseFormat, Mode $mode) : array {
         return $this->removeDisallowedEntries($responseFormat['schema'] ?? []);
-//        return match($mode) {
-//            Mode::MdJson => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-//            Mode::Json => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-//            Mode::JsonSchema => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-//            //Mode::Custom => $this->removeDisallowedEntries($responseFormat['schema'] ?? []),
-//            default => [],
-//        };
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
@@ -352,18 +340,6 @@ class GeminiDriver implements CanHandleInference
         return $data['candidates'][0]['content']['parts'][0]['text']
             ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '')
             ?? '';
-    }
-
-    private function withCachedContext(InferenceRequest $request): InferenceRequest {
-        if (!isset($request->cachedContext)) {
-            return $request;
-        }
-        $cloned = clone $request;
-        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
-        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
-        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
-        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
-        return $cloned;
     }
 
     private function makeToolName(array $data) : string {

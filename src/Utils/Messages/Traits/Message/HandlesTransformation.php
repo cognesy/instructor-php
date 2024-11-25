@@ -34,13 +34,13 @@ trait HandlesTransformation
     }
 
     public function toCompositeMessage() : Message {
-        return Message::fromArray([
-            'role' => $this->role,
-            'content' => match(true) {
+        return new Message(
+            role: $this->role,
+            content: match(true) {
                 $this->isComposite() => $this->content,
                 default => [['type' => 'text', 'text' => $this->content]]
             },
-            '_metadata' => $this->metadata,
-        ]);
+            metadata: $this->metadata,
+        );
     }
 }

@@ -3,7 +3,7 @@ namespace Tests\Feature\Extras;
 
 use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
 use Tests\Examples\Call\TestClass;
-use function Tests\Examples\Call\{testFunction, variadicFunction};
+use function Tests\Examples\Call\{testFunction, variadicFunction, testFunctionWithDefault};
 require_once __DIR__ . '/../../Examples/Call/test_functions.php';
 
 it('can process function by name', function () {
@@ -57,9 +57,24 @@ it('it can handle variadic args', function () {
     $call = FunctionCall::fromCallable(variadicFunction(...));
     $arguments = $call->getArgumentNames();
     expect($arguments)->toBe(['objectParams']);
-    expect($call->getField('objectParams')->typeDetails()->type)->toBe('collection');
-    expect($call->getField('objectParams')->typeDetails()->nestedType->type)->toBe('object');
-    expect($call->getField('objectParams')->typeDetails()->nestedType->class)->toBe('Tests\Examples\Call\TestClass');
+    expect($call->getArgumentInfo('objectParams')->typeDetails()->type)->toBe('collection');
+    expect($call->getArgumentInfo('objectParams')->typeDetails()->nestedType->type)->toBe('object');
+    expect($call->getArgumentInfo('objectParams')->typeDetails()->nestedType->class)->toBe('Tests\Examples\Call\TestClass');
+});
+
+it('it can handle default args', function () {
+    $call = FunctionCall::fromCallable(testFunctionWithDefault(...));
+    $arguments = $call->getArgumentNames();
+    expect($arguments)->toBe([
+        'objectParam',
+        'intParam',
+        'stringParam',
+        'boolParam',
+    ]);
+    expect($call->getArgumentInfo('objectParam')->defaultValue())->toBe(null);
+    expect($call->getArgumentInfo('intParam')->defaultValue())->toBe(1);
+    expect($call->getArgumentInfo('stringParam')->defaultValue())->toBe('default');
+    expect($call->getArgumentInfo('boolParam')->defaultValue())->toBe(true);
 });
 
 it('can deserialize from JSON', function () {

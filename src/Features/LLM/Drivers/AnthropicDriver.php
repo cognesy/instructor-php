@@ -34,20 +34,20 @@ class AnthropicDriver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : CanAccessResponse {
-        $request = $this->withCachedContext($request);
+        $request = $request->withCacheApplied();
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody(
-                $request->messages,
-                $request->model,
-                $request->tools,
-                $request->toolChoice,
-                $request->responseFormat,
-                $request->options,
-                $request->mode,
+                $request->messages(),
+                $request->model(),
+                $request->tools(),
+                $request->toolChoice(),
+                $request->responseFormat(),
+                $request->options(),
+                $request->mode(),
             ),
-            streaming: $request->options['stream'] ?? false,
+            streaming: $request->options()['stream'] ?? false,
         );
     }
 
@@ -96,8 +96,6 @@ class AnthropicDriver implements CanHandleInference
             $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
         }
 
-        // return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
-
         return $request;
     }
 
@@ -106,10 +104,10 @@ class AnthropicDriver implements CanHandleInference
     public function toLLMResponse(array $data): ?LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
-            responseData: $data,
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -119,12 +117,12 @@ class AnthropicDriver implements CanHandleInference
         }
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
-            responseData: $data,
             toolId: $data['content_block']['id'] ?? '',
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -140,20 +138,6 @@ class AnthropicDriver implements CanHandleInference
     }
 
     // PRIVATE //////////////////////////////////////////////
-
-//    private function applyMode(
-//        array $request,
-//        Mode $mode,
-//        array $tools,
-//        string|array $toolChoice,
-//        array $responseFormat
-//    ) : array {
-//        if ($mode->is(Mode::Tools)) {
-//            $request['tools'] = $this->toTools($tools);
-//            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
-//        }
-//        return $request;
-//    }
 
     private function toTools(array $tools) : array {
         $result = [];
@@ -313,22 +297,6 @@ class AnthropicDriver implements CanHandleInference
         return $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '';
     }
 
-    private function withCachedContext(InferenceRequest $request): InferenceRequest {
-        if (!isset($request->cachedContext)) {
-            return $request;
-        }
-
-        $cloned = clone $request;
-
-        $cloned->messages = empty($request->cachedContext->messages)
-            ? $request->messages
-            : array_merge($this->setCacheMarker($request->cachedContext->messages), $request->messages);
-        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
-        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
-        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
-        return $cloned;
-    }
-
     private function setCacheMarker(array $messages): array {
         $lastIndex = count($messages) - 1;
         $lastMessage = $messages[$lastIndex];
@@ -364,13 +332,5 @@ class AnthropicDriver implements CanHandleInference
                 ?? 0,
             reasoningTokens: 0,
         );
-    }
-
-    protected function excludeUnderscoredKeys(array $messages) : array {
-        $list = [];
-        foreach ($messages as $message) {
-            $list[] = array_filter($message, fn($value, $key) => !Str::startsWith($key, '_'), ARRAY_FILTER_USE_BOTH);
-        }
-        return $list;
     }
 }

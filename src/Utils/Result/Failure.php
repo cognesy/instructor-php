@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Utils\Result;
 
-use Exception;
+use Throwable;
 
 /**
  * @template E
@@ -29,7 +29,7 @@ class Failure extends Result {
 
     public function errorMessage() : string {
         return match(true) {
-            $this->error instanceof Exception => $this->error->getMessage(),
+            $this->error instanceof Throwable => $this->error->getMessage(),
             default => (string) $this->error,
         };
     }

@@ -24,6 +24,9 @@ trait HandlesMutation
     }
 
     public function appendMessages(array|Messages $messages) : static {
+        if (Messages::becomesEmpty($messages)) {
+            return $this;
+        }
         $appended = match (true) {
             $messages instanceof Messages => $messages->messages,
             default => Messages::fromAnyArray($messages)->messages,

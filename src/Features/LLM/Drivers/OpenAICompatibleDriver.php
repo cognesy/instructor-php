@@ -41,10 +41,6 @@ class OpenAICompatibleDriver extends OpenAIDriver
         array $responseFormat
     ) : array {
         switch($mode) {
-//            case Mode::Tools:
-//                $request['tools'] = $this->removeDisallowedEntries($tools);
-//                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
-//                break;
             case Mode::Json:
                 $request['response_format'] = [ "type" => "json_object" ];
                 break;
@@ -54,10 +50,6 @@ class OpenAICompatibleDriver extends OpenAIDriver
                     'schema' => $responseFormat['json_schema']['schema'],
                 ];
                 break;
-//            case Mode::Custom:
-//                $request['tools'] = $this->removeDisallowedEntries($tools);
-//                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
-//                $request['response_format'] = $responseFormat;
         }
         return $request;
     }

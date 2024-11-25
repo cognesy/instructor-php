@@ -15,9 +15,9 @@ trait HandlesFieldValidation
      */
     public function validIf(callable $validator, string $error = '') : self {
         $this->validator = function() use ($validator, $error) {
-            $result = $validator($this->value);
+            $result = $validator($this->get());
             if ($result === false) {
-                return ValidationResult::fieldError($this->name, $this->value, $error ?: "Invalid field value");
+                return ValidationResult::fieldError($this->name(), $this->get(), $error ?: "Invalid field value");
             }
             return ValidationResult::valid();
         };
@@ -44,6 +44,6 @@ trait HandlesFieldValidation
         if ($this->validator === null) {
             return ValidationResult::valid();
         }
-        return ($this->validator)($this->value);
+        return ($this->validator)($this->get());
     }
 }

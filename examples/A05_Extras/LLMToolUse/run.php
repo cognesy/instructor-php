@@ -12,87 +12,63 @@ docname: 'llm_tool_use'
 ```php
 <?php
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\ToolCall;
-use Cognesy\Instructor\Features\LLM\Enums\LLMFinishReason;
-use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\Instructor\Extras\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
+use Cognesy\Instructor\Extras\ToolUse\Tools\FunctionTool;
+use Cognesy\Instructor\Extras\ToolUse\ToolUse;
 use Cognesy\Instructor\Utils\Debug\Debug;
-use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Utils\Messages\Message;
-use Cognesy\Instructor\Utils\Messages\Messages;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-function add_numbers($a, $b) : int {
+function add_numbers(int $a, int $b) : int {
     return $a + $b;
 }
+$addTool = FunctionTool::fromCallable(add_numbers(...));
 
-function subtract_numbers($a, $b) : int {
+function subtract_numbers(int $a, int $b) : int {
     return $a - $b;
 }
+$subtractTool = FunctionTool::fromCallable(subtract_numbers(...));
 
-$tools = [
-    [
-        'type' => 'function',
-        'function' => [
-            'name' => 'add_numbers',
-            'description' => 'Add two numbers',
-            'parameters' => [
-                'type' => 'object',
-                'description' => 'Numbers to add',
-                'properties' => [
-                    'a' => [
-                        'type' => 'integer',
-                        'description' => 'First number',
-                    ],
-                    'b' => [
-                        'type' => 'integer',
-                        'description' => 'Second number',
-                    ],
-                ],
-                'required' => ['a', 'b'],
-                'additionalProperties' => false,
-            ],
-        ],
-    ],
-    [
-        'type' => 'function',
-        'function' => [
-            'name' => 'subtract_numbers',
-            'description' => 'Subtract two numbers',
-            'parameters' => [
-                'type' => 'object',
-                'description' => 'Numbers to subtract',
-                'properties' => [
-                    'a' => [
-                        'type' => 'integer',
-                        'description' => 'First number',
-                    ],
-                    'b' => [
-                        'type' => 'integer',
-                        'description' => 'Second number',
-                    ],
-                ],
-                'required' => ['a', 'b'],
-                'additionalProperties' => false,
-            ],
-        ],
-    ]
-];
-
-$prompt = 'Add 2455 and 3558 then subtract 4344 from the result.';
-
-$messages = [
-    ['role' => 'user', 'content' => $prompt]
-];
+//function return_result(int $result) : int {
+//    dump('FINAL:', $result);
+//    return $result;
+//}
+//$returnTool = FunctionTool::fromCallable(return_result(...));
 
 Debug::enable();
 
-$chat = (new Inference)
-    ->withConnection('openrouter');
-$toolUse = new ToolUse($chat, $tools);
-$response = $toolUse
-    ->withMessages($messages)
-    ->response();
+$driver = new ToolCallingDriver();
+
+$toolUse = (new ToolUse)
+    ->withDriver($driver)
+    ->withDefaultContinuationCriteria()
+    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
+    ->withTools([
+        $addTool,
+        $subtractTool,
+//        $returnTool,
+    ]);
+
+
+# PATTERN #1 - fine grained control
+// iterate until no more steps
+while ($toolUse->hasNextStep()) {
+    $step = $toolUse->nextStep();
+}
+// do something with final response
+print($step->response());
+
+
+//# PATTERN #2 - use iterator
+//foreach ($toolUse->iterator() as $step) {
+//    dump($step);
+//}
+//// do something with final response
+//dump('final #2', $step);
+//
+//
+//# PATTERN #3 - just get final step (fast forward to it)
+//$step = $toolUse->finalStep();
+//// do something with final response
+//dump('final #3', $step);

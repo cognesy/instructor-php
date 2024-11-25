@@ -12,6 +12,7 @@ use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Observers\Aggregate\AggregateExperimentObserver;
+use Cognesy\Instructor\Utils\Debug\Debug;
 
 $data = new InferenceData(
     messages: [
@@ -28,30 +29,32 @@ $data = new InferenceData(
             'type' => 'object',
             'description' => 'Company information',
             'properties' => [
-                'year' => [
+                'founding_year' => [
                     'type' => 'integer',
                     'description' => 'Founding year',
                 ],
-                'name' => [
+                'company_name' => [
                     'type' => 'string',
                     'description' => 'Company name',
                 ],
             ],
-            'required' => ['name', 'year'],
+            'required' => ['company_name', 'founding_year'],
             'additionalProperties' => false,
         ]
     ),
 );
 
+//Debug::enable();
+
 $experiment = new Experiment(
-    cases: InferenceCases::only(['grok'], [Mode::Tools, Mode::Json, Mode::JsonSchema, Mode::MdJson, Mode::Text], [true, false]),
+    cases: InferenceCases::only(['gemini-oai'], [Mode::Text], [false, true]),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(
             key: 'execution.is_correct',
             expectations: [
-                'name' => 'ACME',
-                'year' => 2020
+                'company_name' => 'ACME',
+                'founding_year' => 2020
             ]),
     ],
     postprocessors: [

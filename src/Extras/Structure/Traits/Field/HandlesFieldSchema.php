@@ -16,8 +16,8 @@ trait HandlesFieldSchema
     public function withName(string $name) : self {
         $this->schema->name = $name;
         // TODO: revise this
-        if ($this->schema->typeDetails->class === Structure::class) {
-            $this->value->withName($name);
+        if ($this->isStructure()) {
+            $this->get()?->withName($name);
         }
         return $this;
     }
@@ -29,14 +29,18 @@ trait HandlesFieldSchema
     public function withDescription(string $description) : self {
         $this->schema->description = $description;
         // TODO: revise this
-        if ($this->schema->typeDetails->class === Structure::class) {
-            $this->value->withDescription($description);
+        if ($this->isStructure()) {
+            $this->get()->withDescription($description);
         }
         return $this;
     }
 
     public function schema() : Schema {
         return $this->schema;
+    }
+
+    public function isStructure() : bool {
+        return $this->schema->typeDetails->class === Structure::class;
     }
 
     public function typeDetails() : TypeDetails {

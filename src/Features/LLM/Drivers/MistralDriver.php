@@ -43,10 +43,6 @@ class MistralDriver extends OpenAIDriver
         array $responseFormat
     ) : array {
         switch($mode) {
-//            case Mode::Tools:
-//                $request['tools'] = $this->removeDisallowedEntries($tools);
-//                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
-//                break;
             case Mode::Text:
                 $request['response_format'] = ['type' => 'text'];
                 break;
@@ -54,10 +50,6 @@ class MistralDriver extends OpenAIDriver
             case Mode::JsonSchema:
                 $request['response_format'] = ['type' => 'json_object'];
                 break;
-//            case Mode::Custom:
-//                $request['tools'] = $this->removeDisallowedEntries($tools);
-//                $request['tool_choice'] = $this->toToolChoice($tools, $toolChoice);
-//                $request['response_format'] = ['type' => 'json_object'];
         }
         return $request;
     }

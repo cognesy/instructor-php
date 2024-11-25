@@ -107,8 +107,8 @@ class Prompt
         return $this->withValues($values);
     }
 
-    public function from(string $string) : self {
-        $this->withTemplateContent($string);
+    public function from(string $content) : self {
+        $this->withTemplateContent($content);
         return $this;
     }
     public function withValues(array $values) : self {

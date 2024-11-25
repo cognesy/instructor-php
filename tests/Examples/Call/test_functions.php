@@ -18,3 +18,7 @@ function testFunction(int $intParam, string $stringParam, bool $boolParam, TestC
 function variadicFunction(TestClass ...$objectParams): string {
     return 'test';
 }
+
+function testFunctionWithDefault(?TestClass $objectParam = null, int $intParam = 1, string $stringParam = 'default', bool $boolParam = true): string {
+    return 'test';
+}

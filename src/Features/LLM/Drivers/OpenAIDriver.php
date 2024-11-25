@@ -15,7 +15,6 @@ use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
-use Cognesy\Instructor\Utils\Str;
 
 class OpenAIDriver implements CanHandleInference
 {
@@ -31,18 +30,18 @@ class OpenAIDriver implements CanHandleInference
     // REQUEST //////////////////////////////////////////////
 
     public function handle(InferenceRequest $request) : CanAccessResponse {
-        $request = $this->withCachedContext($request);
+        $request = $request->withCacheApplied();
         return $this->httpClient->handle(
             url: $this->getEndpointUrl($request),
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody(
-                $request->messages,
-                $request->model,
-                $request->tools,
-                $request->toolChoice,
-                $request->responseFormat,
-                $request->options,
-                $request->mode,
+                $request->messages(),
+                $request->model(),
+                $request->tools(),
+                $request->toolChoice(),
+                $request->responseFormat(),
+                $request->options(),
+                $request->mode(),
             ),
             streaming: $request->options['stream'] ?? false,
         );
@@ -95,10 +94,10 @@ class OpenAIDriver implements CanHandleInference
     public function toLLMResponse(array $data): ?LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
-            responseData: $data,
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -108,12 +107,12 @@ class OpenAIDriver implements CanHandleInference
         }
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
-            responseData: $data,
             toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -138,10 +137,6 @@ class OpenAIDriver implements CanHandleInference
         array $responseFormat
     ) : array {
         switch($mode) {
-//            case Mode::Tools:
-//                $request['tools'] = $tools;
-//                $request['tool_choice'] = $toolChoice;
-//                break;
             case Mode::Json:
                 $request['response_format'] = ['type' => 'json_object'];
                 break;
@@ -152,25 +147,8 @@ class OpenAIDriver implements CanHandleInference
             case Mode::MdJson:
                 $request['response_format'] = ['type' => 'text'];
                 break;
-//            case Mode::Custom:
-//                $request['tools'] = $tools;
-//                $request['tool_choice'] = $toolChoice;
-//                $request['response_format'] = $responseFormat;
         }
         return $request;
-    }
-
-    private function withCachedContext(InferenceRequest $request): InferenceRequest {
-        if (!isset($request->cachedContext)) {
-            return $request;
-        }
-
-        $cloned = clone $request;
-        $cloned->messages = array_merge($request->cachedContext->messages, $request->messages);
-        $cloned->tools = empty($request->tools) ? $request->cachedContext->tools : $request->tools;
-        $cloned->toolChoice = empty($request->toolChoice) ? $request->cachedContext->toolChoice : $request->toolChoice;
-        $cloned->responseFormat = empty($request->responseFormat) ? $request->cachedContext->responseFormat : $request->responseFormat;
-        return $cloned;
     }
 
     private function makeToolCalls(array $data) : ToolCalls {

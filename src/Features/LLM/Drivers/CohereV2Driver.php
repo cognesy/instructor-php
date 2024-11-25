@@ -53,10 +53,10 @@ class CohereV2Driver extends OpenAIDriver
     public function toLLMResponse(array $data): LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
-            responseData: $data,
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -66,12 +66,12 @@ class CohereV2Driver extends OpenAIDriver
         }
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
-            responseData: $data,
             toolId: $data['delta']['message']['tool_calls']['function']['id'] ?? '',
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
             toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
             finishReason: $data['delta']['finish_reason'] ?? '',
             usage: $this->makeUsage($data),
+            responseData: $data,
         );
     }
 
@@ -96,9 +96,6 @@ class CohereV2Driver extends OpenAIDriver
         array $responseFormat
     ) : array {
         switch($mode) {
-//            case Mode::Tools:
-//                $request['tools'] = $this->removeDisallowedEntries($tools);
-//                break;
             case Mode::Json:
                 $request['response_format'] = $responseFormat;
                 break;

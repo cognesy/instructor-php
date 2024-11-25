@@ -57,14 +57,14 @@ class CompanyEval implements CanGenerateObservations
             return false;
         }
         return 'store_company' === $toolCall->name()
-            && 'ACME' === $toolCall->stringValue('name')
-            && 2020 === $toolCall->intValue('year');
+            && 'ACME' === $toolCall->stringValue('company_name')
+            && 2020 === $toolCall->intValue('founding_year');
     }
 
     private function validateDefault(Execution $execution) : bool {
         $decoded = $execution->get('response')?->json()->toArray();
-        return $this->expectations['name'] === ($decoded['name'] ?? '')
-            && $this->expectations['year'] === ($decoded['year'] ?? 0);
+        return $this->expectations['company_name'] === ($decoded['company_name'] ?? '')
+            && $this->expectations['founding_year'] === ($decoded['founding_year'] ?? 0);
     }
 
     private function validateText(Execution $execution) : bool {
@@ -72,9 +72,20 @@ class CompanyEval implements CanGenerateObservations
         return Str::containsAll(
             $content,
             [
-                $this->expectations['name'],
-                (string) $this->expectations['year']
+                $this->expectations['company_name'],
+                (string) $this->expectations['founding_year']
             ]
         );
+    }
+
+    private function meetsExpectations(array $data): bool {
+        foreach ($this->expectations as $key => $value) {
+            if (!isset($data[$key])) {
+                return false;
+            }
+            if ($data[$key] !== $value) {
+                return false;
+            }
+        }
     }
 }

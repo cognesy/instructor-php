@@ -15,6 +15,22 @@ class CachedContext
         }
     }
 
+    public function messages() : array {
+        return $this->messages;
+    }
+
+    public function tools() : array {
+        return $this->tools;
+    }
+
+    public function toolChoice() : string|array {
+        return $this->toolChoice;
+    }
+
+    public function responseFormat() : array {
+        return $this->responseFormat;
+    }
+
     public function merged(
         string|array $messages = [],
         array $tools = [],
@@ -25,10 +41,10 @@ class CachedContext
             $messages = ['role' => 'user', 'content' => $messages];
         }
         return new CachedContext(
-            array_merge($this->messages, $messages),
-            empty($tools) ? $this->tools : $tools,
-            empty($toolChoice) ? $this->toolChoice : $toolChoice,
-            empty($responseFormat) ? $this->responseFormat : $responseFormat,
+            messages: array_merge($this->messages, $messages),
+            tools: empty($tools) ? $this->tools : $tools,
+            toolChoice: empty($toolChoice) ? $this->toolChoice : $toolChoice,
+            responseFormat: empty($responseFormat) ? $this->responseFormat : $responseFormat,
         );
     }
 }

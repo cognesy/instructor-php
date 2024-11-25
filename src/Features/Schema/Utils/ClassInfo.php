@@ -18,8 +18,14 @@ class ClassInfo {
     private ReflectionClass $reflectionClass;
     private ReflectionEnum $reflectionEnum;
     private array $propertyInfos = [];
+    private bool $isNullable = false;
 
     public function __construct(string $class) {
+        // if class name starts with ?, remove it
+        if (str_starts_with($class, '?')) {
+            $class = substr($class, 1);
+            $this->isNullable = true;
+        }
         $this->class = $class;
         $this->reflectionClass = new ReflectionClass($class);
         if ($this->isEnum()) {
@@ -81,7 +87,10 @@ class ClassInfo {
         return $this->getProperty($property)->isPublic();
     }
 
-    public function isNullable(string $property) : bool {
+    public function isNullable(string $property = null) : bool {
+        if ($property === null) {
+            return $this->isNullable;
+        }
         return $this->getProperty($property)->isNullable();
     }
 
@@ -183,17 +192,6 @@ class ClassInfo {
         return $this->filterProperties($filters);
     }
 
-    /**
-     * @param ClassInfo $classInfo
-     * @return array<string, PropertyInfo>
-     */
-    private function getFilteredPropertyData(array $filters, callable $extractor) : array {
-        return array_map(
-            callback: fn(PropertyInfo $property) => $extractor($property),
-            array: $this->filterProperties($filters),
-        );
-    }
-
     // INTERNAL /////////////////////////////////////////////////////////////////
 
     /**
@@ -238,6 +236,17 @@ class ClassInfo {
             [$phpDocExtractor],
             [$reflectionExtractor],
             [$reflectionExtractor]
+        );
+    }
+
+    /**
+     * @param ClassInfo $classInfo
+     * @return array<string, PropertyInfo>
+     */
+    private function getFilteredPropertyData(array $filters, callable $extractor) : array {
+        return array_map(
+            callback: fn(PropertyInfo $property) => $extractor($property),
+            array: $this->filterProperties($filters),
         );
     }
 }

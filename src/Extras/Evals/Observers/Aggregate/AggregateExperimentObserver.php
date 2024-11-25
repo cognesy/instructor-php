@@ -17,6 +17,7 @@ class AggregateExperimentObserver implements CanObserveExperiment
         private string $observationKey = '',
         private array $params = [],
         private NumberAggregationMethod $method = NumberAggregationMethod::Mean,
+        private bool $throwOnEmptyObservations = true,
     ) {
         if (empty($name)) {
             throw new InvalidArgumentException('Name cannot be empty');
@@ -45,8 +46,12 @@ class AggregateExperimentObserver implements CanObserveExperiment
             $experiment->executionObservations(),
         ])->withKey($this->observationKey)->get();
 
-        if (empty($observations)) {
+        if (empty($observations) && $this->throwOnEmptyObservations) {
             throw new InvalidArgumentException("No observations found for key: {$this->observationKey}");
+        }
+
+        if (empty($observations)) {
+            return 0;
         }
 
         $values = array_map(
