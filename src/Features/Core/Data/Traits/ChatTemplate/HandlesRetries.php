@@ -12,7 +12,7 @@ trait HandlesRetries
         }
         foreach($this->request->attempts() as $attempt) {
             $messages = $this->makeRetryMessages(
-                [], $attempt->llmResponse()->content, $attempt->errors()
+                [], $attempt->llmResponse()->content(), $attempt->errors()
             );
             $this->script->section('retries')->appendMessages($messages);
         }

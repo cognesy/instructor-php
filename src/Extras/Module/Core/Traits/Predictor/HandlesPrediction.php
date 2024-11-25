@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core\Traits\Predictor;
 
+use Cognesy\Instructor\Extras\Prompt\Template;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Instructor\Utils\TemplateUtil;
 use InvalidArgumentException;
 
 trait HandlesPrediction
@@ -33,7 +33,7 @@ trait HandlesPrediction
 
     protected function predictText(array $callArgs) : string {
         $this->requestInfo->prompt = match(true) {
-            empty($this->requestInfo->prompt) => TemplateUtil::render(
+            empty($this->requestInfo->prompt) => Template::render(
                 template: $this->toTextTemplate(),
                 parameters: array_merge([
                     'instructions' => $this->instructions(),

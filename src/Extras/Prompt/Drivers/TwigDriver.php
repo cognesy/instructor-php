@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Extras\Prompt\Drivers;
 
 use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
 use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
-use Cognesy\Instructor\Utils\Arrays;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\Node\Expression\NameExpression;

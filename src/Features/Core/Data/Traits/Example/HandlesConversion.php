@@ -2,9 +2,9 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Example;
 
 use BackedEnum;
+use Cognesy\Instructor\Extras\Prompt\Template;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Messages;
-use Cognesy\Instructor\Utils\TemplateUtil;
 
 trait HandlesConversion
 {
@@ -21,7 +21,7 @@ trait HandlesConversion
     }
 
     public function toString() : string {
-        return TemplateUtil::render($this->template(), [
+        return Template::render($this->template(), [
             'input' => $this->inputString(),
             'output' => $this->outputString(),
         ]);

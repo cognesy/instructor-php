@@ -1,11 +1,12 @@
 <?php
-use Cognesy\Instructor\Utils\TemplateUtil;
+
+use Cognesy\Instructor\Extras\Prompt\Template;
 
 test('it renders a simple string', function () {
     $template = 'Hello, <|name|>!';
     $parameters = ['name' => 'John'];
 
-    $rendered = TemplateUtil::render($template, $parameters);
+    $rendered = Template::render($template, $parameters);
 
     expect($rendered)->toBe('Hello, John!');
 });
@@ -14,7 +15,7 @@ test('it handles missing keys gracefully', function () {
     $template = 'Hello, <|name|>! Your score is <|score|>.';
     $parameters = ['name' => 'John'];
 
-    $rendered = TemplateUtil::render($template, $parameters);
+    $rendered = Template::render($template, $parameters);
 
     expect($rendered)->toBe('Hello, John! Your score is .');
 });
@@ -26,7 +27,7 @@ test('it renders an array of messages', function () {
     ];
     $parameters = ['name' => 'John'];
 
-    $rendered = (new TemplateUtil($parameters))->renderMessages($messages);
+    $rendered = (new Template($parameters))->renderMessages($messages);
 
     expect($rendered)->toBe([
         ['role' => 'user', 'content' => 'Hello, John!'],
@@ -41,7 +42,7 @@ test('it renders an array of objects', function () {
     ];
     $parameters = ['name' => 'John'];
 
-    $rendered = (new TemplateUtil($parameters))->renderArray($objects);
+    $rendered = (new Template($parameters))->renderArray($objects);
 
     expect($rendered)->toBe([
         'Hello, John!',
@@ -57,7 +58,7 @@ test('it handles complex context values', function () {
         'tags' => ['developer', 'musician'],
     ];
 
-    $rendered = TemplateUtil::render($template, $parameters);
+    $rendered = Template::render($template, $parameters);
 
     expect($rendered)->toBe('Name: John, Age: 30, Tags: ["developer","musician"]');
 });

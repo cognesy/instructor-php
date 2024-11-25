@@ -1,5 +1,7 @@
 # Other LLMs
 
+- Gemini OpenAI-style API
+
 > Priority: must have
 
 1) Via custom BASE_URI - via existing OpenAI client

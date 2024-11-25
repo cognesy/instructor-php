@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Utils\Messages\Traits;
 
+use Cognesy\Instructor\Extras\Prompt\Template;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
-use Cognesy\Instructor\Utils\TemplateUtil;
 
 trait RendersContent
 {
@@ -16,7 +16,7 @@ trait RendersContent
     private function renderString(string $template, ?array $parameters) : string {
         return match(true) {
             empty($parameters) => $template,
-            default => (new TemplateUtil($parameters))->renderString($template),
+            default => (new Template($parameters))->renderString($template),
         };
     }
 
@@ -28,7 +28,7 @@ trait RendersContent
     protected function renderMessage(array|Message $message, ?array $parameters) : array {
         return match(true) {
             empty($parameters) => $message,
-            default => (new TemplateUtil($parameters))->renderMessage($message),
+            default => (new Template($parameters))->renderMessage($message),
         };
     }
 
@@ -40,7 +40,7 @@ trait RendersContent
     protected function renderMessages(array|Messages $messages, ?array $parameters) : array {
         return match(true) {
             //empty($context) => $messages,
-            default => (new TemplateUtil($parameters))->renderMessages($messages),
+            default => (new Template($parameters))->renderMessages($messages),
         };
     }
 }

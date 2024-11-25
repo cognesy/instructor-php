@@ -1,17 +1,19 @@
 <?php
-namespace Cognesy\Instructor\Utils;
+namespace Cognesy\Instructor\Extras\Prompt;
 
+use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
 use InvalidArgumentException;
 
-class TemplateUtil
+class Template
 {
-    private array $parameters = [];
+    private bool $clearUnknownParams;
+    private array $parameters;
+
     private array $parameterValues = [];
     private array $parameterKeys = [];
-    private bool $clearUnknownParams = true;
 
     public function __construct(
         array $parameters = [],
@@ -49,7 +51,7 @@ class TemplateUtil
         array  $parameters,
         bool   $clearUnknownParams = true,
     ) : string {
-        return (new TemplateUtil(
+        return (new Template(
             $parameters,
             $clearUnknownParams
         ))->renderString($template);
@@ -67,6 +69,10 @@ class TemplateUtil
         // render values
         return str_replace($this->parameterKeys, $this->parameterValues, $template);
     }
+
+//    public function renderString(string $template) : string {
+//        return Prompt::twig()->from($template)->with($this->parameters)->toText();
+//    }
 
     public function renderArray(
         array $rows,
@@ -116,7 +122,6 @@ class TemplateUtil
     // INTERNAL //////////////////////////////////////////////////////////////////
 
     private function materializeParameters(array $parameters) : array {
-        // TODO: is there a way to consolidate value rendering?
         $parameterValues = [];
         foreach ($parameters as $key => $value) {
             $value = match (true) {

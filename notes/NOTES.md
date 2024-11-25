@@ -2,36 +2,41 @@
 
 ## High priority
 
-- Evals / eval framework
-  * execution level correctness metric
-- Add 'Output' section to each example, generate it and include in docs, so reader can see what they can expect
-- Logging via PSR-3
-- Schema abstraction layer - decouple names and descriptions from the model
-- Prompt optimization via TextGrad
-- Agents
-- Indexing to vector DB
-- CLI app
-- Fast/simple REST API server - compatible with OpenAI? 
-- Revise examples debugging - not sure if it works as expected (what does it demonstrate?)
-- Multiple tools with tool selection
-- Parallel tool calls
-- Export configuration to user folder / use external configuration
+- Unify TemplateUtil and Prompt + decide on how to proceed with ChatTemplate class
+- Unify template conventions - <||> vs. {{}}, update docs
 - Full control over generated prompt (access to Script object processing)
-- Gemini OpenAI-style API
+- ToolUse - apply context variables to message sequence (via ScriptParameters??)
 
 ## Low priority
 
-- Batch API support (Gemini, OpenAI, Anthropic)
 - Gemini context caching
 - Generate unstructured, then format to structured - to improve reasoning
 
-
 # BACKLOG
+
+## Addon: Evals
+
+- Evals / eval framework
+  * execution level correctness metric
+
+## Addon: Agents
+
+- ToolUse mechanism - finalize, document, add examples
+- Agents - integrate ToolUse
 
 ## Addon: Modules
 
 - Modules: Add module observability via events - currently no access to this info
 
+## Addon: Prompt & schema optimization
+
+- Schema abstraction layer - decouple names and descriptions from the model
+- Prompt optimization via TextGrad
+
+## Addons: Indexing & Search
+
+- Indexing to vector DB
+- pgvector? Scout + MeiliSearch / typesense?
 
 ## Refactorings
 
@@ -46,15 +51,17 @@
 - Async mode
 - Fix response caching
 - Finish logging support
+- Documentation for logging
+- Logging via PSR-3 + tail
+- PSR-3 logger - finish, demo how to plug custom logger
 - Document how to inject custom HTTP client
 - Better error messages
-- Documentation for logging
 - PSR-14 events - finish, demo how to plug custom dispatcher
 - PSR-11 container - finish, demo how to plug custom container
-- PSR-3 logger - finish, demo how to plug custom logger
 
 ## Other
 
+- Revise examples debugging - not sure if it works as expected (what does it demonstrate?)
 - Sequences - validate only individual items, reject ONLY the invalid; allows progressive extraction in multiple stages
 - Use LLM to generate Example based on the class - just render object to JSON + add schema as an explanation - this should give the model enough info to come up with something that makes sense
 - Extract APIClient to a separate package?
@@ -62,7 +69,13 @@
 - example of integration with Laravel/Livewire
 - Read rate limits from API responses
 - Rate limited API calls - wait for the limit to reset
+- Batch API support (Gemini, OpenAI, Anthropic)
+- Fast/simple REST API server - compatible with OpenAI?
+- CLI app
 
+## Docs
+
+- Better docs: add 'Output' section to each example, generate it and include in docs, so reader can see what they can expect
 
 
 # Partially done
