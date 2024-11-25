@@ -6,10 +6,10 @@ use Cognesy\Instructor\Extras\ToolUse\Contracts\CanProcessStep;
 use Cognesy\Instructor\Extras\ToolUse\ToolUseContext;
 use Cognesy\Instructor\Extras\ToolUse\ToolUseStep;
 
-class AppendStepMessages implements CanProcessStep
+class AccumulateTokenUsage implements CanProcessStep
 {
     public function processStep(ToolUseStep $step, ToolUseContext $context): ToolUseStep {
-        $context->appendMessages($step->messages());
+        $context->accumulateUsage($step->usage());
         return $step;
     }
 }

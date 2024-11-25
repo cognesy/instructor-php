@@ -51,15 +51,7 @@ class ToolUse {
 
     public function nextStep() : ToolUseStep {
         $step = $this->driver->useTools($this->context);
-
-        // process step results
-        $this->context->accumulateUsage($step->usage());
-        $this->context->addStep($step);
-        $this->context->setCurrentStep($step);
-
-        $this->context->appendMessages($step->messages());
-
-        return $step;
+        return $this->processStep($step, $this->context);
     }
 
     public function finalStep() : ToolUseStep {

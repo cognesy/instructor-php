@@ -43,6 +43,7 @@ $driver = new ToolCallingDriver();
 $toolUse = (new ToolUse)
     ->withDriver($driver)
     ->withDefaultContinuationCriteria()
+    ->withDefaultProcessors()
     ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
     ->withTools([
         $addTool,

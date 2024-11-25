@@ -7,5 +7,5 @@ use Cognesy\Instructor\Extras\ToolUse\ToolUseStep;
 
 interface CanProcessStep
 {
-    public function processStep(ToolUseContext $context, ToolUseStep $step): void;
+    public function processStep(ToolUseStep $step, ToolUseContext $context): ToolUseStep;
 }
