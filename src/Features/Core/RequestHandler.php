@@ -15,6 +15,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Features\LLM\InferenceResponse;
+use Cognesy\Instructor\Features\LLM\LLM;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
@@ -90,13 +91,14 @@ class RequestHandler
     // INTERNAL ///////////////////////////////////////////////////////////
 
     protected function getInference(Request $request) : InferenceResponse {
-        $inference = new Inference(
+        $llm = new LLM(
             connection: $this->connection,
             httpClient: $this->httpClient,
             driver: $this->driver,
             events: $this->events,
         );
-        return $inference
+        return (new Inference)
+            ->withLLM($llm)
             ->create(
                 $request->toMessages(),
                 $request->model(),

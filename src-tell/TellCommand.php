@@ -24,10 +24,12 @@ class TellCommand extends Command
         $prompt = $input->getArgument('prompt');
         $connection = $input->getOption('connection');
 
-        $response = (new Inference)->withConnection($connection)->create(
-            messages: $prompt,
-            options: ['stream' => true]
-        );
+        $response = (new Inference)
+            ->withConnection($connection)
+            ->create(
+                messages: $prompt,
+                options: ['stream' => true]
+            );
 
         foreach ($response->stream()->responses() as $response) {
             $output->write($response->contentDelta);

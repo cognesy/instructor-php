@@ -58,16 +58,6 @@ class Instructor {
     }
 
     /**
-     * Initializes an Instructor instance with a specified connection.
-     *
-     * @param string $connection The connection string to be used.
-     * @return Instructor An instance of Instructor with the specified connection.
-     */
-    public static function using(string $connection) : Instructor {
-        return (new static)->withConnection($connection);
-    }
-
-    /**
      * Enables or disables debug mode for the current instance.
      *
      * @param bool $debug Optional. If true, enables debug mode; otherwise, disables it. Defaults to true.

@@ -3,26 +3,10 @@ namespace Cognesy\Instructor\Features\LLM;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\Inference\InferenceRequested;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Features\Http\HttpClient;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\CachedContext;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Drivers\AnthropicDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\AzureOpenAIDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\CohereV1Driver;
-use Cognesy\Instructor\Features\LLM\Drivers\CohereV2Driver;
-use Cognesy\Instructor\Features\LLM\Drivers\GeminiDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\GeminiOAIDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\GrokDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\MistralDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatibleDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
-use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
-use Cognesy\Instructor\Utils\Debug\Debug;
-use Cognesy\Instructor\Utils\Settings;
-use InvalidArgumentException;
 
 /**
  * Class Inference
@@ -31,37 +15,24 @@ use InvalidArgumentException;
  */
 class Inference
 {
-    protected LLMConfig $config;
-
     protected EventDispatcher $events;
-    protected CanHandleInference $driver;
-    protected CanHandleHttp $httpClient;
+    protected LLM $llm;
     protected CachedContext $cachedContext;
 
     /**
      * Constructor for initializing dependencies and configurations.
      *
-     * @param string $connection The connection string.
-     * @param LLMConfig|null $config Configuration object.
-     * @param CanHandleHttp|null $httpClient HTTP client handler.
-     * @param CanHandleInference|null $driver Inference handler.
+     * @param LLM|null $llm LLM object.
      * @param EventDispatcher|null $events Event dispatcher.
      *
      * @return void
      */
     public function __construct(
-        string $connection = '',
-        LLMConfig $config = null,
-        CanHandleHttp $httpClient = null,
-        CanHandleInference $driver = null,
-        EventDispatcher $events = null,
+        LLM                $llm = null,
+        EventDispatcher    $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->config = $config ?? LLMConfig::load(
-            connection: $connection ?: Settings::get('llm', "defaultConnection")
-        );
-        $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
-        $this->driver = $driver ?? $this->makeDriver($this->config, $this->httpClient);
+        $this->llm = $llm ?? new LLM(events: $this->events);
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
@@ -78,10 +49,10 @@ class Inference
      */
     public static function text(
         string|array $messages,
-        string $connection = '',
-        string $model = '',
-        array $options = []
-    ) : string {
+        string       $connection = '',
+        string       $model = '',
+        array        $options = []
+    ): string {
         return (new Inference)
             ->withConnection($connection)
             ->create(
@@ -95,6 +66,11 @@ class Inference
 
     // PUBLIC //////////////////////////////////////////////////////////////////
 
+    public function withLLM(LLM $llm): self {
+        $this->llm = $llm;
+        return $this;
+    }
+
     /**
      * Updates the configuration and re-initializes the driver.
      *
@@ -103,8 +79,7 @@ class Inference
      * @return self
      */
     public function withConfig(LLMConfig $config): self {
-        $this->config = $config;
-        $this->driver = $this->makeDriver($this->config, $this->httpClient);
+        $this->llm->withConfig($config);
         return $this;
     }
 
@@ -119,8 +94,7 @@ class Inference
         if (empty($connection)) {
             return $this;
         }
-        $this->config = LLMConfig::load($connection);
-        $this->driver = $this->makeDriver($this->config, $this->httpClient);
+        $this->llm->withConnection($connection);
         return $this;
     }
 
@@ -132,8 +106,7 @@ class Inference
      * @return self Returns the current instance for method chaining.
      */
     public function withHttpClient(CanHandleHttp $httpClient): self {
-        $this->httpClient = $httpClient;
-        $this->driver = $this->makeDriver($this->config, $this->httpClient);
+        $this->llm->withHttpClient($httpClient);
         return $this;
     }
 
@@ -145,7 +118,7 @@ class Inference
      * @return self
      */
     public function withDriver(CanHandleInference $driver): self {
-        $this->driver = $driver;
+        $this->llm->withDriver($driver);
         return $this;
     }
 
@@ -156,8 +129,8 @@ class Inference
      *
      * @return self
      */
-    public function withDebug(bool $debug = true) : self {
-        Debug::setEnabled($debug); // TODO: fix me - debug should not be global, should be request specific
+    public function withDebug(bool $debug = true): self {
+        $this->llm->withDebug($debug);
         return $this;
     }
 
@@ -173,9 +146,9 @@ class Inference
      */
     public function withCachedContext(
         string|array $messages = [],
-        array $tools = [],
+        array        $tools = [],
         string|array $toolChoice = [],
-        array $responseFormat = [],
+        array        $responseFormat = [],
     ): self {
         $this->cachedContext = new CachedContext($messages, $tools, $toolChoice, $responseFormat);
         return $this;
@@ -189,11 +162,10 @@ class Inference
      * @return InferenceResponse The response from the inference request.
      */
     public function withRequest(InferenceRequest $request): InferenceResponse {
-        $this->events->dispatch(new InferenceRequested($request));
         return new InferenceResponse(
-            response: $this->driver->handle($request),
-            driver: $this->driver,
-            config: $this->config,
+            response: $this->llm->handleInferenceRequest($request),
+            driver: $this->llm->driver(),
+            config: $this->llm->config(),
             isStreamed: $request->options['stream'] ?? false,
             events: $this->events,
         );
@@ -214,12 +186,12 @@ class Inference
      */
     public function create(
         string|array $messages = [],
-        string $model = '',
-        array $tools = [],
+        string       $model = '',
+        array        $tools = [],
         string|array $toolChoice = [],
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text
+        array        $responseFormat = [],
+        array        $options = [],
+        Mode         $mode = Mode::Text
     ): InferenceResponse {
         return $this->withRequest(new InferenceRequest(
             messages: $messages,
@@ -231,37 +203,5 @@ class Inference
             mode: $mode,
             cachedContext: $this->cachedContext ?? null
         ));
-    }
-
-    // INTERNAL ////////////////////////////////////////////////////////////////
-
-    /**
-     * Creates and returns an appropriate driver instance based on the given configuration.
-     *
-     * @param LLMConfig $config Configuration object specifying the provider type and other necessary settings.
-     * @param CanHandleHttp $httpClient An HTTP client instance to handle HTTP requests.
-     *
-     * @return CanHandleInference A driver instance matching the specified provider type.
-     * @throws InvalidArgumentException If the provider type is not supported.
-     */
-    protected function makeDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
-        return match ($config->providerType) {
-            LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient, $this->events),
-            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient, $this->events),
-            LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient, $this->events),
-            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient, $this->events),
-            LLMProviderType::GeminiOAI => new GeminiOAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Grok => new GrokDriver($config, $httpClient, $this->events),
-            LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
-            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Fireworks,
-            LLMProviderType::Groq,
-            LLMProviderType::Ollama,
-            LLMProviderType::OpenAICompatible,
-            LLMProviderType::OpenRouter,
-            LLMProviderType::Together => new OpenAICompatibleDriver($config, $httpClient, $this->events),
-            default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
-        };
     }
 }
