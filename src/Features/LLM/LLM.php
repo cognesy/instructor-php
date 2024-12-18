@@ -11,6 +11,7 @@ use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\Drivers\AnthropicDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\AzureOpenAIDriver;
+use Cognesy\Instructor\Features\LLM\Drivers\CerebrasDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV1Driver;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV2Driver;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiDriver;
@@ -195,7 +196,7 @@ class LLM
             LLMProviderType::Grok => new GrokDriver($config, $httpClient, $this->events),
             LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Cerebras,
+            LLMProviderType::Cerebras => new CerebrasDriver($config, $httpClient, $this->events),
             LLMProviderType::Fireworks,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,
