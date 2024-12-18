@@ -4,9 +4,20 @@ return [
 
     'libraries' => [
         'system' => [
-            'templateEngine' => 'twig',
+            'templateEngine' => 'arrowpipe',
             'resourcePath' => '/../../../../prompts/system',
             'cachePath' => '/tmp/instructor/cache/system',
+            'extension' => '.tpl',
+            'frontMatterTags' => ['{#---', '---#}'],
+            'frontMatterFormat' => 'yaml',
+            'metadata' => [
+                'autoReload' => true,
+            ],
+        ],
+        'examples' => [
+            'templateEngine' => 'twig',
+            'resourcePath' => '/../../../../prompts/examples',
+            'cachePath' => '/tmp/instructor/cache/examples',
             'extension' => '.twig',
             'frontMatterTags' => ['{#---', '---#}'],
             'frontMatterFormat' => 'yaml',
@@ -32,17 +43,6 @@ return [
             'extension' => '.blade.php',
             'frontMatterTags' => ['{{--', '--}}'],
             'frontMatterFormat' => 'yaml',
-        ],
-        'examples' => [
-            'templateEngine' => 'twig',
-            'resourcePath' => '/../../../../prompts/examples',
-            'cachePath' => '/tmp/instructor/cache/examples',
-            'extension' => '.twig',
-            'frontMatterTags' => ['{#---', '---#}'],
-            'frontMatterFormat' => 'yaml',
-            'metadata' => [
-                'autoReload' => true,
-            ],
         ],
     ]
 ];

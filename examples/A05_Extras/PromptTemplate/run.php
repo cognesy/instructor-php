@@ -1,12 +1,12 @@
 ---
-title: 'Prompts'
+title: 'Prompt Templates'
 docname: 'prompt_text'
 ---
 
 ## Overview
 
-`Prompt` class in Instructor PHP provides a way to define and use
-prompt templates using Twig or Blade template syntax.
+`Template` class in Instructor PHP provides a way to define and use
+prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
 
 
 ## Example
@@ -16,13 +16,13 @@ prompt templates using Twig or Blade template syntax.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Prompt\Prompt;
+use Cognesy\Instructor\Extras\Prompt\Template;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Utils\Str;
 
 // EXAMPLE 1: Define prompt template inline (don't use files) and use short syntax
 
-$prompt = Prompt::twig()
+$prompt = Template::twig()
     ->from('What is capital of {{country}}')
     ->with(['country' => 'Germany'])
     ->toText();
@@ -40,7 +40,7 @@ assert(Str::contains($answer, 'Berlin'));
 // EXAMPLE 2: Use Prompt library to load prompt from file
 
 // use default template language, prompt files are in /prompts/twig/<prompt>.twig
-$prompt = Prompt::text(
+$prompt = Template::text(
     pathOrDsn: 'demo-twig:capital',
     variables: ['country' => 'Germany'],
 );

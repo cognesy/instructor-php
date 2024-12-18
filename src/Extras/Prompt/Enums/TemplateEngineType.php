@@ -2,8 +2,9 @@
 
 namespace Cognesy\Instructor\Extras\Prompt\Enums;
 
-enum TemplateEngine : string
+enum TemplateEngineType : string
 {
     case Twig = 'twig';
     case Blade = 'blade';
+    case Arrowpipe = 'arrowpipe';
 }

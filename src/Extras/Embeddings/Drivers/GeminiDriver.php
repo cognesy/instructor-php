@@ -72,11 +72,11 @@ class GeminiDriver implements CanVectorize
         );
     }
 
-    private function countCharacters(array $input) : int {
+    protected function countCharacters(array $input) : int {
         return array_sum(array_map(fn($item) => strlen($item), $input));
     }
 
-    private function makeUsage(array $response) : Usage {
+    protected function makeUsage(array $response) : Usage {
         return new Usage(
             inputTokens: $this->inputCharacters,
             outputTokens: 0,

@@ -5,6 +5,14 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
 
+/**
+ * A class responsible for managing and dispatching events to corresponding listeners.
+ *
+ * The EventDispatcher provides functionality to register listeners for specific
+ * event classes, notify those listeners when an event is dispatched, and manage
+ * a hierarchical chain of dispatchers with an optional parent dispatcher to forward events.
+ * Additionally, it supports wiretapping, enabling callbacks to observe all dispatched events.
+ */
 class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface
 {
     private string $name;
@@ -21,15 +29,33 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
         $this->parent = $parent;
     }
 
+    /**
+     * Retrieves the name of the dispatcher.
+     *
+     * @return string The name.
+     */
     public function name() : string {
         return $this->name;
     }
 
+    /**
+     * Registers a listener for a specific event class.
+     *
+     * @param string $eventClass The fully qualified name of the event class to listen for.
+     * @param callable $listener A callable function or method that will handle the event.
+     * @return self Returns the current instance for method chaining.
+     */
     public function addListener(string $eventClass, callable $listener): self {
         $this->listeners[$eventClass][] = $listener;
         return $this;
     }
 
+    /**
+     * Retrieves the listeners associated with a given event object.
+     *
+     * @param object $event The event object for which to retrieve listeners.
+     * @return iterable An iterable list of listeners that are registered for the event's class or its parent classes.
+     */
     public function getListenersForEvent(object $event): iterable {
         foreach ($this->listeners as $eventClass => $listeners) {
             if ($event instanceof $eventClass) {
@@ -38,6 +64,12 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
         }
     }
 
+    /**
+     * Dispatches an event to all registered listeners and forwards it to the parent dispatcher if available.
+     *
+     * @param object $event The event object to be dispatched.
+     * @return void
+     */
     public function dispatch(object $event): void {
         $this->notifyListeners($event);
         // forward event to parent dispatcher
@@ -46,6 +78,12 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
         }
     }
 
+    /**
+     * Notifies all registered listeners of the given event.
+     *
+     * @param object $event The event object being dispatched to the listeners.
+     * @return void This method does not return a value.
+     */
     protected function notifyListeners(object $event) : void {
         $listeners = $this->getListenersForEvent($event);
         // dispatch event to listeners
@@ -58,11 +96,23 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
         $this->wiretapDispatch($event);
     }
 
+    /**
+     * Adds a wiretap listener that will be triggered for all events.
+     *
+     * @param callable $listener A callable function or method to handle the events.
+     * @return self Returns the current instance for method chaining.
+     */
     public function wiretap(callable $listener): self {
         $this->wiretaps[] = $listener;
         return $this;
     }
 
+    /**
+     * Dispatches an event to all registered wiretap listeners.
+     *
+     * @param object $event The event object to be passed to each wiretap listener.
+     * @return void Does not return any value.
+     */
     private function wiretapDispatch(object $event): void {
         foreach ($this->wiretaps as $wiretap) {
             $wiretap($event);

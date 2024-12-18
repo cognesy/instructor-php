@@ -40,4 +40,19 @@ trait HandlesAccess
         }
         return true;
     }
+
+    public function nameList() : array {
+        return array_keys($this->tools);
+    }
+
+    public function descriptionList() : array {
+        $toolsList = [];
+        foreach($this->tools as $tool) {
+            $toolsList[] = [
+                'name' => $tool->name(),
+                'description' => $tool->description(),
+            ];
+        }
+        return $toolsList;
+    }
 }

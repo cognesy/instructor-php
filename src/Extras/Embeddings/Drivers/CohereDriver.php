@@ -65,7 +65,7 @@ class CohereDriver implements CanVectorize
         );
     }
 
-    private function makeUsage(array $response) : Usage {
+    protected function makeUsage(array $response) : Usage {
         return new Usage(
             inputTokens: $response['meta']['billed_units']['input_tokens'] ?? 0,
             outputTokens: $response['meta']['billed_units']['output_tokens'] ?? 0,

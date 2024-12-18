@@ -6,6 +6,7 @@ enum LLMProviderType : string
     case Anthropic = 'anthropic';
     //case Anyscale = 'anyscale';
     case Azure = 'azure';
+    case Cerebras = 'cerebras';
     case CohereV1 = 'cohere1';
     case CohereV2 = 'cohere2';
     case Fireworks = 'fireworks';

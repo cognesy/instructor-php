@@ -3,36 +3,37 @@
 namespace Cognesy\Instructor\Extras\Prompt;
 
 use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Drivers\ArrowpipeDriver;
 use Cognesy\Instructor\Extras\Prompt\Drivers\BladeDriver;
 use Cognesy\Instructor\Extras\Prompt\Drivers\TwigDriver;
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
+use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngineType;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
-class PromptLibrary
+class TemplateLibrary
 {
     private CanHandleTemplate $driver;
-    private PromptEngineConfig $config;
+    private TemplateEngineConfig $config;
 
     public function __construct(
-        string             $library = '',
-        PromptEngineConfig $config = null,
-        CanHandleTemplate  $driver = null,
+        string               $library = '',
+        TemplateEngineConfig $config = null,
+        CanHandleTemplate    $driver = null,
     ) {
-        $this->config = $config ?? PromptEngineConfig::load(
+        $this->config = $config ?? TemplateEngineConfig::load(
             library: $library ?: Settings::get('prompt', "defaultLibrary")
         );
         $this->driver = $driver ?? $this->makeDriver($this->config);
     }
 
     public function get(string $library): self {
-        $this->config = PromptEngineConfig::load($library);
+        $this->config = TemplateEngineConfig::load($library);
         $this->driver = $this->makeDriver($this->config);
         return $this;
     }
 
-    public function withConfig(PromptEngineConfig $config): self {
+    public function withConfig(TemplateEngineConfig $config): self {
         $this->config = $config;
         $this->driver = $this->makeDriver($config);
         return $this;
@@ -43,7 +44,7 @@ class PromptLibrary
         return $this;
     }
 
-    public function config(): PromptEngineConfig {
+    public function config(): TemplateEngineConfig {
         return $this->config;
     }
 
@@ -69,10 +70,11 @@ class PromptLibrary
 
     // INTERNAL ///////////////////////////////////////////////////
 
-    private function makeDriver(PromptEngineConfig $config): CanHandleTemplate {
+    private function makeDriver(TemplateEngineConfig $config): CanHandleTemplate {
         return match ($config->templateEngine) {
-            TemplateEngine::Twig => new TwigDriver($config),
-            TemplateEngine::Blade => new BladeDriver($config),
+            TemplateEngineType::Twig => new TwigDriver($config),
+            TemplateEngineType::Blade => new BladeDriver($config),
+            TemplateEngineType::Arrowpipe => new ArrowpipeDriver($config),
             default => throw new InvalidArgumentException("Unknown driver: $config->templateEngine"),
         };
     }

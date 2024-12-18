@@ -2,19 +2,23 @@
 namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Features\LLM\LLM;
 
 interface CanInferSelf
 {
     static public function infer(
-        string|array $messages = '',
+        string|array        $messages = '',
         string|array|object $input = '',
-        string $model = '',
-        int $maxRetries = 2,
-        array $options = [],
-        array $examples = [],
-        string $prompt = '',
-        Mode $mode = Mode::Tools,
-        Instructor $instructor = null,
+        string              $system = '',
+        string              $prompt = '',
+        array               $examples = [],
+        string              $model = '',
+        int                 $maxRetries = 2,
+        array               $options = [],
+        Mode                $mode = Mode::Tools,
+        string              $toolName = '',
+        string              $toolDescription = '',
+        string              $retryPrompt = '',
+        LLM                 $llm = null,
     ) : static;
 }

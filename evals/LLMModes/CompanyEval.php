@@ -52,7 +52,7 @@ class CompanyEval implements CanGenerateObservations
 
     private function validateToolsData(Execution $execution) : bool {
         /** @var ToolCall $toolCall */
-        $toolCall = $execution->get('response')->toolCalls?->first();
+        $toolCall = $execution->get('response')->toolCalls()?->first();
         if (null === $toolCall) {
             return false;
         }

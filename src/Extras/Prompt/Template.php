@@ -1,144 +1,346 @@
 <?php
+
 namespace Cognesy\Instructor\Extras\Prompt;
 
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
+use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Messages\Script;
+use Cognesy\Instructor\Utils\Str;
+use Cognesy\Instructor\Utils\Xml\Xml;
+use Cognesy\Instructor\Utils\Xml\XmlElement;
 use InvalidArgumentException;
 
 class Template
 {
-    private bool $clearUnknownParams;
-    private array $parameters;
+    const DSN_SEPARATOR = ':';
 
-    private array $parameterValues = [];
-    private array $parameterKeys = [];
+    private TemplateLibrary $library;
+    private TemplateInfo $templateInfo;
+
+    private string $templateContent;
+    private array $variableValues;
+    private string $rendered;
+    private $tags = ['chat', 'message', 'content', 'section'];
 
     public function __construct(
-        array $parameters = [],
-        bool  $clearUnknownParams = true,
+        string               $path = '',
+        string               $library = '',
+        TemplateEngineConfig $config = null,
+        CanHandleTemplate    $driver = null,
     ) {
-        $this->clearUnknownParams = $clearUnknownParams;
-        $this->parameters = $parameters;
-        if (empty($parameters)) {
-            return;
-        }
-        // remove keys starting with @ - these are used for section templates
-        $filteredParameters = array_filter(
-            $parameters,
-            fn($key) => substr($key, 0, 1) !== '@',
-            ARRAY_FILTER_USE_KEY
-        );
-        $materializedParameters = $this->materializeParameters($filteredParameters);
-        $this->parameterValues = array_values($materializedParameters);
-        $this->parameterKeys = array_map(
-            fn($key) => $this->varPattern($key),
-            array_keys($materializedParameters)
-        );
+        $this->library = new TemplateLibrary($library, $config, $driver);
+        $this->templateContent = $path ? $this->library->loadTemplate($path) : '';
     }
 
-    public function getParameters() : array {
-        return $this->parameters;
+    public static function twig() : self {
+        return new self(config: TemplateEngineConfig::twig());
     }
 
-    public static function cleanVarMarkers(string $template) : string {
-        return str_replace(['<|', '|>'], '', $template);
+    public static function blade() : self {
+        return new self(config: TemplateEngineConfig::blade());
     }
 
-    public static function render(
-        string $template,
-        array  $parameters,
-        bool   $clearUnknownParams = true,
-    ) : string {
-        return (new Template(
-            $parameters,
-            $clearUnknownParams
-        ))->renderString($template);
+    public static function arrowpipe() : self {
+        return new self(config: TemplateEngineConfig::arrowpipe());
     }
 
-    public function renderString(string $template): string {
-        // find all keys in the template
-        $keys = $this->findVars($template);
-        if ($this->clearUnknownParams) {
-            // find keys missing from $this->keys
-            $missingKeys = array_diff($keys, $this->parameterKeys);
-            // remove missing key strings from the template
-            $template = str_replace($missingKeys, '', $template);
-        }
-        // render values
-        return str_replace($this->parameterKeys, $this->parameterValues, $template);
-    }
-
-//    public function renderString(string $template) : string {
-//        return Prompt::twig()->from($template)->with($this->parameters)->toText();
-//    }
-
-    public function renderArray(
-        array $rows,
-        string $field = 'content'
-    ): array {
-        return array_map(
-            fn($item) => $this->renderString($item[$field] ?? ''),
-            $rows
-        );
-    }
-
-    public function renderMessage(array|Message $message) : array {
-        $normalized = match(true) {
-            is_array($message) => Message::fromArray($message),
-            $message instanceof Message => $message,
-            default => throw new InvalidArgumentException('Invalid message type'),
+    public static function make(string $pathOrDsn) : static {
+        return match(true) {
+            Str::contains($pathOrDsn, self::DSN_SEPARATOR) => self::fromDsn($pathOrDsn),
+            default => new self(path: $pathOrDsn),
         };
+    }
 
-        // skip rendering if content is an array - it may contain non-text data
-        if (is_array($normalized->content())) {
-            return ['role' => $normalized->role()->value, 'content' => $normalized->content()];
+    public static function using(string $library) : static {
+        return new self(library: $library);
+    }
+
+    public static function text(string $pathOrDsn, array $variables) : string {
+        return self::make($pathOrDsn)->withValues($variables)->toText();
+    }
+
+    public static function messages(string $pathOrDsn, array $variables) : Messages {
+        return self::make($pathOrDsn)->withValues($variables)->toMessages();
+    }
+
+    public static function fromDsn(string $dsn) : static {
+        if (!Str::contains($dsn, self::DSN_SEPARATOR)) {
+            throw new InvalidArgumentException("Invalid DSN: $dsn - missing separator");
         }
+        $parts = explode(self::DSN_SEPARATOR, $dsn, 2);
+        if (count($parts) !== 2) {
+            throw new InvalidArgumentException("Invalid DSN: `$dsn` - failed to parse");
+        }
+        return new self(path: $parts[1], library: $parts[0]);
+    }
 
-        return ['role' => $normalized->role()->value, 'content' => $this->renderString($normalized->content())];
+    public function withLibrary(string $library) : self {
+        $this->library->get($library);
+        return $this;
+    }
+
+    public function withConfig(TemplateEngineConfig $config) : self {
+        $this->library->withConfig($config);
+        return $this;
+    }
+
+    public function withDriver(CanHandleTemplate $driver) : self {
+        $this->library->withDriver($driver);
+        return $this;
+    }
+
+    public function get(string $path) : self {
+        return $this->withTemplate($path);
+    }
+
+    public function withTemplate(string $path) : self {
+        $this->templateContent = $this->library->loadTemplate($path);
+        $this->templateInfo = new TemplateInfo($this->templateContent, $this->library->config());
+        return $this;
+    }
+
+    public function withTemplateContent(string $content) : self {
+        $this->templateContent = $content;
+        $this->templateInfo = new TemplateInfo($this->templateContent, $this->library->config());
+        return $this;
+    }
+
+    public function from(string $content) : self {
+        $this->withTemplateContent($content);
+        return $this;
+    }
+
+    public function with(array $values) : self {
+        return $this->withValues($values);
+    }
+
+    public function withValues(array $values) : self {
+        $this->variableValues = $values;
+        return $this;
+    }
+
+    public function toText() : string {
+        return $this->rendered();
+    }
+
+    public function toMessages() : Messages {
+        return $this->makeMessages($this->rendered());
+    }
+
+    public function toScript() : Script {
+        return $this->makeScript($this->rendered());
+    }
+
+    public function toArray() : array {
+        return $this->toMessages()->toArray();
+    }
+
+    public function config() : TemplateEngineConfig {
+        return $this->library->config();
+    }
+
+    public function params() : array {
+        return $this->variableValues;
+    }
+
+    public function template() : string {
+        return $this->templateContent;
+    }
+
+    public function variables() : array {
+        return $this->library->getVariableNames($this->templateContent);
+    }
+
+    public function info() : TemplateInfo {
+        return $this->templateInfo;
+    }
+
+    public function validationErrors() : array {
+        $infoVars = $this->info()->variableNames();
+        $templateVars = $this->variables();
+        $valueKeys = array_keys($this->variableValues);
+        return $this->validateVariables($infoVars, $templateVars, $valueKeys);
+    }
+
+    public function renderMessage(Message|array $message) : array {
+        $array = match(true) {
+            $message instanceof Message => $message->toArray(),
+            default => $message,
+        };
+        $content = $array['content'];
+        if (is_array($content)) {
+            foreach ($content as $key => $item) {
+                $content[$key] = match($item['type']) {
+                    'text' => $this->library->renderString($item['text'], $this->variableValues),
+                    default => $item,
+                };
+            }
+        } else {
+            $content = $this->library->renderString($content, $this->variableValues);
+        }
+        $array['content'] = $content;
+        return $array;
     }
 
     public function renderMessages(array|Messages $messages) : array {
-        return array_map(
-            fn($message) => $this->renderMessage($message),
-            is_array($messages) ? $messages : $messages->toArray()
-        );
-    }
-
-    // OVERRIDEABLE //////////////////////////////////////////////////////////////
-
-    protected function varPattern(string $key) : string {
-        return '<|' . $key . '|>';
-    }
-
-    protected function findVars(string $template) : array {
-        $matches = [];
-        // replace {xxx} pattern with <|xxx|> pattern match
-        preg_match_all('/<\|([^|]+)\|>/', $template, $matches);
-        return $matches[0];
-    }
-
-    // INTERNAL //////////////////////////////////////////////////////////////////
-
-    private function materializeParameters(array $parameters) : array {
-        $parameterValues = [];
-        foreach ($parameters as $key => $value) {
-            $value = match (true) {
-                is_scalar($value) => $value,
-                is_array($value) => Json::encode($value),
-                is_callable($value) => $value($key, $parameters),
-                is_object($value) && method_exists($value, 'toString') => $value->toString(),
-                is_object($value) && method_exists($value, 'toJson') => $value->toJson(),
-                is_object($value) && method_exists($value, 'toArray') => Json::encode($value->toArray()),
-                is_object($value) && method_exists($value, 'toSchema') => Json::encode($value->toSchema()),
-                is_object($value) && method_exists($value, 'toOutputSchema') => Json::encode($value->toOutputSchema()),
-                is_object($value) && property_exists($value, 'value') => $value->value(),
-                is_object($value) => Json::encode($value),
-                default => $value,
-            };
-            $parameterValues[$key] = $value;
+        $output = [];
+        foreach ($messages as $message) {
+            $output[] = $this->renderMessage($message);
         }
-        return $parameterValues;
+        return $output;
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////
+
+    private function rendered() : string {
+        if (!isset($this->rendered)) {
+            $rendered = $this->library->renderString($this->templateContent, $this->variableValues);
+            $this->rendered = $rendered;
+        }
+        return $this->rendered;
+    }
+
+    private function makeMessages(string $text) : Messages {
+        return match(true) {
+            $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeMessagesFromXml($text),
+            default => Messages::fromString($text),
+        };
+    }
+
+    private function makeScript(string $text) : Script {
+        return match(true) {
+            $this->containsXml($text) && $this->hasChatRoles($text) => $this->makeScriptFromXml($text),
+            default => Messages::fromString($text),
+        };
+    }
+
+    private function hasChatRoles(string $text) : bool {
+        $roleStrings = [
+            '<chat>', '<message>', '<section>'
+        ];
+        if (Str::containsAny($text, $roleStrings)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function containsXml(string $text) : bool {
+        return preg_match('/<[^>]+>/', $text) === 1;
+    }
+
+    private function makeScriptFromXml(string $text) : Script {
+        $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
+        $script = new Script();
+        $section = $script->section('messages');
+        foreach ($xml->children() as $element) {
+            if ($element->tag() === 'section') {
+                $section = $script->section($element->attribute('name') ?? 'messages');
+                continue;
+            }
+            if ($element->tag() !== 'message') {
+                continue;
+            }
+            $section->appendMessage(Message::make(
+                role: $element->attribute('role', 'user'),
+                content: match(true) {
+                    $element->hasChildren() => $this->getMessageContent($element),
+                    default => $element->content(),
+                }
+            ));
+        }
+        return $script;
+    }
+
+    private function makeMessagesFromXml(string $text) : Messages {
+        $xml = Xml::from($text)->withTags($this->tags)->toXmlElement();
+        $messages = new Messages();
+        foreach ($xml->children() as $element) {
+            if ($element->tag() !== 'message') {
+                continue;
+            }
+            $messages->appendMessage(Message::make(
+                role: $element->attribute('role', 'user'),
+                content: match(true) {
+                    $element->hasChildren() => $this->getMessageContent($element),
+                    default => $element->content(),
+                }
+            ));
+        }
+        return $messages;
+    }
+
+    private function getMessageContent(XmlElement $element) : array {
+        $content = [];
+        foreach ($element->children() as $child) {
+            if ($child->tag() !== 'content') {
+                continue;
+            }
+            $type = $child->attribute('type', 'text');
+            $content[] = match($type) {
+                'image' => $this->makeImageContent($child),
+                'audio' => $this->makeAudioContent($child),
+                default => $this->makeTextContent($child),
+            };
+        }
+        return $content;
+    }
+
+    private function makeTextContent(XmlElement $child) : array {
+        $hasCacheControl = $child->attribute('cache', false);
+        return array_filter([
+            'type' => 'text',
+            'text' => $child->content(),
+            'cache_control' => $hasCacheControl ? ['type' => 'ephemeral'] : []
+        ]);
+    }
+
+    private function makeImageContent(XmlElement $child) : array {
+        return [
+            'type' => 'image_url',
+            'image_url' => [
+                'url' => $child->content()
+            ]
+        ];
+    }
+
+    private function makeAudioContent(XmlElement $child) : array {
+        return [
+            'type' => 'input_audio',
+            'input_audio' => [
+                'data' => $child->content(),
+                'format' => $child->attribute('format', 'mp3')
+            ]
+        ];
+    }
+
+    private function validateVariables(array $infoVars, array $templateVars, array $valueKeys) : array {
+        $messages = [];
+        foreach($infoVars as $var) {
+            if (!in_array($var, $valueKeys)) {
+                $messages[] = "$var: variable defined in template info, but value not provided";
+            }
+            if (!in_array($var, $templateVars)) {
+                $messages[] = "$var: variable defined in template info, but not used";
+            }
+        }
+        foreach($valueKeys as $var) {
+            if (!in_array($var, $infoVars)) {
+                $messages[] = "$var: value provided, but not defined in template info";
+            }
+            if (!in_array($var, $templateVars)) {
+                $messages[] = "$var: value provided, but not used in template content";
+            }
+        }
+        foreach($templateVars as $var) {
+            if (!in_array($var, $infoVars)) {
+                $messages[] = "$var: variable used in template, but not defined in template info";
+            }
+            if (!in_array($var, $valueKeys)) {
+                $messages[] = "$var: variable used in template, but value not provided";
+            }
+        }
+        return $messages;
     }
 }

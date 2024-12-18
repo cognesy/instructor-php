@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extras\ToolUse\ToolUseContext;
 class ErrorPresenceCheck implements CanDecideToContinue
 {
     public function canContinue(ToolUseContext $context): bool {
-        return !($context->currentStep()?->hasErrors() ?? false);
+        $hasErrors = $context->currentStep()?->hasErrors() ?? false;
+        return !($hasErrors);
     }
 }

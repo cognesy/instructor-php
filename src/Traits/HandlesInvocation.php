@@ -112,9 +112,7 @@ trait HandlesInvocation
                 $this->responseTransformer,
                 $this->events,
             ),
-            connection: $this->connection,
-            driver: $this->driver,
-            httpClient: $this->httpClient,
+            llm: $this->llm,
             events: $this->events,
         );
 

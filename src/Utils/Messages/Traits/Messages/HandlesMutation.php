@@ -15,8 +15,9 @@ trait HandlesMutation
         return $this;
     }
 
-    public function appendMessage(array|Message $message) : static {
+    public function appendMessage(string|array|Message $message) : static {
         $this->messages[] = match (true) {
+            is_string($message) => Message::fromString($message),
             is_array($message) => Message::fromArray($message),
             default => $message,
         };

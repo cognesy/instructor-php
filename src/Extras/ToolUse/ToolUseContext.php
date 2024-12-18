@@ -2,11 +2,13 @@
 
 namespace Cognesy\Instructor\Extras\ToolUse;
 
+use Cognesy\Instructor\Extras\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Messages\Messages;
 
 class ToolUseContext
 {
+    private ToolUseStatus $status = ToolUseStatus::InProgress;
     private Tools $tools;
     private Messages $messages;
     private array $variables = [];
@@ -24,6 +26,8 @@ class ToolUseContext
         $this->messages = new Messages();
         $this->usage = new Usage();
     }
+
+    // HANDLE STEPS ////////////////////////////////////////////////
 
     public function currentStep() : ?ToolUseStep {
         return $this->currentStep;
@@ -46,6 +50,8 @@ class ToolUseContext
         $this->currentStep = $step;
     }
 
+    // HANDLE MESSAGES /////////////////////////////////////////////
+
     public function messages() : Messages {
         return $this->messages;
     }
@@ -58,6 +64,8 @@ class ToolUseContext
         $this->messages->appendMessages($messages);
     }
 
+    // HANDLE TOOLS ////////////////////////////////////////////////
+
     public function tools() : Tools {
         return $this->tools;
     }
@@ -65,6 +73,8 @@ class ToolUseContext
     public function withTools(Tools $tools) {
         $this->tools = $tools;
     }
+
+    // HANDLE USAGE ////////////////////////////////////////////////
 
     public function usage() : Usage {
         return $this->usage;
@@ -74,11 +84,27 @@ class ToolUseContext
         $this->usage->accumulate($usage);
     }
 
-    public function setVariable(int|string $name, mixed $value) : void {
+    // HANDLE VARIABLES ////////////////////////////////////////////
+
+    public function withVariable(int|string $name, mixed $value) : void {
         $this->variables[$name] = $value;
     }
 
-    public function getVariable(string $name, mixed $default = null) : mixed {
+    public function variable(string $name, mixed $default = null) : mixed {
         return $this->variables[$name] ?? $default;
+    }
+
+    public function variables() : array {
+        return $this->variables;
+    }
+
+    // HANDLE STATUS ///////////////////////////////////////////////
+
+    public function status() : ToolUseStatus {
+        return $this->status;
+    }
+
+    public function withStatus(ToolUseStatus $status) {
+        $this->status = $status;
     }
 }

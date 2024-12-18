@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Prompt\Drivers;
 
 use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
 use eftec\bladeone\BladeOne;
 use Exception;
 
@@ -19,10 +19,10 @@ class BladeDriver implements CanHandleTemplate
     /**
      * BladeDriver constructor.
      *
-     * @param PromptEngineConfig $config The configuration for the prompt engine
+     * @param TemplateEngineConfig $config The configuration for the prompt engine
      */
     public function __construct(
-        private PromptEngineConfig $config,
+        private TemplateEngineConfig $config,
     ) {
         $views = __DIR__ . $this->config->resourcePath;
         $cache = __DIR__ . $this->config->cachePath;

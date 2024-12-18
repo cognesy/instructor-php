@@ -21,10 +21,13 @@ trait HandlesConversion
     }
 
     public function toString() : string {
-        return Template::render($this->template(), [
-            'input' => $this->inputString(),
-            'output' => $this->outputString(),
-        ]);
+        return Template::arrowpipe()
+            ->from($this->template())
+            ->with([
+                'input' => $this->inputString(),
+                'output' => $this->outputString(),
+            ])
+            ->toText();
     }
 
     public function toXmlArray() : array {

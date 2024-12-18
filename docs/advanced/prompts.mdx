@@ -1,5 +1,5 @@
 ---
-title: Prompts
+title: Prompt Templates
 description: 'Managing and rendering prompts in Instructor'
 ---
 
@@ -16,8 +16,8 @@ multiple template engines (Twig, Blade), prompt metadata, variable injection, an
 
 ## What are Prompts
 
-Prompts in Instructor are structured text templates that can be rendered to text or series of chat
-messages. As many of your prompts will be dynamically generated based on input data, you can
+Prompts in Instructor are based on structured text templates that can be rendered to text or series
+of chat messages. As many of your prompts will be dynamically generated based on input data, you can
 use syntax of one of the supported template engines (Twig, Blade) to define your prompts.
 
 This document will be using Twig syntax for prompt templates for simplicity and consistency, but
@@ -33,7 +33,7 @@ Example prompt template in Twig:
 Hello, world.
 ```
 
-### Prompt with Variables
+### Prompt Template with Variables
 
 You can define variables in your prompt templates and inject values when rendering the prompt.
 
@@ -53,7 +53,7 @@ for LLM chat APIs.
 </chat>
 ```
 
-### Prompt Metadata
+### Prompt Template Metadata
 
 We recommend to preface each prompt with front matter - a block of metadata that describes the
 prompt and its variables. This metadata can be used for validation, documentation, and schema
@@ -82,10 +82,10 @@ schema:
 ```
 
 
-## Prompt Libraries
+## Template Libraries
 
-Instructor allows you to define multiple `prompt libraries` in your app. Library is just a collection of
-prompts which is stored under a specific directory. Library can have a nested structure, which allows
+Instructor allows you to define multiple `template libraries` in your app. Library is just a collection of
+prompt templates which is stored under a specific directory. Library can have a nested structure, which allows
 you to organize your prompts in a way that makes sense for your application.
 
 Library properties are specified in `config/prompt.php` configuration file.
@@ -100,15 +100,15 @@ where you can define:
  - `metadata` - engine-specific configuration.
 
 Instructor comes with 3 default prompt libraries:
- - `system` - prompts used by Instructor itself,
- - `demo-twig` - demo prompts using Twig template engine,
- - `demo-blade` - demo prompts using Blade template engine.
+ - `system` - prompt templates used by Instructor itself,
+ - `demo-twig` - demo prompt templates using Twig template engine,
+ - `demo-blade` - demo prompt templates using Blade template engine.
 
-Instructor's Prompt library mechanism does not specify how you should organize or manage your prompts,
-but it provides a flexible way to do it in a way that suits your application.
+Instructor's does not specify how you should organize or manage your prompt templates, but it provides
+a flexible way to do it in a way that suits your application.
 
 
-## Using Prompts
+## Using Prompt Templates
 
 ### Rendering a Simple Prompt
 
@@ -116,10 +116,10 @@ To get started, you can create and render a simple prompt defined in the bundled
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\Prompt\Prompt;
+use Cognesy\Instructor\Extras\Prompt\Template;
 
 // Basic example using "using->get->with" syntax
-$prompt = Prompt::using('demo-twig')->get('hello')->with(['name' => 'World']);
+$prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
@@ -128,19 +128,19 @@ Or, using the shorthand `make()` syntax:
 
 ```php
 <?php
-$prompt = Prompt::make('demo-twig:hello')->with(['name' => 'World']);
+$prompt = Template::make('demo-twig:hello')->with(['name' => 'World']);
 
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
 ```
 
-### Rendering a Chat Prompt
+### Rendering a Chat Template
 
 The Prompt class can also render prompts directly as chat-style messages:
 
 ```php
 <?php
-$messages = Prompt::messages('demo-twig:hello', ['name' => 'World']);
+$messages = Template::messages('demo-twig:hello', ['name' => 'World']);
 
 print_r($messages->toArray());
 // Outputs:
@@ -156,18 +156,18 @@ If you need to customize the configuration or set the template content directly,
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngine;
+use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngineType;
 
 // Setting custom configuration
-$config = new PromptEngineConfig(
-    templateEngine: TemplateEngine::Twig,
+$config = new TemplateEngineConfig(
+    templateEngine: TemplateEngineType::Twig,
     resourcePath: '',
     cachePath: '/tmp/cache',
     extension: '.twig',
 );
 
-$prompt = new Prompt();
+$prompt = new Template();
 $prompt->withConfig($config)
        ->withTemplateContent('Hello, {{ name }}!')
        ->withValues(['name' => 'World']);
@@ -176,13 +176,13 @@ echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
 ```
 
-### In Memory Prompts
+### In Memory Templates
 
-If you need to create an inline prompt (without saving it to a library), you can use following syntax:
+If you need to create an inline prompt (without saving it to a file), you can use following syntax:
 
 ```php
 <?php
-$prompt = Prompt::twig() // or Prompt::blade() for Blade syntax
+$prompt = Template::twig() // or Template::blade() for Blade syntax
     ->withTemplateContent('Hello, {{ name }}!')
     ->withValues(['name' => 'World'])
     ->toText();
@@ -193,7 +193,7 @@ There's shorter syntax for creating in-memory prompts:
 
 ```php
 <?php
-$prompt = Prompt::twig() // or Prompt::blade() for Blade syntax
+$prompt = Template::twig() // or Template::blade() for Blade syntax
     ->from('Hello, {{ name }}!')
     ->with(['name' => 'World'])
     ->toText();
@@ -206,7 +206,7 @@ To check which variables are available in a prompt template:
 
 ```php
 <?php
-$prompt = Prompt::using('demo-twig')
+$prompt = Template::using('demo-twig')
     ->withTemplateContent('Hello, {{ name }}!')
     ->withValues(['name' => 'World']);
 
@@ -223,11 +223,11 @@ For more flexible template loading, you can load templates by name or use a 'DSN
 ```php
 <?php
 // Load a template by name using specified library 'demo-blade'
-$prompt = Prompt::using('demo-blade')->withTemplate('hello');
+$prompt = Template::using('demo-blade')->withTemplate('hello');
 echo $prompt->template();
 
 // Load a template from specified library using DSN syntax
-$prompt = Prompt::fromDsn('demo-blade:hello')->with(['name' => 'World']);
+$prompt = Template::fromDsn('demo-blade:hello')->with(['name' => 'World']);
 echo $prompt->toText(); // Outputs: "Hello, World!"
 ?>
 ```
@@ -250,7 +250,7 @@ And here is how you use `Prompt` class to convert XML template into a sequence o
 <?php
 use Cognesy\Instructor\Utils\Messages\Messages;
 
-$prompt = Prompt::using('demo-blade')
+$prompt = Template::using('demo-blade')
     ->withTemplateContent('<chat><message role="system">You are a helpful assistant.</message><message role="user">Hello, {{ $name }}</message></chat>')
     ->withValues(['name' => 'assistant']);
 

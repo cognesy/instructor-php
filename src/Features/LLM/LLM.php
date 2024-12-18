@@ -24,6 +24,12 @@ use Cognesy\Instructor\Utils\Debug\Debug;
 use Cognesy\Instructor\Utils\Settings;
 use InvalidArgumentException;
 
+/**
+ * Class LLM
+ *
+ * This class represents a Language Learning Model interface, handling
+ * configurations, HTTP client integrations, inference drivers, and event dispatching.
+ */
 class LLM
 {
     protected LLMConfig $config;
@@ -189,6 +195,7 @@ class LLM
             LLMProviderType::Grok => new GrokDriver($config, $httpClient, $this->events),
             LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::Cerebras,
             LLMProviderType::Fireworks,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,

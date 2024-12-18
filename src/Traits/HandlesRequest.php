@@ -11,11 +11,7 @@ use JetBrains\PhpStorm\Deprecated;
 
 trait HandlesRequest
 {
-    private ?CanHandleInference $driver = null;
-    private ?CanHandleHttp $httpClient = null;
-    private string $connection = '';
     private LLM $llm;
-
     private Request $request;
     private array $cachedContext = [];
 
@@ -39,17 +35,17 @@ trait HandlesRequest
     }
 
     public function withDriver(CanHandleInference $driver) : self {
-        $this->driver = $driver;
+        $this->llm->withDriver($driver);
         return $this;
     }
 
     public function withHttpClient(CanHandleHttp $httpClient) : self {
-        $this->httpClient = $httpClient;
+        $this->llm->withHttpClient($httpClient);
         return $this;
     }
 
     public function withConnection(string $connection) : self {
-        $this->connection = $connection;
+        $this->llm->withConnection($connection);
         return $this;
     }
 
@@ -76,7 +72,7 @@ trait HandlesRequest
 
     #[Deprecated]
     public function withClient(string $client) : self {
-        $this->connection = $client;
+        $this->llm->withConnection($client);
         return $this;
     }
 }

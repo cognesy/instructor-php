@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\ToolUse\Traits\ToolUse;
 
 use Cognesy\Instructor\Extras\ToolUse\Contracts\CanProcessStep;
 use Cognesy\Instructor\Extras\ToolUse\Processors\AccumulateTokenUsage;
+use Cognesy\Instructor\Extras\ToolUse\Processors\AppendContextVariables;
 use Cognesy\Instructor\Extras\ToolUse\Processors\AppendStepMessages;
 use Cognesy\Instructor\Extras\ToolUse\Processors\UpdateStep;
 use Cognesy\Instructor\Extras\ToolUse\ToolUseContext;
@@ -22,12 +23,15 @@ trait HandlesStepProcessors
         $this->withProcessors(
             new AccumulateTokenUsage(),
             new UpdateStep(),
+            new AppendContextVariables(),
             new AppendStepMessages(),
         );
         return $this;
     }
 
-    public function processStep(ToolUseStep $step, ToolUseContext $context): ToolUseStep {
+    // INTERNAL /////////////////////////////////////////////
+
+    protected function processStep(ToolUseStep $step, ToolUseContext $context): ToolUseStep {
         foreach ($this->processors as $processor) {
             $step = $processor->processStep($step, $context);
         }

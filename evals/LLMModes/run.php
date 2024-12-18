@@ -20,7 +20,7 @@ $data = new InferenceData(
         ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],
         //['role' => 'user', 'content' => 'EXAMPLE CONTEXT: Sony was established in 1946 by Akio Morita.'],
         //['role' => 'user', 'content' => 'EXAMPLE RESPONSE: ```json{"name":"Sony","year":1899}```'],
-        ['role' => 'user', 'content' => 'What is the name and founding year of our company?'],
+        ['role' => 'user', 'content' => 'Store the name and founding year of our company'],
     ],
     schema: new InferenceSchema(
         toolName: 'store_company',
@@ -44,10 +44,10 @@ $data = new InferenceData(
     ),
 );
 
-//Debug::enable();
+Debug::enable();
 
 $experiment = new Experiment(
-    cases: InferenceCases::only(['gemini-oai'], [Mode::Text], [false, true]),
+    cases: InferenceCases::only(['cerebras'], [Mode::JsonSchema, Mode::Json, Mode::Tools, Mode::Text], [false]),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(

@@ -40,6 +40,14 @@ return [
             'defaultModel' => 'gpt-4o-mini',
             'defaultMaxTokens' => 1024,
         ],
+        'cerebras' => [
+            'providerType' => LLMProviderType::Cerebras->value,
+            'apiUrl' => 'https://api.cerebras.ai/v1',
+            'apiKey' => Env::get('CEREBRAS_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'llama3.1-70b',
+            'defaultMaxTokens' => 1024,
+        ],
         'cohere1' => [
             'providerType' => LLMProviderType::CohereV1->value,
             'apiUrl' => 'https://api.cohere.ai/v1',
@@ -69,7 +77,7 @@ return [
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/models/{model}:generateContent',
-            'defaultModel' => 'gemini-1.5-flash-latest',
+            'defaultModel' => 'gemini-2.0-flash-exp',
             'defaultMaxTokens' => 1024,
         ],
         'gemini-oai' => [
@@ -77,7 +85,7 @@ return [
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta/openai',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'gemini-1.5-flash',
+            'defaultModel' => 'gemini-2.0-flash-exp',
             'defaultMaxTokens' => 1024,
         ],
         'grok' => [

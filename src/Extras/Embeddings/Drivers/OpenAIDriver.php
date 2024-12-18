@@ -62,7 +62,7 @@ class OpenAIDriver implements CanVectorize
         );
     }
 
-    private function toUsage(array $response) : Usage {
+    protected function toUsage(array $response) : Usage {
         return new Usage(
             inputTokens: $response['usage']['prompt_tokens'] ?? 0,
             outputTokens: ($response['usage']['total_tokens'] ?? 0) - ($response['usage']['prompt_tokens'] ?? 0),

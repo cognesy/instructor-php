@@ -15,8 +15,10 @@ class GeminiOAIDriver extends OpenAICompatibleDriver
     ) : array {
         switch($mode) {
             case Mode::Json:
-            case Mode::JsonSchema:
                 $request['response_format'] = [ "type" => "json_object" ];
+                break;
+            case Mode::JsonSchema:
+                $request['response_format'] = $responseFormat;
                 break;
         }
         return $request;

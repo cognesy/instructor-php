@@ -68,7 +68,7 @@ class JinaDriver implements CanVectorize
         );
     }
 
-    private function makeUsage(array $response) : Usage {
+    protected function makeUsage(array $response) : Usage {
         return new Usage(
             inputTokens: $response['usage']['prompt_tokens'] ?? 0,
             outputTokens: ($response['usage']['total_tokens'] ?? 0) - ($response['usage']['prompt_tokens'] ?? 0),

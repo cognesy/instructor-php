@@ -6,6 +6,7 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
+use Cognesy\Instructor\Features\LLM\LLM;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
@@ -37,10 +38,12 @@ class Instructor {
     use Traits\HandlesSequenceUpdates;
 
     /**
+     * @param LLM|null $llm An optional LLM object instance for LLM connection.
      * @param EventDispatcher|null $events An optional EventDispatcher instance for managing events.
      * @return void
      */
     public function __construct(
+        LLM $llm = null,
         EventDispatcher $events = null,
     ) {
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
@@ -52,6 +55,8 @@ class Instructor {
         $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
+
+        $this->llm = $llm ?? new LLM(events: $this->events);
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());

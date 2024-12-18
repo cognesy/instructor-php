@@ -16,7 +16,7 @@ trait RendersContent
     private function renderString(string $template, ?array $parameters) : string {
         return match(true) {
             empty($parameters) => $template,
-            default => (new Template($parameters))->renderString($template),
+            default => Template::arrowpipe()->from($template)->with($parameters)->toText(),
         };
     }
 
@@ -28,7 +28,7 @@ trait RendersContent
     protected function renderMessage(array|Message $message, ?array $parameters) : array {
         return match(true) {
             empty($parameters) => $message,
-            default => (new Template($parameters))->renderMessage($message),
+            default => Template::arrowpipe()->with($parameters)->renderMessage($message),
         };
     }
 
@@ -40,7 +40,7 @@ trait RendersContent
     protected function renderMessages(array|Messages $messages, ?array $parameters) : array {
         return match(true) {
             //empty($context) => $messages,
-            default => (new Template($parameters))->renderMessages($messages),
+            default => Template::arrowpipe()->with($parameters)->renderMessages($messages),
         };
     }
 }

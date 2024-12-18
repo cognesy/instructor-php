@@ -9,8 +9,6 @@ use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Features\Core\Data\Request;
-use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
@@ -32,9 +30,7 @@ class RequestHandler
         protected Request $request,
         protected CanGenerateResponse $responseGenerator,
         protected CanGeneratePartials $partialsGenerator,
-        protected string $connection,
-        protected ?CanHandleInference $driver,
-        protected ?CanHandleHttp $httpClient,
+        protected LLM $llm,
         EventDispatcher $events,
     ) {
         $this->events = $events;
@@ -91,14 +87,8 @@ class RequestHandler
     // INTERNAL ///////////////////////////////////////////////////////////
 
     protected function getInference(Request $request) : InferenceResponse {
-        $llm = new LLM(
-            connection: $this->connection,
-            httpClient: $this->httpClient,
-            driver: $this->driver,
-            events: $this->events,
-        );
         return (new Inference)
-            ->withLLM($llm)
+            ->withLLM($this->llm)
             ->create(
                 $request->toMessages(),
                 $request->model(),

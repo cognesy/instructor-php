@@ -33,13 +33,13 @@ trait HandlesPrediction
 
     protected function predictText(array $callArgs) : string {
         $this->requestInfo->prompt = match(true) {
-            empty($this->requestInfo->prompt) => Template::render(
-                template: $this->toTextTemplate(),
-                parameters: array_merge([
+            empty($this->requestInfo->prompt) => Template::arrowpipe()
+                ->from($this->toTextTemplate())
+                ->with(array_merge([
                     'instructions' => $this->instructions(),
                     'input' => $callArgs,
-                ])
-            ),
+                ]))
+                ->toText(),
             default => $this->requestInfo->prompt,
         };
         return $this->inference->create(messages: $this->requestInfo->prompt)->toText();

@@ -4,12 +4,15 @@ namespace Cognesy\Instructor\Extras\ToolUse\Traits\ToolUse;
 
 use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\ErrorPresenceCheck;
 use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\ExecutionTimeLimit;
+use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\FinishReasonCheck;
 use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\RetryLimit;
 use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\StepsLimit;
 use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\TokenUsageLimit;
 use Cognesy\Instructor\Extras\ToolUse\ContinuationCriteria\ToolCallPresenceCheck;
 use Cognesy\Instructor\Extras\ToolUse\Contracts\CanDecideToContinue;
+use Cognesy\Instructor\Extras\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Instructor\Extras\ToolUse\ToolUseContext;
+use Cognesy\Instructor\Features\LLM\Enums\LLMFinishReason;
 
 trait HandlesContinuationCriteria
 {
@@ -24,7 +27,8 @@ trait HandlesContinuationCriteria
         int $maxSteps = 3,
         int $maxTokens = 8192,
         int $maxExecutionTime = 30,
-        int $maxRetries = 3
+        int $maxRetries = 3,
+        array $finishReasons = [],
     ) : self {
         $this->withContinuationCriteria(
             new StepsLimit($maxSteps),
@@ -33,6 +37,7 @@ trait HandlesContinuationCriteria
             new RetryLimit($maxRetries),
             new ErrorPresenceCheck(),
             new ToolCallPresenceCheck(),
+            new FinishReasonCheck($finishReasons),
         );
         return $this;
     }
@@ -49,6 +54,10 @@ trait HandlesContinuationCriteria
     protected function canContinue(ToolUseContext $context) : bool {
         foreach ($this->continuationCriteria as $criterion) {
             if (!$criterion->canContinue($context)) {
+                $context->withStatus(match(true) {
+                    $context->currentStep()?->hasErrors() => ToolUseStatus::Failed,
+                    default => ToolUseStatus::Completed,
+                });
                 return false;
             }
         }

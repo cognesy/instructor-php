@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Prompt\Drivers;
 
 use Cognesy\Instructor\Extras\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\Node\Expression\NameExpression;
@@ -22,10 +22,10 @@ class TwigDriver implements CanHandleTemplate
     /**
      * TwigDriver constructor.
      *
-     * @param PromptEngineConfig $config The configuration for the prompt engine
+     * @param TemplateEngineConfig $config The configuration for the prompt engine
      */
     public function __construct(
-        private PromptEngineConfig $config,
+        private TemplateEngineConfig $config,
     ) {
         $paths = [__DIR__ . $this->config->resourcePath];
         $extension = $this->config->extension;

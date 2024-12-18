@@ -12,44 +12,68 @@ docname: 'llm_tool_use'
 ```php
 <?php
 
-use Cognesy\Instructor\Extras\ToolUse\Drivers\ToolCalling\ToolCallingDriver;
 use Cognesy\Instructor\Extras\ToolUse\Tools\FunctionTool;
+use Cognesy\Instructor\Extras\ToolUse\Tools\UpdateContextVariable;
 use Cognesy\Instructor\Extras\ToolUse\ToolUse;
 use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Instructor\Utils\Result\Result;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-function add_numbers(int $a, int $b) : int {
-    return $a + $b;
-}
-$addTool = FunctionTool::fromCallable(add_numbers(...));
-
-function subtract_numbers(int $a, int $b) : int {
-    return $a - $b;
-}
-$subtractTool = FunctionTool::fromCallable(subtract_numbers(...));
-
-//function return_result(int $result) : int {
-//    dump('FINAL:', $result);
-//    return $result;
-//}
-//$returnTool = FunctionTool::fromCallable(return_result(...));
-
 Debug::enable();
 
-$driver = new ToolCallingDriver();
+//function add_numbers(int $a, int $b) : int {
+//    return $a + $b;
+//}
+//
+//function subtract_numbers(int $a, int $b) : int {
+//    return $a - $b;
+//}
+//
+//$toolUse = (new ToolUse)
+//    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
+//    ->withTools([
+//        FunctionTool::fromCallable(add_numbers(...)),
+//        FunctionTool::fromCallable(subtract_numbers(...)),
+//    ]);
 
-$toolUse = (new ToolUse)
-    ->withDriver($driver)
-    ->withDefaultContinuationCriteria()
-    ->withDefaultProcessors()
-    ->withMessages('Add 2455 and 3558 then subtract 4344 from the result.')
-    ->withTools([
-        $addTool,
-        $subtractTool,
-//        $returnTool,
-    ]);
+function send_discount_code(string $name, string $email) : Result {
+    return Result::success(true);
+}
+
+function save_to_crm(string $email) : Result {
+    return Result::success(true);
+}
+
+$sequence = [
+    ['role' => 'user', 'content' => 'Can you offer me a discount?'],
+    ['role' => 'user', 'content' => 'My email is john@doe.com'],
+];
+
+$messages = Messages::fromArray([
+    ['role' => 'system', 'content' => 'Your objective is to answer user questions. If user shares their email address - store it to the context variable `email` and save it to CRM. Never nag user for their email unless he asks for discount.'],
+    ['role' => 'user', 'content' => 'I\'ve got your invite from nick@acme.com and I like the product, but I need assistance with your pricing'],
+]);
+
+echo $messages->toRoleString();
+echo "\n";
+foreach($sequence as $message) {
+    $toolUse = (new ToolUse)
+        ->withTools([
+            new UpdateContextVariable(),
+            FunctionTool::fromCallable(send_discount_code(...)),
+            FunctionTool::fromCallable(save_to_crm(...)),
+        ])
+        ->withMessages($messages);
+    $step = $toolUse->finalStep();
+    //dump($step);
+    $messages->appendMessage($step->response());
+    echo "ASSISTANT: {$messages->last()->content()}\n";
+    $messages->appendMessage($message);
+    echo "USER: {$messages->last()->content()}\n";
+}
 
 
 # PATTERN #1 - fine grained control

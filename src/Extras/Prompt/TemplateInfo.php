@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Prompt;
 
-use Cognesy\Instructor\Extras\Prompt\Data\PromptEngineConfig;
+use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
 use Cognesy\Instructor\Extras\Prompt\Enums\FrontMatterFormat;
 use InvalidArgumentException;
 use Webuni\FrontMatter\FrontMatter;
@@ -10,15 +10,15 @@ use Webuni\FrontMatter\Processor\JsonProcessor;
 use Webuni\FrontMatter\Processor\TomlProcessor;
 use Webuni\FrontMatter\Processor\YamlProcessor;
 
-class PromptInfo
+class TemplateInfo
 {
     private FrontMatter $engine;
     private array $templateData;
     private string $templateContent;
 
     public function __construct(
-        string                      $content,
-        private ?PromptEngineConfig $config = null,
+        string $content,
+        private ?TemplateEngineConfig $config = null,
     ) {
         $startTag = $this->config->frontMatterTags[0] ?? '---';
         $endTag = $this->config->frontMatterTags[1] ?? '---';

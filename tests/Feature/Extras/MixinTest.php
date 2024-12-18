@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Features\LLM\LLM;
 use Tests\Examples\Mixin\PersonWithMixin;
 use Tests\MockLLM;
 
@@ -10,10 +10,10 @@ it('supports HandlesExtraction mixin', function () {
         '{"name":"Jason","age":28}'
     ]);
 
-    $instructor = (new Instructor)->withHttpClient($mockLLM);
+    $customLLM = (new LLM)->withHttpClient($mockLLM);
     $person = PersonWithMixin::infer(
         messages: "His name is Jason, he is 28 years old.",
-        instructor: $instructor
+        llm: $customLLM
     );
 
     // dump($person);

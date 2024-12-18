@@ -44,7 +44,7 @@ abstract class BaseTool implements ToolInterface
     // INTERNAL ////////////////////////////////////////////////
 
     protected function toJsonSchema(): array {
-        if (isset($this->jsonSchema)) {
+        if (!isset($this->jsonSchema)) {
             $this->jsonSchema = StructureFactory::fromMethodName(static::class, '__invoke')
                 ->toSchema()
                 ->toJsonSchema();
