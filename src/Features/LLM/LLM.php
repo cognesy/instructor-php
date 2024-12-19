@@ -16,7 +16,8 @@ use Cognesy\Instructor\Features\LLM\Drivers\CohereV1Driver;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV2Driver;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiOAIDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\GrokDriver;
+use Cognesy\Instructor\Features\LLM\Drivers\SambaNovaDriver;
+use Cognesy\Instructor\Features\LLM\Drivers\XAiDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\MistralDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatibleDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
@@ -189,14 +190,16 @@ class LLM
         return match ($config->providerType) {
             LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient, $this->events),
             LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient, $this->events),
+            LLMProviderType::Cerebras => new CerebrasDriver($config, $httpClient, $this->events),
             LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient, $this->events),
             LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient, $this->events),
             LLMProviderType::Gemini => new GeminiDriver($config, $httpClient, $this->events),
             LLMProviderType::GeminiOAI => new GeminiOAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Grok => new GrokDriver($config, $httpClient, $this->events),
             LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
             LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Cerebras => new CerebrasDriver($config, $httpClient, $this->events),
+            LLMProviderType::SambaNova => new SambaNovaDriver($config, $httpClient, $this->events),
+            LLMProviderType::XAi => new XAiDriver($config, $httpClient, $this->events),
+            LLMProviderType::A21,
             LLMProviderType::Fireworks,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,

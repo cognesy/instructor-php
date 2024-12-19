@@ -3,6 +3,7 @@ namespace Cognesy\Instructor\Features\LLM\Enums;
 
 enum LLMProviderType : string
 {
+    case A21 = 'a21';
     case Anthropic = 'anthropic';
     //case Anyscale = 'anyscale';
     case Azure = 'azure';
@@ -12,13 +13,14 @@ enum LLMProviderType : string
     case Fireworks = 'fireworks';
     case Gemini = 'gemini';
     case GeminiOAI = 'gemini-oai';
-    case Grok = 'grok';
+    case XAi = 'xai';
     case Groq = 'groq';
     case Jina = 'jina';
     case Mistral = 'mistral';
     case Ollama = 'ollama';
     case OpenAI = 'openai';
     case OpenRouter = 'openrouter';
+    case SambaNova = 'sambanova';
     case Together = 'together';
     case OpenAICompatible = 'openai-compatible';
     case Other = 'other';

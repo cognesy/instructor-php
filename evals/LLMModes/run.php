@@ -47,7 +47,7 @@ $data = new InferenceData(
 Debug::enable();
 
 $experiment = new Experiment(
-    cases: InferenceCases::only(['cerebras'], [Mode::JsonSchema, Mode::Json, Mode::Tools, Mode::Text], [false]),
+    cases: InferenceCases::only(['sambanova'], [Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Tools, Mode::Text], [false]),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(

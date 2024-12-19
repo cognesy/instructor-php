@@ -51,7 +51,7 @@ class InferenceAdapter
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
-                    ['role' => 'user', 'content' => 'Respond with correct JSON.'],
+                    ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                 ]),
                 responseFormat: $schema->responseFormatJsonSchema(),
                 options: $options,
@@ -65,7 +65,7 @@ class InferenceAdapter
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
-                    ['role' => 'user', 'content' => 'Respond with correct JSON.'],
+                    ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                 ]),
                 responseFormat: $schema->responseFormatJson(),
                 options: $options,
@@ -79,7 +79,7 @@ class InferenceAdapter
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
-                    ['role' => 'user', 'content' => 'Respond with correct JSON'],
+                    ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
                     ['role' => 'user', 'content' => '```json'],
                 ]),
                 options: $options,

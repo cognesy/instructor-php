@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Features\LLM\Drivers;
 
 use Cognesy\Instructor\Enums\Mode;
 
-class GrokDriver extends OpenAICompatibleDriver
+class XAiDriver extends OpenAICompatibleDriver
 {
     protected function toNativeToolCall(array $message) : array {
         return [
@@ -14,21 +14,5 @@ class GrokDriver extends OpenAICompatibleDriver
             'tool_calls' => $message['_metadata']['tool_calls']
                 ?? [],
         ];
-    }
-
-    protected function applyMode(
-        array $request,
-        Mode $mode,
-        array $tools,
-        string|array $toolChoice,
-        array $responseFormat
-    ) : array {
-        switch($mode) {
-            case Mode::Json:
-            case Mode::JsonSchema:
-                $request['response_format'] = []; // not supported by Grok
-                break;
-        }
-        return $request;
     }
 }

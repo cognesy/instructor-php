@@ -15,6 +15,14 @@ return [
     'defaultToolsPrompt' => "Extract correct and accurate data from the input using provided tools.\n",
 
     'connections' => [
+        'a21' => [
+            'providerType' => LLMProviderType::A21->value,
+            'apiUrl' => 'https://api.ai21.com/studio/v1',
+            'apiKey' => Env::get('A21_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'jamba-1.5-mini',
+            'defaultMaxTokens' => 1024,
+        ],
         'anthropic' => [
             'providerType' => LLMProviderType::Anthropic->value,
             'apiUrl' => 'https://api.anthropic.com/v1',
@@ -88,14 +96,6 @@ return [
             'defaultModel' => 'gemini-2.0-flash-exp',
             'defaultMaxTokens' => 1024,
         ],
-        'grok' => [
-            'providerType' => LLMProviderType::Grok->value,
-            'apiUrl' => 'https://api.x.ai/v1',
-            'apiKey' => Env::get('GROK_API_KEY', ''),
-            'endpoint' => '/chat/completions',
-            'defaultModel' => 'grok-beta',
-            'defaultMaxTokens' => 1024,
-        ],
         'groq' => [
             'providerType' => LLMProviderType::Groq->value,
             'apiUrl' => 'https://api.groq.com/openai/v1',
@@ -141,12 +141,28 @@ return [
             'defaultModel' => 'qwen/qwen-2.5-72b-instruct', //'microsoft/phi-3.5-mini-128k-instruct',
             'defaultMaxTokens' => 1024,
         ],
+        'sambanova' => [
+            'providerType' => LLMProviderType::SambaNova->value,
+            'apiUrl' => 'https://api.sambanova.ai/v1',
+            'apiKey' => Env::get('SAMBANOVA_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'Meta-Llama-3.1-8B-Instruct',
+            'defaultMaxTokens' => 1024,
+        ],
         'together' => [
             'providerType' => LLMProviderType::Together->value,
             'apiUrl' => 'https://api.together.xyz/v1',
             'apiKey' => Env::get('TOGETHER_API_KEY', ''),
             'endpoint' => '/chat/completions',
             'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+            'defaultMaxTokens' => 1024,
+        ],
+        'xai' => [
+            'providerType' => LLMProviderType::XAi->value,
+            'apiUrl' => 'https://api.x.ai/v1',
+            'apiKey' => Env::get('XAI_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'grok-2-1212',
             'defaultMaxTokens' => 1024,
         ],
     ],
