@@ -171,8 +171,10 @@
         {
             "group": "LLM API Support",
             "pages": [
+                "cookbook/examples/api_support/a21",
                 "cookbook/examples/api_support/anthropic",
                 "cookbook/examples/api_support/azure_openai",
+                "cookbook/examples/api_support/cerebras",
                 "cookbook/examples/api_support/cohere",
                 "cookbook/examples/api_support/fireworks",
                 "cookbook/examples/api_support/google_gemini",
@@ -181,7 +183,9 @@
                 "cookbook/examples/api_support/ollama",
                 "cookbook/examples/api_support/openai",
                 "cookbook/examples/api_support/openrouter",
-                "cookbook/examples/api_support/togetherai"
+                "cookbook/examples/api_support/sambanova",
+                "cookbook/examples/api_support/togetherai",
+                "cookbook/examples/api_support/xai"
             ]
         },
         {
@@ -200,6 +204,7 @@
                 "cookbook/examples/extras/llm_json",
                 "cookbook/examples/extras/llm_json_schema",
                 "cookbook/examples/extras/llm_md_json",
+                "cookbook/examples/extras/llm_tool_use",
                 "cookbook/examples/extras/llm_tools",
                 "cookbook/examples/extras/prompt_text",
                 "cookbook/examples/extras/schema",
