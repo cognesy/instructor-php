@@ -331,14 +331,41 @@ class GeminiDriver implements CanHandleInference
     }
 
     private function makeContent(array $data) : string {
-        return $data['candidates'][0]['content']['parts'][0]['text']
-            ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '')
+        $partCount = count($data['candidates'][0]['content']['parts'] ?? []);
+        if ($partCount === 1) {
+            return $this->makeContentPart($data, 0);
+        }
+        $content = '';
+        for ($i = 0; $i < $partCount; $i++) {
+            $part = $this->makeContentPart($data, $i) . "\n\n";
+            $content .= $part;
+        }
+        return $content;
+    }
+
+    private function makeContentPart(array $data, int $index) : string {
+        return $data['candidates'][0]['content']['parts'][$index]['text']
+            ?? Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'] ?? '')
             ?? '';
     }
 
     private function makeContentDelta(array $data): string {
-        return $data['candidates'][0]['content']['parts'][0]['text']
-            ?? Json::encode($data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '')
+        $partCount = count($data['candidates'][0]['content']['parts'] ?? []);
+        if ($partCount === 1) {
+            return  $this->makeContentDeltaPart($data, 0);
+        }
+
+        $content = '';
+        for ($i = 0; $i < $partCount; $i++) {
+            $part = $this->makeContentDeltaPart($data, $i) . "\n";
+            $content .= $part;
+        }
+        return $content;
+    }
+
+    private function makeContentDeltaPart(array $data, int $index) : string {
+        return $data['candidates'][0]['content']['parts'][$index]['text']
+            ?? Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'] ?? '')
             ?? '';
     }
 
