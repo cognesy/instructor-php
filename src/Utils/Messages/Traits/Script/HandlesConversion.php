@@ -38,6 +38,7 @@ trait HandlesConversion
      */
     public function toArray(array $parameters = null, bool $raw = false) : array {
         $array = $this->toMessages()->toArray();
+
         return match($raw) {
             false => $this->renderMessages(
                 messages: $array,

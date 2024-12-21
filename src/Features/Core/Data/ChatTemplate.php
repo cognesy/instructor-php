@@ -46,10 +46,10 @@ class ChatTemplate
                 // potentially cached - predefined sections used to construct the script
                 'system',
                 'pre-cached',
-                    'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-                    'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-                    'pre-cached-input', 'cached-input', 'post-cached-input',
-                    'cached-messages',
+                'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+                'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+                'pre-cached-input', 'cached-input', 'post-cached-input',
+                'cached-messages',
                 'post-cached',
                 // never cached
                 'pre-prompt', 'prompt', 'post-prompt',

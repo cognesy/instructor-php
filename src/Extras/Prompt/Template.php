@@ -171,12 +171,14 @@ class Template
         };
         $content = $array['content'];
         if (is_array($content)) {
+            $subsections = [];
             foreach ($content as $key => $item) {
-                $content[$key] = match($item['type']) {
-                    'text' => $this->library->renderString($item['text'], $this->variableValues),
-                    default => $item,
-                };
+                if ($item['type'] === 'text') {
+                    $item['text'] = $this->library->renderString($item['text'], $this->variableValues);
+                }
+                $subsections[] = $item;
             }
+            $content = $subsections;
         } else {
             $content = $this->library->renderString($content, $this->variableValues);
         }

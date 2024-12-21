@@ -55,8 +55,10 @@ class ResponseDeserializer
                 $deserializer instanceof CanDeserializeClass => $deserializer,
                 default => throw new Exception('Deserializer must implement CanDeserializeClass interface'),
             };
+
             // we're catching exceptions here - then trying the next deserializer
             // TODO: but the exceptions can be for other reason than deserialization problems
+
             $result = Result::try(fn() => $deserializer->fromJson($json, $responseModel->returnedClass()));
             if ($result->isSuccess()) {
                 return $result;

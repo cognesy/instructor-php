@@ -20,6 +20,12 @@ class SequenceableHandler
         $this->events = $events;
     }
 
+    /**
+     * Updates the state of the sequence by processing changes to the partial sequence.
+     *
+     * @param Sequenceable $partialSequence The partial sequence to be processed and updated.
+     * @return void
+     */
     public function update(Sequenceable $partialSequence) : void {
         $currentLength = count($partialSequence);
         // We only process up to currentLength - 1 because that's the last item we're sure is complete
@@ -30,6 +36,13 @@ class SequenceableHandler
         $this->lastPartialSequence = clone $partialSequence;
     }
 
+    /**
+     * Finalizes the processing of the current sequence if there is a partial sequence available.
+     * It compares the length of the current sequence with the previous sequence length and dispatches
+     * sequence events if the current sequence is longer. Updates the previous sequence length accordingly.
+     *
+     * @return void
+     */
     public function finalize() : void {
         if ($this->lastPartialSequence !== null) {
             $currentLength = count($this->lastPartialSequence);
@@ -40,6 +53,12 @@ class SequenceableHandler
         }
     }
 
+    /**
+     * Resets the internal state of the object by clearing any stored partial sequences
+     * and resetting the sequence length counter.
+     *
+     * @return void
+     */
     public function reset() : void {
         $this->lastPartialSequence = null;
         $this->previousSequenceLength = 0;
@@ -47,6 +66,18 @@ class SequenceableHandler
 
     // INTERNAL /////////////////////////////////////////////////
 
+    /**
+     * Dispatches sequence events for the given sequence between specified lengths.
+     * This method trims the sequence to the target length, collects incremental states
+     * within the range from the last length to the target length, and dispatches events
+     * in the order they occurred.
+     *
+     * @param Sequenceable $sequence The sequence object to process for state changes.
+     * @param int $lastLength The previous length of the sequence to track changes from.
+     * @param int $targetLength The target length of the sequence to process up to.
+     *
+     * @return void
+     */
     private function dispatchSequenceEvents(Sequenceable $sequence, int $lastLength, int $targetLength) : void {
         $itemsInOrder = [];
         $current = clone $sequence;
@@ -68,40 +99,3 @@ class SequenceableHandler
         }
     }
 }
-
-//    // sequenceable support state
-//    private ?Sequenceable $lastPartialSequence = null;
-//    private int $previousSequenceLength = 1;
-//    private EventDispatcher $events;
-//
-//    public function __construct(EventDispatcher $events) {
-//        $this->events = $events;
-//    }
-//
-//    public function make(Sequenceable $partialResponse) : void {
-//        $this->lastPartialSequence = clone $partialResponse;
-//    }
-//
-//    public function update(Sequenceable $partialSequence) : void {
-//        $currentLength = count($partialSequence);
-//        if ($currentLength > $this->previousSequenceLength) {
-//            if ($this->lastPartialSequence !== null) {
-//                $this->events->dispatch(new SequenceUpdated($this->lastPartialSequence));
-//                //$this->dispatchSequenceEvents($partialSequence, $this->previousSequenceLength);
-//                $this->previousSequenceLength = $currentLength;
-//            }
-//        }
-//        $this->lastPartialSequence = clone $partialSequence;
-//    }
-//
-//    public function finalize() : void {
-//        if ($this->lastPartialSequence !== null) {
-//            $this->events->dispatch(new SequenceUpdated($this->lastPartialSequence));
-//            //$this->dispatchSequenceEvents($this->lastPartialSequence, $this->previousSequenceLength);
-//        }
-//    }
-//
-//    public function reset() : void {
-//        $this->lastPartialSequence = null;
-//        $this->previousSequenceLength = 1;
-//    }
