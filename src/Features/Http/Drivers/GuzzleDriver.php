@@ -32,14 +32,21 @@ class GuzzleDriver implements CanHandleHttp
         protected ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        if (isset($this->httpClient) && Debug::isEnabled()) {
+
+        // First check if debugging is enabled with a custom client
+        if (Debug::isEnabled() && isset($this->httpClient)) {
             throw new InvalidArgumentException("Guzzle does not allow to inject debugging stack into existing client. Turn off debug or use default client.");
         }
-//        $this->client = match(Debug::isEnabled()) {
-//            false => $httpClient ?? new Client(),
-//            true => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
-//        };
-        $this->client = new Client(['handler' => $this->addDebugStack(HandlerStack::create())]);
+
+        // Handle client initialization based on debug mode and custom client
+        $this->client = match(true) {
+            // When debugging is enabled, always create new client with debug stack
+            Debug::isEnabled() => new Client(['handler' => $this->addDebugStack(HandlerStack::create())]),
+            // When custom client is provided and debug is off, use it
+            isset($this->httpClient) => $this->httpClient,
+            // Default case: create new client without debug stack
+            default => new Client()
+        };
     }
 
     public function handle(
