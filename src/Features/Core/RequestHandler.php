@@ -89,6 +89,7 @@ class RequestHandler
     protected function getInference(Request $request) : InferenceResponse {
         return (new Inference)
             ->withLLM($this->llm)
+            ->withEventDispatcher($this->events)
             ->create(
                 $request->toMessages(),
                 $request->model(),

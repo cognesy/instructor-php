@@ -49,4 +49,8 @@ trait HandlesSequenceable
     public function pop() : mixed {
         return array_pop($this->list);
     }
+
+    public function isEmpty() : bool {
+        return empty($this->list);
+    }
 }

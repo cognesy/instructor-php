@@ -42,6 +42,7 @@ class JsonParser
             fn($text) => $this->findPartialByBrackets($text),
             fn($text) => $this->findJSONLikeStrings($text),
         ];
+
         foreach ($extractors as $extractor) {
             $candidates = $extractor($input);
             if (empty($candidates)) {
@@ -62,15 +63,16 @@ class JsonParser
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
-    private function tryParse(string $json) : ?array {
+    private function tryParse(string $maybeJson) : ?array {
         $parsers = [
             fn($json) => json_decode($json, associative: true, flags: JSON_THROW_ON_ERROR),
             fn($json) => (new PartialJsonParser)->parse($json),
             fn($json) => (new ResilientJsonParser($json))->parse(),
         ];
+
         foreach ($parsers as $parser) {
             try {
-                $data = $parser($json);
+                $data = $parser($maybeJson);
             } catch(Exception $e) {
                 continue;
             }
@@ -79,6 +81,7 @@ class JsonParser
             }
             return $data;
         }
+
         return null;
     }
 

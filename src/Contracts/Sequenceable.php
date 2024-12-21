@@ -9,4 +9,5 @@ interface Sequenceable extends Countable
     public function toArray() : array;
     public function push(mixed $item) : void;
     public function pop() : mixed;
+    public function isEmpty() : bool;
 }

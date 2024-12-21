@@ -56,7 +56,12 @@ class InferenceResponse
         if (!$this->isStreamed) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
-        return new InferenceStream($this->response, $this->driver, $this->config, $this->events);
+        return new InferenceStream(
+            response: $this->response,
+            driver: $this->driver,
+            config: $this->config,
+            events: $this->events
+        );
     }
 
     // AS API RESPONSE OBJECT ///////////////////////////////////

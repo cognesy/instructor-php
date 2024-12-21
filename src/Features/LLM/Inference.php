@@ -71,6 +71,11 @@ class Inference
         return $this;
     }
 
+    public function withEventDispatcher(EventDispatcher $events) : self {
+        $this->events = $events;
+        return $this;
+    }
+
     /**
      * Updates the configuration and re-initializes the driver.
      *
