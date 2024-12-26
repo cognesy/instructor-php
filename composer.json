@@ -74,6 +74,7 @@
     "require": {
         "php": "^8.2",
         "ext-fileinfo": "*",
+        "ext-libxml": "*",
         "ext-simplexml": "*",
         "ext-xmlreader": "*",
         "adbario/php-dot-notation": "^3.3",

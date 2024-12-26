@@ -49,6 +49,7 @@ class RespondToChat extends Module
         foreach ($subqueries as $subquery) {
             $sources[] = $this->findSources->for(sourceUrls: $this->urls, query: $subquery, topK: 3);
         }
+dd($sources);
         $context = implode("\n", array_merge(["SOURCES:\n"], $sources));
         $answer = $this->answerQuestion->for(question: $query, context: $context);
         $answerLanguage = $this->guessLanguage->for(text: $answer);

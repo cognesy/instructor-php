@@ -10,10 +10,10 @@ enum LLMProviderType : string
     case Cerebras = 'cerebras';
     case CohereV1 = 'cohere1';
     case CohereV2 = 'cohere2';
+    case DeepSeek = 'deepseek';
     case Fireworks = 'fireworks';
     case Gemini = 'gemini';
     case GeminiOAI = 'gemini-oai';
-    case XAi = 'xai';
     case Groq = 'groq';
     case Jina = 'jina';
     case Mistral = 'mistral';
@@ -22,6 +22,7 @@ enum LLMProviderType : string
     case OpenRouter = 'openrouter';
     case SambaNova = 'sambanova';
     case Together = 'together';
+    case XAi = 'xai';
     case OpenAICompatible = 'openai-compatible';
     case Other = 'other';
     case Unknown = 'unknown';

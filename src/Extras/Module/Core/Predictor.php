@@ -34,6 +34,7 @@ class Predictor
         string $instructions = '',
     ) {
         $this->instructor = new Instructor();
+        $this->inference = new Inference();
         $this->requestInfo = new RequestInfo();
         $this->signature = match(true) {
             !empty($signature) => $this->makeSignature($signature, $description),

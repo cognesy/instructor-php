@@ -5,6 +5,7 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Modules\Markdown\SplitMarkdown;
 use Cognesy\Instructor\Extras\Module\Modules\Web\ConvertHtmlToMarkdown;
 use Cognesy\Instructor\Extras\Module\Modules\Web\GetUrlContent;
+use Cognesy\Instructor\Utils\Web\Html\RawHtml;
 
 //use Cognesy\Experimental\BM25\SearchWithBM25;
 
@@ -15,7 +16,7 @@ class FindSources extends Module
     protected SplitMarkdown $splitMarkdown;
 
     public function __construct() {
-        $this->getWebpageContent = new GetUrlContent();
+        $this->getWebpageContent = new GetUrlContent(scraper: '');
         $this->convertToMarkdown = new ConvertHtmlToMarkdown();
         $this->splitMarkdown = new SplitMarkdown();
     }
@@ -37,7 +38,7 @@ class FindSources extends Module
         $data = [];
         foreach ($urls as $url) {
             $webpage = $this->getWebpageContent->for(url: $url);
-            $markdown = $this->convertToMarkdown->for(html: $webpage);
+            $markdown = RawHtml::fromContent($webpage)->asMarkdown();  //$this->convertToMarkdown->for(html: $webpage);
             $split = $this->splitMarkdown->for(markdown: $markdown, source: $url);
             $data[] = $split;
         }

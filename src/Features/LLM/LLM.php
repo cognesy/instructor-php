@@ -200,6 +200,7 @@ class LLM
             LLMProviderType::SambaNova => new SambaNovaDriver($config, $httpClient, $this->events),
             LLMProviderType::XAi => new XAiDriver($config, $httpClient, $this->events),
             LLMProviderType::A21,
+            LLMProviderType::DeepSeek,
             LLMProviderType::Fireworks,
             LLMProviderType::Groq,
             LLMProviderType::Ollama,

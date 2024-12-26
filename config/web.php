@@ -6,6 +6,10 @@ return [
     'defaultScraper' => 'none', // 'none' uses file_get_contents($url)
 
     'scrapers' => [
+        'firecrawl' => [
+            'baseUri' => 'https://api.firecrawl.dev/v1/scrape',
+            'apiKey' => Env::get('FIRECRAWL_API_KEY', ''),
+        ],
         'jinareader' => [
             'baseUri' => 'https://r.jina.ai/',
             'apiKey' => Env::get('JINAREADER_API_KEY', ''),

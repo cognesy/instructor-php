@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Traits;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\RequestInfo;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Core\InstructorResponse;
 use Cognesy\Instructor\Features\Core\PartialsGenerator;
@@ -16,10 +17,29 @@ use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Utils\Settings;
 use Exception;
 
+/**
+ * Trait provides invocation handling functionality for the Instructor class.
+ */
 trait HandlesInvocation
 {
     /**
      * Generates a response model via LLM based on provided string or OpenAI style message array
+     *
+     * @param string|array $messages Text or chat sequence to be used for generating the response.
+     * @param string|array|object $input Data or input to send with the request (optional).
+     * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
+     * @param string $system The system instructions (optional).
+     * @param string $prompt The prompt to guide the request's response generation (optional).
+     * @param array $examples Example data to provide additional context for the request (optional).
+     * @param string $model Specifies the model to be employed - check LLM documentation for more details.
+     * @param int $maxRetries The maximum number of retries for the request in case of failure.
+     * @param array $options Additional LLM options - check LLM documentation for more details.
+     * @param string $toolName The name of the tool to be used in Mode::Tools.
+     * @param string $toolDescription A description of the tool to be used in Mode::Tools.
+     * @param string $retryPrompt The prompt to be used during retries.
+     * @param Mode $mode The mode of operation for the request.
+     * @return InstructorResponse A response object providing access to various results retrieval methods.
+     * @throws Exception If the response model is empty or invalid.
      */
     public function respond(
         string|array        $messages = '',
@@ -54,7 +74,49 @@ trait HandlesInvocation
     }
 
     /**
-     * Creates the request to be executed
+     * Processes the provided request information and creates a new request to be executed.
+     *
+     * @param RequestInfo $request The RequestInfo object containing all necessary data
+     *                             for generating the request.
+     *
+     * @return InstructorResponse The response generated based on the provided request details.
+     */
+    public function withRequest(RequestInfo $request) : InstructorResponse {
+        return $this->request(
+            messages: $request->messages ?? [],
+            input: $request->input ?? [],
+            responseModel: $request->responseModel ?? [],
+            system: $request->system ?? '',
+            prompt: $request->prompt ?? '',
+            examples: $request->examples ?? [],
+            model: $request->model ?? '',
+            maxRetries: $request->maxRetries ?? 0,
+            options: $request->options ?? [],
+            toolName: $request->toolName ?? '',
+            toolDescription: $request->toolDescription ?? '',
+            retryPrompt: $request->retryPrompt ?? '',
+            mode: $request->mode ?? Mode::Tools,
+        );
+    }
+
+    /**
+     * Processes a request using provided input, system configurations, and response specifications.
+     *
+     * @param string|array $messages Text or chat sequence to be used for generating the response.
+     * @param string|array|object $input Data or input to send with the request (optional).
+     * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
+     * @param string $system The system instructions (optional).
+     * @param string $prompt The prompt to guide the request's response generation (optional).
+     * @param array $examples Example data to provide additional context for the request (optional).
+     * @param string $model Specifies the model to be employed - check LLM documentation for more details.
+     * @param int $maxRetries The maximum number of retries for the request in case of failure.
+     * @param array $options Additional LLM options - check LLM documentation for more details.
+     * @param string $toolName The name of the tool to be used in Mode::Tools.
+     * @param string $toolDescription A description of the tool to be used in Mode::Tools.
+     * @param string $retryPrompt The prompt to be used during retries.
+     * @param Mode $mode The mode of operation for the request.
+     * @return InstructorResponse A response object providing access to various results retrieval methods.
+     * @throws Exception If the response model is empty or invalid.
      */
     public function request(
         string|array        $messages = '',
@@ -125,6 +187,15 @@ trait HandlesInvocation
 
     // INTERNAL /////////////////////////////////////////////////
 
+    /**
+     * Creates a ResponseModel instance utilizing the provided schema, tool name, and description.
+     *
+     * @param string|array|object $requestedSchema The schema to be used for creating the response model, provided as a string, array, or object.
+     * @param string $toolName The name of the tool, which can be overridden by default settings if not provided.
+     * @param string $toolDescription The description of the tool, which can be overridden by default settings if not provided.
+     *
+     * @return ResponseModel Returns a ResponseModel object constructed using the requested schema, tool name, and description.
+     */
     private function makeResponseModel(
         string|array|object $requestedSchema,
         string $toolName,

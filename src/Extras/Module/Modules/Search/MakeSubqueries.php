@@ -24,8 +24,7 @@ class MakeSubqueries extends Module
             default => $context,
         };
         return ($this)(question: $question, context: $context)
-            ->get('subqueries')
-            ->toArray();
+            ->get('subqueries');
     }
 
     protected function forward(mixed ...$callArgs) : array {
@@ -33,7 +32,7 @@ class MakeSubqueries extends Module
         $context = $callArgs['context'];
         $result = $this->makeSubqueries->predict(question: $query, context: $context);
         return [
-            'subqueries' => $result
+            'subqueries' => $result->get('list_of_subqueries'),
         ];
     }
 }
