@@ -56,15 +56,20 @@ trait HandlesFieldDefinitions
     static public function structure(string $name, array|callable $fields, string $description = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->objectType(Structure::class);
+
         $result = new Field($name, $description, $type);
         $result->set(Structure::define($name, $fields, $description));
         return $result;
     }
 
-    static public function collection(string $name, string $itemType, string $description = '') : self {
+    static public function collection(string $name, string|object $itemType, string $description = '') : self {
         $factory = new TypeDetailsFactory();
-        $type = $factory->collectionType($itemType);
-        return new Field($name, $description, $type);
+        return match(true) {
+            is_string($itemType) => new Field($name, $description, $factory->collectionType($itemType)),
+            is_object($itemType) && $itemType instanceof TypeDetails => new Field($name, $description, $factory->collectionType($itemType->class())),
+            is_object($itemType) && $itemType instanceof Structure => (new Field($name, $description, $factory->collectionType(Structure::class)))->set($itemType),
+            default => throw new \InvalidArgumentException('Invalid item type for collection field: ' . get_debug_type($name)),
+        };
     }
 
     static public function array(string $name, string $description = '') : self {

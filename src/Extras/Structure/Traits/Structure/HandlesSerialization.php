@@ -22,10 +22,10 @@ trait HandlesSerialization
                 continue;
             }
             $data[$fieldName] = match(true) {
-                ($field->typeDetails()->class == Structure::class) => $value?->toArray(),
                 ($field->typeDetails()->type === TypeDetails::PHP_ENUM) => $value->value,
                 ($field->typeDetails()->type === TypeDetails::PHP_ARRAY) => $this->serializeArrayField($value),
                 ($field->typeDetails()->type === TypeDetails::PHP_COLLECTION) => $this->serializeArrayField($value),
+                ($field->typeDetails()->class == Structure::class) => $value?->toArray(),
                 ($field->typeDetails()->class !== null) => $this->serializeObjectField($value),
                 default => $value,
             };

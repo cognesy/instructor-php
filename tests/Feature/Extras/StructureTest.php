@@ -282,3 +282,22 @@ it('creates structure from array', function() {
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
     expect($structure->field('collectionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
 });
+
+it('handles structure with collection field', function() {
+    $nestedStructure = Structure::define('item', [
+        Field::string('stringProperty', 'String property'),
+    ]);
+
+    $structure = Structure::define('container', [
+        Field::collection('collectionProperty', $nestedStructure, 'Collection property'),
+    ]);
+
+    $nestedStructure->set('stringProperty', 'string1');
+    $structure->collectionProperty = [$nestedStructure, $nestedStructure];
+
+    $data = $structure->toArray();
+    expect($data['collectionProperty'])->toBe([
+        ['stringProperty' => 'string1'],
+        ['stringProperty' => 'string1'],
+    ]);
+});
