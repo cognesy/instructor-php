@@ -6,6 +6,7 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Instructor\Extras\Module\Signature\Attributes\ModuleSignature;
 use Cognesy\Instructor\Utils\Web\Html\HtmlProcessor;
+use Cognesy\Instructor\Utils\Web\Html\RawHtml;
 
 #[ModuleSignature('html:string -> markdown:string')]
 #[ModuleDescription('Convert HTML to Markdown')]
@@ -23,7 +24,7 @@ class ConvertHtmlToMarkdown extends Module
 
     protected function forward(mixed ...$args): array {
         $html = $args['html'];
-        $result = $this->processHtml->toMarkdown($html);
+        $result = RawHtml::fromContent($html)->asMarkdown(); // $this->processHtml->toMarkdown($html);
         return [
             'markdown' => $result
         ];

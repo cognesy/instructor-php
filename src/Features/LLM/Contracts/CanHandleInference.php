@@ -24,5 +24,5 @@ interface CanHandleInference
     ) : array;
     public function toLLMResponse(array $data): ?LLMResponse;
     public function toPartialLLMResponse(array $data) : ?PartialLLMResponse;
-    public function getData(string $data): string|bool;
+    public function getStreamData(string $data): string|bool;
 }

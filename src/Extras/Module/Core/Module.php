@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Extras\Module\Core;
 
-use Cognesy\Instructor\ApiClient\Contracts\CanCallLLM;
 use Cognesy\Instructor\Extras\Module\Contracts\CanInitiateModuleCall;
 use Cognesy\Instructor\Instructor;
 

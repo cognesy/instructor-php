@@ -66,7 +66,7 @@ trait HandlesFieldDefinitions
         $factory = new TypeDetailsFactory();
         return match(true) {
             is_string($itemType) => new Field($name, $description, $factory->collectionType($itemType)),
-            is_object($itemType) && $itemType instanceof TypeDetails => new Field($name, $description, $factory->collectionType($itemType->class())),
+            is_object($itemType) && $itemType instanceof TypeDetails => (new Field($name, $description, $factory->collectionType($itemType->toString())))->set($itemType),
             is_object($itemType) && $itemType instanceof Structure => (new Field($name, $description, $factory->collectionType(Structure::class)))->set($itemType),
             default => throw new \InvalidArgumentException('Invalid item type for collection field: ' . get_debug_type($name)),
         };

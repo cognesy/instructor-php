@@ -38,7 +38,7 @@ class FindSources extends Module
         $data = [];
         foreach ($urls as $url) {
             $webpage = $this->getWebpageContent->for(url: $url);
-            $markdown = RawHtml::fromContent($webpage)->asMarkdown();  //$this->convertToMarkdown->for(html: $webpage);
+            $markdown = RawHtml::fromContent($webpage)->asMarkdown();
             $split = $this->splitMarkdown->for(markdown: $markdown, source: $url);
             $data[] = $split;
         }

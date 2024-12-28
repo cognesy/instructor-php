@@ -67,7 +67,6 @@ class Settings
         if ($default === null && !self::has($group, $key)) {
             throw new Exception("Settings key not found: $key in group: $group and no default value provided");
         }
-
         return self::$settings[$group]->get($key, $default);
     }
 

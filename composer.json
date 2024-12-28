@@ -11,7 +11,8 @@
         "psr-4": {
             "Cognesy\\Instructor\\": "src/",
             "Cognesy\\InstructorHub\\": "src-hub/",
-            "Cognesy\\Setup\\": "src-setup/"
+            "Cognesy\\Setup\\": "src-setup/",
+            "Cognesy\\Tell\\": "src-tell/"
         },
         "files": [
         ]
@@ -21,8 +22,7 @@
             "Tests\\": "tests/",
             "Examples\\": "examples/",
             "Cognesy\\Evals\\": "evals/",
-            "Cognesy\\Experimental\\": "experimental/",
-            "Cognesy\\Tell\\": "src-tell/"
+            "Cognesy\\Experimental\\": "experimental/"
         },
         "files": [
             "tests/Examples/Call/test_functions.php"

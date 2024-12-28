@@ -9,14 +9,20 @@ class Link {
     readonly public bool $isInternal;
     readonly public string $domain;
 
-    public function __construct(string $url, string $title = '', string $baseUrl = '') {
+    public function __construct(
+        string $url = '',
+        string $title = '',
+        string $baseUrl = '',
+        bool $isInternal = null,
+        string $domain = null,
+    ) {
         $this->title = $title;
-        $this->isInternal = $this->isInternal($baseUrl, $url);
+        $this->isInternal = $isInternal ?? $this->isInternal($baseUrl, $url);
         $this->url = match(true) {
-            $this->isInternal($baseUrl, $url) => Str::startsWith($url, '/') ? $baseUrl . $url : $url,
+            $this->isInternal => Str::startsWith($url, '/') ? $baseUrl . $url : $url,
             default => $url,
         };
-        $this->domain = $this->getDomain($this->url);
+        $this->domain = $domain ?? $this->getDomain($this->url);
     }
 
     // INTERNAL ///////////////////////////////////////////////////////

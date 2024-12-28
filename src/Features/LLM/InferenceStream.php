@@ -43,7 +43,7 @@ class InferenceStream
 
         $this->stream = $this->response->streamContents();
         $this->reader = new EventStreamReader(
-            parser: $this->driver->getData(...),
+            parser: $this->driver->getStreamData(...),
             events: $this->events,
         );
     }

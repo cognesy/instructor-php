@@ -113,7 +113,7 @@ class CohereV1Driver implements CanHandleInference
         );
     }
 
-    public function getData(string $data): string|bool {
+    public function getStreamData(string $data): string|bool {
         $data = trim($data);
         return match(true) {
             $data === '[DONE]' => false,

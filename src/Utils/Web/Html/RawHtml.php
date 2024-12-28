@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Utils\Web\Html;
 
+use Cognesy\Instructor\Utils\Pipeline;
 use DOMDocument;
 use DOMXPath;
 use League\HTMLToMarkdown\HtmlConverter;
@@ -13,38 +14,36 @@ class RawHtml
     private string $content = '';
     private ?DOMDocument $dom = null;
 
-    public function __construct(string $content)
-    {
+    public function __construct(string $content) {
         $this->content = $content;
     }
 
-    static public function fromContent(string $content): self
-    {
+    static public function fromContent(string $content): self {
         return new static($content);
     }
 
-    public function asCleanHtml(): string
-    {
-        return $this->pipeline()
+    public function asCleanHtml(): string {
+        return (new Pipeline())
             ->through([
-                [$this, 'normalizeEncoding'],
-                [$this, 'parseDOM'],
-                [$this, 'removeScripts'],
-                [$this, 'removeStyles'],
-                [$this, 'removeComments'],
-                [$this, 'cleanupWhitespace'],
-                [$this, 'normalizeStructure'],
-                [$this, 'cleanupAttributes'],
-                [$this, 'removeEmptyElements'],
-                //[$this, 'linearizeContent'],
-                [$this, 'extractMainContent'],
-                [$this, 'normalizeUrls'],
-            ])
-            ->thenReturn();
+                $this->normalizeEncoding(...),
+                $this->cleanupWhitespace(...),
+                $this->removeEmptyElements(...),
+                $this->parseDOM(...),
+                $this->removeScripts(...),
+                $this->removeStyles(...),
+                $this->removeComments(...),
+                $this->removeSVGs(...),
+                $this->cleanupAttributes(...),
+                $this->separateTags(...),
+                $this->cleanupTags(...),
+//                $this->normalizeStructure(...),
+//                $this->normalizeUrls(...),
+//                //$this->linearizeContent,
+//                $this->extractMainContent(...),
+            ])->process($this->content);
     }
 
-    public function asText(): string
-    {
+    public function asText(): string {
         // Convert to Markdown first to preserve some structure
         $markdown = $this->asMarkdown();
 
@@ -62,12 +61,10 @@ class RawHtml
         return trim($text);
     }
 
-    public function asMarkdown(): string
-    {
+    public function asMarkdown(): string {
         $html = $this->asCleanHtml();
-        dd($html);
         return (new HtmlConverter)->convert($html);
-        
+
         // return $this->pipeline()
         //     ->through([
         //         [$this, 'convertHeadings'],
@@ -82,13 +79,7 @@ class RawHtml
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function pipeline(): HtmlPipeline
-    {
-        return HtmlPipeline::send($this->content);
-    }
-
-    public function normalizeEncoding(string $content): string
-    {
+    public function normalizeEncoding(string $content): string {
         // Convert to UTF-8 if needed
         if (!mb_check_encoding($content, 'UTF-8')) {
             $content = mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content));
@@ -98,8 +89,7 @@ class RawHtml
         return html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
-    public function parseDOM(string $content): string
-    {
+    public function parseDOM(string $content): string {
         libxml_use_internal_errors(true);
         $this->dom = new DOMDocument('1.0', 'UTF-8');
 
@@ -115,8 +105,7 @@ class RawHtml
         return $content;
     }
 
-    public function removeScripts(string $content): string
-    {
+    public function removeScripts(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -142,8 +131,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function removeStyles(string $content): string
-    {
+    public function removeStyles(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -172,9 +160,8 @@ class RawHtml
         $nodes = $xpath->query('//*[@class]');
         foreach ($nodes as $node) {
             $classes = explode(' ', $node->getAttribute('class'));
-            $semanticClasses = array_filter($classes, fn($class) =>
-                !preg_match('/^(tw-|md:|lg:|sm:|hover:|focus:|active:|group-|dark:|light:)/', $class) &&
-                !preg_match('/^(mt-|mb-|ml-|mr-|px-|py-|text-|bg-|border-)/', $class)
+            $semanticClasses = array_filter($classes, fn($class) => !preg_match('/^(tw-|md:|lg:|sm:|hover:|focus:|active:|group-|dark:|light:)/', $class) &&
+                !preg_match('/^(mt-|mb-|ml-|mr-|px-|py-|text-|bg-|border-)/', $class),
             );
 
             if (empty($semanticClasses)) {
@@ -187,8 +174,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function removeComments(string $content): string
-    {
+    public function removeComments(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -203,13 +189,15 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function cleanupWhitespace(string $content): string
-    {
+    public function cleanupWhitespace(string $content): string {
         // Normalize line endings
         $content = preg_replace('/\R/', "\n", $content);
 
         // Remove multiple spaces
         $content = preg_replace('/[ \t]+/', ' ', $content);
+
+        // Remove lines with only whitespace
+        $content = preg_replace('/^\s+$/m', '', $content);
 
         // Remove spaces around tags
         $content = preg_replace('/\s*(<[^>]*>)\s*/', '$1', $content);
@@ -220,8 +208,13 @@ class RawHtml
         return trim($content);
     }
 
-    public function normalizeStructure(string $content): string
-    {
+    public function cleanupTags(string $content): string {
+        $whitelist = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'ul', 'ol', 'li', 'img'];
+        // Remove all tags that are not in the whitelist
+        return strip_tags($content, $whitelist);
+    }
+
+    public function normalizeStructure(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -262,8 +255,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function cleanupAttributes(string $content): string
-    {
+    public function cleanupAttributes(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -285,8 +277,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function removeEmptyElements(string $content): string
-    {
+    public function removeEmptyElements(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -298,7 +289,7 @@ class RawHtml
 
             // Find elements with no text content and no meaningful children
             $emptyNodes = $xpath->query(
-                '//*[not(self::img) and not(self::br) and not(self::hr)][not(normalize-space())]'
+                '//*[not(self::img) and not(self::br) and not(self::hr)][not(normalize-space())]',
             );
 
             foreach ($emptyNodes as $node) {
@@ -312,8 +303,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function extractMainContent(string $content): string
-    {
+    public function extractMainContent(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -372,8 +362,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function normalizeUrls(string $content): string
-    {
+    public function normalizeUrls(string $content): string {
         if (!$this->dom) {
             return $content;
         }
@@ -404,8 +393,7 @@ class RawHtml
         return $this->dom->saveHTML();
     }
 
-    public function makeAbsoluteUrl(string $url, string $baseUrl): string
-    {
+    public function makeAbsoluteUrl(string $url, string $baseUrl): string {
         // Already absolute URL
         if (preg_match('~^(?:https?://|//|data:)~i', $url)) {
             return $url;
@@ -447,69 +435,64 @@ class RawHtml
         return $url;
     }
 
-    public function convertHeadings(string $content): string
-    {
+    public function convertHeadings(string $content): string {
         return preg_replace_callback(
             '/<h([1-6])[^>]*>(.*?)<\/h\1>/si',
             fn($matches) => str_repeat('#', (int)$matches[1]) . ' ' . trim(strip_tags($matches[2])) . "\n\n",
-            $content
+            $content,
         );
     }
 
-    public function convertLists(string $content): string
-    {
+    public function convertLists(string $content): string {
         // Convert unordered lists
         $content = preg_replace_callback(
             '/<ul[^>]*>(.*?)<\/ul>/si',
-            function($matches) {
+            function ($matches) {
                 return preg_replace_callback(
                         '/<li[^>]*>(.*?)<\/li>/si',
                         fn($m) => "* " . trim(strip_tags($m[1])) . "\n",
-                        $matches[1]
+                        $matches[1],
                     ) . "\n";
             },
-            $content
+            $content,
         );
 
         // Convert ordered lists
         $content = preg_replace_callback(
             '/<ol[^>]*>(.*?)<\/ol>/si',
-            function($matches) {
+            function ($matches) {
                 $index = 1;
                 return preg_replace_callback(
                         '/<li[^>]*>(.*?)<\/li>/si',
-                        function($m) use (&$index) {
+                        function ($m) use (&$index) {
                             return $index++ . ". " . trim(strip_tags($m[1])) . "\n";
                         },
-                        $matches[1]
+                        $matches[1],
                     ) . "\n";
             },
-            $content
+            $content,
         );
 
         return $content;
     }
 
-    public function convertLinks(string $content): string
-    {
+    public function convertLinks(string $content): string {
         return preg_replace_callback(
             '/<a[^>]+href=["\'](.*?)["\'](.*?)>(.*?)<\/a>/si',
             fn($matches) => sprintf('[%s](%s)', trim(strip_tags($matches[3])), $matches[1]),
-            $content
+            $content,
         );
     }
 
-    public function convertImages(string $content): string
-    {
+    public function convertImages(string $content): string {
         return preg_replace_callback(
             '/<img[^>]+src=["\'](.*?)["\'](.*?)alt=["\'](.*?)["\'](.*?)>/si',
             fn($matches) => sprintf('![%s](%s)', $matches[3], $matches[1]),
-            $content
+            $content,
         );
     }
 
-    public function convertParagraphs(string $content): string
-    {
+    public function convertParagraphs(string $content): string {
         // Convert <p> tags to double newlines
         $content = preg_replace('/<p[^>]*>(.*?)<\/p>/si', "$1\n\n", $content);
 
@@ -519,8 +502,7 @@ class RawHtml
         return $content;
     }
 
-    public function cleanupMarkdown(string $content): string
-    {
+    public function cleanupMarkdown(string $content): string {
         // Remove any remaining HTML tags
         $content = strip_tags($content);
 
@@ -532,5 +514,13 @@ class RawHtml
 
         // Clean up whitespace
         return trim($content);
+    }
+
+    public function removeSVGs(string $content): string {
+        return preg_replace('/<svg[^>]*>.*?<\/svg>/si', '', $content);
+    }
+
+    public function separateTags(string $content): string {
+        return preg_replace('/></', '> <', $content);
     }
 }

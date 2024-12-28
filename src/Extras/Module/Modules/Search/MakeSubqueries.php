@@ -5,8 +5,6 @@ use Cognesy\Instructor\Extras\Module\Core\Module;
 use Cognesy\Instructor\Extras\Module\Core\Predictor;
 use Cognesy\Instructor\Utils\Messages\Messages;
 
-//#[ModuleSignature('question, context -> list_of_subqueries:string[]')]
-//#[ModuleDescription('Generate relevant subqueries to extract context needed to answer provided question')]
 class MakeSubqueries extends Module
 {
     protected Predictor $makeSubqueries;

@@ -19,16 +19,16 @@ class Scraper
     public static function withDriver(string $scraper = '') : CanGetUrlContent {
         $scraper = $scraper ?: Settings::get('web', 'defaultScraper', 'none');
 
-        $baseUrl = Settings::get('web', 'scrapers'.$scraper.'.baseUri', '');
-        $apiKey = Settings::get('web', 'scrapers'.$scraper.'.apiKey', '');
+        $baseUrl = Settings::get('web', 'scrapers.'.$scraper.'.baseUri', '');
+        $apiKey = Settings::get('web', 'scrapers.'.$scraper.'.apiKey', '');
 
         return match($scraper) {
             'none' => new BasicReader(),
             'browsershot' => new BrowsershotDriver(),
+            'firecrawl' => new FirecrawlDriver($baseUrl, $apiKey),
             'jinareader' => new JinaReaderDriver($baseUrl, $apiKey),
             'scrapfly' => new ScrapFlyDriver($baseUrl, $apiKey),
             'scrapingbee' => new ScrapingBeeDriver($baseUrl, $apiKey),
-            'firecrawl' => new FirecrawlDriver($baseUrl, $apiKey),
             default => throw new Exception("Unknown scraper requested: $scraper"),
         };
     }

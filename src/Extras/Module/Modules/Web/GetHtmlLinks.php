@@ -44,14 +44,10 @@ class GetHtmlLinks extends Module
         $links = [];
         preg_match_all('/<a[^>]+href\s*=\s*([\'"])(?<href>.+?)\1[^>]*>(?<text>.*?)<\/a>/i', $page, $matches);
         foreach ($matches['href'] as $key => $href) {
-            $link = new \Cognesy\Instructor\Utils\Web\Link();
-            $link->url = $href;
-            $link->title = strip_tags($matches['text'][$key]);
-            $link->isInternal = $this->isInternal($href, $baseUrl);
-            if ($link->isInternal) {
-                $link->url = Str::startsWith($href, '/') ? $baseUrl . $href : $href;
-            }
-            $link->domain = $this->getDomain($link->url);
+            $link = new Link(
+                url: $href,
+                title: strip_tags($matches['text'][$key]),
+            );
             if ($this->skip($link, $links)) {
                 continue;
             }
@@ -63,15 +59,6 @@ class GetHtmlLinks extends Module
     private function getDomain(string $url): string {
         $urlParts = parse_url($url);
         return $urlParts['host'] ?? '';
-    }
-
-    private function isInternal($url, $baseUrl) : bool {
-        return match(true) {
-            empty($url) => false,
-            Str::startsWith($url, '/') => true,
-            !empty($baseUrl) && Str::startsWith($url, $baseUrl) => true,
-            default => false,
-        };
     }
 
     private function isLinkInArray(array $links, string $url): bool {

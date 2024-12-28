@@ -45,4 +45,40 @@ trait HandlesAccess
     public function isArray() : bool {
         return in_array($this->type, [self::PHP_ARRAY, self::PHP_COLLECTION]);
     }
+
+    public function isCollection() : bool {
+        return $this->type === self::PHP_COLLECTION;
+    }
+
+    public function isCollectionOf(string $type) : bool {
+        return $this->isCollection() && $this->nestedType->type() === $type;
+    }
+
+    public function isCollectionOfScalar() : bool {
+        return $this->isCollection() && $this->nestedType->isScalar();
+    }
+
+    public function isCollectionOfObject() : bool {
+        return $this->isCollection() && $this->nestedType->isObject();
+    }
+
+    public function isCollectionOfEnum() : bool {
+        return $this->isCollection() && $this->nestedType->isEnum();
+    }
+
+    public function isCollectionOfArray() : bool {
+        return $this->isCollection() && $this->nestedType->isArray();
+    }
+
+    public function hasNestedType() : bool {
+        return $this->nestedType !== null;
+    }
+
+    public function hasClass() : bool {
+        return $this->class !== null;
+    }
+
+    public function hasEnumType() : bool {
+        return $this->enumType !== null;
+    }
 }

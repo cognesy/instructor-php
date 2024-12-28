@@ -116,7 +116,7 @@ class OpenAIDriver implements CanHandleInference
         );
     }
 
-    public function getData(string $data): string|bool {
+    public function getStreamData(string $data): string|bool {
         if (!str_starts_with($data, 'data:')) {
             return '';
         }
