@@ -1,13 +1,13 @@
 ---
-title: 'Context caching (Anthropic)'
+title: 'Context caching'
 docname: 'context_cache'
 ---
 
 ## Overview
 
-Instructor offers a simplified way to work with LLM providers' APIs supporting caching
-(currently only Anthropic API), so you can focus on your business logic while still being
-able to take advantage of lower latency and costs.
+Instructor offers a simplified way to work with LLM providers' APIs supporting caching,
+so you can focus on your business logic while still being able to take advantage of lower
+latency and costs.
 
 > **Note 1:** Instructor supports context caching for Anthropic API and OpenAI API.
 
@@ -34,6 +34,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Debug\Debug;
 use Cognesy\Instructor\Utils\Str;
 
 class Project {
@@ -63,10 +64,10 @@ multiple requests.
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
-$cached = (new Instructor)->withConnection('openai')->withCachedContext(
+$cached = (new Instructor)->withConnection('anthropic')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
-    prompt: 'Respond to the user with a description of the project with JSON using schema:\n<|json_schema|>',
+    prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',
 );
 ?>
 ```
@@ -81,7 +82,7 @@ $project = $cached->respond(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
-    mode: Mode::Json,
+    mode: Mode::MdJson,
 );
 dump($project);
 assert($project instanceof Project);
