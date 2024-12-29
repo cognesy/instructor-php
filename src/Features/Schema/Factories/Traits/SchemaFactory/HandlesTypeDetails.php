@@ -77,13 +77,9 @@ trait HandlesTypeDetails
                 $type,
                 $name,
                 $description,
-                $this->makePropertySchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
+                $this->makeNestedItemSchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
             ),
-            ($type->type === TypeDetails::PHP_ARRAY) => new ArraySchema(
-                $type,
-                $name,
-                $description
-            ),
+            ($type->type === TypeDetails::PHP_ARRAY) => new ArraySchema($type, $name, $description),
             in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, $name, $description),
             default => throw new \Exception('Unknown type: ' . $type->type),
         };
@@ -110,5 +106,24 @@ trait HandlesTypeDetails
             $this->getPropertySchemas($classInfo),
             ($classInfo)->getRequiredProperties(),
         );
+    }
+
+    /**
+     * Makes schema for collection nested items
+     *
+     * @param TypeDetails $type
+     * @param string $name
+     * @param string $description
+     * @return Schema
+     */
+    protected function makeNestedItemSchema(TypeDetails $type, string $name, string $description): Schema {
+        return match (true) {
+            ($type->type === TypeDetails::PHP_OBJECT) => $this->makeObjectSchema($type, $name, $description),
+            ($type->type === TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
+            ($type->type === TypeDetails::PHP_COLLECTION) => throw new \Exception('Collections are not allowed as collection nested items'),
+            ($type->type === TypeDetails::PHP_ARRAY) => throw new \Exception('Arrays are not allowed as collection nested items'),
+            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, $name, $description),
+            default => throw new \Exception('Unknown type: ' . $type->type),
+        };
     }
 }

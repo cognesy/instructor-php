@@ -7,8 +7,6 @@ use Cognesy\Instructor\Features\Schema\Utils\ClassInfo;
 
 trait HandlesBuilders
 {
-    // TYPE DETAILS CREATION //////////////////////////////////////////////////////////////////
-
     /**
      * Create TypeDetails for atom (scalar) type
      *
@@ -58,8 +56,9 @@ trait HandlesBuilders
         };
         return new TypeDetails(
             type: TypeDetails::PHP_COLLECTION,
+            class: null,
             nestedType: $nestedType,
-            docString: $typeSpec
+            docString: $typeSpec,
         );
     }
 

@@ -13,7 +13,7 @@ trait RendersContent
      * @param array<string,mixed>|null $parameters
      * @return string
      */
-    private function renderString(string $template, ?array $parameters) : string {
+    protected function renderString(string $template, ?array $parameters) : string {
         return match(true) {
             empty($parameters) => $template,
             default => Template::arrowpipe()->from($template)->with($parameters)->toText(),

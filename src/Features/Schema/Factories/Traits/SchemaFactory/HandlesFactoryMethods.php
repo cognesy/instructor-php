@@ -7,6 +7,7 @@ use Cognesy\Instructor\Features\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ScalarSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Features\Schema\Utils\ClassInfo;
 
@@ -45,9 +46,9 @@ trait HandlesFactoryMethods
         return new EnumSchema(TypeDetails::enum($class), $name, $description);
     }
 
-    public function collection(string $nestedType, string $name = '', string $description = ''): CollectionSchema {
+    public function collection(string $nestedType, string $name = '', string $description = '', ?Schema $nestedTypeSchema = null): CollectionSchema {
         $nestedTypeDetails = TypeDetails::fromTypeName($nestedType);
-        $nestedSchema = $this->makeSchema($nestedTypeDetails);
+        $nestedSchema = $nestedTypeSchema ?? $this->makeSchema($nestedTypeDetails);
         $schema = new CollectionSchema(TypeDetails::collection($nestedTypeDetails), $name, $description, $nestedSchema);
         return $schema;
     }

@@ -5,8 +5,10 @@ namespace Cognesy\Instructor\Utils;
 /**
  * A class for generating Universally Unique Identifiers (UUID).
  *
- * Goal: decouple Instructor main code from depending on specific UUID provider libraries
+ * Goal is to decouple Instructor main code from depending on specific UUID provider libraries
  * and make it easier to switch providers.
+ *
+ * TODO: implement drivers for different UUID providers (e.g. ramsey/uuid, webpatser/uuid, etc.)
  */
 class Uuid {
     /**

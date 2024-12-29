@@ -45,6 +45,11 @@ trait HandlesMutation
         return $this;
     }
 
+    public function prependMessage(Message $param) : static {
+        $this->prependMessages([$param]);
+        return $this;
+    }
+
     public function removeHead() : static {
         array_shift($this->messages);
         return $this;

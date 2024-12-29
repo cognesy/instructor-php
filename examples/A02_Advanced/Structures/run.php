@@ -30,6 +30,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Debug\Debug;
 
 enum Role : string {
     case Manager = 'manager';
@@ -47,11 +48,17 @@ $structure = Structure::define('person', [
         Field::string('zip', 'Zip code')->optional(),
     ], 'Address of the person'),
     Field::enum('role', Role::class, 'Role of the person'),
+    Field::collection('favourite_books', Structure::define('book', [
+            Field::string('author', 'Book author')->optional(),
+            Field::string('title', 'Book title'),
+        ], 'Favorite book data'),
+    'Favorite books of the person'),
 ], 'A person object');
 
 $text = <<<TEXT
     Jane Doe lives in Springfield, 50210. She is 25 years old and works as manager at McDonald's.
-    McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
+    McDonald's in Ney York is located at 456 Elm St, NYC, 12345. His favourite books are "The Lord
+    of the Rings" and "The Hobbit" by JRR Tolkien.
     TEXT;
 
 print("INPUT:\n$text\n\n");
@@ -66,5 +73,9 @@ print("Age: " . $person->age . "\n");
 print("Address / city: " . $person->address->city . "\n");
 print("Address / ZIP: " . $person->address->zip . "\n");
 print("Role: " . $person->role->value . "\n");
+print("Favourite books:\n");
+foreach ($person->favourite_books as $book) {
+    print("  - " . $book->title . " by " . $book->author . "\n");
+}
 ?>
 ```

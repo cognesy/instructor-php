@@ -36,7 +36,10 @@ trait HandlesFieldSchema
     }
 
     public function schema() : Schema {
-        return $this->schema;
+        return match(true) {
+            $this->isStructure() => $this->value->schema(),
+            default => $this->schema,
+        };
     }
 
     public function isStructure() : bool {

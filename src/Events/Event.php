@@ -11,14 +11,14 @@ use Psr\Log\LogLevel;
 
 class Event implements JsonSerializable
 {
-    public readonly string $eventId;
+    public readonly string $id;
     public readonly DateTimeImmutable $createdAt;
     public mixed $data;
 
     public $logLevel = LogLevel::DEBUG;
 
     public function __construct(mixed $data = []) {
-        $this->eventId = Uuid::uuid4();
+        $this->id = Uuid::uuid4();
         $this->createdAt = new DateTimeImmutable();
         $this->data = $data;
     }
@@ -70,7 +70,7 @@ class Event implements JsonSerializable
 
     private function logFormat(string $message): string {
         $class = (new \ReflectionClass($this))->getName();
-        return "({$this->eventId}) {$this->createdAt->format('Y-m-d H:i:s v')}ms ($this->logLevel) [$class] - $message";
+        return "({$this->id}) {$this->createdAt->format('Y-m-d H:i:s v')}ms ($this->logLevel) [$class] - $message";
     }
 
     private function consoleFormat(string $message = '', bool $quote = false) : string {
@@ -81,7 +81,7 @@ class Event implements JsonSerializable
             $message = Color::DARK_GRAY."`".Color::RESET.$message.Color::DARK_GRAY."`".Color::RESET;
         }
         return Console::columns([
-            [7, '(.'.substr($this->eventId, -4).')'],
+            [7, '(.'.substr($this->id, -4).')'],
             [14, $this->createdAt->format('H:i:s v').'ms'],
             [7, "{$this->logLevel}", STR_PAD_LEFT],
             [30, "{$eventName}"],

@@ -44,7 +44,7 @@ trait HandlesFactoryMethods
         return (new SchemaFactory)->enum($class, $name, $description);
     }
 
-    public static function collection(string $nestedType, string $name = '', string $description = ''): CollectionSchema {
-        return (new SchemaFactory)->collection($nestedType, $name, $description);
+    public static function collection(string $nestedType, string $name = '', string $description = '', ?Schema $nestedItemSchema = null): CollectionSchema {
+        return (new SchemaFactory)->collection($nestedType, $name, $description, $nestedItemSchema);
     }
 }

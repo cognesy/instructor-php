@@ -65,7 +65,7 @@ trait HandlesDeserialization
                 ($typeDetails->type === TypeDetails::PHP_COLLECTION) => throw new Exception('Nested collections are not supported.'),
                 ($typeDetails->type === TypeDetails::PHP_ARRAY) => is_array($itemData) ? $itemData : [$itemData],
                 ($typeDetails->class === null) => $itemData,
-                ($typeDetails->class === Structure::class) => $field->get()->fromArray($itemData),
+                ($typeDetails->class === Structure::class) && ($field->hasPrototype()) => $field->prototype()?->clone()->fromArray($itemData),
                 ($typeDetails->class === DateTime::class) => new DateTime($itemData),
                 ($typeDetails->class === DateTimeImmutable::class) => new DateTimeImmutable($itemData),
                 default => $this->deserializer->fromArray($itemData, $typeDetails->class),

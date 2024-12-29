@@ -16,6 +16,10 @@ trait HandlesAccess
         );
     }
 
+    public function id() : string {
+        return $this->id;
+    }
+
     public function role() : MessageRole {
         return MessageRole::fromString($this->role);
     }

@@ -21,6 +21,16 @@ trait HandlesAccess
         return $this->messages[count($this->messages)-1];
     }
 
+    /**
+     * @return \Generator<Message>
+     */
+    public function each() : iterable {
+        $reversed = array_reverse($this->messages);
+        foreach ($reversed as $message) {
+            yield $message;
+        }
+    }
+
     public function hasComposites() : bool {
         return $this->reduce(fn(bool $carry, Message $message) => $carry || $message->isComposite(), false);
     }

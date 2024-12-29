@@ -23,26 +23,3 @@ trait ProvidesSchema
         return $objectSchema;
     }
 }
-
-//        $schemaFactory = new SchemaFactory(false);
-//        $typeDetailsFactory = new TypeDetailsFactory();
-//
-//        $nestedSchema = $schemaFactory->schema($this->class);
-//        $nestedTypeDetails = $typeDetailsFactory->fromTypeName($this->class);
-//        $collectionTypeDetails = $typeDetailsFactory->collectionType($nestedTypeDetails->toString());
-//        $collectionSchema = new CollectionSchema(
-//            type: $collectionTypeDetails,
-//            name: 'list',
-//            description: '',
-//            nestedItemSchema: $nestedSchema,
-//        );
-//        $objectSchema->properties['list'] = $collectionSchema;
-//        $objectSchema->required = ['list'];
-//        $collectionSchema = Schema::collection($this->class, 'list', '');
-//        $objectSchema = Schema::object(
-//            $this->class,
-//            'list',
-//            '',
-//            ['list' => $collectionSchema],
-//            ['list']
-//        );

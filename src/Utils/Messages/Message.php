@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Utils\Messages;
 
 use Cognesy\Instructor\Utils\Messages\Enums\MessageRole;
+use Cognesy\Instructor\Utils\Uuid;
 
 class Message {
     use Traits\Message\HandlesCreation;
@@ -11,6 +12,7 @@ class Message {
 
     public const DEFAULT_ROLE = 'user';
 
+    protected string $id;
     protected string $role;
     protected string|array $content;
     protected array $metadata = [];
@@ -24,6 +26,7 @@ class Message {
         string|array|null $content = '',
         array $metadata = [],
     ) {
+        $this->id = Uuid::uuid4();
         $this->role = match(true) {
             $role instanceof MessageRole => $role->value,
             ($role === '') => self::DEFAULT_ROLE,

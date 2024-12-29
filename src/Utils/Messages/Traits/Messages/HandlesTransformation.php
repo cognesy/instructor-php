@@ -46,6 +46,12 @@ trait HandlesTransformation
         return $text;
     }
 
+    public function reversed() : Messages {
+        $messages = new Messages();
+        $messages->messages = array_reverse($this->messages);
+        return $messages;
+    }
+
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     private function mergeRolesFlat() : Messages {

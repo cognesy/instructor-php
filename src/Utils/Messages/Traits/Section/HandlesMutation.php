@@ -8,6 +8,11 @@ use Cognesy\Instructor\Utils\Messages\Section;
 
 trait HandlesMutation
 {
+    public function clear() : static {
+        $this->messages = new Messages();
+        return $this;
+    }
+
     public function setMessages(Messages $messages) : static {
         $this->messages = $messages;
         return $this;
@@ -63,6 +68,11 @@ trait HandlesMutation
 
     public function mergeSection(Section $section) : static {
         $this->appendMessages($section->messages());
+        return $this;
+    }
+
+    public function copyFrom(Section $section) : static {
+        $this->setMessages($section->messages());
         return $this;
     }
 }

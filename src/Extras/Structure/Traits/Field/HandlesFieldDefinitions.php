@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use DateTime;
 
@@ -55,19 +56,34 @@ trait HandlesFieldDefinitions
 
     static public function structure(string $name, array|callable $fields, string $description = '') : self {
         $factory = new TypeDetailsFactory();
-        $type = $factory->objectType(Structure::class);
-
-        $result = new Field($name, $description, $type);
-        $result->set(Structure::define($name, $fields, $description));
+        $structure = Structure::define($name, $fields, $description);
+        $result = new Field($name, $description, $factory->objectType(Structure::class));
+        $result->set($structure);
         return $result;
     }
 
     static public function collection(string $name, string|object $itemType, string $description = '') : self {
         $factory = new TypeDetailsFactory();
+        $schemaFactory = new SchemaFactory();
         return match(true) {
             is_string($itemType) => new Field($name, $description, $factory->collectionType($itemType)),
-            is_object($itemType) && $itemType instanceof TypeDetails => (new Field($name, $description, $factory->collectionType($itemType->toString())))->set($itemType),
-            is_object($itemType) && $itemType instanceof Structure => (new Field($name, $description, $factory->collectionType(Structure::class)))->set($itemType),
+            is_object($itemType) && $itemType instanceof TypeDetails => (new Field(
+                $name,
+                $description,
+                $factory->collectionType($itemType->toString())
+            ))->set($itemType),
+            is_object($itemType) && $itemType instanceof Structure => (new Field(
+                name: $name,
+                description: $description,
+                typeDetails: $factory->collectionType(Structure::class),
+                customSchema: $schemaFactory->collection(
+                    nestedType: Structure::class,
+                    name: $name,
+                    description: $description,
+                    nestedTypeSchema: $itemType->schema(),
+                ),
+                prototype: $itemType,
+            )),
             default => throw new \InvalidArgumentException('Invalid item type for collection field: ' . get_debug_type($name)),
         };
     }
