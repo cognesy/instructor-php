@@ -1,6 +1,6 @@
 ---
-title: 'Context caching'
-docname: 'context_cache'
+title: 'Context caching (structured output)'
+docname: 'context_cache_structured'
 ---
 
 ## Overview

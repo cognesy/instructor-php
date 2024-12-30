@@ -1,5 +1,5 @@
 ---
-title: 'Context caching'
+title: 'Context caching (text inference)'
 docname: 'context_cache_llm'
 ---
 
