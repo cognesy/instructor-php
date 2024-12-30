@@ -1,59 +1,32 @@
 <?php
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+
+namespace Cognesy\Instructor\Features\LLM\Drivers\Gemini;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
-use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Features\Http\HttpClient;
-use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Features\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\ToolCall;
-use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
-use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Arrays;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Messages;
 use Cognesy\Instructor\Utils\Str;
 
-class GeminiDriver implements CanHandleInference
+class GeminiRequestAdapter implements ProviderRequestAdapter
 {
     public function __construct(
-        protected LLMConfig      $config,
-        protected ?CanHandleHttp $httpClient = null,
-        protected ?EventDispatcher $events = null,
-    ) {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
+        protected LLMConfig $config,
+    ) {}
+
+    public function toHeaders(): array {
+        return [
+            'Content-Type' => 'application/json',
+        ];
     }
 
-    // REQUEST //////////////////////////////////////////////
-
-    public function handle(InferenceRequest $request) : CanAccessResponse {
-        $request = $request->withCacheApplied();
-        return $this->httpClient->handle(
-            url: $this->getEndpointUrl($request),
-            headers: $this->getRequestHeaders(),
-            body: $this->getRequestBody(
-                $request->messages(),
-                $request->model(),
-                $request->tools(),
-                $request->toolChoice(),
-                $request->responseFormat(),
-                $request->options(),
-                $request->mode(),
-            ),
-            streaming: $request->options['stream'] ?? false,
-        );
-    }
-
-    public function getEndpointUrl(InferenceRequest $request): string {
+    public function toUrl(string $model = '', bool $stream = false): string {
+        $model = $model ?: $this->config->model;
         $urlParams = ['key' => $this->config->apiKey];
 
-        if ($request->options['stream'] ?? false) {
+        if ($stream) {
             $this->config->endpoint = '/models/{model}:streamGenerateContent';
             $urlParams['alt'] = 'sse';
         } else {
@@ -62,29 +35,24 @@ class GeminiDriver implements CanHandleInference
 
         return str_replace(
             search: "{model}",
-            replace: $request->model ?: $this->config->model,
-            subject: "{$this->config->apiUrl}{$this->config->endpoint}?" . http_build_query($urlParams));
+            replace: $model,
+            subject: "{$this->config->apiUrl}{$this->config->endpoint}?" . http_build_query($urlParams)
+        );
     }
 
-    public function getRequestHeaders() : array {
-        return [
-            'Content-Type' => 'application/json',
-        ];
-    }
-
-    public function getRequestBody(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : array {
+    public function toRequestBody(
+        array $messages,
+        string $model,
+        array $tools,
+        array|string $toolChoice,
+        array $responseFormat,
+        array $options,
+        Mode $mode
+    ): array {
         $request = array_filter([
             'systemInstruction' => $this->toSystem($messages),
             'contents' => $this->toMessages($messages),
-            'generationConfig' => $this->toOptions($options, $responseFormat, $mode),
+            'generationConfig' => $this->toOptions($this->config, $options, $responseFormat, $mode),
         ]);
 
         if (!empty($tools)) {
@@ -95,45 +63,7 @@ class GeminiDriver implements CanHandleInference
         return $request;
     }
 
-    // RESPONSE /////////////////////////////////////////////
-
-    public function toLLMResponse(array $data): ?LLMResponse {
-        return new LLMResponse(
-            content: $this->makeContent($data),
-            finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
-            usage: $this->makeUsage($data),
-            responseData: $data,
-        );
-    }
-
-    public function toPartialLLMResponse(array $data) : ?PartialLLMResponse {
-        if (empty($data)) {
-            return null;
-        }
-        return new PartialLLMResponse(
-            contentDelta: $this->makeContentDelta($data),
-            toolId: $data['candidates'][0]['id'] ?? '',
-            toolName: $this->makeToolName($data),
-            toolArgs: $this->makeToolArgs($data),
-            finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            usage: $this->makeUsage($data),
-            responseData: $data,
-        );
-    }
-
-    public function getStreamData(string $data): string|bool {
-        if (!str_starts_with($data, 'data:')) {
-            return '';
-        }
-        $data = trim(substr($data, 5));
-        return match(true) {
-            $data === '[DONE]' => false,
-            default => $data,
-        };
-    }
-
-    // PRIVATE //////////////////////////////////////////////
+    // INTERNAL //////////////////////////////////////////////
 
     private function toSystem(array $messages) : array {
         $system = Messages::fromArray($messages)
@@ -153,6 +83,7 @@ class GeminiDriver implements CanHandleInference
     }
 
     protected function toOptions(
+        LLMConfig $config,
         array $options,
         array $responseFormat,
         Mode $mode,
@@ -161,7 +92,7 @@ class GeminiDriver implements CanHandleInference
             "responseMimeType" => $this->toResponseMimeType($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
             "candidateCount" => 1,
-            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
+            "maxOutputTokens" => $options['max_tokens'] ?? $config->maxTokens,
             "temperature" => $options['temperature'] ?? 1.0,
         ]);
     }
@@ -321,70 +252,5 @@ class GeminiDriver implements CanHandleInference
                 'data' => Str::after($contentPart['image_url']['url'], ';base64,'),
             ],
         ];
-    }
-
-    private function makeToolCalls(array $data) : ToolCalls {
-        return ToolCalls::fromMapper(array_map(
-            callback: fn(array $call) => $call['functionCall'] ?? [],
-            array: $data['candidates'][0]['content']['parts'] ?? []
-        ), fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['args'] ?? '']));
-    }
-
-    private function makeContent(array $data) : string {
-        $partCount = count($data['candidates'][0]['content']['parts'] ?? []);
-        if ($partCount === 1) {
-            return $this->makeContentPart($data, 0);
-        }
-        $content = '';
-        for ($i = 0; $i < $partCount; $i++) {
-            $part = $this->makeContentPart($data, $i) . "\n\n";
-            $content .= $part;
-        }
-        return $content;
-    }
-
-    private function makeContentPart(array $data, int $index) : string {
-        return $data['candidates'][0]['content']['parts'][$index]['text']
-            ?? Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'] ?? '')
-            ?? '';
-    }
-
-    private function makeContentDelta(array $data): string {
-        $partCount = count($data['candidates'][0]['content']['parts'] ?? []);
-        if ($partCount === 1) {
-            return  $this->makeContentDeltaPart($data, 0);
-        }
-
-        $content = '';
-        for ($i = 0; $i < $partCount; $i++) {
-            $part = $this->makeContentDeltaPart($data, $i) . "\n";
-            $content .= $part;
-        }
-        return $content;
-    }
-
-    private function makeContentDeltaPart(array $data, int $index) : string {
-        return $data['candidates'][0]['content']['parts'][$index]['text']
-            ?? Json::encode($data['candidates'][0]['content']['parts'][$index]['functionCall']['args'] ?? '')
-            ?? '';
-    }
-
-    private function makeToolName(array $data) : string {
-        return $data['candidates'][0]['content']['parts'][0]['functionCall']['name'] ?? '';
-    }
-
-    private function makeToolArgs(array $data) : string {
-        $value = $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '';
-        return is_array($value) ? Json::encode($value) : '';
-    }
-
-    private function makeUsage(array $data) : Usage {
-        return new Usage(
-            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
-            cacheWriteTokens: 0,
-            cacheReadTokens: 0,
-            reasoningTokens: 0,
-        );
     }
 }

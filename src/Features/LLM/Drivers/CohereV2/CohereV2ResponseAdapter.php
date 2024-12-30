@@ -1,56 +1,17 @@
 <?php
 
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+namespace Cognesy\Instructor\Features\LLM\Drivers\CohereV2;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
-use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
 
-class CohereV2Driver extends OpenAIDriver
+class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 {
-    // REQUEST //////////////////////////////////////////////
-
-    public function getRequestBody(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : array {
-        unset($options['parallel_tool_calls']);
-
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
-            'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->toNativeMessages($messages),
-        ]), $options);
-
-        if (!empty($tools)) {
-            $request['tools'] = $this->removeDisallowedEntries($tools);
-        }
-
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
-    }
-
-    public function getRequestHeaders(): array {
-        $optional = [
-            'X-Client-Name' => $this->config->metadata['client_name'] ?? '',
-        ];
-        return array_merge([
-            'Authorization' => "Bearer {$this->config->apiKey}",
-            'Content-Type' => 'application/json',
-        ], $optional);
-    }
-
-    // RESPONSE //////////////////////////////////////////////
-
-    public function toLLMResponse(array $data): LLMResponse {
+    public function fromResponse(array $data): LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
             finishReason: $data['finish_reason'] ?? '',
@@ -60,7 +21,7 @@ class CohereV2Driver extends OpenAIDriver
         );
     }
 
-    public function toPartialLLMResponse(array|null $data) : ?PartialLLMResponse {
+    public function fromStreamResponse(array|null $data) : ?PartialLLMResponse {
         if (empty($data)) {
             return null;
         }
@@ -75,7 +36,7 @@ class CohereV2Driver extends OpenAIDriver
         );
     }
 
-    public function getStreamData(string $data): string|bool {
+    public function fromStreamData(string $data): string|bool {
         if (!str_starts_with($data, 'data:')) {
             return '';
         }
@@ -87,35 +48,6 @@ class CohereV2Driver extends OpenAIDriver
     }
 
     // OVERRIDES - HELPERS ///////////////////////////////////
-
-    protected function applyMode(
-        array $request,
-        Mode $mode,
-        array $tools,
-        string|array $toolChoice,
-        array $responseFormat
-    ) : array {
-        switch($mode) {
-            case Mode::Json:
-                $request['response_format'] = $responseFormat;
-                break;
-            case Mode::JsonSchema:
-                $request['response_format'] = [
-                    'type' => 'json_object',
-                    'schema' => $responseFormat['json_schema']['schema'],
-                ];
-                break;
-        }
-        return $request;
-    }
-
-    protected function removeDisallowedEntries(array $jsonSchema) : array {
-        return Arrays::removeRecursively($jsonSchema, [
-            'x-title',
-            'x-php-class',
-            'additionalProperties',
-        ]);
-    }
 
     private function makeContent(array $data): string {
         $contentMsg = $data['message']['content'][0]['text'] ?? '';
@@ -144,7 +76,7 @@ class CohereV2Driver extends OpenAIDriver
         if (!isset($data['id'])) {
             return null;
         }
-        return ToolCall::fromArray($data['function'] ?? [])->withId($data['id'] ?? '');
+        return ToolCall::fromArray($data['function'] ?? [])?->withId($data['id'] ?? '');
     }
 
     private function makeContentDelta(array $data): string {
@@ -167,11 +99,11 @@ class CohereV2Driver extends OpenAIDriver
     private function makeUsage(array $data) : Usage {
         return new Usage(
             inputTokens: $data['usage']['billed_units']['input_tokens']
-                ?? $data['delta']['usage']['billed_units']['input_tokens']
-                ?? 0,
+            ?? $data['delta']['usage']['billed_units']['input_tokens']
+            ?? 0,
             outputTokens: $data['usage']['billed_units']['output_tokens']
-                ?? $data['delta']['usage']['billed_units']['output_tokens']
-                ?? 0,
+            ?? $data['delta']['usage']['billed_units']['output_tokens']
+            ?? 0,
             cacheWriteTokens: 0,
             cacheReadTokens: 0,
             reasoningTokens: 0,

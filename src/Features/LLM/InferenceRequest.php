@@ -54,6 +54,10 @@ class InferenceRequest
         return $this->model;
     }
 
+    public function isStream() : bool {
+        return $this->options['stream'] ?? false;
+    }
+
     public function withModel(string $model) : self {
         $this->model = $model;
         return $this;

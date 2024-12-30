@@ -1,14 +1,14 @@
 <?php
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+
+namespace Cognesy\Instructor\Features\LLM\Drivers\Mistral;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Instructor\Utils\Arrays;
 
-class MistralDriver extends OpenAIDriver
+class MistralRequestAdapter extends OpenAIRequestAdapter
 {
-    // REQUEST //////////////////////////////////////////////
-
-    public function getRequestBody(
+    public function toRequestBody(
         array $messages = [],
         string $model = '',
         array $tools = [],

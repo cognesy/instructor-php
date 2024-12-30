@@ -1,10 +1,11 @@
 <?php
 
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+namespace Cognesy\Instructor\Features\LLM\Drivers\GeminiOAI;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatible\OpenAICompatibleRequestAdapter;
 
-class GeminiOAIDriver extends OpenAICompatibleDriver
+class GeminiOAIRequestAdapter extends OpenAICompatibleRequestAdapter
 {
     protected function applyMode(
         array $request,

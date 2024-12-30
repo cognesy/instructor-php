@@ -43,7 +43,7 @@ class InferenceStream
 
         $this->stream = $this->response->streamContents();
         $this->reader = new EventStreamReader(
-            parser: $this->driver->getStreamData(...),
+            parser: $this->driver->fromStreamData(...),
             events: $this->events,
         );
     }
@@ -122,7 +122,7 @@ class InferenceStream
                 continue;
             }
             $data = Json::decode($streamEvent, []);
-            $partialResponse = $this->driver->toPartialLLMResponse($data);
+            $partialResponse = $this->driver->fromStreamResponse($data);
             if ($partialResponse === null) {
                 continue;
             }

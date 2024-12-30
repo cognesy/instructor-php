@@ -1,6 +1,18 @@
 <?php
 namespace Cognesy\Instructor\Utils\Messages;
 
+/**
+ * Script represents a complex message sequence with multiple sections and messages.
+ * It is used to interact with chat-type language models to provide them instructions
+ * and replay the history of interaction.
+ *
+ * Think of it like a script in a play, where each section is a scene, and messages
+ * are dialogues or stage directions.
+ *
+ * Script provides various convenience methods to manipulate the sequence of messages,
+ * such as adding, removing, reordering, transforming, and converting sections and
+ * individual messages.
+ */
 class Script {
     use Traits\Script\HandlesAccess;
     use Traits\Script\HandlesParameters;

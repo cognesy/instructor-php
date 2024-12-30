@@ -8,20 +8,20 @@ use Cognesy\Instructor\Utils\Messages\Messages;
 trait HandlesHeaderFooter
 {
     public function header() : Messages {
-        return $this->header->toMergedPerRole();
+        return $this->header;
     }
 
     public function footer() : Messages {
-        return $this->footer->toMergedPerRole();
+        return $this->footer;
     }
 
-    public function withHeader(string|array|Message $message) : static {
-        $this->header->setMessage($message);
+    public function withHeader(string|array|Message|Messages $message) : static {
+        $this->header->withMessages(Messages::fromAny($message));
         return $this;
     }
 
-    public function withFooter(string|array|Message $message) : static {
-        $this->footer->setMessage($message);
+    public function withFooter(string|array|Message|Messages $message) : static {
+        $this->footer->withMessages(Messages::fromAny($message));
         return $this;
     }
 }

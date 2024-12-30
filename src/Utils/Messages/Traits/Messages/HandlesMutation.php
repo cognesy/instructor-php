@@ -6,11 +6,19 @@ use Cognesy\Instructor\Utils\Messages\Messages;
 
 trait HandlesMutation
 {
-    public function setMessage(string|array|Message $message) : static {
+    public function withMessage(string|array|Message $message) : static {
         $this->messages = match (true) {
             is_string($message) => [Message::fromString($message)],
             is_array($message) => [Message::fromArray($message)],
             default => [$message],
+        };
+        return $this;
+    }
+
+    public function withMessages(array|Messages $messages) : static {
+        $this->messages = match (true) {
+            $messages instanceof Messages => $messages->messages,
+            default => Messages::fromAnyArray($messages)->messages,
         };
         return $this;
     }

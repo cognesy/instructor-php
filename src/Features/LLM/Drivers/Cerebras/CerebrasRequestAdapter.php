@@ -1,12 +1,13 @@
 <?php
 
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+namespace Cognesy\Instructor\Features\LLM\Drivers\Cerebras;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatible\OpenAICompatibleRequestAdapter;
 
-class CerebrasDriver extends OpenAICompatibleDriver
+class CerebrasRequestAdapter extends OpenAICompatibleRequestAdapter
 {
-    public function getRequestBody(
+    public function toRequestBody(
         array $messages = [],
         string $model = '',
         array $tools = [],
@@ -15,7 +16,7 @@ class CerebrasDriver extends OpenAICompatibleDriver
         array $options = [],
         Mode $mode = Mode::Text,
     ) : array {
-        $body = parent::getRequestBody($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
+        $body = parent::toRequestBody($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
         $body['max_completion_tokens'] = $body['max_tokens'] ?? -1;
         unset($body['max_tokens']);
         return $body;

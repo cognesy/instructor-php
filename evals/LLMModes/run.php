@@ -44,10 +44,11 @@ $data = new InferenceData(
     ),
 );
 
-Debug::enable();
+//Debug::enable();
 
 $experiment = new Experiment(
-    cases: InferenceCases::only(['deepseek'], [Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Tools, Mode::Text], [false]),
+    //cases: InferenceCases::only(['cerebras'], [Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Tools, Mode::Text], [true]),
+    cases: InferenceCases::all(),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(

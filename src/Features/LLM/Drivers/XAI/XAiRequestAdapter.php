@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+namespace Cognesy\Instructor\Features\LLM\Drivers\XAI;
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatible\OpenAICompatibleRequestAdapter;
 
-class XAiDriver extends OpenAICompatibleDriver
+class XAiRequestAdapter extends OpenAICompatibleRequestAdapter
 {
     protected function toNativeToolCall(array $message) : array {
         return [

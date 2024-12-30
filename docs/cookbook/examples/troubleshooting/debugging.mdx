@@ -22,7 +22,6 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
 
 class User {
@@ -67,8 +66,7 @@ assert($user2->age === 21);
 
 // CASE 2 - forcing API error via empty LLM config
 
-$driver = new OpenAIDriver(new LLMConfig());
-$instructor = (new Instructor)->withDriver($driver);
+$instructor = (new Instructor)->withLLMConfig(new LLMConfig());
 
 echo "\n### CASE 2 - Debugging exception\n\n";
 try {

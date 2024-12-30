@@ -13,15 +13,13 @@ trait HandlesMutation
         return $this;
     }
 
-    public function setMessages(Messages $messages) : static {
+    public function withMessages(Messages $messages) : static {
         $this->messages = $messages;
         return $this;
     }
 
-    public function prependMessageIfEmpty(array|Message $message) : static {
-        if ($this->messages->isEmpty()) {
-            $this->prependMessage($message);
-        }
+    public function prependMessage(array|Message $message) : static {
+        $this->messages->prependMessages($message);
         return $this;
     }
 
@@ -32,8 +30,10 @@ trait HandlesMutation
         return $this;
     }
 
-    public function prependMessage(array|Message $message) : static {
-        $this->messages->prependMessages($message);
+    public function prependMessageIfEmpty(array|Message $message) : static {
+        if ($this->messages->isEmpty()) {
+            $this->prependMessage($message);
+        }
         return $this;
     }
 
@@ -71,8 +71,13 @@ trait HandlesMutation
         return $this;
     }
 
-    public function copyFrom(Section $section) : static {
-        $this->setMessages($section->messages());
+    public function copyFrom(Section $section, bool $withMetadata = true) : static {
+        $this->withMessages($section->messages());
+        $this->withHeader($section->header());
+        $this->withFooter($section->footer());
+        if ($withMetadata) {
+            $this->withMetadata($section->metadata());
+        }
         return $this;
     }
 }

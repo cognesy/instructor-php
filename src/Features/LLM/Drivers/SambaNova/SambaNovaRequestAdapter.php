@@ -1,10 +1,11 @@
 <?php
 
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+namespace Cognesy\Instructor\Features\LLM\Drivers\SambaNova;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatible\OpenAICompatibleRequestAdapter;
 
-class SambaNovaDriver extends OpenAICompatibleDriver
+class SambaNovaRequestAdapter extends OpenAICompatibleRequestAdapter
 {
     protected function applyMode(
         array $request,

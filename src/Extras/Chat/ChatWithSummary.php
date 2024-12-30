@@ -96,19 +96,11 @@ class ChatWithSummary
         $summary = $this->makeSummary($this->script, $this->maxSummaryTokens);
         $this->summaryTokens = Tokenizer::tokenCount($summary);
         $this->script->section(self::SECTION_BUFFER)->clear();
-        $this->script->section(self::SECTION_SUMMARY)->setMessages(Messages::fromString($summary));
+        $this->script->section(self::SECTION_SUMMARY)->withMessages(Messages::fromString($summary));
         return $this;
     }
 
     // INTERNAL ////////////////////////////////////////////////
-
-    protected function makeSummary(Script $script, int $tokens) : string {
-        $messages = $script->select([self::SECTION_SUMMARY, self::SECTION_BUFFER])->toMessages();
-        if ($messages->isEmpty()) {
-            return '';
-        }
-        return $this->summarizer->summarize($messages, $tokens);
-    }
 
     protected function overflowToBuffer(Script $script, int $tokens) : Script {
         if ($script->isEmpty()) {
@@ -138,5 +130,13 @@ class ChatWithSummary
         $newScript->section(self::SECTION_BUFFER)->appendMessages($overflow->reversed());
         $newScript->section(self::SECTION_SUMMARY)->copyFrom($script->section(self::SECTION_SUMMARY));
         return $newScript;
+    }
+
+    protected function makeSummary(Script $script, int $tokens) : string {
+        $messages = $script->select([self::SECTION_SUMMARY, self::SECTION_BUFFER])->toMessages();
+        if ($messages->isEmpty()) {
+            return '';
+        }
+        return $this->summarizer->summarize($messages, $tokens);
     }
 }

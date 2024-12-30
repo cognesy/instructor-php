@@ -147,7 +147,7 @@
             "pages": [
                 "cookbook/examples/advanced/context_cache_llm",
                 "cookbook/examples/advanced/context_cache",
-                "cookbook/examples/advanced/custom_client",
+                "cookbook/examples/advanced/custom_llm",
                 "cookbook/examples/advanced/custom_prompts",
                 "cookbook/examples/advanced/structured_input",
                 "cookbook/examples/advanced/function_calls",

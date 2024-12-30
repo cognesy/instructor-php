@@ -79,7 +79,7 @@ class InferenceResponse
     private function makeLLMResponse() : LLMResponse {
         $content = $this->getResponseContent();
         $data = Json::decode($content) ?? [];
-        $response = $this->driver->toLLMResponse($data);
+        $response = $this->driver->fromResponse($data);
         $this->events->dispatch(new LLMResponseReceived($response));
         return $response;
     }

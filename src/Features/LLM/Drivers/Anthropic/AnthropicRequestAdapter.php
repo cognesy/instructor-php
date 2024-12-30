@@ -1,61 +1,23 @@
 <?php
-namespace Cognesy\Instructor\Features\LLM\Drivers;
+
+namespace Cognesy\Instructor\Features\LLM\Drivers\Anthropic;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
-use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Features\Http\HttpClient;
-use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Features\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\ToolCall;
-use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
-use Cognesy\Instructor\Features\LLM\InferenceRequest;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Messages\Messages;
 use Cognesy\Instructor\Utils\Str;
 
-class AnthropicDriver implements CanHandleInference
+class AnthropicRequestAdapter implements ProviderRequestAdapter
 {
     private bool $parallelToolCalls = false;
 
     public function __construct(
         protected LLMConfig $config,
-        protected ?CanHandleHttp $httpClient = null,
-        protected ?EventDispatcher $events = null,
-    ) {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
-    }
+    ) {}
 
-    // REQUEST //////////////////////////////////////////////
-
-    public function handle(InferenceRequest $request) : CanAccessResponse {
-        $request = $request->withCacheApplied();
-        return $this->httpClient->handle(
-            url: $this->getEndpointUrl($request),
-            headers: $this->getRequestHeaders(),
-            body: $this->getRequestBody(
-                $request->messages(),
-                $request->model(),
-                $request->tools(),
-                $request->toolChoice(),
-                $request->responseFormat(),
-                $request->options(),
-                $request->mode(),
-            ),
-            streaming: $request->options()['stream'] ?? false,
-        );
-    }
-
-    public function getEndpointUrl(InferenceRequest $request) : string {
-        return "{$this->config->apiUrl}{$this->config->endpoint}";
-    }
-
-    public function getRequestHeaders() : array {
+    public function toHeaders(): array {
         return array_filter([
             'x-api-key' => $this->config->apiKey,
             'content-type' => 'application/json',
@@ -65,15 +27,19 @@ class AnthropicDriver implements CanHandleInference
         ]);
     }
 
-    public function getRequestBody(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
-    ) : array {
+    public function toUrl(string $model = '', bool $stream = false): string {
+        return "{$this->config->apiUrl}{$this->config->endpoint}";
+    }
+
+    public function toRequestBody(
+        array $messages,
+        string $model,
+        array $tools,
+        array|string $toolChoice,
+        array $responseFormat,
+        array $options,
+        Mode $mode
+    ): array {
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
         unset($options['parallel_tool_calls']);
 
@@ -99,45 +65,7 @@ class AnthropicDriver implements CanHandleInference
         return $request;
     }
 
-    // RESPONSE /////////////////////////////////////////////
-
-    public function toLLMResponse(array $data): ?LLMResponse {
-        return new LLMResponse(
-            content: $this->makeContent($data),
-            finishReason: $data['stop_reason'] ?? '',
-            toolCalls: $this->makeToolCalls($data),
-            usage: $this->makeUsage($data),
-            responseData: $data,
-        );
-    }
-
-    public function toPartialLLMResponse(array $data) : ?PartialLLMResponse {
-        if (empty($data)) {
-            return null;
-        }
-        return new PartialLLMResponse(
-            contentDelta: $this->makeContentDelta($data),
-            toolId: $data['content_block']['id'] ?? '',
-            toolName: $data['content_block']['name'] ?? '',
-            toolArgs: $data['delta']['partial_json'] ?? '',
-            finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
-            usage: $this->makeUsage($data),
-            responseData: $data,
-        );
-    }
-
-    public function getStreamData(string $data): string|bool {
-        if (!str_starts_with($data, 'data:')) {
-            return '';
-        }
-        $data = trim(substr($data, 5));
-        return match(true) {
-            $data === 'event: message_stop' => false,
-            default => $data,
-        };
-    }
-
-    // PRIVATE //////////////////////////////////////////////
+    // INTERNAL /////////////////////////////////////////////
 
     private function toTools(array $tools) : array {
         $result = [];
@@ -274,63 +202,5 @@ class AnthropicDriver implements CanHandleInference
                 //'is_error' => false,
             ]]
         ];
-    }
-
-    private function makeToolCalls(array $data) : ToolCalls {
-        return ToolCalls::fromMapper(array_map(
-            callback: fn(array $call) => $call,
-            array: array_filter(
-                array: $data['content'] ?? [],
-                callback: fn($part) => 'tool_use' === ($part['type'] ?? ''))
-        ), fn($call) => ToolCall::fromArray([
-            'id' => $call['id'] ?? '',
-            'name' => $call['name'] ?? '',
-            'arguments' => $call['input'] ?? ''
-        ]));
-    }
-
-    private function makeContent(array $data) : string {
-        return $data['content'][0]['text'] ?? Json::encode($data['content'][0]['input']) ?? '';
-    }
-
-    private function makeContentDelta(array $data) : string {
-        return $data['delta']['text'] ?? $data['delta']['partial_json'] ?? '';
-    }
-
-    private function setCacheMarker(array $messages): array {
-        $lastIndex = count($messages) - 1;
-        $lastMessage = $messages[$lastIndex];
-
-        if (is_array($lastMessage['content'])) {
-            $subIndex = count($lastMessage['content']) - 1;
-            $lastMessage['content'][$subIndex]['cache_control'] = ["type" => "ephemeral"];
-        } else {
-            $lastMessage['content'] = [[
-                'type' => $lastMessage['type'] ?? 'text',
-                'text' => $lastMessage['content'] ?? '',
-                'cache_control' => ["type" => "ephemeral"],
-            ]];
-        }
-
-        $messages[$lastIndex] = $lastMessage;
-        return $messages;
-    }
-
-    private function makeUsage(array $data) : Usage {
-        return new Usage(
-            inputTokens: $data['usage']['input_tokens']
-                ?? $data['message']['usage']['input_tokens']
-                ?? 0,
-            outputTokens: $data['usage']['output_tokens']
-                ?? $data['message']['usage']['output_tokens']
-                ?? 0,
-            cacheWriteTokens: $data['usage']['cache_creation_input_tokens']
-                ?? $data['message']['usage']['cache_creation_input_tokens']
-                ?? 0,
-            cacheReadTokens: $data['usage']['cache_read_input_tokens']
-                ?? $data['message']['usage']['cache_read_input_tokens']
-                ?? 0,
-            reasoningTokens: 0,
-        );
     }
 }

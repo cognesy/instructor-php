@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Traits;
 use Cognesy\Instructor\Features\Core\Data\Request;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
+use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\LLM;
 use Cognesy\Instructor\Instructor;
 use JetBrains\PhpStorm\Deprecated;
@@ -31,6 +32,11 @@ trait HandlesRequest
 
     public function withLLM(LLM $llm) : static {
         $this->llm = $llm;
+        return $this;
+    }
+
+    public function withLLMConfig(LLMConfig $config) : self {
+        $this->llm->withConfig($config);
         return $this;
     }
 
