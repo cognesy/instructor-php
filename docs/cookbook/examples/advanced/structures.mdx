@@ -42,6 +42,7 @@ $structure = Structure::define('person', [
     Field::int('age', 'Age of the person')->validIf(
         fn($value) => $value > 0, "Age has to be positive number"
     ),
+    Field::option('gender', ['male', 'female'], 'Gender of the person')->optional(),
     Field::structure('address', [
         Field::string('street', 'Street name')->optional(),
         Field::string('city', 'City name'),
@@ -57,7 +58,7 @@ $structure = Structure::define('person', [
 
 $text = <<<TEXT
     Jane Doe lives in Springfield, 50210. She is 25 years old and works as manager at McDonald's.
-    McDonald's in Ney York is located at 456 Elm St, NYC, 12345. His favourite books are "The Lord
+    McDonald's in Ney York is located at 456 Elm St, NYC, 12345. Her favourite books are "The Lord
     of the Rings" and "The Hobbit" by JRR Tolkien.
     TEXT;
 
@@ -70,6 +71,7 @@ $person = (new Instructor)->respond(
 print("OUTPUT:\n");
 print("Name: " . $person->name . "\n");
 print("Age: " . $person->age . "\n");
+print("Gender: " . $person->gender . "\n");
 print("Address / city: " . $person->address->city . "\n");
 print("Address / ZIP: " . $person->address->zip . "\n");
 print("Role: " . $person->role->value . "\n");
