@@ -176,6 +176,7 @@
                 "cookbook/examples/api_support/azure_openai",
                 "cookbook/examples/api_support/cerebras",
                 "cookbook/examples/api_support/cohere",
+                "cookbook/examples/api_support/deepseek",
                 "cookbook/examples/api_support/fireworks",
                 "cookbook/examples/api_support/google_gemini",
                 "cookbook/examples/api_support/groq",
