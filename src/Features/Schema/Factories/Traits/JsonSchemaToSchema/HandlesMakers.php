@@ -6,6 +6,7 @@ use Cognesy\Instructor\Features\Schema\Data\Schema\ArraySchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\OptionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
@@ -48,8 +49,11 @@ trait HandlesMakers
      * Create enum or scalar property schema
      */
     private function makeEnumOrScalarProperty(string $name, array $jsonSchema) : Schema {
-        if (isset($jsonSchema['enum'])) {
+        if (isset($jsonSchema['enum']) && !empty($jsonSchema['x-php-class'])) {
             return $this->makeEnumProperty($name, $jsonSchema);
+        }
+        if (isset($jsonSchema['enum'])) {
+            return $this->makeOptionProperty($name, $jsonSchema);
         }
         return match (true) {
             in_array($jsonSchema['type'], TypeDetails::JSON_SCALAR_TYPES) => $this->makeScalarProperty($name, $jsonSchema),
@@ -64,9 +68,9 @@ trait HandlesMakers
         $factory = new TypeDetailsFactory();
         $type = $factory->scalarType(TypeDetails::toPhpType($jsonSchema['type']));
         return new ScalarSchema(
+            type: $type,
             name: $name,
             description: $jsonSchema['description'] ?? '',
-            type: $type
         );
     }
 
@@ -83,6 +87,24 @@ trait HandlesMakers
         $factory = new TypeDetailsFactory();
         $type = $factory->enumType($class, TypeDetails::toPhpType($jsonSchema['type']), $jsonSchema['enum']);
         return new EnumSchema(type: $type, name: $name, description: $jsonSchema['description'] ?? '');
+    }
+
+    /**
+     * Create option property schema
+     */
+    private function makeOptionProperty(string $name, array $jsonSchema) : OptionSchema {
+        if (!$jsonSchema['type'] === TypeDetails::JSON_STRING) {
+            throw new \Exception('Option type must be string');
+        }
+        if (!isset($jsonSchema['enum'])) {
+            throw new \Exception('Option must have enum field');
+        }
+        $factory = new TypeDetailsFactory();
+        return new OptionSchema(
+            type: $factory->optionType($jsonSchema['enum']),
+            name: $name,
+            description: $jsonSchema['description'] ?? '',
+        );
     }
 
     /**

@@ -8,6 +8,7 @@ use Cognesy\Instructor\Features\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\OptionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 
@@ -22,4 +23,5 @@ interface CanVisitSchema
     public function visitEnumSchema(EnumSchema $schema): void;
     public function visitScalarSchema(ScalarSchema $schema): void;
     public function visitObjectRefSchema(ObjectRefSchema $schema): void;
+    public function visitOptionSchema(OptionSchema $param) : void;
 }

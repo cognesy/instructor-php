@@ -115,6 +115,14 @@ trait HandlesBuilders
         );
     }
 
+    public function optionType(array $values) : TypeDetails {
+        return new TypeDetails(
+            type: TypeDetails::PHP_STRING,
+            class: null,
+            enumValues: $values,
+        );
+    }
+
     // INTERNAL ///////////////////////////////////////////////////////////////////////////////
 
     /**

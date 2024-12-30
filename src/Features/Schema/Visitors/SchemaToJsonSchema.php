@@ -9,6 +9,7 @@ use Cognesy\Instructor\Features\Schema\Data\Schema\CollectionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\EnumSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectRefSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Instructor\Features\Schema\Data\Schema\OptionSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use DateTime;
@@ -97,6 +98,14 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
+    public function visitOptionSchema(OptionSchema $param): void {
+        $this->result = array_filter([
+            'description' => $schema->description ?? '',
+            'type' => 'string',
+            'enum' => $schema->typeDetails->enumValues ?? [],
+        ]);
+    }
+
     public function visitScalarSchema(ScalarSchema $schema): void {
         $this->result = array_filter([
             'type' => $schema->typeDetails->jsonType(),
@@ -141,5 +150,4 @@ class SchemaToJsonSchema implements CanVisitSchema
         $classSegments = explode('\\', $fqcn);
         return array_pop($classSegments);
     }
-
 }

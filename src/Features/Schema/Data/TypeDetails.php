@@ -18,6 +18,7 @@ class TypeDetails
      * @param TypeDetails|null $nestedType for arrays OR null
      * @param string|null $enumType for enums OR null
      * @param array|null $enumValues for enums OR null
+     * @param string|null $docString
      */
     public function __construct(
         public string $type,

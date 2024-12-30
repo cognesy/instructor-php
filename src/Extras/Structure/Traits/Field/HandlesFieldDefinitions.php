@@ -42,6 +42,12 @@ trait HandlesFieldDefinitions
         return new Field($name, $description, $type);
     }
 
+    static public function option(string $name, array $values, string $description = '') : self {
+        $factory = new TypeDetailsFactory();
+        $type = $factory->optionType($values);
+        return new Field($name, $description, $type);
+    }
+
     static public function object(string $name, string $class, string $description = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->objectType($class);

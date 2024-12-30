@@ -32,19 +32,21 @@ it('creates structure', function () {
         Field::float('floatProperty', 'Float property'),
         Field::datetime('datetimeProperty', 'Datetime property'),
         Field::enum('enumProperty', TestEnum::class, 'Enum property'),
+        Field::option('optionProperty', ['A', 'B'], 'Option property'),
         Field::object('objectProperty', TestNestedObject::class, 'Object property'),
         Field::array('arrayProperty', 'Array property'),
         Field::collection('collectionProperty', TypeDetails::PHP_STRING, 'Array property'),
         Field::collection('collectionObjectProperty', TestNestedObject::class, 'Array object property'),
         Field::collection('collectionEnumProperty', TestEnum::class, 'Array enum property'),
     ]);
-    expect($structure->fields())->toHaveCount(11);
+    expect($structure->fields())->toHaveCount(12);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('boolProperty')->name())->toBe('boolProperty');
     expect($structure->field('floatProperty')->name())->toBe('floatProperty');
     expect($structure->field('datetimeProperty')->name())->toBe('datetimeProperty');
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
+    expect($structure->field('optionProperty')->name())->toBe('optionProperty');
     expect($structure->field('objectProperty')->name())->toBe('objectProperty');
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
@@ -60,6 +62,7 @@ it('serializes structure', function() {
         Field::float('floatProperty', 'Float property'),
         Field::datetime('datetimeProperty', 'Datetime property'),
         Field::enum('enumProperty', TestEnum::class, 'Enum property'),
+        Field::option('optionProperty', ['A', 'B'], 'Option property'),
         Field::object('objectProperty', TestNestedObject::class, 'Object property'),
         Field::array('arrayProperty', 'Array property'),
         Field::collection('collectionProperty', TypeDetails::PHP_STRING, 'Collection property'),
@@ -73,6 +76,7 @@ it('serializes structure', function() {
     $structure->floatProperty = 1.1;
     $structure->datetimeProperty = new DateTime('2020-10-01');
     $structure->enumProperty = TestEnum::A;
+    $structure->optionProperty = 'A';
     $structure->objectProperty = new TestNestedObject();
     $structure->arrayProperty = ['a', 'b', 1];
     $structure->collectionProperty = ['a', 'b', 'c'];
@@ -80,13 +84,14 @@ it('serializes structure', function() {
     $structure->collectionEnumProperty = [TestEnum::A, TestEnum::B];
 
     $data = $structure->toArray();
-    expect($data)->toHaveCount(11);
+    expect($data)->toHaveCount(12);
     expect($data['stringProperty'])->toBe('string');
     expect($data['integerProperty'])->toBe(1);
     expect($data['boolProperty'])->toBe(true);
     expect($data['floatProperty'])->toBe(1.1);
     expect($data['datetimeProperty'])->toBe('2020-10-01 00:00:00');
     expect($data['enumProperty'])->toBe(TestEnum::A->value);
+    expect($data['optionProperty'])->toBe('A');
     expect($data['objectProperty'])->toBe([]);
     expect($data['arrayProperty'])->toBe(['a', 'b', 1]);
     expect($data['collectionProperty'])->toBe(['a', 'b', 'c']);
@@ -102,6 +107,7 @@ it('deserializes structure', function() {
         Field::bool('boolProperty', 'Boolean property'),
         Field::float('floatProperty', 'Float property'),
         Field::enum('enumProperty', TestEnum::class, 'Enum property'),
+        Field::option('optionProperty', ['A', 'B'], 'Option property'),
         Field::structure('structureProperty', [
             Field::string('stringProperty', 'String property'),
             Field::int('integerProperty', 'Integer property'),
@@ -120,6 +126,7 @@ it('deserializes structure', function() {
         'boolProperty' => true,
         'floatProperty' => 1.1,
         'enumProperty' => TestEnum::A->value,
+        'optionProperty' => 'A',
         'structureProperty' => [
             'stringProperty' => 'string',
             'integerProperty' => 1,
@@ -147,6 +154,7 @@ it('deserializes structure', function() {
     expect($structure->boolProperty)->toBe(true);
     expect($structure->floatProperty)->toBe(1.1);
     expect($structure->enumProperty)->toBe(TestEnum::A);
+    expect($structure->optionProperty)->toBe('A');
     expect($structure->structureProperty)->toBeInstanceOf(Structure::class);
     expect($structure->structureProperty->stringProperty)->toBe('string');
     expect($structure->structureProperty->integerProperty)->toBe(1);
@@ -213,6 +221,11 @@ it('creates structure from JSON Schema', function() {
                 'description' => 'Enum property',
                 'x-php-class' => 'Tests\Feature\Extras\TestEnum',
             ],
+            'optionProperty' => [
+                'type' => 'string',
+                'description' => 'Option property',
+                'enum' => ['A', 'B'],
+            ],
             'arrayProperty' => [
                 'type' => 'array',
                 'description' => 'Array property',
@@ -235,7 +248,7 @@ it('creates structure from JSON Schema', function() {
 
     $structure = StructureFactory::fromJsonSchema($jsonSchema);
 
-    expect($structure->fields())->toHaveCount(7);
+    expect($structure->fields())->toHaveCount(8);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('integerProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_INT);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
@@ -246,6 +259,8 @@ it('creates structure from JSON Schema', function() {
     expect($structure->field('floatProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_FLOAT);
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
     expect($structure->field('enumProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('optionProperty')->name())->toBe('optionProperty');
+    expect($structure->field('optionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
     expect($structure->field('arrayProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
@@ -262,11 +277,12 @@ it('creates structure from array', function() {
         'boolProperty' => true,
         'floatProperty' => 1.1,
         'enumProperty' => TestEnum::A->value,
+        'optionProperty' => 'A',
         'arrayProperty' => ['a', 'b', 1],
         'collectionProperty' => ['a', 'b', 1],
     ]);
 
-    expect($structure->fields())->toHaveCount(7);
+    expect($structure->fields())->toHaveCount(8);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
     expect($structure->field('integerProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_INT);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
@@ -277,6 +293,8 @@ it('creates structure from array', function() {
     expect($structure->field('floatProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_FLOAT);
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
     expect($structure->field('enumProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('optionProperty')->name())->toBe('optionProperty');
+    expect($structure->field('optionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
     expect($structure->field('arrayProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
