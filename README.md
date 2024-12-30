@@ -28,6 +28,7 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 - Validation of returned data
 - Automated retries in case of errors when LLM responds with invalid data
 - Integrate LLM support into your existing PHP code with minimal friction - no framework, no extensive code changes
+- Framework agnostic - use it with Laravel, Symfony, your custom framework, or - with no framework at all
 
 ### Flexible inputs
 
