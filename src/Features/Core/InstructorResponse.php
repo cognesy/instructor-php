@@ -29,7 +29,7 @@ class InstructorResponse
      * Executes the request and returns the response
      */
     public function get() : mixed {
-        if ($this->request->isStream()) {
+        if ($this->request->isStreamed()) {
             return $this->stream()->final();
         }
         $response = $this->getResponse();
@@ -51,7 +51,7 @@ class InstructorResponse
      */
     public function stream() : InstructorStream {
         // TODO: do we need this? cannot we just turn streaming on?
-        if (!$this->request->isStream()) {
+        if (!$this->request->isStreamed()) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
         $stream = $this->getStream();

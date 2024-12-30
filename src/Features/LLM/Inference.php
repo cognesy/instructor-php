@@ -171,7 +171,7 @@ class Inference
             response: $this->llm->handleInferenceRequest($request),
             driver: $this->llm->driver(),
             config: $this->llm->config(),
-            isStreamed: $request->isStream(),
+            isStreamed: $request->isStreamed(),
             events: $this->events,
         );
     }

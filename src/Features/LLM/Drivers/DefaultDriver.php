@@ -14,7 +14,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\InferenceRequest;
 
-class LLMDriver implements CanHandleInference {
+class DefaultDriver implements CanHandleInference {
     public function __construct(
         protected LLMConfig $config,
         protected ProviderRequestAdapter $requestAdapter,
@@ -29,7 +29,7 @@ class LLMDriver implements CanHandleInference {
     public function handle(InferenceRequest $request): CanAccessResponse {
         $request = $request->withCacheApplied();
         return $this->httpClient->handle(
-            url: $this->requestAdapter->toUrl($request->model(), $request->isStream()),
+            url: $this->requestAdapter->toUrl($request->model(), $request->isStreamed()),
             headers: $this->requestAdapter->toHeaders(),
             body: $this->requestAdapter->toRequestBody(
                 $request->messages(),
@@ -40,7 +40,7 @@ class LLMDriver implements CanHandleInference {
                 $request->options(),
                 $request->mode(),
             ),
-            streaming: $request->isStream(),
+            streaming: $request->isStreamed(),
         );
     }
 

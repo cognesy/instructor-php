@@ -20,7 +20,7 @@ use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2ResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiRequestAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiOAI\GeminiOAIRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\LLMDriver;
+use Cognesy\Instructor\Features\LLM\Drivers\DefaultDriver;
 use Cognesy\Instructor\Features\LLM\Drivers\Mistral\MistralRequestAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
@@ -194,17 +194,19 @@ class LLM
      */
     protected function makeInferenceDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
         return match ($config->providerType) {
-            LLMProviderType::Anthropic => new LLMDriver($config, new AnthropicRequestAdapter($config), new AnthropicResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Azure => new LLMDriver($config, new AzureOpenAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Cerebras => new LLMDriver($config, new CerebrasRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::CohereV1 => new LLMDriver($config, new CohereV1RequestAdapter($config), new CohereV1ResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::CohereV2 => new LLMDriver($config, new CohereV2RequestAdapter($config), new CohereV2ResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Gemini => new LLMDriver($config, new GeminiRequestAdapter($config), new GeminiResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::GeminiOAI => new LLMDriver($config, new GeminiOAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Mistral => new LLMDriver($config, new MistralRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::OpenAI => new LLMDriver($config, new OpenAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::SambaNova => new LLMDriver($config, new SambaNovaRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::XAi => new LLMDriver($config, new XAiRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            // Tailored drivers
+            LLMProviderType::Anthropic => new DefaultDriver($config, new AnthropicRequestAdapter($config), new AnthropicResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::Azure => new DefaultDriver($config, new AzureOpenAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::Cerebras => new DefaultDriver($config, new CerebrasRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::CohereV1 => new DefaultDriver($config, new CohereV1RequestAdapter($config), new CohereV1ResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::CohereV2 => new DefaultDriver($config, new CohereV2RequestAdapter($config), new CohereV2ResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::Gemini => new DefaultDriver($config, new GeminiRequestAdapter($config), new GeminiResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::GeminiOAI => new DefaultDriver($config, new GeminiOAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::Mistral => new DefaultDriver($config, new MistralRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::OpenAI => new DefaultDriver($config, new OpenAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::SambaNova => new DefaultDriver($config, new SambaNovaRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::XAi => new DefaultDriver($config, new XAiRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            // OpenAI compatible driver for generic OAI providers
             LLMProviderType::A21,
             LLMProviderType::DeepSeek,
             LLMProviderType::Fireworks,
@@ -212,34 +214,8 @@ class LLM
             LLMProviderType::Ollama,
             LLMProviderType::OpenAICompatible,
             LLMProviderType::OpenRouter,
-            LLMProviderType::Together => new LLMDriver($config, new OpenAICompatibleRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
+            LLMProviderType::Together => new DefaultDriver($config, new OpenAICompatibleRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
             default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
         };
     }
-
-//    #[Deprecated]
-//    protected function oldMakeInferenceDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
-//        return match ($config->providerType) {
-//            LLMProviderType::Anthropic => new AnthropicDriver($config, $httpClient, $this->events),
-//            LLMProviderType::Azure => new AzureOpenAIDriver($config, $httpClient, $this->events),
-//            LLMProviderType::Cerebras => new CerebrasDriver($config, $httpClient, $this->events),
-//            LLMProviderType::CohereV1 => new CohereV1Driver($config, $httpClient, $this->events),
-//            LLMProviderType::CohereV2 => new CohereV2Driver($config, $httpClient, $this->events),
-//            LLMProviderType::Gemini => new GeminiDriver($config, $httpClient, $this->events),
-//            LLMProviderType::GeminiOAI => new GeminiOAIDriver($config, $httpClient, $this->events),
-//            LLMProviderType::Mistral => new MistralDriver($config, $httpClient, $this->events),
-//            LLMProviderType::OpenAI => new OpenAIDriver($config, $httpClient, $this->events),
-//            LLMProviderType::SambaNova => new SambaNovaDriver($config, $httpClient, $this->events),
-//            LLMProviderType::XAi => new XAiDriver($config, $httpClient, $this->events),
-//            LLMProviderType::A21,
-//            LLMProviderType::DeepSeek,
-//            LLMProviderType::Fireworks,
-//            LLMProviderType::Groq,
-//            LLMProviderType::Ollama,
-//            LLMProviderType::OpenAICompatible,
-//            LLMProviderType::OpenRouter,
-//            LLMProviderType::Together => new OpenAICompatibleDriver($config, $httpClient, $this->events),
-//            default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
-//        };
-//    }
 }

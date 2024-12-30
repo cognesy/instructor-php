@@ -65,7 +65,7 @@ class Request
         ];
     }
 
-    public function isStream() : bool {
+    public function isStreamed() : bool {
         return $this->options['stream'] ?? false;
     }
 }
