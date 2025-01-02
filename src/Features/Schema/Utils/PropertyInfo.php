@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Features\Schema\Utils;
 
-use Cognesy\Instructor\Extras\Module\Signature\Attributes\InputField;
-use Cognesy\Instructor\Extras\Module\Signature\Attributes\OutputField;
+use Cognesy\Instructor\Experimental\Module\Signature\Attributes\InputField;
+use Cognesy\Instructor\Experimental\Module\Signature\Attributes\OutputField;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use ReflectionProperty;

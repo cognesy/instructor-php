@@ -2,22 +2,26 @@
 
 namespace Cognesy\Instructor\Features\LLM\Drivers\Anthropic;
 
+use Cognesy\Instructor\Features\LLM\Contracts\CanMapUsage;
 use Cognesy\Instructor\Features\LLM\Contracts\ProviderResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Utils\Json\Json;
 
 class AnthropicResponseAdapter implements ProviderResponseAdapter
 {
+    public function __construct(
+        protected CanMapUsage $usageFormat,
+    ) {}
+
     public function fromResponse(array $data): ?LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -32,7 +36,7 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
             finishReason: $data['delta']['stop_reason'] ?? $data['message']['stop_reason'] ?? '',
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -69,42 +73,5 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
             'name' => $call['name'] ?? '',
             'arguments' => $call['input'] ?? ''
         ]));
-    }
-
-    private function setCacheMarker(array $messages): array {
-        $lastIndex = count($messages) - 1;
-        $lastMessage = $messages[$lastIndex];
-
-        if (is_array($lastMessage['content'])) {
-            $subIndex = count($lastMessage['content']) - 1;
-            $lastMessage['content'][$subIndex]['cache_control'] = ["type" => "ephemeral"];
-        } else {
-            $lastMessage['content'] = [[
-                'type' => $lastMessage['type'] ?? 'text',
-                'text' => $lastMessage['content'] ?? '',
-                'cache_control' => ["type" => "ephemeral"],
-            ]];
-        }
-
-        $messages[$lastIndex] = $lastMessage;
-        return $messages;
-    }
-
-    private function makeUsage(array $data) : Usage {
-        return new Usage(
-            inputTokens: $data['usage']['input_tokens']
-            ?? $data['message']['usage']['input_tokens']
-            ?? 0,
-            outputTokens: $data['usage']['output_tokens']
-            ?? $data['message']['usage']['output_tokens']
-            ?? 0,
-            cacheWriteTokens: $data['usage']['cache_creation_input_tokens']
-            ?? $data['message']['usage']['cache_creation_input_tokens']
-            ?? 0,
-            cacheReadTokens: $data['usage']['cache_read_input_tokens']
-            ?? $data['message']['usage']['cache_read_input_tokens']
-            ?? 0,
-            reasoningTokens: 0,
-        );
     }
 }

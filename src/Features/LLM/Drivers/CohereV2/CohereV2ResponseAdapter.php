@@ -6,7 +6,6 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class CohereV2ResponseAdapter extends OpenAIResponseAdapter
@@ -16,7 +15,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
             content: $this->makeContent($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -31,7 +30,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
             toolArgs: $data['delta']['message']['tool_calls']['function']['arguments'] ?? '',
             finishReason: $data['delta']['finish_reason'] ?? '',
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -94,19 +93,5 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 
     private function normalizeContent(array|string $content) : string {
         return is_array($content) ? $content['text'] : $content;
-    }
-
-    private function makeUsage(array $data) : Usage {
-        return new Usage(
-            inputTokens: $data['usage']['billed_units']['input_tokens']
-            ?? $data['delta']['usage']['billed_units']['input_tokens']
-            ?? 0,
-            outputTokens: $data['usage']['billed_units']['output_tokens']
-            ?? $data['delta']['usage']['billed_units']['output_tokens']
-            ?? 0,
-            cacheWriteTokens: 0,
-            cacheReadTokens: 0,
-            reasoningTokens: 0,
-        );
     }
 }

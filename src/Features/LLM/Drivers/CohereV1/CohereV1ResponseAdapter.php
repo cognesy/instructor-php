@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Features\LLM\Drivers\CohereV1;
 
+use Cognesy\Instructor\Features\LLM\Contracts\CanMapUsage;
 use Cognesy\Instructor\Features\LLM\Contracts\ProviderResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
@@ -12,13 +13,17 @@ use Cognesy\Instructor\Utils\Json\Json;
 
 class CohereV1ResponseAdapter implements ProviderResponseAdapter
 {
+    public function __construct(
+        protected CanMapUsage $usageFormat,
+    ) {}
+
     public function fromResponse(array $data): ?LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
             //: $this->map($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -30,7 +35,7 @@ class CohereV1ResponseAdapter implements ProviderResponseAdapter
             toolName: $this->makeToolNameDelta($data),
             toolArgs: $this->makeToolArgsDelta($data),
             finishReason: $data['response']['finish_reason'] ?? $data['delta']['finish_reason'] ?? '',
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -90,21 +95,5 @@ class CohereV1ResponseAdapter implements ProviderResponseAdapter
 
     private function isStreamChunk(array $data) : bool {
         return in_array(($data['event_type'] ?? ''), ['text-generation', 'tool-calls-chunk']);
-    }
-
-    private function makeUsage(array $data) : Usage {
-        return new Usage(
-            inputTokens: $data['meta']['tokens']['input_tokens']
-            ?? $data['response']['meta']['tokens']['input_tokens']
-            ?? $data['delta']['tokens']['input_tokens']
-            ?? 0,
-            outputTokens: $data['meta']['tokens']['output_tokens']
-            ?? $data['response']['meta']['tokens']['output_tokens']
-            ?? $data['delta']['tokens']['input_tokens']
-            ?? 0,
-            cacheWriteTokens: 0,
-            cacheReadTokens: 0,
-            reasoningTokens: 0,
-        );
     }
 }

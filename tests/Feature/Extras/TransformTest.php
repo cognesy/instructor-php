@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Extras\Module\Modules\CallClosure;
+use Cognesy\Instructor\Experimental\Module\Modules\CallClosure;
 use Cognesy\Instructor\Utils\Profiler\Profiler;
 use Tests\Examples\Module\TestModule;
 

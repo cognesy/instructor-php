@@ -9,7 +9,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
-use Cognesy\Instructor\Extras\Module\Signature\Contracts\HasOutputSchema;
+use Cognesy\Instructor\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Features\Core\Data\Request;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;

@@ -113,8 +113,8 @@ class InferenceCases
 
     private function streamingModes() : array {
         return [
-            false,
             true,
+            false,
         ];
     }
 

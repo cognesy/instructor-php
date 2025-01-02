@@ -9,28 +9,9 @@ use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\HttpClient;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Drivers\Anthropic\AnthropicRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\Anthropic\AnthropicResponseAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\Azure\AzureOpenAIRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\Cerebras\CerebrasRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\CohereV1\CohereV1RequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\CohereV1\CohereV1ResponseAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2RequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2ResponseAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiResponseAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\GeminiOAI\GeminiOAIRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\DefaultDriver;
-use Cognesy\Instructor\Features\LLM\Drivers\Mistral\MistralRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAICompatible\OpenAICompatibleRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\SambaNova\SambaNovaRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Drivers\XAI\XAiRequestAdapter;
-use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
+use Cognesy\Instructor\Features\LLM\Drivers\InferenceDriverFactory;
 use Cognesy\Instructor\Utils\Debug\Debug;
 use Cognesy\Instructor\Utils\Settings;
-use InvalidArgumentException;
 
 /**
  * Class LLM
@@ -45,6 +26,7 @@ class LLM
     protected EventDispatcher $events;
     protected CanHandleHttp $httpClient;
     protected CanHandleInference $driver;
+    protected InferenceDriverFactory $driverFactory;
 
     /**
      * Constructor for initializing dependencies and configurations.
@@ -69,7 +51,9 @@ class LLM
             connection: $connection ?: Settings::get('llm', "defaultConnection")
         );
         $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
-        $this->driver = $driver ?? $this->makeInferenceDriver($this->config, $this->httpClient);
+
+        $this->driverFactory = new InferenceDriverFactory();
+        $this->driver = $driver ?? $this->driverFactory->make($this->config, $this->httpClient, $this->events);
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
@@ -95,7 +79,7 @@ class LLM
      */
     public function withConfig(LLMConfig $config): self {
         $this->config = $config;
-        $this->driver = $this->makeInferenceDriver($this->config, $this->httpClient);
+        $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
         return $this;
     }
 
@@ -111,7 +95,7 @@ class LLM
             return $this;
         }
         $this->config = LLMConfig::load($connection);
-        $this->driver = $this->makeInferenceDriver($this->config, $this->httpClient);
+        $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
         return $this;
     }
 
@@ -124,7 +108,7 @@ class LLM
      */
     public function withHttpClient(CanHandleHttp $httpClient): self {
         $this->httpClient = $httpClient;
-        $this->driver = $this->makeInferenceDriver($this->config, $this->httpClient);
+        $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
         return $this;
     }
 
@@ -179,43 +163,5 @@ class LLM
     public function handleInferenceRequest(InferenceRequest $request) : CanAccessResponse {
         $this->events->dispatch(new InferenceRequested($request));
         return $this->driver->handle($request);
-    }
-
-    // INTERNAL ////////////////////////////////////////////////////////////////
-
-    /**
-     * Creates and returns an appropriate driver instance based on the given configuration.
-     *
-     * @param LLMConfig $config Configuration object specifying the provider type and other necessary settings.
-     * @param CanHandleHttp $httpClient An HTTP client instance to handle HTTP requests.
-     *
-     * @return CanHandleInference A driver instance matching the specified provider type.
-     * @throws InvalidArgumentException If the provider type is not supported.
-     */
-    protected function makeInferenceDriver(LLMConfig $config, CanHandleHttp $httpClient): CanHandleInference {
-        return match ($config->providerType) {
-            // Tailored drivers
-            LLMProviderType::Anthropic => new DefaultDriver($config, new AnthropicRequestAdapter($config), new AnthropicResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Azure => new DefaultDriver($config, new AzureOpenAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Cerebras => new DefaultDriver($config, new CerebrasRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::CohereV1 => new DefaultDriver($config, new CohereV1RequestAdapter($config), new CohereV1ResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::CohereV2 => new DefaultDriver($config, new CohereV2RequestAdapter($config), new CohereV2ResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Gemini => new DefaultDriver($config, new GeminiRequestAdapter($config), new GeminiResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::GeminiOAI => new DefaultDriver($config, new GeminiOAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::Mistral => new DefaultDriver($config, new MistralRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::OpenAI => new DefaultDriver($config, new OpenAIRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::SambaNova => new DefaultDriver($config, new SambaNovaRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            LLMProviderType::XAi => new DefaultDriver($config, new XAiRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            // OpenAI compatible driver for generic OAI providers
-            LLMProviderType::A21,
-            LLMProviderType::DeepSeek,
-            LLMProviderType::Fireworks,
-            LLMProviderType::Groq,
-            LLMProviderType::Ollama,
-            LLMProviderType::OpenAICompatible,
-            LLMProviderType::OpenRouter,
-            LLMProviderType::Together => new DefaultDriver($config, new OpenAICompatibleRequestAdapter($config), new OpenAIResponseAdapter, $httpClient, $this->events),
-            default => throw new InvalidArgumentException("Client not supported: {$config->providerType->value}"),
-        };
     }
 }

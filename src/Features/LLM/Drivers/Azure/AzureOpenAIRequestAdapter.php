@@ -7,7 +7,7 @@ use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 
 class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
 {
-    public function toUrl(string $model = '', bool $stream = false): string {
+    protected function toUrl(string $model = '', bool $stream = false): string {
         return str_replace(
                 search: array_map(fn($key) => "{".$key."}", array_keys($this->config->metadata)),
                 replace: array_values($this->config->metadata),
@@ -15,7 +15,7 @@ class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
             ) . $this->getUrlParams($this->config);
     }
 
-    public function toHeaders(): array {
+    protected function toHeaders(): array {
         return [
             'Api-Key' => $this->config->apiKey,
             'Content-Type' => 'application/json',

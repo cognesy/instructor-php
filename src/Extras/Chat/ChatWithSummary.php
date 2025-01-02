@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Extras\Chat;
 
 use Cognesy\Instructor\Extras\Chat\Contracts\CanSummarizeMessages;
+use Cognesy\Instructor\Extras\Chat\Utils\SummarizeMessages;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
 use Cognesy\Instructor\Utils\Messages\Script;
@@ -44,7 +45,7 @@ class ChatWithSummary
         $this->maxSummaryTokens = $maxSummaryTokens;
         $this->autoBuffer = $autoBuffer;
         $this->autoSummarize = $autoSummarize;
-        $this->summarizer = $summarizer ?? new SummarizeChat();
+        $this->summarizer = $summarizer ?? new SummarizeMessages();
     }
 
     public static function fromMessages(Messages $messages) : self {

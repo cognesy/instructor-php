@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Features\LLM;
 
 use Cognesy\Instructor\Enums\Mode;
+use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 use Cognesy\Instructor\Features\LLM\Data\CachedContext;
 
 class InferenceRequest

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Features\LLM\Drivers\Gemini;
 
+use Cognesy\Instructor\Features\LLM\Contracts\CanMapUsage;
 use Cognesy\Instructor\Features\LLM\Contracts\ProviderResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
@@ -12,12 +13,16 @@ use Cognesy\Instructor\Utils\Json\Json;
 
 class GeminiResponseAdapter implements ProviderResponseAdapter
 {
+    public function __construct(
+        protected CanMapUsage $usageFormat,
+    ) {}
+
     public function fromResponse(array $data): ?LLMResponse {
         return new LLMResponse(
             content: $this->makeContent($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -32,7 +37,7 @@ class GeminiResponseAdapter implements ProviderResponseAdapter
             toolName: $this->makeToolName($data),
             toolArgs: $this->makeToolArgs($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
-            usage: $this->makeUsage($data),
+            usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
     }
@@ -103,15 +108,5 @@ class GeminiResponseAdapter implements ProviderResponseAdapter
     private function makeToolArgs(array $data) : string {
         $value = $data['candidates'][0]['content']['parts'][0]['functionCall']['args'] ?? '';
         return is_array($value) ? Json::encode($value) : '';
-    }
-
-    private function makeUsage(array $data) : Usage {
-        return new Usage(
-            inputTokens: $data['usageMetadata']['promptTokenCount'] ?? 0,
-            outputTokens: $data['usageMetadata']['candidatesTokenCount'] ?? 0,
-            cacheWriteTokens: 0,
-            cacheReadTokens: 0,
-            reasoningTokens: 0,
-        );
     }
 }

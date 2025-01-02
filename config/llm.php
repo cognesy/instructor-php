@@ -93,7 +93,7 @@ return [
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/models/{model}:generateContent',
-            'defaultModel' => 'gemini-2.0-flash-exp',
+            'defaultModel' => 'gemini-1.5-flash',
             'defaultMaxTokens' => 1024,
         ],
         'gemini-oai' => [
@@ -101,7 +101,7 @@ return [
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta/openai',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'gemini-2.0-flash-exp',
+            'defaultModel' => 'gemini-1.5-flash',
             'defaultMaxTokens' => 1024,
         ],
         'groq' => [
@@ -146,7 +146,15 @@ return [
             'apiUrl' => 'https://openrouter.ai/api/v1',
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'qwen/qwen-2.5-72b-instruct', //'microsoft/phi-3.5-mini-128k-instruct',
+            'defaultModel' => 'deepseek/deepseek-chat', //'microsoft/phi-3.5-mini-128k-instruct',
+            'defaultMaxTokens' => 1024,
+        ],
+        'perplexity' => [
+            'providerType' => LLMProviderType::Perplexity->value,
+            'apiUrl' => 'https://api.perplexity.ai',
+            'apiKey' => Env::get('PERPLEXITY_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'llama-3.1-sonar-small-128k-online',
             'defaultMaxTokens' => 1024,
         ],
         'sambanova' => [

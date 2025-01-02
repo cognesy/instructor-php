@@ -20,6 +20,7 @@ enum LLMProviderType : string
     case Ollama = 'ollama';
     case OpenAI = 'openai';
     case OpenRouter = 'openrouter';
+    case Perplexity = 'perplexity';
     case SambaNova = 'sambanova';
     case Together = 'together';
     case XAi = 'xai';

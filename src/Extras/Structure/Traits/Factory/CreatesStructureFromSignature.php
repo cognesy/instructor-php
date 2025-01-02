@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
 
-use Cognesy\Instructor\Extras\Module\Signature\Signature;
+use Cognesy\Instructor\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
 

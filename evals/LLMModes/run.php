@@ -13,6 +13,7 @@ use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
 use Cognesy\Instructor\Extras\Evals\Experiment;
 use Cognesy\Instructor\Extras\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Utils\Settings;
 
 $data = new InferenceData(
     messages: [
@@ -45,9 +46,10 @@ $data = new InferenceData(
 );
 
 //Debug::enable();
+//$connections = array_keys(Settings::get('llm', 'connections'));
 
 $experiment = new Experiment(
-    //cases: InferenceCases::only(['cerebras'], [Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Tools, Mode::Text], [true]),
+    //cases: InferenceCases::only($connections, [Mode::Tools], [true]),
     cases: InferenceCases::all(),
     executor: new RunInference($data),
     processors: [
