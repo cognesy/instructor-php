@@ -66,11 +66,23 @@ class Inference
 
     // PUBLIC //////////////////////////////////////////////////////////////////
 
+    /**
+     * Sets the LLM instance to be used.
+     *
+     * @param LLM $llm The LLM instance to set.
+     * @return self Returns the current instance.
+     */
     public function withLLM(LLM $llm): self {
         $this->llm = $llm;
         return $this;
     }
 
+    /**
+     * Sets the EventDispatcher instance to be used.
+     *
+     * @param EventDispatcher $events The EventDispatcher instance to set.
+     * @return self Returns the current instance.
+     */
     public function withEventDispatcher(EventDispatcher $events) : self {
         $this->events = $events;
         return $this;

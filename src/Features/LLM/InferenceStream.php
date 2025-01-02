@@ -14,6 +14,11 @@ use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Utils\Json\Json;
 use Generator;
 
+/**
+ * The InferenceStream class is responsible for handling and processing streamed responses
+ * from language models in a structured and event-driven manner. It allows for real-time
+ * processing of incoming data and supports partial and cumulative responses.
+ */
 class InferenceStream
 {
     protected EventDispatcher $events;
@@ -49,7 +54,9 @@ class InferenceStream
     }
 
     /**
-     * @return Generator<PartialLLMResponse>
+     * Generates and yields partial LLM responses from the given stream.
+     *
+     * @return Generator<PartialLLMResponse> A generator yielding partial LLM responses.
      */
     public function responses() : Generator {
         foreach ($this->makePartialLLMResponses($this->stream) as $partialLLMResponse) {
@@ -58,7 +65,9 @@ class InferenceStream
     }
 
     /**
-     * @return PartialLLMResponse[]
+     * Retrieves all partial LLM responses from the given stream.
+     *
+     * @return PartialLLMResponse[] An array of all partial LLM responses.
      */
     public function all() : array {
         return $this->getAllPartialLLMResponses($this->stream);
@@ -86,8 +95,10 @@ class InferenceStream
     // INTERNAL //////////////////////////////////////////////
 
     /**
-     * @param Generator<string> $stream
-     * @return ?PartialLLMResponse
+     * Retrieves the final LLM response from the given stream of partial responses.
+     *
+     * @param Generator<PartialLLMResponse> $stream A generator yielding raw partial LLM response strings.
+     * @return LLMResponse|null The final LLMResponse object or null if not available.
      */
     protected function getFinalResponse(Generator $stream) : ?LLMResponse {
         if ($this->finalLLMResponse === null) {
@@ -97,8 +108,10 @@ class InferenceStream
     }
 
     /**
-     * @param Generator<string> $stream
-     * @return PartialLLMResponse[]
+     * Retrieves all partial LLM responses from the provided generator stream.
+     *
+     * @param Generator<string> $stream The generator stream producing raw partial LLM response strings.
+     * @return PartialLLMResponse[] An array containing all PartialLLMResponse objects.
      */
     protected function getAllPartialLLMResponses(Generator $stream) : array {
         if ($this->finalLLMResponse === null) {
@@ -108,8 +121,10 @@ class InferenceStream
     }
 
     /**
-     * @param Generator<string> $stream
-     * @return Generator<PartialLLMResponse>
+     * Processes the given stream to generate partial LLM responses and enriches them with accumulated content and finish reason.
+     *
+     * @param Generator<string> $stream The stream to be processed to extract and enrich partial LLM responses.
+     * @return Generator<PartialLLMResponse> A generator yielding enriched PartialLLMResponse objects.
      */
     private function makePartialLLMResponses(Generator $stream) : Generator {
         $content = '';
@@ -149,7 +164,11 @@ class InferenceStream
     }
 
     /**
-     * @return Generator<string|null>
+     * Processes and retrieves events from the provided stream generator.
+     *
+     * @param Generator<string|null> $stream The input generator stream containing events.
+     *
+     * @return Generator<string> A generator yielding individual events from the processed stream.
      */
     private function getEventStream(Generator $stream) : Generator {
         if (!$this->streamReceived) {
@@ -165,7 +184,10 @@ class InferenceStream
     }
 
     /**
-     * @return Generator<string>
+     * Processes a stream of data and returns a generator of parsed events.
+     *
+     * @param Generator<string> $stream The input data stream to be processed.
+     * @return Generator<string|null> A generator yielding parsed events from the input stream.
      */
     private function streamFromResponse(Generator $stream) : Generator {
         return $this->reader->eventsFrom($stream);

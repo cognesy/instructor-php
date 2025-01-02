@@ -43,6 +43,10 @@ use Cognesy\Instructor\Features\LLM\Drivers\XAI\XAiMessageFormat;
 use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
 use InvalidArgumentException;
 
+/**
+ * Factory class for creating inference driver instances based
+ * on the specified configuration and provider type.
+ */
 class InferenceDriverFactory
 {
     /**

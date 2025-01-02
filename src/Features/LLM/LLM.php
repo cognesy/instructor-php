@@ -14,10 +14,9 @@ use Cognesy\Instructor\Utils\Debug\Debug;
 use Cognesy\Instructor\Utils\Settings;
 
 /**
- * Class LLM
- *
- * This class represents a Language Learning Model interface, handling
- * configurations, HTTP client integrations, inference drivers, and event dispatching.
+ * This class represents a interface to Large Language Model provider APIs,
+ * handling configurations, HTTP client integrations, inference drivers,
+ * and event dispatching.
  */
 class LLM
 {
