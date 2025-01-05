@@ -35,4 +35,9 @@ class HttpClientRequest
     public function isStreamed() : bool {
         return $this->options['stream'] ?? false;
     }
+
+    public function withStreaming(bool $streaming) : self {
+        $this->options['stream'] = $streaming;
+        return $this;
+    }
 }

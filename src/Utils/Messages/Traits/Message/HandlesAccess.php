@@ -24,6 +24,10 @@ trait HandlesAccess
         return MessageRole::fromString($this->role);
     }
 
+    public function name() : string {
+        return $this->name;
+    }
+
     public function content() : string|array {
         return $this->content;
     }

@@ -5,6 +5,7 @@ namespace Cognesy\Instructor\Features\LLM\Drivers;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 use Cognesy\Instructor\Features\Http\HttpClient;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Contracts\ProviderRequestAdapter;
@@ -53,11 +54,13 @@ class ModularLLMDriver implements CanHandleInference {
             $request->mode(),
         );
         return $this->httpClient->handle(
-            url: $clientRequest->url(),
-            headers: $clientRequest->headers(),
-            body: $clientRequest->body(),
-            method: $clientRequest->method(),
-            streaming: $clientRequest->isStreamed(),
+            (new HttpClientRequest(
+                url: $clientRequest->url(),
+                method: $clientRequest->method(),
+                headers: $clientRequest->headers(),
+                body: $clientRequest->body(),
+                options: $clientRequest->options(),
+            ))->withStreaming($clientRequest->isStreamed())
         );
     }
 

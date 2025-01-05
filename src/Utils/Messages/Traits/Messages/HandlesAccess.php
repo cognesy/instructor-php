@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Utils\Messages\Traits\Messages;
 use Cognesy\Instructor\Utils\Messages\Enums\MessageRole;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
+use Generator;
 
 trait HandlesAccess
 {
@@ -22,11 +23,10 @@ trait HandlesAccess
     }
 
     /**
-     * @return \Generator<Message>
+     * @return Generator<Message>
      */
     public function each() : iterable {
-        $reversed = array_reverse($this->messages);
-        foreach ($reversed as $message) {
+        foreach ($this->messages as $message) {
             yield $message;
         }
     }

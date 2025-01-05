@@ -1,7 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Features\Http\Contracts;
 
+use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
+
 interface CanHandleHttp
 {
-    public function handle(string $url, array $headers, array $body, string $method = 'POST', bool $streaming = false) : CanAccessResponse;
+    public function handle(HttpClientRequest $request) : CanAccessResponse;
 }

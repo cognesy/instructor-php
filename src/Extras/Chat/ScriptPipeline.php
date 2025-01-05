@@ -22,6 +22,11 @@ class ScriptPipeline {
         }
     }
 
+    public function withScript(Script $script) : ScriptPipeline {
+        $this->script = $script;
+        return $this;
+    }
+
     public function appendMessage(Message $message, string $section): self {
         $this->script->section($section)->appendMessage($message);
         return $this->process();

@@ -8,6 +8,7 @@ use Cognesy\Instructor\Extras\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Instructor\Extras\Embeddings\Data\Vector;
 use Cognesy\Instructor\Extras\Embeddings\EmbeddingsResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
+use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 use Cognesy\Instructor\Features\Http\HttpClient;
 use Cognesy\Instructor\Features\LLM\Data\Usage;
 
@@ -23,11 +24,14 @@ class JinaDriver implements CanVectorize
     }
 
     public function vectorize(array $input, array $options = []): EmbeddingsResponse {
-        $response = $this->httpClient->handle(
-            $this->getEndpointUrl(),
-            $this->getRequestHeaders(),
-            $this->getRequestBody($input, $options),
+        $request = new HttpClientRequest(
+            url: $this->getEndpointUrl(),
+            method: 'POST',
+            headers: $this->getRequestHeaders(),
+            body: $this->getRequestBody($input, $options),
+            options: [],
         );
+        $response = $this->httpClient->handle($request);
         return $this->toResponse(json_decode($response->getContents(), true));
     }
 

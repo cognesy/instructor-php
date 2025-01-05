@@ -131,7 +131,8 @@ class LLM
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
-        Debug::setEnabled($debug); // TODO: fix me - debug should not be global, should be request specific
+        // TODO: fix me - debug should not be global, should be request specific
+        Debug::setEnabled($debug);
         return $this;
     }
 

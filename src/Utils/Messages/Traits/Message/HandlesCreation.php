@@ -10,11 +10,11 @@ use Exception;
 trait HandlesCreation
 {
     public static function make(string $role, string|array $content) : Message {
-        return new Message($role, $content);
+        return new Message(role: $role, content: $content);
     }
 
-    public static function fromString(string $content) : static {
-        return new static(self::DEFAULT_ROLE, $content);
+    public static function fromString(string $content, string $role = self::DEFAULT_ROLE) : static {
+        return new static(role: $role, content: $content);
     }
 
     public static function fromArray(array $message) : static {
@@ -26,7 +26,7 @@ trait HandlesCreation
     }
 
     public static function fromContent(string $role, string|array $content) : static {
-        return new static($role, $content);
+        return new static(role: $role, content: $content);
     }
 
     public static function fromAnyMessage(string|array|Message $message) : static {
@@ -47,6 +47,6 @@ trait HandlesCreation
     }
 
     public function clone() : static {
-        return new static($this->role, $this->content);
+        return new static(role: $this->role, content: $this->content);
     }
 }

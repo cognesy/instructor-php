@@ -34,6 +34,7 @@ class Message {
 
     protected string $id;
     protected string $role;
+    protected string $name;
     protected string|array $content;
     protected array $metadata = [];
 
@@ -44,6 +45,7 @@ class Message {
     public function __construct(
         string|MessageRole $role = '',
         string|array|null $content = '',
+        string $name = '',
         array $metadata = [],
     ) {
         $this->id = Uuid::uuid4();
@@ -52,6 +54,7 @@ class Message {
             ($role === '') => self::DEFAULT_ROLE,
             default => $role,
         };
+        $this->name = $name;
         $this->content = $content ?? '';
         $this->metadata = $metadata;
     }

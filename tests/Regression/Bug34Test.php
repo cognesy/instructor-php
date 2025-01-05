@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
+use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
 use Cognesy\Instructor\Features\Http\Enums\HttpClientType;
 use Cognesy\Instructor\Utils\Debug\Debug;
@@ -45,10 +46,10 @@ test('custom http client is used when debugging is disabled', function () {
 
     // Make a request to test which client instance is used
     $response = $driver->handle(
-        '/test', // Using relative path to test base_uri
-        [],
-        [],
-        'GET'
+        url: '/test', // Using relative path to test base_uri
+        headers: [],
+        body: [],
+        method: 'GET'
     );
 
     // Assert

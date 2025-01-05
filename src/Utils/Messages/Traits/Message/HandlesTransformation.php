@@ -9,6 +9,7 @@ trait HandlesTransformation
     public function toArray() : array {
         return array_filter([
             'role' => $this->role,
+            'name' => $this->name,
             'content' => $this->content,
             '_metadata' => $this->metadata,
         ]);

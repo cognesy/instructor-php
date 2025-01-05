@@ -46,6 +46,15 @@ trait HandlesTransformation
         return $text;
     }
 
+    public function remapRoles(array $mapping) : Messages {
+        $messages = new Messages();
+        foreach ($this->messages as $message) {
+            $role = $message->role()->value;
+            $messages->appendMessage($message->withRole($mapping[$role] ?? $role));
+        }
+        return $messages;
+    }
+
     public function reversed() : Messages {
         $messages = new Messages();
         $messages->messages = array_reverse($this->messages);

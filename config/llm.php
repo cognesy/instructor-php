@@ -22,6 +22,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'jamba-1.5-mini',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 256_000,
+            'maxOutputLength' => 4096,
         ],
         'anthropic' => [
             'providerType' => LLMProviderType::Anthropic->value,
@@ -34,6 +36,8 @@ return [
             ],
             'defaultModel' => 'claude-3-haiku-20240307',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 200_000,
+            'maxOutputLength' => 8192,
         ],
         'azure' => [
             'providerType' => LLMProviderType::Azure->value,
@@ -47,6 +51,8 @@ return [
             ],
             'defaultModel' => 'gpt-4o-mini',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 16384,
         ],
         'cerebras' => [
             'providerType' => LLMProviderType::Cerebras->value,
@@ -55,6 +61,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'llama3.1-70b',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 2048,
         ],
         'cohere1' => [
             'providerType' => LLMProviderType::CohereV1->value,
@@ -63,6 +71,8 @@ return [
             'endpoint' => '/chat',
             'defaultModel' => 'command-r-plus-08-2024',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 4096,
         ],
         'cohere2' => [
             'providerType' => LLMProviderType::CohereV2->value,
@@ -71,6 +81,8 @@ return [
             'endpoint' => '/chat',
             'defaultModel' => 'command-r-plus-08-2024',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 4096,
         ],
         'deepseek' => [
             'providerType' => LLMProviderType::DeepSeek->value,
@@ -79,6 +91,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'deepseek-chat',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 8192,
         ],
         'fireworks' => [
             'providerType' => LLMProviderType::Fireworks->value,
@@ -87,6 +101,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'accounts/fireworks/models/mixtral-8x7b-instruct',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 65_000,
+            'maxOutputLength' => 4096,
         ],
         'gemini' => [
             'providerType' => LLMProviderType::Gemini->value,
@@ -95,6 +111,8 @@ return [
             'endpoint' => '/models/{model}:generateContent',
             'defaultModel' => 'gemini-1.5-flash',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 1_000_000,
+            'maxOutputLength' => 8192,
         ],
         'gemini-oai' => [
             'providerType' => LLMProviderType::GeminiOAI->value,
@@ -103,14 +121,18 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'gemini-1.5-flash',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 1_000_000,
+            'maxOutputLength' => 8192,
         ],
         'groq' => [
             'providerType' => LLMProviderType::Groq->value,
             'apiUrl' => 'https://api.groq.com/openai/v1',
             'apiKey' => Env::get('GROQ_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'llama3-groq-8b-8192-tool-use-preview', // 'gemma2-9b-it',
+            'defaultModel' => 'llama-3.3-70b-versatile', // 'gemma2-9b-it',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 2048,
         ],
         'mistral' => [
             'providerType' => LLMProviderType::Mistral->value,
@@ -119,6 +141,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'mistral-small-latest',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 4096,
         ],
         'ollama' => [
             'providerType' => LLMProviderType::Ollama->value,
@@ -128,6 +152,8 @@ return [
             'defaultModel' => 'qwen2.5-coder:3b', //'gemma2:2b',
             'defaultMaxTokens' => 1024,
             'httpClient' => 'http-ollama',
+            'contextLength' => 128_000,
+            'maxOutputLength' => 8192,
         ],
         'openai' => [
             'providerType' => LLMProviderType::OpenAI->value,
@@ -140,6 +166,8 @@ return [
             ],
             'defaultModel' => 'gpt-4o-mini',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 16384,
         ],
         'openrouter' => [
             'providerType' => LLMProviderType::OpenRouter->value,
@@ -148,6 +176,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'deepseek/deepseek-chat', //'microsoft/phi-3.5-mini-128k-instruct',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 8192,
         ],
         'perplexity' => [
             'providerType' => LLMProviderType::Perplexity->value,
@@ -156,6 +186,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'llama-3.1-sonar-small-128k-online',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 2048,
         ],
         'sambanova' => [
             'providerType' => LLMProviderType::SambaNova->value,
@@ -164,6 +196,8 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'Meta-Llama-3.1-8B-Instruct',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 2048,
         ],
         'together' => [
             'providerType' => LLMProviderType::Together->value,
@@ -172,14 +206,18 @@ return [
             'endpoint' => '/chat/completions',
             'defaultModel' => 'mistralai/Mixtral-8x7B-Instruct-v0.1',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 4096,
         ],
         'xai' => [
             'providerType' => LLMProviderType::XAi->value,
             'apiUrl' => 'https://api.x.ai/v1',
             'apiKey' => Env::get('XAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'grok-2-1212',
+            'defaultModel' => '-1212',
             'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 128_000,
         ],
     ],
 ];

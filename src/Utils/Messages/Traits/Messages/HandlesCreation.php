@@ -12,8 +12,8 @@ use InvalidArgumentException;
 
 trait HandlesCreation
 {
-    static public function fromString(string $content) : Messages {
-        return (new self)->appendMessage(Message::fromString($content));
+    static public function fromString(string $content, string $role = 'user') : Messages {
+        return (new self)->appendMessage(Message::fromString($content, $role));
     }
 
     /**

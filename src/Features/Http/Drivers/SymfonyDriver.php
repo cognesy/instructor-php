@@ -10,6 +10,7 @@ use Cognesy\Instructor\Features\Http\Adapters\SymfonyResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
+use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 use Cognesy\Instructor\Utils\Debug\Debug;
 use Exception;
 use Symfony\Component\HttpClient\HttpClient;
@@ -28,13 +29,13 @@ class SymfonyDriver implements CanHandleHttp
         $this->client = $httpClient ?? HttpClient::create();
     }
 
-    public function handle(
-        string $url,
-        array $headers,
-        array $body,
-        string $method = 'POST',
-        bool $streaming = false,
-    ): CanAccessResponse {
+    public function handle(HttpClientRequest $request) : CanAccessResponse {
+        $url = $request->url();
+        $headers = $request->headers();
+        $body = $request->body();
+        $method = $request->method();
+        $streaming = $request->isStreamed();
+
         $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
         try {
             Debug::tryDumpUrl($url);

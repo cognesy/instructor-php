@@ -108,20 +108,20 @@ class ChatWithSummary
             return $script;
         }
 
-        $totalTokens = 0;
         $this->chatTokens = 0;
         $this->bufferTokens = 0;
         $limited = new Messages();
         $overflow = new Messages();
         $messages = $script->select([self::SECTION_BUFFER, self::SECTION_MAIN])->toMessages();
+        $totalTokens = 0;
         foreach ($messages->reversed()->each() as $message) {
             $messageTokens = Tokenizer::tokenCount($message->toString());
-            if ($totalTokens + $messageTokens > $tokens) {
-                $overflow->appendMessage($message);
-                $this->bufferTokens += $messageTokens;
-            } else {
+            if ($totalTokens + $messageTokens <= $tokens) {
                 $limited->appendMessage($message);
                 $this->chatTokens += $messageTokens;
+            } else {
+                $overflow->appendMessage($message);
+                $this->bufferTokens += $messageTokens;
             }
             $totalTokens += $messageTokens;
         }

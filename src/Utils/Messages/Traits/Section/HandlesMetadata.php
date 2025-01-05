@@ -9,6 +9,10 @@ trait HandlesMetadata
         return $this;
     }
 
+    public function metadata() : array {
+        return $this->metadata;
+    }
+
     public function get(string $key, mixed $default = null) : mixed {
         return $this->metadata[$key] ?? $default;
     }

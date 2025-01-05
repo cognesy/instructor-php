@@ -19,4 +19,9 @@ trait HandlesMutation
 
         return $this;
     }
+
+    public function withRole(string $role) : static {
+        $this->role = $role;
+        return $this;
+    }
 }
