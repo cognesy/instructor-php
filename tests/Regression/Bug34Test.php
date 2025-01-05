@@ -45,12 +45,13 @@ test('custom http client is used when debugging is disabled', function () {
     $driver = new GuzzleDriver($config, $customClient);
 
     // Make a request to test which client instance is used
-    $response = $driver->handle(
+    $response = $driver->handle(new HttpClientRequest(
         url: '/test', // Using relative path to test base_uri
+        method: 'GET',
         headers: [],
         body: [],
-        method: 'GET'
-    );
+        options: []
+    ));
 
     // Assert
     expect($container)->toHaveCount(1);
@@ -147,12 +148,13 @@ test('client timeout configuration is properly set', function () {
     // Act
     $driver = new GuzzleDriver($config, $customClient);
 
-    $driver->handle(
-        'https://api.test.com/endpoint',
-        [],
-        [],
-        'GET'
-    );
+    $driver->handle(new HttpClientRequest(
+        url: 'https://api.test.com/endpoint',
+        method: 'GET',
+        headers: [],
+        body: [],
+        options: [],
+    ));
 
     // Assert
     expect($container[0]['options'])->toHaveKey('connect_timeout', 5);
