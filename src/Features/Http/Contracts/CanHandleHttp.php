@@ -6,4 +6,5 @@ use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 interface CanHandleHttp
 {
     public function handle(HttpClientRequest $request) : CanAccessResponse;
+
 }

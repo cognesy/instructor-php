@@ -43,6 +43,7 @@
         "gioni06/gpt3-tokenizer": "^1.2",
         "guzzlehttp/psr7": "^2.7",
         "illuminate/database": "^11.10",
+        "illuminate/http": "^11.37",
         "league/html-to-markdown": "^5.1",
         "mockery/mockery": "^1.6",
         "nyholm/psr7": "^1.8",

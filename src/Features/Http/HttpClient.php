@@ -6,6 +6,7 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
 use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
+use Cognesy\Instructor\Features\Http\Drivers\LaravelDriver;
 use Cognesy\Instructor\Features\Http\Drivers\SymfonyDriver;
 use Cognesy\Instructor\Features\Http\Enums\HttpClientType;
 use Cognesy\Instructor\Utils\Settings;
@@ -103,6 +104,7 @@ class HttpClient
         return match ($config->httpClientType) {
             HttpClientType::Guzzle => new GuzzleDriver(config: $config, events: $this->events),
             HttpClientType::Symfony => new SymfonyDriver(config: $config, events: $this->events),
+            httpClientType::Laravel => new LaravelDriver(config: $config, events: $this->events),
             default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType->value}"),
         };
     }

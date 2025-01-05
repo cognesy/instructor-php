@@ -3,7 +3,7 @@
 use Cognesy\Instructor\Features\Http\Enums\HttpClientType;
 
 return [
-    'defaultClient' => 'guzzle',
+    'defaultClient' => 'laravel',
 
     'cache' => [
         'enabled' => false,
@@ -19,6 +19,12 @@ return [
         ],
         'symfony' => [
             'httpClientType' => HttpClientType::Symfony->value,
+            'connectTimeout' => 1,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+        ],
+        'laravel' => [
+            'httpClientType' => HttpClientType::Laravel->value,
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
