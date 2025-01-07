@@ -1,13 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\ChatTemplate;
 
-use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Utils\Messages\Script;
 use Exception;
 
 trait HandlesScript
 {
-    protected function makeScript(Request $request) : Script {
+    protected function makeScript(StructuredOutputRequest $request) : Script {
         if ($this->isRequestEmpty($request)) {
             throw new Exception('Request cannot be empty - you have to provide content for processing.');
         }
@@ -77,7 +77,7 @@ trait HandlesScript
         return $script;
     }
 
-    private function isRequestEmpty(Request $request) : bool {
+    private function isRequestEmpty(StructuredOutputRequest $request) : bool {
         return match(true) {
             !empty($request->messages()) => false,
             !empty($request->input()) => false,

@@ -8,7 +8,7 @@ use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
-use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\LLM\Inference;
@@ -27,11 +27,11 @@ class RequestHandler
     protected array $errors = [];
 
     public function __construct(
-        protected Request $request,
-        protected CanGenerateResponse $responseGenerator,
-        protected CanGeneratePartials $partialsGenerator,
-        protected LLM $llm,
-        EventDispatcher $events,
+        protected StructuredOutputRequest $request,
+        protected CanGenerateResponse     $responseGenerator,
+        protected CanGeneratePartials     $partialsGenerator,
+        protected LLM                     $llm,
+        EventDispatcher                   $events,
     ) {
         $this->events = $events;
         $this->retries = 0;
@@ -43,7 +43,7 @@ class RequestHandler
     /**
      * Generates response value
      */
-    public function responseFor(Request $request) : LLMResponse {
+    public function responseFor(StructuredOutputRequest $request) : LLMResponse {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $llmResponse = $this->getInference($request)->response();
@@ -65,10 +65,11 @@ class RequestHandler
 
     /**
      * Yields response value versions based on streamed responses
-     * @param Request $request
+     *
+     * @param StructuredOutputRequest $request
      * @return Generator<PartialLLMResponse>
      */
-    public function streamResponseFor(Request $request) : Generator {
+    public function streamResponseFor(StructuredOutputRequest $request) : Generator {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $stream = $this->getInference($request)->stream()->responses();
@@ -86,7 +87,7 @@ class RequestHandler
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
-    protected function getInference(Request $request) : InferenceResponse {
+    protected function getInference(StructuredOutputRequest $request) : InferenceResponse {
         return (new Inference)
             ->withLLM($this->llm)
             ->withEventDispatcher($this->events)
@@ -101,7 +102,7 @@ class RequestHandler
             );
     }
 
-    protected function processResponse(Request $request, LLMResponse $llmResponse, array $partialResponses) : Result {
+    protected function processResponse(StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : Result {
         // we have LLMResponse here - let's process it: deserialize, validate, transform
         $processingResult = $this->responseGenerator->makeResponse($llmResponse, $request->responseModel());
 
@@ -113,7 +114,7 @@ class RequestHandler
         return $processingResult;
     }
 
-    protected function finalizeResult(Result $processingResult, Request $request, LLMResponse $llmResponse, array $partialResponses) : mixed {
+    protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
             throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $this->errors));
@@ -129,7 +130,7 @@ class RequestHandler
         return $value;
     }
 
-    protected function handleError(Result $processingResult, Request $request, LLMResponse $llmResponse, array $partialResponses) : void {
+    protected function handleError(Result $processingResult, StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : void {
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
 
@@ -141,7 +142,7 @@ class RequestHandler
         }
     }
 
-    protected function maxRetriesReached(Request $request) : bool {
+    protected function maxRetriesReached(StructuredOutputRequest $request) : bool {
         return $this->retries > $request->maxRetries();
     }
 }

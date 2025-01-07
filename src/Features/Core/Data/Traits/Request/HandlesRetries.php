@@ -2,21 +2,21 @@
 
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Request;
 
-use Cognesy\Instructor\Features\Core\Data\Response;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputAttempt;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 
 trait HandlesRetries
 {
     private int $maxRetries;
-    /** @var Response[] */
+    /** @var StructuredOutputAttempt[] */
     private array $failedResponses = [];
-    private Response $response;
+    private StructuredOutputAttempt $response;
 
     public function maxRetries() : int {
         return $this->maxRetries;
     }
 
-    public function response() : Response {
+    public function response() : StructuredOutputAttempt {
         return $this->response;
     }
 
@@ -35,7 +35,7 @@ trait HandlesRetries
         return $this->hasFailures() && !$this->hasResponse();
     }
 
-    public function lastFailedResponse() : ?Response {
+    public function lastFailedResponse() : ?StructuredOutputAttempt {
         return end($this->failedResponses) ?: null;
     }
 
@@ -57,7 +57,7 @@ trait HandlesRetries
         array       $partialLLMResponses = [],
         mixed       $returnedValue = null
     ) {
-        $this->response = new Response($messages, $llmResponse, $partialLLMResponses, [], $returnedValue);
+        $this->response = new StructuredOutputAttempt($messages, $llmResponse, $partialLLMResponses, [], $returnedValue);
     }
 
     public function addFailedResponse(
@@ -66,6 +66,6 @@ trait HandlesRetries
         array       $partialLLMResponses = [],
         array       $errors = [],
     ) {
-        $this->failedResponses[] = new Response($messages, $llmResponse, $partialLLMResponses, $errors, null);
+        $this->failedResponses[] = new StructuredOutputAttempt($messages, $llmResponse, $partialLLMResponses, $errors, null);
     }
 }

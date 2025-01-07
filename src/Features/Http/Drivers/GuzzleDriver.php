@@ -16,6 +16,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Pool;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\CachingStream;
@@ -78,6 +79,67 @@ class GuzzleDriver implements CanHandleHttp
             stream: $response->getBody()
         );
     }
+
+    public function pool(array $requests, ?int $maxConcurrent = null): array {
+        $promises = [];
+        $responses = [];
+
+        // Use class config if maxConcurrent not provided
+        $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;
+
+        // Create promises for each request
+        foreach ($requests as $key => $request) {
+            if (!$request instanceof HttpClientRequest) {
+                throw new InvalidArgumentException('Invalid request type in pool');
+            }
+
+            $promises[$key] = $this->client->requestAsync(
+                $request->method(),
+                $request->url(),
+                [
+                    'headers' => $request->headers(),
+                    'json' => $request->body(),
+                    'connect_timeout' => $this->config->connectTimeout,
+                    'timeout' => $this->config->requestTimeout,
+                    'debug' => Debug::isFlag('http.trace') ?? false,
+                ]
+            );
+        }
+
+        // Use Guzzle's Pool for handling concurrent requests
+        $pool = new Pool($this->client, $promises, [
+            'concurrency' => $concurrency,
+            'fulfilled' => function ($response, $index) use (&$responses) {
+                $responses[$index] = new PsrResponse(
+                    response: $response,
+                    stream: $response->getBody()
+                );
+            },
+            'rejected' => function ($reason, $index) {
+                if ($this->config->failOnError) {
+                    throw $reason;
+                }
+                // Log or handle the error as needed
+                $this->events->dispatch(new RequestToLLMFailed(
+                    'Pool request ' . $index,
+                    'POOL',
+                    [],
+                    [],
+                    $reason->getMessage()
+                ));
+            },
+        ]);
+
+        // Execute the pool with a timeout
+        $promise = $pool->promise();
+        $promise->wait($this->config->poolTimeout);
+
+        // Ensure responses are in the same order as requests
+        ksort($responses);
+        return array_values($responses);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
 
     protected function addDebugStack(HandlerStack $stack) : HandlerStack {
         // add caching stream to make response body rewindable

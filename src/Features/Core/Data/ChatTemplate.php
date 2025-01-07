@@ -16,10 +16,10 @@ class ChatTemplate
     private string $defaultRetryPrompt;
     private array $defaultPrompts = [];
 
-    private ?Request $request;
+    private ?StructuredOutputRequest $request;
     private Script $script;
 
-    public function __construct(Request $request = null) {
+    public function __construct(StructuredOutputRequest $request = null) {
         $this->request = $request;
         $this->defaultRetryPrompt = Settings::get('llm', 'defaultRetryPrompt');
         $this->defaultPrompts[Mode::MdJson->value] = Settings::get('llm', 'defaultMdJsonPrompt');
@@ -27,7 +27,7 @@ class ChatTemplate
         $this->defaultPrompts[Mode::Tools->value] = Settings::get('llm', 'defaultToolsPrompt');
     }
 
-    public static function fromRequest(Request $request) : static {
+    public static function fromRequest(StructuredOutputRequest $request) : static {
         return new self($request);
     }
 

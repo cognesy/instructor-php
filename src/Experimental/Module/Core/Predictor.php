@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Experimental\Module\Core;
 
 use Closure;
 use Cognesy\Instructor\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Core\Data\RequestInfo;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Instructor;
 
@@ -19,7 +19,7 @@ class Predictor
     protected Inference $inference;
     protected string $connection;
 
-    protected RequestInfo $requestInfo;
+    protected StructuredOutputRequestInfo $requestInfo;
     protected ?Signature $signature;
     protected Feedback $feedback;
     protected Closure $feedbackFn;
@@ -35,7 +35,7 @@ class Predictor
     ) {
         $this->instructor = new Instructor();
         $this->inference = new Inference();
-        $this->requestInfo = new RequestInfo();
+        $this->requestInfo = new StructuredOutputRequestInfo();
         $this->signature = match(true) {
             !empty($signature) => $this->makeSignature($signature, $description),
             default => null,

@@ -3,20 +3,20 @@
 namespace Cognesy\Instructor\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Instructor\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Core\Data\RequestInfo;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Instructor;
 
 trait HandlesParametrization
 {
     public function using(
-        Instructor  $instructor = null,
-        RequestInfo $requestInfo = null,
-        Signature   $signature = null,
-        string      $instructions = null,
-        array       $examples = null,
-        array       $options = null,
-        string      $model = null,
+        Instructor                  $instructor = null,
+        StructuredOutputRequestInfo $requestInfo = null,
+        Signature                   $signature = null,
+        string                      $instructions = null,
+        array                       $examples = null,
+        array                       $options = null,
+        string                      $model = null,
     ) : static {
         $this->withInstructor($instructor);
         $this->withRequestInfo($requestInfo);
@@ -57,10 +57,10 @@ trait HandlesParametrization
         return $this;
     }
 
-    public function withRequestInfo(?RequestInfo $requestInfo) : static {
+    public function withRequestInfo(?StructuredOutputRequestInfo $requestInfo) : static {
         $this->requestInfo = match(true) {
             !is_null($requestInfo) => $requestInfo,
-            !isset($this->requestInfo) => new RequestInfo(),
+            !isset($this->requestInfo) => new StructuredOutputRequestInfo(),
             default => $this->requestInfo,
         };
         return $this;

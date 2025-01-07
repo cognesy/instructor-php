@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Features\Core\Data;
 
 use Cognesy\Instructor\Enums\Mode;
 
-class RequestInfo
+class StructuredOutputRequestInfo
 {
     use Traits\RequestInfo\HandlesMutation;
     use Traits\RequestInfo\HandlesCreation;

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
@@ -13,7 +13,7 @@ use JetBrains\PhpStorm\Deprecated;
 trait HandlesRequest
 {
     private LLM $llm;
-    private Request $request;
+    private StructuredOutputRequest $request;
     private array $cachedContext = [];
 
     // PUBLIC /////////////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ trait HandlesRequest
         return $this;
     }
 
-    public function getRequest() : Request {
+    public function getRequest() : StructuredOutputRequest {
         return $this->request;
     }
 

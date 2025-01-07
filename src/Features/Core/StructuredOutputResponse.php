@@ -4,21 +4,21 @@ namespace Cognesy\Instructor\Features\Core;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
-use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Exception;
 use Generator;
 
-class InstructorResponse
+class StructuredOutputResponse
 {
     private RequestHandler $requestHandler;
     private EventDispatcher $events;
-    private Request $request;
+    private StructuredOutputRequest $request;
 
     public function __construct(
-        Request $request,
-        RequestHandler $requestHandler,
-        EventDispatcher $events,
+        StructuredOutputRequest $request,
+        RequestHandler          $requestHandler,
+        EventDispatcher         $events,
     ) {
         $this->events = $events;
         $this->requestHandler = $requestHandler;
@@ -49,13 +49,13 @@ class InstructorResponse
     /**
      * Executes the request and returns the response stream
      */
-    public function stream() : InstructorStream {
+    public function stream() : StructuredOutputStream {
         // TODO: do we need this? cannot we just turn streaming on?
         if (!$this->request->isStreamed()) {
             throw new Exception('Instructor::stream() method requires response streaming: set "stream" = true in the request options.');
         }
         $stream = $this->getStream();
-        return new InstructorStream($stream, $this->events);
+        return new StructuredOutputStream($stream, $this->events);
     }
 
     // INTERNAL /////////////////////////////////////////////////

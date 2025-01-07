@@ -10,7 +10,6 @@ trait HandlesSchema
 {
     private string $toolName;
     private string $toolDescription;
-
     private string|array|object $requestedSchema;
     private ?ResponseModel $responseModel = null;
 

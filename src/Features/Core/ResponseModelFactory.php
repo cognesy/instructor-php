@@ -11,7 +11,7 @@ use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
 use Cognesy\Instructor\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Core\Data\Request;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
@@ -36,7 +36,7 @@ class ResponseModelFactory
         $this->schemaConverter = new JsonSchemaToSchema;
     }
 
-    public function fromRequest(Request $request) : ResponseModel {
+    public function fromRequest(StructuredOutputRequest $request) : ResponseModel {
         return $this->fromAny(
             $request->requestedSchema(),
             $request->toolName(),

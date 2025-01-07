@@ -3,10 +3,10 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Features\Core\Data\Request;
-use Cognesy\Instructor\Features\Core\Data\RequestInfo;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\Instructor\Features\Core\InstructorResponse;
+use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\RequestHandler;
 use Cognesy\Instructor\Features\Core\ResponseGenerator;
@@ -38,7 +38,7 @@ trait HandlesInvocation
      * @param string $toolDescription A description of the tool to be used in Mode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
      * @param Mode $mode The mode of operation for the request.
-     * @return InstructorResponse A response object providing access to various results retrieval methods.
+     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
     public function respond(
@@ -76,12 +76,12 @@ trait HandlesInvocation
     /**
      * Processes the provided request information and creates a new request to be executed.
      *
-     * @param RequestInfo $request The RequestInfo object containing all necessary data
+     * @param StructuredOutputRequestInfo $request The RequestInfo object containing all necessary data
      *                             for generating the request.
      *
-     * @return InstructorResponse The response generated based on the provided request details.
+     * @return StructuredOutputResponse The response generated based on the provided request details.
      */
-    public function withRequest(RequestInfo $request) : InstructorResponse {
+    public function withRequest(StructuredOutputRequestInfo $request) : StructuredOutputResponse {
         return $this->request(
             messages: $request->messages ?? [],
             input: $request->input ?? [],
@@ -115,7 +115,7 @@ trait HandlesInvocation
      * @param string $toolDescription A description of the tool to be used in Mode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
      * @param Mode $mode The mode of operation for the request.
-     * @return InstructorResponse A response object providing access to various results retrieval methods.
+     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
     public function request(
@@ -132,7 +132,7 @@ trait HandlesInvocation
         string              $toolDescription = '',
         string              $retryPrompt = '',
         Mode                $mode = Mode::Tools,
-    ) : InstructorResponse {
+    ) : StructuredOutputResponse {
         $this->queueEvent(new RequestReceived());
         $this->dispatchQueuedEvents();
 
@@ -143,7 +143,7 @@ trait HandlesInvocation
         $requestedSchema = $responseModel;
         $responseModel = $this->makeResponseModel($requestedSchema, $toolName, $toolDescription);
 
-        $request = new Request(
+        $request = new StructuredOutputRequest(
             messages: $messages ?? [],
             input: $input ?? [],
             requestedSchema: $requestedSchema ?? [],
@@ -178,7 +178,7 @@ trait HandlesInvocation
             events: $this->events,
         );
 
-        return new InstructorResponse(
+        return new StructuredOutputResponse(
             request: $request,
             requestHandler: $requestHandler,
             events: $this->events,

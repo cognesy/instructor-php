@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Core\Data\RequestInfo;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
@@ -15,9 +15,9 @@ use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 trait CreatesFromRequest
 {
     public static function fromRequest(
-        RequestInfo $request,
-        string $inputName = 'input',
-        string $outputName = 'output',
+        StructuredOutputRequestInfo $request,
+        string                      $inputName = 'input',
+        string                      $outputName = 'output',
     ) : Signature {
         return new Signature(
             input: self::inputSchema($request)->withName($inputName),
@@ -26,11 +26,11 @@ trait CreatesFromRequest
         );
     }
 
-    private static function inputSchema(RequestInfo $request) : Schema {
+    private static function inputSchema(StructuredOutputRequestInfo $request) : Schema {
         return Schema::string(name: 'input', description: 'Input data');
     }
 
-    private static function responseModel(RequestInfo $request) : ResponseModel {
+    private static function responseModel(StructuredOutputRequestInfo $request) : ResponseModel {
         return self::responseModelFactory()->fromAny(
             requestedModel: $request->responseModel,
             toolName: $request->toolName,

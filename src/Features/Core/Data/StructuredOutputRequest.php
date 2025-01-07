@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Features\Core\Data;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Utils\Settings;
 
-class Request
+class StructuredOutputRequest
 {
     use Traits\Request\HandlesMessages;
     use Traits\Request\HandlesRetries;

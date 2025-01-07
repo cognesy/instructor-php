@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Extras\Evals\Executors;
 use Cognesy\Instructor\Extras\Evals\Contracts\CanRunExecution;
 use Cognesy\Instructor\Extras\Evals\Execution;
 use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
-use Cognesy\Instructor\Features\Core\InstructorResponse;
+use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Instructor;
 
 class RunInstructor implements CanRunExecution
@@ -23,7 +23,7 @@ class RunInstructor implements CanRunExecution
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function makeInstructorResponse(Execution $execution) : InstructorResponse {
+    private function makeInstructorResponse(Execution $execution) : StructuredOutputResponse {
         return (new Instructor)
             ->withConnection($execution->get('case.connection'))
             ->request(

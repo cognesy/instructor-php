@@ -13,6 +13,10 @@ class HttpClientConfig
         public int $connectTimeout = 3,
         public int $requestTimeout = 30,
         public int $idleTimeout = -1,
+        // Concurrency-related properties
+        public int $maxConcurrent = 5,
+        public int $poolTimeout = 120,
+        public bool $failOnError = false,
     ) {}
 
     public static function load(string $client) : HttpClientConfig {
@@ -24,6 +28,9 @@ class HttpClientConfig
             connectTimeout: Settings::get(group: "http", key: "clients.$client.connectTimeout", default: 30),
             requestTimeout: Settings::get("http", "clients.$client.requestTimeout", 3),
             idleTimeout: Settings::get(group: "http", key: "clients.$client.idleTimeout", default: 0),
+            maxConcurrent: Settings::get("http", "clients.$client.maxConcurrent", 5),
+            poolTimeout: Settings::get("http", "clients.$client.poolTimeout", 120),
+            failOnError: Settings::get("http", "clients.$client.failOnError", false),
         );
     }
 }
