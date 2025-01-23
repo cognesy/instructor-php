@@ -30,6 +30,7 @@ use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiUsageFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiOAI\GeminiOAIBodyFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\GeminiOAI\GeminiOAIUsageFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\Groq\GroqUsageFormat;
+use Cognesy\Instructor\Features\LLM\Drivers\Minimaxi\MinimaxiBodyFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\Mistral\MistralBodyFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAI\OpenAIMessageFormat;
@@ -69,6 +70,7 @@ class InferenceDriverFactory
             LLMProviderType::Gemini => $this->gemini($config, $httpClient, $events),
             LLMProviderType::GeminiOAI => $this->geminiOAI($config, $httpClient, $events),
             LLMProviderType::Groq => $this->groq($config, $httpClient, $events),
+            LLMProviderType::Minimaxi => $this->minimaxi($config, $httpClient, $events),
             LLMProviderType::Mistral => $this->mistral($config, $httpClient, $events),
             LLMProviderType::OpenAI => $this->openAI($config, $httpClient, $events),
             LLMProviderType::Perplexity => $this->perplexity($config, $httpClient, $events),
@@ -196,6 +198,19 @@ class InferenceDriverFactory
             new OpenAIRequestAdapter(
                 $config,
                 new MistralBodyFormat($config, new OpenAIMessageFormat())
+            ),
+            new OpenAIResponseAdapter(new OpenAIUsageFormat()),
+            $httpClient,
+            $events
+        );
+    }
+
+    public function minimaxi(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+        return new ModularLLMDriver(
+            $config,
+            new OpenAIRequestAdapter(
+                $config,
+                new MinimaxiBodyFormat($config, new OpenAIMessageFormat())
             ),
             new OpenAIResponseAdapter(new OpenAIUsageFormat()),
             $httpClient,

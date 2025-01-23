@@ -13,6 +13,11 @@ trait HandlesMutation
         return $this;
     }
 
+    public function withName(string $newName) : static {
+        $this->name = $newName;
+        return $this;
+    }
+
     public function withMessages(Messages $messages) : static {
         $this->messages = $messages;
         return $this;
@@ -72,6 +77,7 @@ trait HandlesMutation
     }
 
     public function copyFrom(Section $section, bool $withMetadata = true) : static {
+        //$this->withName($section->name());
         $this->withMessages($section->messages());
         $this->withHeader($section->header());
         $this->withFooter($section->footer());

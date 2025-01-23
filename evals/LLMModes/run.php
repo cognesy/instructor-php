@@ -45,12 +45,14 @@ $data = new InferenceData(
     ),
 );
 
-//Debug::enable();
-//$connections = array_keys(Settings::get('llm', 'connections'));
+Debug::enable();
+$connections = ['minimaxi']; // array_keys(Settings::get('llm', 'connections'));
+$modes = [Mode::Tools];//, Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Text];
+$stream = [false]; // [true, false];
 
 $experiment = new Experiment(
-    //cases: InferenceCases::only($connections, [Mode::Tools], [true]),
-    cases: InferenceCases::all(),
+    cases: InferenceCases::only($connections, $modes, $stream),
+    //cases: InferenceCases::all(),
     executor: new RunInference($data),
     processors: [
         new CompanyEval(

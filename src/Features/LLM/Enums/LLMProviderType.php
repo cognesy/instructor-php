@@ -16,6 +16,7 @@ enum LLMProviderType : string
     case GeminiOAI = 'gemini-oai';
     case Groq = 'groq';
     case Jina = 'jina';
+    case Minimaxi = 'minimaxi';
     case Mistral = 'mistral';
     case Ollama = 'ollama';
     case OpenAI = 'openai';

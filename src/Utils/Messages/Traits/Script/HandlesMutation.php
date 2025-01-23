@@ -19,8 +19,9 @@ trait HandlesMutation
     }
 
     public function appendSection(Section $section) : static {
-        if ($this->hasSection($section->name())) {
-            throw new Exception("Section with name '{$section->name()}' already exists - use mergeSection() instead.");
+        $name = $section->name();
+        if ($this->hasSection($name)) {
+            throw new Exception("Section with name '{$name}' already exists - use mergeSection() instead.");
         }
         $this->sections = $this->appendSections([$section]);
         return $this;

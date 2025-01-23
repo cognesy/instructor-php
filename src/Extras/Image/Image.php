@@ -5,9 +5,15 @@ namespace Cognesy\Instructor\Extras\Image;
 use Cognesy\Instructor\Contracts\CanProvideMessages;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Messages;
 use Exception;
 
+/**
+ * The Image class.
+ *
+ * Represent an image in LLM calls. Provides convenience methods to extract data from the image.
+ */
 class Image implements CanProvideMessages
 {
     private string $base64bytes = '';
@@ -29,12 +35,25 @@ class Image implements CanProvideMessages
         $this->prompt = $prompt;
     }
 
+    /**
+     * Create an Image object from a file.
+     *
+     * @param string $imagePath The path to the image file.
+     * @return Image
+     */
     public static function fromFile(string $imagePath): self {
         $mimeType = mime_content_type($imagePath);
         $imageBase64 = 'data:' . $mimeType. ';base64,' . base64_encode(file_get_contents($imagePath));
         return new self($imageBase64, $mimeType);
     }
 
+    /**
+     * Create an Image object from a base64 encoded string.
+     *
+     * @param string $base64string The base64 encoded string.
+     * @param string $mimeType The MIME type of the image.
+     * @return Image
+     */
     public static function fromBase64(string $base64string, string $mimeType): self {
         $prefix = 'data:{$mimeType};base64,';
         if (substr($base64string, 0, 5) !== 'data:') {
@@ -43,36 +62,77 @@ class Image implements CanProvideMessages
         return new self($base64string, $mimeType);
     }
 
+    /**
+     * Create an Image object from an image URL.
+     *
+     * @param string $imageUrl The URL of the image.
+     * @param string $mimeType The MIME type of the image.
+     * @return Image
+     */
     public static function fromUrl(string $imageUrl, string $mimeType): self {
         return new self($imageUrl, $mimeType);
     }
 
+    /**
+     * Get the image as Messages object.
+     *
+     * @return Messages
+     */
     public function toMessages(): Messages {
-        $messages = [[
+        return Messages::fromMessages($this->toMessage());
+    }
+
+    /**
+     * Get the image as a Message object.
+     *
+     * @return Message
+     */
+    public function toMessage(): Message {
+        return Message::fromArray($this->toArray());
+    }
+
+    /**
+     * Get OpenAI API compatible array representation of the image.
+     *
+     * @return array
+     */
+    public function toArray(): array {
+        $array = [
             'role' => 'user',
             'content' => [
                 ['type' => 'text', 'text' => $this->prompt],
                 ['type' => 'image_url', 'image_url' => ['url' => $this->url ?: $this->base64bytes]],
             ],
-        ]];
-        if (empty($this->prompt)) {
-            unset($messages[0]['content'][0]);
-        }
-        return Messages::fromArray($messages);
-    }
-
-    public function toArray(): array {
-        return [
-            'url' => $this->url,
-            'mimeType' => $this->mimeType,
-            'base64bytes' => $this->base64bytes,
         ];
+        if (empty($this->prompt)) {
+            unset($array['content'][0]);
+        }
+        return $array;
     }
 
+    /**
+     * Get the image URL or base64 string.
+     *
+     * @return string
+     */
     public function toImageUrl(): string {
         return $this->url ?: $this->base64bytes;
     }
 
+    /**
+     * Get structured output from the image via Instructor.
+     *
+     * @param string|array|object $responseModel The response model.
+     * @param string $prompt The prompt to extract data from the image.
+     * @param string $connection The connection string.
+     * @param string $model The model to use.
+     * @param string $system The system string.
+     * @param array $examples Examples for the request.
+     * @param int $maxRetries The maximum number of retries.
+     * @param array $options Additional options for the request.
+     * @param Mode $mode The mode to use.
+     * @return mixed
+     */
     public function toData(
         string|array|object $responseModel,
         string $prompt,
@@ -97,10 +157,20 @@ class Image implements CanProvideMessages
         )->get();
     }
 
+    /**
+     * Get the base64 encoded bytes of the image.
+     *
+     * @return string
+     */
     public function getBase64Bytes(): string {
         return $this->base64bytes;
     }
 
+    /**
+     * Get the MIME type of the image.
+     *
+     * @return string
+     */
     public function getMimeType(): string {
         return $this->mimeType;
     }

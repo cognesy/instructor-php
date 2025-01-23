@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Utils\Messages\Traits\Message;
 
 use Cognesy\Instructor\Contracts\CanProvideMessage;
+use Cognesy\Instructor\Extras\Image\Image;
 use Cognesy\Instructor\Utils\Messages\Message;
 use Cognesy\Instructor\Utils\Messages\Utils\Text;
 use Exception;
@@ -44,6 +45,10 @@ trait HandlesCreation
             $input instanceof CanProvideMessage => $input->toMessage(),
             default => new Message($role, Text::fromAny($input)),
         };
+    }
+
+    public static function fromImage(Image $image, string $role = '') : static {
+        return new static(role: $role, content: $image->toArray());
     }
 
     public function clone() : static {

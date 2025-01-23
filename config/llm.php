@@ -144,6 +144,16 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 4096,
         ],
+        'minimaxi' => [
+            'providerType' => LLMProviderType::Minimaxi->value,
+            'apiUrl' => 'https://api.minimaxi.chat/v1',
+            'apiKey' => Env::get('MINIMAXI_API_KEY', ''),
+            'endpoint' => '/text/chatcompletion_v2',
+            'defaultModel' => 'abab6.5s-chat', // 'MiniMax-Text-01',
+            'defaultMaxTokens' => 1024,
+            'contextLength' => 1_000_000,
+            'maxOutputLength' => 4096,
+        ],
         'ollama' => [
             'providerType' => LLMProviderType::Ollama->value,
             'apiUrl' => 'http://localhost:11434/v1',

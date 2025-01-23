@@ -29,7 +29,7 @@ class OpenAIRequestAdapter implements ProviderRequestAdapter
             method: 'POST',
             headers: $this->toHeaders(),
             body: $this->bodyFormat->map($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode),
-            options: [],
+            options: ['stream' => $options['stream'] ?? false],
         );
     }
 

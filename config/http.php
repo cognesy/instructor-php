@@ -3,7 +3,7 @@
 use Cognesy\Instructor\Features\Http\Enums\HttpClientType;
 
 return [
-    'defaultClient' => 'laravel',
+    'defaultClient' => 'guzzle',
 
     'cache' => [
         'enabled' => false,

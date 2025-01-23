@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Extras\Chat\Processors;
 
 use Cognesy\Instructor\Extras\Chat\Contracts\ScriptProcessor;
 use Cognesy\Instructor\Extras\Chat\Utils\SplitMessages;
-use Cognesy\Instructor\Utils\Messages\Messages;
 use Cognesy\Instructor\Utils\Messages\Script;
 use Cognesy\Instructor\Utils\Tokenizer;
 

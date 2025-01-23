@@ -8,18 +8,19 @@ use Cognesy\Instructor\Utils\Tokenizer;
 class SplitMessages
 {
     public function split(Messages $messages, int $tokenLimit): array {
-        $keep = new Messages();
+        $limited = new Messages();
         $overflow = new Messages();
-        $tokens = 0;
+        $totalTokens = 0;
         foreach ($messages->reversed()->each() as $message) {
             $messageTokens = Tokenizer::tokenCount($message->toString());
-            if ($tokens + $messageTokens <= $tokenLimit) {
-                $keep->appendMessage($message);
-                $tokens += $messageTokens;
+            if ($totalTokens + $messageTokens <= $tokenLimit) {
+                $limited->appendMessage($message);
             } else {
                 $overflow->appendMessage($message);
             }
+            $totalTokens += $messageTokens;
         }
-        return [$keep->reversed(), $overflow->reversed()];
+
+        return [$limited->reversed(), $overflow->reversed()];
     }
 }
