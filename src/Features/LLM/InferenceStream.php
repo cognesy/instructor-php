@@ -128,6 +128,7 @@ class InferenceStream
      */
     private function makePartialLLMResponses(Generator $stream) : Generator {
         $content = '';
+        $reasoningContent = '';
         $finishReason = '';
         $this->llmResponses = [];
         $this->lastPartialLLMResponse = null;
@@ -148,8 +149,10 @@ class InferenceStream
                 $finishReason = $partialResponse->finishReason;
             }
             $content .= $partialResponse->contentDelta;
+            $reasoningContent .= $partialResponse->reasoningContentDelta;
             $enrichedResponse = $partialResponse
                 ->withContent($content)
+                ->withReasoningContent($reasoningContent)
                 ->withFinishReason($finishReason);
             $this->events->dispatch(new PartialLLMResponseReceived($enrichedResponse));
 

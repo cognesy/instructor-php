@@ -51,14 +51,14 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter
         };
     }
 
-    private function makeToolCalls(array $data) : ToolCalls {
+    protected function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
             callback: fn(array $call) => $this->makeToolCall($call),
             array: $data['choices'][0]['message']['tool_calls'] ?? []
         ));
     }
 
-    private function makeToolCall(array $data) : ?ToolCall {
+    protected function makeToolCall(array $data) : ?ToolCall {
         if (empty($data)) {
             return null;
         }
@@ -71,7 +71,7 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter
         return ToolCall::fromArray($data['function'])?->withId($data['id']);
     }
 
-    private function makeContent(array $data): string {
+    protected function makeContent(array $data): string {
         $contentMsg = $data['choices'][0]['message']['content'] ?? '';
         $contentFnArgs = $data['choices'][0]['message']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {
@@ -81,7 +81,7 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter
         };
     }
 
-    private function makeContentDelta(array $data): string {
+    protected function makeContentDelta(array $data): string {
         $deltaContent = $data['choices'][0]['delta']['content'] ?? '';
         $deltaFnArgs = $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {
@@ -91,15 +91,15 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter
         };
     }
 
-    private function makeToolId(array $data) : string {
+    protected function makeToolId(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['id'] ?? '';
     }
 
-    private function makeToolNameDelta(array $data) : string {
+    protected function makeToolNameDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['name'] ?? '';
     }
 
-    private function makeToolArgsDelta(array $data) : string {
+    protected function makeToolArgsDelta(array $data) : string {
         return $data['choices'][0]['delta']['tool_calls'][0]['function']['arguments'] ?? '';
     }
 }

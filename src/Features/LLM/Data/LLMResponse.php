@@ -13,6 +13,8 @@ class LLMResponse
         private string $content = '',
         private string $finishReason = '',
         private ?ToolCalls $toolCalls = null,
+        private string $reasoningContent = '',
+        //private array $citations = [],
         private ?Usage $usage = null,
         private array  $responseData = [],
     ) {
@@ -51,6 +53,19 @@ class LLMResponse
     public function withContent(string $content) : self {
         $this->content = $content;
         return $this;
+    }
+
+    public function withReasoningContent(string $reasoningContent) : self {
+        $this->reasoningContent = $reasoningContent;
+        return $this;
+    }
+
+    public function reasoningContent() : string {
+        return $this->reasoningContent;
+    }
+
+    public function hasReasoningContent() : bool {
+        return $this->reasoningContent !== '';
     }
 
     public function json(): Json {
@@ -103,16 +118,19 @@ class LLMResponse
         }
 
         $content = '';
+        $reasoningContent = '';
         foreach($partialResponses as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
             $content .= $partialResponse->contentDelta;
+            $reasoningContent .= $partialResponse->reasoningContentDelta;
             $this->responseData[] = $partialResponse->responseData;
             $this->usage()->accumulate($partialResponse->usage);
             $this->finishReason = $partialResponse->finishReason;
         }
         $this->content = $content;
+        $this->reasoningContent = $reasoningContent;
 
         $tools = $this->makeTools($partialResponses);
         if (!empty($tools)) {

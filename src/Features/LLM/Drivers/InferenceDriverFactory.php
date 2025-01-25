@@ -22,6 +22,7 @@ use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2BodyFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2RequestAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2ResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\CohereV2\CohereV2UsageFormat;
+use Cognesy\Instructor\Features\LLM\Drivers\Deepseek\DeepseekResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiBodyFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiMessageFormat;
 use Cognesy\Instructor\Features\LLM\Drivers\Gemini\GeminiRequestAdapter;
@@ -67,6 +68,7 @@ class InferenceDriverFactory
             LLMProviderType::Cerebras => $this->cerebras($config, $httpClient, $events),
             LLMProviderType::CohereV1 => $this->cohereV1($config, $httpClient, $events),
             LLMProviderType::CohereV2 => $this->cohereV2($config, $httpClient, $events),
+            LLMProviderType::DeepSeek => $this->deepseek($config, $httpClient, $events),
             LLMProviderType::Gemini => $this->gemini($config, $httpClient, $events),
             LLMProviderType::GeminiOAI => $this->geminiOAI($config, $httpClient, $events),
             LLMProviderType::Groq => $this->groq($config, $httpClient, $events),
@@ -78,7 +80,6 @@ class InferenceDriverFactory
             LLMProviderType::XAi => $this->xAi($config, $httpClient, $events),
             // OpenAI compatible driver for generic OAI providers
             LLMProviderType::A21,
-            LLMProviderType::DeepSeek,
             LLMProviderType::Fireworks,
             LLMProviderType::Ollama,
             LLMProviderType::OpenAICompatible,
@@ -148,6 +149,19 @@ class InferenceDriverFactory
                 new CohereV2BodyFormat($config, new OpenAIMessageFormat())
             ),
             new CohereV2ResponseAdapter(new CohereV2UsageFormat()),
+            $httpClient,
+            $events
+        );
+    }
+
+    public function deepseek(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+        return new ModularLLMDriver(
+            $config,
+            new OpenAIRequestAdapter(
+                $config,
+                new OpenAICompatibleBodyFormat($config, new OpenAIMessageFormat())
+            ),
+            new DeepseekResponseAdapter(new OpenAIUsageFormat()),
             $httpClient,
             $events
         );

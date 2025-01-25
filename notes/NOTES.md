@@ -6,6 +6,10 @@
 - Unify template conventions - <||> vs. {{}}, update docs
 - Full control over generated prompt (access to Script object processing)
 - ToolUse - apply context variables to message sequence (via ScriptParameters??)
+- Predicted outputs API
+- Batch completion API
+- Citations API
+- Reasoning traces support in response objects
 
 ## Low priority
 

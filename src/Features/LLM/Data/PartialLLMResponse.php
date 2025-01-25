@@ -8,9 +8,11 @@ class PartialLLMResponse
 {
     private mixed $value = null; // data extracted from response or tool calls
     private string $content = '';
+    private string $reasoningContent = '';
 
     public function __construct(
         public string $contentDelta = '',
+        public string $reasoningContentDelta = '',
         public string $toolId = '',
         public string $toolName = '',
         public string $toolArgs = '',
@@ -45,6 +47,19 @@ class PartialLLMResponse
 
     public function content() : string {
         return $this->content;
+    }
+
+    public function reasoningContent() : string {
+        return $this->reasoningContent;
+    }
+
+    public function withReasoningContent(string $reasoningContent) : self {
+        $this->reasoningContent = $reasoningContent;
+        return $this;
+    }
+
+    public function hasReasoningContent() : bool {
+        return $this->reasoningContent !== '';
     }
 
     public function json(): string {

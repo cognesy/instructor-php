@@ -94,6 +94,16 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 8192,
         ],
+        'deepseek-r' => [
+            'providerType' => LLMProviderType::DeepSeek->value,
+            'apiUrl' => 'https://api.deepseek.com',
+            'apiKey' => Env::get('DEEPSEEK_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'deepseek-reasoner',
+            'defaultMaxTokens' => 1024,
+            'contextLength' => 128_000,
+            'maxOutputLength' => 8192,
+        ],
         'fireworks' => [
             'providerType' => LLMProviderType::Fireworks->value,
             'apiUrl' => 'https://api.fireworks.ai/inference/v1',
