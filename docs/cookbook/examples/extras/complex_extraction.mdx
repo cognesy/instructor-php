@@ -97,7 +97,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-//Debug::enable();
+Debug::enable();
 
 $instructor = new Instructor;
 

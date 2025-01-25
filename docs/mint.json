@@ -192,6 +192,7 @@
         {
             "group": "Extras",
             "pages": [
+                "cookbook/examples/extras/chat_with_summary",
                 "cookbook/examples/extras/complex_extraction",
                 "cookbook/examples/extras/complex_extraction_claude",
                 "cookbook/examples/extras/complex_extraction_cohere",
@@ -206,7 +207,9 @@
                 "cookbook/examples/extras/llm_json_schema",
                 "cookbook/examples/extras/llm_md_json",
                 "cookbook/examples/extras/llm_tools",
+                "cookbook/examples/extras/parallel_calls",
                 "cookbook/examples/extras/prompt_text",
+                "cookbook/examples/extras/reasoning_content",
                 "cookbook/examples/extras/schema",
                 "cookbook/examples/extras/schema_dynamic",
                 "cookbook/examples/extras/summary_with_llm",
