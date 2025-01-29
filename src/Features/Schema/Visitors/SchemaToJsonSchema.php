@@ -107,10 +107,14 @@ class SchemaToJsonSchema implements CanVisitSchema
     }
 
     public function visitScalarSchema(ScalarSchema $schema): void {
-        $this->result = array_filter([
+        $array = [
             'type' => $schema->typeDetails->jsonType(),
             'description' => $schema->description,
-        ]);
+        ];
+        if ($schema->typeDetails->enumValues) {
+            $array['enum'] = $schema->typeDetails->enumValues;
+        }
+        $this->result = array_filter($array);
     }
 
     public function visitObjectRefSchema(ObjectRefSchema $schema): void {
