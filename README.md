@@ -30,6 +30,14 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 - Integrate LLM support into your existing PHP code with minimal friction - no framework, no extensive code changes
 - Framework agnostic - use it with Laravel, Symfony, your custom framework, or - with no framework at all
 
+### Various extraction modes
+
+- Supports multiple extraction modes to allow working with various models depending on their capabilities
+- `Mode::Json` - use response_format to get LLM follow provided JSON Schema
+- `Mode::JsonSchema` - use strict JSON Schema mode to get LLM follow provided JSON Schema
+- `Mode::Tools` - use tool calling API to get LLM follow provided JSON Schema
+- `Mode::MdJson` - extract via prompting LLM to nudge it to generate provided JSON Schema
+
 ### Flexible inputs
 
 - Process various types of input data: text, series of chat messages or images using the same, simple API
