@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Features\LLM;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
@@ -19,18 +19,18 @@ use InvalidArgumentException;
 class InferenceResponse
 {
     protected EventDispatcher $events;
-    protected CanAccessResponse $response;
+    protected ResponseAdapter $response;
     protected CanHandleInference $driver;
     protected string $responseContent = '';
     protected LLMConfig $config;
     protected bool $isStreamed = false;
 
     public function __construct(
-        CanAccessResponse $response,
+        ResponseAdapter    $response,
         CanHandleInference $driver,
-        LLMConfig $config,
-        bool $isStreamed = false,
-        ?EventDispatcher $events = null,
+        LLMConfig          $config,
+        bool               $isStreamed = false,
+        ?EventDispatcher   $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->driver = $driver;

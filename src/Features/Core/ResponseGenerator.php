@@ -12,7 +12,7 @@ use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Utils\Chain;
+use Cognesy\Instructor\Utils\ResultChain;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
@@ -27,7 +27,7 @@ class ResponseGenerator implements CanGenerateResponse
     ) {}
 
     public function makeResponse(LLMResponse $response, ResponseModel $responseModel) : Result {
-        $result = Chain::from(fn() => $response->json()->toString())
+        $result = ResultChain::from(fn() => $response->json()->toString())
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),
                 default => Result::success($responseJson)

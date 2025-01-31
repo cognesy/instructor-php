@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Features\LLM;
 
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\InferenceRequested;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\HttpClient;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
@@ -158,9 +158,9 @@ class LLM
      * Returns the HTTP response object for given inference request
      *
      * @param InferenceRequest $request
-     * @return CanAccessResponse
+     * @return ResponseAdapter
      */
-    public function handleInferenceRequest(InferenceRequest $request) : CanAccessResponse {
+    public function handleInferenceRequest(InferenceRequest $request) : ResponseAdapter {
         $this->events->dispatch(new InferenceRequested($request));
         return $this->driver->handle($request);
     }

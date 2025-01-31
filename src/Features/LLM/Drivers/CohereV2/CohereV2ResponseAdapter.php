@@ -48,7 +48,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 
     // OVERRIDES - HELPERS ///////////////////////////////////
 
-    private function makeContent(array $data): string {
+    protected function makeContent(array $data): string {
         $contentMsg = $data['message']['content'][0]['text'] ?? '';
         $contentFnArgs = $data['message']['tool_calls'][0]['function']['arguments'] ?? '';
         return match(true) {
@@ -58,14 +58,14 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         };
     }
 
-    private function makeToolCalls(array $data) : ToolCalls {
+    protected function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromArray(array_map(
             callback: fn(array $call) => $this->makeToolCall($call),
             array: $data['message']['tool_calls'] ?? [],
         ));
     }
 
-    private function makeToolCall(array $data) : ?ToolCall {
+    protected function makeToolCall(array $data) : ?ToolCall {
         if (empty($data)) {
             return null;
         }
@@ -78,7 +78,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         return ToolCall::fromArray($data['function'] ?? [])?->withId($data['id'] ?? '');
     }
 
-    private function makeContentDelta(array $data): string {
+    protected function makeContentDelta(array $data): string {
         $deltaContent = match(true) {
             ([] !== ($data['delta']['message']['content'] ?? [])) => $this->normalizeContent($data['delta']['message']['content']),
             default => '',
@@ -91,7 +91,7 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         };
     }
 
-    private function normalizeContent(array|string $content) : string {
+    protected function normalizeContent(array|string $content) : string {
         return is_array($content) ? $content['text'] : $content;
     }
 }

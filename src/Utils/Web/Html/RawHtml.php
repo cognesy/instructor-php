@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Instructor\Utils\Web\Html;
 
-use Cognesy\Instructor\Utils\Pipeline;
+use Cognesy\Instructor\Utils\RawChain;
 use DOMDocument;
 use DOMXPath;
 use League\HTMLToMarkdown\HtmlConverter;
@@ -23,7 +23,7 @@ class RawHtml
     }
 
     public function asCleanHtml(): string {
-        return (new Pipeline())
+        return (new RawChain())
             ->through([
                 $this->normalizeEncoding(...),
                 $this->cleanupWhitespace(...),

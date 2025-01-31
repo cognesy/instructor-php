@@ -20,7 +20,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
 use Cognesy\Instructor\Features\Core\Data\Example;
 use Cognesy\Instructor\Instructor;
 
@@ -32,7 +32,7 @@ class User {
 echo "\nREQUEST:\n";
 $user = (new Instructor)
     // let's dump the request data to see how examples are used in requests
-    ->onEvent(RequestSentToLLM::class, fn($event) => dump($event))
+    ->onEvent(HttpRequestSent::class, fn($event) => dump($event))
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,

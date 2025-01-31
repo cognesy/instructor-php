@@ -46,7 +46,7 @@ $instructor = (new Instructor)->withConnection('cerebras');
 $user = $instructor->respond(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'llama3.1-70b', // set your own value/source
+    model: 'llama3.1-8b', // set your own value/source
     mode: Mode::Json,
     examples: [[
         'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',

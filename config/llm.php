@@ -59,7 +59,7 @@ return [
             'apiUrl' => 'https://api.cerebras.ai/v1',
             'apiKey' => Env::get('CEREBRAS_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'llama3.1-70b',
+            'defaultModel' => 'llama3.1-8b', // ''
             'defaultMaxTokens' => 1024,
             'contextLength' => 128_000,
             'maxOutputLength' => 2048,

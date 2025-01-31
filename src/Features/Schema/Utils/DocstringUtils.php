@@ -1,13 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Features\Schema\Utils;
 
-use Cognesy\Instructor\Utils\Pipeline;
+use Cognesy\Instructor\Utils\RawChain;
 
 class DocstringUtils
 {
     public static function descriptionsOnly(string $code): string
     {
-        return (new Pipeline())
+        return (new RawChain())
             ->through(fn($code) => self::removeMarkers($code))
             ->through(fn($code) => self::removeAnnotations($code))
             ->then(fn($code) => trim($code))

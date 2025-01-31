@@ -2,11 +2,11 @@
 
 namespace Cognesy\Instructor\Features\Http\Adapters;
 
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Generator;
 use Illuminate\Http\Client\Response;
 
-class LaravelResponse implements CanAccessResponse
+class LaravelResponseAdapter implements ResponseAdapter
 {
     public function __construct(
         private Response $response,

@@ -20,7 +20,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
 use Cognesy\Instructor\Instructor;
 
 class User {
@@ -30,7 +30,7 @@ class User {
 
 $instructor = (new Instructor)
     // let's dump the request data to see how customized prompts look like in requests
-    ->onEvent(RequestSentToLLM::class, fn(RequestSentToLLM $event) => dump($event));
+    ->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
 
 print("\n# Request for Mode::Tools:\n\n");
 $user = $instructor

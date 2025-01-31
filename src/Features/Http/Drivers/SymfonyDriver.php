@@ -3,16 +3,20 @@
 namespace Cognesy\Instructor\Features\Http\Drivers;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
-use Cognesy\Instructor\Events\HttpClient\RequestToLLMFailed;
-use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
-use Cognesy\Instructor\Features\Http\Adapters\SymfonyResponse;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestFailed;
+use Cognesy\Instructor\Events\HttpClient\HttpResponseReceived;
+use Cognesy\Instructor\Features\Http\Adapters\SymfonyResponseAdapter;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
 use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
+use Cognesy\Instructor\Features\Http\Exceptions\RequestException;
 use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
+use InvalidArgumentException;
+use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -26,17 +30,17 @@ class SymfonyDriver implements CanHandleHttp
         protected ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->client = $httpClient ?? HttpClient::create();
+        $this->client = $httpClient ?? HttpClient::create(['http_version' => '2.0']);
     }
 
-    public function handle(HttpClientRequest $request) : CanAccessResponse {
+    public function handle(HttpClientRequest $request) : ResponseAdapter {
         $url = $request->url();
         $headers = $request->headers();
         $body = $request->body();
         $method = $request->method();
         $streaming = $request->isStreamed();
 
-        $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
+        $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
         try {
             Debug::tryDumpUrl($url);
             $response = $this->client->request(
@@ -51,11 +55,11 @@ class SymfonyDriver implements CanHandleHttp
                 ]
             );
         } catch (Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($url, $method, $headers, $body, $e->getMessage()));
-            throw $e;
+            $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
+            throw new RequestException($e);
         }
-        $this->events->dispatch(new ResponseReceivedFromLLM($response->getStatusCode()));
-        return new SymfonyResponse(
+        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+        return new SymfonyResponseAdapter(
             client: $this->client,
             response: $response,
             connectTimeout: $this->config->connectTimeout ?? 3,
@@ -63,94 +67,223 @@ class SymfonyDriver implements CanHandleHttp
     }
 
     public function pool(array $requests, ?int $maxConcurrent = null): array {
-        // Use config maxConcurrent if not provided
         $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
-
-        // Validate requests and prepare responses array
         $responses = [];
+        $httpResponses = $this->prepareHttpResponses($requests);
+
+        try {
+            $this->processHttpResponses($httpResponses, $responses, $maxConcurrent);
+        } catch (Exception $e) {
+            return $this->handlePoolException($e, $httpResponses);
+        }
+
+        return $this->normalizeResponses($responses);
+    }
+
+    // INTERNAL /////////////////////////////////////////////////
+
+    private function prepareHttpResponses(array $requests): array {
         $httpResponses = [];
 
-        // Create array of responses for streaming
         foreach ($requests as $index => $request) {
-            if (!$request instanceof HttpClientRequest) {
-                throw new Exception('Invalid request type in pool');
-            }
-
             try {
-                // Prepare the request options
-                $options = [
-                    'headers' => $request->headers(),
-                    'body' => is_array($request->body()) ? json_encode($request->body()) : $request->body(),
-                    'timeout' => $this->config->idleTimeout ?? 0,
-                    'max_duration' => $this->config->requestTimeout ?? 30,
-                    'buffer' => true, // We don't want streaming for pooled requests
-                ];
-
-                // Create the request
-                $httpResponses[$index] = $this->client->request(
-                    method: $request->method(),
-                    url: $request->url(),
-                    options: $options
-                );
-
-                // Dispatch event for request
-                $this->events->dispatch(new RequestSentToLLM(
-                    $request->url(),
-                    $request->method(),
-                    $request->headers(),
-                    $request->body()
-                ));
-
+                $this->validateRequest($request);
+                $httpResponses[$index] = $this->createHttpResponse($request);
+                $this->dispatchRequestEvent($request);
             } catch (Exception $e) {
-                $this->events->dispatch(new RequestToLLMFailed(
-                    $request->url(),
-                    $request->method(),
-                    $request->headers(),
-                    $request->body(),
-                    $e->getMessage()
+                $this->handleRequestError($e, $request);
+            }
+        }
+
+        return $httpResponses;
+    }
+
+    private function validateRequest($request): void {
+        if (!$request instanceof HttpClientRequest) {
+            throw new InvalidArgumentException('Invalid request type in pool');
+        }
+    }
+
+    private function createHttpResponse(HttpClientRequest $request) {
+        return $this->client->request(
+            method: $request->method(),
+            url: $request->url(),
+            options: $this->createRequestOptions($request)
+        );
+    }
+
+    private function createRequestOptions(HttpClientRequest $request): array {
+        return [
+            'headers' => $request->headers(),
+            'body' => is_array($request->body()) ? json_encode($request->body()) : $request->body(),
+            'timeout' => $this->config->idleTimeout ?? 0,
+            'max_duration' => $this->config->requestTimeout ?? 30,
+            'buffer' => true,
+        ];
+    }
+
+    private function processHttpResponses(array $httpResponses, array &$responses, int $maxConcurrent): void {
+        try {
+            foreach ($this->client->stream($httpResponses, $this->config->poolTimeout) as $response => $chunk) {
+                try {
+                    if ($chunk->isTimeout()) {
+                        if ($this->config->failOnError) {
+                            throw new RequestException('Request timeout in pool');
+                        }
+                        $this->handleTimeout($response, $httpResponses, $responses);
+                        continue;
+                    }
+
+                    if ($chunk->isLast()) {
+                        $this->processLastChunk($response, $httpResponses, $responses);
+
+                        if ($this->isPoolComplete($responses, count($httpResponses), $maxConcurrent)) {
+                            break;
+                        }
+                    }
+                } catch (TransportException $e) {
+                    if ($this->config->failOnError) {
+                        throw new RequestException($e->getMessage());
+                    }
+                    $index = array_search($response, $httpResponses, true);
+                    if ($index !== false) {
+                        $responses[$index] = Result::failure(new RequestException($e->getMessage()));
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            if ($this->config->failOnError) {
+                throw new RequestException($e->getMessage());
+            }
+            // Handle any remaining unprocessed responses
+            foreach ($httpResponses as $index => $response) {
+                if (!isset($responses[$index])) {
+                    $responses[$index] = Result::failure(new RequestException($e->getMessage()));
+                }
+            }
+        } finally {
+            // Cancel any leftover/unconsumed responses
+            foreach ($httpResponses as $resp) {
+                try {
+                    $resp->cancel();
+                } catch (\Throwable $t) {
+                    // swallow any cancel() error
+               }
+            }
+        }
+    }
+
+    private function handleTimeout($response, array $httpResponses, array &$responses): void {
+        $timeoutException = new RequestException('Request timeout in pool');
+        if ($this->config->failOnError) {
+            throw $timeoutException;
+        }
+        $index = array_search($response, $httpResponses, true);
+        if ($index !== false) {
+            $responses[$index] = Result::failure($timeoutException);
+        }
+    }
+
+    private function checkForErrors($response): ?RequestException {
+        try {
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 400) {
+                $responseInfo = $response->getInfo();
+                $error = new RequestException(sprintf(
+                    'HTTP error %d: %s',
+                    $statusCode,
+                    $responseInfo['response_headers'][0] ?? 'Unknown error'
                 ));
                 if ($this->config->failOnError) {
-                    throw $e;
+                    throw $error;
                 }
-                // Skip failed request if not failing on error
-                continue;
+                return $error;
             }
+            return null;
+        } catch (TransportException $e) {
+            $error = new RequestException($e->getMessage());
+            if ($this->config->failOnError) {
+                throw $error;
+            }
+            return $error;
+        }
+    }
+
+    private function processLastChunk($response, array $httpResponses, array &$responses): void {
+        $index = array_search($response, $httpResponses, true);
+
+        try {
+            $statusCode = $response->getStatusCode();
+            $error = $this->checkForErrors($response);
+
+            if ($error !== null) {
+                $responses[$index] = $this->handleError($error);
+            } else {
+                $responses[$index] = $this->createSuccessResponse($response);
+            }
+
+            $this->events->dispatch(new HttpResponseReceived($statusCode));
+        } catch (Exception $e) {
+            $responses[$index] = $this->handleError($e);
+        }
+    }
+
+    private function createSuccessResponse($response): Result {
+        return Result::success(new SymfonyResponseAdapter(
+            client: $this->client,
+            response: $response,
+            connectTimeout: $this->config->connectTimeout ?? 3
+        ));
+    }
+
+    private function handleError(Exception $error): Result {
+        if ($this->config->failOnError) {
+            throw new RequestException($error);
+        }
+        return Result::failure($error);
+    }
+
+    private function handlePoolException(Exception $e, array $httpResponses): array {
+        if ($this->config->failOnError) {
+            throw new RequestException($e);
         }
 
-        // Process responses using Symfony's stream
-        foreach ($this->client->stream($httpResponses, $this->config->poolTimeout) as $response => $chunk) {
-            if ($chunk->isTimeout()) {
-                // Handle timeout - skip or throw based on config
-                if ($this->config->failOnError) {
-                    throw new Exception('Request timeout in pool');
-                }
-                continue;
-            }
-
-            if ($chunk->isLast()) {
-                // Find the index of this response
-                $index = array_search($response, $httpResponses, true);
-
-                // Create our response adapter
-                $responses[$index] = new SymfonyResponse(
-                    client: $this->client,
-                    response: $response,
-                    connectTimeout: $this->config->connectTimeout ?? 3
-                );
-
-                // Dispatch event for successful response
-                $this->events->dispatch(new ResponseReceivedFromLLM($response->getStatusCode()));
-
-                // If we've got all responses, we can break
-                if (count($responses) >= min(count($requests), $maxConcurrent)) {
-                    break;
-                }
-            }
+        $responses = [];
+        foreach ($httpResponses as $index => $_) {
+            $responses[$index] = Result::failure($e);
         }
+        return $responses;
+    }
 
-        // Sort responses by original request order
+    private function isPoolComplete(array $responses, int $totalRequests, int $maxConcurrent): bool {
+        return count($responses) >= min($totalRequests, $maxConcurrent);
+    }
+
+    private function dispatchRequestEvent(HttpClientRequest $request): void {
+        $this->events->dispatch(new HttpRequestSent(
+            $request->url(),
+            $request->method(),
+            $request->headers(),
+            $request->body()
+        ));
+    }
+
+    private function handleRequestError(Exception $e, HttpClientRequest $request): void {
+        $this->events->dispatch(new HttpRequestFailed(
+            $request->url(),
+            $request->method(),
+            $request->headers(),
+            $request->body(),
+            $e->getMessage()
+        ));
+
+        if ($this->config->failOnError) {
+            throw new RequestException($e);
+        }
+    }
+
+    private function normalizeResponses(array $responses): array {
         ksort($responses);
-
         return array_values($responses);
     }
 }

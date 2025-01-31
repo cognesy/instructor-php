@@ -6,7 +6,7 @@ use Closure;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Inference\LLMResponseReceived;
 use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
 use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
@@ -24,7 +24,7 @@ class InferenceStream
     protected EventDispatcher $events;
     protected EventStreamReader $reader;
     protected Generator $stream;
-    protected CanAccessResponse $response;
+    protected ResponseAdapter $response;
     protected CanHandleInference $driver;
     protected bool $streamReceived = false;
     protected array $streamEvents = [];
@@ -36,10 +36,10 @@ class InferenceStream
     protected ?Closure $onPartialResponse = null;
 
     public function __construct(
-        CanAccessResponse $response,
+        ResponseAdapter    $response,
         CanHandleInference $driver,
-        LLMConfig $config,
-        ?EventDispatcher $events = null,
+        LLMConfig          $config,
+        ?EventDispatcher   $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->driver = $driver;

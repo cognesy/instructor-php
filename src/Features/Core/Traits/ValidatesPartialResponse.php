@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Features\Core\Traits;
 use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Utils\Arrays;
-use Cognesy\Instructor\Utils\Chain;
+use Cognesy\Instructor\Utils\ResultChain;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
@@ -18,7 +18,7 @@ trait ValidatesPartialResponse
         bool $preventJsonSchema,
         bool $matchToExpectedFields
     ) : Result {
-        return Chain::make()
+        return ResultChain::make()
             ->through(fn() => $this->preventJsonSchemaResponse($preventJsonSchema, $partialResponseText))
             ->through(fn() => $this->detectNonMatchingJson($matchToExpectedFields, $partialResponseText, $responseModel))
             ->onFailure(fn($result) => throw new JsonParsingException(

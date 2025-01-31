@@ -19,7 +19,7 @@ until results meet the requirements or maxRetries is reached.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
@@ -38,7 +38,7 @@ print("INPUT:\n$text\n\n");
 
 print("RESULTS:\n");
 $user = (new Instructor)
-    ->onEvent(RequestSentToLLM::class, fn($event) => print("[ ] Requesting LLM response...\n"))
+    ->onEvent(HttpRequestSent::class, fn($event) => print("[ ] Requesting LLM response...\n"))
     ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".json_encode($event->response)."\n"))
     ->onEvent(ResponseValidationFailed::class, fn($event) => print("[!] Validation failed:\n    $event\n"))
     ->onEvent(ResponseValidated::class, fn($event) => print("[ ] Validation succeeded.\n"))

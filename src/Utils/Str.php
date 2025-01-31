@@ -42,7 +42,7 @@ class Str
     }
 
     static private function spaceSeparated(string $input) : string {
-        return (new Pipeline)->through([
+        return (new RawChain)->through([
             // separate groups of capitalized words
             fn ($data) => preg_replace('/([A-Z])([a-z])/', ' $1$2', $data),
             // de-camel

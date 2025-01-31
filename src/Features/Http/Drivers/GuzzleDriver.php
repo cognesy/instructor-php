@@ -3,23 +3,27 @@
 namespace Cognesy\Instructor\Features\Http\Drivers;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
-use Cognesy\Instructor\Events\HttpClient\RequestToLLMFailed;
-use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
-use Cognesy\Instructor\Features\Http\Adapters\PsrResponse;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestFailed;
+use Cognesy\Instructor\Events\HttpClient\HttpResponseReceived;
+use Cognesy\Instructor\Features\Http\Adapters\PsrResponseAdapter;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
 use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
+use Cognesy\Instructor\Features\Http\Exceptions\RequestException;
 use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\CachingStream;
+use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -51,13 +55,13 @@ class GuzzleDriver implements CanHandleHttp
         };
     }
 
-    public function handle(HttpClientRequest $request) : CanAccessResponse {
+    public function handle(HttpClientRequest $request) : ResponseAdapter {
         $url = $request->url();
         $headers = $request->headers();
         $body = $request->body();
         $method = $request->method();
         $streaming = $request->isStreamed();
-        $this->events->dispatch(new RequestSentToLLM($url, $method, $headers, $body));
+        $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
         Debug::tryDumpUrl($url);
         try {
             $response = $this->client->request($method, $url, [
@@ -69,71 +73,99 @@ class GuzzleDriver implements CanHandleHttp
                 'stream' => $streaming,
             ]);
         } catch (Exception $e) {
-            $this->events->dispatch(new RequestToLLMFailed($url, $method, $headers, $body, $e->getMessage()));
-            throw $e;
+            $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
+            throw new RequestException($e);
         }
-        $this->events->dispatch(new ResponseReceivedFromLLM($response->getStatusCode()));
-        return new PsrResponse(
+        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+        return new PsrResponseAdapter(
             response: $response,
             stream: $response->getBody()
         );
     }
 
     public function pool(array $requests, ?int $maxConcurrent = null): array {
-        $promises = [];
         $responses = [];
-
-        // Use class config if maxConcurrent not provided
         $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;
 
-        // Create promises for each request
-        foreach ($requests as $key => $request) {
-            if (!$request instanceof HttpClientRequest) {
-                throw new InvalidArgumentException('Invalid request type in pool');
-            }
-
-            $promises[$key] = $this->client->requestAsync(
-                $request->method(),
-                $request->url(),
-                [
-                    'headers' => $request->headers(),
-                    'json' => $request->body(),
-                    'connect_timeout' => $this->config->connectTimeout,
-                    'timeout' => $this->config->requestTimeout,
-                    'debug' => Debug::isFlag('http.trace') ?? false,
-                ]
-            );
-        }
-
-        // Use Guzzle's Pool for handling concurrent requests
-        $pool = new Pool($this->client, $promises, [
-            'concurrency' => $concurrency,
-            'fulfilled' => function ($response, $index) use (&$responses) {
-                $responses[$index] = new PsrResponse(
-                    response: $response,
-                    stream: $response->getBody()
-                );
-            },
-            'rejected' => function ($reason, $index) {
-                if ($this->config->failOnError) {
-                    throw $reason;
-                }
-                // Log or handle the error as needed
-                $this->events->dispatch(new RequestToLLMFailed(
-                    'Pool request ' . $index,
-                    'POOL',
-                    [],
-                    [],
-                    $reason->getMessage()
-                ));
-            },
-        ]);
+        $pool = new Pool($this->client,
+            $this->createRequestGenerator($requests)(),
+            $this->createPoolConfiguration($responses, $concurrency)
+        );
 
         // Execute the pool with a timeout
-        $promise = $pool->promise();
-        $promise->wait($this->config->poolTimeout);
+        $pool->promise()->wait($this->config->poolTimeout);
 
-        // Ensure responses are in the same order as requests
+        return $this->normalizeResponses($responses);
+    }
+
+    private function createRequestGenerator(array $requests): callable {
+        return function() use ($requests) {
+            foreach ($requests as $key => $request) {
+                if (!$request instanceof HttpClientRequest) {
+                    throw new InvalidArgumentException('Invalid request type in pool');
+                }
+
+                $this->dispatchRequestEvent($request);
+                yield $key => $this->createPsrRequest($request);
+            }
+        };
+    }
+
+    private function createPsrRequest(HttpClientRequest $request): Request {
+        return new Request(
+            $request->method(),
+            $request->url(),
+            $request->headers(),
+            json_encode($request->body())
+        );
+    }
+
+    private function createPoolConfiguration(array &$responses, int $concurrency): array {
+        return [
+            'concurrency' => $concurrency,
+            'fulfilled' => function(ResponseInterface $response, $index) use (&$responses) {
+                $responses[$index] = $this->handleFulfilledResponse($response);
+            },
+            'rejected' => function($reason, $index) use (&$responses) {
+                $responses[$index] = $this->handleRejectedResponse($reason);
+            },
+        ];
+    }
+
+    private function handleFulfilledResponse(ResponseInterface $response): Result {
+        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+        return Result::success(new PsrResponseAdapter(
+            response: $response,
+            stream: $response->getBody()
+        ));
+    }
+
+    private function handleRejectedResponse($reason): Result {
+        if ($this->config->failOnError) {
+            throw new RequestException($reason);
+        }
+
+        $this->events->dispatch(new HttpRequestFailed(
+            'Pool request',
+            'POOL',
+            [],
+            [],
+            $reason->getMessage()
+        ));
+
+        return Result::failure($reason);
+    }
+
+    private function dispatchRequestEvent(HttpClientRequest $request): void {
+        $this->events->dispatch(new HttpRequestSent(
+            $request->url(),
+            $request->method(),
+            $request->headers(),
+            $request->body()
+        ));
+    }
+
+    private function normalizeResponses(array $responses): array {
         ksort($responses);
         return array_values($responses);
     }

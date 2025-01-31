@@ -50,7 +50,7 @@ class Company {
 
 $instructor = (new Instructor)->withConnection('openai');
 
-$companyGen = Webpage::withScraper('none')
+$companyGen = Webpage::withScraper('scrapfly')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
     ->cleanup()
     ->select('.directory-providers__list')

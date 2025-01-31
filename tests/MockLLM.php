@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
 use Mockery;
@@ -11,7 +11,7 @@ class MockLLM
     static public function get(array $args) : CanHandleHttp {
 //        $mockLLM = Mockery::mock(OpenAIDriver::class);
         $mockHttp = Mockery::mock(GuzzleDriver::class);
-        $mockResponse = Mockery::mock(CanAccessResponse::class);
+        $mockResponse = Mockery::mock(ResponseAdapter::class);
 
         $list = [];
         foreach ($args as $arg) {

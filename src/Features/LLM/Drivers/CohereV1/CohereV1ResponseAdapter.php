@@ -50,42 +50,42 @@ class CohereV1ResponseAdapter implements ProviderResponseAdapter
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function makeToolCalls(array $data) : ToolCalls {
+    protected function makeToolCalls(array $data) : ToolCalls {
         return ToolCalls::fromMapper(
             $data['tool_calls'] ?? [],
             fn($call) => ToolCall::fromArray(['name' => $call['name'] ?? '', 'arguments' => $call['parameters'] ?? ''])
         );
     }
 
-    private function makeContent(array $data) : string {
+    protected function makeContent(array $data) : string {
         return ($data['text'] ?? '') . (!empty($data['tool_calls'])
                 ? ("\n" . Json::encode($data['tool_calls']))
                 : ''
             );
     }
 
-    private function makeContentDelta(array $data) : string {
+    protected function makeContentDelta(array $data) : string {
         if (!$this->isStreamChunk($data)) {
             return '';
         }
         return $data['tool_call_delta']['parameters'] ?? $data['text'] ?? '';
     }
 
-    private function makeToolId(array $data) {
+    protected function makeToolId(array $data) {
         if (!$this->isStreamChunk($data)) {
             return '';
         }
         return $data['tool_calls'][0]['id'] ?? '';
     }
 
-    private function makeToolNameDelta(array $data) : string {
+    protected function makeToolNameDelta(array $data) : string {
         if (!$this->isStreamChunk($data)) {
             return '';
         }
         return $data['tool_calls'][0]['name'] ?? '';
     }
 
-    private function makeToolArgsDelta(array $data) : string {
+    protected function makeToolArgsDelta(array $data) : string {
         if (!$this->isStreamChunk($data)) {
             return '';
         }
@@ -93,7 +93,7 @@ class CohereV1ResponseAdapter implements ProviderResponseAdapter
         return ('' === $toolArgs) ? '' : Json::encode($toolArgs);
     }
 
-    private function isStreamChunk(array $data) : bool {
+    protected function isStreamChunk(array $data) : bool {
         return in_array(($data['event_type'] ?? ''), ['text-generation', 'tool-calls-chunk']);
     }
 }

@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Features\LLM\Drivers;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Features\Http\Contracts\CanAccessResponse;
+use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
 use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
 use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
 use Cognesy\Instructor\Features\Http\HttpClient;
@@ -40,9 +40,9 @@ class ModularLLMDriver implements CanHandleInference {
      * Processes the given inference request and handles it through the HTTP client.
      *
      * @param InferenceRequest $request The request to be processed, including messages, model, tools, and other parameters.
-     * @return CanAccessResponse The response indicating the access result after processing the request.
+     * @return ResponseAdapter The response indicating the access result after processing the request.
      */
-    public function handle(InferenceRequest $request): CanAccessResponse {
+    public function handle(InferenceRequest $request): ResponseAdapter {
         $request = $request->withCacheApplied();
         $clientRequest = $this->requestAdapter->toHttpClientRequest(
             $request->messages(),

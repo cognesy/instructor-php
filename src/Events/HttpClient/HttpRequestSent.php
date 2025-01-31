@@ -5,16 +5,15 @@ use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class RequestToLLMFailed extends Event
+class HttpRequestSent extends Event
 {
-    public $logLevel = LogLevel::ERROR;
+    public $logLevel = LogLevel::INFO;
 
     public function __construct(
         public string $url,
         public string $method,
         public array $headers,
         public array $body,
-        public string $errors,
     ) {
         parent::__construct();
     }
@@ -25,7 +24,6 @@ class RequestToLLMFailed extends Event
             'method' => $this->method,
             'headers' => $this->headers,
             'body' => $this->body,
-            'errors' => $this->errors,
         ]);
     }
 }

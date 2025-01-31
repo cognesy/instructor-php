@@ -22,7 +22,7 @@ use Cognesy\Instructor\Features\LLM\Data\ToolCall;
 use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Utils\Arrays;
-use Cognesy\Instructor\Utils\Chain;
+use Cognesy\Instructor\Utils\ResultChain;
 use Cognesy\Instructor\Utils\Json\Json;
 use Cognesy\Instructor\Utils\Result\Result;
 use Exception;
@@ -133,7 +133,7 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJson,
         ResponseModel $responseModel
     ) : Result {
-        return Chain::make()
+        return ResultChain::make()
             ->through(fn() => $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
             ->tap(fn() => $this->events->dispatch(new PartialJsonReceived($partialJson)))
             ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->toolName()))
@@ -149,7 +149,7 @@ class PartialsGenerator implements CanGeneratePartials
         string $partialJsonData,
         ResponseModel $responseModel,
     ) : Result {
-        return Chain::from(fn() => Json::fromPartial($partialJsonData)->toString())
+        return ResultChain::from(fn() => Json::fromPartial($partialJsonData)->toString())
             ->through(fn($json) => $this->responseDeserializer->deserialize($json, $responseModel, $this->toolCalls->last()?->name()))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->result();

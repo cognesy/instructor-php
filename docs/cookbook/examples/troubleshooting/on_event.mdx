@@ -26,8 +26,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Events\HttpClient\RequestSentToLLM;
-use Cognesy\Instructor\Events\HttpClient\ResponseReceivedFromLLM;
+use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
+use Cognesy\Instructor\Events\HttpClient\HttpResponseReceived;
 use Cognesy\Instructor\Instructor;
 
 class User
@@ -46,8 +46,8 @@ $logger = new class {
 };
 
 $user = (new Instructor)
-    ->onEvent(RequestSentToLLM::class, fn($event) => $logger->log($event))
-    ->onEvent(ResponseReceivedFromLLM::class, fn($event) => $logger->log($event))
+    ->onEvent(HttpRequestSent::class, fn($event) => $logger->log($event))
+    ->onEvent(HttpResponseReceived::class, fn($event) => $logger->log($event))
     ->request(
         messages: "Jason is 28 years old",
         responseModel: User::class,

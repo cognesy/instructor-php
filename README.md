@@ -838,9 +838,9 @@ Receiving events can help you to monitor the execution process and makes it easi
 ```php
 $instructor = (new Instructor)
     // see requests to LLM
-    ->onEvent(RequestSentToLLM::class, fn($e) => dump($e))
+    ->onEvent(HttpRequestSent::class, fn($e) => dump($e))
     // see responses from LLM
-    ->onEvent(ResponseReceivedFromLLM::class, fn($event) => dump($event))
+    ->onEvent(HttpResponseReceived::class, fn($event) => dump($event))
     // see all events in console-friendly format
     ->wiretap(fn($event) => dump($event->toConsole()));
 

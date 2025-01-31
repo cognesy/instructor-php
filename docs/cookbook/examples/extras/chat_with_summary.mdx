@@ -24,6 +24,8 @@ use Cognesy\Instructor\Utils\Messages\Script;
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+die(); // TO BE FIXED
+
 $maxSteps = 5;
 $sys = [
     'You are helpful assistant explaining Challenger Sale method, you answer questions. Provide very brief answers, not more than one sentence. Simplify things, don\'t go into details, but be very pragmatic and focused on practical bizdev problems.',

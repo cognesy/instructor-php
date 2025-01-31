@@ -19,6 +19,18 @@ class HttpClientConfig
         public bool $failOnError = false,
     ) {}
 
+    public static function fromArray(array $config) : HttpClientConfig {
+        return new HttpClientConfig(
+            httpClientType: HttpClientType::from($config['httpClientType']),
+            connectTimeout: $config['connectTimeout'] ?? 3,
+            requestTimeout: $config['requestTimeout'] ?? 30,
+            idleTimeout: $config['idleTimeout'] ?? -1,
+            maxConcurrent: $config['maxConcurrent'] ?? 5,
+            poolTimeout: $config['poolTimeout'] ?? 120,
+            failOnError: $config['failOnError'] ?? false,
+        );
+    }
+
     public static function load(string $client) : HttpClientConfig {
         if (!Settings::has('http', "clients.$client")) {
             throw new InvalidArgumentException("Unknown client: $client");

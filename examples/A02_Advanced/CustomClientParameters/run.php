@@ -29,10 +29,10 @@ class User {
 
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(
-    apiUrl: 'https://api.together.xyz/v1',
-    apiKey: Env::get('TOGETHER_API_KEY'),
+    apiUrl: 'https://api.deepseek.com',
+    apiKey: Env::get('DEEPSEEK_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+    model: 'deepseek-chat',
     maxTokens: 128,
     httpClient: 'guzzle',
     providerType: LLMProviderType::OpenAICompatible,
