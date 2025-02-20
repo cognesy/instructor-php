@@ -6,7 +6,7 @@ use Cognesy\Utils\Messages\Contracts\CanProvideMessage;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessages;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
-use Cognesy\Utils\Messages\Utils\Text;
+use Cognesy\Utils\Messages\Utils\TextRepresentation;
 use Exception;
 use InvalidArgumentException;
 
@@ -85,7 +85,7 @@ trait HandlesCreation
             $input instanceof CanProvideMessages => $input->toMessages(),
             $input instanceof \Cognesy\Utils\Messages\Message => (new \Cognesy\Utils\Messages\Messages)->appendMessage($input),
             $input instanceof CanProvideMessage => (new \Cognesy\Utils\Messages\Messages)->appendMessage($input->toMessage()),
-            default => (new \Cognesy\Utils\Messages\Messages)->appendMessage(new Message('user', Text::fromAny($input))),
+            default => (new \Cognesy\Utils\Messages\Messages)->appendMessage(new Message('user', TextRepresentation::fromAny($input))),
         };
     }
 }

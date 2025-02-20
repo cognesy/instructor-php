@@ -5,7 +5,7 @@ namespace Cognesy\Utils\Messages\Traits\Message;
 use Cognesy\Addons\Image\Image;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessage;
 use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Utils\Text;
+use Cognesy\Utils\Messages\Utils\TextRepresentation;
 use Exception;
 
 trait HandlesCreation
@@ -43,7 +43,7 @@ trait HandlesCreation
         return match(true) {
             $input instanceof Message => $input,
             $input instanceof CanProvideMessage => $input->toMessage(),
-            default => new Message($role, Text::fromAny($input)),
+            default => new Message($role, TextRepresentation::fromAny($input)),
         };
     }
 

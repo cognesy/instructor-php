@@ -3,7 +3,7 @@ namespace Cognesy\Addons\Prompt\Utils;
 
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
-use Cognesy\Utils\Messages\Utils\Text;
+use Cognesy\Utils\Messages\Utils\TextRepresentation;
 use InvalidArgumentException;
 
 class StringTemplate
@@ -132,7 +132,7 @@ class StringTemplate
     private function materializeParameters(array $parameters) : array {
         $parameterValues = [];
         foreach ($parameters as $key => $value) {
-            $parameterValues[$key] = Text::fromParameter($value, $key, $parameters);
+            $parameterValues[$key] = TextRepresentation::fromParameter($value, $key, $parameters);
         }
         return $parameterValues;
     }

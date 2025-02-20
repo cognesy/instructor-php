@@ -9,6 +9,7 @@ use Cognesy\Utils\Messages\Messages;
 trait HandlesConversion
 {
     public function toArray() : array {
+        // TODO: should this use TextRepresentation class?
         return match(true) {
             is_array($this->output) => $this->output,
             is_scalar($this->output) => ['value' => $this->output],

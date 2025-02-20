@@ -6,9 +6,12 @@ use BackedEnum;
 use Closure;
 use Cognesy\Utils\Json\Json;
 
-// TODO: this should be moved to a chain-like component, so the way we handle inputs can be customized
-
-class Text
+/**
+ * Tries to render arbitrary input to a text representation
+ *
+ * TODO: this should be moved to a chain-like component, so the way we handle inputs can be customized
+ */
+class TextRepresentation
 {
     public static function fromAny(string|array|object $input) : string {
         return match(true) {
