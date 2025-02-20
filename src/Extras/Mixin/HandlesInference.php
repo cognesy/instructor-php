@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\LLM;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\LLM;
 
 trait HandlesInference {
     public function infer(

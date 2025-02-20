@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\Request;
 
 use Cognesy\Instructor\Events\Event;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
 class ValidationRecoveryLimitReached extends Event

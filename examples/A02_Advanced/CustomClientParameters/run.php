@@ -17,10 +17,10 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Env;
+use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\LLM\LLM\Enums\LLMProviderType;
+use Cognesy\Utils\Env;
 
 class User {
     public int $age;

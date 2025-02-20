@@ -1,6 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
+
 describe('Json Class', function () {
     it('creates an empty Json object', function () {
         $json = new Json();

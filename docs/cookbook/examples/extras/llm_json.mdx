@@ -33,7 +33,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\LLM\LLM\Inference;
 
 $data = (new Inference)
     ->withConnection('openai') // optional, default is set in /config/llm.php

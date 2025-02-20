@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 
 trait HandlesDeserialization
 {

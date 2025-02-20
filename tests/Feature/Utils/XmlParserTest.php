@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\Xml\SelectiveXmlParser;
+use Cognesy\Utils\Xml\SelectiveXmlParser;
 
 it('parses a simple XML structure correctly', function () {
     $parser = new SelectiveXmlParser(['chat', 'message', 'user', 'assistant']);

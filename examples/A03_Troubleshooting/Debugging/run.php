@@ -21,8 +21,8 @@ This is useful for debugging the request and response when you are not getting t
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Data\LLMConfig;
 
 class User {
     public int $age;

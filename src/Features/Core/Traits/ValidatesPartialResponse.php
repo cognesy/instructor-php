@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Features\Core\Traits;
 
-use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\Instructor\Utils\Arrays;
-use Cognesy\Instructor\Utils\ResultChain;
-use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\Utils\Arrays;
+use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonParsingException;
+use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\ResultChain;
 use Exception;
 
 trait ValidatesPartialResponse

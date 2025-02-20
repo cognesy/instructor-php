@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\Json\PartialJsonParser;
+use Cognesy\Utils\Json\PartialJsonParser;
 
 test('can parse partial JSON', function ($data) {
     $json = $data[0];

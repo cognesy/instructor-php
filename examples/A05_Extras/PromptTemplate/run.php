@@ -16,9 +16,9 @@ prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Prompt\Template;
-use Cognesy\Instructor\Features\LLM\Inference;
-use Cognesy\Instructor\Utils\Str;
+use Cognesy\Addons\Prompt\Template;
+use Cognesy\LLM\LLM\Inference;
+use Cognesy\Utils\Str;
 
 // EXAMPLE 1: Define prompt template inline (don't use files) and use short syntax
 

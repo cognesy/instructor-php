@@ -2,9 +2,9 @@
 
 namespace Cognesy\Evals\UseExamples;
 
-use Cognesy\Instructor\Extras\Evals\Contracts\CanObserveExecution;
-use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Observation;
+use Cognesy\Addons\Evals\Contracts\CanObserveExecution;
+use Cognesy\Addons\Evals\Execution;
+use Cognesy\Addons\Evals\Observation;
 
 class CompanyEval implements CanObserveExecution
 {

@@ -1,10 +1,10 @@
 <?php
 
-use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
-use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
-use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
-use Cognesy\Instructor\Features\Http\Enums\HttpClientType;
-use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\LLM\Http\Data\HttpClientConfig;
+use Cognesy\LLM\Http\Data\HttpClientRequest;
+use Cognesy\LLM\Http\Drivers\GuzzleDriver;
+use Cognesy\LLM\Http\Enums\HttpClientType;
+use Cognesy\Utils\Debug\Debug;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;

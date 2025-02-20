@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\RawChain;
+use Cognesy\Utils\RawChain;
 
 test('processing pipeline', function () {
     $pipeline = (new RawChain())

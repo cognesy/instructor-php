@@ -12,14 +12,12 @@ docname: 'chat_with_summary'
 ```php
 <?php
 
-use Cognesy\Instructor\Extras\Chat\Pipelines\ChatWithSummary;
-use Cognesy\Instructor\Extras\Chat\Utils\SummarizeMessages;
-use Cognesy\Instructor\Features\LLM\Inference;
-use Cognesy\Instructor\Features\LLM\LLM;
-use Cognesy\Instructor\Utils\Debug\Debug;
-use Cognesy\Instructor\Utils\Messages\Message;
-use Cognesy\Instructor\Utils\Messages\Messages;
-use Cognesy\Instructor\Utils\Messages\Script;
+use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
+use Cognesy\Addons\Chat\Utils\SummarizeMessages;
+use Cognesy\LLM\LLM\Inference;
+use Cognesy\LLM\LLM\LLM;
+use Cognesy\Utils\Messages\Message;
+use Cognesy\Utils\Messages\Messages;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');

@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
-use Cognesy\Instructor\Utils\Env;
+use Cognesy\LLM\LLM\Enums\LLMProviderType;
+use Cognesy\Utils\Env;
 
 return [
     'debug' => [

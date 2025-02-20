@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\LLM;
+use Cognesy\LLM\LLM\LLM;
 
 interface CanInfer
 {

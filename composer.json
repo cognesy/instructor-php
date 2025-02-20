@@ -10,9 +10,14 @@
     "autoload": {
         "psr-4": {
             "Cognesy\\Instructor\\": "src/",
-            "Cognesy\\InstructorHub\\": "src-hub/",
+            "Cognesy\\Utils\\": "src-utils/",
+            "Cognesy\\Addons\\": "src-addons/",
+            "Cognesy\\Aux\\": "src-aux/",
+            "Cognesy\\LLM\\": "src-llm/",
             "Cognesy\\Setup\\": "src-setup/",
-            "Cognesy\\Tell\\": "src-tell/"
+            "Cognesy\\Tell\\": "src-tell/",
+            "Cognesy\\Experimental\\": "src-experimental/",
+            "Cognesy\\InstructorHub\\": "src-hub/"
         },
         "files": [
         ]

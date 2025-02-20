@@ -2,9 +2,9 @@
 
 namespace Cognesy\Setup;
 
-use RuntimeException;
-use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Utils\Settings;
 use ReflectionClass;
+use RuntimeException;
 
 /**
  * Manages environment file operations including parsing, merging, and writing.

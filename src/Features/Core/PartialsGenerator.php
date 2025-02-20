@@ -16,15 +16,15 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
 use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\ToolCall;
-use Cognesy\Instructor\Features\LLM\Data\ToolCalls;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Utils\Arrays;
-use Cognesy\Instructor\Utils\ResultChain;
-use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\LLM\LLM\Data\ToolCall;
+use Cognesy\LLM\LLM\Data\ToolCalls;
+use Cognesy\Utils\Arrays;
+use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\ResultChain;
 use Exception;
 use Generator;
 
@@ -61,16 +61,16 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     /**
-     * @param Generator<PartialLLMResponse> $stream
+     * @param Generator<\Cognesy\LLM\LLM\Data\PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Generator<PartialLLMResponse>
+     * @return Generator<\Cognesy\LLM\LLM\Data\PartialLLMResponse>
      */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         // reset state
         $this->resetPartialResponse();
 
         // receive data
-        /** @var PartialLLMResponse $partialResponse */
+        /** @var \Cognesy\LLM\LLM\Data\PartialLLMResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response

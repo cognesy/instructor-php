@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Events;
 
-use Cognesy\Instructor\Utils\Cli\Color;
-use Cognesy\Instructor\Utils\Cli\Console;
-use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Utils\Uuid;
+use Cognesy\Utils\Cli\Color;
+use Cognesy\Utils\Cli\Console;
+use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Uuid;
 use DateTimeImmutable;
 use JsonSerializable;
 use Psr\Log\LogLevel;

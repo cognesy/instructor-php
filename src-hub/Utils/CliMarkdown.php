@@ -2,8 +2,8 @@
 namespace Cognesy\InstructorHub\Utils;
 
 use cebe\markdown\GithubMarkdown;
-use Cognesy\Instructor\Utils\Cli\Color as IColor;
 use Cognesy\InstructorHub\Core\Cli;
+use Cognesy\Utils\Cli\Color as IColor;
 use Toolkit\Cli\Color;
 use Toolkit\Cli\Color\ColorTag;
 use Toolkit\Cli\Util\Highlighter;

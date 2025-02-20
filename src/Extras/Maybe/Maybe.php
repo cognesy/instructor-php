@@ -7,7 +7,7 @@ use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserialize
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 
 class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {

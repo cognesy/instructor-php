@@ -1,14 +1,14 @@
 <?php
 
+use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Addons\Evals\Executors\Data\InferenceCases;
+use Cognesy\Addons\Evals\Executors\Data\InstructorData;
+use Cognesy\Addons\Evals\Executors\RunInstructor;
+use Cognesy\Addons\Evals\Experiment;
+use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\ComplexExtraction\ProjectEvents;
 use Cognesy\Evals\ComplexExtraction\ProjectsEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
-use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
-use Cognesy\Instructor\Extras\Evals\Executors\Data\InstructorData;
-use Cognesy\Instructor\Extras\Evals\Executors\RunInstructor;
-use Cognesy\Instructor\Extras\Evals\Experiment;
-use Cognesy\Instructor\Extras\Evals\Observers\Aggregate\AggregateExperimentObserver;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');

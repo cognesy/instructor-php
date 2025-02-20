@@ -19,8 +19,8 @@ streamed requests.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Features\LLM\Data\Usage;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Data\Usage;
 
 class User {
     public int $age;

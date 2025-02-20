@@ -9,7 +9,7 @@ use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\Utils\Result\Result;
 use Exception;
 
 class ResponseValidator

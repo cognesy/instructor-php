@@ -10,7 +10,7 @@ use Cognesy\Instructor\Events\Response\ResponseDeserialized;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\Utils\Result\Result;
 use Exception;
 
 class ResponseDeserializer

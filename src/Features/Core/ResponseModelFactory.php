@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
+use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
@@ -9,10 +10,9 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
-use Cognesy\Instructor\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
+use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Features\Schema\Factories\JsonSchemaToSchema;

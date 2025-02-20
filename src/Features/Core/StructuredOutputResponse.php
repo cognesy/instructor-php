@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Features\Core;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
+use Cognesy\LLM\LLM\Data\LLMResponse;
 use Exception;
 use Generator;
 

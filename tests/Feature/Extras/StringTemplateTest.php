@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Extras\Prompt\Utils\StringTemplate;
+use Cognesy\Addons\Prompt\Utils\StringTemplate;
 
 test('it renders a simple string', function () {
     $template = 'Hello, <|name|>!';

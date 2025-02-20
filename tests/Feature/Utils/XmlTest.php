@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\Xml\Xml;
+use Cognesy\Utils\Xml\Xml;
 
 it('converts XML to array with attributes', function () {
     $xmlString = '<root attr="value"><child>sample content</child></root>';

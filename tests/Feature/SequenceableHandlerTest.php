@@ -8,11 +8,11 @@ use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
+use Cognesy\LLM\LLM\Data\PartialLLMResponse;
 
 class SimpleItem
 {

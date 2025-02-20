@@ -19,12 +19,7 @@ until results meet the requirements or maxRetries is reached.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\HttpClient\HttpRequestSent;
-use Cognesy\Instructor\Events\Response\ResponseValidated;
-use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
-use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
-use Cognesy\Instructor\Instructor;
-use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Instructor\Events\Response\ResponseValidated;use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;use Cognesy\Instructor\Events\Response\ResponseValidationFailed;use Cognesy\Instructor\Instructor;use Cognesy\LLM\Http\Events\HttpRequestSent;use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
 {

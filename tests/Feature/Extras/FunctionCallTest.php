@@ -1,10 +1,13 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
-use Tests\Examples\Call\TestClass;
-use function Tests\Examples\Call\{testFunction, variadicFunction, testFunctionWithDefault};
 require_once __DIR__ . '/../../Examples/Call/test_functions.php';
+
+use Cognesy\Addons\FunctionCall\FunctionCall;
+use Tests\Examples\Call\TestClass;
+use function Tests\Examples\Call\testFunction;
+use function Tests\Examples\Call\testFunctionWithDefault;
+use function Tests\Examples\Call\variadicFunction;
 
 it('can process function by name', function () {
     $call = FunctionCall::fromFunctionName('Tests\Examples\Call\testFunction');

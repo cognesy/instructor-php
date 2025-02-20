@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\InstructorHub\Services;
 
-use Cognesy\Instructor\Utils\Str;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Views\DocGenView;
+use Cognesy\Utils\Str;
 
 class DocGenerator
 {

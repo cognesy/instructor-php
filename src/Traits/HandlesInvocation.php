@@ -3,18 +3,18 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
+use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\RequestHandler;
 use Cognesy\Instructor\Features\Core\ResponseGenerator;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
+use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
-use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Utils\Settings;
 use Exception;
 
 /**

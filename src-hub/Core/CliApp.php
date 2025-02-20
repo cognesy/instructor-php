@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\InstructorHub\Core;
 
-use Cognesy\Instructor\Utils\Cli\Color;
+use Cognesy\Utils\Cli\Color;
 
 abstract class CliApp {
     private CommandProvider $commandProvider;
@@ -21,7 +21,7 @@ abstract class CliApp {
             $this->commandNotSpecified();
             return;
         }
-        list($command, $args) = $this->parseArgs($argv);
+        [$command, $args] = $this->parseArgs($argv);
         $this->onCommand($command, $args);
         Cli::outln();
     }

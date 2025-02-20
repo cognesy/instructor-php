@@ -5,7 +5,7 @@ use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 use DateTime;
 use DateTimeImmutable;
 use Exception;

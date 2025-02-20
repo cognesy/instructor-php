@@ -6,9 +6,9 @@ use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
-use Cognesy\Instructor\Features\LLM\Data\Usage;
+use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\LLM\LLM\Data\Usage;
 use Exception;
 use Generator;
 

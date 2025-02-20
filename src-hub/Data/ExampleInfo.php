@@ -2,7 +2,7 @@
 
 namespace Cognesy\InstructorHub\Data;
 
-use Cognesy\Instructor\Utils\Str;
+use Cognesy\Utils\Str;
 use Webuni\FrontMatter\FrontMatter;
 
 class ExampleInfo

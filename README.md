@@ -680,7 +680,9 @@ For more information see [Structures](docs/structures.md) section.
 You can specify model and other options that will be passed to OpenAI / LLM endpoint.
 
 ```php
-use Cognesy\Instructor\Features\LLM\Data\LLMConfig;use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Data\LLMConfig;
 
 // OpenAI auth params
 $yourApiKey = Env::get('OPENAI_API_KEY'); // use your own API key

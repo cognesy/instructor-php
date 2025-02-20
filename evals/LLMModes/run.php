@@ -3,17 +3,16 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
+use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Addons\Evals\Executors\Data\InferenceCases;
+use Cognesy\Addons\Evals\Executors\Data\InferenceData;
+use Cognesy\Addons\Evals\Executors\Data\InferenceSchema;
+use Cognesy\Addons\Evals\Executors\RunInference;
+use Cognesy\Addons\Evals\Experiment;
+use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\LLMModes\CompanyEval;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
-use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceCases;
-use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceData;
-use Cognesy\Instructor\Extras\Evals\Executors\Data\InferenceSchema;
-use Cognesy\Instructor\Extras\Evals\Executors\RunInference;
-use Cognesy\Instructor\Extras\Evals\Experiment;
-use Cognesy\Instructor\Extras\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Instructor\Utils\Debug\Debug;
-use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Utils\Settings;
 
 $data = new InferenceData(
     messages: [
@@ -45,10 +44,10 @@ $data = new InferenceData(
     ),
 );
 
-Debug::enable();
-$connections = ['minimaxi']; // array_keys(Settings::get('llm', 'connections'));
-$modes = [Mode::Tools];//, Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Text];
-$stream = [false]; // [true, false];
+//Debug::enable();
+$connections = array_keys(Settings::get('llm', 'connections'));
+$modes = [Mode::Tools, Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Text];
+$stream = [true, false];
 
 $experiment = new Experiment(
     cases: InferenceCases::only($connections, $modes, $stream),

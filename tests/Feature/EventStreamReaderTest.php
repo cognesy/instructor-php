@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use Cognesy\Instructor\Events\EventDispatcher;
-use Cognesy\Instructor\Events\Inference\StreamDataReceived;
-use Cognesy\Instructor\Events\Inference\StreamDataParsed;
-use Cognesy\Instructor\Features\LLM\EventStreamReader;
+use Cognesy\LLM\LLM\Events\StreamDataParsed;
+use Cognesy\LLM\LLM\Events\StreamDataReceived;
+use Cognesy\LLM\LLM\EventStreamReader;
 use Mockery as Mock;
 
 beforeEach(function () {

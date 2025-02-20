@@ -54,7 +54,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Utils\Arrays;
 
 class Company {
     public string $name;

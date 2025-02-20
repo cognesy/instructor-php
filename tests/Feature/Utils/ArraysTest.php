@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Utils\Arrays;
 
 test('flatten nested arrays with separator', function () {
     $nestedArray = [

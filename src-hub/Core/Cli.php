@@ -2,8 +2,8 @@
 
 namespace Cognesy\InstructorHub\Core;
 
-use Cognesy\Instructor\Utils\Cli\Color;
-use Cognesy\Instructor\Utils\Cli\Console;
+use Cognesy\Utils\Cli\Color;
+use Cognesy\Utils\Cli\Console;
 
 class Cli
 {

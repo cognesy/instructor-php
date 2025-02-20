@@ -25,7 +25,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\LLM\LLM\Inference;
 
 $city = Structure::define('city', [
     Field::string('name', 'City name')->required(),

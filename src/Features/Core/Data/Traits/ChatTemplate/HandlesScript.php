@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\ChatTemplate;
 
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Utils\Messages\Script;
+use Cognesy\Utils\Messages\Script;
 use Exception;
 
 trait HandlesScript

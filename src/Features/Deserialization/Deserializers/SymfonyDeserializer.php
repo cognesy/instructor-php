@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Features\Deserialization\Deserializers;
 
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Features\Deserialization\Exceptions\DeserializationException;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;

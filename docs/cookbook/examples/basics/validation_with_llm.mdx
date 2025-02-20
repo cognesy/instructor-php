@@ -22,7 +22,7 @@ use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Str;
+use Cognesy\Utils\Str;
 
 class UserDetails
 {

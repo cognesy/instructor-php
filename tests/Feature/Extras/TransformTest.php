@@ -1,8 +1,8 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Experimental\Module\Modules\CallClosure;
-use Cognesy\Instructor\Utils\Profiler\Profiler;
+use Cognesy\Experimental\Module\Modules\CallClosure;
+use Cognesy\Utils\Profiler\Profiler;
 use Tests\Examples\Module\TestModule;
 
 it('can process a simple task', function() {

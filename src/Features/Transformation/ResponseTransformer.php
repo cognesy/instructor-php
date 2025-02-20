@@ -7,7 +7,7 @@ use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformObject;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\Utils\Result\Result;
 use Exception;
 
 class ResponseTransformer

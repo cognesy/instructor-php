@@ -31,10 +31,10 @@ Commercial scrapers require API key, which can be set in the configuration file
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
+use Cognesy\Aux\Web\Webpage;
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Web\Webpage;
 
 class Company {
     public string $name = '';

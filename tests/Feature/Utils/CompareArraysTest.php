@@ -3,7 +3,7 @@
 namespace Tests\Feature\Utils;
 
 // Test identical arrays
-use Cognesy\Instructor\Extras\Evals\Utils\CompareNestedArrays;
+use Cognesy\Addons\Evals\Utils\CompareNestedArrays;
 
 it('returns no differences for identical arrays', function () {
     $expected = [
@@ -66,7 +66,7 @@ it('detects differences in values', function () {
         'age' => 30,
     ];
 
-    $comparer = new CompareNestedArrays();
+    $comparer = new \Cognesy\Addons\Evals\Utils\CompareNestedArrays();
     $differences = $comparer->compare($expected, $actual);
 
     expect($differences)->toHaveCount(1);
@@ -124,7 +124,7 @@ it('ignores specified keys during comparison', function () {
         'timestamp' => '2024-04-01T10:05:00Z',
     ];
 
-    $comparer = new CompareNestedArrays(['timestamp']);
+    $comparer = new \Cognesy\Addons\Evals\Utils\CompareNestedArrays(['timestamp']);
     $differences = $comparer->compare($expected, $actual);
 
     expect($differences)->toHaveCount(1);
@@ -332,7 +332,7 @@ it('identifies keys missing in actual from expected', function () {
         ],
     ];
 
-    $comparer = new CompareNestedArrays();
+    $comparer = new \Cognesy\Addons\Evals\Utils\CompareNestedArrays();
     $differences = $comparer->compare($expected, $actual);
 
     expect($differences)->toHaveKey('user.roles.1');

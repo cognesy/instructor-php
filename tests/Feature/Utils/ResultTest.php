@@ -1,8 +1,8 @@
 <?php
 
-use Cognesy\Instructor\Utils\Result\Failure;
-use Cognesy\Instructor\Utils\Result\Result;
-use Cognesy\Instructor\Utils\Result\Success;
+use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\Result\Success;
 
 test('it creates a success result', function () {
     $result = Result::success(42);

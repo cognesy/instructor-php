@@ -1,0 +1,18 @@
+{
+    "exclude": [
+        "**/.cache",
+        "**/.git",
+        "**/.github",
+        "**/.idea",
+        "**/.vscode",
+        "**/.venv",
+        "**/archived",
+        "**/evals",
+        "**/experimental",
+        "**/notes",
+        "**/tmp",
+        "**/tests",
+        "**/vendor",
+        "**/node_modules"
+    ]
+}

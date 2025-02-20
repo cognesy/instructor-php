@@ -19,9 +19,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Cli\Console;
+use Cognesy\Utils\Cli\Console;
 
 class UserRole
 {

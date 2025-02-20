@@ -1,9 +1,9 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\Instructor\Experimental\Module\Signature\Attributes\InputField;
-use Cognesy\Instructor\Experimental\Module\Signature\Attributes\OutputField;
-use Cognesy\Instructor\Experimental\Module\Signature\SignatureFactory;
+use Cognesy\Experimental\Module\Signature\Attributes\InputField;
+use Cognesy\Experimental\Module\Signature\Attributes\OutputField;
+use Cognesy\Experimental\Module\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Module\CallData\SignatureData;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;

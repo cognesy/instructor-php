@@ -12,8 +12,7 @@ chatbots or agents.
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Addons\FunctionCall\FunctionCall;use Cognesy\Instructor\Instructor;
 
 /** Save user data to storage */
 function saveUser(string $name, int $age, string $country) {
@@ -37,8 +36,7 @@ saveUser(...$args);
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Addons\FunctionCall\FunctionCall;use Cognesy\Instructor\Instructor;
 
 class DataStore {
     /** Save user data to storage */
@@ -64,8 +62,7 @@ $args = (new Instructor)->respond(
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Addons\FunctionCall\FunctionCall;use Cognesy\Instructor\Instructor;
 
 /** Save user data to storage */
 $callable = function saveUser(string $name, int $age, string $country) {

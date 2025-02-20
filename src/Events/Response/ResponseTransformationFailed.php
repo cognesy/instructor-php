@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Events\Response;
 
 use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
 class ResponseTransformationFailed extends Event

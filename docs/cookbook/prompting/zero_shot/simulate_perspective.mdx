@@ -41,7 +41,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Utils\Arrays;
 
 class KnownFacts {
     #[Description("Facts that the given entity would know")]

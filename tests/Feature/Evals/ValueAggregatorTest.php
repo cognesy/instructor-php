@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Extras\Evals\Utils\NumberSeriesAggregator;
-use Cognesy\Instructor\Extras\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Addons\Evals\Utils\NumberSeriesAggregator;
 
 beforeEach(function () {
     $this->values = [1, 2, 3, 4, 5];

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Tell;
 
-use Cognesy\Instructor\Features\LLM\Inference;
+use Cognesy\LLM\LLM\Inference;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

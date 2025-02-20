@@ -1,9 +1,9 @@
 <?php
 namespace Tests;
 
-use Cognesy\Instructor\Features\Http\Contracts\ResponseAdapter;
-use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
+use Cognesy\LLM\Http\Contracts\CanHandleHttp;
+use Cognesy\LLM\Http\Contracts\ResponseAdapter;
+use Cognesy\LLM\Http\Drivers\GuzzleDriver;
 use Mockery;
 
 class MockLLM

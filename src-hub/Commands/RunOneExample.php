@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\InstructorHub\Commands;
 
-use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Core\Command;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\Runner;
+use Cognesy\Utils\Cli\Color;
 
 class RunOneExample extends Command
 {

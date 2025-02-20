@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Example;
 
-use Cognesy\Instructor\Utils\Json\Json;
+use Cognesy\Utils\Json\Json;
 use Exception;
 
 trait HandlesCreation

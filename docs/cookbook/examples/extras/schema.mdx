@@ -17,8 +17,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Features\LLM\Inference;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
+use Cognesy\LLM\LLM\Inference;
 
 class City {
     public string $name;

@@ -12,12 +12,12 @@ docname: 'llm_tool_use'
 ```php
 <?php
 
-use Cognesy\Instructor\Extras\ToolUse\Tools\FunctionTool;
-use Cognesy\Instructor\Extras\ToolUse\Tools\UpdateContextVariable;
-use Cognesy\Instructor\Extras\ToolUse\ToolUse;
-use Cognesy\Instructor\Utils\Debug\Debug;
-use Cognesy\Instructor\Utils\Messages\Messages;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\Tools\UpdateContextVariable;
+use Cognesy\Addons\ToolUse\ToolUse;
+use Cognesy\Utils\Debug\Debug;
+use Cognesy\Utils\Messages\Messages;
+use Cognesy\Utils\Result\Result;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');

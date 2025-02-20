@@ -2,9 +2,9 @@
 
 namespace Cognesy\InstructorHub\Views;
 
-use Cognesy\Instructor\Utils\Cli\Color;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
+use Cognesy\Utils\Cli\Color;
 
 class DocGenView
 {

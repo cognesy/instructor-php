@@ -3,13 +3,13 @@
 namespace Cognesy\Instructor\Features\Core\Contracts;
 
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\Instructor\Features\LLM\Data\PartialLLMResponse;
+use Cognesy\LLM\LLM\Data\PartialLLMResponse;
 use Generator;
 
 interface CanGeneratePartials
 {
     /**
-     * @param Generator<PartialLLMResponse> $stream
+     * @param Generator<\Cognesy\LLM\LLM\Data\PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
      * @return Generator<mixed>
      */

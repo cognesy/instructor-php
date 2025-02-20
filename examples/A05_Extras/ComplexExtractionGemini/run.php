@@ -16,10 +16,8 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\Inference\PartialLLMResponseReceived;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Debug\Debug;
 
 $report = <<<'EOT'
     [2021-09-01]

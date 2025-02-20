@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Features\Core\Data;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Utils\Messages\Script;
-use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Utils\Messages\Script;
+use Cognesy\Utils\Settings;
 
 class ChatTemplate
 {

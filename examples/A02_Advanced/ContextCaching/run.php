@@ -34,8 +34,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Debug\Debug;
-use Cognesy\Instructor\Utils\Str;
+use Cognesy\Utils\Str;
 
 class Project {
     public string $name;

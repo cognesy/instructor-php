@@ -2,12 +2,12 @@
 
 namespace Cognesy\Evals\LLMModes;
 
+use Cognesy\Addons\Evals\Contracts\CanGenerateObservations;
+use Cognesy\Addons\Evals\Execution;
+use Cognesy\Addons\Evals\Observation;
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Extras\Evals\Contracts\CanGenerateObservations;
-use Cognesy\Instructor\Extras\Evals\Execution;
-use Cognesy\Instructor\Extras\Evals\Observation;
-use Cognesy\Instructor\Features\LLM\Data\ToolCall;
-use Cognesy\Instructor\Utils\Str;
+use Cognesy\LLM\LLM\Data\ToolCall;
+use Cognesy\Utils\Str;
 
 class CompanyEval implements CanGenerateObservations
 {

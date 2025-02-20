@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\ChatTemplate;
 
 use Cognesy\Instructor\Features\Core\Data\Example;
-use Cognesy\Instructor\Utils\Messages\Message;
-use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Utils\Messages\Message;
+use Cognesy\Utils\Messages\Messages;
 use Exception;
 
 trait HandlesSections

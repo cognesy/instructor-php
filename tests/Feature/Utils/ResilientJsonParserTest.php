@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Utils\Json\ResilientJsonParser;
+use Cognesy\Utils\Json\ResilientJsonParser;
 
 test('parse empty object', function () {
     $result = (new ResilientJsonParser('{}'))->parse();

@@ -1,10 +1,10 @@
 <?php
 
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngineType;
-use Cognesy\Instructor\Extras\Prompt\Template;
-use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
-use Cognesy\Instructor\Utils\Messages\Messages;
-use Cognesy\Instructor\Utils\Messages\Script;
+use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;
+use Cognesy\Addons\Prompt\Enums\TemplateEngineType;
+use Cognesy\Addons\Prompt\Template;
+use Cognesy\Utils\Messages\Messages;
+use Cognesy\Utils\Messages\Script;
 
 // RECOMMENDED, READING FRIENDLY SYNTAX
 

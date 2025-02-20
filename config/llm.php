@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Features\LLM\Enums\LLMProviderType;
-use Cognesy\Instructor\Utils\Env;
+use Cognesy\LLM\LLM\Enums\LLMProviderType;
+use Cognesy\Utils\Env;
 
 return [
     'useObjectReferences' => false,
@@ -144,6 +144,16 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 2048,
         ],
+        'minimaxi' => [
+            'providerType' => LLMProviderType::Minimaxi->value,
+            'apiUrl' => 'https://api.minimaxi.chat/v1',
+            'apiKey' => Env::get('MINIMAXI_API_KEY', ''),
+            'endpoint' => '/text/chatcompletion_v2',
+            'defaultModel' => 'MiniMax-Text-01', // 'MiniMax-Text-01',
+            'defaultMaxTokens' => 1024,
+            'contextLength' => 1_000_000,
+            'maxOutputLength' => 4096,
+        ],
         'mistral' => [
             'providerType' => LLMProviderType::Mistral->value,
             'apiUrl' => 'https://api.mistral.ai/v1',
@@ -154,14 +164,14 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 4096,
         ],
-        'minimaxi' => [
-            'providerType' => LLMProviderType::Minimaxi->value,
-            'apiUrl' => 'https://api.minimaxi.chat/v1',
-            'apiKey' => Env::get('MINIMAXI_API_KEY', ''),
-            'endpoint' => '/text/chatcompletion_v2',
-            'defaultModel' => 'abab6.5s-chat', // 'MiniMax-Text-01',
+        'moonshot-kimi' => [
+            'providerType' => LLMProviderType::Moonshot->value,
+            'apiUrl' => 'https://api.moonshot.ai/v1',
+            'apiKey' => Env::get('MOONSHOT_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'kimi-k1.5-preview',
             'defaultMaxTokens' => 1024,
-            'contextLength' => 1_000_000,
+            'contextLength' => 128_000,
             'maxOutputLength' => 4096,
         ],
         'ollama' => [

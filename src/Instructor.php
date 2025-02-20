@@ -6,11 +6,11 @@ use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Features\LLM\LLM;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
-use Cognesy\Instructor\Utils\Debug\Debug;
+use Cognesy\LLM\LLM\LLM;
+use Cognesy\Utils\Debug\Debug;
 
 /**
  * The Instructor class manages the lifecycle and functionalities of Instructor instance.

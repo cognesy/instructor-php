@@ -1,12 +1,12 @@
 <?php
 
-use Cognesy\Instructor\Features\Http\Data\HttpClientRequest;
-use Cognesy\Instructor\Features\Http\Data\HttpClientConfig;
-use Cognesy\Instructor\Features\Http\Drivers\GuzzleDriver;
-use Cognesy\Instructor\Features\Http\Drivers\SymfonyDriver;
-use Cognesy\Instructor\Features\Http\Drivers\LaravelDriver;
-use Cognesy\Instructor\Utils\Result\Success;
-use Cognesy\Instructor\Utils\Result\Failure;
+use Cognesy\LLM\Http\Data\HttpClientConfig;
+use Cognesy\LLM\Http\Data\HttpClientRequest;
+use Cognesy\LLM\Http\Drivers\GuzzleDriver;
+use Cognesy\LLM\Http\Drivers\LaravelDriver;
+use Cognesy\LLM\Http\Drivers\SymfonyDriver;
+use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Success;
 
 it('tests pool method for GuzzleDriver with failOnError=true', function () {
     $config = HttpClientConfig::fromArray([

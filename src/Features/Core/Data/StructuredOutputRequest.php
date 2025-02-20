@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Features\Core\Data;
 
 use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Utils\Settings;
+use Cognesy\Utils\Settings;
 
 class StructuredOutputRequest
 {

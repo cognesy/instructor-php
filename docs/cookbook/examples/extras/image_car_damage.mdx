@@ -27,9 +27,7 @@ Here's the image we're going to extract data from.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Extras\Image\Image;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Utils\Str;
+use Cognesy\Addons\Image\Image;use Cognesy\Instructor\Features\Schema\Attributes\Description;use Cognesy\Utils\Str;
 
 enum DamageSeverity : string {
     case Minor = 'minor';

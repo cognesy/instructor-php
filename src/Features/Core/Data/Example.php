@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Features\Core\Data;
 
 use Cognesy\Instructor\Contracts\CanProvideJson;
-use Cognesy\Instructor\Contracts\CanProvideMessages;
+use Cognesy\Utils\Messages\Contracts\CanProvideMessages;
 use JsonSerializable;
 
 class Example implements CanProvideMessages, CanProvideJson, JsonSerializable

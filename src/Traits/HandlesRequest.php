@@ -3,11 +3,11 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Features\Http\Contracts\CanHandleHttp;
-use Cognesy\Instructor\Features\LLM\Contracts\CanHandleInference;
-use Cognesy\Instructor\Features\LLM\Data\LLMConfig;
-use Cognesy\Instructor\Features\LLM\LLM;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\Http\Contracts\CanHandleHttp;
+use Cognesy\LLM\LLM\Contracts\CanHandleInference;
+use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\LLM\LLM\LLM;
 use JetBrains\PhpStorm\Deprecated;
 
 trait HandlesRequest

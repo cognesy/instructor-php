@@ -30,7 +30,6 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Instructor\Utils\Debug\Debug;
 
 enum Role : string {
     case Manager = 'manager';

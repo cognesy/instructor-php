@@ -116,7 +116,7 @@ To get started, you can create and render a simple prompt defined in the bundled
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\Prompt\Template;
+use Cognesy\Addons\Prompt\Template;
 
 // Basic example using "using->get->with" syntax
 $prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
@@ -156,8 +156,7 @@ If you need to customize the configuration or set the template content directly,
 
 ```php
 <?php
-use Cognesy\Instructor\Extras\Prompt\Data\TemplateEngineConfig;
-use Cognesy\Instructor\Extras\Prompt\Enums\TemplateEngineType;
+use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;use Cognesy\Addons\Prompt\Enums\TemplateEngineType;
 
 // Setting custom configuration
 $config = new TemplateEngineConfig(
@@ -248,7 +247,6 @@ And here is how you use `Prompt` class to convert XML template into a sequence o
 
 ```php
 <?php
-use Cognesy\Instructor\Utils\Messages\Messages;
 
 $prompt = Template::using('demo-blade')
     ->withTemplateContent('<chat><message role="system">You are a helpful assistant.</message><message role="user">Hello, {{ $name }}</message></chat>')

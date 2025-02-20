@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\ChatTemplate;
 
-use Cognesy\Instructor\Utils\Arrays;
+use Cognesy\Utils\Arrays;
 
 trait HandlesRetries
 {

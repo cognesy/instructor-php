@@ -2,9 +2,9 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Example;
 
 use BackedEnum;
-use Cognesy\Instructor\Extras\Prompt\Template;
-use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Utils\Messages\Messages;
+use Cognesy\Addons\Prompt\Template;
+use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Messages\Messages;
 
 trait HandlesConversion
 {

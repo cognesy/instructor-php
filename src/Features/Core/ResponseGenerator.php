@@ -4,17 +4,17 @@ namespace Cognesy\Instructor\Features\Core;
 use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
-use Cognesy\Instructor\Exceptions\JsonParsingException;
 use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Features\LLM\Data\LLMResponse;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Utils\ResultChain;
-use Cognesy\Instructor\Utils\Json\Json;
-use Cognesy\Instructor\Utils\Result\Result;
+use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\Json\JsonParsingException;
+use Cognesy\Utils\Result\Result;
+use Cognesy\Utils\ResultChain;
 use Exception;
 
 class ResponseGenerator implements CanGenerateResponse

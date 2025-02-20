@@ -34,8 +34,8 @@ The LLM is expected to call the functions in the correct order to get the final 
 ```php
 <?php
 
-use Cognesy\Instructor\Extras\ToolUse\Tools\FunctionTool;
-use Cognesy\Instructor\Extras\ToolUse\ToolUse;
+use Cognesy\Addons\ToolUse\Tools\FunctionTool;
+use Cognesy\Addons\ToolUse\ToolUse;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
