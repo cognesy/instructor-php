@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Features\Core;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
+use Cognesy\Utils\Events\EventDispatcher;
 
 /**
  * Handles dispatching SequenceUpdate events in the streaming mode

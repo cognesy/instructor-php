@@ -32,7 +32,7 @@ this feature in JSON mode (only in JSON Schema mode).
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\LLM\LLM\Inference;
 
 $data = (new Inference)

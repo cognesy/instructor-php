@@ -2,7 +2,6 @@
 
 namespace Cognesy\LLM\Embeddings;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Embeddings\Contracts\CanVectorize;
 use Cognesy\LLM\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\LLM\Embeddings\Drivers\AzureOpenAIDriver;
@@ -14,6 +13,7 @@ use Cognesy\LLM\Embeddings\Traits\HasFinders;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\Http\HttpClient;
 use Cognesy\LLM\LLM\Enums\LLMProviderType;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 

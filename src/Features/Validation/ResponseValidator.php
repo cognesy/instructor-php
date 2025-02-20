@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Features\Validation;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
 

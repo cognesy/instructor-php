@@ -20,9 +20,7 @@ Mode compatibility:
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Instructor;
-use Cognesy\Utils\Debug\Debug;
+use Cognesy\Instructor\Instructor;use Cognesy\LLM\LLM\Enums\Mode;use Cognesy\Utils\Debug\Debug;
 
 enum UserType : string {
     case Guest = 'guest';

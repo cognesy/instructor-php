@@ -2,8 +2,8 @@
 
 namespace Cognesy\LLM\LLM\Drivers\Cerebras;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
 {

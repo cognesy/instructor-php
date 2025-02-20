@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Features\Core;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialJsonReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
@@ -22,6 +21,7 @@ use Cognesy\LLM\LLM\Data\PartialLLMResponse;
 use Cognesy\LLM\LLM\Data\ToolCall;
 use Cognesy\LLM\LLM\Data\ToolCalls;
 use Cognesy\Utils\Arrays;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\ResultChain;

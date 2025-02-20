@@ -2,7 +2,7 @@
 
 namespace Tests\Examples\Instructor;
 
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 
 class EventSink
 {

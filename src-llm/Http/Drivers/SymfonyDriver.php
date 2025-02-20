@@ -2,7 +2,6 @@
 
 namespace Cognesy\LLM\Http\Drivers;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Adapters\SymfonyResponseAdapter;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\Http\Contracts\ResponseAdapter;
@@ -13,6 +12,7 @@ use Cognesy\LLM\Http\Events\HttpRequestSent;
 use Cognesy\LLM\Http\Events\HttpResponseReceived;
 use Cognesy\LLM\Http\Exceptions\RequestException;
 use Cognesy\Utils\Debug\Debug;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use InvalidArgumentException;

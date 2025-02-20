@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\LLM\LLM;
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\LLM\Contracts\CanHandleInference;
 use Cognesy\LLM\LLM\Data\CachedContext;
 use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Utils\Events\EventDispatcher;
 
 /**
  * Class Inference

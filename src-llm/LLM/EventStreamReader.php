@@ -3,10 +3,10 @@
 namespace Cognesy\LLM\LLM;
 
 use Closure;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\LLM\Events\StreamDataParsed;
 use Cognesy\LLM\LLM\Events\StreamDataReceived;
 use Cognesy\Utils\Debug\Debug;
+use Cognesy\Utils\Events\EventDispatcher;
 use Generator;
 
 /**

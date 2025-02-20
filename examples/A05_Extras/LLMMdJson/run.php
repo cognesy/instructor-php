@@ -26,7 +26,7 @@ to guide the model in generating the correct response.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\LLM\LLM\Inference;
 
 $data = (new Inference)

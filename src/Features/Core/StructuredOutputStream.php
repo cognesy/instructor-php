@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\LLM\LLM\Data\LLMResponse;
 use Cognesy\LLM\LLM\Data\PartialLLMResponse;
 use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 use Generator;
 
@@ -19,7 +19,7 @@ class StructuredOutputStream
 
     /**
      * @param Generator<PartialLLMResponse> $stream
-     * @param EventDispatcher $events
+     * @param \Cognesy\Utils\Events\EventDispatcher $events
      */
     public function __construct(
         private Generator $stream,

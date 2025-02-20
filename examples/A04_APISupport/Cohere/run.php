@@ -26,8 +26,8 @@ Reasons Mode::Tools is not recommended:
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 enum UserType : string {
     case Guest = 'guest';

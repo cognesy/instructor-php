@@ -3,7 +3,6 @@
 namespace Cognesy\LLM\LLM;
 
 use Closure;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\ResponseAdapter;
 use Cognesy\LLM\LLM\Contracts\CanHandleInference;
 use Cognesy\LLM\LLM\Data\LLMConfig;
@@ -11,6 +10,7 @@ use Cognesy\LLM\LLM\Data\LLMResponse;
 use Cognesy\LLM\LLM\Data\PartialLLMResponse;
 use Cognesy\LLM\LLM\Events\LLMResponseReceived;
 use Cognesy\LLM\LLM\Events\PartialLLMResponseReceived;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Generator;
 

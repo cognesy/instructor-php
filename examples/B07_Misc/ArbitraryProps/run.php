@@ -15,8 +15,8 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class Property
 {

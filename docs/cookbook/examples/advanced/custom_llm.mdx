@@ -16,11 +16,7 @@ other LLMs which support OpenAI API.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Data\LLMConfig;
-use Cognesy\LLM\LLM\Enums\LLMProviderType;
-use Cognesy\Utils\Env;
+use Cognesy\Instructor\Instructor;use Cognesy\LLM\LLM\Data\LLMConfig;use Cognesy\LLM\LLM\Enums\LLMProviderType;use Cognesy\LLM\LLM\Enums\Mode;use Cognesy\Utils\Env;
 
 class User {
     public int $age;

@@ -1,11 +1,10 @@
 <?php
 namespace Cognesy\LLM\Http\Events;
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class HttpResponseReceived extends Event
+class HttpResponseReceived extends \Cognesy\Utils\Events\Event
 {
     public $logLevel = LogLevel::INFO;
 

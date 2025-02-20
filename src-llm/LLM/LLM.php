@@ -2,7 +2,6 @@
 
 namespace Cognesy\LLM\LLM;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\Http\Contracts\ResponseAdapter;
 use Cognesy\LLM\Http\HttpClient;
@@ -11,6 +10,7 @@ use Cognesy\LLM\LLM\Data\LLMConfig;
 use Cognesy\LLM\LLM\Drivers\InferenceDriverFactory;
 use Cognesy\LLM\LLM\Events\InferenceRequested;
 use Cognesy\Utils\Debug\Debug;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 
 /**
@@ -34,7 +34,7 @@ class LLM
      * @param \Cognesy\LLM\LLM\Data\LLMConfig|null $config Configuration object.
      * @param \Cognesy\LLM\Http\Contracts\CanHandleHttp|null $httpClient HTTP client handler.
      * @param CanHandleInference|null $driver Inference handler.
-     * @param EventDispatcher|null $events Event dispatcher.
+     * @param \Cognesy\Utils\Events\EventDispatcher|null $events Event dispatcher.
      *
      * @return void
      */

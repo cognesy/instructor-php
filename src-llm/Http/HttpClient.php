@@ -2,13 +2,13 @@
 
 namespace Cognesy\LLM\Http;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\Http\Data\HttpClientConfig;
 use Cognesy\LLM\Http\Drivers\GuzzleDriver;
 use Cognesy\LLM\Http\Drivers\LaravelDriver;
 use Cognesy\LLM\Http\Drivers\SymfonyDriver;
 use Cognesy\LLM\Http\Enums\HttpClientType;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 

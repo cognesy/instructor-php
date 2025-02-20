@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Enums;
+namespace Cognesy\LLM\LLM\Enums;
 
 /**
  * Mode is an enumeration representing different modes of responses or processing types.

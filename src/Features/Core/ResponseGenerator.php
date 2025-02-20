@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
@@ -11,6 +10,7 @@ use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;

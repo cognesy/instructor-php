@@ -16,9 +16,9 @@ better error handling without breaking the code flow.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class User
 {

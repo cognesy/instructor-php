@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Evals\Events;
 
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 
 class ExecutionProcessed extends Event
 {

@@ -9,7 +9,7 @@ use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Addons\Evals\Observers\Evaluate\ArrayMatchEval;
 use Cognesy\Evals\UseExamples\Company;
 use Cognesy\Evals\UseExamples\CompanyEval;
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');

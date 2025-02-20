@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Evals\Executors\Data;
 
 use Cognesy\Addons\Evals\Contracts\CanMapValues;
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class InferenceCaseParams implements CanMapValues {
     public string $connection;

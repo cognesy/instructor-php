@@ -2,8 +2,8 @@
 
 namespace Cognesy\LLM\LLM\Contracts;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\Http\Data\HttpClientRequest;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 interface ProviderRequestAdapter
 {

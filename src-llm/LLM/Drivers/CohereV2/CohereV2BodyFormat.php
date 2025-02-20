@@ -2,10 +2,10 @@
 
 namespace Cognesy\LLM\LLM\Drivers\CohereV2;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\LLM\Contracts\CanMapMessages;
 use Cognesy\LLM\LLM\Contracts\CanMapRequestBody;
 use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\Utils\Arrays;
 
 class CohereV2BodyFormat implements CanMapRequestBody

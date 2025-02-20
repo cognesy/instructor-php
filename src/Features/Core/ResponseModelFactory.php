@@ -6,7 +6,6 @@ use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanReceiveEvents;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
@@ -20,6 +19,7 @@ use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
 
 class ResponseModelFactory

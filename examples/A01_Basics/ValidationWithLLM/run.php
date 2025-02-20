@@ -16,12 +16,12 @@ to achieve using traditional, code-based validation.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Instructor;
+use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Str;
 
 class UserDetails

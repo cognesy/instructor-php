@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 use Psr\Log\LogLevel;
 
 class RequestReceived extends Event

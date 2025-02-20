@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\Evals\Executors;
 
 use Cognesy\Addons\Evals\Executors\Data\InferenceSchema;
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\LLM\LLM\Inference;
 use Cognesy\LLM\LLM\InferenceResponse;
 

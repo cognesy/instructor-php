@@ -2,7 +2,7 @@
 
 namespace Cognesy\LLM\LLM\Contracts;
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 interface CanMapRequestBody
 {

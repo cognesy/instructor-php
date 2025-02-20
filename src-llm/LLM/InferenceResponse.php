@@ -2,12 +2,12 @@
 
 namespace Cognesy\LLM\LLM;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\ResponseAdapter;
 use Cognesy\LLM\LLM\Contracts\CanHandleInference;
 use Cognesy\LLM\LLM\Data\LLMConfig;
 use Cognesy\LLM\LLM\Data\LLMResponse;
 use Cognesy\LLM\LLM\Events\LLMResponseReceived;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 

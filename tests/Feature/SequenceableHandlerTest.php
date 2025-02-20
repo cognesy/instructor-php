@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
@@ -13,6 +12,7 @@ use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\Utils\Events\EventDispatcher;
 
 class SimpleItem
 {

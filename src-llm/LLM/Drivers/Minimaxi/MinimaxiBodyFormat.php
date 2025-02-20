@@ -2,8 +2,8 @@
 
 namespace Cognesy\LLM\LLM\Drivers\Minimaxi;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\Utils\Json\Json;
 
 class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat

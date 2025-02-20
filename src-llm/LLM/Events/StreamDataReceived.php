@@ -2,9 +2,7 @@
 
 namespace Cognesy\LLM\LLM\Events;
 
-use Cognesy\Instructor\Events\Event;
-
-class StreamDataReceived extends Event
+class StreamDataReceived extends \Cognesy\Utils\Events\Event
 {
     public function __construct(
         public string $content,

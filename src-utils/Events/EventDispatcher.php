@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Events;
+namespace Cognesy\Utils\Events;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;

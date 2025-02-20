@@ -2,8 +2,8 @@
 
 namespace Cognesy\LLM\LLM\Drivers\Perplexity;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\Utils\Messages\Messages;
 
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat

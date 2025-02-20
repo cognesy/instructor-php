@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Request;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\Core\Data\ChatTemplate;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 trait HandlesMessages
 {

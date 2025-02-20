@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\LLM\Events\StreamDataParsed;
 use Cognesy\LLM\LLM\Events\StreamDataReceived;
 use Cognesy\LLM\LLM\EventStreamReader;
+use Cognesy\Utils\Events\EventDispatcher;
 use Mockery as Mock;
 
 beforeEach(function () {

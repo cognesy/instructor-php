@@ -2,7 +2,6 @@
 
 namespace Cognesy\LLM\LLM\Drivers;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\Http\Contracts\ResponseAdapter;
 use Cognesy\LLM\Http\Data\HttpClientRequest;
@@ -14,6 +13,7 @@ use Cognesy\LLM\LLM\Data\LLMConfig;
 use Cognesy\LLM\LLM\Data\LLMResponse;
 use Cognesy\LLM\LLM\Data\PartialLLMResponse;
 use Cognesy\LLM\LLM\InferenceRequest;
+use Cognesy\Utils\Events\EventDispatcher;
 
 /**
  * ModularLLMDriver is responsible for handling inference requests and managing

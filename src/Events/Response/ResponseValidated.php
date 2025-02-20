@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
+use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 

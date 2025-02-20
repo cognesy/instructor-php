@@ -2,8 +2,8 @@
 
 namespace Cognesy\Addons\Image;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessages;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -130,7 +130,7 @@ class Image implements CanProvideMessages
      * @param array $examples Examples for the request.
      * @param int $maxRetries The maximum number of retries.
      * @param array $options Additional options for the request.
-     * @param Mode $mode The mode to use.
+     * @param \Cognesy\LLM\LLM\Enums\Mode $mode The mode to use.
      * @return mixed
      */
     public function toData(

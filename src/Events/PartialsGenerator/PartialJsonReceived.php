@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 
 class PartialJsonReceived extends Event
 {

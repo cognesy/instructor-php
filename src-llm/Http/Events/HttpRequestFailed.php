@@ -1,11 +1,10 @@
 <?php
 namespace Cognesy\LLM\Http\Events;
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class HttpRequestFailed extends Event
+class HttpRequestFailed extends \Cognesy\Utils\Events\Event
 {
     public $logLevel = LogLevel::ERROR;
 

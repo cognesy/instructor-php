@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\LLM\LLM;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\LLM\Data\CachedContext;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 /**
  * Represents a request for an inference operation, holding configuration parameters
@@ -204,7 +204,7 @@ class InferenceRequest
     /**
      * Retrieves the current mode of the object.
      *
-     * @return Mode The current mode instance.
+     * @return \Cognesy\LLM\LLM\Enums\Mode The current mode instance.
      */
     public function mode() : Mode {
         return $this->mode;

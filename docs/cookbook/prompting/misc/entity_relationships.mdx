@@ -19,7 +19,6 @@ incorporating an `$id` and `$coworkers` fields.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__.'../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
 
 class UserDetail

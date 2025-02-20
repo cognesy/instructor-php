@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
@@ -11,14 +10,15 @@ use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
 use Cognesy\LLM\LLM\LLM;
 use Cognesy\Utils\Debug\Debug;
+use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Traits\HandlesEvents;
 
 /**
  * The Instructor class manages the lifecycle and functionalities of Instructor instance.
  *
  * It uses various traits including event management, environment settings, and request handling.
  *
- * @uses Events\Traits\HandlesEvents
- * @uses Events\Traits\HandlesEventListeners
+ * @uses HandlesEvents
  * @uses Traits\HandlesInvocation
  * @uses Traits\HandlesOverrides
  * @uses Traits\HandlesPartialUpdates
@@ -27,8 +27,7 @@ use Cognesy\Utils\Debug\Debug;
  * @uses Traits\HandlesSequenceUpdates
  */
 class Instructor {
-    use Events\Traits\HandlesEvents;
-    use Events\Traits\HandlesEventListeners;
+    use HandlesEvents;
 
     use Traits\HandlesInvocation;
     use Traits\HandlesOverrides;
@@ -39,7 +38,7 @@ class Instructor {
 
     /**
      * @param LLM|null $llm An optional LLM object instance for LLM connection.
-     * @param EventDispatcher|null $events An optional EventDispatcher instance for managing events.
+     * @param \Cognesy\Utils\Events\EventDispatcher|null $events An optional EventDispatcher instance for managing events.
      * @return void
      */
     public function __construct(

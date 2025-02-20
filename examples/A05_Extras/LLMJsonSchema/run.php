@@ -24,7 +24,7 @@ supported by all language model providers.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\LLM\LLM\Inference;
 
 $data = (new Inference)

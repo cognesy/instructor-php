@@ -2,7 +2,6 @@
 
 namespace Cognesy\LLM\LLM\Drivers;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\LLM\Contracts\CanHandleInference;
 use Cognesy\LLM\LLM\Data\LLMConfig;
@@ -43,6 +42,7 @@ use Cognesy\LLM\LLM\Drivers\Perplexity\PerplexityBodyFormat;
 use Cognesy\LLM\LLM\Drivers\SambaNova\SambaNovaBodyFormat;
 use Cognesy\LLM\LLM\Drivers\XAI\XAiMessageFormat;
 use Cognesy\LLM\LLM\Enums\LLMProviderType;
+use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
 
 /**

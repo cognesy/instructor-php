@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Events\Request;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
 class SequenceUpdated extends Event

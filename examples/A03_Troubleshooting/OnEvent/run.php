@@ -25,10 +25,10 @@ and their properties.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\Instructor\Instructor;
 use Cognesy\LLM\Http\Events\HttpRequestSent;
 use Cognesy\LLM\Http\Events\HttpResponseReceived;
+use Cognesy\Utils\Events\Event;
 
 class User
 {

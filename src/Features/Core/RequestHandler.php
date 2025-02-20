@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Instructor\Enums\Mode;
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
@@ -11,9 +9,11 @@ use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\LLM\LLM\Data\LLMResponse;
 use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\LLM\LLM\Inference;
 use Cognesy\LLM\LLM\InferenceResponse;
 use Cognesy\LLM\LLM\LLM;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Exception;

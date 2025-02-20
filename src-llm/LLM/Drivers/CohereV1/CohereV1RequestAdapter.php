@@ -2,11 +2,11 @@
 
 namespace Cognesy\LLM\LLM\Drivers\CohereV1;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\Http\Data\HttpClientRequest;
 use Cognesy\LLM\LLM\Contracts\CanMapRequestBody;
 use Cognesy\LLM\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class CohereV1RequestAdapter implements ProviderRequestAdapter
 {

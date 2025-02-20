@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\LLM\LLM\Events;
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
 class LLMResponseReceived extends Event

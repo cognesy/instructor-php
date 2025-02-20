@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\RequestInfo;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\Core\Data\Example;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 trait HandlesCreation
 {

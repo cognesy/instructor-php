@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Evals\Executors\Data;
 
 use Cognesy\Addons\Evals\Utils\Combination;
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\Utils\Settings;
 use Generator;
 

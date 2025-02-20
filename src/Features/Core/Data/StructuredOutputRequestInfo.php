@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data;
 
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class StructuredOutputRequestInfo
 {

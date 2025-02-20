@@ -31,9 +31,9 @@ that we want to extract or generate based on README file.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Enums\Mode;
 use Cognesy\Utils\Str;
 
 class Project {

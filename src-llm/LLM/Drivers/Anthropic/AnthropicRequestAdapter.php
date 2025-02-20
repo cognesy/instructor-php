@@ -2,11 +2,11 @@
 
 namespace Cognesy\LLM\LLM\Drivers\Anthropic;
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\LLM\Http\Data\HttpClientRequest;
 use Cognesy\LLM\LLM\Contracts\CanMapRequestBody;
 use Cognesy\LLM\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 class AnthropicRequestAdapter implements ProviderRequestAdapter
 {

@@ -22,8 +22,8 @@ Here's how you can use Instructor with Groq API.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\Instructor\Enums\Mode;
 use Cognesy\Instructor\Instructor;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 enum UserType : string {
     case Guest = 'guest';

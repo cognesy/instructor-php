@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 
 trait HandlesQueuedEvents
 {

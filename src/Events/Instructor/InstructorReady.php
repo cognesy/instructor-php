@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Instructor;
 
-use Cognesy\Instructor\Events\Event;
+use Cognesy\Utils\Events\Event;
 
 class InstructorReady extends Event
 {

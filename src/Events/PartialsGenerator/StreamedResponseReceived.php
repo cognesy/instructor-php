@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
 class StreamedResponseReceived extends Event

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Instructor\Events\Event;
 use Cognesy\LLM\LLM\Data\ToolCall;
+use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
 class StreamedToolCallStarted extends Event

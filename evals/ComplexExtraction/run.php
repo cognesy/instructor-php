@@ -8,7 +8,7 @@ use Cognesy\Addons\Evals\Experiment;
 use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\ComplexExtraction\ProjectEvents;
 use Cognesy\Evals\ComplexExtraction\ProjectsEval;
-use Cognesy\Instructor\Enums\Mode;
+use Cognesy\LLM\LLM\Enums\Mode;
 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');

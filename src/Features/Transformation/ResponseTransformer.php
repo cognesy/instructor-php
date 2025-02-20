@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\Instructor\Features\Transformation;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\Instructor\Events\Response\ResponseTransformationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformObject;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
 

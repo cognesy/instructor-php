@@ -2,7 +2,6 @@
 
 namespace Cognesy\LLM\Embeddings\Drivers;
 
-use Cognesy\Instructor\Events\EventDispatcher;
 use Cognesy\LLM\Embeddings\Contracts\CanVectorize;
 use Cognesy\LLM\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\LLM\Embeddings\Data\Vector;
@@ -11,6 +10,7 @@ use Cognesy\LLM\Http\Contracts\CanHandleHttp;
 use Cognesy\LLM\Http\Data\HttpClientRequest;
 use Cognesy\LLM\Http\HttpClient;
 use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Utils\Events\EventDispatcher;
 
 class JinaDriver implements CanVectorize
 {
