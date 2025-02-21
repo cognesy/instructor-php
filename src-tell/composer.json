@@ -1,0 +1,10 @@
+{
+  "name": "cognesy/tell",
+  "description": "Minimal tool to run queries to LLM inference providers via CLI",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Tell\\": "/"
+    }
+  },
+  "version": "0.12.0"
+}

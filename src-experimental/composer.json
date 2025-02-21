@@ -1,0 +1,10 @@
+{
+  "name": "cognesy/experimental",
+  "description": "Experimental code used by Cognesy Instructor and LLM libraries",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\LLM\\": "/"
+    }
+  },
+  "version": "0.12.0"
+}

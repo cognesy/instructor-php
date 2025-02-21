@@ -1,0 +1,10 @@
+{
+  "name": "cognesy/aux-tools",
+  "description": "Collection of auxiliary services and integrations",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\LLM\\": "/"
+    }
+  },
+  "version": "0.12.0"
+}
