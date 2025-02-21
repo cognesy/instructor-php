@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERSION=$1
-REPO="cognesy/instructor-php"  # Replace with your repo name
+REPO="cognesy/instructor-php"
 
 if [ -z "$VERSION" ]; then
     echo "Please provide version number"
@@ -23,7 +23,7 @@ echo "Creating release for version $VERSION..."
 echo "Using release notes from: $NOTES_FILE"
 
 # 1. Update package versions
-./bin/sync-ver.sh "$VERSION"
+# ./bin/sync-ver.sh "$VERSION"
 
 # 2. Commit changes
 git commit -am "Release version $VERSION"

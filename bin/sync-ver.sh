@@ -15,11 +15,11 @@ VERSION=${VERSION#v}
 declare -A REQUIRE_PACKAGES=(
     ["src-utils"]="cognesy/utils"
     ["src-addons"]="cognesy/instructor-php-addons"
-    ["src-llm"]="cognesy/llm"
+    ["src-polyglot"]="cognesy/polyglot-php"
 )
 
 declare -A REQUIRE_DEV_PACKAGES=(
-    ["src-aux"]="cognesy/aux-tools"
+    ["src-aux"]="cognesy/aux"
     ["src-experimental"]="cognesy/experimental"
     ["src-hub"]="cognesy/instructor-php-hub"
     ["src-setup"]="cognesy/instructor-php-setup"

@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/aux-tools",
+  "name": "cognesy/aux",
   "description": "Collection of auxiliary services and integrations",
   "autoload": {
     "psr-4": {
