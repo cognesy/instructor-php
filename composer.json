@@ -82,11 +82,11 @@
     "twig/twig": "^3.0",
     "vimeo/psalm": "dev-master",
     "webuni/front-matter": "^2.0",
-    "cognesy/aux-tools": "^0.12.2",
-    "cognesy/tell": "^0.12.2",
-    "cognesy/instructor-php-hub": "^0.12.2",
-    "cognesy/instructor-php-setup": "^0.12.2",
-    "cognesy/experimental": "^0.12.2"
+    "cognesy/aux-tools": "^0.12.3",
+    "cognesy/tell": "^0.12.3",
+    "cognesy/instructor-php-hub": "^0.12.3",
+    "cognesy/instructor-php-setup": "^0.12.3",
+    "cognesy/experimental": "^0.12.3"
   },
   "config": {
     "allow-plugins": {
@@ -117,9 +117,10 @@
     "symfony/validator": "^6.4 || ^7.0",
     "symfony/yaml": "^7.1",
     "vlucas/phpdotenv": "^5.6",
-    "cognesy/llm": "^0.12.2",
-    "cognesy/utils": "^0.12.2",
-    "cognesy/instructor-php-addons": "^0.12.2"
+    "cognesy/polyglot-php": "^0.12.2",
+    "cognesy/utils": "^0.12.3",
+    "cognesy/instructor-php-addons": "^0.12.3",
+    "cognesy/llm": "^0.12.3"
   },
   "scripts": {
     "tests": "@php vendor/bin/pest",
