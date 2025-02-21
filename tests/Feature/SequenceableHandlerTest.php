@@ -11,7 +11,7 @@ use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
-use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Utils\Events\EventDispatcher;
 
 class SimpleItem

@@ -9,7 +9,7 @@ use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\LLM\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;

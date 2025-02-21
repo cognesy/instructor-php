@@ -1,9 +1,9 @@
 <?php
 
-use Cognesy\LLM\Http\Data\HttpClientConfig;
-use Cognesy\LLM\Http\Data\HttpClientRequest;
-use Cognesy\LLM\Http\Drivers\GuzzleDriver;
-use Cognesy\LLM\Http\Enums\HttpClientType;
+use Cognesy\Polyglot\Http\Data\HttpClientConfig;
+use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Polyglot\Http\Drivers\GuzzleDriver;
+use Cognesy\Polyglot\Http\Enums\HttpClientType;
 use Cognesy\Utils\Debug\Debug;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;

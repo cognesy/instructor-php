@@ -21,8 +21,8 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Features\Core\Data\Example;
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\Http\Events\HttpRequestSent;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\Http\Events\HttpRequestSent;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 
 class User {
     public int $age;

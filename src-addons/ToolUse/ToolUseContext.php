@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse;
 
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
-use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\Messages\Messages;
 
 class ToolUseContext

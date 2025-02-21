@@ -20,7 +20,7 @@ LLM providers access details can be found and modified via
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\LLM\LLM\Inference;
+use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;
 
 // EXAMPLE 1: simplified API, default connection for convenient ad-hoc calls

@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\LLM\LLM\Enums\LLMProviderType;
+use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 return [

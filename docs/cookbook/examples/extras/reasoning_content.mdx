@@ -16,7 +16,7 @@ This feature is useful for debugging and understanding the reasoning behind the 
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\LLM\LLM\Inference;
+use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Str;
 

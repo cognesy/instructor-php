@@ -23,7 +23,7 @@ use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\Http\Events\HttpRequestSent;
+use Cognesy\Polyglot\Http\Events\HttpRequestSent;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails

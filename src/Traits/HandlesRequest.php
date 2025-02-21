@@ -4,10 +4,10 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\Http\Contracts\CanHandleHttp;
-use Cognesy\LLM\LLM\Contracts\CanHandleInference;
-use Cognesy\LLM\LLM\Data\LLMConfig;
-use Cognesy\LLM\LLM\LLM;
+use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
+use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
+use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\LLM;
 use JetBrains\PhpStorm\Deprecated;
 
 trait HandlesRequest

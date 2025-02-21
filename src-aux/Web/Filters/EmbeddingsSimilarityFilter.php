@@ -3,8 +3,8 @@
 namespace Cognesy\Aux\Web\Filters;
 
 use Cognesy\Aux\Web\Contracts\CanFilterContent;
-use Cognesy\LLM\Embeddings\Data\Vector;
-use Cognesy\LLM\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Data\Vector;
+use Cognesy\Polyglot\Embeddings\Embeddings;
 
 class EmbeddingsSimilarityFilter implements CanFilterContent
 {

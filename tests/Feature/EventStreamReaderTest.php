@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Cognesy\LLM\LLM\Events\StreamDataParsed;
-use Cognesy\LLM\LLM\Events\StreamDataReceived;
-use Cognesy\LLM\LLM\EventStreamReader;
+use Cognesy\Polyglot\LLM\Events\StreamDataParsed;
+use Cognesy\Polyglot\LLM\Events\StreamDataReceived;
+use Cognesy\Polyglot\LLM\EventStreamReader;
 use Cognesy\Utils\Events\EventDispatcher;
 use Mockery as Mock;
 

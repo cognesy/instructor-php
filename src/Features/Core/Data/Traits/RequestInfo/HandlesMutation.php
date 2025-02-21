@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\RequestInfo;
 
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 
 trait HandlesMutation
 {

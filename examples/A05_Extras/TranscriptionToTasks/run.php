@@ -15,7 +15,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract

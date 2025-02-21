@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\LLM\LLM\Data\LLMResponse;
-use Cognesy\LLM\LLM\Data\ToolCalls;
-use Cognesy\LLM\LLM\Data\Usage;
-use Cognesy\LLM\LLM\Enums\LLMFinishReason;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\ToolCalls;
+use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\LLM\Enums\LLMFinishReason;
 use Cognesy\Utils\Messages\Messages;
 use Throwable;
 

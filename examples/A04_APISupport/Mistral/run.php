@@ -25,7 +25,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 
 enum UserType : string {
     case Guest = 'guest';

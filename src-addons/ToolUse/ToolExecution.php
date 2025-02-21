@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\LLM\LLM\Data\ToolCall;
+use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Utils\Result\Result;
 use DateTimeImmutable;
 use Throwable;

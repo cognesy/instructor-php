@@ -11,7 +11,7 @@ use Cognesy\Addons\Evals\Executors\RunInference;
 use Cognesy\Addons\Evals\Experiment;
 use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\LLMModes\CompanyEval;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Settings;
 
 $data = new InferenceData(

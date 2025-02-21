@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Extras\Mixin;
 
-use Cognesy\LLM\LLM\Enums\Mode;
-use Cognesy\LLM\LLM\LLM;
+use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\LLM;
 
 interface CanInferSelf
 {

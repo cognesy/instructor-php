@@ -6,7 +6,7 @@ use Cognesy\Addons\Evals\Contracts\CanObserveExecution;
 use Cognesy\Addons\Evals\Contracts\CanRunExecution;
 use Cognesy\Addons\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Addons\Evals\Observers\Measure\TokenUsageObserver;
-use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\DataMap;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Uuid;

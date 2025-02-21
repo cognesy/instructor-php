@@ -34,7 +34,7 @@ $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 use Cognesy\Aux\Web\Webpage;
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 
 class Company {
     public string $name = '';

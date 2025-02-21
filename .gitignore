@@ -42,10 +42,16 @@ Thumbs.db
 /tests/_support/_generated/
 /coverage/
 
-# User-specific files (temporary, experimental, to be archived / removed)
+# Non-distributed files (temporary, experimental, to be archived / removed)
 /archived/
-/experimental/*
+/experimental/
 /tmp/
 /temp/
-/prompts/misc/*
-/prompts/archive/*
+/prompts/misc/
+/prompts/archive/
+
+# Excluding examples, hub, etc to make the library distribution smaller
+/examples/
+/src-aux/
+/src-hub/
+/scripts/hub.php

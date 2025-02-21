@@ -9,7 +9,7 @@ use Cognesy\Addons\Evals\Events\ExperimentStarted;
 use Cognesy\Addons\Evals\Execution;
 use Cognesy\Addons\Evals\Observation;
 use Cognesy\Addons\Evals\Observation\MakeObservations;
-use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Polyglot\LLM\Data\Usage;
 use DateTime;
 use Exception;
 

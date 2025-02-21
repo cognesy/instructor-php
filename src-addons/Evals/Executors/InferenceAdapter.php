@@ -3,10 +3,10 @@
 namespace Cognesy\Addons\Evals\Executors;
 
 use Cognesy\Addons\Evals\Executors\Data\InferenceSchema;
-use Cognesy\LLM\LLM\Data\LLMResponse;
-use Cognesy\LLM\LLM\Enums\Mode;
-use Cognesy\LLM\LLM\Inference;
-use Cognesy\LLM\LLM\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\LLM\InferenceResponse;
 
 class InferenceAdapter
 {

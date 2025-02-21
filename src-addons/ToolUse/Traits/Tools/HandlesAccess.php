@@ -4,7 +4,7 @@ namespace Cognesy\Addons\ToolUse\Traits\Tools;
 
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
 use Cognesy\Addons\ToolUse\Exceptions\InvalidToolException;
-use Cognesy\LLM\LLM\Data\ToolCalls;
+use Cognesy\Polyglot\LLM\Data\ToolCalls;
 
 trait HandlesAccess
 {

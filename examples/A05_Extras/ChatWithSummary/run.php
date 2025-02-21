@@ -14,8 +14,8 @@ docname: 'chat_with_summary'
 
 use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\LLM\LLM\Inference;
-use Cognesy\LLM\LLM\LLM;
+use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\LLM\LLM;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 

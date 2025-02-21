@@ -5,7 +5,7 @@ namespace Cognesy\Addons\Evals\Traits\Execution;
 use Cognesy\Addons\Evals\Contracts\CanRunExecution;
 use Cognesy\Addons\Evals\Observation;
 use Cognesy\Addons\Evals\Observation\SelectObservations;
-use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\DataMap;
 use DateTime;
 use Exception;

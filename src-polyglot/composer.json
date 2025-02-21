@@ -1,0 +1,10 @@
+{
+  "name": "cognesy/polyglot-php",
+  "description": "Unified API for various LLM providers",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Polyglot\\": "/"
+    }
+  },
+  "version": "0.12.0"
+}

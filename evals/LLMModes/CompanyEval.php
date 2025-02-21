@@ -5,8 +5,8 @@ namespace Cognesy\Evals\LLMModes;
 use Cognesy\Addons\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Addons\Evals\Execution;
 use Cognesy\Addons\Evals\Observation;
-use Cognesy\LLM\LLM\Data\ToolCall;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Data\ToolCall;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Str;
 
 class CompanyEval implements CanGenerateObservations

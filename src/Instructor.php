@@ -8,7 +8,7 @@ use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
-use Cognesy\LLM\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLM;
 use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Events\Traits\HandlesEvents;

@@ -27,7 +27,7 @@ Embeddings providers access details can be found and modified via
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\LLM\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $documents = [
     'Computer vision models are used to analyze images and videos.',

@@ -14,7 +14,7 @@ This is an example of a simple summarization.
 $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
-use Cognesy\LLM\LLM\Inference;
+use Cognesy\Polyglot\LLM\Inference;
 
 $report = <<<EOT
     [2021-09-01]

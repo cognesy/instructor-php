@@ -17,9 +17,9 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Data\LLMConfig;
-use Cognesy\LLM\LLM\Enums\LLMProviderType;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Env;
 
 class User {

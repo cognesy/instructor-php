@@ -4,7 +4,7 @@ namespace Cognesy\Addons\ToolUse\ContinuationCriteria;
 
 use Cognesy\Addons\ToolUse\Contracts\CanDecideToContinue;
 use Cognesy\Addons\ToolUse\ToolUseContext;
-use Cognesy\LLM\LLM\Data\Usage;
+use Cognesy\Polyglot\LLM\Data\Usage;
 
 class TokenUsageLimit implements CanDecideToContinue
 {

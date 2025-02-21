@@ -3,9 +3,9 @@
 namespace Cognesy\Addons\Chat\Utils;
 
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
-use Cognesy\LLM\LLM\Enums\Mode;
-use Cognesy\LLM\LLM\Inference;
-use Cognesy\LLM\LLM\LLM;
+use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\LLM\LLM;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 

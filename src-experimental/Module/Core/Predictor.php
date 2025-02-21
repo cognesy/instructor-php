@@ -10,7 +10,7 @@ use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesPrediction;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Inference;
+use Cognesy\Polyglot\LLM\Inference;
 
 class Predictor
 {

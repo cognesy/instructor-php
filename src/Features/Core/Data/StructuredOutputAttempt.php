@@ -2,13 +2,13 @@
 
 namespace Cognesy\Instructor\Features\Core\Data;
 
-use Cognesy\LLM\LLM\Data\LLMResponse;
-use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 
 class StructuredOutputAttempt {
     private array $messages;
     private LLMResponse $llmResponse;
-    /** @var \Cognesy\LLM\LLM\Data\PartialLLMResponse[] */
+    /** @var \Cognesy\Polyglot\LLM\Data\PartialLLMResponse[] */
     private array $partialLLMResponses;
     private array $errors;
     private mixed $output;

@@ -13,7 +13,7 @@ use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Settings;
 use Exception;
 

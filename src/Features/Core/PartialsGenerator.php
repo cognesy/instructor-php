@@ -16,10 +16,10 @@ use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
-use Cognesy\LLM\LLM\Data\LLMResponse;
-use Cognesy\LLM\LLM\Data\PartialLLMResponse;
-use Cognesy\LLM\LLM\Data\ToolCall;
-use Cognesy\LLM\LLM\Data\ToolCalls;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\ToolCall;
+use Cognesy\Polyglot\LLM\Data\ToolCalls;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
@@ -61,16 +61,16 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     /**
-     * @param Generator<\Cognesy\LLM\LLM\Data\PartialLLMResponse> $stream
+     * @param Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Generator<\Cognesy\LLM\LLM\Data\PartialLLMResponse>
+     * @return Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse>
      */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         // reset state
         $this->resetPartialResponse();
 
         // receive data
-        /** @var \Cognesy\LLM\LLM\Data\PartialLLMResponse $partialResponse */
+        /** @var \Cognesy\Polyglot\LLM\Data\PartialLLMResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response

@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Request;
 
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Str;
 
 trait HandlesSchema

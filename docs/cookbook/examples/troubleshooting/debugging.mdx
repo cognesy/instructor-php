@@ -22,7 +22,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Data\LLMConfig;
 
 class User {
     public int $age;

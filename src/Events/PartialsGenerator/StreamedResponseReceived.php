@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\LLM\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 

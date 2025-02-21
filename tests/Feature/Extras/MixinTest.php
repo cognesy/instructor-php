@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature\Extras;
 
-use Cognesy\LLM\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLM;
 use Tests\Examples\Mixin\PersonWithMixin;
 use Tests\MockLLM;
 

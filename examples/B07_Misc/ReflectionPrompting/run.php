@@ -21,7 +21,7 @@ use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Instructor;
-use Cognesy\LLM\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\Mode;
 
 class ReflectiveResponse implements CanValidateSelf {
     #[Instructions('Is problem solvable and what domain expertise it requires')]
