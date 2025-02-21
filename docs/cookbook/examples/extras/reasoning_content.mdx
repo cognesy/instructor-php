@@ -17,6 +17,7 @@ $loader = require 'vendor/autoload.php';
 $loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
 
 use Cognesy\LLM\LLM\Inference;
+use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Str;
 
 //Debug::enable();
