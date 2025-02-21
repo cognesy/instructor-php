@@ -8,7 +8,7 @@ namespace Cognesy\Utils\Xml;
  *
  * Convert XML to array
  *
- * @package Cognesy\Instructor\Utils
+ * @package Cognesy\Utils
  */
 class Xml
 {

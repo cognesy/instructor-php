@@ -1,10 +1,5 @@
 # Exclude unnecessary files from Composer and Git exports
-/docs/            export-ignore
-#/evals/           export-ignore # include this one with distribution
-#/examples/        export-ignore # include this one with distribution
 /.github/         export-ignore
-/notes/           export-ignore
-/tests/           export-ignore
 /.gitignore       export-ignore
 /.gitattributes   export-ignore
 /.cursorignore    export-ignore
@@ -20,6 +15,16 @@
 /phpstan.neon     export-ignore
 *.md              export-ignore
 *.mdx             export-ignore
+
+# Project specific ignores
+/archived/        export-ignore
+/docs/            export-ignore
+#/evals/           export-ignore # include this one with distribution
+#/examples/        export-ignore # include this one with distribution
+/experimental/    export-ignore
+/notes/           export-ignore
+/tests/           export-ignore
+/src-experimental/ export-ignore
 
 # Line ending normalization
 # Ensure PHP, JS, and text files have consistent line endings
