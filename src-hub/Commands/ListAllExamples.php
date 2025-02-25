@@ -21,15 +21,15 @@ class ListAllExamples extends Command
         $this->examples->forEachExample(function(Example $example) {
             Cli::grid([
                 [1, '(', STR_PAD_LEFT, Color::DARK_GRAY],
-                [2, $example->index, STR_PAD_LEFT, Color::WHITE],
+                [3, $example->index, STR_PAD_LEFT, Color::WHITE],
                 [1, ')', STR_PAD_LEFT, Color::DARK_GRAY],
                 [10, $example->tab, STR_PAD_RIGHT, Color::DARK_YELLOW],
                 [1, '/', STR_PAD_LEFT, Color::DARK_GRAY],
-                [15, $example->group, STR_PAD_LEFT, Color::DARK_YELLOW],
+                [19, $example->group, STR_PAD_LEFT, Color::DARK_YELLOW],
                 [1, '/', STR_PAD_LEFT, Color::DARK_GRAY],
                 [24, $example->name, STR_PAD_RIGHT, Color::GREEN],
                 [2, '-', STR_PAD_LEFT, Color::WHITE],
-                [50, $example->title, STR_PAD_RIGHT, Color::DARK_GRAY]
+                [43, $example->title, STR_PAD_RIGHT, Color::DARK_GRAY]
             ]);
             Cli::outln();
             return true;

@@ -40,11 +40,11 @@ class Example
         $info = ExampleInfo::fromFile($baseDir . $path . '/run.php', $name);
 
         $mapping = [
-            'A01_Basics' => ['tab' => 'examples', 'name' => 'basics', 'title' => 'Basics'],
-            'A02_Advanced' => ['tab' => 'examples', 'name' => 'advanced', 'title' => 'Advanced'],
-            'A03_Troubleshooting' => ['tab' => 'examples', 'name' => 'troubleshooting', 'title' => 'Troubleshooting'],
-            'A04_APISupport' => ['tab' => 'examples', 'name' => 'api_support', 'title' => 'LLM API Support'],
-            'A05_Extras' => ['tab' => 'examples', 'name' => 'extras', 'title' => 'Extras'],
+            'A01_Basics' => ['tab' => 'instructor', 'name' => 'basics', 'title' => 'Basics'],
+            'A02_Advanced' => ['tab' => 'instructor', 'name' => 'advanced', 'title' => 'Advanced'],
+            'A03_Troubleshooting' => ['tab' => 'instructor', 'name' => 'troubleshooting', 'title' => 'Troubleshooting'],
+            'A04_APISupport' => ['tab' => 'instructor', 'name' => 'api_support', 'title' => 'LLM API Support'],
+            'A05_Extras' => ['tab' => 'instructor', 'name' => 'extras', 'title' => 'Extras'],
             'B01_ZeroShot' => ['tab' => 'prompting', 'name' => 'zero_shot', 'title' => 'Zero-Shot Prompting'],
             'B02_FewShot' => ['tab' => 'prompting', 'name' => 'few_shot', 'title' => 'Few-Shot Prompting'],
             'B03_ThoughtGen' => ['tab' => 'prompting', 'name' => 'thought_gen', 'title' => 'Thought Generation'],
@@ -52,6 +52,11 @@ class Example
             'B05_SelfCriticism' => ['tab' => 'prompting', 'name' => 'self_criticism', 'title' => 'Self-Criticism'],
             'B06_Decomposition' => ['tab' => 'prompting', 'name' => 'decomposition', 'title' => 'Decomposition'],
             'B07_Misc' => ['tab' => 'prompting', 'name' => 'misc', 'title' => 'Miscellaneous'],
+            'C01_LLM' => ['tab' => 'polyglot', 'name' => 'llm_basics', 'title' => 'LLM Basics'],
+            'C02_LLMAdvanced' => ['tab' => 'polyglot', 'name' => 'llm_advanced', 'title' => 'LLM Advanced'],
+            'C03_LLMTroubleshooting' => ['tab' => 'polyglot', 'name' => 'llm_troubleshooting', 'title' => 'LLM Troubleshooting'],
+            'C04_LLMApiSupport' => ['tab' => 'polyglot', 'name' => 'llm_api_support', 'title' => 'LLM API Support'],
+            'C05_LLMExtras' => ['tab' => 'polyglot', 'name' => 'llm_extras', 'title' => 'LLM Extras'],
         ];
 
         $tab = $mapping[$group]['tab'];

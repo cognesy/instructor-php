@@ -27,8 +27,8 @@ class Hub extends CliApp
 
         $docGen = new MintlifyDocGenerator(
                 $exampleRepo,
-                __DIR__ . '/../docs/cookbook',
-                __DIR__ . '/../docs/mint.json',
+            __DIR__ . '/../docs/cookbook',
+            __DIR__ . '/../docs/mint.json',
                 [
                     'Basics',
                     'Advanced',

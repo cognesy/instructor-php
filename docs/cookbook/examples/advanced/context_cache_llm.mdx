@@ -26,7 +26,8 @@ generating its summary for 2 target audiences.
 ```php
 <?php
 $loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+$loader->add('Cognesy\\Polyglot\\', __DIR__ . '../../src-polyglot/');
+$loader->add('Cognesy\\Utils\\', __DIR__ . '../../src-utils/');
 
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;

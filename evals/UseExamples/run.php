@@ -12,7 +12,7 @@ use Cognesy\Evals\UseExamples\CompanyEval;
 use Cognesy\Polyglot\LLM\Enums\Mode;
 
 $loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src-instructor/');
 
 $data = new InstructorData(
     messages: [

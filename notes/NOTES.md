@@ -9,6 +9,7 @@
 - Predicted outputs API
 - Batch completion API
 - Citations API
+- MCP support as addon
 - Reasoning traces support in response objects
 
 ## Low priority

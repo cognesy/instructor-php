@@ -1,6 +1,5 @@
 <?php
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+require '../../boot.php';
 $loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
 
 use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;

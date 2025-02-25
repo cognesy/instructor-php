@@ -11,11 +11,11 @@ Instructor simplifies LLM integration in PHP projects. It handles the complexity
 
 Instructor for PHP is inspired by the [Instructor](https://jxnl.github.io/instructor/) library for Python created by [Jason Liu](https://twitter.com/jxnlco).
 
-![image](./docs/images/concept.png)
+![image](docs/images/concept.png)
 
 Here's a simple CLI demo app using Instructor to extract structured data from text:
 
-![image](./docs/images/extraction.gif)
+![image](docs/images/extraction.gif)
 
 
 

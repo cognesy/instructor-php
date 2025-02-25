@@ -4,12 +4,14 @@ namespace Cognesy\Addons\ToolUse;
 
 use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Drivers\ToolCallingDriver;
+use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesContinuationCriteria;
+use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesStepProcessors;
 use Cognesy\Utils\Messages\Messages;
 use Generator;
 
 class ToolUse {
-    use \Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesContinuationCriteria;
-    use \Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesStepProcessors;
+    use HandlesContinuationCriteria;
+    use HandlesStepProcessors;
 
     private CanUseTools $driver;
     private array $processors;

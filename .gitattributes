@@ -18,9 +18,11 @@
 
 # Project specific ignores
 /archived/        export-ignore
-/docs/            export-ignore
-#/evals/           export-ignore # include this one with distribution
-#/examples/        export-ignore # include this one with distribution
+/docs-instructor/ export-ignore
+/docs-polyglot/   export-ignore
+#/evals/            export-ignore # include this one with distribution
+#/examples-instructor/  export-ignore # include this one with distribution
+#/examples-polyglot/    export-ignore # include this one with distribution
 /experimental/    export-ignore
 /notes/           export-ignore
 /tests/           export-ignore

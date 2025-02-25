@@ -29,8 +29,16 @@
     },
     "tabs": [
         {
-            "name": "Examples",
-            "url": "cookbook/examples"
+            "name": "Polyglot",
+            "url": "polyglot"
+        },
+        {
+            "name": "Instructor Cookbook",
+            "url": "cookbook/instructor"
+        },
+        {
+            "name": "Polyglot Cookbook",
+            "url": "cookbook/polyglot"
         },
         {
             "name": "Prompting",
@@ -105,7 +113,8 @@
                 "internals/debugging",
                 "internals/events",
                 "internals/environment",
-                "internals/configuration_path"
+                "internals/configuration_path",
+                "internals/settings_class"
             ]
         },
         {
@@ -122,6 +131,14 @@
             "pages": [
                 "cookbook/introduction",
                 "cookbook/contributing"
+            ]
+        },
+        {
+            "group": "Polyglot",
+            "pages": [
+                "polyglot/introduction",
+                "polyglot/quickstart",
+                "polyglot/setup"
             ]
         },
         {

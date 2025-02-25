@@ -10,8 +10,7 @@ use Cognesy\Evals\ComplexExtraction\ProjectEvents;
 use Cognesy\Evals\ComplexExtraction\ProjectsEval;
 use Cognesy\Polyglot\LLM\Enums\Mode;
 
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src/');
+require '../boot.php';
 
 $data = new InstructorData(
     responseModel: ProjectEvents::class,
