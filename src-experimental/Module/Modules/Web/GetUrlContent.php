@@ -18,7 +18,7 @@ class GetUrlContent extends Module
         $this->getUrlFn = match(true) {
             empty($scraper) => fn(string $url) => file_get_contents($url),
             is_callable($scraper) => fn(string $url) => $scraper($url),
-            is_string($scraper) => fn(string $url) => \Cognesy\Aux\Web\Scraper::withDriver($scraper)->getContent($url),
+            is_string($scraper) => fn(string $url) => \Cognesy\Auxiliary\Web\Scraper::withDriver($scraper)->getContent($url),
             default => $scraper
         };
     }

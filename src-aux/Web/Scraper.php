@@ -1,14 +1,14 @@
 <?php
 
-namespace Cognesy\Aux\Web;
+namespace Cognesy\Auxiliary\Web;
 
-use Cognesy\Aux\Web\Contracts\CanGetUrlContent;
-use Cognesy\Aux\Web\Scrapers\BasicReader;
-use Cognesy\Aux\Web\Scrapers\BrowsershotDriver;
-use Cognesy\Aux\Web\Scrapers\FirecrawlDriver;
-use Cognesy\Aux\Web\Scrapers\JinaReaderDriver;
-use Cognesy\Aux\Web\Scrapers\ScrapFlyDriver;
-use Cognesy\Aux\Web\Scrapers\ScrapingBeeDriver;
+use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
+use Cognesy\Auxiliary\Web\Scrapers\BasicReader;
+use Cognesy\Auxiliary\Web\Scrapers\BrowsershotDriver;
+use Cognesy\Auxiliary\Web\Scrapers\FirecrawlDriver;
+use Cognesy\Auxiliary\Web\Scrapers\JinaReaderDriver;
+use Cognesy\Auxiliary\Web\Scrapers\ScrapFlyDriver;
+use Cognesy\Auxiliary\Web\Scrapers\ScrapingBeeDriver;
 use Cognesy\Utils\Settings;
 use Exception;
 

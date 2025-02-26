@@ -1,10 +1,14 @@
 {
-  "name": "cognesy/instructor-php-hub",
+  "name": "cognesy/instructor-hub-php",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
   "autoload": {
     "psr-4": {
       "Cognesy\\InstructorHub\\": "/"
     }
   },
-  "version": "0.12.3"
+  "version": "0.12.3",
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-php": "0.12.3"
+  }
 }

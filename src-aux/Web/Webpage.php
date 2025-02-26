@@ -1,13 +1,13 @@
 <?php
-namespace Cognesy\Aux\Web;
+namespace Cognesy\Auxiliary\Web;
 
-use Cognesy\Aux\Web\Contracts\CanGetUrlContent;
-use Cognesy\Aux\Web\Html\HtmlProcessor;
-use Cognesy\Aux\Web\Scrapers\BasicReader;
-use Cognesy\Aux\Web\Traits\HandlesContent;
-use Cognesy\Aux\Web\Traits\HandlesCreation;
-use Cognesy\Aux\Web\Traits\HandlesExtraction;
-use Cognesy\Aux\Web\Traits\HandlesLinks;
+use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
+use Cognesy\Auxiliary\Web\Html\HtmlProcessor;
+use Cognesy\Auxiliary\Web\Scrapers\BasicReader;
+use Cognesy\Auxiliary\Web\Traits\HandlesContent;
+use Cognesy\Auxiliary\Web\Traits\HandlesCreation;
+use Cognesy\Auxiliary\Web\Traits\HandlesExtraction;
+use Cognesy\Auxiliary\Web\Traits\HandlesLinks;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessage;
 use Cognesy\Utils\Messages\Message;
 

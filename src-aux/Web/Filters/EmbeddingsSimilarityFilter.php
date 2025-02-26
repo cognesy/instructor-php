@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Web\Filters;
+namespace Cognesy\Auxiliary\Web\Filters;
 
-use Cognesy\Aux\Web\Contracts\CanFilterContent;
+use Cognesy\Auxiliary\Web\Contracts\CanFilterContent;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 

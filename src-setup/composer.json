@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/instructor-php-setup",
+  "name": "cognesy/setup-php",
   "description": "Setup tool for Instructor PHP library",
   "autoload": {
     "psr-4": {

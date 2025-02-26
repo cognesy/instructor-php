@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cognesy\Aux\Web\Html;
+namespace Cognesy\Auxiliary\Web\Html;
 
 use Cognesy\Utils\RawChain;
 use DOMDocument;

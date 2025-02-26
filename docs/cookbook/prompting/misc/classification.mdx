@@ -14,8 +14,7 @@ Let's start by defining the data structures.
 
 ```php
 <?php
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src-instructor/');
+require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
 

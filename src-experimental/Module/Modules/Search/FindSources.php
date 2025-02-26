@@ -5,7 +5,7 @@ use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Modules\Markdown\SplitMarkdown;
 use Cognesy\Experimental\Module\Modules\Web\ConvertHtmlToMarkdown;
 use Cognesy\Experimental\Module\Modules\Web\GetUrlContent;
-use Cognesy\Aux\Web\Html\RawHtml;
+use Cognesy\Auxiliary\Web\Html\RawHtml;
 
 //use Cognesy\Experimental\BM25\SearchWithBM25;
 

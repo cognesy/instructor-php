@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Web\Traits;
+namespace Cognesy\Auxiliary\Web\Traits;
 
-use Cognesy\Aux\Web\Link;
+use Cognesy\Auxiliary\Web\Link;
 use Cognesy\Utils\Str;
 
 trait HandlesLinks

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Codebase;
+namespace Cognesy\Auxiliary\Codebase;
 
 use phpDocumentor\Reflection\DocBlockFactory;
 use PhpParser\Node;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Codebase;
+namespace Cognesy\Auxiliary\Codebase;
 
 class ComposerJson {
     private string $projectPath;

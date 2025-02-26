@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Web\Html\Processors;
+namespace Cognesy\Auxiliary\Web\Html\Processors;
 
-use Cognesy\Aux\Web\Contracts\CanCleanHtml;
+use Cognesy\Auxiliary\Web\Contracts\CanCleanHtml;
 
 class CleanBodyTag implements CanCleanHtml
 {

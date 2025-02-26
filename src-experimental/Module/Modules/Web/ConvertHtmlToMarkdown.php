@@ -5,8 +5,8 @@ namespace Cognesy\Experimental\Module\Modules\Web;
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Aux\Web\Html\HtmlProcessor;
-use Cognesy\Aux\Web\Html\RawHtml;
+use Cognesy\Auxiliary\Web\Html\HtmlProcessor;
+use Cognesy\Auxiliary\Web\Html\RawHtml;
 
 #[ModuleSignature('html:string -> markdown:string')]
 #[ModuleDescription('Convert HTML to Markdown')]

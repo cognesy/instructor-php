@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Aux\Web\Traits;
+namespace Cognesy\Auxiliary\Web\Traits;
 
 trait HandlesContent
 {

@@ -1,4 +1,5 @@
 <?php
+require 'evals/boot.php';
 
 use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Addons\Evals\Executors\Data\InferenceCases;
@@ -10,9 +11,6 @@ use Cognesy\Addons\Evals\Observers\Evaluate\ArrayMatchEval;
 use Cognesy\Evals\UseExamples\Company;
 use Cognesy\Evals\UseExamples\CompanyEval;
 use Cognesy\Polyglot\LLM\Enums\Mode;
-
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src-instructor/');
 
 $data = new InstructorData(
     messages: [

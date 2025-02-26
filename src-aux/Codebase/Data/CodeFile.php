@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Data;
+namespace Cognesy\Auxiliary\Codebase\Data;
 
-use Cognesy\Aux\Codebase\Enums\CodeFileType;
+use Cognesy\Auxiliary\Codebase\Enums\CodeFileType;
 use Cognesy\Utils\Uuid;
 
 class CodeFile

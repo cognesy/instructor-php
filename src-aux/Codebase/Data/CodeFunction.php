@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Data;
+namespace Cognesy\Auxiliary\Codebase\Data;
 
 class CodeFunction
 {

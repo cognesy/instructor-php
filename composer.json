@@ -24,11 +24,11 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\Instructor\\": "src-instructor/",
       "Cognesy\\Utils\\": "src-utils/",
+      "Cognesy\\Polyglot\\": "src-polyglot/",
+      "Cognesy\\Instructor\\": "src-instructor/",
       "Cognesy\\Addons\\": "src-addons/",
       "Cognesy\\Aux\\": "src-aux/",
-      "Cognesy\\Polyglot\\": "src-polyglot/",
       "Cognesy\\Setup\\": "src-setup/",
       "Cognesy\\Tell\\": "src-tell/",
       "Cognesy\\InstructorHub\\": "src-hub/"

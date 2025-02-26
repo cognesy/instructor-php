@@ -16,8 +16,7 @@ a manageable set of properties.
 
 ```php
 <?php
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src-instructor/');
+require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Features\Validation\ValidationResult;

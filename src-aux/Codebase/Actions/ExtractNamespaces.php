@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Actions;
+namespace Cognesy\Auxiliary\Codebase\Actions;
 
-use Cognesy\Aux\Codebase\Data\CodeNamespace;
+use Cognesy\Auxiliary\Codebase\Data\CodeNamespace;
 
 class ExtractNamespaces
 {

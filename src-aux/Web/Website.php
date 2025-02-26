@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Aux\Web;
+namespace Cognesy\Auxiliary\Web;
 
-use Cognesy\Aux\Web\Contracts\CanFilterContent;
-use Cognesy\Aux\Web\Contracts\CanGetUrlContent;
-use Cognesy\Aux\Web\Filters\NoFilter;
+use Cognesy\Auxiliary\Web\Contracts\CanFilterContent;
+use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
+use Cognesy\Auxiliary\Web\Filters\NoFilter;
 
 class Website
 {

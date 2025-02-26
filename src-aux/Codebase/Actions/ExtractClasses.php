@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Actions;
+namespace Cognesy\Auxiliary\Codebase\Actions;
 
-use Cognesy\Aux\Codebase\Codebase;
+use Cognesy\Auxiliary\Codebase\Codebase;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 

@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Aux\Web;
+namespace Cognesy\Auxiliary\Web;
 
 use Cognesy\Utils\Str;
 

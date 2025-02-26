@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Actions;
+namespace Cognesy\Auxiliary\Codebase\Actions;
 
-use Cognesy\Aux\Codebase\Codebase;
-use Cognesy\Aux\Codebase\Data\CodeFunction;
-use Cognesy\Aux\Codebase\NodeUtils;
+use Cognesy\Auxiliary\Codebase\Codebase;
+use Cognesy\Auxiliary\Codebase\Data\CodeFunction;
+use Cognesy\Auxiliary\Codebase\NodeUtils;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 

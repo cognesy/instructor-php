@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Web\Scrapers;
+namespace Cognesy\Auxiliary\Web\Scrapers;
 
-use Cognesy\Aux\Web\Contracts\CanGetUrlContent;
+use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
 use Cognesy\Utils\Env;
 use Exception;
 use GuzzleHttp\Client;

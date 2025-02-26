@@ -1,8 +1,8 @@
 <?php
-namespace Cognesy\Aux\Web\Html;
+namespace Cognesy\Auxiliary\Web\Html;
 
-use Cognesy\Aux\Web\Contracts\CanConvertToMarkdown;
-use Cognesy\Aux\Web\Contracts\CanProcessHtml;
+use Cognesy\Auxiliary\Web\Contracts\CanConvertToMarkdown;
+use Cognesy\Auxiliary\Web\Contracts\CanProcessHtml;
 use League\HTMLToMarkdown\HtmlConverter;
 use Symfony\Component\DomCrawler\Crawler;
 

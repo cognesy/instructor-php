@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Web\Data;
+namespace Cognesy\Auxiliary\Web\Data;
 
 class PageSummary
 {

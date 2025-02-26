@@ -49,8 +49,7 @@ Here is how the results of the research can be applied to your code.
 
 ```php
 <?php
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src-instructor/');
+require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;

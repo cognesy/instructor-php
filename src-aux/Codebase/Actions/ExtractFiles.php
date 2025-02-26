@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Actions;
+namespace Cognesy\Auxiliary\Codebase\Actions;
 
-use Cognesy\Aux\Codebase\Data\CodeFile;
-use Cognesy\Aux\Codebase\Enums\CodeFileType;
+use Cognesy\Auxiliary\Codebase\Data\CodeFile;
+use Cognesy\Auxiliary\Codebase\Enums\CodeFileType;
 
 class ExtractFiles
 {

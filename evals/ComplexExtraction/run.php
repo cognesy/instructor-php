@@ -1,4 +1,5 @@
 <?php
+require 'evals/boot.php';
 
 use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Addons\Evals\Executors\Data\InferenceCases;
@@ -9,8 +10,6 @@ use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\ComplexExtraction\ProjectEvents;
 use Cognesy\Evals\ComplexExtraction\ProjectsEval;
 use Cognesy\Polyglot\LLM\Enums\Mode;
-
-require '../boot.php';
 
 $data = new InstructorData(
     responseModel: ProjectEvents::class,

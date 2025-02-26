@@ -1,6 +1,5 @@
 <?php
-require '../../boot.php';
-$loader->add('Cognesy\\Evals\\', __DIR__ . '../../evals/');
+require 'evals/boot.php';
 
 use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Addons\Evals\Executors\Data\InferenceCases;

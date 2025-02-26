@@ -1,9 +1,9 @@
 <?php
-namespace Cognesy\Aux\Codebase;
+namespace Cognesy\Auxiliary\Codebase;
 
-use Cognesy\Aux\Codebase\Actions\ExtractClasses;
-use Cognesy\Aux\Codebase\Actions\ExtractFunctions;
-use Cognesy\Aux\Codebase\Actions\ExtractNamespaces;
+use Cognesy\Auxiliary\Codebase\Actions\ExtractClasses;
+use Cognesy\Auxiliary\Codebase\Actions\ExtractFunctions;
+use Cognesy\Auxiliary\Codebase\Actions\ExtractNamespaces;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;

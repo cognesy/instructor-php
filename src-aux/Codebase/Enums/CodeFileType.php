@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Codebase\Enums;
+namespace Cognesy\Auxiliary\Codebase\Enums;
 
 enum CodeFileType : string
 {

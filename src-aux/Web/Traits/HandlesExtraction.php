@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Aux\Web\Traits;
+namespace Cognesy\Auxiliary\Web\Traits;
 
-use Cognesy\Aux\Web\Webpage;
+use Cognesy\Auxiliary\Web\Webpage;
 use Generator;
 
 trait HandlesExtraction
@@ -29,7 +29,7 @@ trait HandlesExtraction
     /**
      * @param string $selector CSS selector
      * @param callable|null $callback Function to transform the selected item
-     * @return Generator<\Cognesy\Aux\Web\Webpage> a generator of Webpage objects
+     * @return Generator<\Cognesy\Auxiliary\Web\Webpage> a generator of Webpage objects
      */
     public function selectMany(string $selector, callable $callback = null, int $limit = 0) : Generator {
         $count = 0;

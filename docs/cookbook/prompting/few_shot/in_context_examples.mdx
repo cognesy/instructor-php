@@ -18,9 +18,7 @@ We can implement SG-ICL using Instructor as seen below.
 
 ```php
 <?php
-
-$loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Instructor\\', __DIR__ . '../../src-instructor/');
+require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Extras\Sequence\Sequence;

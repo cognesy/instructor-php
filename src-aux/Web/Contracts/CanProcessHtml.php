@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Aux\Web\Contracts;
+namespace Cognesy\Auxiliary\Web\Contracts;
 
 interface CanProcessHtml
 {

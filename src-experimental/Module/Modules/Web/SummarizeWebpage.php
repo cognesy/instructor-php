@@ -6,7 +6,7 @@ use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Modules\Text\SummarizeText;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Aux\Web\Data\PageSummary;
+use Cognesy\Auxiliary\Web\Data\PageSummary;
 
 #[ModuleSignature('url:string -> summary:PageSummary')]
 #[ModuleDescription('Summarize a webpage')]

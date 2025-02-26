@@ -1,10 +1,14 @@
 {
-  "name": "cognesy/aux",
+  "name": "cognesy/aux-php",
   "description": "Collection of auxiliary services and integrations",
   "autoload": {
     "psr-4": {
-      "Cognesy\\LLM\\": "/"
+      "Cognesy\\Auxiliary\\": "/"
     }
   },
-  "version": "0.12.3"
+  "version": "0.12.3",
+  "require": {
+    "php": "^8.2",
+    "cognesy/utils-php": "0.12.3"
+  }
 }

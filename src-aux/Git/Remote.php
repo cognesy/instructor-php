@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Git;
+namespace Cognesy\Auxiliary\Git;
 
 class Remote
 {

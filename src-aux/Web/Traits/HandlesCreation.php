@@ -1,9 +1,9 @@
 <?php
-namespace Cognesy\Aux\Web\Traits;
+namespace Cognesy\Auxiliary\Web\Traits;
 
-use Cognesy\Aux\Web\Link;
-use Cognesy\Aux\Web\Scraper;
-use Cognesy\Aux\Web\Webpage;
+use Cognesy\Auxiliary\Web\Link;
+use Cognesy\Auxiliary\Web\Scraper;
+use Cognesy\Auxiliary\Web\Webpage;
 
 trait HandlesCreation
 {

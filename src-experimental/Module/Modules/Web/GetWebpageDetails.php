@@ -5,7 +5,7 @@ namespace Cognesy\Experimental\Module\Modules\Web;
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleDescription;
 use Cognesy\Experimental\Module\Signature\Attributes\ModuleSignature;
-use Cognesy\Aux\Web\Html\HtmlProcessor;
+use Cognesy\Auxiliary\Web\Html\HtmlProcessor;
 use Cognesy\Instructor\Extras\Web\Data\PageData;
 
 #[ModuleSignature('url:string -> pageDetails:PageData')]

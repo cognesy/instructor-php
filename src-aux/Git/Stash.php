@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Aux\Git;
+namespace Cognesy\Auxiliary\Git;
 
 /**
  * Stash class provides methods to interact with Git stash functionality.
