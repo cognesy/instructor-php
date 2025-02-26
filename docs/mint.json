@@ -1,8 +1,8 @@
 {
     "name": "Instructor for PHP",
     "logo": {
-        "dark": "/logo/dark.svg",
-        "light": "/logo/light.svg"
+        "dark": "/images/logo/dark.svg",
+        "light": "/images/logo/light.svg"
     },
     "favicon": "/favicon.svg",
     "colors": {
@@ -30,19 +30,23 @@
     "tabs": [
         {
             "name": "Polyglot",
-            "url": "polyglot"
+            "url": "polyglot",
+            "group": "Polyglot"
         },
         {
-            "name": "Instructor Cookbook",
-            "url": "cookbook/instructor"
+            "name": "Cookbook (Instructor)",
+            "url": "cookbook/instructor",
+            "group": "Basics"
         },
         {
-            "name": "Polyglot Cookbook",
-            "url": "cookbook/polyglot"
+            "name": "Cookbook (Polyglot)",
+            "url": "cookbook/polyglot",
+            "group": "LLM Basics"
         },
         {
             "name": "Prompting",
-            "url": "cookbook/prompting"
+            "url": "cookbook/prompting",
+            "group": "Prompting"
         }
     ],
     "anchors": [
@@ -127,13 +131,6 @@
             ]
         },
         {
-            "group": "Instructor Hub",
-            "pages": [
-                "cookbook/introduction",
-                "cookbook/contributing"
-            ]
-        },
-        {
             "group": "Polyglot",
             "pages": [
                 "polyglot/introduction",
@@ -143,6 +140,13 @@
                 "polyglot/essentials/inference",
                 "polyglot/advanced/embeddings",
                 "polyglot/internals/http"
+            ]
+        },
+        {
+            "group": "Instructor Hub",
+            "pages": [
+                "cookbook/introduction",
+                "cookbook/contributing"
             ]
         },
         {

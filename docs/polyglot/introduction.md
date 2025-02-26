@@ -1,3 +1,8 @@
+---
+title: Introduction
+description: 'Polyglot is a PHP library that provides a unified API to access various LLM API providers.'
+---
+
 # Overview
 
 Polyglot is a PHP library that provides a unified API to access various LLM API providers.
