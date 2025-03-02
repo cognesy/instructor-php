@@ -1,6 +1,6 @@
 {
-  "name": "cognesy/tell-cli",
-  "description": "Minimal tool to run queries to LLM inference providers via CLI",
+  "name": "cognesy/auxiliary-php",
+  "description": "Collection of auxiliary services and integrations",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -15,13 +15,13 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\Tell\\": ""
+      "Cognesy\\Auxiliary\\": "/"
     }
   },
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
-    "cognesy/polyglot-php": "^0.12"
+    "cognesy/utils-php": "0.12.3"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

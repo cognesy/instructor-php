@@ -24,23 +24,23 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\Utils\\": "src-utils/",
-      "Cognesy\\Polyglot\\": "src-polyglot/",
-      "Cognesy\\Instructor\\": "src-instructor/",
       "Cognesy\\Addons\\": "src-addons/",
-      "Cognesy\\Aux\\": "src-aux/",
+      "Cognesy\\Instructor\\": "src-instructor/",
+      "Cognesy\\Polyglot\\": "src-polyglot/",
       "Cognesy\\Setup\\": "src-setup/",
-      "Cognesy\\Tell\\": "src-tell/",
-      "Cognesy\\InstructorHub\\": "src-hub/"
+      "Cognesy\\Utils\\": "src-utils/"
     },
     "files": []
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/",
-      "Examples\\": "examples/",
+      "Cognesy\\Auxiliary\\": "src-auxiliary/",
       "Cognesy\\Evals\\": "evals/",
-      "Cognesy\\Experimental\\": "experimental/"
+      "Cognesy\\Experimental\\": "src-experimental/",
+      "Cognesy\\InstructorHub\\": "src-hub/",
+      "Cognesy\\Tell\\": "src-tell/",
+      "Examples\\": "examples/",
+      "Tests\\": "tests/"
     },
     "files": [
       "tests/Examples/Call/test_functions.php"

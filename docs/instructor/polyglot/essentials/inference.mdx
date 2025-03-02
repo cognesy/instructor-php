@@ -11,7 +11,7 @@ LLM providers access details can be found and modified via `/config/llm.php`.
 
 ## Examples
 
-### Example 1
+### Simple text inference
 
 Simplified inference API uses the default connection for convenient ad-hoc calls.
 Default LLM connection can be configured via config/llm.php.
@@ -26,7 +26,7 @@ echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n";
 ```
 
-### Example 2
+### Regular synchronous inference
 
 Regular inference API allows you to customize inference options, specific for given LLM provider.
 Most providers options are compatible with OpenAI API.
@@ -47,7 +47,7 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
 ```
 
-## Example 3
+### Streaming inference results
 
 Inference API allows streaming responses, which is useful for building more responsive UX
 as you can display partial responses from LLM as soon as they arrive, without waiting until

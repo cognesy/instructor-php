@@ -1,6 +1,18 @@
 {
   "name": "cognesy/instructor-hub-php",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "Cognesy\\InstructorHub\\": "/"
@@ -9,6 +21,9 @@
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-php": "0.12.3"
+    "cognesy/instructor-core": "0.12.3"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
   }
 }

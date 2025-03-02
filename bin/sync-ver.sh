@@ -23,7 +23,7 @@ declare -A REQUIRE_DEV_PACKAGES=(
     ["src-experimental"]="cognesy/experimental"
     ["src-hub"]="cognesy/instructor-php-hub"
     ["src-setup"]="cognesy/instructor-php-setup"
-    ["src-tell"]="cognesy/tell"
+    ["src/Tell"]="cognesy/tell"
 )
 
 # Update version in each package's composer.json

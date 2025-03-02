@@ -30,7 +30,7 @@
     "tabs": [
         {
             "name": "Polyglot",
-            "url": "polyglot",
+            "url": "instructor/polyglot",
             "group": "Polyglot"
         },
         {
@@ -133,13 +133,13 @@
         {
             "group": "Polyglot",
             "pages": [
-                "polyglot/introduction",
-                "polyglot/quickstart",
-                "polyglot/setup",
-                "polyglot/essentials/llm",
-                "polyglot/essentials/inference",
-                "polyglot/advanced/embeddings",
-                "polyglot/internals/http"
+                "instructor/polyglot/introduction",
+                "instructor/polyglot/quickstart",
+                "instructor/polyglot/setup",
+                "instructor/polyglot/essentials/llm",
+                "instructor/polyglot/essentials/inference",
+                "instructor/polyglot/advanced/embeddings",
+                "instructor/polyglot/internals/http"
             ]
         },
         {

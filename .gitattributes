@@ -1,55 +1,53 @@
 # Exclude unnecessary files from Composer and Git exports
+/.cursorignore    export-ignore
 /.github/         export-ignore
 /.gitignore       export-ignore
 /.gitattributes   export-ignore
-/.cursorignore    export-ignore
-/composer.lock    export-ignore
 /.replit          export-ignore
+/composer.lock    export-ignore
 /Doxyfile         export-ignore
+/mkdocs.yml       export-ignore
 /mkdocs.yml.bak   export-ignore
 /phpunit.xml      export-ignore
 /phpstan.neon.dist export-ignore
 /phpunit.xml.dist export-ignore
 /psalm.xml        export-ignore
-/mkdocs.yml       export-ignore
 /phpstan.neon     export-ignore
 *.md              export-ignore
 *.mdx             export-ignore
 
 # Project specific ignores
 /archived/        export-ignore
-/docs-instructor/ export-ignore
-/docs-polyglot/   export-ignore
-#/evals/            export-ignore # include this one with distribution
-#/examples-instructor/  export-ignore # include this one with distribution
-#/examples-polyglot/    export-ignore # include this one with distribution
+/docs/            export-ignore
+#/evals/          export-ignore # include this one with distribution
+#/examples/       export-ignore # include this one with distribution
 /experimental/    export-ignore
 /notes/           export-ignore
+/scratchpad/      export-ignore
 /tests/           export-ignore
-/src-experimental/ export-ignore
 
 # Line ending normalization
 # Ensure PHP, JS, and text files have consistent line endings
-*.php             text eol=lf
-*.js              text eol=lf
+*.bat             text eol=lf
 *.css             text eol=lf
 *.html            text eol=lf
-*.txt             text eol=lf
+*.js              text eol=lf
 *.md              text eol=lf
 *.mdx             text eol=lf
+*.php             text eol=lf
+*.sh              text eol=lf
+*.txt             text eol=lf
 *.xml             text eol=lf
 *.yml             text eol=lf
 *.yaml            text eol=lf
-*.sh              text eol=lf
-*.bat             text eol=lf
 
 # Treat binary files as binary
-*.png             binary
-*.jpg             binary
-*.jpeg            binary
 *.gif             binary
 *.ico             binary
+*.jpg             binary
+*.jpeg            binary
 *.pdf             binary
+*.png             binary
 *.svg             binary
 
 # Linguist overrides (optional for GitHub)
@@ -58,9 +56,9 @@
 /vendor/          linguist-vendored
 
 # Ignore logs and temp files in exports (optional)
+*.bak             export-ignore
 *.log             export-ignore
+*.swp             export-ignore
+/cache/           export-ignore
 /temp/            export-ignore
 /tmp/             export-ignore
-/cache/           export-ignore
-*.bak             export-ignore
-*.swp             export-ignore

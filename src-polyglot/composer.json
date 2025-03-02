@@ -13,5 +13,8 @@
     "cognesy/setup-php": "^0.12",
     "cognesy/llm-addons-php": "^0.12",
     "guzzlehttp/guzzle": "^7.8"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
   }
 }

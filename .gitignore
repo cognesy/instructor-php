@@ -45,13 +45,8 @@ Thumbs.db
 # Non-distributed files (temporary, experimental, to be archived / removed)
 /archived/
 /experimental/
-/tmp/
-/temp/
 /prompts/misc/
 /prompts/archive/
-
-# Excluding examples, hub, etc to make the library distribution smaller
-/examples/
-/src-aux/
-/src-hub/
-/scripts/hub.php
+/scratchpad/
+/tmp/
+/temp/
