@@ -28,7 +28,7 @@
       "Cognesy\\Addons\\": "src-addons/",
       "Cognesy\\Instructor\\": "src-instructor/",
       "Cognesy\\Polyglot\\": "src-polyglot/",
-      "Cognesy\\Setup\\": "src-setup/",
+      "Cognesy\\Setup\\": "src-setup/"
     },
     "files": []
   },
