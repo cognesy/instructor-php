@@ -2,8 +2,16 @@
 
 namespace Cognesy\InstructorHub\Services;
 
+use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Utils\Mintlify\MintlifyIndex;
 use Cognesy\InstructorHub\Views\DocGenView;
+use Cognesy\Utils\Files;
+use DirectoryIterator;
+use Exception;
+use InvalidArgumentException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
 
 class MintlifyDocGenerator
 {
@@ -11,17 +19,20 @@ class MintlifyDocGenerator
 
     public function __construct(
         private ExampleRepository $examples,
-        private string $mintlifyCookbookDir,
-        private string $mintlifyIndexFile,
+        private string $docsSourceDir,
+        private string $docsTargetDir,
+        private string $cookbookTargetDir,
+        private string $mintlifySourceIndexFile,
+        private string $mintlifyTargetIndexFile,
         private array $dynamicGroups,
     ) {
         $this->view = new DocGenView;
     }
 
     public function makeDocs() : void {
-        if (!is_dir($this->mintlifyCookbookDir)) {
-            throw new \Exception("Hub docs directory '$this->mintlifyCookbookDir' does not exist");
-        }
+//        if (!is_dir($this->cookbookTargetDir)) {
+//            throw new \Exception("Hub docs directory '$this->cookbookTargetDir' does not exist");
+//        }
         $this->view->renderHeader();
         $this->updateFiles();
         $this->view->renderUpdate(true);
@@ -30,43 +41,22 @@ class MintlifyDocGenerator
     public function clearDocs() : void {
         $this->view->renderHeader();
         // get only subdirectories of mintlifyCookbookDir
-        $subdirs = array_filter(glob($this->mintlifyCookbookDir . '/*'), 'is_dir');
-        foreach ($subdirs as $subdir) {
-            $this->removeDir($subdir);
-        }
+//        $subdirs = array_filter(glob($this->cookbookTargetDir . '/*'), 'is_dir');
+//        foreach ($subdirs as $subdir) {
+//            $this->removeDir($subdir);
+//        }
+        Files::removeDirectory($this->docsTargetDir);
         $this->view->renderUpdate(true);
     }
 
     private function updateFiles() : void {
-        //$this->removeDir($this->mintlifyCookbookDir . '/examples');
+        Files::removeDirectory($this->docsTargetDir);
+        Files::copyDirectory($this->docsSourceDir, $this->docsTargetDir);
+
         $groups = $this->examples->getExampleGroups();
         foreach ($groups as $group) {
             foreach ($group->examples as $example) {
-                $this->view->renderFile($example);
-                $targetFilePath = $this->mintlifyCookbookDir . $example->toDocPath() . '.mdx';
-
-                // get last update date of source file
-                $sourceFileLastUpdate = filemtime($example->runPath);
-                // get last update date of target file
-                $targetFile = $this->mintlifyCookbookDir . $example->toDocPath() . '.mdx';
-                $targetFileExists = file_exists($targetFile);
-
-                if ($targetFileExists) {
-                    $targetFileLastUpdate = filemtime($targetFile);
-                    // if source file is older than target file, skip
-                    if ($sourceFileLastUpdate > $targetFileLastUpdate) {
-                        // remove target file
-                        unlink($targetFile);
-                        $this->copy($example->runPath, $targetFilePath);
-                        $this->view->renderExists(true);
-                    } else {
-                        $this->view->renderExists(false);
-                    }
-                } else {
-                    $this->copy($example->runPath, $targetFilePath);
-                    $this->view->renderNew();
-                }
-                $this->view->renderResult(true);
+                $this->copyExample($example);
             }
         }
         // make backup copy of mint.json
@@ -77,35 +67,46 @@ class MintlifyDocGenerator
         $this->view->renderResult(true);
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////
+
     private function updateHubIndex(array $exampleGroups) : bool {
         // get the content of the hub index
-        $index = MintlifyIndex::fromFile($this->mintlifyIndexFile);
+        $index = MintlifyIndex::fromFile($this->mintlifySourceIndexFile);
         if ($index === false) {
             throw new \Exception("Failed to read hub index file");
         }
-        $index->navigation->removeGroups($this->dynamicGroups);
+        $index->navigation->removeGroups($this->dynamicGroups); // TODO: remove this after tests
         foreach ($exampleGroups as $exampleGroup) {
             $index->navigation->appendGroup($exampleGroup->toNavigationGroup());
         }
-        return $index->saveFile($this->mintlifyIndexFile);
+        return $index->saveFile($this->mintlifyTargetIndexFile);
     }
 
-    // INTERNAL ////////////////////////////////////////////////////////////////
+    private function copyExample(Example $example) : void {
+        $this->view->renderFile($example);
+        $targetFilePath = $this->cookbookTargetDir . $example->toDocPath() . '.mdx';
 
-    private function removeDir(string $path) : void {
-        $files = glob($path . '/*');
-        foreach ($files as $file) {
-            is_dir($file) ? $this->removeDir($file) : unlink($file);
-        }
-        rmdir($path);
-    }
+        // get last update date of source file
+        $sourceFileLastUpdate = filemtime($example->runPath);
+        // get last update date of target file
+        $targetFile = $this->cookbookTargetDir . $example->toDocPath() . '.mdx';
+        $targetFileExists = file_exists($targetFile);
 
-    private function copy(string $source, string $destination) : void {
-        // if destination does not exist, create it
-        $destDir = dirname($destination);
-        if (!is_dir($destDir) && !mkdir($destDir, 0777, true) && !is_dir($destDir)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $destDir));
+        if ($targetFileExists) {
+            $targetFileLastUpdate = filemtime($targetFile);
+            // if source file is older than target file, skip
+            if ($sourceFileLastUpdate > $targetFileLastUpdate) {
+                // remove target file
+                unlink($targetFile);
+                Files::copyFile($example->runPath, $targetFilePath);
+                $this->view->renderExists(true);
+            } else {
+                $this->view->renderExists(false);
+            }
+        } else {
+            Files::copyFile($example->runPath, $targetFilePath);
+            $this->view->renderNew();
         }
-        copy($source, $destination);
+        $this->view->renderResult(true);
     }
 }

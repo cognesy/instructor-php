@@ -26,25 +26,35 @@ class Hub extends CliApp
         );
 
         $docGen = new MintlifyDocGenerator(
-                $exampleRepo,
-            __DIR__ . '/../docs/cookbook',
-            __DIR__ . '/../docs/mint.json',
-                [
-                    'Basics',
-                    'Advanced',
-                    'Prompting',
-                    'Troubleshooting',
-                    'LLM API Support',
-                    'Extras',
-                    'Zero-Shot Prompting',
-                    'Few-Shot Prompting',
-                    'Thought Generation',
-                    'Ensembling',
-                    'Self-Criticism',
-                    'Decomposition',
-                    'Miscellaneous',
-                ],
-            );
+            examples: $exampleRepo,
+            docsSourceDir: __DIR__ . '/../docs',
+            docsTargetDir: __DIR__ . '/../docs-build',
+            cookbookTargetDir: __DIR__ . '/../docs-build/cookbook',
+            mintlifySourceIndexFile: __DIR__ . '/../docs/mint.json',
+            mintlifyTargetIndexFile: __DIR__ . '/../docs-build/mint.json',
+            dynamicGroups: [
+                'Basics',
+                'Advanced',
+                'Prompting',
+                'Troubleshooting',
+                'API Support',
+
+                "LLM Basics",
+                "LLM Advanced",
+                "LLM Troubleshooting",
+                "LLM API Support",
+                "LLM Extras",
+
+                'Extras',
+                'Zero-Shot Prompting',
+                'Few-Shot Prompting',
+                'Thought Generation',
+                'Ensembling',
+                'Self-Criticism',
+                'Decomposition',
+                'Miscellaneous',
+            ]
+        );
 
         $runner = new Runner($exampleRepo, true, 0, true);
 

@@ -1,0 +1,49 @@
+## Changing LLM model and options
+
+You can specify model and other options that will be passed to OpenAI / LLM endpoint.
+
+```php
+<?php
+$person = (new Instructor)->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+    model: 'gpt-3.5-turbo',
+    options: [
+        // custom temperature setting
+        'temperature' => 0.0
+        // ... other options
+    ],
+);
+```
+
+
+## Providing custom client
+
+You can pass a custom configured instance of client to the Instructor. This allows you to specify your own API key, base URI or organization.
+
+```php
+<?php
+use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
+use Cognesy\Instructor\Instructor;
+use Cognesy\Polyglot\LLM\Data\LLMConfig;
+
+// Create instance of OpenAI client initialized with custom parameters
+$driver = new OpenAIDriver(new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1', // you can change base URI
+    apiKey: $yourApiKey,
+    endpoint: '/chat/completions',
+    metadata: ['organization' => ''],
+    model: 'gpt-4o-mini',
+    maxTokens: 128,
+));
+
+/// Get Instructor with the default client component overridden with your own
+$instructor = (new Instructor)->withDriver($driver);
+
+$person = $instructor->respond(
+    messages: [['role' => 'user', 'content' => $text]],
+    responseModel: Person::class,
+    model: 'gpt-3.5-turbo',
+    options: ['temperature' => 0.0],
+);
+```

@@ -19,6 +19,7 @@
 # Project specific ignores
 /archived/        export-ignore
 /docs/            export-ignore
+/docs-build/      export-ignore
 #/evals/          export-ignore # include this one with distribution
 #/examples/       export-ignore # include this one with distribution
 /src-auxiliary/    export-ignore

@@ -1,0 +1,45 @@
+---
+title: Embeddings
+description: 'Embeddings are a way to represent data (text, images, audio) in a continuous vector space.'
+---
+
+Embeddings are a key component of many LLM-based solutions and are used to represent text
+(or multimodal data) with numbers capturing their meaning and relationships.
+
+## `Embeddings` class
+
+`Embeddings` class offers access to embeddings APIs and convenient methods to find top K vectors
+or documents most similar to provided query.
+
+## Supported providers
+
+`Embeddings` class supports following embeddings providers:
+- Azure
+- Cohere
+- Gemini
+- Jina
+- Mistral
+- OpenAI
+
+Embeddings providers access details can be found and modified via
+`/config/embed.php`.
+
+## Usage example
+
+In this example, we use OpenAI embeddings provider to generate embeddings for a given list of documents
+(only one in this case).
+
+The result is a list of embeddings vectors (one per document).
+
+```php
+<?php
+use Cognesy\Polyglot\Embeddings\Embeddings;
+
+$docs = ['Computer vision models are used to analyze images and videos.'];
+
+$embedding = (new Embeddings)
+    ->withConnection('openai')
+    ->create(input: $docs)
+    ->all();
+?>
+```
