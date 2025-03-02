@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/auxiliary-php",
+  "name": "cognesy/instructor-aux",
   "description": "Collection of auxiliary services and integrations",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -21,7 +21,7 @@
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
-    "cognesy/utils-php": "0.12.3"
+    "cognesy/instructor-utils": "0.12.3"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

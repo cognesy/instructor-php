@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/instructor-hub-php",
+  "name": "cognesy/instructor-hub",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
   "license": "MIT",
   "homepage": "https://instructorphp.com",

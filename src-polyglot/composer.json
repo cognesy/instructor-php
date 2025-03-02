@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/polyglot-php",
+  "name": "cognesy/instructor-polyglot",
   "description": "Unified API for various LLM providers",
   "autoload": {
     "psr-4": {
@@ -9,9 +9,9 @@
   "version": "0.12.0",
   "require": {
     "php": "^8.2",
-    "cognesy/utils-php": "^0.12",
-    "cognesy/setup-php": "^0.12",
-    "cognesy/llm-addons-php": "^0.12",
+    "cognesy/instructor-utils": "^0.12",
+    "cognesy/instructor-setup": "^0.12",
+    "cognesy/instructor-addons": "^0.12",
     "guzzlehttp/guzzle": "^7.8"
   },
   "require-dev": {

@@ -13,17 +13,18 @@ VERSION=${VERSION#v}
 
 # Define packages and their sections based on composer.json
 declare -A REQUIRE_PACKAGES=(
-    ["src-utils"]="cognesy/utils"
-    ["src-addons"]="cognesy/instructor-php-addons"
-    ["src-polyglot"]="cognesy/polyglot-php"
+    ["src-utils"]="cognesy/instructor-utils"
+    ["src-addons"]="cognesy/instructor-addons"
+    ["src-polyglot"]="cognesy/instructor-polyglot"
+    ["src-instructor"]="cognesy/instructor-core"
 )
 
 declare -A REQUIRE_DEV_PACKAGES=(
-    ["src-aux"]="cognesy/aux"
-    ["src-experimental"]="cognesy/experimental"
-    ["src-hub"]="cognesy/instructor-php-hub"
-    ["src-setup"]="cognesy/instructor-php-setup"
-    ["src/Tell"]="cognesy/tell"
+    ["src-aux"]="cognesy/instructor-aux"
+    ["src-experimental"]="cognesy/instructor-experimental"
+    ["src-hub"]="cognesy/instructor-hub"
+    ["src-setup"]="cognesy/instructor-setup"
+    ["src-tell"]="cognesy/tell-cli"
 )
 
 # Update version in each package's composer.json
