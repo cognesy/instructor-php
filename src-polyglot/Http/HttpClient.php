@@ -1,5 +1,4 @@
 <?php
-
 namespace Cognesy\Polyglot\Http;
 
 use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
@@ -44,7 +43,7 @@ class HttpClient
      * @param EventDispatcher|null $events The event dispatcher instance to use.
      * @return \Cognesy\Polyglot\Http\Contracts\CanHandleHttp Returns an instance that can handle HTTP operations.
      */
-    public static function make(string $client = '', ?EventDispatcher $events = null) : CanHandleHttp {
+    public static function make(string $client = '', ?EventDispatcher $events = null): CanHandleHttp {
         return (new self($client, $events))->get();
     }
 
@@ -54,7 +53,7 @@ class HttpClient
      * @param string $name The name of the client to load the configuration for.
      * @return self Returns the instance of the class for method chaining.
      */
-    public function withClient(string $name) : self {
+    public function withClient(string $name): self {
         $config = HttpClientConfig::load($name);
         $this->driver = $this->makeDriver($config);
         return $this;
@@ -66,7 +65,7 @@ class HttpClient
      * @param HttpClientConfig $config The configuration object to set up the HttpClient.
      * @return self Returns the instance of the class for method chaining.
      */
-    public function withConfig(HttpClientConfig $config) : self {
+    public function withConfig(HttpClientConfig $config): self {
         $this->driver = $this->makeDriver($config);
         return $this;
     }
@@ -77,7 +76,7 @@ class HttpClient
      * @param \Cognesy\Polyglot\Http\Contracts\CanHandleHttp $driver The driver capable of handling HTTP requests.
      * @return self Returns the instance of the class for method chaining.
      */
-    public function withDriver(CanHandleHttp $driver) : self {
+    public function withDriver(CanHandleHttp $driver): self {
         $this->driver = $driver;
         return $this;
     }
@@ -87,7 +86,7 @@ class HttpClient
      *
      * @return \Cognesy\Polyglot\Http\Contracts\CanHandleHttp The HTTP handler associated with the current context.
      */
-    public function get() : CanHandleHttp {
+    public function get(): CanHandleHttp {
         return $this->driver;
     }
 
@@ -100,12 +99,12 @@ class HttpClient
      * @return CanHandleHttp The instantiated HTTP driver corresponding to the specified client type.
      * @throws InvalidArgumentException If the specified client type is not supported.
      */
-    private function makeDriver(HttpClientConfig $config) : CanHandleHttp {
+    private function makeDriver(HttpClientConfig $config): CanHandleHttp {
         return match ($config->httpClientType) {
-            HttpClientType::Guzzle => new GuzzleDriver(config: $config, events: $this->events),
-            HttpClientType::Symfony => new SymfonyDriver(config: $config, events: $this->events),
-            httpClientType::Laravel => new LaravelDriver(config: $config, events: $this->events),
-            default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType->value}"),
+            HttpClientType::Guzzle->value => new GuzzleDriver(config: $config, events: $this->events),
+            HttpClientType::Symfony->value => new SymfonyDriver(config: $config, events: $this->events),
+            httpClientType::Laravel->value => new LaravelDriver(config: $config, events: $this->events),
+            default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType}"),
         };
     }
 }

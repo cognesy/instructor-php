@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Contracts\ResponseAdapter;
+use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
@@ -158,9 +158,9 @@ class LLM
      * Returns the HTTP response object for given inference request
      *
      * @param InferenceRequest $request
-     * @return ResponseAdapter
+     * @return HttpClientResponse
      */
-    public function handleInferenceRequest(InferenceRequest $request) : ResponseAdapter {
+    public function handleInferenceRequest(InferenceRequest $request) : HttpClientResponse {
         $this->events->dispatch(new InferenceRequested($request));
         return $this->driver->handle($request);
     }

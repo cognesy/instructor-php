@@ -105,6 +105,12 @@ class Settings
         self::$settings[$group] = self::$settings[$group]->set($key, $value);
     }
 
+    public static function unset(string $group) : void {
+        if (self::isGroupLoaded($group)) {
+            self::$settings[$group] = [];
+        }
+    }
+
     // INTERNAL //////////////////////////////////////////////////////////////////
 
     /**

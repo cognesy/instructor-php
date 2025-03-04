@@ -34,7 +34,7 @@ $config = new LLMConfig(
     model: 'deepseek-chat',
     maxTokens: 128,
     httpClient: 'guzzle',
-    providerType: LLMProviderType::OpenAICompatible,
+    providerType: LLMProviderType::OpenAICompatible->value,
 );
 
 // Get Instructor with the default client component overridden with your own

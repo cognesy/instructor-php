@@ -19,7 +19,7 @@ beforeEach(function () {
 test('custom http client is used when debugging is disabled', function () {
     // Arrange
     $config = new HttpClientConfig(
-        httpClientType: HttpClientType::Guzzle,
+        httpClientType: HttpClientType::Guzzle->value,
         connectTimeout: 3,
         requestTimeout: 30
     );
@@ -64,7 +64,7 @@ test('custom http client is used when debugging is disabled', function () {
 test('default client is created when no custom client is provided and debugging is disabled', function () {
     // Arrange
     $config = new HttpClientConfig(
-        httpClientType: HttpClientType::Guzzle,
+        httpClientType: HttpClientType::Guzzle->value,
         connectTimeout: 3,
         requestTimeout: 30
     );
@@ -94,7 +94,7 @@ test('debug client is created when debugging is enabled and no custom client is 
     Debug::enable();
 
     $config = new HttpClientConfig(
-        httpClientType: HttpClientType::Guzzle,
+        httpClientType: HttpClientType::Guzzle->value,
         connectTimeout: 3,
         requestTimeout: 30
     );
@@ -140,7 +140,7 @@ test('client timeout configuration is properly set', function () {
     ]);
 
     $config = new HttpClientConfig(
-        httpClientType: HttpClientType::Guzzle,
+        httpClientType: HttpClientType::Guzzle->value,
         connectTimeout: 5,
         requestTimeout: 10
     );

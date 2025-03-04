@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\LLM\Drivers;
 
 use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Contracts\ResponseAdapter;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
@@ -40,9 +40,9 @@ class ModularLLMDriver implements CanHandleInference {
      * Processes the given inference request and handles it through the HTTP client.
      *
      * @param \Cognesy\Polyglot\LLM\InferenceRequest $request The request to be processed, including messages, model, tools, and other parameters.
-     * @return ResponseAdapter The response indicating the access result after processing the request.
+     * @return HttpClientResponse The response indicating the access result after processing the request.
      */
-    public function handle(InferenceRequest $request): ResponseAdapter {
+    public function handle(InferenceRequest $request): HttpClientResponse {
         $request = $request->withCacheApplied();
         $clientRequest = $this->requestAdapter->toHttpClientRequest(
             $request->messages(),

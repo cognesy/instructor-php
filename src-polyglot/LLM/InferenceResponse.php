@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM;
 
-use Cognesy\Polyglot\Http\Contracts\ResponseAdapter;
+use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
@@ -19,14 +19,14 @@ use InvalidArgumentException;
 class InferenceResponse
 {
     protected EventDispatcher $events;
-    protected ResponseAdapter $response;
+    protected HttpClientResponse $response;
     protected CanHandleInference $driver;
     protected string $responseContent = '';
     protected LLMConfig $config;
     protected bool $isStreamed = false;
 
     public function __construct(
-        ResponseAdapter    $response,
+        HttpClientResponse    $response,
         CanHandleInference $driver,
         LLMConfig          $config,
         bool               $isStreamed = false,

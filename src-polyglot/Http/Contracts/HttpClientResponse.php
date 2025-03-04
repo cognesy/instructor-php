@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Http\Contracts;
 
 use Generator;
 
-interface ResponseAdapter
+interface HttpClientResponse
 {
     public function getStatusCode(): int;
 

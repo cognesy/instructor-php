@@ -5,6 +5,5 @@ use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 
 interface CanHandleHttp
 {
-    public function handle(HttpClientRequest $request) : ResponseAdapter;
-    public function pool(array $requests, ?int $maxConcurrent = null): array;
+    public function handle(HttpClientRequest $request) : HttpClientResponse;
 }

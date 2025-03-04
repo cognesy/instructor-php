@@ -17,7 +17,7 @@ class EmbeddingsConfig
         public int $maxInputs = 0,
         public array $metadata = [],
         public string $httpClient = '',
-        public ?LLMProviderType $providerType = null,
+        public string $providerType = LLMProviderType::OpenAI->value,
     ) {}
 
     public static function load(string $connection) : EmbeddingsConfig {
@@ -33,7 +33,7 @@ class EmbeddingsConfig
             maxInputs: Settings::get('embed', "connections.$connection.maxInputs", 1),
             metadata: Settings::get('embed', "connections.$connection.metadata", []),
             httpClient: Settings::get('embed', "connections.$connection.httpClient", ''),
-            providerType: LLMProviderType::from(Settings::get('embed', "connections.$connection.providerType")),
+            providerType: Settings::get('embed', "connections.$connection.providerType", LLMProviderType::OpenAI->value),
         );
     }
 }

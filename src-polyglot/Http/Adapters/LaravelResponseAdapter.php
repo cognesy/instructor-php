@@ -2,11 +2,11 @@
 
 namespace Cognesy\Polyglot\Http\Adapters;
 
-use Cognesy\Polyglot\Http\Contracts\ResponseAdapter;
+use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Generator;
 use Illuminate\Http\Client\Response;
 
-class LaravelResponseAdapter implements ResponseAdapter
+class LaravelResponseAdapter implements HttpClientResponse
 {
     public function __construct(
         private Response $response,
@@ -40,20 +40,4 @@ class LaravelResponseAdapter implements ResponseAdapter
             yield $stream->read($chunkSize);
         }
     }
-
-//    public function streamContents(int $chunkSize = 1): Generator
-//    {
-//        if (!$this->streaming) {
-//            yield $this->getContents();
-//            return;
-//        }
-//
-//        $resource = StreamWrapper::getResource($this->response->toPsrResponse()->getBody());
-//
-//        while (!feof($resource)) {
-//            yield fread($resource, $chunkSize);
-//        }
-//
-//        fclose($resource);
-//    }
 }

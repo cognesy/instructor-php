@@ -2,12 +2,12 @@
 
 namespace Cognesy\Polyglot\Http\Adapters;
 
-use Cognesy\Polyglot\Http\Contracts\ResponseAdapter;
+use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Generator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
-class PsrResponseAdapter implements ResponseAdapter
+class PsrResponseAdapter implements HttpClientResponse
 {
     private ResponseInterface $response;
     private StreamInterface $stream;

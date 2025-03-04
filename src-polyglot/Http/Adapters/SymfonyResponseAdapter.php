@@ -2,12 +2,12 @@
 
 namespace Cognesy\Polyglot\Http\Adapters;
 
-use Cognesy\Polyglot\Http\Contracts\ResponseAdapter;
+use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Generator;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class SymfonyResponseAdapter implements ResponseAdapter
+class SymfonyResponseAdapter implements HttpClientResponse
 {
     private ResponseInterface $response;
     private HttpClientInterface $client;

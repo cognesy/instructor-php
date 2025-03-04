@@ -18,7 +18,7 @@ class LLMConfig
         public int $contextLength = 8000,
         public int $maxOutputLength = 4096,
         public string $httpClient = '',
-        public LLMProviderType $providerType = LLMProviderType::OpenAICompatible,
+        public string $providerType = LLMProviderType::OpenAICompatible->value,
     ) {}
 
     public static function load(string $connection) : LLMConfig {
@@ -34,7 +34,7 @@ class LLMConfig
             maxTokens: Settings::get('llm', "connections.$connection.defaultMaxTokens", 1024),
             contextLength: Settings::get('llm', "connections.$connection.contextLength", 8000),
             httpClient: Settings::get('llm', "connections.$connection.httpClient", ''),
-            providerType: LLMProviderType::from(Settings::get('llm', "connections.$connection.providerType")),
+            providerType: Settings::get('llm', "connections.$connection.providerType", LLMProviderType::OpenAICompatible->value),
         );
     }
 }

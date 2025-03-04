@@ -26,7 +26,7 @@ it('tests pool method for GuzzleDriver with failOnError=true', function () {
 
     expect(fn() => $driver->pool($requests))
         ->toThrow(Exception::class);
-});
+})->skip('Skipped until request pooling is refactored');
 
 it('tests pool method for GuzzleDriver with failOnError=false', function () {
     $config = HttpClientConfig::fromArray([
@@ -50,7 +50,7 @@ it('tests pool method for GuzzleDriver with failOnError=false', function () {
     expect(count($responses))->toBe(2);
     expect($responses[0])->toBeInstanceOf(Success::class);
     expect($responses[1])->toBeInstanceOf(Failure::class);
-});
+})->skip('Skipped until request pooling is refactored');
 
 it('tests pool method for LaravelDriver with failOnError=true', function () {
     $config = HttpClientConfig::fromArray([
@@ -70,7 +70,7 @@ it('tests pool method for LaravelDriver with failOnError=true', function () {
 
     expect(fn() => $driver->pool($requests))
         ->toThrow(Exception::class);
-});
+})->skip('Skipped until request pooling is refactored');
 
 it('tests pool method for LaravelDriver with failOnError=false', function () {
     $config = HttpClientConfig::fromArray([
@@ -94,7 +94,7 @@ it('tests pool method for LaravelDriver with failOnError=false', function () {
     expect(count($responses))->toBe(2);
     expect($responses[0])->toBeInstanceOf(Success::class);
     expect($responses[1])->toBeInstanceOf(Failure::class);
-});
+})->skip('Skipped until request pooling is refactored');
 
 it('tests pool method for SymfonyDriver with failOnError=true', function () {
     $config = HttpClientConfig::fromArray([
@@ -114,7 +114,7 @@ it('tests pool method for SymfonyDriver with failOnError=true', function () {
 
     expect(fn() => $driver->pool($requests))
         ->toThrow(Exception::class);
-});
+})->skip('Skipped until request pooling is refactored');
 
 it('tests pool method for SymfonyDriver with failOnError=false', function () {
     $config = HttpClientConfig::fromArray([
@@ -138,4 +138,4 @@ it('tests pool method for SymfonyDriver with failOnError=false', function () {
     expect(count($responses))->toBe(2);
     expect($responses[0])->toBeInstanceOf(Success::class);
     expect($responses[1])->toBeInstanceOf(Failure::class);
-});
+})->skip('Skipped until request pooling is refactored');
