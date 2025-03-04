@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Adapters\SymfonyResponseAdapter;
+use Cognesy\Polyglot\Http\Adapters\SymfonyHttpResponse;
 use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
 use Cognesy\Polyglot\Http\Data\HttpClientConfig;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
@@ -56,7 +56,7 @@ class SymfonyDriver implements CanHandleHttp
             throw new RequestException($e);
         }
         $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
-        return new SymfonyResponseAdapter(
+        return new SymfonyHttpResponse(
             client: $this->client,
             response: $response,
             connectTimeout: $this->config->connectTimeout ?? 3,

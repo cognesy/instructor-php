@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Adapters\PsrResponseAdapter;
+use Cognesy\Polyglot\Http\Adapters\PsrHttpResponse;
 use Cognesy\Polyglot\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Polyglot\Http\Data\HttpClientConfig;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
@@ -77,7 +77,7 @@ class GuzzlePool implements CanHandleRequestPool
 
     private function handleFulfilledResponse(ResponseInterface $response): Result {
         $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
-        return Result::success(new PsrResponseAdapter(
+        return Result::success(new PsrHttpResponse(
             response: $response,
             stream: $response->getBody()
         ));

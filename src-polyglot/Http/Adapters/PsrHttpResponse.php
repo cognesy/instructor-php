@@ -7,7 +7,12 @@ use Generator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
-class PsrResponseAdapter implements HttpClientResponse
+/**
+ * Class PsrHttpResponse
+ *
+ * Implements HttpClientResponse contract for PSR-compatible HTTP client
+ */
+class PsrHttpResponse implements HttpClientResponse
 {
     private ResponseInterface $response;
     private StreamInterface $stream;
@@ -20,18 +25,39 @@ class PsrResponseAdapter implements HttpClientResponse
         $this->stream = $stream;
     }
 
+    /**
+     * Get the response status code
+     *
+     * @return int
+     */
     public function getStatusCode(): int {
         return $this->response->getStatusCode();
     }
 
+    /**
+     * Get the response headers
+     *
+     * @return array
+     */
     public function getHeaders(): array {
         return $this->response->getHeaders();
     }
 
+    /**
+     * Get the response content
+     *
+     * @return string
+     */
     public function getContents(): string {
         return $this->response->getBody()->getContents();
     }
 
+    /**
+     * Read chunks of the stream
+     *
+     * @param int $chunkSize
+     * @return Generator<string>
+     */
     public function streamContents(int $chunkSize = 1): Generator {
         while (!$this->stream->eof()) {
             yield $this->stream->read($chunkSize);

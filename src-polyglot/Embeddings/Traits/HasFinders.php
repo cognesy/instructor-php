@@ -3,8 +3,20 @@ namespace Cognesy\Polyglot\Embeddings\Traits;
 
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 
+/**
+ * Trait HasFinders
+ *
+ * Provides methods for finding similar documents
+ */
 trait HasFinders
 {
+    /**
+     * Find the most similar documents to the query
+     * @param string $query
+     * @param array $documents
+     * @param int $topK
+     * @return array
+     */
     public function findSimilar(string $query, array $documents, int $topK = 5) : array {
         // generate embeddings for query and documents (in a single request)
         [$queryVector, $docVectors] = $this->create(array_merge([$query], $documents))->split(1);
@@ -20,6 +32,13 @@ trait HasFinders
         ], array_keys($matches));
     }
 
+    /**
+     * Find the top K most similar documents to the query vector
+     * @param array $queryVector
+     * @param array $documentVectors
+     * @param int $n
+     * @return array
+     */
     public static function findTopK(array $queryVector, array $documentVectors, int $n = 5) : array {
         $similarity = [];
         foreach ($documentVectors as $i => $vector) {
@@ -29,11 +48,3 @@ trait HasFinders
         return array_slice($similarity, 0, $n, true);
     }
 }
-
-//if ($this->clientType !== ClientType::Jina && $this->model === 'jina-colbert-v2') {
-//    $docVectors = $this->make($documents, ['options' => ['input_type' => 'document']]);
-//    $queryVector = $this->make($query, ['options' => ['input_type' => 'query']]);
-//} else {
-//    $docVectors = $this->make($documents);
-//    $queryVector = $this->make($query);
-//}

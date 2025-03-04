@@ -17,6 +17,9 @@ use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
+/**
+ * Embeddings is a facade responsible for generating embeddings for provided input data
+ */
 class Embeddings
 {
     use HasFinders;
@@ -43,34 +46,65 @@ class Embeddings
 
     // PUBLIC ///////////////////////////////////////////////////
 
+    /**
+     * Configures the Embeddings instance with the given connection name.
+     * @param string $connection
+     * @return $this
+     */
     public function withConnection(string $connection) : self {
         $this->config = EmbeddingsConfig::load($connection);
         $this->driver = $this->getDriver($this->config, $this->httpClient);
         return $this;
     }
 
+    /**
+     * Configures the Embeddings instance with the given configuration.
+     * @param EmbeddingsConfig $config
+     * @return $this
+     */
     public function withConfig(EmbeddingsConfig $config) : self {
         $this->config = $config;
         $this->driver = $this->getDriver($this->config, $this->httpClient);
         return $this;
     }
 
+    /**
+     * Configures the Embeddings instance with the given model name.
+     * @param string $model
+     * @return $this
+     */
     public function withModel(string $model) : self {
         $this->config->model = $model;
         return $this;
     }
 
+    /**
+     * Configures the Embeddings instance with the given HTTP client.
+     * @param CanHandleHttp $httpClient
+     * @return $this
+     */
     public function withHttpClient(CanHandleHttp $httpClient) : self {
         $this->httpClient = $httpClient;
         $this->driver = $this->getDriver($this->config, $this->httpClient);
         return $this;
     }
 
+    /**
+     * Configures the Embeddings instance with the given driver.
+     * @param CanVectorize $driver
+     * @return $this
+     */
     public function withDriver(CanVectorize $driver) : self {
         $this->driver = $driver;
         return $this;
     }
 
+    /**
+     * Generates embeddings for the provided input data.
+     * @param string|array $input
+     * @param array $options
+     * @return EmbeddingsResponse
+     */
     public function create(string|array $input, array $options = []) : EmbeddingsResponse {
         if (is_string($input)) {
             $input = [$input];
@@ -83,6 +117,12 @@ class Embeddings
 
     // INTERNAL /////////////////////////////////////////////////
 
+    /**
+     * Returns the driver for the specified configuration.
+     * @param EmbeddingsConfig $config
+     * @param CanHandleHttp $httpClient
+     * @return CanVectorize
+     */
     protected function getDriver(EmbeddingsConfig $config, CanHandleHttp $httpClient) : CanVectorize {
         return match ($config->providerType) {
             LLMProviderType::Azure->value => new AzureOpenAIDriver($config, $httpClient, $this->events),

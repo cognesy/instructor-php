@@ -7,7 +7,12 @@ use Generator;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class SymfonyResponseAdapter implements HttpClientResponse
+/**
+ * Class SymfonyHttpResponse
+ *
+ * Implements HttpClientResponse contract for Symfony HTTP client
+ */
+class SymfonyHttpResponse implements HttpClientResponse
 {
     private ResponseInterface $response;
     private HttpClientInterface $client;
@@ -21,14 +26,29 @@ class SymfonyResponseAdapter implements HttpClientResponse
         $this->response = $response;
     }
 
+    /**
+     * Get the response status code
+     *
+     * @return int
+     */
     public function getStatusCode(): int {
         return $this->response->getStatusCode();
     }
 
+    /**
+     * Get the response headers
+     *
+     * @return array
+     */
     public function getHeaders(): array {
         return $this->response->getHeaders();
     }
 
+    /**
+     * Get the response content
+     *
+     * @return string
+     */
     public function getContents(): string {
         // workaround to handle connect timeout: https://github.com/symfony/symfony/pull/57811
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
@@ -41,6 +61,12 @@ class SymfonyResponseAdapter implements HttpClientResponse
         return $this->response->getContent();
     }
 
+    /**
+     * Read chunks of the stream
+     *
+     * @param int $chunkSize
+     * @return Generator<string>
+     */
     public function streamContents(int $chunkSize = 1): Generator {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             yield $chunk->getContent();

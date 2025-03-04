@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Adapters\SymfonyResponseAdapter;
+use Cognesy\Polyglot\Http\Adapters\SymfonyHttpResponse;
 use Cognesy\Polyglot\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Polyglot\Http\Data\HttpClientConfig;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
@@ -167,7 +167,7 @@ class SymfonyPool implements CanHandleRequestPool
             if ($error !== null) {
                 $responses[$index] = $this->handleError($error);
             } else {
-                $responses[$index] = Result::success(new SymfonyResponseAdapter(
+                $responses[$index] = Result::success(new SymfonyHttpResponse(
                     client: $this->client,
                     response: $response,
                     connectTimeout: $this->config->connectTimeout ?? 3

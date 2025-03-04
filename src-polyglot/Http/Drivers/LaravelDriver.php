@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Adapters\LaravelResponseAdapter;
+use Cognesy\Polyglot\Http\Adapters\LaravelHttpResponse;
 use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
 use Cognesy\Polyglot\Http\Data\HttpClientConfig;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
@@ -60,7 +60,7 @@ class LaravelDriver implements CanHandleHttp
             throw new RequestException($e);
         }
         $this->events->dispatch(new HttpResponseReceived($response->status()));
-        return new LaravelResponseAdapter(
+        return new LaravelHttpResponse(
             $response,
             $streaming
         );

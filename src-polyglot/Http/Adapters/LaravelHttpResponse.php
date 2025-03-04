@@ -6,28 +6,54 @@ use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
 use Generator;
 use Illuminate\Http\Client\Response;
 
-class LaravelResponseAdapter implements HttpClientResponse
+/**
+ * Class LaravelHttpResponse
+ *
+ * Implements HttpClientResponse contract for Laravel HTTP client
+ */
+class LaravelHttpResponse implements HttpClientResponse
 {
     public function __construct(
         private Response $response,
         private bool $streaming = false
     ) {}
 
+    /**
+     * Get the response status code
+     *
+     * @return int
+     */
     public function getStatusCode(): int
     {
         return $this->response->status();
     }
 
+    /**
+     * Get the response headers
+     *
+     * @return array
+     */
     public function getHeaders(): array
     {
         return $this->response->headers();
     }
 
+    /**
+     * Get the response content
+     *
+     * @return string
+     */
     public function getContents(): string
     {
         return $this->response->body();
     }
 
+    /**
+     * Read chunks of the stream
+     *
+     * @param int $chunkSize
+     * @return Generator<string>
+     */
     public function streamContents(int $chunkSize = 1): Generator
     {
         if (!$this->streaming) {

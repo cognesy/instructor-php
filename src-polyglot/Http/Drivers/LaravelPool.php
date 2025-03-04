@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Adapters\LaravelResponseAdapter;
+use Cognesy\Polyglot\Http\Adapters\LaravelHttpResponse;
 use Cognesy\Polyglot\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Polyglot\Http\Data\HttpClientConfig;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
@@ -83,7 +83,7 @@ class LaravelPool implements CanHandleRequestPool
 
     private function handleSuccessfulResponse(Response $response): Result {
         $this->events->dispatch(new HttpResponseReceived($response->status()));
-        return Result::success(new LaravelResponseAdapter($response));
+        return Result::success(new LaravelHttpResponse($response));
     }
 
     private function handleFailedResponse(Response $response): Result {

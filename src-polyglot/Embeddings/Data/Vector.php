@@ -2,6 +2,11 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
+/**
+ * Class Vector
+ *
+ * Represents an embedding - vector of floating point values
+ */
 class Vector
 {
     public const METRIC_COSINE = 'cosine';
@@ -14,15 +19,28 @@ class Vector
         private int|string $id = 0,
     ) {}
 
-    /** @return float[] */
+    /**
+     * Get the vector values
+     * @return float[]
+     */
     public function values() : array {
         return $this->values;
     }
 
+    /**
+     * Get the vector ID
+     * @return int|string
+     */
     public function id() : int|string {
         return $this->id;
     }
 
+    /**
+     * Compare this vector to another vector using a metric
+     * @param Vector $vector
+     * @param string $metric
+     * @return float
+     */
     public function compareTo(Vector $vector, string $metric) : float {
         return match ($metric) {
             self::METRIC_COSINE => self::cosineSimilarity($this->values, $vector->values),
@@ -33,6 +51,7 @@ class Vector
     }
 
     /**
+     * Calculate the cosine similarity between two vectors
      * @param float[] $v1
      * @param float[] $v2
      */
@@ -51,17 +70,8 @@ class Vector
         return $dotProduct / ($magnitudeV1 * $magnitudeV2);
     }
 
-//    private function cosineSimilarity(array $vec1, array $vec2) : float {
-//        $dotProduct = array_sum(array_map(fn($a, $b) => $a * $b, $vec1, $vec2));
-//        $magnitude1 = sqrt(array_sum(array_map(fn($a) => $a * $a, $vec1)));
-//        $magnitude2 = sqrt(array_sum(array_map(fn($b) => $b * $b, $vec2)));
-//        if ($magnitude1 * $magnitude2 == 0) {
-//            return 0;
-//        }
-//        return $dotProduct / ($magnitude1 * $magnitude2);
-//    }
-
     /**
+     * Calculate the Euclidean distance between two vectors
      * @param float[] $v1
      * @param float[] $v2
      */
@@ -75,6 +85,7 @@ class Vector
     }
 
     /**
+     * Calculate the dot product between two vectors
      * @param float[] $v1
      * @param float[] $v2
      */

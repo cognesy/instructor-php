@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Adapters\PsrResponseAdapter;
+use Cognesy\Polyglot\Http\Adapters\PsrHttpResponse;
 use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
 use Cognesy\Polyglot\Http\Data\HttpClientConfig;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
@@ -73,7 +73,7 @@ class GuzzleDriver implements CanHandleHttp
             throw new RequestException($e);
         }
         $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
-        return new PsrResponseAdapter(
+        return new PsrHttpResponse(
             response: $response,
             stream: $response->getBody()
         );
