@@ -5,6 +5,10 @@ namespace Cognesy\Utils\Xml;
 use Cognesy\Utils\Str;
 use SimpleXMLElement;
 
+/**
+ * Class SimpleXmlParser
+ * Supports reading XML string and convert it to array
+ */
 class SimpleXmlParser
 {
     private ?array $parsedData = null;
@@ -16,40 +20,79 @@ class SimpleXmlParser
         private string $namingConvention = 'raw',
     ) {}
 
+    /**
+     * Create a new instance of SimpleXmlParser from XML string
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public static function from(string $xmlString): self {
         return new self($xmlString);
     }
 
+    /**
+     * Sets inclusion of attributes in the result array
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public function withAttributes(): self {
         $this->includeAttributes = true;
         return $this;
     }
 
+    /**
+     * Sets inclusion of root element in the result array
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public function withRoot(): self {
         $this->includeRoot = true;
         return $this;
     }
 
+    /**
+     * Wraps the XML string with a root element
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public function wrapped(string $root = 'root'): self {
         $this->xmlString = "<$root>{$this->xmlString}</$root>";
         return $this;
     }
 
+    /**
+     * Sets the naming convention for the keys in the result array to camelCase
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public function asCamelCase(): self {
         $this->namingConvention = 'camel';
         return $this;
     }
 
+    /**
+     * Sets the naming convention for the keys in the result array to snake_case
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public function asSnakeCase(): self {
         $this->namingConvention = 'snake';
         return $this;
     }
 
+    /**
+     * Sets the naming convention for the keys in the result array to provided value
+     * @param string $xmlString
+     * @return SimpleXmlParser
+     */
     public function withNaming(string $namingConvention): self {
         $this->namingConvention = $namingConvention;
         return $this;
     }
 
+    /**
+     * Convert the XML string to array
+     * @return array
+     */
     public function toArray(): array {
         if ($this->parsedData === null) {
             $this->parsedData = $this->convertXmlToArray();
@@ -57,6 +100,10 @@ class SimpleXmlParser
         return $this->parsedData;
     }
 
+    /**
+     * Convert the XML string to array
+     * @return string
+     */
     private function convertXmlToArray(): array {
         if ($this->xmlString === '') {
             return [];
@@ -69,6 +116,11 @@ class SimpleXmlParser
         return $array;
     }
 
+    /**
+     * Convert the XML element to array
+     * @param SimpleXMLElement $element
+     * @return array|string
+     */
     private function xmlToArray(SimpleXMLElement $element): array|string {
         $result = [];
 
@@ -108,7 +160,7 @@ class SimpleXmlParser
     }
 
     /**
-     * Conversion of names to snake_case or camelCase
+     * Sanitize the name of the element
      * @param string $name
      * @return string
      */

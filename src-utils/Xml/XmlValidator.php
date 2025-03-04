@@ -4,8 +4,17 @@ namespace Cognesy\Utils\Xml;
 
 use RuntimeException;
 
+/**
+ * Validates XML against the XML specification.
+ */
 class XmlValidator
 {
+    /**
+     * Validates the given XML string.
+     *
+     * @param string $xml The XML string to validate.
+     * @throws RuntimeException If the XML is invalid.
+     */
     public function validate(string $xml): void
     {
         $previous = libxml_use_internal_errors(true);
@@ -27,6 +36,12 @@ class XmlValidator
         libxml_use_internal_errors($previous);
     }
 
+    /**
+     * Formats error object as a string.
+     *
+     * @param \LibXMLError $error The error to format.
+     * @return string The formatted error message.
+     */
     private function formatLibXmlError(\LibXMLError $error): string
     {
         $message = $error->message;

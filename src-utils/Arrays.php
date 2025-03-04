@@ -4,8 +4,17 @@ namespace Cognesy\Utils;
 
 use WeakMap;
 
+/**
+ * Utility functions for working with arrays.
+ */
 class Arrays
 {
+    /**
+     * Merges two arrays, handling null values.
+     * @param array|null $array1
+     * @param array|null $array2
+     * @return array|null
+     */
     public static function mergeNull(?array $array1, ?array $array2): ?array {
         return match(true) {
             is_null($array1) && is_null($array2) => null,
@@ -15,6 +24,12 @@ class Arrays
         };
     }
 
+    /**
+     * Merges two arrays, handling null values.
+     * @param array|null $array1
+     * @param array|null $array2
+     * @return array|null
+     */
     public static function unset(array $array, array|string $fields) : array {
         if (!is_array($fields)) {
             $fields = [$fields];
@@ -25,6 +40,11 @@ class Arrays
         return $array;
     }
 
+    /**
+     * Converts a value to an array.
+     * @param mixed $value
+     * @return array
+     */
     public static function asArray(mixed $value): array {
         if (is_array($value)) {
             return $value;
@@ -35,10 +55,22 @@ class Arrays
         return [$value];
     }
 
+    /**
+     * Checks if an array is a subset of another array.
+     * @param array $decodedKeys
+     * @param array $propertyNames
+     * @return bool
+     */
     static public function isSubset(array $decodedKeys, array $propertyNames) {
         return count(array_diff($decodedKeys, $propertyNames)) === 0;
     }
 
+    /**
+     * Removes the last N elements from an array.
+     * @param array $array
+     * @param int $count
+     * @return array
+     */
     static public function removeTail(array $array, int $count) : array {
         if ($count < 1) {
             return $array;
@@ -46,10 +78,22 @@ class Arrays
         return array_slice($array, 0, -$count);
     }
 
+    /**
+     * Flattens an array of arrays into a single string.
+     * @param array $arrays
+     * @param string $separator
+     * @return string
+     */
     static public function flatten(array $arrays, string $separator = ''): string {
         return self::doFlatten($arrays, $separator);
     }
 
+    /**
+     * Maps an array using a callback.
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
     static public function map(array $array, callable $callback): array {
         $target = [];
         foreach ($array as $key => $value) {
@@ -58,6 +102,12 @@ class Arrays
         return $target;
     }
 
+    /**
+     * Filters an array using a callback.
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
     static public function fromAny(mixed $anyValue): array {
         $visited = new WeakMap();
         $toArray = function($x) use(&$toArray, &$visited) {
@@ -75,6 +125,12 @@ class Arrays
         return $toArray($anyValue);
     }
 
+    /**
+     * Filters an array using a callback.
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
     static public function removeRecursively(array $array, array $keys): array {
         if (empty($array) || empty($keys)) {
             return $array;
@@ -92,12 +148,24 @@ class Arrays
         return $remove($array, $keys);
     }
 
+    /**
+     * Filters an array using a callback.
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
     static public function toBullets(array $array): string {
         return implode("\n", array_map(fn($c) => " - {$c}\n", $array));
     }
 
     // INTERNAL ///////////////////////////////////////////////////////
 
+    /**
+     * Flattens an array of arrays into a single string.
+     * @param array $arrays
+     * @param string $separator
+     * @return string
+     */
     private static function doFlatten(array $arrays, string $separator): string {
         $flat = '';
         foreach ($arrays as $item) {

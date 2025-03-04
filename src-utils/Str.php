@@ -2,18 +2,41 @@
 
 namespace Cognesy\Utils;
 
+/**
+ * String manipulation utilities.
+ */
 class Str
 {
+    /**
+     * Splits a string into an array by a delimiter.
+     *
+     * @param string $input The input string.
+     * @param string $delimiter The delimiter.
+     * @return array The array of strings.
+     */
     static public function split(string $input, string $delimiter = ' ') : array {
         return explode($delimiter, $input);
     }
 
+    /**
+     * Joins an array of strings into a single string.
+     *
+     * @param array $input The array of strings.
+     * @param string $glue The glue.
+     * @return string The joined string.
+     */
     static public function pascal(string $input) : string {
         // turn any case into pascal case
         $normalized = self::spaceSeparated($input);
         return str_replace(' ', '', ucwords($normalized));
     }
 
+    /**
+     * Converts a string to snake_case.
+     *
+     * @param string $input The input string.
+     * @return string The snake_case string.
+     */
     static public function snake(string $input) : string {
         // turn any case into snake case
         $normalized = self::spaceSeparated($input);
@@ -21,6 +44,12 @@ class Str
         return str_replace(' ', '_', $lowered);
     }
 
+    /**
+     * Converts a string to camelCase.
+     *
+     * @param string $input The input string.
+     * @return string The camelCase string.
+     */
     static public function camel(string $input) : string {
         // turn any case into camel case
         $normalized = self::spaceSeparated($input);
@@ -28,6 +57,12 @@ class Str
         return lcfirst($camelized);
     }
 
+    /**
+     * Converts a string to kebab-case.
+     *
+     * @param string $input The input string.
+     * @return string The kebab-case string.
+     */
     static public function kebab(string $input) : string {
         // turn any case into kebab case
         $normalized = self::spaceSeparated($input);
@@ -35,12 +70,24 @@ class Str
         return str_replace(' ', '-', $lowered);
     }
 
+    /**
+     * Converts a string to Title Case.
+     *
+     * @param string $input The input string.
+     * @return string The Title Case string.
+     */
     static public function title(string $input) : string {
         // turn any case into title case
         $normalized = self::spaceSeparated($input);
         return ucwords($normalized);
     }
 
+    /**
+     * Converts a string to Sentence case.
+     *
+     * @param string $input The input string.
+     * @return string The Sentence case string.
+     */
     static private function spaceSeparated(string $input) : string {
         return (new RawChain)->through([
             // separate groups of capitalized words
@@ -65,6 +112,14 @@ class Str
         ])->process($input);
     }
 
+    /**
+     * Checks if a string contains another string.
+     *
+     * @param string $haystack The string to search in.
+     * @param string $needle The string to search for.
+     * @param bool $caseSensitive True for case-sensitive search, false otherwise.
+     * @return bool True if the needle is found, false otherwise.
+     */
     static public function contains(string $haystack, string $needle, bool $caseSensitive = true) : bool {
         return match($caseSensitive) {
             true => strpos($haystack, $needle) !== false,
@@ -72,6 +127,14 @@ class Str
         };
     }
 
+    /**
+     * Checks if a string contains all of the specified substrings.
+     *
+     * @param string $haystack The string to search in.
+     * @param string|array $needles The substrings to search for.
+     * @param bool $caseSensitive True for case-sensitive search, false otherwise.
+     * @return bool True if all substrings are found, false otherwise.
+     */
     static public function containsAll(string $haystack, string|array $needles, bool $caseSensitive = true) : bool {
         $needles = is_string($needles) ? [$needles] : $needles;
         foreach($needles as $item) {
@@ -83,6 +146,14 @@ class Str
         return true;
     }
 
+    /**
+     * Checks if a string contains any of the specified substrings.
+     *
+     * @param string $haystack The string to search in.
+     * @param string|array $needles The substrings to search for.
+     * @param bool $caseSensitive True for case-sensitive search, false otherwise.
+     * @return bool True if any substring is found, false otherwise.
+     */
     static public function containsAny(string $haystack, string|array $needles, bool $caseSensitive = true) : bool {
         $needles = is_string($needles) ? [$needles] : $needles;
         foreach($needles as $item) {
@@ -94,14 +165,36 @@ class Str
         return false;
     }
 
+    /**
+     * Checks if a string starts with a prefix.
+     *
+     * @param string $text The string to check.
+     * @param string $prefix The prefix to check for.
+     * @return bool True if the string starts with the prefix, false otherwise.
+     */
     public static function startsWith(string $text, string $prefix) : bool {
         return substr($text, 0, strlen($prefix)) === $prefix;
     }
 
+    /**
+     * Checks if a string ends with a suffix.
+     *
+     * @param string $text The string to check.
+     * @param string $suffix The suffix to check for.
+     * @return bool True if the string ends with the suffix, false otherwise.
+     */
     public static function endsWith(string $text, string $suffix) : bool {
         return substr($text, -strlen($suffix)) === $suffix;
     }
 
+    /**
+     * Extracts a substring from a string between two needles.
+     *
+     * @param string $text The text to search in.
+     * @param string $firstNeedle The first needle.
+     * @param string $nextNeedle The next needle.
+     * @return string The extracted substring.
+     */
     public static function between(mixed $text, string $firstNeedle, string $nextNeedle) : string {
         $start = strpos($text, $firstNeedle);
         if ($start === false) {
@@ -115,6 +208,13 @@ class Str
         return substr($text, $start, $end - $start);
     }
 
+    /**
+     * Extracts a substring from a string before a needle.
+     *
+     * @param string $text The text to search in.
+     * @param string $needle The needle.
+     * @return string The extracted substring.
+     */
     public static function after(mixed $text, string $needle) : string {
         $start = strpos($text, $needle);
         if ($start === false) {
@@ -124,6 +224,13 @@ class Str
         return substr($text, $start);
     }
 
+    /**
+     * Extracts a substring from a string after a needle.
+     *
+     * @param string $text The text to search in.
+     * @param string $needle The needle.
+     * @return string The extracted substring.
+     */
     public static function when(bool $condition, string $onTrue, string $onFalse) : string {
         return match($condition) {
             true => $onTrue,
@@ -131,6 +238,13 @@ class Str
         };
     }
 
+    /**
+     * Extracts a substring from a string before a needle.
+     *
+     * @param string $text The text to search in.
+     * @param string $needle The needle.
+     * @return string The extracted substring.
+     */
     public static function limit(
         string $text,
         int    $limit,

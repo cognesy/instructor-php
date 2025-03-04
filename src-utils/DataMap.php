@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use JsonSerializable;
 
 /**
+ * DataMap provides a simple way to work with nested data structures.
  * @template TKey of array-key
  * @template TValue
  */

@@ -32,11 +32,22 @@ class Xml
         return new self($xmlString);
     }
 
+    /**
+     * Create a new instance from XML string with parsed tags
+     * @param string $xmlString
+     * @param array $parsedTags
+     * @return self
+     */
     public function withTags(array $parsedTags): self {
         $this->parsedTags = $parsedTags;
         return $this;
     }
 
+    /**
+     * Wrap the XML string with a root tag
+     * @param string $root
+     * @return self
+     */
     public function wrapped(string $root = 'root'): self {
         $this->xmlString = "<$root>{$this->xmlString}</$root>";
         return $this;
@@ -50,12 +61,20 @@ class Xml
         return $this->parsedData();
     }
 
+    /**
+     * Return the XmlElement representation of the XML
+     * @return XmlElement
+     */
     public function toXmlElement(): XmlElement {
         return XmlElement::fromArray($this->parsedData());
     }
 
     // INTERNAL ///////////////////////////////////////////////////
 
+    /**
+     * Parse the XML string and return the array representation
+     * @return array
+     */
     private function parsedData(): array {
         if ($this->parsedData === null) {
             $array = match(true) {
@@ -67,6 +86,10 @@ class Xml
         return $this->parsedData;
     }
 
+    /**
+     * Return an empty XmlElement array
+     * @return array
+     */
     private static function empty(): array {
         return [
             'tag' => '',

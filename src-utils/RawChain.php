@@ -37,7 +37,6 @@ use Throwable;
  *
  * return $chain->process(5);
  */
-
 class RawChain {
     /**
      * @var callable[] The processors that the payload will be passed through.

@@ -105,6 +105,11 @@ class Settings
         self::$settings[$group] = self::$settings[$group]->set($key, $value);
     }
 
+    /**
+     * Unsets a settings group.
+     *
+     * @param string $group The settings group.
+     */
     public static function unset(string $group) : void {
         if (self::isGroupLoaded($group)) {
             self::$settings[$group] = [];

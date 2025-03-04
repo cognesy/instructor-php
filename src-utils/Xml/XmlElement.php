@@ -2,6 +2,11 @@
 
 namespace Cognesy\Utils\Xml;
 
+/**
+ * Class XmlElement
+ *
+ * Represents an XML element
+ */
 class XmlElement
 {
     private string $tag = '';
@@ -23,6 +28,12 @@ class XmlElement
         }
     }
 
+    /**
+     * Create an XmlElement from an array
+     *
+     * @param array $data
+     * @return XmlElement
+     */
     public static function fromArray(array $data): self {
         return new self(
             tag: $data['tag'] ?? '',
@@ -32,25 +43,47 @@ class XmlElement
         );
     }
 
+    /**
+     * Create an XmlElement from a SimpleXMLElement
+     *
+     * @param \SimpleXMLElement $element
+     * @return XmlElement
+     */
     public function tag(): string {
         return $this->tag;
     }
 
+    /**
+     * Create an XmlElement from a SimpleXMLElement
+     *
+     * @param \SimpleXMLElement $element
+     * @return XmlElement
+     */
     public function content(): string {
         return $this->content;
     }
 
+    /**
+     * Return the attributes of the element
+     * @return string
+     */
     public function attributes(): array {
         return $this->attributes;
     }
 
     /**
+     * Return the children of the element
      * @return XmlElement[]
      */
     public function children(): array {
         return $this->children;
     }
 
+    /**
+     * Return the child with the given path
+     * @param string $path
+     * @return XmlElement
+     */
     public function get(string $path) : XmlElement {
         $parts = explode('.', $path);
         $current = $this;
@@ -60,6 +93,11 @@ class XmlElement
         return $current;
     }
 
+    /**
+     * Return the first child with the given tag
+     * @param string $tag
+     * @return XmlElement
+     */
     public function first(string $tag): ?XmlElement {
         foreach ($this->children as $child) {
             if ($child->tag() === $tag) {
@@ -70,6 +108,7 @@ class XmlElement
     }
 
     /**
+     * Return all the children with the given tag
      * @return XmlElement[]
      */
     public function all(string $tag): array {
@@ -82,10 +121,20 @@ class XmlElement
         return $result;
     }
 
+    /**
+     * Return the attribute with the given name
+     * @param string $name
+     * @param mixed $default
+     * @return string
+     */
     public function attribute(string $name, mixed $default = null): ?string {
         return $this->attributes[$name] ?? $default;
     }
 
+    /**
+     * Return the content of the element
+     * @return string
+     */
     public function toArray(): array {
         $children = [];
         foreach ($this->children as $child) {
@@ -99,10 +148,18 @@ class XmlElement
         ];
     }
 
+    /**
+     * Return the content of the element
+     * @return string
+     */
     public function hasChildren() : bool {
         return count($this->children) > 0;
     }
 
+    /**
+     * Return the content of the element
+     * @return string
+     */
     public function hasContent() : bool {
         return $this->content !== '';
     }

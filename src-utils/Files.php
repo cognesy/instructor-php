@@ -9,6 +9,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 
+/**
+ * Utility class for working with files and directories.
+ */
 class Files
 {
     /**

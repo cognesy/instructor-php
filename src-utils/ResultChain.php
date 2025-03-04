@@ -71,20 +71,43 @@ class ResultChain
 
     // CREATION ///////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Create a new ResultChain instance.
+     *
+     * @return ResultChain
+     */
     static public function make() : static {
         return new ResultChain();
     }
 
+    /**
+     * Create a new ResultChain instance with an initial value.
+     *
+     * @param mixed $value
+     * @return ResultChain
+     */
     static public function for(mixed $value): static {
         return new ResultChain(value: Result::with($value));
     }
 
+    /**
+     * Create a new ResultChain instance with a source of values.
+     *
+     * @param callable $source
+     * @return ResultChain
+     */
     static public function from(callable $source): static {
         return new ResultChain(source: $source);
     }
 
     // DEFINITION /////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Set the initial value of the chain.
+     *
+     * @param mixed $value
+     * @return ResultChain
+     */
     public function withContext(mixed $context): static {
         $this->context = $context;
         return $this;
@@ -248,6 +271,13 @@ class ResultChain
         };
     }
 
+    /**
+     * Process the value with the processor.
+     *
+     * @param callable $processor
+     * @param mixed $value
+     * @return mixed
+     */
     private function processValue(callable $processor, mixed $value): mixed {
         return match(true) {
             $value instanceof Result => $processor($value->unwrap()),
@@ -256,6 +286,13 @@ class ResultChain
         };
     }
 
+    /**
+     * Wrap the value into a Result object or unwrap it if it is already a Result.
+     *
+     * @param mixed $value
+     * @param string $onNull
+     * @return Result|null
+     */
     private function asResult(mixed $value, string $onNull = self::FAIL_ON_NULL) : ?Result {
         return match(true) {
             $value instanceof Result => $value,
@@ -268,6 +305,12 @@ class ResultChain
         };
     }
 
+    /**
+     * Wrap or unwrap the value based on the flag.
+     * @param mixed $value
+     * @param bool $wrapped
+     * @return mixed
+     */
     private function wrapOrUnwrap(mixed $value, bool $wrapped = true): mixed {
         return match(true) {
             $wrapped => $this->asResult($value, self::CONTINUE_ON_NULL),
@@ -275,6 +318,12 @@ class ResultChain
         };
     }
 
+    /**
+     * Unwrap the value if it is a Result object.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
     private function unwrapIfResult(mixed $value): mixed {
         return match(true) {
             $value instanceof Success => $value->unwrap(),
