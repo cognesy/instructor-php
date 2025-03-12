@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature\Extras;
 
-require_once __DIR__ . '/../../Examples/Call/test_functions.php';
+//require_once __DIR__ . '/../../Examples/Call/test_functions.php';
 
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Tests\Examples\Call\TestClass;

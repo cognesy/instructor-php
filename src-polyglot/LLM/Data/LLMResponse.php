@@ -5,6 +5,9 @@ namespace Cognesy\Polyglot\LLM\Data;
 use Cognesy\Polyglot\LLM\Enums\LLMFinishReason;
 use Cognesy\Utils\Json\Json;
 
+/**
+ * Represents a response from the LLM.
+ */
 class LLMResponse
 {
     private mixed $value = null;
@@ -22,61 +25,114 @@ class LLMResponse
 
     // STATIC ////////////////////////////////////////////////
 
+    /**
+     * Create an LLMResponse from an array of PartialLLMResponses.
+     *
+     * @param PartialLLMResponse[] $partialResponses
+     * @return LLMResponse
+     */
     public static function fromPartialResponses(array $partialResponses) : LLMResponse {
         return (new self)->makeFromPartialResponses($partialResponses);
     }
 
     // PUBLIC ////////////////////////////////////////////////
 
+    /**
+     * Create an LLMResponse from a value.
+     *
+     * @param mixed $value
+     * @return LLMResponse
+     */
     public function hasValue() : bool {
         return $this->value !== null;
     }
 
+    /**
+     * Set the processed / transformed value of the response.
+     * @param mixed $value
+     * @return $this
+     */
     public function withValue(mixed $value) : self {
         $this->value = $value;
         return $this;
     }
 
+    /**
+     * Get the processed / transformed value of the response.
+     * @return mixed
+     */
     public function value() : mixed {
         return $this->value;
     }
 
+    /**
+     * Check if the response has content.
+     * @return bool
+     */
     public function hasContent() : bool {
         return $this->content !== '';
     }
 
+    /**
+     * Get the content of the response.
+     * @return string
+     */
     public function content() : string {
         return $this->content;
     }
 
+    /**
+     * Set the content of the response.
+     * @param string $content
+     * @return $this
+     */
     public function withContent(string $content) : self {
         $this->content = $content;
         return $this;
     }
 
+    /**
+     * Set reasoning content of the response.
+     * @return bool
+     */
     public function withReasoningContent(string $reasoningContent) : self {
         $this->reasoningContent = $reasoningContent;
         return $this;
     }
 
+    /**
+     * Get the reasoning content of the response.
+     * @return string
+     */
     public function reasoningContent() : string {
         return $this->reasoningContent;
     }
 
+    /**
+     * Check if the response has reasoning content.
+     * @return bool
+     */
     public function hasReasoningContent() : bool {
         return $this->reasoningContent !== '';
     }
 
+    /**
+     * Get the JSON representation of the response.
+     * @return Json
+     */
     public function json(): Json {
         return match(true) {
-            // TODO: what about tool calls?
-            $this->hasContent() => Json::from($this->content),
+            $this->hasToolCalls() => match($this->toolCalls->hasSingle()) {
+                true => $this->toolCalls->first()?->json(),
+                default => $this->toolCalls->json(),
+            },
+            $this->hasContent() => Json::fromString($this->content),
             default => Json::none(),
         };
     }
 
     public function hasToolCalls() : bool {
-        return !($this->toolCalls?->empty() ?? true);
+        return $this->toolCalls?->hasAny() ?? false;
     }
 
     public function usage() : Usage {
@@ -98,6 +154,7 @@ class LLMResponse
     public function toArray() : array {
         return [
             'content' => $this->content,
+            'reasoningContent' => $this->reasoningContent,
             'responseData' => $this->responseData,
             'finishReason' => $this->finishReason,
             'toolCalls' => $this->toolCalls?->toArray() ?? [],

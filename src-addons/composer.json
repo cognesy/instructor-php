@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-addons",
-  "description": "Optional addons for Instructor library",
+  "description": "Optional addons for Instructor library, should be used with Instructor or Polyglot",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -21,9 +21,15 @@
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-core": "0.12.3"
+    "ext-fileinfo": "*",
+    "ext-libxml": "*",
+    "cognesy/instructor-utils": "^0.12"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
+  },
+  "suggest": {
+      "cognesy/instructor-core": "Some addons need Instructor core library - e.g. Image class",
+      "cognesy/instructor-polyglot": "Some addones can be used with Instructor Polyglot library - e.g. Chat, Evals, FunctionCall, ToolUse"
   }
 }

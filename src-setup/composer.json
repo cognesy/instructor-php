@@ -19,6 +19,12 @@
     }
   },
   "version": "0.12.3",
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-utils": "^0.12",
+    "symfony/console": "^7.1",
+    "symfony/filesystem": "^7.1"
+  },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
   }

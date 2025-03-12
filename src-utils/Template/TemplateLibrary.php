@@ -72,10 +72,30 @@ class TemplateLibrary
 
     private function makeDriver(TemplateEngineConfig $config): CanHandleTemplate {
         return match ($config->templateEngine) {
-            TemplateEngineType::Twig => new TwigDriver($config),
-            TemplateEngineType::Blade => new BladeDriver($config),
+            TemplateEngineType::Twig => $this->getTwig($config),
+            TemplateEngineType::Blade => $this->getBladeOne($config),
             TemplateEngineType::Arrowpipe => new ArrowpipeDriver($config),
             default => throw new InvalidArgumentException("Unknown driver: $config->templateEngine"),
         };
+    }
+
+    private function getTwig(TemplateEngineConfig $config) : CanHandleTemplate {
+        // check if Twig is installed via composer
+        if (!class_exists('Twig\Environment')) {
+            // if not - throw exception, explain 'composer install twig/twig' is required
+            throw new \RuntimeException("Twig is not installed. Run 'composer require twig/twig'");
+        }
+        // return TwigDriver if Twig is installed
+        return new TwigDriver($config);
+    }
+
+    private function getBladeOne(TemplateEngineConfig $config) : CanHandleTemplate {
+        // check if Blade is installed via composer
+        if (!class_exists('eftec\bladeone\BladeOne')) {
+            // if not - throw exception, explain 'composer install eftec/bladeone' is required
+            throw new \RuntimeException("BladeOne is not installed. Run 'composer require eftec/bladeone'");
+        }
+        // return BladeDriver if Blade is installed
+        return new BladeDriver($config);
     }
 }

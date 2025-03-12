@@ -52,7 +52,7 @@ class RequestHandler
                 Mode::Tools => $llmResponse->toolCalls()->first()?->argsAsJson()
                     ?? $llmResponse->content() // fallback if no tool calls - some LLMs return just a string
                     ?? '',
-                default => Json::from($llmResponse->content())->toString(),
+                default => Json::fromString($llmResponse->content())->toString(), // Mode::MdJson, Mode::Json, Mode::JsonSchema
             });
             $partialResponses = [];
             $processingResult = $this->processResponse($request, $llmResponse, $partialResponses);

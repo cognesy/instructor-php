@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
+use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 
 class ToolCalls
@@ -56,6 +57,22 @@ class ToolCalls
         return $this->toolCalls[count($this->toolCalls) - 1];
     }
 
+    public function hasSingle() : bool {
+        return count($this->toolCalls) === 1;
+    }
+
+    public function hasMany() : bool {
+        return count($this->toolCalls) > 1;
+    }
+
+    public function hasNone() : bool {
+        return empty($this->toolCalls);
+    }
+
+    public function hasAny() : bool {
+        return !empty($this->toolCalls);
+    }
+
     public function empty() : bool {
         return empty($this->toolCalls);
     }
@@ -100,5 +117,9 @@ class ToolCalls
             $list[] = $toolCall->toArray();
         }
         return $list;
+    }
+
+    public function json() : Json {
+        return Json::fromArray($this->toArray());
     }
 }

@@ -56,12 +56,29 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
      * @param object $event The event object for which to retrieve listeners.
      * @return iterable An iterable list of listeners that are registered for the event's class or its parent classes.
      */
+//    public function getListenersForEvent(object $event): iterable {
+//        foreach ($this->listeners as $eventClass => $listeners) {
+//            if ($event instanceof $eventClass) {
+//                yield from $listeners;
+//            }
+//        }
+//    }
     public function getListenersForEvent(object $event): iterable {
+        $listenersToReturn = [];
+
+        // Loop through all registered event classes
         foreach ($this->listeners as $eventClass => $listeners) {
+            // If the event is an instance of this class, add all its listeners
             if ($event instanceof $eventClass) {
-                yield from $listeners;
+                foreach ($listeners as $listener) {
+                    // Using an array ensures each listener only appears once
+                    $listenersToReturn[] = $listener;
+                }
             }
         }
+
+        // Return the listeners
+        return $listenersToReturn;
     }
 
     /**

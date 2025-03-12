@@ -4,11 +4,14 @@ namespace Cognesy\Polyglot\LLM\Data;
 
 use Cognesy\Utils\Json\Json;
 
+/**
+ * Represents a tool call.
+ */
 class ToolCall
 {
+    private string $id;
     private string $name;
     private array $arguments;
-    private string $id;
 
     public function __construct(
         string $name,
@@ -19,7 +22,7 @@ class ToolCall
         $this->name = $name;
         $this->arguments = match(true) {
             is_array($args) => $args,
-            is_string($args) => Json::from($args)->toArray(),
+            is_string($args) => Json::fromString($args)->toArray(),
             default => []
         };
     }
@@ -53,7 +56,7 @@ class ToolCall
     public function withArgs(string|array $args) : self {
         $this->arguments = match(true) {
             is_array($args) => $args,
-            is_string($args) => Json::from($args)->toArray(),
+            is_string($args) => Json::fromString($args)->toArray(),
             default => []
         };
         return $this;
@@ -109,6 +112,10 @@ class ToolCall
 
     public function floatValue(string $key, float $default = 0.0) : float {
         return (float) ($this->arguments[$key] ?? $default);
+    }
+
+    public function json() : Json {
+        return Json::fromArray($this->arguments);
     }
 
     public function toArray() : array {

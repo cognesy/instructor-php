@@ -21,7 +21,9 @@
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-core": "0.12.3"
+    "cognesy/instructor-core": "0.12.3",
+    "toolkit/cli-utils": "^2.0",
+    "cebe/markdown": "^1.2"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

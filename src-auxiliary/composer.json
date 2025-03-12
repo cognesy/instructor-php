@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/instructor-aux",
+  "name": "cognesy/instructor-auxiliary",
   "description": "Collection of auxiliary services and integrations",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -15,13 +15,18 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\Auxiliary\\": "/"
+      "Cognesy\\Auxiliary\\": ""
     }
   },
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "0.12.3"
+    "ext-dom": "*",
+    "cognesy/instructor-utils": "^0.12",
+    "guzzlehttp/psr7": "^2.7",
+    "league/html-to-markdown": "^5.1",
+    "spatie/browsershot": "^4.1",
+    "symfony/dom-crawler": "^7.1"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

@@ -121,7 +121,7 @@ class PartialsGenerator implements CanGeneratePartials
         }
         // finalize last function call
         if ($this->toolCalls->count() > 0) {
-            $this->finalizeToolCall(Json::from($this->responseText)->toString(), $responseModel->toolName());
+            $this->finalizeToolCall(Json::fromString($this->responseText)->toString(), $responseModel->toolName());
         }
         // finalize sequenceable
         $this->sequenceableHandler->finalize();

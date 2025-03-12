@@ -49,14 +49,14 @@ class GeminiMessageFormat implements CanMapMessages
         return [
             'functionCall' => [
                 'name' => $call['function']['name'] ?? '',
-                'args' => Json::from($call['function']['arguments'])->toArray() ?? [],
+                'args' => Json::fromString($call['function']['arguments'])->toArray() ?? [],
             ]
         ];
     }
 
     private function toNativeToolResult(array $message) : array {
         $content = match(true) {
-            is_array($message['_metadata']['result'] ?? '') => Json::from($message['_metadata']['result'] ?? '')->toArray(),
+            is_array($message['_metadata']['result'] ?? '') => Json::fromString($message['_metadata']['result'] ?? '')->toArray(),
             default => $message['content'],
         };
         return [

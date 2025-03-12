@@ -20,7 +20,7 @@ declare -A REQUIRE_PACKAGES=(
 )
 
 declare -A REQUIRE_DEV_PACKAGES=(
-    ["src-aux"]="cognesy/instructor-aux"
+    ["src-aux"]="cognesy/instructor-auxiliary"
     ["src-experimental"]="cognesy/instructor-experimental"
     ["src-hub"]="cognesy/instructor-hub"
     ["src-setup"]="cognesy/instructor-setup"

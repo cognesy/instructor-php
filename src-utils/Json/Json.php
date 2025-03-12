@@ -18,12 +18,16 @@ class Json
         return new Json('');
     }
 
-    public static function from(string $text) : Json {
+    public static function fromString(string $text) : Json {
         if (empty(trim($text))) {
             return new Json('');
         }
         $json = (new JsonParser)->findCompleteJson($text);
         return new Json($json);
+    }
+
+    public static function fromArray(array $array) : Json {
+        return new Json(json_encode($array));
     }
 
     public static function fromPartial(string $text) : Json {

@@ -11,10 +11,15 @@
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.12",
     "cognesy/instructor-setup": "^0.12",
-    "cognesy/instructor-addons": "^0.12",
-    "guzzlehttp/guzzle": "^7.8"
+    "guzzlehttp/guzzle": "^7.4",
+    "guzzlehttp/psr7": "^2.7"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
+  },
+  "suggest": {
+    "cognesy/instructor-addons": "Provided extra optional capabilities like evals, tool use, etc.",
+    "symfony/http-client": "For Symfony HTTP client support",
+    "illuminate/http": "For Laravel HTTP client support"
   }
 }

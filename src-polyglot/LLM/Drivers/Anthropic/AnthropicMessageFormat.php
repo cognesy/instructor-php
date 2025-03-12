@@ -89,7 +89,7 @@ class AnthropicMessageFormat implements CanMapMessages
                 'type' => 'tool_use',
                 'id' => $message['_metadata']['tool_calls'][0]['id'] ?? '',
                 'name' => $message['_metadata']['tool_calls'][0]['function']['name'] ?? '',
-                'input' => Json::from($message['_metadata']['tool_calls'][0]['function']['arguments'] ?? '')->toArray(),
+                'input' => Json::fromString($message['_metadata']['tool_calls'][0]['function']['arguments'] ?? '')->toArray(),
             ]]
         ];
     }
