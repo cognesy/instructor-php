@@ -1,12 +1,12 @@
 <?php
 
-namespace Cognesy\Addons\Prompt;
+namespace Cognesy\Utils\Template;
 
-use Cognesy\Addons\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Cognesy\Utils\Messages\Script;
+use Cognesy\Utils\Template\Contracts\CanHandleTemplate;
+use Cognesy\Utils\Template\Data\TemplateEngineConfig;
 use Cognesy\Utils\Str;
 use Cognesy\Utils\Xml\Xml;
 use Cognesy\Utils\Xml\XmlElement;

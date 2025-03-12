@@ -150,6 +150,29 @@
             ]
         },
         {
+            "group": "API Providers Support",
+            "pages": [
+                "cookbook/instructor/api_support/a21",
+                "cookbook/instructor/api_support/anthropic",
+                "cookbook/instructor/api_support/azure_openai",
+                "cookbook/instructor/api_support/cerebras",
+                "cookbook/instructor/api_support/cohere",
+                "cookbook/instructor/api_support/deepseek",
+                "cookbook/instructor/api_support/fireworks",
+                "cookbook/instructor/api_support/google_gemini",
+                "cookbook/instructor/api_support/groq",
+                "cookbook/instructor/api_support/minimaxi",
+                "cookbook/instructor/api_support/mistralai",
+                "cookbook/instructor/api_support/moonshotai",
+                "cookbook/instructor/api_support/ollama",
+                "cookbook/instructor/api_support/openai",
+                "cookbook/instructor/api_support/openrouter",
+                "cookbook/instructor/api_support/sambanova",
+                "cookbook/instructor/api_support/togetherai",
+                "cookbook/instructor/api_support/xai"
+            ]
+        },
+        {
             "group": "Basics",
             "pages": [
                 "cookbook/instructor/basics/basic_use",
@@ -193,73 +216,6 @@
             ]
         },
         {
-            "group": "API Providers Support",
-            "pages": [
-                "cookbook/instructor/api_support/a21",
-                "cookbook/instructor/api_support/anthropic",
-                "cookbook/instructor/api_support/azure_openai",
-                "cookbook/instructor/api_support/cerebras",
-                "cookbook/instructor/api_support/cohere",
-                "cookbook/instructor/api_support/deepseek",
-                "cookbook/instructor/api_support/fireworks",
-                "cookbook/instructor/api_support/google_gemini",
-                "cookbook/instructor/api_support/groq",
-                "cookbook/instructor/api_support/minimaxi",
-                "cookbook/instructor/api_support/mistralai",
-                "cookbook/instructor/api_support/moonshotai",
-                "cookbook/instructor/api_support/ollama",
-                "cookbook/instructor/api_support/openai",
-                "cookbook/instructor/api_support/openrouter",
-                "cookbook/instructor/api_support/sambanova",
-                "cookbook/instructor/api_support/togetherai",
-                "cookbook/instructor/api_support/xai"
-            ]
-        },
-        {
-            "group": "Extras",
-            "pages": [
-                "cookbook/instructor/extras/complex_extraction",
-                "cookbook/instructor/extras/complex_extraction_claude",
-                "cookbook/instructor/extras/complex_extraction_cohere",
-                "cookbook/instructor/extras/complex_extraction_gemini",
-                "cookbook/instructor/extras/image_car_damage",
-                "cookbook/instructor/extras/image_to_data",
-                "cookbook/instructor/extras/image_to_data_anthropic",
-                "cookbook/instructor/extras/image_to_data_gemini",
-                "cookbook/instructor/extras/schema",
-                "cookbook/instructor/extras/schema_dynamic",
-                "cookbook/instructor/extras/transcription_to_tasks",
-                "cookbook/instructor/extras/translate_ui_fields",
-                "cookbook/instructor/extras/web_to_objects"
-            ]
-        },
-        {
-            "group": "LLM Basics",
-            "pages": [
-                "cookbook/polyglot/llm_basics/llm",
-                "cookbook/polyglot/llm_basics/llm_json",
-                "cookbook/polyglot/llm_basics/llm_json_schema",
-                "cookbook/polyglot/llm_basics/llm_md_json",
-                "cookbook/polyglot/llm_basics/llm_tools"
-            ]
-        },
-        {
-            "group": "LLM Advanced",
-            "pages": [
-                "cookbook/polyglot/llm_advanced/context_cache_llm",
-                "cookbook/polyglot/llm_advanced/custom_llm",
-                "cookbook/polyglot/llm_advanced/embeddings",
-                "cookbook/polyglot/llm_advanced/parallel_calls",
-                "cookbook/polyglot/llm_advanced/reasoning_content"
-            ]
-        },
-        {
-            "group": "LLM Troubleshooting",
-            "pages": [
-                "cookbook/polyglot/llm_troubleshooting/http_debug"
-            ]
-        },
-        {
             "group": "LLM API Support",
             "pages": [
                 "cookbook/polyglot/llm_api_support/a21",
@@ -283,12 +239,21 @@
             ]
         },
         {
-            "group": "LLM Extras",
+            "group": "Extras",
             "pages": [
-                "cookbook/polyglot/llm_extras/chat_with_summary",
-                "cookbook/polyglot/llm_extras/prompt_templates",
-                "cookbook/polyglot/llm_extras/summary_with_llm",
-                "cookbook/polyglot/llm_extras/tool_use"
+                "cookbook/instructor/extras/complex_extraction",
+                "cookbook/instructor/extras/complex_extraction_claude",
+                "cookbook/instructor/extras/complex_extraction_cohere",
+                "cookbook/instructor/extras/complex_extraction_gemini",
+                "cookbook/instructor/extras/image_car_damage",
+                "cookbook/instructor/extras/image_to_data",
+                "cookbook/instructor/extras/image_to_data_anthropic",
+                "cookbook/instructor/extras/image_to_data_gemini",
+                "cookbook/instructor/extras/schema",
+                "cookbook/instructor/extras/schema_dynamic",
+                "cookbook/instructor/extras/transcription_to_tasks",
+                "cookbook/instructor/extras/translate_ui_fields",
+                "cookbook/instructor/extras/web_to_objects"
             ]
         },
         {
@@ -335,6 +300,41 @@
                 "cookbook/prompting/misc/summary_with_keywords",
                 "cookbook/prompting/misc/component_reuse",
                 "cookbook/prompting/misc/component_reuse_cot"
+            ]
+        },
+        {
+            "group": "LLM Basics",
+            "pages": [
+                "cookbook/polyglot/llm_basics/llm",
+                "cookbook/polyglot/llm_basics/llm_json",
+                "cookbook/polyglot/llm_basics/llm_json_schema",
+                "cookbook/polyglot/llm_basics/llm_md_json",
+                "cookbook/polyglot/llm_basics/llm_tools"
+            ]
+        },
+        {
+            "group": "LLM Advanced",
+            "pages": [
+                "cookbook/polyglot/llm_advanced/context_cache_llm",
+                "cookbook/polyglot/llm_advanced/custom_llm",
+                "cookbook/polyglot/llm_advanced/embeddings",
+                "cookbook/polyglot/llm_advanced/parallel_calls",
+                "cookbook/polyglot/llm_advanced/reasoning_content"
+            ]
+        },
+        {
+            "group": "LLM Troubleshooting",
+            "pages": [
+                "cookbook/polyglot/llm_troubleshooting/http_debug"
+            ]
+        },
+        {
+            "group": "LLM Extras",
+            "pages": [
+                "cookbook/polyglot/llm_extras/chat_with_summary",
+                "cookbook/polyglot/llm_extras/prompt_templates",
+                "cookbook/polyglot/llm_extras/summary_with_llm",
+                "cookbook/polyglot/llm_extras/tool_use"
             ]
         }
     ],

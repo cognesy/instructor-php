@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Addons\Prompt\Enums;
+namespace Cognesy\Utils\Template\Enums;
 
 enum TemplateEngineType : string
 {

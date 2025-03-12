@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Addons\Prompt\Drivers;
+namespace Cognesy\Utils\Template\Drivers;
 
-use Cognesy\Addons\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;
+use Cognesy\Utils\Template\Contracts\CanHandleTemplate;
+use Cognesy\Utils\Template\Data\TemplateEngineConfig;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\Node\Expression\NameExpression;
@@ -22,7 +22,7 @@ class TwigDriver implements CanHandleTemplate
     /**
      * TwigDriver constructor.
      *
-     * @param \Cognesy\Addons\Prompt\Data\TemplateEngineConfig $config The configuration for the prompt engine
+     * @param \Cognesy\Utils\Template\Data\TemplateEngineConfig $config The configuration for the prompt engine
      */
     public function __construct(
         private TemplateEngineConfig $config,

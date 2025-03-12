@@ -28,7 +28,7 @@ $config = new LLMConfig(
     model: 'deepseek-chat',
     maxTokens: 128,
     httpClient: 'guzzle',
-    providerType: LLMProviderType::OpenAICompatible,
+    providerType: LLMProviderType::OpenAICompatible->value,
 );
 
 $answer = (new Inference)

@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Addons\Prompt\Utils;
+namespace Cognesy\Utils\Template\Utils;
 
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;

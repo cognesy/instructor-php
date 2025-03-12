@@ -2,9 +2,9 @@
 
 namespace Cognesy\Utils\Messages\Traits;
 
-use Cognesy\Addons\Prompt\Template;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
+use Cognesy\Utils\Template\Template;
 
 trait RendersContent
 {

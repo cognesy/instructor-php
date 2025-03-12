@@ -15,8 +15,8 @@ prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Addons\Prompt\Template;
 use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Utils\Template\Template;
 use Cognesy\Utils\Str;
 
 // EXAMPLE 1: Define prompt template inline (don't use files) and use short syntax

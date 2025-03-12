@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
-use Cognesy\Addons\Prompt\Template;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
+use Cognesy\Utils\Template\Template;
 use InvalidArgumentException;
 
 trait HandlesPrediction

@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Addons\Prompt;
+namespace Cognesy\Utils\Template;
 
-use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;
-use Cognesy\Addons\Prompt\Enums\FrontMatterFormat;
+use Cognesy\Utils\Template\Data\TemplateEngineConfig;
+use Cognesy\Utils\Template\Enums\FrontMatterFormat;
 use InvalidArgumentException;
 use Webuni\FrontMatter\FrontMatter;
 use Webuni\FrontMatter\Processor\JsonProcessor;

@@ -91,13 +91,7 @@ class ToolCalls
     }
 
     public function finalizeLast(string $responseJson, string $defaultName) : ToolCall {
-        $last = $this->last();
-        if (empty($last)) {
-            return $this->add($defaultName, $responseJson);
-        }
-        $last->withName($last->name() ?? $defaultName);
-        $last->withArgs($responseJson);
-        return $this->last();
+        return $this->updateLast($responseJson, $defaultName);
     }
 
     public function toArray() : array {

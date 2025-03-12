@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Addons\Prompt\Data;
+namespace Cognesy\Utils\Template\Data;
 
-use Cognesy\Addons\Prompt\Enums\FrontMatterFormat;
-use Cognesy\Addons\Prompt\Enums\TemplateEngineType;
+use Cognesy\Utils\Template\Enums\FrontMatterFormat;
+use Cognesy\Utils\Template\Enums\TemplateEngineType;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 

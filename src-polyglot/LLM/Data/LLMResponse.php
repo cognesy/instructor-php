@@ -14,7 +14,6 @@ class LLMResponse
         private string $finishReason = '',
         private ?ToolCalls $toolCalls = null,
         private string $reasoningContent = '',
-        //private array $citations = [],
         private ?Usage $usage = null,
         private array  $responseData = [],
     ) {

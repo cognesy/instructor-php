@@ -6,16 +6,20 @@
 - Unify template conventions - <||> vs. {{}}, update docs
 - Full control over generated prompt (access to Script object processing)
 - ToolUse - apply context variables to message sequence (via ScriptParameters??)
-- Predicted outputs API
 - Batch completion API
-- Citations API
-- MCP support as addon
-- Reasoning traces support in response objects
+- Async / parallel calls to multiple APIs
 
 ## Low priority
 
 - Gemini context caching
 - Generate unstructured, then format to structured - to improve reasoning
+- Citations API
+- Predicted outputs API
+- MCP support as addon
+
+## Partially done
+
+- Reasoning traces support in response objects (done: Deepseek, Anthropic)
 
 # BACKLOG
 

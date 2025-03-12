@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Addons\Prompt\Contracts;
+namespace Cognesy\Utils\Template\Contracts;
 
 /**
  * Interface CanHandleTemplate

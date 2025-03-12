@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Addons\Prompt\Drivers;
+namespace Cognesy\Utils\Template\Drivers;
 
-use Cognesy\Addons\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;
-use Cognesy\Addons\Prompt\Utils\StringTemplate;
+use Cognesy\Utils\Template\Contracts\CanHandleTemplate;
+use Cognesy\Utils\Template\Data\TemplateEngineConfig;
+use Cognesy\Utils\Template\Utils\StringTemplate;
 
 class ArrowpipeDriver implements CanHandleTemplate
 {

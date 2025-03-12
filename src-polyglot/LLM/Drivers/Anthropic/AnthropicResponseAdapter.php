@@ -21,6 +21,7 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
             content: $this->makeContent($data),
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
+            reasoningContent: $this->makeReasoningContent($data),
             usage: $this->usageFormat->fromData($data),
             responseData: $data,
         );
@@ -32,6 +33,7 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
         }
         return new PartialLLMResponse(
             contentDelta: $this->makeContentDelta($data),
+            reasoningContentDelta: $data['delta']['thinking_delta'] ?? '',
             toolId: $data['content_block']['id'] ?? '',
             toolName: $data['content_block']['name'] ?? '',
             toolArgs: $data['delta']['partial_json'] ?? '',
@@ -73,5 +75,15 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
             'name' => $call['name'] ?? '',
             'arguments' => $call['input'] ?? ''
         ]));
+    }
+
+    private function makeReasoningContent(array $data) : string {
+        $content = '';
+        $nl = '';
+        foreach ($data['content'] ?? [] as $part) {
+            $content .= $nl . $part['thinking'] ?? '';
+            $nl = PHP_EOL;
+        }
+        return $content;
     }
 }

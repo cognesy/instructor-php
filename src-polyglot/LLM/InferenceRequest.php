@@ -77,6 +77,17 @@ class InferenceRequest
     }
 
     /**
+     * Sets the model to be used and returns the current instance.
+     *
+     * @param string $model The name of the model to set.
+     * @return self The current instance with the updated model.
+     */
+    public function withModel(string $model) : self {
+        $this->model = $model;
+        return $this;
+    }
+
+    /**
      * Determines whether the content or resource is being streamed.
      *
      * @return bool True if streaming is enabled, false otherwise.
@@ -86,13 +97,13 @@ class InferenceRequest
     }
 
     /**
-     * Sets the model to be used and returns the current instance.
+     * Sets the streaming option for the current instance.
      *
-     * @param string $model The name of the model to set.
-     * @return self The current instance with the updated model.
+     * @param bool $streaming Whether to enable streaming.
+     * @return self The current instance with the updated streaming option.
      */
-    public function withModel(string $model) : self {
-        $this->model = $model;
+    public function withStreaming(bool $streaming) : self {
+        $this->options['stream'] = $streaming;
         return $this;
     }
 
@@ -204,7 +215,7 @@ class InferenceRequest
     /**
      * Retrieves the current mode of the object.
      *
-     * @return \Cognesy\Polyglot\LLM\Enums\Mode The current mode instance.
+     * @return Mode The current mode instance.
      */
     public function mode() : Mode {
         return $this->mode;
@@ -224,7 +235,7 @@ class InferenceRequest
     /**
      * Retrieves the cached context if available.
      *
-     * @return \Cognesy\Polyglot\LLM\Data\CachedContext|null The cached context instance or null if not set.
+     * @return CachedContext|null The cached context instance or null if not set.
      */
     public function cachedContext() : ?CachedContext {
         return $this->cachedContext;
@@ -233,7 +244,7 @@ class InferenceRequest
     /**
      * Sets the cached context for the current instance.
      *
-     * @param \Cognesy\Polyglot\LLM\Data\CachedContext|null $cachedContext The cached context to be set, or null to clear it.
+     * @param CachedContext|null $cachedContext The cached context to be set, or null to clear it.
      * @return self The current instance for method chaining.
      */
     public function withCachedContext(?CachedContext $cachedContext) : self {

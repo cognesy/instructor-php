@@ -1,13 +1,13 @@
 <?php
 
-namespace Cognesy\Addons\Prompt;
+namespace Cognesy\Utils\Template;
 
-use Cognesy\Addons\Prompt\Contracts\CanHandleTemplate;
-use Cognesy\Addons\Prompt\Data\TemplateEngineConfig;
-use Cognesy\Addons\Prompt\Drivers\ArrowpipeDriver;
-use Cognesy\Addons\Prompt\Drivers\BladeDriver;
-use Cognesy\Addons\Prompt\Drivers\TwigDriver;
-use Cognesy\Addons\Prompt\Enums\TemplateEngineType;
+use Cognesy\Utils\Template\Contracts\CanHandleTemplate;
+use Cognesy\Utils\Template\Data\TemplateEngineConfig;
+use Cognesy\Utils\Template\Drivers\ArrowpipeDriver;
+use Cognesy\Utils\Template\Drivers\BladeDriver;
+use Cognesy\Utils\Template\Drivers\TwigDriver;
+use Cognesy\Utils\Template\Enums\TemplateEngineType;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
