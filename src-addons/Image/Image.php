@@ -79,7 +79,7 @@ class Image implements CanProvideMessages
      * @return \Cognesy\Utils\Messages\Messages
      */
     public function toMessages(): Messages {
-        return Messages::fromMessages($this->toMessage());
+        return Messages::fromMessages([$this->toMessage()]);
     }
 
     /**

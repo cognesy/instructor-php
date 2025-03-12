@@ -41,7 +41,7 @@ trait HandlesConversion
             $merged->appendMessage(new Message(
                 role: $role,
                 content: implode("\n", array_filter($content)), // TODO: see above
-                metadata: $message['_metadata'],
+                metadata: $message['_metadata'] ?? [],
             ));
         }
         return $merged->toArray();

@@ -5,6 +5,7 @@ use Cognesy\Utils\Messages\Enums\MessageRole;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Generator;
+use Termwind\Components\Dd;
 
 trait HandlesAccess
 {
@@ -36,10 +37,12 @@ trait HandlesAccess
     }
 
     public function middle() : Messages {
-        if (count($this->messages) < 3) {
+        $messageCount = count($this->messages);
+        if ($messageCount < 3) {
             return new Messages();
         }
-        return Messages::fromMessages(array_slice($this->messages, 1, count($this->messages)-2));
+        $slice = array_slice($this->messages, 1, $messageCount - 2);
+        return Messages::fromMessages($slice);
     }
 
     public function head() : array {
