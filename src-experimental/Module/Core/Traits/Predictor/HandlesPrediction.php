@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
+use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Utils\Template\Template;
 use InvalidArgumentException;
@@ -48,7 +49,7 @@ trait HandlesPrediction
     protected function predictStructure(array $callArgs) : mixed {
         $this->requestInfo->input = $callArgs;
         $this->requestInfo->prompt = $this->instructions();
-        $this->requestInfo->responseModel = StructureFactory::fromSignature('prediction', $this->signature);
+        $this->requestInfo->responseModel = Signature::toStructure('prediction', $this->signature);
         // TODO: replace with new Instructor API call
         return $this->instructor->withRequest($this->requestInfo)->get();
     }

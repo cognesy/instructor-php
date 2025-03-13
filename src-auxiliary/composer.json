@@ -25,6 +25,7 @@
     "cognesy/instructor-utils": "^0.12",
     "guzzlehttp/psr7": "^2.7",
     "league/html-to-markdown": "^5.1",
+    "phpdocumentor/reflection-docblock": "^5.4",
     "spatie/browsershot": "^4.1",
     "symfony/dom-crawler": "^7.1"
   },

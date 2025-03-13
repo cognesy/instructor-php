@@ -8,6 +8,14 @@ use Cognesy\Utils\Str;
 
 class AnthropicMessageFormat implements CanMapMessages
 {
+    private $roles = [
+        'user' => 'user',
+        'assistant' => 'assistant',
+        'system' => 'user',
+        'developer' => 'user',
+        'tool' => 'user',
+    ];
+
     public function map(array $messages) : array {
         $list = [];
         foreach ($messages as $message) {
@@ -36,8 +44,7 @@ class AnthropicMessageFormat implements CanMapMessages
     }
 
     private function mapRole(string $role) : string {
-        $roles = ['user' => 'user', 'assistant' => 'assistant', 'system' => 'user', 'tool' => 'user'];
-        return $roles[$role] ?? $role;
+        return $this->roles[$role] ?? $role;
     }
 
     private function toNativeContent(string|array $content) : string|array {

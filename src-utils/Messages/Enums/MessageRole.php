@@ -3,6 +3,7 @@ namespace Cognesy\Utils\Messages\Enums;
 
 enum MessageRole : string {
     case System = 'system';
+    case Developer = 'developer';
     case User = 'user';
     case Assistant = 'assistant';
     case Tool = 'tool';
@@ -11,6 +12,7 @@ enum MessageRole : string {
     {
         return match($role) {
             'system' => self::System,
+            'developer' => self::Developer,
             'user' => self::User,
             'assistant' => self::Assistant,
             'tool' => self::Tool,

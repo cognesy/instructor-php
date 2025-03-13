@@ -3,7 +3,8 @@ namespace Cognesy\Experimental\Module\Signature;
 
 use Cognesy\Experimental\Module\Signature\Contracts\HasInputSchema;
 use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
-use Cognesy\Experimental\Module\Signature\Traits\ConvertsToSignatureString;
+use Cognesy\Experimental\Module\Signature\Traits\Signature\ConvertsToSignatureString;
+use Cognesy\Experimental\Module\Signature\Traits\Signature\ConvertsToStructure;
 use Cognesy\Experimental\Module\Signature\Traits\Signature\HandlesAccess;
 use Cognesy\Experimental\Module\Signature\Traits\Signature\HandlesConversion;
 use Cognesy\Experimental\Module\Signature\Traits\Signature\HandlesSerialization;
@@ -25,6 +26,7 @@ use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 class Signature implements HasInputSchema, HasOutputSchema
 {
     use ConvertsToSignatureString;
+    use ConvertsToStructure;
     use HandlesAccess;
     use HandlesConversion;
     use HandlesSerialization;

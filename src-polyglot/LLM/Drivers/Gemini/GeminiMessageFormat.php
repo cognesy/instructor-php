@@ -8,6 +8,14 @@ use Cognesy\Utils\Str;
 
 class GeminiMessageFormat implements CanMapMessages
 {
+    private $roles = [
+        'user' => 'user',
+        'assistant' => 'model',
+        'system' => 'user',
+        'developer' => 'user',
+        'tool' => 'tool',
+    ];
+
     public function map(array $messages) : array {
         $list = [];
         foreach ($messages as $message) {
@@ -74,8 +82,7 @@ class GeminiMessageFormat implements CanMapMessages
     }
 
     protected function mapRole(string $role) : string {
-        $roles = ['user' => 'user', 'assistant' => 'model', 'system' => 'user', 'tool' => 'tool'];
-        return $roles[$role] ?? $role;
+        return $this->roles[$role] ?? $role;
     }
 
     protected function toNativeContentParts(string|array $contentParts) : array {

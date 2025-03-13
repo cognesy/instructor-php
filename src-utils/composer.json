@@ -21,6 +21,7 @@
   "version": "0.12.3",
   "require": {
     "php": "^8.2",
+    "ext-ctype": "*",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
     "ext-simplexml": "*",

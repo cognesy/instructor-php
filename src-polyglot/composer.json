@@ -20,6 +20,8 @@
   "suggest": {
     "cognesy/instructor-addons": "Provided extra optional capabilities like evals, tool use, etc.",
     "symfony/http-client": "For Symfony HTTP client support",
+    "psr/http-message": "*",
+    "psr/http-client": "*",
     "illuminate/http": "For Laravel HTTP client support"
   }
 }

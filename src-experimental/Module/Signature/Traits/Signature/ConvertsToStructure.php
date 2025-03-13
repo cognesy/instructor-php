@@ -1,14 +1,14 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
+namespace Cognesy\Experimental\Module\Signature\Traits\Signature;
 
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
 
-trait CreatesStructureFromSignature
+trait ConvertsToStructure
 {
-    static public function fromSignature(string $name, Signature $signature) : Structure {
+    static public function toStructure(string $name, Signature $signature) : Structure {
         return StructureFactory::fromSchema($name, $signature->toOutputSchema(), $signature->getDescription());
     }
 }

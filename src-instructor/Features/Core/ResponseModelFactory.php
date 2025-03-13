@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
-use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
+//use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
@@ -76,7 +76,7 @@ class ResponseModelFactory
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel, $toolName, $toolDescription),
             is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
-            is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
+            //is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
             is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
             is_string($requestedModel) => $this->fromClassString($requestedModel),
             is_array($requestedModel) => $this->fromJsonSchema($requestedModel, $toolName, $toolDescription),
