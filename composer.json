@@ -94,7 +94,7 @@
     "guzzlehttp/guzzle": "^7.8",
     "guzzlehttp/psr7": "^2.7",
     "psr/http-message": "^2.0",
-    "psr/http-client": "^2.0",
+    "psr/http-client": "^1.0",
     "psr/event-dispatcher": "^1.0",
     "psr/log": "^3.0",
     "symfony/console": "^7.1",
