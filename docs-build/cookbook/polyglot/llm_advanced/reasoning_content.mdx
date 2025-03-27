@@ -19,7 +19,7 @@ use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Str;
 
-//Debug::enable();
+//Debug::setEnabled();
 
 // EXAMPLE 1: regular API, allows to customize inference options
 $response = (new Inference)

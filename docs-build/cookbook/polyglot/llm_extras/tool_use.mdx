@@ -38,7 +38,7 @@ require 'examples/boot.php';
 use Cognesy\Addons\ToolUse\Tools\FunctionTool;
 use Cognesy\Addons\ToolUse\ToolUse;
 
-//Debug::enable();
+//Debug::setEnabled();
 
 function add_numbers(int $a, int $b) : int {
     return $a + $b;

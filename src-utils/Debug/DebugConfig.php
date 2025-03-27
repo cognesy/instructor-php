@@ -7,7 +7,7 @@ use Cognesy\Utils\Settings;
 class DebugConfig
 {
     public function __construct(
-        public bool $httpEnabled = false,
+        public bool $httpEnabled = true,
         public bool $httpTrace = false,
         public bool $httpRequestUrl = true,
         public bool $httpRequestHeaders = true,
@@ -56,7 +56,7 @@ class DebugConfig
     public static function fromArray(array $config): self
     {
         return new self(
-            $config['httpEnabled'] ?? false,
+            $config['httpEnabled'] ?? true,
             $config['httpTrace'] ?? false,
             $config['httpRequestUrl'] ?? true,
             $config['httpRequestHeaders'] ?? true,

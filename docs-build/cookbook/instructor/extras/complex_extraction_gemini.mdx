@@ -95,7 +95,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-//Debug::enable();
+//Debug::setEnabled();
 $instructor = (new Instructor)->withConnection('gemini');
 
 echo "PROJECT EVENTS:\n\n";

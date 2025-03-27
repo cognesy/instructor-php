@@ -5,10 +5,8 @@ docname: 'http_debug'
 
 ## Overview
 
-Instructor PHP provides a way to debug HTTP calls made to LLM APIs via `Debug::enable()` method.
-`Debug::enable()` works globally, it turns on dumping all HTTP requests and responses to the console.
-
-> NOTE: Currently `Debug::enable()` is only supported by Guzzle HTTP client.
+Instructor PHP provides a way to debug HTTP calls made to LLM APIs via `Debug::setEnabled()` method.
+`Debug::setEnabled()` works globally, it turns on dumping all HTTP requests and responses to the console.
 
 ## Example
 
@@ -19,7 +17,7 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Debug\Debug;
 
-Debug::enable();
+Debug::setEnabled();
 
 $response = (new Inference)
     ->create(

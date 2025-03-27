@@ -38,15 +38,12 @@ class Debug
     }
 
     public function tryDumpStream(string $line, bool $isConsolidated = false): void {
-        if (!$this->config->httpEnabled) {
-            return;
-        }
         if (!$this->config->httpResponseStream) {
             return;
         }
         $now = (new DateTimeImmutable)->format('H:i:s v') . 'ms';
         if ($isConsolidated) {
-            Console::print("\n[STREAM DATA / full lines]", [Color::DARK_YELLOW]);
+            Console::print("\n[STREAM DATA (full line)]", [Color::DARK_YELLOW]);
         } else {
             Console::print("\n[STREAM DATA]", [Color::DARK_YELLOW]);
         }
@@ -56,9 +53,6 @@ class Debug
     }
 
     public function tryDumpRequest(HttpClientRequest $request): void {
-        if (!$this->config->httpEnabled) {
-            return;
-        }
         $highlight = [Color::YELLOW];
         if ($this->config->httpRequestHeaders) {
             Console::println("[REQUEST HEADERS]", $highlight);
@@ -75,9 +69,6 @@ class Debug
     }
 
     public function tryDumpTrace() {
-        if (!$this->config->httpEnabled) {
-            return;
-        }
         $highlight = [Color::WHITE];
         if ($this->config->httpTrace) {
             Console::println("[HTTP DEBUG]", $highlight);
@@ -85,9 +76,6 @@ class Debug
     }
 
     public function tryDumpResponse(HttpClientResponse $response, array $options) {
-        if (!$this->config->httpEnabled) {
-            return;
-        }
         $highlight = [Color::WHITE];
         if ($this->config->httpTrace) {
             Console::println("[/HTTP DEBUG]", $highlight);
@@ -107,10 +95,22 @@ class Debug
         }
     }
 
-    public function printHeaders(array $headers) : void {
-        if (!$this->config->httpEnabled) {
-            return;
+    public function tryDumpUrl(string $url) : void {
+        if ($this->config->httpRequestUrl) {
+            Console::println("");
+            Console::println("[REQUEST URL]", [Color::YELLOW]);
+            Console::println($url, [Color::GRAY]);
+            Console::println("[REQUEST /URL]", [Color::YELLOW]);
+            Console::println("");
         }
+    }
+
+    protected function printBody(string $body) : void {
+        /** @noinspection ForgottenDebugOutputInspection */
+        dump(json_decode($body));
+    }
+
+    protected function printHeaders(array $headers) : void {
         foreach ($headers as $name => $values) {
             if (is_array($values)) {
                 $valuesStr = implode(', ', $values);
@@ -120,27 +120,6 @@ class Debug
             Console::print("   ".$name, [Color::DARK_GRAY]);
             Console::print(': ', [Color::WHITE]);
             Console::println($valuesStr, [Color::GRAY]);
-        }
-    }
-
-    public function printBody(string $body) : void {
-        if (!$this->config->httpEnabled) {
-            return;
-        }
-        /** @noinspection ForgottenDebugOutputInspection */
-        dump(json_decode($body));
-    }
-
-    public function tryDumpUrl(string $url) : void {
-        if (!$this->config->httpEnabled) {
-            return;
-        }
-        if ($this->config->httpRequestUrl) {
-            Console::println("");
-            Console::println("[REQUEST URL]", [Color::YELLOW]);
-            Console::println($url, [Color::GRAY]);
-            Console::println("[REQUEST /URL]", [Color::YELLOW]);
-            Console::println("");
         }
     }
 }

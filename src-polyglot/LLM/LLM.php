@@ -131,8 +131,6 @@ class LLM
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
-        // TODO: fix me - debug should not be global, should be request specific
-        //Debug::setEnabled($debug);
         $this->httpClient->withDebug($debug);
         return $this;
     }

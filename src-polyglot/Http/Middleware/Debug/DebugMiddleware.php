@@ -34,7 +34,7 @@ class DebugMiddleware extends BaseMiddleware
         HttpClientRequest  $request,
         HttpClientResponse $response
     ): HttpClientResponse {
-//        $this->debug->tryDumpResponse($response, ['stream' => $request->isStreamed()]);
+        $this->debug->tryDumpResponse($response, ['stream' => $request->isStreamed()]);
         return $response;
     }
 

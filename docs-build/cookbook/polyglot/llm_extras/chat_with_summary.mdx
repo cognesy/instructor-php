@@ -56,7 +56,7 @@ $chat = ChatWithSummary::create(
 );
 $chat->script()->section('main')->appendMessage($startMessage);
 
-//Debug::enable();
+//Debug::setEnabled();
 
 for($i = 0; $i < $maxSteps; $i++) {
     $chat->script()

@@ -23,14 +23,6 @@ class DebugResponseDecorator extends BaseResponseDecorator
         $this->streamByLine = $this->debug->config()->httpResponseStreamByLine;
     }
 
-    public function body(): string {
-        $response = $this->response;
-        $body = $response->body();
-        $this->debug->tryDumpResponse($response, ['stream' => $this->request->isStreamed()]);
-        return $body;
-    }
-
-
     public function stream(int $chunkSize = 1): Generator
     {
         $buffer = '';

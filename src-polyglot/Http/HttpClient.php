@@ -112,8 +112,14 @@ class HttpClient implements CanHandleHttp
 
     public function withDebug(bool $debug = true) : self {
         if ($debug) {
-            $this->stack->append(new BufferResponseMiddleware());
-            $this->stack->append(new DebugMiddleware(new Debug(new DebugConfig(httpEnabled: true)), $this->events));
+            $this->stack->append(new DebugMiddleware(
+                new Debug(new DebugConfig(httpEnabled: true)), $this->events),
+                'internal:debug'
+            );
+            $this->stack->append(new BufferResponseMiddleware(), 'internal:buffering');
+        } else {
+            $this->stack->remove('internal:debug');
+            $this->stack->remove('internal:buffering');
         }
         return $this;
     }

@@ -22,6 +22,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Utils\Str;
 
 class User {
     public int $age;
@@ -50,7 +51,7 @@ assert($user->age === 25);
 // CASE 1.2 - normal flow, streaming request
 
 echo "\n### CASE 1.2 - Debugging streaming request\n\n";
-$user2 = $instructor->withDebug()->respond(
+$user2 = $instructor->withDebug(true)->respond(
     messages: "Anna is 21 years old.",
     responseModel: User::class,
     options: [ 'stream' => true ]
@@ -67,18 +68,20 @@ assert($user2->age === 21);
 
 // CASE 2 - forcing API error via empty LLM config
 
-$instructor = (new Instructor)->withLLMConfig(new LLMConfig(apiUrl: 'https://wrong.com'));
+// let's initialize the instructor with an incorrect LLM config
+$instructor = (new Instructor)
+    ->withLLMConfig(new LLMConfig(apiUrl: 'https://example.com'));
 
 echo "\n### CASE 2 - Debugging with HTTP exception\n\n";
 try {
-    $user = $instructor->withDebug()->respond(
+    $user = $instructor->withDebug(true)->respond(
         messages: "Jason is 25 years old.",
         responseModel: User::class,
         options: [ 'stream' => true ]
     );
 } catch (Exception $e) {
-    echo "\nCaught it:\n";
-    dump($e);
+    $msg = Str::limit($e->getMessage(), 250);
+    echo "\nCaught exception: " . $msg . "\n";
 }
 ?>
 ```

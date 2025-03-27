@@ -68,7 +68,6 @@ class Instructor {
      * @return static The current instance with the updated debug state.
      */
     public function withDebug(bool $debug = true) : static {
-        //Debug::setEnabled($debug); // TODO: fix me - debug should not be global, should be request specific
         $this->llm->withDebug($debug);
         return $this;
     }
