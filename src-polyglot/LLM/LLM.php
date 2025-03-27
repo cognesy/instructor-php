@@ -14,7 +14,7 @@ use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 
 /**
- * This class represents a interface to Large Language Model provider APIs,
+ * This class represents an interface to Large Language Model provider APIs,
  * handling configurations, HTTP client integrations, inference drivers,
  * and event dispatching.
  */
@@ -132,7 +132,8 @@ class LLM
      */
     public function withDebug(bool $debug = true) : self {
         // TODO: fix me - debug should not be global, should be request specific
-        Debug::setEnabled($debug);
+        //Debug::setEnabled($debug);
+        $this->httpClient->withDebug($debug);
         return $this;
     }
 

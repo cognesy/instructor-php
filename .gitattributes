@@ -1,5 +1,6 @@
 # Exclude unnecessary files from Composer and Git exports
 /.cursorignore    export-ignore
+/.cursorprompt     export-ignore
 /.github/         export-ignore
 /.gitignore       export-ignore
 /.gitattributes   export-ignore
@@ -9,10 +10,12 @@
 /mkdocs.yml       export-ignore
 /mkdocs.yml.bak   export-ignore
 /phpunit.xml      export-ignore
+/phpstan.neon     export-ignore
 /phpstan.neon.dist export-ignore
 /phpunit.xml.dist export-ignore
 /psalm.xml        export-ignore
-/phpstan.neon     export-ignore
+/pyrightconfig.json export-ignore
+/requirements-doc.txt   export-ignore
 *.md              export-ignore
 *.mdx             export-ignore
 
@@ -20,10 +23,12 @@
 /archived/        export-ignore
 /docs/            export-ignore
 /docs-build/      export-ignore
-#/evals/          export-ignore # include this one with distribution
-#/examples/       export-ignore # include this one with distribution
-/src-auxiliary/    export-ignore
+/evals/           export-ignore
+/examples/        export-ignore
+/src-auxiliary/   export-ignore
 /src-experimental/ export-ignore
+/src-hub/         export-ignore
+/src-tell/        export-ignore
 /notes/           export-ignore
 /scratchpad/      export-ignore
 /tests/           export-ignore

@@ -28,6 +28,11 @@ use Cognesy\Utils\ResultChain;
 use Exception;
 use Generator;
 
+/**
+ * The PartialsGenerator class is responsible for generating
+ * typed partial responses (instances of LLMPartialResponse)
+ * from streamed data.
+ */
 class PartialsGenerator implements CanGeneratePartials
 {
     use Traits\ValidatesPartialResponse;
@@ -61,16 +66,18 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     /**
-     * @param Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse> $stream
+     * Get generator of partial responses for the given stream and response model.
+     *
+     * @param Generator<PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse>
+     * @return Generator<PartialLLMResponse>
      */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         // reset state
         $this->resetPartialResponse();
 
         // receive data
-        /** @var \Cognesy\Polyglot\LLM\Data\PartialLLMResponse $partialResponse */
+        /** @var PartialLLMResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response
@@ -183,6 +190,9 @@ class PartialsGenerator implements CanGeneratePartials
     }
 
     public function lastPartialResponse() : PartialLLMResponse {
+        if (empty($this->partialResponses)) {
+            throw new Exception('No partial responses found');
+        }
         $index = count($this->partialResponses) - 1;
         return $this->partialResponses[$index];
     }

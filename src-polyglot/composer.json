@@ -1,6 +1,6 @@
 {
-  "name": "cognesy/instructor-polyglot",
-  "description": "Unified API for various LLM providers",
+  "name": "cognesy/polyglot-php",
+  "description": "Unified LLM connectivity layer for PHP applications",
   "autoload": {
     "psr-4": {
       "Cognesy\\Polyglot\\": "/"

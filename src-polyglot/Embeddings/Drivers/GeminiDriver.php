@@ -34,7 +34,7 @@ class GeminiDriver implements CanVectorize
             options: [],
         );
         $response = $this->httpClient->handle($request);
-        return $this->toResponse(json_decode($response->getContents(), true));
+        return $this->toResponse(json_decode($response->body(), true));
     }
 
     // INTERNAL /////////////////////////////////////////////////

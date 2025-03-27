@@ -64,7 +64,7 @@ class LaravelPool implements CanHandleRequestPool
             'headers' => $request->headers(),
         ])->{strtolower($request->method())}(
             $request->url(),
-            $request->method() === 'GET' ? [] : $request->body(),
+            $request->method() === 'GET' ? [] : $request->body()->toArray(),
         );
     }
 

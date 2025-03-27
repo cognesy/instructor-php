@@ -42,7 +42,7 @@ $data = new InferenceData(
     ),
 );
 
-//Debug::enable();
+//Debug::setEnabled();
 $connections = array_keys(Settings::get('llm', 'connections'));
 $modes = [Mode::Tools, Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Text];
 $stream = [true, false];

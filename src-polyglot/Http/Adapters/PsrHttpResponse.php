@@ -30,7 +30,7 @@ class PsrHttpResponse implements HttpClientResponse
      *
      * @return int
      */
-    public function getStatusCode(): int {
+    public function statusCode(): int {
         return $this->response->getStatusCode();
     }
 
@@ -39,7 +39,7 @@ class PsrHttpResponse implements HttpClientResponse
      *
      * @return array
      */
-    public function getHeaders(): array {
+    public function headers(): array {
         return $this->response->getHeaders();
     }
 
@@ -48,7 +48,7 @@ class PsrHttpResponse implements HttpClientResponse
      *
      * @return string
      */
-    public function getContents(): string {
+    public function body(): string {
         return $this->response->getBody()->getContents();
     }
 
@@ -58,7 +58,7 @@ class PsrHttpResponse implements HttpClientResponse
      * @param int $chunkSize
      * @return Generator<string>
      */
-    public function streamContents(int $chunkSize = 1): Generator {
+    public function stream(int $chunkSize = 1): Generator {
         while (!$this->stream->eof()) {
             yield $this->stream->read($chunkSize);
         }

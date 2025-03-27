@@ -57,7 +57,7 @@ class SymfonyPool implements CanHandleRequestPool
                 url: $request->url(),
                 options: [
                     'headers' => $request->headers(),
-                    'body' => is_array($request->body()) ? json_encode($request->body()) : $request->body(),
+                    'body' => $request->body()->toString(),
                     'timeout' => $this->config->idleTimeout ?? 0,
                     'max_duration' => $this->config->requestTimeout ?? 30,
                     'buffer' => true,
@@ -208,7 +208,7 @@ class SymfonyPool implements CanHandleRequestPool
             $request->url(),
             $request->method(),
             $request->headers(),
-            $request->body()
+            $request->body()->toArray()
         ));
     }
 
@@ -217,7 +217,7 @@ class SymfonyPool implements CanHandleRequestPool
             $request->url(),
             $request->method(),
             $request->headers(),
-            $request->body(),
+            $request->body()->toArray(),
             $e->getMessage()
         ));
 

@@ -28,10 +28,10 @@ class MockLLM
 //        $mockLLM->shouldReceive('toLLMResponse')->andReturnUsing(...$list);
 //        $mockLLM->shouldReceive('toPartialLLMResponse')->andReturn($mockLLM);
 
-        $mockResponse->shouldReceive('getStatusCode')->andReturn(200);
-        $mockResponse->shouldReceive('getHeaders')->andReturn([]);
-        $mockResponse->shouldReceive('getContents')->andReturnUsing(...$list);
-        $mockResponse->shouldReceive('streamContents')->andReturn($mockResponse);
+        $mockResponse->shouldReceive('statusCode')->andReturn(200);
+        $mockResponse->shouldReceive('headers')->andReturn([]);
+        $mockResponse->shouldReceive('body')->andReturnUsing(...$list);
+        $mockResponse->shouldReceive('stream')->andReturn($mockResponse);
 
         return $mockHttp;
     }

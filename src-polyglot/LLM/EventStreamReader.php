@@ -5,7 +5,6 @@ namespace Cognesy\Polyglot\LLM;
 use Closure;
 use Cognesy\Polyglot\LLM\Events\StreamDataParsed;
 use Cognesy\Polyglot\LLM\Events\StreamDataReceived;
-use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Events\EventDispatcher;
 use Generator;
 
@@ -79,7 +78,6 @@ class EventStreamReader
         if ($line === '') {
             return null;
         }
-        Debug::tryDumpStream($line);
         if (false === ($data = $this->parse($line))) {
             return null;
         }

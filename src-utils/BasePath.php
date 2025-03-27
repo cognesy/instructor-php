@@ -2,8 +2,12 @@
 
 namespace Cognesy\Utils;
 
+use Composer\Autoload\ClassLoader;
+use ReflectionClass;
+use Throwable;
+
 /**
- * Settings class provides utility methods for application configuration.
+ * BasePath class provides a method to determine the base path of the application
  */
 class BasePath
 {
@@ -72,12 +76,12 @@ class BasePath
     private static function getBasePathFromComposer(): ?string
     {
         try {
-            if (class_exists(\Composer\Autoload\ClassLoader::class)) {
-                $reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+            if (class_exists(ClassLoader::class)) {
+                $reflection = new ReflectionClass(ClassLoader::class);
                 $vendorDir = dirname($reflection->getFileName(), 2);
                 return dirname($vendorDir);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Silently fail and try the next method
         }
 
@@ -93,7 +97,7 @@ class BasePath
     private static function getBasePathFromReflection(): ?string
     {
         try {
-            $reflection = new \ReflectionClass(self::class);
+            $reflection = new ReflectionClass(self::class);
             $dir = dirname($reflection->getFileName());
 
             // Walk up directories until we find composer.json
@@ -106,7 +110,7 @@ class BasePath
             }
 
             return $dir;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Silently fail
         }
 

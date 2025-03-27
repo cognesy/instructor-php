@@ -21,7 +21,7 @@ $data = new InstructorData(
     responseModel: Company::class,
 );
 
-//Debug::enable();
+//Debug::setEnabled();
 
 $experiment = new Experiment(
     cases: InferenceCases::except(

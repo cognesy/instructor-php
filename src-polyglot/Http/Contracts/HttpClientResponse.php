@@ -16,21 +16,21 @@ interface HttpClientResponse
      *
      * @return int
      */
-    public function getStatusCode(): int;
+    public function statusCode(): int;
 
     /**
      * Get the response headers
      *
      * @return array
      */
-    public function getHeaders(): array;
+    public function headers(): array;
 
     /**
      * Get the response
      *
      * @return string
      */
-    public function getContents(): string;
+    public function body(): string;
 
     /**
      * Read chunks of the stream
@@ -38,5 +38,5 @@ interface HttpClientResponse
      * @param int $chunkSize
      * @return Generator<string>
      */
-    public function streamContents(int $chunkSize = 1): Generator;
+    public function stream(int $chunkSize = 1): Generator;
 }

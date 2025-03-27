@@ -23,7 +23,7 @@ class LaravelHttpResponse implements HttpClientResponse
      *
      * @return int
      */
-    public function getStatusCode(): int
+    public function statusCode(): int
     {
         return $this->response->status();
     }
@@ -33,7 +33,7 @@ class LaravelHttpResponse implements HttpClientResponse
      *
      * @return array
      */
-    public function getHeaders(): array
+    public function headers(): array
     {
         return $this->response->headers();
     }
@@ -43,7 +43,7 @@ class LaravelHttpResponse implements HttpClientResponse
      *
      * @return string
      */
-    public function getContents(): string
+    public function body(): string
     {
         return $this->response->body();
     }
@@ -54,10 +54,10 @@ class LaravelHttpResponse implements HttpClientResponse
      * @param int $chunkSize
      * @return Generator<string>
      */
-    public function streamContents(int $chunkSize = 1): Generator
+    public function stream(int $chunkSize = 1): Generator
     {
         if (!$this->streaming) {
-            yield $this->getContents();
+            yield $this->body();
             return;
         }
 

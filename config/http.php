@@ -5,12 +5,6 @@ use Cognesy\Polyglot\Http\Enums\HttpClientType;
 return [
     'defaultClient' => 'guzzle',
 
-    'cache' => [
-        'enabled' => false,
-        'expiryInSeconds' => 3600,
-        'path' => '/tmp/instructor/cache',
-    ],
-
     'clients' => [
         'guzzle' => [
             'httpClientType' => HttpClientType::Guzzle->value,
@@ -48,5 +42,5 @@ return [
             'poolTimeout' => 60,
             'failOnError' => true,
         ],
-    ]
+    ],
 ];

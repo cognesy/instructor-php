@@ -9,6 +9,8 @@ namespace Cognesy\Polyglot\Http\Data;
  */
 class HttpClientRequest
 {
+    private HttpRequestBody $body;
+
     /**
      * HttpClientRequest constructor.
      *
@@ -22,9 +24,11 @@ class HttpClientRequest
         public string $url,
         public string $method,
         public array $headers,
-        public array $body,
+        string|array $body,
         public array $options,
-    ) {}
+    ) {
+        $this->body = new HttpRequestBody($body);
+    }
 
     /**
      * Get the request URL
@@ -56,9 +60,9 @@ class HttpClientRequest
     /**
      * Get the request body
      *
-     * @return array
+     * @return HttpRequestBody
      */
-    public function body() : array {
+    public function body() : HttpRequestBody {
         return $this->body;
     }
 

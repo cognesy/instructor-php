@@ -9,10 +9,6 @@ use Cognesy\Setup\Path;
 
 class PromptsDirAsset implements Publishable
 {
-    public const RESULT_OK = 0;
-    public const RESULT_ERROR = 1;
-    public const RESULT_NOOP = 2;
-
     public readonly string $name;
     public readonly string $description;
     private string $sourcePath;

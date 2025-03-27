@@ -59,7 +59,7 @@ class GuzzlePool implements CanHandleRequestPool
             $request->method(),
             $request->url(),
             $request->headers(),
-            json_encode($request->body())
+            $request->body()->toString()
         );
     }
 
@@ -104,7 +104,7 @@ class GuzzlePool implements CanHandleRequestPool
             $request->url(),
             $request->method(),
             $request->headers(),
-            $request->body()
+            $request->body()->toArray()
         ));
     }
 

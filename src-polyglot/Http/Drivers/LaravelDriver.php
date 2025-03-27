@@ -35,12 +35,12 @@ class LaravelDriver implements CanHandleHttp
     public function handle(HttpClientRequest $request): HttpClientResponse {
         $url = $request->url();
         $headers = $request->headers();
-        $body = $request->body();
+        $body = $request->body()->toArray();
         $method = $request->method();
         $streaming = $request->isStreamed();
 
         $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
-        Debug::tryDumpUrl($url);
+        //Debug::tryDumpUrl($url);
 
         // Create a fresh pending request with configuration
         $pendingRequest = $this->factory

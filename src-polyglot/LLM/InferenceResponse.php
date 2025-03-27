@@ -138,6 +138,6 @@ class InferenceResponse
      * @return string The contents of the response.
      */
     private function readFromResponse() : string {
-        return $this->response->getContents();
+        return $this->response->body();
     }
 }

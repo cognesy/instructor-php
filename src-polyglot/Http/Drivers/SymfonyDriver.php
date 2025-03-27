@@ -33,13 +33,13 @@ class SymfonyDriver implements CanHandleHttp
     public function handle(HttpClientRequest $request) : HttpClientResponse {
         $url = $request->url();
         $headers = $request->headers();
-        $body = $request->body();
+        $body = $request->body()->toArray();
         $method = $request->method();
         $streaming = $request->isStreamed();
 
         $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
         try {
-            Debug::tryDumpUrl($url);
+            //Debug::tryDumpUrl($url);
             $response = $this->client->request(
                 method: $method,
                 url: $url,

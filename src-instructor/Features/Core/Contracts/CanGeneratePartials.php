@@ -9,7 +9,7 @@ use Generator;
 interface CanGeneratePartials
 {
     /**
-     * @param Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse> $stream
+     * @param Generator<PartialLLMResponse> $stream
      * @param ResponseModel $responseModel
      * @return Generator<mixed>
      */

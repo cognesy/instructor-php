@@ -58,7 +58,7 @@ class ModularLLMDriver implements CanHandleInference {
                 url: $clientRequest->url(),
                 method: $clientRequest->method(),
                 headers: $clientRequest->headers(),
-                body: $clientRequest->body(),
+                body: $clientRequest->body()->toArray(),
                 options: $clientRequest->options(),
             ))->withStreaming($clientRequest->isStreamed())
         );

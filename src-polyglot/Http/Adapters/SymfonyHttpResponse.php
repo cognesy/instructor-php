@@ -31,7 +31,7 @@ class SymfonyHttpResponse implements HttpClientResponse
      *
      * @return int
      */
-    public function getStatusCode(): int {
+    public function statusCode(): int {
         return $this->response->getStatusCode();
     }
 
@@ -40,7 +40,7 @@ class SymfonyHttpResponse implements HttpClientResponse
      *
      * @return array
      */
-    public function getHeaders(): array {
+    public function headers(): array {
         return $this->response->getHeaders();
     }
 
@@ -49,7 +49,7 @@ class SymfonyHttpResponse implements HttpClientResponse
      *
      * @return string
      */
-    public function getContents(): string {
+    public function body(): string {
         // workaround to handle connect timeout: https://github.com/symfony/symfony/pull/57811
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout() && !$this->response->getInfo('connect_time')) {
@@ -67,7 +67,7 @@ class SymfonyHttpResponse implements HttpClientResponse
      * @param int $chunkSize
      * @return Generator<string>
      */
-    public function streamContents(int $chunkSize = 1): Generator {
+    public function stream(int $chunkSize = 1): Generator {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             yield $chunk->getContent();
         }

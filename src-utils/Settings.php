@@ -13,17 +13,18 @@ class Settings
     /**
      * @var string The default path to the configuration files.
      */
-    static private string $defaultPath = __DIR__ . '/../config/';
+    static private string $defaultPath = 'config/';
+//    static private string $defaultPath = __DIR__ . '/../config/';
 
     /**
      * @var array The loaded settings.
      */
     static private array $settings = [];
 
-    /**
-     * @var string The base directory for resolving relative paths.
-     */
-    static private string $baseDir = __DIR__;
+//    /**
+//     * @var string The base directory for resolving relative paths.
+//     */
+//    static private string $baseDir = __DIR__;
 
     // STATIC ////////////////////////////////////////////////////////////////////
 
@@ -42,8 +43,17 @@ class Settings
      *
      * @return string The current path to the configuration files.
      */
-    public static function getPath() : string {
+    public static function getPath(): string {
         return self::$path ?? self::resolvePath($_ENV['INSTRUCTOR_CONFIG_PATH'] ?? self::$defaultPath);
+    }
+
+    /**
+     * Gets the default path to the configuration files.
+     * @return string
+     * @throws Exception
+     */
+    public static function getDefaultPath(): string {
+        return BasePath::get(self::$defaultPath);
     }
 
     /**
@@ -156,20 +166,25 @@ class Settings
      * @param string $path The path to resolve.
      * @return string The resolved absolute path.
      */
-    private static function resolvePath(string $path) : string {
-        if (self::isAbsolutePath($path)) {
-            return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        }
-
-        // Resolve relative paths based on the base directory
-        $resolvedPath = realpath(self::$baseDir . DIRECTORY_SEPARATOR . $path);
-        if ($resolvedPath !== false) {
-            return rtrim($resolvedPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-        }
-
-        // If realpath fails (path doesn't exist), return the concatenated path
-        return rtrim(self::$baseDir . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    private static function resolvePath(string $path): string {
+        $path = self::isAbsolutePath($path) ? $path : BasePath::get($path);
+        // if path does not end with DIRECTORY_SEPARATOR, add it
+        return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
+//    private static function resolvePath(string $path) : string {
+//        if (self::isAbsolutePath($path)) {
+//            return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+//        }
+//
+//        // Resolve relative paths based on the base directory
+//        $resolvedPath = realpath(self::$baseDir . DIRECTORY_SEPARATOR . $path);
+//        if ($resolvedPath !== false) {
+//            return rtrim($resolvedPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+//        }
+//
+//        // If realpath fails (path doesn't exist), return the concatenated path
+//        return rtrim(self::$baseDir . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+//    }
 
     /**
      * Checks if a given path is absolute.
@@ -177,7 +192,7 @@ class Settings
      * @param string $path The path to check.
      * @return bool True if the path is absolute, false otherwise.
      */
-    private static function isAbsolutePath(string $path) : bool {
-        return strpos($path, '/') === 0 || preg_match('/^[A-Z]:\\\\/', $path) === 1;
+    private static function isAbsolutePath(string $path): bool {
+        return strpos($path, '/') === 0 || preg_match('/^[a-zA-Z]:\\\\/', $path) === 1;
     }
 }
