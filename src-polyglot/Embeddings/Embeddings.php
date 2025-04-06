@@ -2,6 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Drivers\AzureOpenAIDriver;
@@ -10,8 +12,6 @@ use Cognesy\Polyglot\Embeddings\Drivers\GeminiDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\JinaDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAIDriver;
 use Cognesy\Polyglot\Embeddings\Traits\HasFinders;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
@@ -26,15 +26,15 @@ class Embeddings
 
     protected EventDispatcher $events;
     protected EmbeddingsConfig $config;
-    protected CanHandleHttp $httpClient;
+    protected CanHandleHttpRequest $httpClient;
     protected CanVectorize $driver;
 
     public function __construct(
-        string $connection = '',
-        EmbeddingsConfig $config = null,
-        CanHandleHttp $httpClient = null,
-        CanVectorize $driver = null,
-        EventDispatcher $events = null,
+        string               $connection = '',
+        EmbeddingsConfig     $config = null,
+        CanHandleHttpRequest $httpClient = null,
+        CanVectorize         $driver = null,
+        EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->config = $config ?? EmbeddingsConfig::load($connection
@@ -80,10 +80,11 @@ class Embeddings
 
     /**
      * Configures the Embeddings instance with the given HTTP client.
-     * @param CanHandleHttp $httpClient
+     *
+     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient
      * @return $this
      */
-    public function withHttpClient(CanHandleHttp $httpClient) : self {
+    public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
         $this->httpClient = $httpClient;
         $this->driver = $this->getDriver($this->config, $this->httpClient);
         return $this;
@@ -119,11 +120,12 @@ class Embeddings
 
     /**
      * Returns the driver for the specified configuration.
+     *
      * @param EmbeddingsConfig $config
-     * @param CanHandleHttp $httpClient
+     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient
      * @return CanVectorize
      */
-    protected function getDriver(EmbeddingsConfig $config, CanHandleHttp $httpClient) : CanVectorize {
+    protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient) : CanVectorize {
         return match ($config->providerType) {
             LLMProviderType::Azure->value => new AzureOpenAIDriver($config, $httpClient, $this->events),
             LLMProviderType::CohereV1->value => new CohereDriver($config, $httpClient, $this->events),

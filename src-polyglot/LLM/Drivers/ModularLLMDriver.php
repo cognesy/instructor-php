@@ -2,10 +2,10 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -26,11 +26,11 @@ use Cognesy\Utils\Events\EventDispatcher;
  */
 class ModularLLMDriver implements CanHandleInference {
     public function __construct(
-        protected LLMConfig $config,
-        protected ProviderRequestAdapter $requestAdapter,
+        protected LLMConfig               $config,
+        protected ProviderRequestAdapter  $requestAdapter,
         protected ProviderResponseAdapter $responseAdapter,
-        protected ?CanHandleHttp $httpClient = null,
-        protected ?EventDispatcher $events = null,
+        protected ?CanHandleHttpRequest   $httpClient = null,
+        protected ?EventDispatcher        $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);

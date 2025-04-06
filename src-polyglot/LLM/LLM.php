@@ -2,14 +2,13 @@
 
 namespace Cognesy\Polyglot\LLM;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\InferenceDriverFactory;
 use Cognesy\Polyglot\LLM\Events\InferenceRequested;
-use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 
@@ -23,7 +22,7 @@ class LLM
     protected LLMConfig $config;
 
     protected EventDispatcher $events;
-    protected CanHandleHttp $httpClient;
+    protected CanHandleHttpRequest $httpClient;
     protected CanHandleInference $driver;
     protected InferenceDriverFactory $driverFactory;
 
@@ -32,18 +31,18 @@ class LLM
      *
      * @param string $connection The connection string.
      * @param \Cognesy\Polyglot\LLM\Data\LLMConfig|null $config Configuration object.
-     * @param \Cognesy\Polyglot\Http\Contracts\CanHandleHttp|null $httpClient HTTP client handler.
+     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest|null $httpClient HTTP client handler.
      * @param CanHandleInference|null $driver Inference handler.
      * @param \Cognesy\Utils\Events\EventDispatcher|null $events Event dispatcher.
      *
      * @return void
      */
     public function __construct(
-        string $connection = '',
-        LLMConfig $config = null,
-        CanHandleHttp $httpClient = null,
-        CanHandleInference $driver = null,
-        EventDispatcher $events = null,
+        string               $connection = '',
+        LLMConfig            $config = null,
+        CanHandleHttpRequest $httpClient = null,
+        CanHandleInference   $driver = null,
+        EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->config = $config ?? LLMConfig::load(
@@ -101,11 +100,11 @@ class LLM
     /**
      * Sets a custom HTTP client and updates the inference driver accordingly.
      *
-     * @param \Cognesy\Polyglot\Http\Contracts\CanHandleHttp $httpClient The custom HTTP client handler.
+     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient The custom HTTP client handler.
      *
      * @return self Returns the current instance for method chaining.
      */
-    public function withHttpClient(CanHandleHttp $httpClient): self {
+    public function withHttpClient(CanHandleHttpRequest $httpClient): self {
         $this->httpClient = $httpClient;
         $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
         return $this;
@@ -157,7 +156,7 @@ class LLM
      * Returns the HTTP response object for given inference request
      *
      * @param InferenceRequest $request
-     * @return HttpClientResponse
+     * @return \Cognesy\Http\Contracts\HttpClientResponse
      */
     public function handleInferenceRequest(InferenceRequest $request) : HttpClientResponse {
         $this->events->dispatch(new InferenceRequested($request));

@@ -1,8 +1,8 @@
 <?php
 
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\RequestRecords;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Middleware\RecordReplay\RequestRecords;
 
 beforeEach(function() {
     $this->testStorageDir = sys_get_temp_dir() . '/http_test_records_' . uniqid();

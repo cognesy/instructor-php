@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\Anthropic\AnthropicBodyFormat;
@@ -55,12 +55,12 @@ class InferenceDriverFactory
      * Creates and returns an appropriate driver instance based on the given configuration.
      *
      * @param \Cognesy\Polyglot\LLM\Data\LLMConfig $config Configuration object specifying the provider type and other necessary settings.
-     * @param CanHandleHttp $httpClient An HTTP client instance to handle HTTP requests.
+     * @param CanHandleHttpRequest $httpClient An HTTP client instance to handle HTTP requests.
      *
      * @return \Cognesy\Polyglot\LLM\Contracts\CanHandleInference A driver instance matching the specified provider type.
      * @throws InvalidArgumentException If the provider type is not supported.
      */
-    public function make(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function make(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return match ($config->providerType) {
             // Tailored drivers
             LLMProviderType::Anthropic->value => $this->anthropic($config, $httpClient, $events),
@@ -90,7 +90,7 @@ class InferenceDriverFactory
         };
     }
 
-    public function anthropic(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function anthropic(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new AnthropicRequestAdapter(
@@ -103,7 +103,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function azure(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function azure(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new AzureOpenAIRequestAdapter(
@@ -116,7 +116,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function cerebras(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function cerebras(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -129,7 +129,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function cohereV1(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function cohereV1(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new CohereV1RequestAdapter(
@@ -142,7 +142,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function cohereV2(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function cohereV2(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new CohereV2RequestAdapter(
@@ -155,7 +155,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function deepseek(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function deepseek(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -168,7 +168,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function gemini(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function gemini(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new GeminiRequestAdapter(
@@ -181,7 +181,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function geminiOAI(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function geminiOAI(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -194,7 +194,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function groq(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function groq(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -207,7 +207,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function mistral(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function mistral(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -220,7 +220,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function minimaxi(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function minimaxi(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -233,7 +233,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function openAI(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function openAI(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -246,7 +246,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function openAICompatible(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function openAICompatible(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -259,7 +259,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function perplexity(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function perplexity(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -272,7 +272,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function sambaNova(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function sambaNova(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(
@@ -285,7 +285,7 @@ class InferenceDriverFactory
         );
     }
 
-    public function xAi(LLMConfig $config, CanHandleHttp $httpClient, EventDispatcher $events): CanHandleInference {
+    public function xAi(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
         return new ModularLLMDriver(
             $config,
             new OpenAIRequestAdapter(

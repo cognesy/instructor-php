@@ -2,8 +2,8 @@
 
 namespace Cognesy\Utils\Debug;
 
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
 use Cognesy\Utils\Settings;

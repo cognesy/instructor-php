@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Contracts;
 
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;

@@ -1,10 +1,10 @@
 <?php
 
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\RecordReplayMiddleware;
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\Exceptions\RecordingNotFoundException;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\Middleware\RecordReplay\Exceptions\RecordingNotFoundException;
+use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
 beforeEach(function() {
     $this->testStorageDir = sys_get_temp_dir() . '/http_test_recordings_' . uniqid();

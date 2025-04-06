@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Traits;
 
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLM;
@@ -45,7 +45,7 @@ trait HandlesRequest
         return $this;
     }
 
-    public function withHttpClient(CanHandleHttp $httpClient) : self {
+    public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
         $this->llm->withHttpClient($httpClient);
         return $this;
     }

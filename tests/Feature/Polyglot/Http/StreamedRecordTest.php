@@ -1,8 +1,8 @@
 <?php
 
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\StreamedRequestRecord;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
 
 test('creates from streamed HTTP interaction', function() {
     // Arrange

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Contracts;
 
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Polyglot\LLM\Enums\Mode;
 
 interface ProviderRequestAdapter

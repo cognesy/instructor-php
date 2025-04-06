@@ -24,9 +24,9 @@ and their properties.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
-use Cognesy\Polyglot\Http\Events\HttpResponseReceived;
 use Cognesy\Utils\Events\Event;
 
 class User

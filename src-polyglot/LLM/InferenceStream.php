@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Closure;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;

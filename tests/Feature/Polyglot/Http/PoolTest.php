@@ -1,10 +1,10 @@
 <?php
 
-use Cognesy\Polyglot\Http\Data\HttpClientConfig;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Drivers\GuzzleDriver;
-use Cognesy\Polyglot\Http\Drivers\LaravelDriver;
-use Cognesy\Polyglot\Http\Drivers\SymfonyDriver;
+use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Drivers\GuzzleDriver;
+use Cognesy\Http\Drivers\LaravelDriver;
+use Cognesy\Http\Drivers\SymfonyDriver;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
 

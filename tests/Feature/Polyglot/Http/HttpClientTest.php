@@ -1,15 +1,15 @@
 <?php
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Contracts\HttpMiddleware;
-use Cognesy\Polyglot\Http\Data\HttpClientConfig;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Enums\HttpClientType;
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\RecordReplayMiddleware;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\Enums\HttpClientType;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
 beforeEach(function() {
     $this->testStorageDir = sys_get_temp_dir() . '/http_test_recordings';
@@ -87,7 +87,7 @@ test('HTTP client with middleware', function() {
 
     // Add a simple test middleware that modifies the request
     $httpClient->middleware()->append(new class implements HttpMiddleware {
-        public function handle(HttpClientRequest $request, CanHandleHttp $next): HttpClientResponse
+        public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
         {
             // Add a test header to the request
             $request->headers['X-Test'] = 'Modified by middleware';

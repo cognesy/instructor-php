@@ -1,14 +1,14 @@
 <?php
 namespace Tests;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Drivers\GuzzleDriver;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Drivers\GuzzleDriver;
 use Mockery;
 
 class MockLLM
 {
-    static public function get(array $args) : CanHandleHttp {
+    static public function get(array $args) : CanHandleHttpRequest {
 //        $mockLLM = Mockery::mock(OpenAIDriver::class);
         $mockHttp = Mockery::mock(GuzzleDriver::class);
         $mockResponse = Mockery::mock(HttpClientResponse::class);

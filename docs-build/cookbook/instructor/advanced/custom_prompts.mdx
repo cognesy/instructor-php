@@ -18,8 +18,8 @@ customize how LLM is instructed to process the input.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
 use Cognesy\Polyglot\LLM\Enums\Mode;
 
 class User {

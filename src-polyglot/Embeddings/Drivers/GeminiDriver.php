@@ -1,13 +1,13 @@
 <?php
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\Events\EventDispatcher;
 
@@ -16,9 +16,9 @@ class GeminiDriver implements CanVectorize
     private int $inputCharacters = 0;
 
     public function __construct(
-        protected EmbeddingsConfig $config,
-        protected ?CanHandleHttp $httpClient = null,
-        protected ?EventDispatcher $events = null,
+        protected EmbeddingsConfig      $config,
+        protected ?CanHandleHttpRequest $httpClient = null,
+        protected ?EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);

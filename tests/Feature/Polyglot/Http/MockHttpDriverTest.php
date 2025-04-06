@@ -1,8 +1,8 @@
 <?php
 
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Drivers\MockHttpDriver;
 
 beforeEach(function() {
     $this->driver = new MockHttpDriver();

@@ -1,9 +1,9 @@
 <?php
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttp;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Middleware\BufferResponse\BufferResponseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 
 beforeEach(function () {
     $this->middleware = new BufferResponseMiddleware();
@@ -52,7 +52,7 @@ test('response stream can be read multiple times', function () {
     expect($this->handler->getStreamReadCount())->toBe(1);
 });
 
-class MockHttpHandler implements CanHandleHttp
+class MockHttpHandler implements CanHandleHttpRequest
 {
     private HttpClientResponse $response;
     private int $responseBodyReadCount = 0;

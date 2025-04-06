@@ -12,7 +12,7 @@ fi
 VERSION=${VERSION#v}
 
 # Check if release notes exist
-NOTES_FILE="docs/release-notes/v$VERSION.md"
+NOTES_FILE="docs/release-notes/v$VERSION.mdx"
 if [ ! -f "$NOTES_FILE" ]; then
     echo "Error: Release notes file not found at $NOTES_FILE"
     echo "Please create release notes file before proceeding"
