@@ -1,0 +1,456 @@
+## Using the Mock HTTP Driver
+
+The library includes a `MockHttpDriver` that's useful for testing. This driver doesn't make actual HTTP requests but returns predefined responses.
+
+### Basic Usage
+
+```php
+use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
+use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
+use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+
+// Create a mock driver
+$mockDriver = new MockHttpDriver();
+
+// Define a response for a specific request
+$mockDriver->addResponse(
+    // Response to return
+    MockHttpResponse::success(
+        statusCode: 200,
+        headers: ['Content-Type' => 'application/json'],
+        body: json_encode(['name' => 'John', 'email' => 'john@example.com'])
+    ),
+    // URL to match
+    'https://api.example.com/users/123',
+    // Method to match
+    'GET',
+    // Body to match (optional)
+    null
+);
+
+// Use the mock driver in a client
+$client = new HttpClient();
+$client->withDriver($mockDriver);
+
+// Make a request
+$request = new HttpClientRequest(
+    url: 'https://api.example.com/users/123',
+    method: 'GET',
+    headers: [],
+    body: [],
+    options: []
+);
+
+// This will return the mock response without making an actual HTTP request
+$response = $client->handle($request);
+
+echo "Status: " . $response->statusCode() . "\n";
+echo "Body: " . $response->body() . "\n";
+```
+
+### Advanced Response Matching
+
+The `MockHttpDriver` supports advanced response matching using callbacks:
+
+```php
+// Match URLs with a pattern
+$mockDriver->addResponse(
+    MockHttpResponse::success(200, [], 'Success'),
+    // Match URLs that start with "https://api.example.com/users"
+    function ($url) {
+        return strpos($url, 'https://api.example.com/users') === 0;
+    },
+    'POST'
+);
+
+// Match request bodies
+$mockDriver->addResponse(
+    MockHttpResponse::success(201, [], json_encode(['id' => 456])),
+    'https://api.example.com/users',
+    'POST',
+    // Match requests with a specific email
+    function ($body) {
+        $data = json_decode($body, true);
+        return isset($data['email']) && $data['email'] === 'test@example.com';
+    }
+);
+```
+
+### Dynamic Response Generation
+
+You can generate responses dynamically based on the request:
+
+```php
+// Generate response based on the request
+$mockDriver->addResponse(
+    // Callback to generate the response
+    function (HttpClientRequest $request) {
+        $userId = basename($request->url());
+
+        return MockHttpResponse::success(
+            statusCode: 200,
+            headers: ['Content-Type' => 'application/json'],
+            body: json_encode([
+                'id' => $userId,
+                'name' => "User $userId",
+                'email' => "user$userId@example.com",
+            ])
+        );
+    },
+    // Match any URL that ends with a number
+    function ($url) {
+        return preg_match('/\/users\/\d+$/', $url);
+    },
+    'GET'
+);
+```
+
+### Error Responses
+
+You can simulate error responses:
+
+```php
+// Add an error response
+$mockDriver->addResponse(
+    MockHttpResponse::error(
+        statusCode: 404,
+        headers: [],
+        body: json_encode(['error' => 'User not found'])
+    ),
+    'https://api.example.com/users/999',
+    'GET'
+);
+
+// Add a server error
+$mockDriver->addResponse(
+    MockHttpResponse::error(
+        statusCode: 500,
+        headers: [],
+        body: json_encode(['error' => 'Internal server error'])
+    ),
+    'https://api.example.com/error',
+    'GET'
+);
+```
+
+### Streaming Responses
+
+You can also mock streaming responses:
+
+```php
+// Create a streaming response with chunks
+$mockDriver->addResponse(
+    MockHttpResponse::streaming(
+        statusCode: 200,
+        headers: ['Content-Type' => 'text/event-stream'],
+        chunks: [
+            "data: {\"id\": 1, \"text\": \"Hello\"}\n\n",
+            "data: {\"id\": 2, \"text\": \"World\"}\n\n",
+            "data: {\"id\": 3, \"text\": \"!\"}\n\n"
+        ]
+    ),
+    'https://api.example.com/stream',
+    'GET'
+);
+```
+
+### Inspecting Received Requests
+
+The `MockHttpDriver` allows you to inspect the requests it has received:
+
+```php
+// Get all received requests
+$requests = $mockDriver->getReceivedRequests();
+
+// Get the last received request
+$lastRequest = $mockDriver->getLastRequest();
+
+if ($lastRequest) {
+    echo "Last request URL: " . $lastRequest->url() . "\n";
+    echo "Last request method: " . $lastRequest->method() . "\n";
+    echo "Last request body: " . $lastRequest->body()->toString() . "\n";
+}
+
+// Reset the mock by clearing all received requests
+$mockDriver->reset();
+
+// Clear all predefined responses
+$mockDriver->clearResponses();
+```
+
+### Using MockHttpDriver in Tests
+
+The `MockHttpDriver` is particularly useful in unit tests:
+
+```php
+use PHPUnit\Framework\TestCase;
+use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
+use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
+use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use YourNamespace\Services\UserService;
+
+class UserServiceTest extends TestCase
+{
+    private MockHttpDriver $mockDriver;
+    private HttpClient $client;
+    private UserService $userService;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create a mock driver
+        $this->mockDriver = new MockHttpDriver();
+
+        // Create a client with the mock driver
+        $this->client = new HttpClient();
+        $this->client->withDriver($this->mockDriver);
+
+        // Create the service with the mocked client
+        $this->userService = new UserService($this->client);
+    }
+
+    public function testGetUser(): void
+    {
+        // Set up a mock response
+        $this->mockDriver->addResponse(
+            MockHttpResponse::success(
+                statusCode: 200,
+                headers: ['Content-Type' => 'application/json'],
+                body: json_encode([
+                    'id' => 123,
+                    'name' => 'John Doe',
+                    'email' => 'john@example.com'
+                ])
+            ),
+            'https://api.example.com/users/123',
+            'GET'
+        );
+
+        // Call the method that uses the HTTP client
+        $user = $this->userService->getUser(123);
+
+        // Assert the result
+        $this->assertEquals(123, $user->id);
+        $this->assertEquals('John Doe', $user->name);
+        $this->assertEquals('john@example.com', $user->email);
+
+        // Assert that the expected request was made
+        $lastRequest = $this->mockDriver->getLastRequest();
+        $this->assertEquals('https://api.example.com/users/123', $lastRequest->url());
+        $this->assertEquals('GET', $lastRequest->method());
+    }
+
+    public function testCreateUser(): void
+    {
+        // Set up a mock response
+        $this->mockDriver->addResponse(
+            MockHttpResponse::success(
+                statusCode: 201,
+                headers: ['Content-Type' => 'application/json'],
+                body: json_encode([
+                    'id' => 456,
+                    'name' => 'Jane Doe',
+                    'email' => 'jane@example.com'
+                ])
+            ),
+            'https://api.example.com/users',
+            'POST'
+        );
+
+        // Call the method that uses the HTTP client
+        $user = $this->userService->createUser('Jane Doe', 'jane@example.com');
+
+        // Assert the result
+        $this->assertEquals(456, $user->id);
+        $this->assertEquals('Jane Doe', $user->name);
+        $this->assertEquals('jane@example.com', $user->email);
+
+        // Assert that the expected request was made
+        $lastRequest = $this->mockDriver->getLastRequest();
+        $this->assertEquals('https://api.example.com/users', $lastRequest->url());
+        $this->assertEquals('POST', $lastRequest->method());
+
+        // Verify the request payload
+        $requestBody = json_decode($lastRequest->body()->toString(), true);
+        $this->assertEquals('Jane Doe', $requestBody['name']);
+        $this->assertEquals('jane@example.com', $requestBody['email']);
+    }
+
+    public function testUserNotFound(): void
+    {
+        // Set up a mock response for a 404 error
+        $this->mockDriver->addResponse(
+            MockHttpResponse::error(
+                statusCode: 404,
+                headers: ['Content-Type' => 'application/json'],
+                body: json_encode(['error' => 'User not found'])
+            ),
+            'https://api.example.com/users/999',
+            'GET'
+        );
+
+        // Expect an exception when the user is not found
+        $this->expectException(UserNotFoundException::class);
+
+        // Call the method that should throw an exception
+        $this->userService->getUser(999);
+    }
+}
+```
+
+### Integration with Frameworks
+
+When integrating with frameworks, you can set up a service provider or factory to create the proper HTTP client based on the environment:
+
+#### Laravel Example
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
+use Illuminate\Support\ServiceProvider;
+
+class HttpClientServiceProvider extends ServiceProvider
+{
+    public function register()
+    {
+        $this->app->singleton(HttpClient::class, function ($app) {
+            $client = new HttpClient('laravel'); // Use Laravel client by default
+
+            // In testing environment, use the mock driver
+            if ($app->environment('testing')) {
+                $mockDriver = new MockHttpDriver();
+                $this->setupMockResponses($mockDriver);
+                $client->withDriver($mockDriver);
+            }
+
+            return $client;
+        });
+    }
+
+    protected function setupMockResponses(MockHttpDriver $mockDriver): void
+    {
+        // Set up standard mock responses for tests
+        $mockDriver->addResponse(/* ... */);
+        // Add more responses as needed
+    }
+}
+```
+
+#### Symfony Example
+
+```php
+<?php
+
+namespace App\Factory;
+
+use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+class HttpClientFactory
+{
+    public function __invoke(ContainerInterface $container): HttpClient
+    {
+        $client = new HttpClient('symfony'); // Use Symfony client by default
+
+        // Use mock driver in test environment
+        $env = $container->getParameter('kernel.environment');
+        if ($env === 'test') {
+            $mockDriver = new MockHttpDriver();
+            $this->setupMockResponses($mockDriver);
+            $client->withDriver($mockDriver);
+        }
+
+        return $client;
+    }
+
+    private function setupMockResponses(MockHttpDriver $mockDriver): void
+    {
+        // Set up standard mock responses for tests
+    }
+}
+```
+
+### Testing with MockHttpDriver and RecordReplayMiddleware
+
+For more advanced testing scenarios, you can combine the `MockHttpDriver` with the `RecordReplayMiddleware`:
+
+```php
+use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Polyglot\Http\Middleware\RecordReplay\RecordReplayMiddleware;
+use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
+
+class ApiTestCase extends TestCase
+{
+    protected HttpClient $client;
+    protected RecordReplayMiddleware $recordReplayMiddleware;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create a client
+        $this->client = new HttpClient('guzzle');
+
+        // Determine the testing mode based on environment variable
+        $testMode = getenv('API_TEST_MODE') ?: 'replay';
+
+        switch ($testMode) {
+            case 'record':
+                // Record real API responses
+                $this->recordReplayMiddleware = new RecordReplayMiddleware(
+                    mode: RecordReplayMiddleware::MODE_RECORD,
+                    storageDir: __DIR__ . '/fixtures/api_recordings',
+                    fallbackToRealRequests: true
+                );
+                $this->client->withMiddleware($this->recordReplayMiddleware);
+                break;
+
+            case 'replay':
+                // Replay recorded responses
+                $this->recordReplayMiddleware = new RecordReplayMiddleware(
+                    mode: RecordReplayMiddleware::MODE_REPLAY,
+                    storageDir: __DIR__ . '/fixtures/api_recordings',
+                    fallbackToRealRequests: false
+                );
+                $this->client->withMiddleware($this->recordReplayMiddleware);
+                break;
+
+            case 'mock':
+                // Use manually defined mock responses
+                $mockDriver = new MockHttpDriver();
+                $this->setupMockResponses($mockDriver);
+                $this->client->withDriver($mockDriver);
+                break;
+
+            case 'real':
+                // Use real API directly (no recording)
+                break;
+
+            default:
+                throw new \RuntimeException("Unknown API test mode: $testMode");
+        }
+    }
+
+    protected function setupMockResponses(MockHttpDriver $mockDriver): void
+    {
+        // Add mock responses for common API calls
+        // This is implemented in specific test cases
+    }
+}
+```
+
+With this setup, you can:
+1. Record real API responses once by setting `API_TEST_MODE=record`
+2. Run tests against recorded responses with `API_TEST_MODE=replay` (default)
+3. Use custom mock responses with `API_TEST_MODE=mock`
+4. Test against the real API with `API_TEST_MODE=real`
+
+This approach makes your tests flexible and reliable while keeping them fast.
