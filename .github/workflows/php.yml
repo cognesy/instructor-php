@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: ['8.2.27', '8.3.16', '8.4.3']
+        php: ['8.2', '8.3', '8.4']
         composer: ['--prefer-stable', '--prefer-lowest']
 
     steps:
