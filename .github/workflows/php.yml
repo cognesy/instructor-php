@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         php: ['8.2.27', '8.3.16', '8.4.3']
         composer: ['--prefer-stable', '--prefer-lowest']

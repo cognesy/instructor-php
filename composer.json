@@ -76,7 +76,7 @@
     "symfony/http-client": "^7.1",
     "toolkit/cli-utils": "^2.0",
     "twig/twig": "^3.0",
-    "vimeo/psalm": "dev-master",
+    "vimeo/psalm": "^6.0",
     "webuni/front-matter": "^2.0"
   },
   "config": {
