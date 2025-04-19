@@ -1,8 +1,8 @@
 {
-  "name": "cognesy/instructor-setup",
-  "description": "Setup tool for Instructor PHP library",
+  "name": "cognesy/polyglot-setup",
+  "description": "Setup tool for Polyglot PHP library",
   "license": "MIT",
-  "homepage": "https://instructorphp.com",
+  "homepage": "https://polyglotphp.com",
   "support": {
     "issues": "https://github.com/cognesy/instructor-php/issues",
     "source": "https://github.com/cognesy/instructor-php"

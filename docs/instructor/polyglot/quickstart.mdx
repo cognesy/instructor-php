@@ -13,7 +13,7 @@ For detailed setup instructions, see [Setup](setup).
 Run following command in your terminal:
 
 ```bash
-composer require cognesy/instructor-polyglot
+composer require cognesy/instructor-php
 ```
 
 
@@ -25,33 +25,23 @@ In this example, we'll use OpenAI as the LLM provider. You can get it from the [
 
 ### Step 2: Create a New PHP File
 
-In your project directory, create a new PHP file `test-instructor.php`:
+In your project directory, create a new PHP file `test-polyglot.php`:
 
 ```php
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Polyglot\LLM\Inference;
 
 // Set up OpenAI API key
 $apiKey = 'your-openai-api-key';
 putenv("OPENAI_API_KEY=" . $apiKey);
 // WARNING: In real project you should set up API key in .env file.
 
-// Step 1: Define target data structure(s)
-class City {
-    public string $name;
-    public string $country;
-    public int $population;
-}
+$answer = Inference::text('What is capital of Germany');
 
-// Step 2: Use Instructor to run LLM inference
-$city = (new Instructor)->withConnection('openai')->respond(
-    messages: 'What is the capital of France?',
-    responseModel: City::class,
-);
-
-var_dump($city);
+echo "USER: What is capital of Germany\n";
+echo "ASSISTANT: $answer\n";
 ```
 
 <Warning>
@@ -63,27 +53,21 @@ var_dump($city);
 Now, you can run the example:
 
 ```bash
-php test-instructor.php
+php test-polyglot.php
 
 # Output:
-# object(City)#1 (3) {
-#   ["name"]=>
-#   string(5) "Paris"
-#   ["country"]=>
-#   string(6) "France"
-#   ["population"]=>
-#   int(2148000)
-# }
+# USER: What is capital of Germany
+# ASSISTANT: Berlin
 ```
 
 
 ## Next Steps
 
-You can start using Instructor in your project right away after installation.
+You can start using Polyglot in your project right away after installation.
 
 But it's recommended to publish configuration files and prompt templates to your project directory, so you can
 customize the library's behavior and use your own prompt templates.
 
 You should also set up LLM provider API keys in your `.env` file instead of putting them directly in your code.
 
-See [Setup Instructions](setup) for more details.
+See setup instructions for more details.

@@ -153,15 +153,85 @@
             ]
         },
         {
-            "group": "Polyglot Guide",
+            "group": "Introduction",
             "pages": [
-                "instructor/polyglot/introduction",
+                "instructor/polyglot/overview",
                 "instructor/polyglot/quickstart",
-                "instructor/polyglot/setup",
-                "instructor/polyglot/essentials/llm",
-                "instructor/polyglot/essentials/inference",
-                "instructor/polyglot/advanced/embeddings",
-                "instructor/polyglot/internals/http"
+                "instructor/polyglot/setup"
+            ]
+        },
+        {
+            "group": "Essentials",
+            "pages": [
+                "instructor/polyglot/essentials/overview",
+                "instructor/polyglot/essentials/creating-requests",
+                "instructor/polyglot/essentials/response-handling",
+                "instructor/polyglot/essentials/inference-class",
+                "instructor/polyglot/essentials/request-options"
+            ]
+        },
+        {
+            "group": "Streaming",
+            "pages": [
+                "instructor/polyglot/streaming/overview",
+                "instructor/polyglot/streaming/misc"
+            ]
+        },
+        {
+            "group": "Output Modes",
+            "pages": [
+                "instructor/polyglot/modes/overview",
+                "instructor/polyglot/modes/text",
+                "instructor/polyglot/modes/json",
+                "instructor/polyglot/modes/json-schema",
+                "instructor/polyglot/modes/md-json",
+                "instructor/polyglot/modes/tools"
+            ]
+        },
+        {
+            "group": "Embeddings",
+            "pages": [
+                "instructor/polyglot/embeddings/overview",
+                "instructor/polyglot/embeddings/work-with-embeddings",
+                "instructor/polyglot/embeddings/optimization"
+            ]
+        },
+        {
+            "group": "Troubleshooting",
+            "pages": [
+                "instructor/polyglot/troubleshooting/overview",
+                "instructor/polyglot/troubleshooting/issues-authentication",
+                "instructor/polyglot/troubleshooting/issues-connection",
+                "instructor/polyglot/troubleshooting/issues-streaming",
+                "instructor/polyglot/troubleshooting/issues-rate-limits",
+                "instructor/polyglot/troubleshooting/issues-model-specific",
+                "instructor/polyglot/troubleshooting/issues-provider-specific",
+                "instructor/polyglot/troubleshooting/issues-configuration",
+                "instructor/polyglot/troubleshooting/debugging"
+            ]
+        },
+        {
+            "group": "Advanced",
+            "pages": [
+                "instructor/polyglot/advanced/context-caching",
+                "instructor/polyglot/advanced/connection-mgmt",
+                "instructor/polyglot/advanced/custom-config",
+                "instructor/polyglot/advanced/custom-http-client",
+                "instructor/polyglot/advanced/extending"
+            ]
+        },
+        {
+            "group": "Internals",
+            "pages": [
+                "instructor/polyglot/internals/overview",
+                "instructor/polyglot/internals/public-api",
+                "instructor/polyglot/internals/request-response",
+                "instructor/polyglot/internals/lifecycle",
+                "instructor/polyglot/internals/providers",
+                "instructor/polyglot/internals/adapters",
+                "instructor/polyglot/internals/http-client",
+                "instructor/polyglot/internals/configuration",
+                "instructor/polyglot/internals/events"
             ]
         },
         {

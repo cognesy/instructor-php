@@ -5,6 +5,7 @@
 - Unify TemplateUtil and Prompt + decide on how to proceed with ChatTemplate class
 - Unify template conventions - <||> vs. {{}}, update docs
 - Full control over generated prompt (access to Script object processing)
+
 - ToolUse - apply context variables to message sequence (via ScriptParameters??)
 - Batch completion API
 - Async / parallel calls to multiple APIs

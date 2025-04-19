@@ -1,5 +1,5 @@
 {
-  "name": "cognesy/instructor-http-client",
+  "name": "cognesy/http-client",
   "description": "Unified HTTP connectivity layer",
   "autoload": {
     "psr-4": {

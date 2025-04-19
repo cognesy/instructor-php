@@ -92,7 +92,7 @@ class InferenceResponse
     /**
      * Generates and returns an LLMResponse based on the streaming status.
      *
-     * @return \Cognesy\Polyglot\LLM\Data\LLMResponse The constructed LLMResponse object, either fully or from partial responses if streaming is enabled.
+     * @return LLMResponse The constructed LLMResponse object, either fully or from partial responses if streaming is enabled.
      */
     public function response() : LLMResponse {
         $response = match($this->isStreamed) {
@@ -107,7 +107,7 @@ class InferenceResponse
     /**
      * Processes and generates a response from the Language Learning Model (LLM) driver.
      *
-     * @return \Cognesy\Polyglot\LLM\Data\LLMResponse The generated response from the LLM driver.
+     * @return LLMResponse The generated response from the LLM driver.
      */
     private function makeLLMResponse() : LLMResponse {
         $content = $this->getResponseContent();

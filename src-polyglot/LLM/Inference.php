@@ -91,7 +91,7 @@ class Inference
     /**
      * Updates the configuration and re-initializes the driver.
      *
-     * @param \Cognesy\Polyglot\LLM\Data\LLMConfig $config The configuration object to set.
+     * @param LLMConfig $config The configuration object to set.
      *
      * @return self
      */
@@ -118,7 +118,7 @@ class Inference
     /**
      * Sets a custom HTTP client and updates the inference driver accordingly.
      *
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient The custom HTTP client handler.
+     * @param CanHandleHttpRequest $httpClient The custom HTTP client handler.
      *
      * @return self Returns the current instance for method chaining.
      */
@@ -130,7 +130,7 @@ class Inference
     /**
      * Sets the driver for inference handling and returns the current instance.
      *
-     * @param \Cognesy\Polyglot\LLM\Contracts\CanHandleInference $driver The inference handler to be set.
+     * @param CanHandleInference $driver The inference handler to be set.
      *
      * @return self
      */

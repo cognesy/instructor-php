@@ -10,7 +10,7 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.12",
-    "cognesy/instructor-http-client": "^0.12",
+    "cognesy/http-client": "^0.12",
     "cognesy/instructor-setup": "^0.12"
   },
   "require-dev": {
