@@ -37,7 +37,7 @@ jobs:
 #          ${{ runner.os }}-php-
 
     - name: Install dependencies
-      run: composer update --no-interaction --no-suggest ${{ matrix.composer }}
+      run: composer update --no-interaction ${{ matrix.composer }}
 
     - name: Regenerate Autoloader
       run: composer dump-autoload
