@@ -245,6 +245,7 @@
                 "instructor/http/7-changing-client",
                 "instructor/http/8-changing-client-config",
                 "instructor/http/9-1-custom-clients",
+                "instructor/http/9-2-mock-http-driver",
                 "instructor/http/10-middleware",
                 "instructor/http/11-processing-with-middleware",
                 "instructor/http/12-troubleshooting"
