@@ -10,6 +10,9 @@
     "openai",
     "anthropic",
     "cohere",
+    "claude",
+    "gemini",
+    "deepseek",
     "ollama",
     "structured output",
     "semantic processing",
@@ -24,22 +27,22 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\Utils\\": "src-utils/",
-      "Cognesy\\Addons\\": "src-addons/",
-      "Cognesy\\Http\\": "src-http/",
-      "Cognesy\\Instructor\\": "src-instructor/",
-      "Cognesy\\Polyglot\\": "src-polyglot/",
-      "Cognesy\\Setup\\": "src-setup/"
+      "Cognesy\\Addons\\": "packages/addons/src/",
+      "Cognesy\\Http\\": "packages/http-client/src/",
+      "Cognesy\\Instructor\\": "packages/instructor/src/",
+      "Cognesy\\Polyglot\\": "packages/polyglot/src/",
+      "Cognesy\\Setup\\": "packages/setup/src/",
+      "Cognesy\\Utils\\": "packages/utils/src/"
     },
     "files": []
   },
   "autoload-dev": {
     "psr-4": {
-      "Cognesy\\Auxiliary\\": "src-auxiliary/",
+      "Cognesy\\InstructorHub\\": "packages/hub/src/",
+      "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
+      "Cognesy\\Tell\\": "packages/tell/src/",
+      "Cognesy\\Experimental\\": "packages/experimental/src/",
       "Cognesy\\Evals\\": "evals/",
-      "Cognesy\\Experimental\\": "src-experimental/",
-      "Cognesy\\InstructorHub\\": "src-hub/",
-      "Cognesy\\Tell\\": "src-tell/",
       "Examples\\": "examples/",
       "Tests\\": "tests/"
     },

@@ -1,0 +1,26 @@
+{
+  "name": "cognesy/instructor-http-client",
+  "description": "Polyglot's unified HTTP connectivity layer",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Http\\": "src/"
+    }
+  },
+  "version": "0.12.0",
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-utils": "^0.12",
+    "cognesy/instructor-setup": "^0.12",
+    "guzzlehttp/guzzle": "^7.4",
+    "guzzlehttp/psr7": "^2.7"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "suggest": {
+    "symfony/http-client": "For Symfony HTTP client support",
+    "psr/http-message": "*",
+    "psr/http-client": "*",
+    "illuminate/http": "For Laravel HTTP client support"
+  }
+}

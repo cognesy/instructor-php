@@ -25,7 +25,6 @@
 /docs-build/      export-ignore
 /evals/           export-ignore
 /examples/        export-ignore
-/src-auxiliary/   export-ignore
 /src-experimental/ export-ignore
 /src-hub/         export-ignore
 /src-tell/        export-ignore

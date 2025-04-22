@@ -157,7 +157,8 @@
             "pages": [
                 "instructor/polyglot/overview",
                 "instructor/polyglot/quickstart",
-                "instructor/polyglot/setup"
+                "instructor/polyglot/setup",
+                "instructor/polyglot/upgrade"
             ]
         },
         {

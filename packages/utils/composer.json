@@ -1,0 +1,45 @@
+{
+  "name": "cognesy/instructor-utils",
+  "description": "Collection of utility classes",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Utils\\": "src/"
+    }
+  },
+  "version": "0.12.3",
+  "require": {
+    "php": "^8.2",
+    "ext-ctype": "*",
+    "ext-fileinfo": "*",
+    "ext-libxml": "*",
+    "ext-simplexml": "*",
+    "ext-xmlreader": "*",
+    "adbario/php-dot-notation": "^3.3",
+    "aimeos/map": "^3.8",
+    "psr/event-dispatcher": "^1.0",
+    "psr/log": "^3.0",
+    "vlucas/phpdotenv": "^5.6",
+    "webuni/front-matter": "^2.0",
+    "twig/twig": "^3.0",
+    "gioni06/gpt3-tokenizer": "^1.2"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "suggest": {
+    "eftec/bladeone": "For BladeOne template engine support",
+    "twig/twig": "For Twig template engine support"
+  }
+}

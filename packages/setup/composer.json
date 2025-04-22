@@ -1,0 +1,31 @@
+{
+  "name": "cognesy/instructor-setup",
+  "description": "Setup tool for Polyglot PHP library",
+  "license": "MIT",
+  "homepage": "https://polyglotphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Setup\\": "src/"
+    }
+  },
+  "version": "0.12.3",
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-utils": "^0.12",
+    "symfony/console": "^7.1",
+    "symfony/filesystem": "^7.1"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  }
+}

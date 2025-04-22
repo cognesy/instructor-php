@@ -72,7 +72,8 @@
             "pages": [
                 "instructor/introduction",
                 "instructor/quickstart",
-                "instructor/setup"
+                "instructor/setup",
+                "instructor/upgrade"
             ]
         },
         {

@@ -1,4 +1,6 @@
 #!/bin/bash
+# sync-ver.sh - Synchronizes versions across explicitly defined packages
+set -e  # Exit immediately if a command exits with non-zero status
 
 # Get the new version from tag
 VERSION=$1
@@ -11,87 +13,142 @@ fi
 # Remove 'v' prefix if present
 VERSION=${VERSION#v}
 
+# Extract major.minor version for dependency constraints
+MAJOR_MINOR=$(echo $VERSION | grep -o "^[0-9]*\.[0-9]*")
+
+echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
+
 # Define packages and their sections based on composer.json
-declare -A REQUIRE_PACKAGES=(
-    ["src-utils"]="cognesy/instructor-utils"
-    ["src-addons"]="cognesy/instructor-addons"
-    ["src-polyglot"]="cognesy/instructor-polyglot"
-    ["src-instructor"]="cognesy/instructor-core"
+declare -A PACKAGES=(
+    ["packages/utils"]="cognesy/instructor-utils"
+    ["packages/addons"]="cognesy/instructor-addons"
+    ["packages/polyglot"]="cognesy/instructor-polyglot"
+    ["packages/instructor"]="cognesy/instructor-struct"
+    ["packages/auxiliary"]="cognesy/instructor-auxiliary"
+    ["packages/http-client"]="cognesy/instructor-http-client"
+    ["packages/hub"]="cognesy/instructor-hub"
+    ["packages/setup"]="cognesy/instructor-setup"
+    ["packages/tell"]="cognesy/instructor-tell"
 )
 
-declare -A REQUIRE_DEV_PACKAGES=(
-    ["src-aux"]="cognesy/instructor-auxiliary"
-    ["src-experimental"]="cognesy/instructor-experimental"
-    ["src-hub"]="cognesy/instructor-hub"
-    ["src-setup"]="cognesy/instructor-setup"
-    ["src-tell"]="cognesy/tell-cli"
+# Define which packages go in which section of the main composer.json
+declare -A MAIN_REQUIRE_PACKAGES=(
+    ["packages/utils"]="cognesy/instructor-utils"
+    ["packages/http-client"]="cognesy/instructor-http-client"
+    ["packages/setup"]="cognesy/instructor-setup"
+    ["packages/polyglot"]="cognesy/instructor-polyglot"
+    ["packages/instructor"]="cognesy/instructor-struct"
+    ["packages/addons"]="cognesy/instructor-addons"
 )
+
+declare -A MAIN_REQUIRE_DEV_PACKAGES=(
+    ["packages/auxiliary"]="cognesy/instructor-auxiliary"
+    ["packages/hub"]="cognesy/instructor-hub"
+    ["packages/tell"]="cognesy/instructor-tell"
+)
+
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is required but not installed. Please install jq first."
+    exit 1
+fi
 
 # Update version in each package's composer.json
 update_package_version() {
     local package_dir=$1
-    if [ -f "$package_dir/composer.json" ]; then
-        # Update version while preserving the rest of the file
-        jq --arg version "$VERSION" '. + {version: $version}' "$package_dir/composer.json" > "$package_dir/composer.json.tmp"
-        mv "$package_dir/composer.json.tmp" "$package_dir/composer.json"
-        echo "Updated $package_dir to version $VERSION"
-    fi
-}
-
-# Function to update package versions in composer.json sections
-update_main_composer() {
-    local section=$1
     local package_name=$2
-    local new_content
 
-    echo "Attempting to update $package_name in $section..."
-
-    # Create a temporary file with updated content
-    new_content=$(jq --arg section "$section" \
-                    --arg pkg "$package_name" \
-                    --arg ver "^$VERSION" \
-                    'setpath([$section, $pkg]; $ver)' \
-                    composer.json)
-
-    # Check if the content actually changed
-    if [ "$new_content" != "$(cat composer.json)" ]; then
-        echo "$new_content" > composer.json
-        echo "Updated $package_name to version $VERSION in $section"
-    else
-        echo "Package $package_name not found in $section"
+    if [ ! -d "$package_dir" ]; then
+        echo "⚠️ Warning: Directory $package_dir does not exist, skipping..."
+        return
     fi
+
+    if [ ! -f "$package_dir/composer.json" ]; then
+        echo "⚠️ Warning: $package_dir/composer.json does not exist, skipping..."
+        return
+    fi
+
+    echo "Updating $package_name in $package_dir..."
+
+    # Update version field
+    jq --arg version "$VERSION" '.version = $version' "$package_dir/composer.json" > "$package_dir/composer.json.tmp"
+
+    # Update internal dependencies to use ^MAJOR.MINOR
+    package_tmp=$(cat "$package_dir/composer.json.tmp")
+
+    # Process require section if it exists
+    if jq -e '.require' "$package_dir/composer.json.tmp" > /dev/null 2>&1; then
+        for pkg in "${PACKAGES[@]}"; do
+            package_tmp=$(echo "$package_tmp" | jq --arg pkg "$pkg" --arg ver "^$MAJOR_MINOR" \
+                'if .require[$pkg] then .require[$pkg] = $ver else . end')
+        done
+    fi
+
+    # Process require-dev section if it exists
+    if jq -e '."require-dev"' "$package_dir/composer.json.tmp" > /dev/null 2>&1; then
+        for pkg in "${PACKAGES[@]}"; do
+            package_tmp=$(echo "$package_tmp" | jq --arg pkg "$pkg" --arg ver "^$MAJOR_MINOR" \
+                'if ."require-dev"[$pkg] then ."require-dev"[$pkg] = $ver else . end')
+        done
+    fi
+
+    echo "$package_tmp" > "$package_dir/composer.json"
+    rm -f "$package_dir/composer.json.tmp"
+
+    echo "✅ Updated $package_name to version $VERSION with appropriate dependency constraints"
 }
 
-# First, let's check what packages are actually in composer.json
-echo "Checking current package versions in composer.json..."
-echo "In require:"
-jq -r '.require | keys[]' composer.json | grep '^cognesy/'
-echo "In require-dev:"
-jq -r '."require-dev" | keys[]' composer.json | grep '^cognesy/'
+# Function to update package versions in main composer.json sections
+update_main_composer() {
+    echo "Updating main composer.json..."
 
-# Update package versions
-echo "Updating package versions..."
-for dir in "${!REQUIRE_PACKAGES[@]}"; do
-    update_package_version "$dir"
+    if [ ! -f "composer.json" ]; then
+        echo "⚠️ Warning: Main composer.json does not exist, skipping..."
+        return
+    }
+
+    # Create a temporary file
+    cp composer.json composer.json.tmp
+
+    # Update require section
+    for dir in "${!MAIN_REQUIRE_PACKAGES[@]}"; do
+        pkg_name="${MAIN_REQUIRE_PACKAGES[$dir]}"
+        echo "  - Updating $pkg_name in require section to ^$MAJOR_MINOR"
+        jq --arg pkg "$pkg_name" --arg ver "^$MAJOR_MINOR" \
+           '.require[$pkg] = $ver' composer.json.tmp > composer.json.tmp2
+        mv composer.json.tmp2 composer.json.tmp
+    done
+
+    # Update require-dev section
+    for dir in "${!MAIN_REQUIRE_DEV_PACKAGES[@]}"; do
+        pkg_name="${MAIN_REQUIRE_DEV_PACKAGES[$dir]}"
+        echo "  - Updating $pkg_name in require-dev section to ^$MAJOR_MINOR"
+        jq --arg pkg "$pkg_name" --arg ver "^$MAJOR_MINOR" \
+           '."require-dev"[$pkg] = $ver' composer.json.tmp > composer.json.tmp2
+        mv composer.json.tmp2 composer.json.tmp
+    done
+
+    # Apply changes
+    mv composer.json.tmp composer.json
+    echo "✅ Updated main composer.json"
+}
+
+# First, list the packages that will be processed
+echo "The following packages will be updated to version $VERSION:"
+for dir in "${!PACKAGES[@]}"; do
+    pkg_name="${PACKAGES[$dir]}"
+    echo "  - $pkg_name ($dir)"
 done
 
-for dir in "${!REQUIRE_DEV_PACKAGES[@]}"; do
-    update_package_version "$dir"
+# Update individual package versions
+echo -e "\nUpdating package versions..."
+for dir in "${!PACKAGES[@]}"; do
+    pkg_name="${PACKAGES[$dir]}"
+    update_package_version "$dir" "$pkg_name"
 done
 
 # Update main composer.json
-echo "Updating main composer.json..."
+update_main_composer
 
-# Update require section
-for dir in "${!REQUIRE_PACKAGES[@]}"; do
-    pkg_name="${REQUIRE_PACKAGES[$dir]}"
-    update_main_composer "require" "$pkg_name"
-done
-
-# Update require-dev section
-for dir in "${!REQUIRE_DEV_PACKAGES[@]}"; do
-    pkg_name="${REQUIRE_DEV_PACKAGES[$dir]}"
-    update_main_composer "require-dev" "$pkg_name"
-done
-
-echo "Version sync complete"
+echo -e "\n🎉 Version sync complete!"
+echo "All packages and dependencies updated to version $VERSION"

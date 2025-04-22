@@ -1,4 +1,6 @@
 #!/bin/bash
+# publish.sh - Main script for releasing a new version
+set -e  # Exit immediately if a command exits with non-zero status
 
 VERSION=$1
 REPO="cognesy/instructor-php"
@@ -22,22 +24,72 @@ fi
 echo "Creating release for version $VERSION..."
 echo "Using release notes from: $NOTES_FILE"
 
-# 1. Update package versions
-# ./bin/sync-ver.sh "$VERSION"
+# Define packages - must match those in sync-ver.sh
+declare -A PACKAGES=(
+    ["packages/utils"]="cognesy/instructor-utils"
+    ["packages/addons"]="cognesy/instructor-addons"
+    ["packages/polyglot"]="cognesy/instructor-polyglot"
+    ["packages/instructor"]="cognesy/instructor-struct"
+    ["packages/auxiliary"]="cognesy/instructor-auxiliary"
+    ["packages/http-client"]="cognesy/instructor-http-client"
+    ["packages/hub"]="cognesy/instructor-hub"
+    ["packages/setup"]="cognesy/instructor-setup"
+    ["packages/tell"]="cognesy/instructor-tell"
+)
 
-# 2. Commit changes
-git commit -am "Release version $VERSION"
+# 1. Update all package versions using sync-ver.sh
+echo "Step 1: Updating package versions..."
+./bin/sync-ver.sh "$VERSION"
 
-# 3. Create git tag
-git tag "v$VERSION"
+# 2. Distribute release notes to all packages
+echo "Step 2: Distributing release notes to all packages..."
+for dir in "${!PACKAGES[@]}"; do
+    if [ -d "$dir" ]; then
+        # Create release_notes directory if it doesn't exist
+        mkdir -p "$dir/release_notes"
 
-# 4. Push changes and tag
-git push && git push --tags
+        # Copy the release notes file to the package (convert from .mdx to .md)
+        cp "$NOTES_FILE" "$dir/release_notes/v$VERSION.md"
 
-# 5. Create GitHub release using notes from file
+        echo "✅ Copied release notes to $dir/release_notes/"
+    else
+        echo "⚠️ Warning: Directory $dir does not exist, skipping..."
+    fi
+done
+
+# 3. Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Step 3: Adding all modified files..."
+    git add .
+else
+    echo "Step 3: No uncommitted changes detected."
+fi
+
+# 4. Check if there are changes to commit
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Step 4: Committing changes..."
+    git commit -m "Release version $VERSION"
+    echo "✅ Changes committed."
+else
+    echo "Step 4: No changes to commit."
+fi
+
+# 5. Create git tag
+echo "Step 5: Creating git tag..."
+git tag -a "v$VERSION" -m "Release version $VERSION"
+echo "✅ Created tag v$VERSION"
+
+# 6. Push changes and tag
+echo "Step 6: Pushing changes and tag..."
+git push origin main && git push origin "v$VERSION"
+echo "✅ Pushed changes and tag to origin"
+
+# 7. Create GitHub release for main repo
+echo "Step 7: Creating GitHub release..."
 gh release create "v$VERSION" \
-    --title "$VERSION" \
+    --title "v$VERSION" \
     --notes-file "$NOTES_FILE" \
     --repo "$REPO"
 
-echo "Release v$VERSION completed!"
+echo "🎉 Release v$VERSION completed!"
+echo "The split.yml workflow will now trigger automatically to split packages and create releases for each subpackage."

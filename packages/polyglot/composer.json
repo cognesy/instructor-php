@@ -1,0 +1,22 @@
+{
+  "name": "cognesy/instructor-polyglot",
+  "description": "Unified LLM connectivity layer for PHP applications",
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Polyglot\\": "src/"
+    }
+  },
+  "version": "0.12.0",
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-utils": "^0.12",
+    "cognesy/instructor-http-client": "^0.12",
+    "cognesy/instructor-setup": "^0.12"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "suggest": {
+    "cognesy/instructor-addons": "Provided extra optional capabilities like evals, tool use, etc.",
+  }
+}

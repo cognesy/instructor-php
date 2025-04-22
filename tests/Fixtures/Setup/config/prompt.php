@@ -5,7 +5,7 @@ return [
     'libraries' => [
         'system' => [
             'templateEngine' => 'arrowpipe',
-            'resourcePath' => '/../../../prompts/system',
+            'resourcePath' => 'prompts/system',
             'cachePath' => '/tmp/instructor/cache/system',
             'extension' => '.tpl',
             'frontMatterTags' => ['{#---', '---#}'],
@@ -16,7 +16,7 @@ return [
         ],
         'examples' => [
             'templateEngine' => 'twig',
-            'resourcePath' => '/../../../prompts/examples',
+            'resourcePath' => 'prompts/examples',
             'cachePath' => '/tmp/instructor/cache/examples',
             'extension' => '.twig',
             'frontMatterTags' => ['{#---', '---#}'],
@@ -27,7 +27,7 @@ return [
         ],
         'demo-twig' => [
             'templateEngine' => 'twig',
-            'resourcePath' => '/../../../prompts/demo-twig',
+            'resourcePath' => 'prompts/demo-twig',
             'cachePath' => '/tmp/instructor/cache/twig',
             'extension' => '.twig',
             'frontMatterTags' => ['{#---', '---#}'],
@@ -38,7 +38,7 @@ return [
         ],
         'demo-blade' => [
             'templateEngine' => 'blade',
-            'resourcePath' => '/../../../prompts/demo-blade',
+            'resourcePath' => 'prompts/demo-blade',
             'cachePath' => '/tmp/instructor/cache/blade',
             'extension' => '.blade.php',
             'frontMatterTags' => ['{{--', '--}}'],

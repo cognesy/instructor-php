@@ -1,0 +1,32 @@
+{
+  "name": "cognesy/instructor-experimental",
+  "description": "Experimental code used by Instructor and Polyglot libraries",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Experimental\\": "/src"
+    }
+  },
+  "version": "0.12.3",
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "suggest": {
+    "cognesy/instructor": "Instructor library",
+    "cognesy/polyglot": "Polyglot library"
+  }
+}
