@@ -18,10 +18,10 @@
       "Cognesy\\Setup\\": "src/"
     }
   },
-  "version": "0.12.3",
+  "version": "0.13.0",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.12",
+    "cognesy/instructor-utils": "^0.13",
     "symfony/console": "^7.1",
     "symfony/filesystem": "^7.1"
   },

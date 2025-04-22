@@ -19,33 +19,30 @@ MAJOR_MINOR=$(echo $VERSION | grep -o "^[0-9]*\.[0-9]*")
 echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 
 # Define packages and their sections based on composer.json
-declare -A PACKAGES=(
-    ["packages/utils"]="cognesy/instructor-utils"
-    ["packages/addons"]="cognesy/instructor-addons"
-    ["packages/polyglot"]="cognesy/instructor-polyglot"
-    ["packages/instructor"]="cognesy/instructor-struct"
-    ["packages/auxiliary"]="cognesy/instructor-auxiliary"
-    ["packages/http-client"]="cognesy/instructor-http-client"
-    ["packages/hub"]="cognesy/instructor-hub"
-    ["packages/setup"]="cognesy/instructor-setup"
-    ["packages/tell"]="cognesy/instructor-tell"
-)
+declare -A PACKAGES
+PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/addons"]="cognesy/instructor-addons"
+PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
+PACKAGES["packages/instructor"]="cognesy/instructor-struct"
+PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
+PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
+PACKAGES["packages/hub"]="cognesy/instructor-hub"
+PACKAGES["packages/setup"]="cognesy/instructor-setup"
+PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
 # Define which packages go in which section of the main composer.json
-declare -A MAIN_REQUIRE_PACKAGES=(
-    ["packages/utils"]="cognesy/instructor-utils"
-    ["packages/http-client"]="cognesy/instructor-http-client"
-    ["packages/setup"]="cognesy/instructor-setup"
-    ["packages/polyglot"]="cognesy/instructor-polyglot"
-    ["packages/instructor"]="cognesy/instructor-struct"
-    ["packages/addons"]="cognesy/instructor-addons"
-)
+declare -A MAIN_REQUIRE_PACKAGES
+MAIN_REQUIRE_PACKAGES["packages/utils"]="cognesy/instructor-utils"
+MAIN_REQUIRE_PACKAGES["packages/addons"]="cognesy/instructor-addons"
+MAIN_REQUIRE_PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
+MAIN_REQUIRE_PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 
-declare -A MAIN_REQUIRE_DEV_PACKAGES=(
-    ["packages/auxiliary"]="cognesy/instructor-auxiliary"
-    ["packages/hub"]="cognesy/instructor-hub"
-    ["packages/tell"]="cognesy/instructor-tell"
-)
+declare -A MAIN_REQUIRE_DEV_PACKAGES
+MAIN_REQUIRE_DEV_PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
+MAIN_REQUIRE_DEV_PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
+MAIN_REQUIRE_DEV_PACKAGES["packages/hub"]="cognesy/instructor-hub"
+MAIN_REQUIRE_DEV_PACKAGES["packages/setup"]="cognesy/instructor-setup"
+MAIN_REQUIRE_DEV_PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
@@ -105,7 +102,7 @@ update_main_composer() {
     if [ ! -f "composer.json" ]; then
         echo "⚠️ Warning: Main composer.json does not exist, skipping..."
         return
-    }
+    fi
 
     # Create a temporary file
     cp composer.json composer.json.tmp
@@ -148,7 +145,7 @@ for dir in "${!PACKAGES[@]}"; do
 done
 
 # Update main composer.json
-update_main_composer
+#update_main_composer
 
 echo -e "\n🎉 Version sync complete!"
 echo "All packages and dependencies updated to version $VERSION"

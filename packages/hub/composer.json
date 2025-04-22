@@ -18,10 +18,10 @@
       "Cognesy\\InstructorHub\\": "src/"
     }
   },
-  "version": "0.12.3",
+  "version": "0.13.0",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-struct": "0.12.3",
+    "cognesy/instructor-struct": "^0.13",
     "toolkit/cli-utils": "^2.0",
     "cebe/markdown": "^1.2"
   },

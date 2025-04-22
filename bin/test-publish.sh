@@ -29,17 +29,16 @@ echo "Creating release for version $VERSION..."
 echo "Using release notes from: $NOTES_FILE"
 
 # Define packages - must match those in sync-ver.sh
-declare -A PACKAGES=(
-    ["packages/utils"]="cognesy/instructor-utils"
-    ["packages/addons"]="cognesy/instructor-addons"
-    ["packages/polyglot"]="cognesy/instructor-polyglot"
-    ["packages/instructor"]="cognesy/instructor-struct"
-    ["packages/auxiliary"]="cognesy/instructor-auxiliary"
-    ["packages/http-client"]="cognesy/instructor-http-client"
-    ["packages/hub"]="cognesy/instructor-hub"
-    ["packages/setup"]="cognesy/instructor-setup"
-    ["packages/tell"]="cognesy/instructor-tell"
-)
+declare -A PACKAGES
+PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/addons"]="cognesy/instructor-addons"
+PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
+PACKAGES["packages/instructor"]="cognesy/instructor-struct"
+PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
+PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
+PACKAGES["packages/hub"]="cognesy/instructor-hub"
+PACKAGES["packages/setup"]="cognesy/instructor-setup"
+PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
 # Create a backup directory
 BACKUP_DIR="test_backup_$(date +%Y%m%d_%H%M%S)"

@@ -18,18 +18,18 @@
       "Cognesy\\Addons\\": "src/"
     }
   },
-  "version": "0.12.3",
+  "version": "0.13.0",
   "require": {
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-utils": "^0.12"
+    "cognesy/instructor-utils": "^0.13"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
   },
   "suggest": {
-      "cognesy/instructor-struct": "Some addons need Instructor core library - e.g. Image class",
-      "cognesy/instructor-polyglot": "Some addones can be used with Instructor Polyglot library - e.g. Chat, Evals, FunctionCall, ToolUse"
+    "cognesy/instructor-struct": "Some addons need Instructor core library - e.g. Image class",
+    "cognesy/instructor-polyglot": "Some addones can be used with Instructor Polyglot library - e.g. Chat, Evals, FunctionCall, ToolUse"
   }
 }

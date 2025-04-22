@@ -18,10 +18,10 @@
       "Cognesy\\Tell\\": "src/"
     }
   },
-  "version": "0.12.3",
+  "version": "0.13.0",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-polyglot": "^0.12"
+    "cognesy/instructor-polyglot": "^0.13"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
