@@ -6,7 +6,7 @@
       "Cognesy\\Http\\": "src/"
     }
   },
-  "version": "0.13.6",
+  "version": "0.13.7",
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.13",
