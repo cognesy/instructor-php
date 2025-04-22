@@ -72,21 +72,21 @@ jobs:
       - name: Split Monorepo
         uses: "danharrin/monorepo-split-github-action@v2.3.0"
         with:
-          github_token: ${{ secrets.SPLIT_TOKEN_2 }}      # PAT here
+          github_token: ${{ secrets.SPLIT_TOKEN_3 }}      # PAT here
           tag: ${{ github.ref_name }}             # e.g. v1.2.3
           package_directory: ${{ matrix.package.local }}
           repository_organization: cognesy
           repository_name: ${{ matrix.package.name }}
-          user_name: 'ci‑bot'
-          user_email: 'ci@cognesy.com'
+          user_name: 'ddebowczyk'
+          user_email: 'ddebowczyk@gmail.com'
 
       # ► create GitHub Release with notes
       - uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         env:
-          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_2 }}
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_3 }}
         with:
           repository: ${{ matrix.package.repo }}          # target repo
           tag_name:    ${{ github.ref_name }}             # v1.2.3
           body_path:   ${{ matrix.package.local }}/release_notes/${{ github.ref_name }}.md
-          token:      ${{ secrets.SPLIT_TOKEN_2 }}        # PAT here
+          token:      ${{ secrets.SPLIT_TOKEN_3 }}        # PAT here
