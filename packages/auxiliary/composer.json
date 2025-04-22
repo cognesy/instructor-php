@@ -18,7 +18,7 @@
       "Cognesy\\Auxiliary\\": "src/"
     }
   },
-  "version": "0.13.8",
+  "version": "0.13.9",
   "require": {
     "php": "^8.2",
     "ext-dom": "*",
