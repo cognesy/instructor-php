@@ -18,7 +18,7 @@
       "Cognesy\\Tell\\": "src/"
     }
   },
-  "version": "0.13.0",
+  "version": "0.13.1",
   "require": {
     "php": "^8.2",
     "cognesy/instructor-polyglot": "^0.13"
