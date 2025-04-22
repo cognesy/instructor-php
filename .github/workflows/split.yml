@@ -51,15 +51,21 @@ jobs:
 
       # Verify release notes exist for this package
       - name: Verify release notes
+        id: check_notes
         run: |
-          TAG=${{ github.ref_name }}                            # v0.13.2
-          NOTES={{ matrix.local }}/release_notes/${TAG}.md
-          if [[ -f "$NOTES" ]]; then
-            echo "release notes found: $NOTES"
+          TAG_NAME=${{ github.ref_name }}
+          NOTES_PATH="${{ matrix.package.local }}/release_notes/${TAG_NAME}.md"
+          
+          if [ -f "$NOTES_PATH" ]; then
+            echo "NOTES_EXIST=true" >> $GITHUB_ENV
+            echo "Notes found at $NOTES_PATH"
           else
-            echo "no notes – creating stub → $NOTES"
-            mkdir -p "$(dirname "$NOTES")"
-            printf '# %s\n\nSplit release of %s.\n' "$TAG" "${{ matrix.name }}" > "$NOTES"
+            echo "NOTES_EXIST=false" >> $GITHUB_ENV
+            echo "Warning: No release notes found at $NOTES_PATH"
+            # Create a minimal release note if none exists
+            mkdir -p "${{ matrix.package.local }}/release_notes"
+            echo "# ${TAG_NAME}\n\nThis release is part of the main monorepo release ${TAG_NAME}." > "$NOTES_PATH"
+            echo "Created minimal release notes"
           fi
 
       # ► push branch + tag
@@ -75,12 +81,12 @@ jobs:
           user_email: 'ci@cognesy.com'
 
       # ► create GitHub Release with notes
-      - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         env:
-          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN }}     # PAT once for all API calls
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN }}
         with:
           repository: ${{ matrix.package.repo }}          # target repo
           tag_name:    ${{ github.ref_name }}             # v1.2.3
           body_path:   ${{ matrix.package.local }}/release_notes/${{ github.ref_name }}.md
+          # token:      ${{ secrets.SPLIT_TOKEN }}        # PAT here
