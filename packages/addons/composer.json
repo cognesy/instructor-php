@@ -18,7 +18,7 @@
       "Cognesy\\Addons\\": "src/"
     }
   },
-  "version": "0.13.1",
+  "version": "0.13.2",
   "require": {
     "php": "^8.2",
     "ext-fileinfo": "*",
