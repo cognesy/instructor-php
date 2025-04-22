@@ -66,7 +66,8 @@ jobs:
           fi
 
       # ► push branch + tag
-      - uses: symplify/monorepo-split-github-action@v2
+      - name: Split Monorepo
+        uses: "danharrin/monorepo-split-github-action@v2.3.0"
         with:
           tag: ${{ github.ref_name }}             # e.g. v1.2.3
           package_directory: ${{ matrix.package.local }}
