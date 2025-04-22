@@ -1,4 +1,4 @@
-name: Split packages
+name: Test package splitting
 on:
   push:
     tags: ['test-v*']
