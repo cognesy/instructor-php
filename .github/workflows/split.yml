@@ -15,22 +15,31 @@ jobs:
         package:
           - local: 'packages/addons'
             repo:  'cognesy/instructor-addons'
+            name:  'instructor-addons'
           - local: 'packages/auxiliary'
             repo:  'cognesy/instructor-aux'
+            name:  'instructor-aux'
           - local: 'packages/http-client'
             repo:  'cognesy/instructor-http-client'
+            name:  'instructor-http-client'
           - local: 'packages/hub'
             repo:  'cognesy/instructor-hub'
+            name:  'instructor-hub'
           - local: 'packages/instructor'
             repo:  'cognesy/instructor-struct'
+            name:  'instructor-struct'
           - local: 'packages/polyglot'
             repo:  'cognesy/instructor-polyglot'
+            name:  'instructor-polyglot'
           - local: 'packages/setup'
             repo:  'cognesy/instructor-setup'
+            name:  'instructor-setup'
           - local: 'packages/tell'
             repo:  'cognesy/instructor-tell'
+            name:  'instructor-tell'
           - local: 'packages/utils'
             repo:  'cognesy/instructor-utils'
+            name:  'instructor-utils'
 
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +71,7 @@ jobs:
           tag: ${{ github.ref_name }}             # e.g. v1.2.3
           package_directory: ${{ matrix.package.local }}
           repository_organization: cognesy
-          repository_name: ${{ matrix.package.repo && matrix.package.repo.split('/')[1] || '' }}
+          repository_name: ${{ matrix.package.name }}
           user_name: 'ci‑bot'
           user_email: 'ci@cognesy.com'
 
