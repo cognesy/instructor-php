@@ -18,12 +18,12 @@
       "Cognesy\\Addons\\": "src/"
     }
   },
-  "version": "0.13.9",
+  "version": "0.14.0",
   "require": {
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-utils": "^0.13"
+    "cognesy/instructor-utils": "^0.14"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

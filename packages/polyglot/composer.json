@@ -6,12 +6,12 @@
       "Cognesy\\Polyglot\\": "src/"
     }
   },
-  "version": "0.13.9",
+  "version": "0.14.0",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.13",
-    "cognesy/instructor-http-client": "^0.13",
-    "cognesy/instructor-setup": "^0.13"
+    "cognesy/instructor-utils": "^0.14",
+    "cognesy/instructor-http-client": "^0.14",
+    "cognesy/instructor-setup": "^0.14"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"

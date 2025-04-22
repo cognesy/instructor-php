@@ -6,11 +6,11 @@
       "Cognesy\\Http\\": "src/"
     }
   },
-  "version": "0.13.9",
+  "version": "0.14.0",
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.13",
-    "cognesy/instructor-setup": "^0.13",
+    "cognesy/instructor-utils": "^0.14",
+    "cognesy/instructor-setup": "^0.14",
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.7"
   },
