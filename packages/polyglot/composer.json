@@ -6,7 +6,7 @@
       "Cognesy\\Polyglot\\": "src/"
     }
   },
-  "version": "0.13.3",
+  "version": "0.13.4",
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.13",
