@@ -1,6 +1,6 @@
 ## Extending the Library
 
-The unified HTTP client API is designed to be extensible. Here are some examples of how you can extend the library beyond just creating custom drivers.
+The Instructor HTTP client API is designed to be extensible. Here are some examples of how you can extend the library beyond just creating custom drivers.
 
 ### Creating a Specialized Client Wrapper
 
@@ -336,7 +336,7 @@ $products = $api->products()->list(1, 50);
 $order = $api->orders()->get(456);
 ```
 
-This approach creates a clean, fluent API for working with RESTful services while leveraging the unified HTTP client API's flexibility and extensibility.
+This approach creates a clean, fluent API for working with RESTful services while leveraging the Instructor HTTP client API's flexibility and extensibility.
 
 ### Building Custom Event Subscribers
 
@@ -482,4 +482,4 @@ $client = new HttpClient('guzzle', $events);
 
 This approach allows you to extend the HTTP client with custom monitoring, logging, or other functionality without modifying the core library code.
 
-By using these extension patterns, you can adapt the unified HTTP client API to a wide variety of use cases while maintaining a clean and consistent codebase.
+By using these extension patterns, you can adapt the Instructor HTTP client API to a wide variety of use cases while maintaining a clean and consistent codebase.

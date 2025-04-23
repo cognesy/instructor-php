@@ -25,33 +25,23 @@
         "url": "https://github.com/cognesy/instructor-php"
     },
     "primaryTab": {
-        "name": "Instructor Guide"
+        "name": "Instructor"
     },
     "tabs": [
         {
-            "name": "Instructor Cookbook",
-            "url": "cookbook/instructor",
-            "group": "Basics"
-        },
-        {
-            "name": "Prompting Examples",
-            "url": "cookbook/prompting",
-            "group": "Prompting"
-        },
-        {
-            "name": "Polyglot Guide",
+            "name": "Polyglot",
             "url": "instructor/polyglot",
             "group": "Polyglot Guide"
         },
         {
-            "name": "Polyglot Cookbook",
-            "url": "cookbook/polyglot",
-            "group": "LLM Basics"
-        },
-        {
-            "name": "HTTP Client Guide",
+            "name": "HTTP Client",
             "url": "instructor/http",
             "group": "HTTP Client Guide"
+        },
+        {
+            "name": "Cookbook",
+            "url": "cookbook",
+            "group": "Cookbook"
         }
     ],
     "anchors": [
@@ -68,11 +58,13 @@
     ],
     "navigation": [
         {
-            "group": "Instructor Guide",
+            "group": "Instructor",
             "pages": [
                 "instructor/introduction",
                 "instructor/quickstart",
-                "instructor/setup"
+                "instructor/setup",
+                "instructor/upgrade",
+                "instructor/cli_tools"
             ]
         },
         {
@@ -85,13 +77,11 @@
         {
             "group": "Essentials",
             "pages": [
-                "instructor/essentials/usage",
-                "instructor/essentials/modes",
-                "instructor/essentials/data_model",
-                "instructor/essentials/scalars",
-                "instructor/essentials/validation",
-                "instructor/essentials/customize_prompts",
-                "instructor/essentials/demonstrations"
+                "instructor/polyglot/essentials/overview",
+                "instructor/polyglot/essentials/creating-requests",
+                "instructor/polyglot/essentials/response-handling",
+                "instructor/polyglot/essentials/inference-class",
+                "instructor/polyglot/essentials/request-options"
             ]
         },
         {
@@ -116,14 +106,15 @@
         {
             "group": "Internals",
             "pages": [
-                "instructor/internals/instructor",
-                "instructor/internals/lifecycle",
-                "instructor/internals/response_models",
-                "instructor/internals/debugging",
-                "instructor/internals/events",
-                "instructor/internals/environment",
-                "instructor/internals/configuration_path",
-                "instructor/internals/settings_class"
+                "instructor/polyglot/internals/overview",
+                "instructor/polyglot/internals/public-api",
+                "instructor/polyglot/internals/request-response",
+                "instructor/polyglot/internals/lifecycle",
+                "instructor/polyglot/internals/providers",
+                "instructor/polyglot/internals/adapters",
+                "instructor/polyglot/internals/http-client",
+                "instructor/polyglot/internals/configuration",
+                "instructor/polyglot/internals/events"
             ]
         },
         {
@@ -138,6 +129,10 @@
         {
             "group": "Release Notes",
             "pages": [
+                "release-notes/v0.14.1",
+                "release-notes/v0.14.0",
+                "release-notes/v0.13.0",
+                "release-notes/v0.12.13",
                 "release-notes/v0.12.12",
                 "release-notes/v0.12.11",
                 "release-notes/v0.12.10",
@@ -157,18 +152,7 @@
             "pages": [
                 "instructor/polyglot/overview",
                 "instructor/polyglot/quickstart",
-                "instructor/polyglot/setup",
-                "instructor/polyglot/upgrade"
-            ]
-        },
-        {
-            "group": "Essentials",
-            "pages": [
-                "instructor/polyglot/essentials/overview",
-                "instructor/polyglot/essentials/creating-requests",
-                "instructor/polyglot/essentials/response-handling",
-                "instructor/polyglot/essentials/inference-class",
-                "instructor/polyglot/essentials/request-options"
+                "instructor/polyglot/setup"
             ]
         },
         {
@@ -222,20 +206,6 @@
             ]
         },
         {
-            "group": "Internals",
-            "pages": [
-                "instructor/polyglot/internals/overview",
-                "instructor/polyglot/internals/public-api",
-                "instructor/polyglot/internals/request-response",
-                "instructor/polyglot/internals/lifecycle",
-                "instructor/polyglot/internals/providers",
-                "instructor/polyglot/internals/adapters",
-                "instructor/polyglot/internals/http-client",
-                "instructor/polyglot/internals/configuration",
-                "instructor/polyglot/internals/events"
-            ]
-        },
-        {
             "group": "HTTP Client Guide",
             "pages": [
                 "instructor/http/1-overview",
@@ -252,14 +222,14 @@
             ]
         },
         {
-            "group": "Instructor Hub",
+            "group": "Cookbook",
             "pages": [
                 "cookbook/introduction",
                 "cookbook/contributing"
             ]
         },
         {
-            "group": "Basics",
+            "group": "Instructor - Basics",
             "pages": [
                 "cookbook/instructor/basics/basic_use",
                 "cookbook/instructor/basics/basic_use_mixin",
@@ -277,7 +247,7 @@
             ]
         },
         {
-            "group": "Advanced",
+            "group": "Instructor - Advanced",
             "pages": [
                 "cookbook/instructor/advanced/context_cache_structured",
                 "cookbook/instructor/advanced/custom_llm",
@@ -293,7 +263,7 @@
             ]
         },
         {
-            "group": "Troubleshooting",
+            "group": "Instructor - Troubleshooting",
             "pages": [
                 "cookbook/instructor/troubleshooting/debugging",
                 "cookbook/instructor/troubleshooting/on_event",
@@ -302,7 +272,7 @@
             ]
         },
         {
-            "group": "API Providers Support",
+            "group": "Instructor - LLM API Support",
             "pages": [
                 "cookbook/instructor/api_support/a21",
                 "cookbook/instructor/api_support/anthropic",
@@ -325,7 +295,7 @@
             ]
         },
         {
-            "group": "Extras",
+            "group": "Instructor - Extras",
             "pages": [
                 "cookbook/instructor/extras/complex_extraction",
                 "cookbook/instructor/extras/complex_extraction_claude",
@@ -343,7 +313,7 @@
             ]
         },
         {
-            "group": "LLM Basics",
+            "group": "Polyglot - LLM Basics",
             "pages": [
                 "cookbook/polyglot/llm_basics/llm",
                 "cookbook/polyglot/llm_basics/llm_json",
@@ -353,7 +323,7 @@
             ]
         },
         {
-            "group": "LLM Advanced",
+            "group": "Polyglot - LLM Advanced",
             "pages": [
                 "cookbook/polyglot/llm_advanced/context_cache_llm",
                 "cookbook/polyglot/llm_advanced/custom_llm",
@@ -363,13 +333,13 @@
             ]
         },
         {
-            "group": "LLM Troubleshooting",
+            "group": "Polyglot - LLM Troubleshooting",
             "pages": [
                 "cookbook/polyglot/llm_troubleshooting/http_debug"
             ]
         },
         {
-            "group": "LLM API Support",
+            "group": "Polyglot - LLM API Support",
             "pages": [
                 "cookbook/polyglot/llm_api_support/a21",
                 "cookbook/polyglot/llm_api_support/anthropic",
@@ -392,7 +362,7 @@
             ]
         },
         {
-            "group": "LLM Extras",
+            "group": "Polyglot - LLM Extras",
             "pages": [
                 "cookbook/polyglot/llm_extras/chat_with_summary",
                 "cookbook/polyglot/llm_extras/prompt_templates",
@@ -401,7 +371,7 @@
             ]
         },
         {
-            "group": "Zero-Shot Prompting",
+            "group": "Prompting - Zero-Shot Prompting",
             "pages": [
                 "cookbook/prompting/zero_shot/assign_role",
                 "cookbook/prompting/zero_shot/auto_refine",
@@ -414,19 +384,19 @@
             ]
         },
         {
-            "group": "Few-Shot Prompting",
+            "group": "Prompting - Few-Shot Prompting",
             "pages": [
                 "cookbook/prompting/few_shot/in_context_examples"
             ]
         },
         {
-            "group": "Thought Generation",
+            "group": "Prompting - Thought Generation",
             "pages": [
                 "cookbook/prompting/thought_gen/analogical_prompting"
             ]
         },
         {
-            "group": "Miscellaneous",
+            "group": "Prompting - Miscellaneous",
             "pages": [
                 "cookbook/prompting/misc/arbitrary_properties",
                 "cookbook/prompting/misc/arbitrary_properties_consistent",

@@ -25,6 +25,9 @@ class MintlifyIndex
         }
         $json = file_get_contents($path);
         $data = json_decode($json, true);
+        if ($data === null) {
+            throw new \Exception("Failed to decode Mintlify index file");
+        }
         return static::fromJson($data);
     }
 

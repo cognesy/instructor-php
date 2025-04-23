@@ -18,7 +18,7 @@
       "Cognesy\\InstructorHub\\": "src/"
     }
   },
-  "version": "0.14.0",
+  "version": "0.14.1",
   "require": {
     "php": "^8.2",
     "cognesy/instructor-struct": "^0.14",

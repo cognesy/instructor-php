@@ -1,13 +1,13 @@
 ---
 title: Changing the Underlying Client
-description: 'Learn how to switch between different HTTP client implementations using the unified HTTP client API.'
+description: 'Learn how to switch between different HTTP client implementations using the Instructor HTTP client API.'
 ---
 
-One of the core features of the unified HTTP client API is its ability to seamlessly switch between different HTTP client implementations. This flexibility allows you to use the same code across different environments or to choose the most appropriate client for specific use cases.
+One of the core features of the Instructor HTTP client API is its ability to seamlessly switch between different HTTP client implementations. This flexibility allows you to use the same code across different environments or to choose the most appropriate client for specific use cases.
 
 ## Available Client Drivers
 
-The library includes several built-in drivers that adapt various HTTP client libraries to the unified interface:
+The library includes several built-in drivers that adapt various HTTP client libraries to the unified interface used by Instructor:
 
 ### GuzzleDriver
 
@@ -383,7 +383,7 @@ When switching between different HTTP client implementations, keep these conside
 
 2. **Feature Availability**: Some advanced features might be available only in specific clients. For example, HTTP/2 support might be better in one client than another.
 
-3. **Error Handling**: Different clients might have slightly different error behavior. The unified API normalizes much of this, but edge cases can still occur.
+3. **Error Handling**: Different clients might have slightly different error behavior. Instructor HTTP client API normalizes much of this, but edge cases can still occur.
 
 4. **Middleware Compatibility**: If you're using middleware, ensure it's compatible with all client types you plan to use.
 

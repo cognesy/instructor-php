@@ -6,12 +6,6 @@ use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Utils\Mintlify\MintlifyIndex;
 use Cognesy\InstructorHub\Views\DocGenView;
 use Cognesy\Utils\Files;
-use DirectoryIterator;
-use Exception;
-use InvalidArgumentException;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use RuntimeException;
 
 class MintlifyDocGenerator
 {
@@ -30,9 +24,9 @@ class MintlifyDocGenerator
     }
 
     public function makeDocs() : void {
-//        if (!is_dir($this->cookbookTargetDir)) {
-//            throw new \Exception("Hub docs directory '$this->cookbookTargetDir' does not exist");
-//        }
+        //        if (!is_dir($this->cookbookTargetDir)) {
+        //            throw new \Exception("Hub docs directory '$this->cookbookTargetDir' does not exist");
+        //        }
         $this->view->renderHeader();
         $this->updateFiles();
         $this->view->renderUpdate(true);
@@ -41,10 +35,10 @@ class MintlifyDocGenerator
     public function clearDocs() : void {
         $this->view->renderHeader();
         // get only subdirectories of mintlifyCookbookDir
-//        $subdirs = array_filter(glob($this->cookbookTargetDir . '/*'), 'is_dir');
-//        foreach ($subdirs as $subdir) {
-//            $this->removeDir($subdir);
-//        }
+        //        $subdirs = array_filter(glob($this->cookbookTargetDir . '/*'), 'is_dir');
+        //        foreach ($subdirs as $subdir) {
+        //            $this->removeDir($subdir);
+        //        }
         Files::removeDirectory($this->docsTargetDir);
         $this->view->renderUpdate(true);
     }
@@ -52,6 +46,7 @@ class MintlifyDocGenerator
     private function updateFiles() : void {
         Files::removeDirectory($this->docsTargetDir);
         Files::copyDirectory($this->docsSourceDir, $this->docsTargetDir);
+        Files::renameFileExtensions($this->docsTargetDir, 'md', 'mdx');
 
         $groups = $this->examples->getExampleGroups();
         foreach ($groups as $group) {

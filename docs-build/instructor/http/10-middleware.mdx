@@ -1,13 +1,13 @@
 ---
 title: Middleware
-description: 'Learn how to use middleware in the unified HTTP client API.'
+description: 'Learn how to use middleware in the Instructor HTTP client API.'
 ---
 
-Middleware is one of the most powerful features of the unified HTTP client API. It allows you to intercept and modify HTTP requests and responses, add functionality to the HTTP client, and create reusable components that can be applied across different applications.
+Middleware is one of the most powerful features of the Instructor HTTP client API. It allows you to intercept and modify HTTP requests and responses, add functionality to the HTTP client, and create reusable components that can be applied across different applications.
 
 ## Middleware Concept
 
-Middleware in the unified HTTP client API follows the pipeline pattern, where each middleware component gets a chance to process the request before it's sent and the response after it's received.
+Middleware in the Instructor HTTP client API follows the pipeline pattern, where each middleware component gets a chance to process the request before it's sent and the response after it's received.
 
 The middleware chain works like this:
 
@@ -220,7 +220,7 @@ $response = $client->handle($request);
 
 ## Built-in Middleware
 
-The unified HTTP client API includes several built-in middleware components for common tasks:
+The Instructor HTTP client API includes several built-in middleware components for common tasks:
 
 ### Debug Middleware
 

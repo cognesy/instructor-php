@@ -1,23 +1,25 @@
 ---
 title: Overview
-description: 'Unified HTTP client API for PHP, designed for LLM interactions. Framework agnostic, middleware support, and streaming capabilities.'
+description: 'Instructor HTTP client layer - framework agnostic, middleware support, and streaming capabilities.'
 ---
 
 ## Purpose and Goals
 
-The unified HTTP client API is designed to provide a consistent interface for making HTTP requests across different PHP environments, regardless of the underlying HTTP client implementation. This library is a part of the Instructor project, which is a developer-friendly library for working with LLM structured outputs supporting various LLM (Large Language Model) providers and modes of structured data extraction.
+The Instructor HTTP client API is designed to provide a consistent interface for making HTTP requests across different PHP environments.
+
+It provides a single API regardless of the underlying HTTP client available in the given environment, which may be Symfony, Laravel, Slim, or just vanilla PHP.
 
 The primary goals of the API are:
 
 - **Easily Switch Between HTTP Clients**: Allow developers to switch between different HTTP client libraries (like Guzzle, Symfony, and Laravel) without changing the code that makes HTTP requests
 - **Framework Agnostic**: Work seamlessly in Laravel, Symfony, or any PHP application without framework-specific dependencies
-- **Consistent Interface**: Provide a unified way to make HTTP requests regardless of the underlying client library
+- **Consistent Interface**: Provide a one way to make HTTP requests regardless of the underlying client library
 - **Middleware Support**: Enable easy extension through a powerful middleware system
 - **Adaptability**: Allow switching between different HTTP client implementations with minimal code changes
 - **Streaming Support**: Provide first-class support for streaming responses, which is crucial for LLM interactions
 - **Concurrency**: Support parallel requests through request pooling
 
-By abstracting away the differences between various HTTP client libraries, the unified HTTP client API allows developers to write code that works across different environments and frameworks without modification.
+By abstracting away the differences between various HTTP client libraries, the Instructor works across different environments and frameworks without modification.
 
 ## Key Features
 
@@ -76,7 +78,7 @@ Built-in features for debugging and testing:
 
 ## Architecture Overview
 
-The unified HTTP client API follows a layered architecture with several key components:
+The Instructor HTTP client follows a layered architecture with several key components:
 
 ### Client Layer
 
@@ -136,25 +138,23 @@ HttpClientResponse (interface)
 
 The [Guzzle HTTP Client](https://docs.guzzlephp.org/) is a powerful HTTP client library for PHP. It provides:
 
-- Promise-based asynchronous requests
 - PSR-7 HTTP message implementation
 - Middleware system
 - Request and response plugins
 - HTTP/2 support (via cURL)
 
-The `GuzzleDriver` adapts Guzzle to the unified HTTP client API interface.
+The `GuzzleDriver` adapts Guzzle to the Instructor HTTP client API interface.
 
 ### Symfony HTTP Client
 
 The [Symfony HTTP Client](https://symfony.com/doc/current/http_client.html) is a component of the Symfony framework. Features include:
 
-- Asynchronous requests
 - HTTP/2 push support
 - PSR-18 compatibility
 - Automatic content-type detection
 - Proxy support
 
-The `SymfonyDriver` adapts the Symfony HTTP Client to the unified HTTP client API.
+The `SymfonyDriver` adapts the Symfony HTTP Client to the Instructor HTTP client API.
 
 ### Laravel HTTP Client
 
@@ -166,7 +166,7 @@ The [Laravel HTTP Client](https://laravel.com/docs/http-client) is built into th
 - Rate limiting
 - Retry logic
 
-The `LaravelDriver` adapts the Laravel HTTP Client to the unified HTTP client API.
+The `LaravelDriver` adapts the Laravel HTTP Client to the Instructor HTTP client API.
 
 ### Mock HTTP Driver
 

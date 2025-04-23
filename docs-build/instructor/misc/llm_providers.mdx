@@ -3,171 +3,28 @@ title: LLM API Providers
 description: 'Instructor supports a number of LLM API providers.'
 ---
 
-Only tested providers with examples are listed here.
-
-
-## Anthropic
-
-Supported extraction modes:
-
-- Mode::Tools
-- Mode::Json (recommended)
-- Mode::MdJson
-
-Example:
-- `./examples/05_APISupport/LLMSupportAnthropic/run.php`
-
-
-
-## Azure OpenAI
-
-Azure is an alternative provider of OpenAI models. You can consider using it as
-a backup provider in case OpenAI is not available.
-
-Supported extraction modes:
-
-- Mode::Tools (recommended)
-- Mode::Json
-- Mode::MdJson
-
-Example:
-- `./examples/05_APISupport/LLMSupportAzureOAI/run.php`
-
-
-## Cohere
-
-
-Cohere API is a commercial provider of Command models with their own API, which
-is significantly different from OpenAI. Instructor uses only a limited set of
-Cohere API capabilities, specifically - chat completions.
-
-You can find the details on how to configure the client in the example below.
-Cohere does not support JSON mode.
-
-Mode compatibility:
-- Mode::MdJson - supported
-- Mode::Json - supported, recommended
-- Mode::Tools - partially supported, not recommended (at the moment)
-
-Reasons Mode::Tools is not recommended:
-
-- Cohere tools mode does not support JSON Schema, which only allows to extract very simple data schemas.
-- Performance of the currently available versions of Cohere models in tools mode for Instructor use case (data extraction) is poor.
-
-Example:
-- `./examples/05_APISupport/LLMSupportCohere/run.php`
-
-
-
-## FireworksAI
-
-Supported extraction modes:
-
-- Mode::MdJson
-- Mode::Json (for selected models)
-- Mode::Tools (for selected models)
-
-Example:
-- `./examples/05_APISupport/LLMSupportFireworksAI/run.php`
-
-
-
-
-## Gemini
-
-Supported extraction modes:
-
-- Mode::MdJson
-- Mode::Json (recommended)
-- Mode::Tools (experimental - not stable)
-
-Example:
-- `./examples/05_APISupport/LLMSupportGemini/run.php`
-
-
-
-## Groq
-
-Supported extraction modes:
-
-- Mode::MdJson
-- Mode::Json (recommended)
-- Mode::Tools (experimental - not stable)
-
-Example:
-- `./examples/05_APISupport/LLMSupportGroq/run.php`
-
-
-
-
-## Mistral API
-
-Supported extraction modes:
-
-- Mode::MdJson
-- Mode::Json (for selected models)
-- Mode::Tools (for selected models)
-
-Example:
-- `./examples/05_APISupport/LLMSupportMistral/run.php`
-
-
-
-## Ollama
-
-Supported extraction modes:
-
-- Mode::MdJson
-- Mode::Json (for selected models, recommended)
-- Mode::Tools (for selected models)
-
-Example:
-- `./examples/05_APISupport/LLMSupportOllama/run.php`
-
-
-
-## OpenAI
-
-OpenAI is the default provider that is called by Instructor unless user
-configures different one.
-
-OpenAI models (esp. GPT-4 and newer) perform very well across all 3 extraction
-modes.  
-
-Supported extraction modes:
- - Mode::Tools (recommended)
- - Mode::Json
- - Mode::MdJson
-
-Majority of examples use OpenAI provider.
-
-- `./examples/05_APISupport/LLMSupportOpenAI/run.php`
-
-
-
-## OpenRouter
-
-You have to use our client adapter to work around the problem in the response format
-returned by OpenRouter for non-streamed requests.
-
-Supported extraction modes:
-
- - Mode::MdJson
- - Mode::Json (for selected models)
- - Mode::Tools (for selected models)
-
-Example:
- - `./examples/05_APISupport/LLMSupportOpenRouter/run.php`
-
-
-
-## TogetherAI
-
-Supported extraction modes:
-
-- Mode::MdJson
-- Mode::Json (for selected models)
-- Mode::Tools (for selected models)
-
-Example:
-- `./examples/05_APISupport/LLMSupportTogetherAI/run.php`
+Following table lists the supported providers:
+
+- A21
+- Anthropic
+- Azure
+- Cerebras
+- Cohere
+- Cohere (OpenAI compatible API)
+- DeepSeek
+- Fireworks
+- Gemini
+- Gemini (OpenAI compatible API)
+- Groq
+- MiniMaxi
+- Mistral
+- Moonshot
+- Ollama
+- OpenAI
+- OpenRouter
+- Perplexity
+- SambaNova
+- Together
+- XAI
+
+Check [the cookbook](/cookbook) for examples of how to use them.

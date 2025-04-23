@@ -13,6 +13,7 @@ use Cognesy\InstructorHub\Core\CommandProvider;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
+use Cognesy\Utils\BasePath;
 
 class Hub extends CliApp
 {
@@ -22,37 +23,37 @@ class Hub extends CliApp
     public function __construct()
     {
         $exampleRepo = new ExampleRepository(
-            __DIR__ . '/../examples/'
+            BasePath::get('examples'),
         );
 
         $docGen = new MintlifyDocGenerator(
             examples: $exampleRepo,
-            docsSourceDir: __DIR__ . '/../docs',
-            docsTargetDir: __DIR__ . '/../docs-build',
-            cookbookTargetDir: __DIR__ . '/../docs-build/cookbook',
-            mintlifySourceIndexFile: __DIR__ . '/../docs/mint.json',
-            mintlifyTargetIndexFile: __DIR__ . '/../docs-build/mint.json',
+            docsSourceDir: BasePath::get('docs'),
+            docsTargetDir: BasePath::get('docs-build'),
+            cookbookTargetDir: BasePath::get('docs-build/cookbook'),
+            mintlifySourceIndexFile: BasePath::get('docs/mint.json'),
+            mintlifyTargetIndexFile: BasePath::get('docs-build/mint.json'),
             dynamicGroups: [
-                'Basics',
-                'Advanced',
-                'Prompting',
-                'Troubleshooting',
-                'API Support',
+                'Instructor - Basics',
+                'Instructor - Advanced',
+                'Instructor - Prompting',
+                'Instructor - Troubleshooting',
+                'Instructor - API Support',
 
-                "LLM Basics",
-                "LLM Advanced",
-                "LLM Troubleshooting",
-                "LLM API Support",
-                "LLM Extras",
+                "Polyglot - LLM Basics",
+                "Polyglot - LLM Advanced",
+                "Polyglot - LLM Troubleshooting",
+                "Polyglot - LLM API Support",
+                "Polyglot - LLM Extras",
 
-                'Extras',
-                'Zero-Shot Prompting',
-                'Few-Shot Prompting',
-                'Thought Generation',
-                'Ensembling',
-                'Self-Criticism',
-                'Decomposition',
-                'Miscellaneous',
+                'Prompting - Extras',
+                'Prompting - Zero-Shot Prompting',
+                'Prompting - Few-Shot Prompting',
+                'Prompting - Thought Generation',
+                'Prompting - Ensembling',
+                'Prompting - Self-Criticism',
+                'Prompting - Decomposition',
+                'Prompting - Miscellaneous',
             ]
         );
 

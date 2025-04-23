@@ -8,7 +8,7 @@ class ExampleRepository {
     public string $baseDir = '';
 
     public function __construct(string $baseDir) {
-        $this->baseDir = $baseDir ?: ($this->guessBaseDir() . '/');
+        $this->baseDir = $this->withEndingSlash($baseDir ?: ($this->guessBaseDir() . '/'));
     }
 
     /** @return ExampleGroup[] */
@@ -159,5 +159,9 @@ class ExampleRepository {
             }
         }
         return '';
+    }
+
+    private function withEndingSlash(string $path) : string {
+        return rtrim($path, '/') . '/';
     }
 }
