@@ -18,7 +18,7 @@
       "Cognesy\\Utils\\": "src/"
     }
   },
-  "version": "0.14.1",
+  "version": "0.14.2",
   "require": {
     "php": "^8.2",
     "ext-ctype": "*",

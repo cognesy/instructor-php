@@ -8,8 +8,13 @@ use Dotenv\Dotenv;
  */
 class Env
 {
-    static private array $paths = [__DIR__.'/..'];
-    static private array $names = ['.env'];
+    static private array $paths = [
+        '.',
+        './.env',
+    ];
+    static private array $names = [
+        '.env'
+    ];
     static private Dotenv $dotenv;
 
     /**
@@ -23,15 +28,17 @@ class Env
         if (is_string($paths)) {
             $paths = [$paths];
         }
-        if (is_string($names)) {
-            $names = [$names];
-        }
         if (!empty($paths)) {
             self::$paths = $paths;
+        }
+
+        if (is_string($names)) {
+            $names = [$names];
         }
         if (!empty($names)) {
             self::$names = $names;
         }
+
         self::load();
     }
 
@@ -69,7 +76,10 @@ class Env
         if ([] === self::$paths && [] === self::$names) {
             return;
         }
-        self::$dotenv = Dotenv::createImmutable(self::$paths, self::$names);
+        $resolvedPaths = array_map(function($path) {
+            return BasePath::get($path);
+        }, self::$paths);
+        self::$dotenv = Dotenv::createImmutable($resolvedPaths, self::$names);
         self::$dotenv->safeLoad();
     }
 }
