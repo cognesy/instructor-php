@@ -57,7 +57,7 @@
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/"
     },
     "files": [
-      "tests/Examples/Call/test_functions.php"
+      "packages/instructor/tests/Examples/Call/test_functions.php"
     ]
   },
   "authors": [
