@@ -1,5 +1,6 @@
 {
   "name": "cognesy/instructor-experimental",
+  "version": "0.14.3",
   "description": "Experimental code used by Instructor and Polyglot libraries",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -18,15 +19,36 @@
       "Cognesy\\Experimental\\": "/src"
     }
   },
-  "version": "0.12.3",
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Experimental\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": "^8.2"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
     "cognesy/instructor": "Instructor library",
     "cognesy/polyglot": "Polyglot library"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

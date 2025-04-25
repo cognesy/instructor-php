@@ -1,12 +1,17 @@
 {
   "name": "cognesy/instructor-polyglot",
+  "version": "0.14.3",
   "description": "Unified LLM connectivity layer for PHP applications",
   "autoload": {
     "psr-4": {
       "Cognesy\\Polyglot\\": "src/"
     }
   },
-  "version": "0.14.2",
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Polyglot\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.14",
@@ -14,9 +19,27 @@
     "cognesy/instructor-setup": "^0.14"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "mockery/mockery": "^1.6",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
     "cognesy/instructor-addons": "Provided extra optional capabilities like evals, tool use, etc."
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

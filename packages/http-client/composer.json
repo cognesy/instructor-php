@@ -1,12 +1,17 @@
 {
   "name": "cognesy/instructor-http-client",
+  "version": "0.14.3",
   "description": "Polyglot's unified HTTP connectivity layer",
   "autoload": {
     "psr-4": {
       "Cognesy\\Http\\": "src/"
     }
   },
-  "version": "0.14.2",
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Http\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.14",
@@ -15,12 +20,30 @@
     "guzzlehttp/psr7": "^2.7"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "mockery/mockery": "^1.6",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
     "symfony/http-client": "For Symfony HTTP client support",
     "psr/http-message": "*",
     "psr/http-client": "*",
     "illuminate/http": "For Laravel HTTP client support"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

@@ -42,5 +42,8 @@ jobs:
     - name: Regenerate Autoloader
       run: composer dump-autoload
 
-    - name: Run test suite
-      run: composer test
+#    - name: Run test suite
+#      run: composer test
+
+    - name: Run all tests
+      run: ./bin/run-all-tests.sh

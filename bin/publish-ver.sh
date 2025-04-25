@@ -35,6 +35,7 @@ PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
 PACKAGES["packages/setup"]="cognesy/instructor-setup"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
+PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 
 # 1. Update all package versions using sync-ver.sh
 echo "Step 1: Updating package versions..."

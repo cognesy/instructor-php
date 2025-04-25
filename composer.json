@@ -44,7 +44,17 @@
       "Cognesy\\Experimental\\": "packages/experimental/src/",
       "Cognesy\\Evals\\": "evals/",
       "Examples\\": "examples/",
-      "Tests\\": "tests/"
+      "Tests\\": "tests/",
+      "Cognesy\\Addons\\Tests\\": "packages/addons/tests/",
+      "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",
+      "Cognesy\\Experimental\\Tests\\": "packages/experimental/tests/",
+      "Cognesy\\Http\\Tests\\": "packages/http-client/tests/",
+      "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
+      "Cognesy\\Instructor\\Tests\\": "packages/instructor/tests/",
+      "Cognesy\\Polyglot\\Tests\\": "packages/polyglot/tests/",
+      "Cognesy\\Setup\\Tests\\": "packages/setup/tests/",
+      "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
+      "Cognesy\\Utils\\Tests\\": "packages/utils/tests/"
     },
     "files": [
       "tests/Examples/Call/test_functions.php"

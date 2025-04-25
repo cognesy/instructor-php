@@ -1,5 +1,6 @@
 {
   "name": "cognesy/instructor-struct",
+  "version": "0.14.3",
   "description": "Structured data extraction in PHP, powered by LLMs - core library",
   "keywords": [
     "llm",
@@ -19,9 +20,6 @@
   ],
   "type": "library",
   "license": "MIT",
-  "bin": [
-    "bin/instructor"
-  ],
   "homepage": "https://instructorphp.com",
   "support": {
     "issues": "https://github.com/cognesy/instructor-php/issues",
@@ -39,10 +37,14 @@
     },
     "files": []
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Instructor\\Tests\\": "tests/"
+    }
+  },
   "config": {
     "allow-plugins": {
-      "pestphp/pest-plugin": true,
-      "php-http/discovery": true
+      "pestphp/pest-plugin": true
     },
     "sort-packages": true
   },
@@ -61,7 +63,18 @@
     "symfony/validator": "^6.4 || ^7.0"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "mockery/mockery": "^1.6",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
   },
-  "version": "0.14.2"
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  }
 }

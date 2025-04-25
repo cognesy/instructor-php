@@ -1,5 +1,6 @@
 {
   "name": "cognesy/instructor-auxiliary",
+  "version": "0.14.3",
   "description": "Collection of auxiliary services and integrations",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -18,7 +19,11 @@
       "Cognesy\\Auxiliary\\": "src/"
     }
   },
-  "version": "0.14.2",
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Auxiliary\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": "^8.2",
     "ext-dom": "*",
@@ -26,10 +31,27 @@
     "guzzlehttp/psr7": "^2.7",
     "league/html-to-markdown": "^5.1",
     "phpdocumentor/reflection-docblock": "^5.4",
-    "spatie/browsershot": "^4.1",
+    "spatie/browsershot": "^5.0.6",
     "symfony/dom-crawler": "^7.1"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

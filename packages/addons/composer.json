@@ -1,5 +1,6 @@
 {
   "name": "cognesy/instructor-addons",
+  "version": "0.14.3",
   "description": "Optional addons for Instructor library, should be used with Instructor or Polyglot",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -18,18 +19,43 @@
       "Cognesy\\Addons\\": "src/"
     }
   },
-  "version": "0.14.2",
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Addons\\Tests\\": "tests/"
+    },
+    "files": [
+      "tests/Examples/Call/test_functions.php"
+    ]
+  },
   "require": {
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-utils": "^0.14"
+    "cognesy/instructor-utils": "^0.14",
+    "cognesy/instructor-struct": "^0.14"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
     "cognesy/instructor-struct": "Some addons need Instructor core library - e.g. Image class",
     "cognesy/instructor-polyglot": "Some addones can be used with Instructor Polyglot library - e.g. Chat, Evals, FunctionCall, ToolUse"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
   }
 }

@@ -1,0 +1,43 @@
+# Composer dependency and autoload files
+composer.lock
+
+# Dependencies
+/vendor/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# Logs and debug files
+*.log
+*.cache
+
+# PHP server and error logs
+error_log
+.php_error.log
+php_errors.log
+
+# Node modules and build artifacts (if using Node or frontend tooling)
+node_modules/
+dist/
+build/
+
+# Python venvs
+.venv/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+/.idea/
+/.vscode/
+.cursorignore
+
+# PHPUnit, Pest, and other test result files
+.phpunit.result.cache
+/.phpunit.result.cache
+/tests/_output/
+/tests/_support/_generated/
+/coverage/

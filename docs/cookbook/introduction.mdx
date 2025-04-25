@@ -40,7 +40,7 @@ $ ./bin/instructor hub list
 
 ### List Cookbooks
 
-Run `./hub.sh list` you can see all the available tutorials and examples.
+Run `./bin/instructor hub list` you can see all the available tutorials and examples.
 
 ```bash
 $ ./bin/instructor hub list
@@ -48,7 +48,7 @@ $ ./bin/instructor hub list
 
 ### Reading a Cookbook
 
-To read a tutorial, you can run `./hub.sh show {id}` to see the full tutorial in the terminal.
+To read a tutorial, you can run `./bin/instructor hub show {id}` to see the full tutorial in the terminal.
 
 ```bash
 $ ./bin/instructor hub show {id}
@@ -60,7 +60,7 @@ Currently, there is no way to page through the tutorial - feel free to contribut
 
 ### Running a Cookbook
 
-To run a tutorial, you run `./hub.sh run {id}` in terminal - it will execute the code and show the output. You need to have your OPENAI_API_KEY set in your environment (.env file in root directory of your copy of instructor-php repo). 
+To run a tutorial, you run `./bin/instructor hub run {id}` in terminal - it will execute the code and show the output. You need to have your OPENAI_API_KEY set in your environment (.env file in root directory of your copy of instructor-php repo).
 
 ```bash
 $ ./bin/instructor hub run {id}
@@ -69,7 +69,7 @@ $ ./bin/instructor hub run {id}
 
 ### Running all Cookbooks
 
-This is mostly for testing if cookbooks are executed properly, but you can run `./hub.sh all {id}` to run all the tutorials and examples in the terminal, starting from the one you specify.
+This is mostly for testing if cookbooks are executed properly, but you can run `./bin/instructor hub all {id}` to run all the tutorials and examples in the terminal, starting from the one you specify.
 
 ```bash
 $ ./bin/instructor hub all {id}

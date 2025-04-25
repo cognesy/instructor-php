@@ -20,15 +20,16 @@ echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 
 # Define packages and their sections based on composer.json
 declare -A PACKAGES
-PACKAGES["packages/utils"]="cognesy/instructor-utils"
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
-PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
-PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
+PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
+PACKAGES["packages/instructor"]="cognesy/instructor-struct"
+PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
 PACKAGES["packages/setup"]="cognesy/instructor-setup"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
+PACKAGES["packages/utils"]="cognesy/instructor-utils"
 
 # Define which packages go in which section of the main composer.json
 declare -A MAIN_REQUIRE_PACKAGES
@@ -43,6 +44,7 @@ MAIN_REQUIRE_DEV_PACKAGES["packages/http-client"]="cognesy/instructor-http-clien
 MAIN_REQUIRE_DEV_PACKAGES["packages/hub"]="cognesy/instructor-hub"
 MAIN_REQUIRE_DEV_PACKAGES["packages/setup"]="cognesy/instructor-setup"
 MAIN_REQUIRE_DEV_PACKAGES["packages/tell"]="cognesy/instructor-tell"
+MAIN_REQUIRE_DEV_PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
