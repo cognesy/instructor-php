@@ -3,6 +3,7 @@ namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Data\ExampleGroup;
+use Cognesy\Utils\BasePath;
 
 class ExampleRepository {
     public string $baseDir = '';
@@ -94,7 +95,7 @@ class ExampleRepository {
 
     private function guessBaseDir() : string {
         // get current directory of this script
-        return dirname(__DIR__).'/../../examples';
+        return BasePath::get('examples');
     }
 
     private function getExampleDirectories() : array {

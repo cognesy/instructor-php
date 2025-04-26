@@ -19,6 +19,26 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 
 
 
+## Instructor packages
+
+This repository is a monorepo containing all Instructor's components (required and optional). It hosts all that you need to work with LLMs via Instructor.
+
+Individual components are distributed also as standalone packages that can be used independently.
+
+![image](docs/images/instructor-packages.png)
+
+Links to read-only repositories of the individual packages:
+ - [instructor-struct](https://github.com/cognesy/instructor-struct) - get dev friendly structured outputs from LLMs
+ - [instructor-polyglot](https://github.com/cognesy/instructor-polyglot) - use single API for inference and embeddings across most of LLM providers, easily switch between them (e.g., develop on Ollama, switch to Groq in production)
+ - [instructor-http-client](https://github.com/cognesy/instructor-http-client) - easily switch between underlying HTTP client libraries (out-of-the-box support for Guzzle, Symfony, Laravel)
+ - [instructor-aux](https://github.com/cognesy/instructor-aux) - external tools and integrations, e.g. used by Instructor examples
+ - [instructor-addons](https://github.com/cognesy/instructor-addons) - extra capabilities and common LLM-related problem solutions
+ - [instructor-utils](https://github.com/cognesy/instructor-utils) - common utility classes used by Instructor packages
+ - [instructor-setup](https://github.com/cognesy/instructor-setup) - CLI tool for publishing Instructor config files in your app
+ - [instructor-hub](https://github.com/cognesy/instructor-hub) - CLI tool for browsing and running Instructor examples
+ - [instructor-tell](https://github.com/cognesy/instructor-tell) - CLI tool for executing LLM prompts in your terminal
+
+
 
 ## Feature highlights
 

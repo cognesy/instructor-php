@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-polyglot",
-  "version": "0.14.3",
+  "version": "0.14.4",
   "description": "Unified LLM connectivity layer for PHP applications",
   "autoload": {
     "psr-4": {

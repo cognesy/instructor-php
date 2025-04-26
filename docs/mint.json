@@ -30,18 +30,23 @@
     "tabs": [
         {
             "name": "Polyglot",
-            "url": "instructor/polyglot",
-            "group": "Polyglot Guide"
+            "url": "polyglot",
+            "group": "Polyglot"
         },
         {
             "name": "HTTP Client",
-            "url": "instructor/http",
-            "group": "HTTP Client Guide"
+            "url": "http",
+            "group": "HTTP Client"
         },
         {
             "name": "Cookbook",
             "url": "cookbook",
             "group": "Cookbook"
+        },
+        {
+            "name": "Changelog",
+            "url": "release-notes",
+            "group": "Release Notes"
         }
     ],
     "anchors": [
@@ -68,14 +73,14 @@
             ]
         },
         {
-            "group": "Concepts",
+            "group": "Instructor \\ Concepts",
             "pages": [
                 "instructor/concepts/overview",
                 "instructor/concepts/why"
             ]
         },
         {
-            "group": "Essentials",
+            "group": "Instructor \\ Essentials",
             "pages": [
                 "instructor/essentials/usage",
                 "instructor/essentials/modes",
@@ -87,7 +92,7 @@
             ]
         },
         {
-            "group": "Advanced Features",
+            "group": "Instructor \\ Advanced Features",
             "pages": [
                 "instructor/advanced/model_options",
                 "instructor/advanced/partials",
@@ -98,7 +103,7 @@
             ]
         },
         {
-            "group": "Practical Techniques",
+            "group": "Instructor \\ Practical Techniques",
             "pages": [
                 "instructor/techniques/prompting",
                 "instructor/techniques/classification",
@@ -106,7 +111,7 @@
             ]
         },
         {
-            "group": "Internals",
+            "group": "Instructor \\ Internals",
             "pages": [
                 "instructor/internals/instructor",
                 "instructor/internals/lifecycle",
@@ -120,7 +125,7 @@
             ]
         },
         {
-            "group": "More",
+            "group": "Instructor \\ More",
             "pages": [
                 "instructor/misc/philosophy",
                 "instructor/misc/contributing",
@@ -131,6 +136,7 @@
         {
             "group": "Release Notes",
             "pages": [
+                "release-notes/v0.14.4",
                 "release-notes/v0.14.3",
                 "release-notes/v0.14.2",
                 "release-notes/v0.14.1",
@@ -152,101 +158,101 @@
             ]
         },
         {
-            "group": "Introduction",
+            "group": "Polyglot",
             "pages": [
-                "instructor/polyglot/overview",
-                "instructor/polyglot/quickstart",
-                "instructor/polyglot/setup"
+                "polyglot/overview",
+                "polyglot/quickstart",
+                "polyglot/setup"
             ]
         },
         {
-            "group": "Essentials",
+            "group": "Polyglot \\ Essentials",
             "pages": [
-                "instructor/polyglot/essentials/overview",
-                "instructor/polyglot/essentials/creating-requests",
-                "instructor/polyglot/essentials/response-handling",
-                "instructor/polyglot/essentials/inference-class",
-                "instructor/polyglot/essentials/request-options"
+                "polyglot/essentials/overview",
+                "polyglot/essentials/creating-requests",
+                "polyglot/essentials/response-handling",
+                "polyglot/essentials/inference-class",
+                "polyglot/essentials/request-options"
             ]
         },
         {
-            "group": "Streaming",
+            "group": "Polyglot \\ Streaming",
             "pages": [
-                "instructor/polyglot/streaming/overview",
-                "instructor/polyglot/streaming/misc"
+                "polyglot/streaming/overview",
+                "polyglot/streaming/misc"
             ]
         },
         {
-            "group": "Output Modes",
+            "group": "Polyglot \\ Embeddings",
             "pages": [
-                "instructor/polyglot/modes/overview",
-                "instructor/polyglot/modes/text",
-                "instructor/polyglot/modes/json",
-                "instructor/polyglot/modes/json-schema",
-                "instructor/polyglot/modes/md-json",
-                "instructor/polyglot/modes/tools"
+                "polyglot/embeddings/overview",
+                "polyglot/embeddings/work-with-embeddings",
+                "polyglot/embeddings/optimization"
             ]
         },
         {
-            "group": "Embeddings",
+            "group": "Polyglot \\ Output Modes",
             "pages": [
-                "instructor/polyglot/embeddings/overview",
-                "instructor/polyglot/embeddings/work-with-embeddings",
-                "instructor/polyglot/embeddings/optimization"
+                "polyglot/modes/overview",
+                "polyglot/modes/text",
+                "polyglot/modes/json",
+                "polyglot/modes/json-schema",
+                "polyglot/modes/md-json",
+                "polyglot/modes/tools"
             ]
         },
         {
-            "group": "Troubleshooting",
+            "group": "Polyglot \\ Advanced",
             "pages": [
-                "instructor/polyglot/troubleshooting/overview",
-                "instructor/polyglot/troubleshooting/issues-authentication",
-                "instructor/polyglot/troubleshooting/issues-connection",
-                "instructor/polyglot/troubleshooting/issues-streaming",
-                "instructor/polyglot/troubleshooting/issues-rate-limits",
-                "instructor/polyglot/troubleshooting/issues-model-specific",
-                "instructor/polyglot/troubleshooting/issues-provider-specific",
-                "instructor/polyglot/troubleshooting/issues-configuration",
-                "instructor/polyglot/troubleshooting/debugging"
+                "polyglot/advanced/context-caching",
+                "polyglot/advanced/connection-mgmt",
+                "polyglot/advanced/custom-config",
+                "polyglot/advanced/custom-http-client",
+                "polyglot/advanced/extending"
             ]
         },
         {
-            "group": "Advanced",
+            "group": "Polyglot \\ Troubleshooting",
             "pages": [
-                "instructor/polyglot/advanced/context-caching",
-                "instructor/polyglot/advanced/connection-mgmt",
-                "instructor/polyglot/advanced/custom-config",
-                "instructor/polyglot/advanced/custom-http-client",
-                "instructor/polyglot/advanced/extending"
+                "polyglot/troubleshooting/overview",
+                "polyglot/troubleshooting/issues-authentication",
+                "polyglot/troubleshooting/issues-connection",
+                "polyglot/troubleshooting/issues-streaming",
+                "polyglot/troubleshooting/issues-rate-limits",
+                "polyglot/troubleshooting/issues-model-specific",
+                "polyglot/troubleshooting/issues-provider-specific",
+                "polyglot/troubleshooting/issues-configuration",
+                "polyglot/troubleshooting/debugging"
             ]
         },
         {
-            "group": "Internals",
+            "group": "Polyglot \\ Internals",
             "pages": [
-                "instructor/polyglot/internals/overview",
-                "instructor/polyglot/internals/public-api",
-                "instructor/polyglot/internals/request-response",
-                "instructor/polyglot/internals/lifecycle",
-                "instructor/polyglot/internals/providers",
-                "instructor/polyglot/internals/adapters",
-                "instructor/polyglot/internals/http-client",
-                "instructor/polyglot/internals/configuration",
-                "instructor/polyglot/internals/events"
+                "polyglot/internals/overview",
+                "polyglot/internals/public-api",
+                "polyglot/internals/request-response",
+                "polyglot/internals/lifecycle",
+                "polyglot/internals/providers",
+                "polyglot/internals/adapters",
+                "polyglot/internals/http-client",
+                "polyglot/internals/configuration",
+                "polyglot/internals/events"
             ]
         },
         {
-            "group": "HTTP Client Guide",
+            "group": "HTTP Client",
             "pages": [
-                "instructor/http/1-overview",
-                "instructor/http/2-getting-started",
-                "instructor/http/3-making-requests",
-                "instructor/http/4-handling-responses",
-                "instructor/http/5-streaming-responses",
-                "instructor/http/7-changing-client",
-                "instructor/http/8-changing-client-config",
-                "instructor/http/9-1-custom-clients",
-                "instructor/http/10-middleware",
-                "instructor/http/11-processing-with-middleware",
-                "instructor/http/12-troubleshooting"
+                "http/1-overview",
+                "http/2-getting-started",
+                "http/3-making-requests",
+                "http/4-handling-responses",
+                "http/5-streaming-responses",
+                "http/7-changing-client",
+                "http/8-changing-client-config",
+                "http/9-1-custom-clients",
+                "http/10-middleware",
+                "http/11-processing-with-middleware",
+                "http/12-troubleshooting"
             ]
         },
         {

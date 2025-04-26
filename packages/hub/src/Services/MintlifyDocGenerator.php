@@ -5,6 +5,7 @@ namespace Cognesy\InstructorHub\Services;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Utils\Mintlify\MintlifyIndex;
 use Cognesy\InstructorHub\Views\DocGenView;
+use Cognesy\Utils\BasePath;
 use Cognesy\Utils\Files;
 
 class MintlifyDocGenerator
@@ -46,6 +47,9 @@ class MintlifyDocGenerator
     private function updateFiles() : void {
         Files::removeDirectory($this->docsTargetDir);
         Files::copyDirectory($this->docsSourceDir, $this->docsTargetDir);
+        $this->copySubpackageDocs('instructor', 'docs-build/instructor');
+        $this->copySubpackageDocs('polyglot', 'docs-build/polyglot');
+        $this->copySubpackageDocs('http-client', 'docs-build/http');
         Files::renameFileExtensions($this->docsTargetDir, 'md', 'mdx');
 
         $groups = $this->examples->getExampleGroups();
@@ -103,5 +107,22 @@ class MintlifyDocGenerator
             $this->view->renderNew();
         }
         $this->view->renderResult(true);
+    }
+
+    private function copySubpackageDocs(string $subpackage, string $targetDir, bool $renameToMdx = false) : bool {
+        // copy from packages/instructor/docs to docs/instructor
+        Files::removeDirectory(BasePath::get($targetDir));
+        Files::copyDirectory(
+            BasePath::get("packages/$subpackage/docs"),
+            BasePath::get($targetDir),
+        );
+        if ($renameToMdx) {
+            Files::renameFileExtensions(
+                BasePath::get($targetDir),
+                'md',
+                'mdx',
+            );
+        }
+        return true;
     }
 }

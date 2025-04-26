@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-http-client",
-  "version": "0.14.3",
+  "version": "0.14.4",
   "description": "Polyglot's unified HTTP connectivity layer",
   "autoload": {
     "psr-4": {
