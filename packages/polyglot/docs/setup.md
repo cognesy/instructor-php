@@ -5,21 +5,30 @@ description: 'Setup of Polyglot in your PHP project'
 
 This chapter will guide you through the initial steps of setting up and using Polyglot in your PHP project. We'll cover installation and configuration to get you up and running quickly.
 
+
+
+
 ## Installation
 
-Polyglot is currently distributed as part of the Instructor PHP package. You can install it using Composer:
+You can install it using Composer:
 
 ```bash
-composer require cognesy/instructor-php
+composer require cognesy/instructor-polyglot
 ```
 
 This will install Polyglot along with its dependencies.
+
+
+> NOTE: Polyglot is distributed as part of the Instructor PHP package, so if you have it installed, you don't need to install Polyglot separately.
 
 ## Requirements
 
 - PHP 8.2 or higher
 - Composer
 - Valid API keys for at least one supported LLM provider
+
+
+
 
 ## Configuration
 
@@ -139,6 +148,8 @@ By default, Polyglot looks for configuration files in the `config` directory rel
 ```
 INSTRUCTOR_CONFIG_PATH=/path/to/your/config
 ```
+
+
 
 
 ## Troubleshooting

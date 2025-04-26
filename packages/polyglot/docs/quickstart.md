@@ -10,14 +10,13 @@ For detailed setup instructions, see [Setup](setup).
 
 ## Install Polyglot with Composer
 
-Run following command in your terminal:
+To install Polyglot in your project, run following command in your terminal:
 
 ```bash
-composer require cognesy/instructor-php
+composer require cognesy/instructor-polyglot
 ```
 
-> NOTE: Currently Polyglot is only available as a part of InstructorPHP package.
-> In the future it will be available as a standalone package.
+> NOTE: Polyglot is already included in Instructor for PHP package, so if you have it installed, you don't need to install Polyglot separately.
 
 
 ## Create and Run Example

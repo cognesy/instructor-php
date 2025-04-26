@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Evals\UseExamples;
+namespace Evals\UseExamples;
 
-use Cognesy\Addons\Evals\Contracts\CanObserveExecution;
-use Cognesy\Addons\Evals\Execution;
-use Cognesy\Addons\Evals\Observation;
+use Cognesy\Evals\Contracts\CanObserveExecution;
+use Cognesy\Evals\Execution;
+use Cognesy\Evals\Observation;
 
 class CompanyEval implements CanObserveExecution
 {

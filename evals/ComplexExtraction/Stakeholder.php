@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Evals\ComplexExtraction;
+namespace Evals\ComplexExtraction;
 
 /** Represents a project stakeholder */
 class Stakeholder {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Evals\ComplexExtraction;
+namespace Evals\ComplexExtraction;
 
 enum StakeholderRole: string {
     case Customer = 'customer';

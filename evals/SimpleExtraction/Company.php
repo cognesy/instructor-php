@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Evals\SimpleExtraction;
+namespace Evals\SimpleExtraction;
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 

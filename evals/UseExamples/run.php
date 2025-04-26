@@ -1,16 +1,16 @@
 <?php
 require 'evals/boot.php';
 
-use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
-use Cognesy\Addons\Evals\Executors\Data\InferenceCases;
-use Cognesy\Addons\Evals\Executors\Data\InstructorData;
-use Cognesy\Addons\Evals\Executors\RunInstructor;
-use Cognesy\Addons\Evals\Experiment;
-use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Addons\Evals\Observers\Evaluate\ArrayMatchEval;
-use Cognesy\Evals\UseExamples\Company;
-use Cognesy\Evals\UseExamples\CompanyEval;
+use Cognesy\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Evals\Executors\Data\InferenceCases;
+use Cognesy\Evals\Executors\Data\InstructorData;
+use Cognesy\Evals\Executors\RunInstructor;
+use Cognesy\Evals\Experiment;
+use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
+use Cognesy\Evals\Observers\Evaluate\ArrayMatchEval;
 use Cognesy\Polyglot\LLM\Enums\Mode;
+use Evals\UseExamples\Company;
+use Evals\UseExamples\CompanyEval;
 
 $data = new InstructorData(
     messages: [

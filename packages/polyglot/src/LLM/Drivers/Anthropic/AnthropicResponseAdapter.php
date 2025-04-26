@@ -81,7 +81,7 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
         $content = '';
         $nl = '';
         foreach ($data['content'] ?? [] as $part) {
-            $content .= $nl . $part['thinking'] ?? '';
+            $content .= $nl . ($part['thinking'] ?? '');
             $nl = PHP_EOL;
         }
         return $content;

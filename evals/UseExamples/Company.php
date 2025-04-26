@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Evals\UseExamples;
+namespace Evals\UseExamples;
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 

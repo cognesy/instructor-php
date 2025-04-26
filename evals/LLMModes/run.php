@@ -1,16 +1,16 @@
 <?php
 require 'evals/boot.php';
 
-use Cognesy\Addons\Evals\Enums\NumberAggregationMethod;
-use Cognesy\Addons\Evals\Executors\Data\InferenceCases;
-use Cognesy\Addons\Evals\Executors\Data\InferenceData;
-use Cognesy\Addons\Evals\Executors\Data\InferenceSchema;
-use Cognesy\Addons\Evals\Executors\RunInference;
-use Cognesy\Addons\Evals\Experiment;
-use Cognesy\Addons\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Evals\LLMModes\CompanyEval;
+use Cognesy\Evals\Enums\NumberAggregationMethod;
+use Cognesy\Evals\Executors\Data\InferenceCases;
+use Cognesy\Evals\Executors\Data\InferenceData;
+use Cognesy\Evals\Executors\Data\InferenceSchema;
+use Cognesy\Evals\Executors\RunInference;
+use Cognesy\Evals\Experiment;
+use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Settings;
+use Evals\LLMModes\CompanyEval;
 
 $data = new InferenceData(
     messages: [

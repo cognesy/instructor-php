@@ -1,6 +1,6 @@
 <?php
 $loader = require 'vendor/autoload.php';
-$loader->add('Cognesy\\Evals\\', __DIR__ . '../evals/');
+$loader->add('Evals\\', __DIR__ . '../evals/');
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

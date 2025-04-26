@@ -14,16 +14,29 @@ The core philosophy behind Polyglot is to create a consistent, provider-agnostic
 
 Polyglot was developed as part of the Instructor for PHP library, which focuses on structured outputs from LLMs, but can also be used as a standalone library for general LLM interactions.
 
+
+
+
 ## Key Features
 
-### Unified API
+### Unified LLM API
 
 Polyglot's primary feature is its unified API that works across multiple LLM providers:
 
-- Consistent interface for making inference requests
+- Consistent interface for making inference or embedding requests
 - Common message format across all providers
 - Standardized response handling
 - Unified error handling
+
+
+### Framework-Agnostic
+
+Polyglot is designed to work with any PHP framework or even in plain PHP applications. It does not depend on any specific framework, making it easy to integrate into existing projects.
+
+- Compatible with Laravel, Symfony, CodeIgniter, and others
+- Can be used in CLI scripts or web applications
+- Lightweight and easy to install
+
 
 ### Comprehensive Provider Support
 
@@ -79,7 +92,23 @@ The library is built with extensibility in mind:
 - Event system for request/response monitoring
 - Ability to add custom providers
 
-## Supported LLM Providers
+
+
+## Use Cases
+
+Polyglot is a good choice for a variety of use cases:
+
+- **Applications requiring LLM provider flexibility**: Switch between providers based on cost, performance, or feature needs
+- **Multi-environment deployments**: Use different LLM providers in development, staging, and production
+- **Redundancy and fallback**: Implement fallback strategies when a provider is unavailable
+- **Hybrid approaches**: Combine different providers for different tasks based on their strengths
+- **Local + cloud development**: Use local models (via Ollama) for development and cloud providers for production
+
+
+
+## Supported Providers
+
+### Inference Providers
 
 Polyglot currently supports the following LLM providers for chat completion:
 
@@ -102,7 +131,7 @@ Polyglot currently supports the following LLM providers for chat completion:
 - **Together**: Together AI hosted models
 - **xAI**: xAI's Grok models
 
-## Supported Embeddings Providers
+### Embeddings Providers
 
 For embeddings generation, Polyglot supports:
 
@@ -113,33 +142,3 @@ For embeddings generation, Polyglot supports:
 - **Mistral**: Mistral embedding models
 - **Ollama**: Self-hosted embedding models
 - **OpenAI**: OpenAI embeddings
-
-## Use Cases
-
-Polyglot is ideal for a variety of use cases:
-
-- **Applications requiring LLM provider flexibility**: Switch between providers based on cost, performance, or feature needs
-- **Multi-environment deployments**: Use different LLM providers in development, staging, and production
-- **Redundancy and fallback**: Implement fallback strategies when a provider is unavailable
-- **Hybrid approaches**: Combine different providers for different tasks based on their strengths
-- **Local + cloud development**: Use local models (via Ollama) for development and cloud providers for production
-
-## Getting Started
-
-To start using Polyglot, you'll need to:
-
-1. Install the library via Composer
-2. Configure your LLM provider credentials
-3. Create your first inference request
-
-Basic example:
-
-```php
-<?php
-use Cognesy\Polyglot\LLM\Inference;
-
-// Simple text generation with default provider
-$answer = Inference::text('What is the capital of France?');
-
-echo "Answer: $answer";
-```

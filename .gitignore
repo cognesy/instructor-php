@@ -34,6 +34,7 @@ Thumbs.db
 /.idea/
 /.vscode/
 .cursorignore
+/docs/.idea/
 
 # PHPUnit, Pest, and other test result files
 .phpunit.result.cache

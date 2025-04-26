@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Evals\ComplexExtraction;
+namespace Evals\ComplexExtraction;
 
-use Cognesy\Addons\Evals\Contracts\CanObserveExecution;
-use Cognesy\Addons\Evals\Execution;
-use Cognesy\Addons\Evals\Observation;
+use Cognesy\Evals\Contracts\CanObserveExecution;
+use Cognesy\Evals\Execution;
+use Cognesy\Evals\Observation;
 
 class ProjectsEval implements CanObserveExecution
 {
@@ -17,7 +17,7 @@ class ProjectsEval implements CanObserveExecution
     }
 
     /**
-     * @return Observation
+     * @return \Cognesy\Evals\Observation
      */
     public function observe(Execution $execution): Observation {
         $expectedEvents = $this->expectations['events'];

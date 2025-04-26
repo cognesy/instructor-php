@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Evals\LLMModes;
+namespace Evals\LLMModes;
 
-use Cognesy\Addons\Evals\Contracts\CanGenerateObservations;
-use Cognesy\Addons\Evals\Execution;
-use Cognesy\Addons\Evals\Observation;
+use Cognesy\Evals\Contracts\CanGenerateObservations;
+use Cognesy\Evals\Execution;
+use Cognesy\Evals\Observation;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Enums\Mode;
 use Cognesy\Utils\Str;
