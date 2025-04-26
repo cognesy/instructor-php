@@ -1,5 +1,15 @@
+name: Tests
 
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
+permissions:
+  contents: read
+
+jobs:
   build:
     name: 'PHP ${{ matrix.php }} (Composer Flags: ${{ matrix.composer }})'
 
