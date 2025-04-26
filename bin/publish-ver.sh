@@ -37,6 +37,10 @@ PACKAGES["packages/setup"]="cognesy/instructor-setup"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
 PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 
+# 0. Build docs
+echo "Step 0: Rebuilding documentation..."
+./bin/instructor hub gendocs
+
 # 1. Update all package versions using sync-ver.sh
 echo "Step 1: Updating package versions..."
 ./bin/sync-ver.sh "$VERSION"
