@@ -13,10 +13,6 @@ You can install it separately via Composer:
 composer require cognesy/instructor-http-client
 ```
 
-> NOTE: Currently Instructor HTTP client API is only available as a part of InstructorPHP package.
-> In the future it will be available as a standalone package.
-
-
 ### Dependencies
 
 The Instructor HTTP client API requires at least one of the supported HTTP client libraries. Depending on which client you want to use, you'll need to install the corresponding package:

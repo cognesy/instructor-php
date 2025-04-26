@@ -1,6 +1,7 @@
 {
   "name": "cognesy/instructor-struct",
-  "version": "0.14.4",
+  "version": "0.14.5",
+  "license": "MIT",
   "description": "Structured data extraction in PHP, powered by LLMs - core library",
   "keywords": [
     "llm",
@@ -19,7 +20,6 @@
     "data extraction"
   ],
   "type": "library",
-  "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
     "issues": "https://github.com/cognesy/instructor-php/issues",
