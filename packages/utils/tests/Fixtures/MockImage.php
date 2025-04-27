@@ -2,7 +2,7 @@
 
 namespace Cognesy\Utils\Tests\Fixtures;
 
-use Cognesy\Utils\Image\Image;
+use Cognesy\Utils\Messages\Utils\Image;
 
 class MockImage extends Image {
     public function toArray(): array {

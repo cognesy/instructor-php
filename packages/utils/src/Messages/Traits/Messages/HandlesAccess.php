@@ -5,26 +5,25 @@ use Cognesy\Utils\Messages\Enums\MessageRole;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Generator;
-use Termwind\Components\Dd;
 
 trait HandlesAccess
 {
     public function first() : Message {
         if (empty($this->messages)) {
-            return new Message();
+            return new \Cognesy\Utils\Messages\Message();
         }
         return $this->messages[0];
     }
 
     public function last() : Message {
         if (empty($this->messages)) {
-            return new Message();
+            return new \Cognesy\Utils\Messages\Message();
         }
         return $this->messages[count($this->messages)-1];
     }
 
     /**
-     * @return Generator<Message>
+     * @return Generator<\Cognesy\Messages\Message>
      */
     public function each() : iterable {
         foreach ($this->messages as $message) {
@@ -33,13 +32,13 @@ trait HandlesAccess
     }
 
     public function hasComposites() : bool {
-        return $this->reduce(fn(bool $carry, Message $message) => $carry || $message->isComposite(), false);
+        return $this->reduce(fn(bool $carry, \Cognesy\Utils\Messages\Message $message) => $carry || $message->isComposite(), false);
     }
 
-    public function middle() : Messages {
+    public function middle() : \Cognesy\Utils\Messages\Messages {
         $messageCount = count($this->messages);
         if ($messageCount < 3) {
-            return new Messages();
+            return new \Cognesy\Utils\Messages\Messages();
         }
         $slice = array_slice($this->messages, 1, $messageCount - 2);
         return Messages::fromMessages($slice);
@@ -59,10 +58,10 @@ trait HandlesAccess
         return array_slice($this->messages, count($this->messages)-1);
     }
 
-    public static function becomesEmpty(array|Message|\Cognesy\Utils\Messages\Messages $messages) : bool {
+    public static function becomesEmpty(array|\Cognesy\Utils\Messages\Message|\Cognesy\Utils\Messages\Messages $messages) : bool {
         return match(true) {
             is_array($messages) && empty($messages) => true,
-            $messages instanceof Message => $messages->isEmpty(),
+            $messages instanceof \Cognesy\Utils\Messages\Message => $messages->isEmpty(),
             $messages instanceof \Cognesy\Utils\Messages\Messages => $messages->isEmpty(),
             default => false,
         };
@@ -71,7 +70,7 @@ trait HandlesAccess
     public static function becomesComposite(array $messages) : bool {
         return match(true) {
             empty($messages) => false,
-            default => Messages::fromMessages($messages)->hasComposites(),
+            default => \Cognesy\Utils\Messages\Messages::fromMessages($messages)->hasComposites(),
         };
     }
 
@@ -94,8 +93,8 @@ trait HandlesAccess
         return array_map($callback, $this->messages);
     }
 
-    public function filter(callable $callback = null) : Messages {
-        $messages = new Messages();
+    public function filter(callable $callback = null) : \Cognesy\Utils\Messages\Messages {
+        $messages = new \Cognesy\Utils\Messages\Messages();
         foreach ($this->messages as $message) {
             if ($message->isEmpty()) {
                 continue;

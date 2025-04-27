@@ -5,7 +5,7 @@ namespace Cognesy\Http\Middleware\Debug;
 use Cognesy\Http\BaseMiddleware;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Debug\Debug;
+use Cognesy\Http\Debug\Debug;
 use Cognesy\Utils\Events\EventDispatcher;
 
 /**

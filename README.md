@@ -23,20 +23,25 @@ Here's a simple CLI demo app using Instructor to extract structured data from te
 
 This repository is a monorepo containing all Instructor's components (required and optional). It hosts all that you need to work with LLMs via Instructor.
 
-Individual components are distributed also as standalone packages that can be used independently.
+Individual components are also distributed as standalone packages that can be used independently.
 
 ![image](docs/images/instructor-packages.png)
 
-Links to read-only repositories of the individual packages:
- - [instructor-struct](https://github.com/cognesy/instructor-struct) - get dev friendly structured outputs from LLMs
- - [instructor-polyglot](https://github.com/cognesy/instructor-polyglot) - use single API for inference and embeddings across most of LLM providers, easily switch between them (e.g., develop on Ollama, switch to Groq in production)
- - [instructor-http-client](https://github.com/cognesy/instructor-http-client) - easily switch between underlying HTTP client libraries (out-of-the-box support for Guzzle, Symfony, Laravel)
- - [instructor-aux](https://github.com/cognesy/instructor-aux) - external tools and integrations, e.g. used by Instructor examples
- - [instructor-addons](https://github.com/cognesy/instructor-addons) - extra capabilities and common LLM-related problem solutions
- - [instructor-utils](https://github.com/cognesy/instructor-utils) - common utility classes used by Instructor packages
- - [instructor-setup](https://github.com/cognesy/instructor-setup) - CLI tool for publishing Instructor config files in your app
- - [instructor-hub](https://github.com/cognesy/instructor-hub) - CLI tool for browsing and running Instructor examples
- - [instructor-tell](https://github.com/cognesy/instructor-tell) - CLI tool for executing LLM prompts in your terminal
+Links to read-only repositories of the standalone package distributions:
+ 
+- [instructor-addons](https://github.com/cognesy/instructor-addons) - extra capabilities and common LLM-related problem solutions
+- [instructor-aux](https://github.com/cognesy/instructor-aux) - external tools and integrations, e.g. used by Instructor examples
+- [instructor-evals](https://github.com/cognesy/instructor-evals) - LLM output evaluation tools
+- [instructor-http-client](https://github.com/cognesy/instructor-http-client) - easily switch between underlying HTTP client libraries (out-of-the-box support for Guzzle, Symfony, Laravel)
+- [instructor-hub](https://github.com/cognesy/instructor-hub) - CLI tool for browsing and running Instructor examples
+- [instructor-polyglot](https://github.com/cognesy/instructor-polyglot) - use single API for inference and embeddings across most of LLM providers, easily switch between them (e.g., develop on Ollama, switch to Groq in production)
+- [instructor-setup](https://github.com/cognesy/instructor-setup) - CLI tool for publishing Instructor config files in your app
+- [instructor-struct](https://github.com/cognesy/instructor-struct) - get dev friendly structured outputs from LLMs
+- [instructor-tell](https://github.com/cognesy/instructor-tell) - CLI tool for executing LLM prompts in your terminal
+- [instructor-templates](https://github.com/cognesy/instructor-templates) - text and chat template tools used by Instructor, support Twig, Blade and ArrowPipe formats
+- [instructor-utils](https://github.com/cognesy/instructor-utils) - common utility classes used by Instructor packages
+
+> NOTE: If you are just starting to use Instructor, I recommend using the `instructor-php` package. It contains all the required components and is the easiest way to get started with the library.
 
 
 
@@ -92,10 +97,11 @@ Links to read-only repositories of the individual packages:
 
 - Developer friendly LLM context caching for reduced costs and faster inference (for Anthropic models)
 - Developer friendly data extraction from images (for OpenAI, Anthropic and Gemini models)
+- Generate vector embeddings using APIs of multiple supported LLM providers
 
 ### Documentation and examples
 
-- Learn more from growing documentation and 50+ cookbooks
+- Learn more from growing documentation and 100+ cookbooks
 
 
 
@@ -957,11 +963,6 @@ Instructor for PHP is compatible with PHP 8.2 or later and, due to minimal depen
 Additional dependencies are required for some extras:
  - spatie/array-to-xml
  - gioni06/gpt3-tokenizer
-
-## TODOs
-
- - [ ] Async support
- - [ ] Documentation
 
 
 ## Contributing

@@ -28,8 +28,8 @@ The Script class serves as a flexible and dynamic container for managing, hydrat
 
 ```php
 <?php
-use Cognesy\Utils\Messages\Script;
-use Cognesy\Utils\Messages\Section;
+use Cognesy\Template\Script\Script;
+use Cognesy\Template\Script\Section;
 
 // Create sections
 $section1 = new Section('introduction');
@@ -69,7 +69,7 @@ $messages = $script->toMessages();
 
 ```php
 <?php
-use Cognesy\Utils\Messages\ScriptParameters;
+use Cognesy\Template\Script\ScriptParameters;
 
 // Create and set parameters
 $parameters = new ScriptParameters(['userName' => 'John Doe']);
@@ -106,7 +106,7 @@ $messages = $script->toMessages();
 
 ```php
 <?php
-use Cognesy\Utils\Messages\Script;
+use Cognesy\Template\Script\Script;
 
 $sectionsArray = [
     'introduction' => 'Welcome to the session.',
@@ -155,9 +155,9 @@ The Script class uses several internal traits to handle various aspects of its f
 
 ```php
 <?php
-use Cognesy\Utils\Messages\Script;
-use Cognesy\Utils\Messages\ScriptParameters;
-use Cognesy\Utils\Messages\Section;
+use Cognesy\Template\Script\Script;
+use Cognesy\Template\Script\ScriptParameters;
+use Cognesy\Template\Script\Section;
 
 // Define sections
 $intro = (new Section('introduction'))

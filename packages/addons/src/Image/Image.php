@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Image;
 
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Enums\Mode;
-use Cognesy\Utils\Image\Image as ImageUtil;
+use Cognesy\Utils\Messages\Utils\Image as ImageUtil;
 
 /**
  * The Image class.

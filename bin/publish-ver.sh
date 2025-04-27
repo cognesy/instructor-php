@@ -26,16 +26,18 @@ echo "Using release notes from: $NOTES_FILE"
 
 # Define packages - must match those in sync-ver.sh
 declare -A PACKAGES
-PACKAGES["packages/utils"]="cognesy/instructor-utils"
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
-PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
-PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
+PACKAGES["packages/evals"]="cognesy/instructor-evals"
+PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
+PACKAGES["packages/instructor"]="cognesy/instructor-struct"
+PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
 PACKAGES["packages/setup"]="cognesy/instructor-setup"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
-PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
+PACKAGES["packages/templates"]="cognesy/instructor-templates"
+PACKAGES["packages/utils"]="cognesy/instructor-utils"
 
 # 0. Build docs
 echo "Step 0: Rebuilding documentation..."

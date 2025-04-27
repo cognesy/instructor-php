@@ -19,9 +19,9 @@ Mode compatibility:
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Debug\Debug;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Enums\Mode;
-use Cognesy\Utils\Debug\Debug;
 
 enum UserType : string {
     case Guest = 'guest';

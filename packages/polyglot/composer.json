@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-polyglot",
-  "version": "0.14.6",
+  "version": "0.14.7",
   "license": "MIT",
   "description": "Unified LLM connectivity layer for PHP applications",
   "autoload": {
@@ -15,9 +15,9 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.14",
     "cognesy/instructor-http-client": "^0.14",
-    "cognesy/instructor-setup": "^0.14"
+    "cognesy/instructor-setup": "^0.14",
+    "cognesy/instructor-utils": "^0.14"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

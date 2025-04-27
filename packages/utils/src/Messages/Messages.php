@@ -8,9 +8,9 @@ use Cognesy\Utils\Messages\Traits\Messages\HandlesMutation;
 use Cognesy\Utils\Messages\Traits\Messages\HandlesTransformation;
 
 class Messages {
+    use HandlesAccess;
     use HandlesConversion;
     use HandlesCreation;
-    use HandlesAccess;
     use HandlesMutation;
     use HandlesTransformation;
 

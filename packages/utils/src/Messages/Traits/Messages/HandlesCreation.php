@@ -6,14 +6,14 @@ use Cognesy\Utils\Messages\Contracts\CanProvideMessage;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessages;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
-use Cognesy\Utils\Messages\Utils\TextRepresentation;
+use Cognesy\Utils\TextRepresentation;
 use Exception;
 use InvalidArgumentException;
 
 trait HandlesCreation
 {
     static public function fromString(string $content, string $role = 'user') : Messages {
-        return (new self)->appendMessage(Message::fromString($content, $role));
+        return (new self)->appendMessage(\Cognesy\Utils\Messages\Message::fromString($content, $role));
     }
 
     /**
@@ -24,7 +24,7 @@ trait HandlesCreation
         foreach ($messages as $message) {
             $instance->messages[] = match(true) {
                 is_string($message) => Message::fromString($message),
-                Message::hasRoleAndContent($message) => Message::fromArray($message),
+                \Cognesy\Utils\Messages\Message::hasRoleAndContent($message) => \Cognesy\Utils\Messages\Message::fromArray($message),
                 default => throw new Exception('Invalid message array - missing role or content keys'),
             };
         }
@@ -32,12 +32,12 @@ trait HandlesCreation
     }
 
     /**
-     * @param array|Message[]|Messages $messages
+     * @param array|\Cognesy\Utils\Messages\Message[]|\Cognesy\Utils\Messages\Messages $messages
      */
-    static public function fromMessages(array|Messages $arrayOfMessages) : Messages {
+    static public function fromMessages(array|\Cognesy\Utils\Messages\Messages $arrayOfMessages) : \Cognesy\Utils\Messages\Messages {
         $instance = new self();
         foreach ($arrayOfMessages as $message) {
-            if ($message instanceof Messages) {
+            if ($message instanceof \Cognesy\Utils\Messages\Messages) {
                 $instance->appendMessages($message);
             } elseif ($message instanceof Message) {
                 $instance->appendMessage($message);
@@ -51,29 +51,29 @@ trait HandlesCreation
     }
 
     public static function fromAnyArray(array $messages) : Messages {
-        if (Message::hasRoleAndContent($messages)) {
+        if (\Cognesy\Utils\Messages\Message::hasRoleAndContent($messages)) {
             return self::fromArray([$messages]);
         }
         $normalized = new self();
         foreach ($messages as $message) {
             $normalized->appendMessage(match(true) {
                 is_array($message) => match(true) {
-                    Message::hasRoleAndContent($message) => Message::fromArray($message),
+                    Message::hasRoleAndContent($message) => \Cognesy\Utils\Messages\Message::fromArray($message),
                     default => throw new Exception('Invalid message array - missing role or content keys'),
                 },
-                is_string($message) => new Message('user', $message),
-                $message instanceof Message => $message,
+                is_string($message) => new \Cognesy\Utils\Messages\Message('user', $message),
+                $message instanceof \Cognesy\Utils\Messages\Message => $message,
                 default => throw new Exception('Invalid message type'),
             });
         }
         return $normalized;
     }
 
-    public static function fromAny(string|array|Message|Messages $messages) : Messages {
+    public static function fromAny(string|array|\Cognesy\Utils\Messages\Message|\Cognesy\Utils\Messages\Messages $messages) : Messages {
         return match(true) {
             is_string($messages) => self::fromString($messages),
             is_array($messages) => self::fromAnyArray($messages),
-            $messages instanceof Message => (new Messages)->appendMessage($messages),
+            $messages instanceof \Cognesy\Utils\Messages\Message => (new \Cognesy\Utils\Messages\Messages)->appendMessage($messages),
             $messages instanceof Messages => $messages,
             default => throw new Exception('Invalid message type'),
         };
@@ -83,9 +83,9 @@ trait HandlesCreation
         return match(true) {
             $input instanceof Messages => $input,
             $input instanceof CanProvideMessages => $input->toMessages(),
-            $input instanceof Message => (new Messages)->appendMessage($input),
+            $input instanceof Message => (new \Cognesy\Utils\Messages\Messages)->appendMessage($input),
             $input instanceof CanProvideMessage => (new Messages)->appendMessage($input->toMessage()),
-            default => (new Messages)->appendMessage(new Message('user', TextRepresentation::fromAny($input))),
+            default => (new Messages)->appendMessage(new \Cognesy\Utils\Messages\Message('user', TextRepresentation::fromAny($input))),
         };
     }
 }

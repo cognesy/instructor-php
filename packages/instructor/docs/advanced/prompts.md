@@ -116,7 +116,7 @@ To get started, you can create and render a simple prompt defined in the bundled
 
 ```php
 <?php
-use Cognesy\Utils\Template\Template;
+use Cognesy\Template\Template;
 
 // Basic example using "using->get->with" syntax
 $prompt = Template::using('demo-twig')->get('hello')->with(['name' => 'World']);
@@ -156,7 +156,7 @@ If you need to customize the configuration or set the template content directly,
 
 ```php
 <?php
-use Cognesy\Utils\Template\Data\TemplateEngineConfig;use Cognesy\Utils\Template\Enums\TemplateEngineType;
+use Cognesy\Template\Data\TemplateEngineConfig;use Cognesy\Template\Enums\TemplateEngineType;
 
 // Setting custom configuration
 $config = new TemplateEngineConfig(

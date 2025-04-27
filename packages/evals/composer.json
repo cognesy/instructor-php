@@ -1,7 +1,7 @@
 {
   "name": "cognesy/instructor-evals",
-  "version": "0.14.5",
-  "description": "LLM evaluation tools for Instructor library, should be used with Instructor or Polyglot",
+  "version": "0.14.7",
+  "description": "LLM evaluation tools for Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {

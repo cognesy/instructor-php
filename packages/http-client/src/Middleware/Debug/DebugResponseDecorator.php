@@ -5,21 +5,20 @@ namespace Cognesy\Http\Middleware\Debug;
 use Cognesy\Http\BaseResponseDecorator;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Debug\Debug;
 use Generator;
 
 class DebugResponseDecorator extends BaseResponseDecorator
 {
-    private Debug $debug;
+    private \Cognesy\Http\Debug\Debug $debug;
     private bool $streamByLine;
 
     public function __construct(
-        HttpClientRequest $request,
-        HttpClientResponse $response,
-        ?Debug $debug = null
+        HttpClientRequest          $request,
+        HttpClientResponse         $response,
+        ?\Cognesy\Http\Debug\Debug $debug = null
     ) {
         parent::__construct($request, $response);
-        $this->debug = $debug ?? new Debug();
+        $this->debug = $debug ?? new \Cognesy\Http\Debug\Debug();
         $this->streamByLine = $this->debug->config()->httpResponseStreamByLine;
     }
 

@@ -14,10 +14,10 @@ the provided text.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Debug\Debug;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Enums\Mode;
-use Cognesy\Utils\Debug\Debug;
 
 $report = <<<'EOT'
     [2021-09-01]

@@ -2,9 +2,9 @@
 
 namespace Cognesy\Addons\Chat;
 
+use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
-use Cognesy\Utils\Messages\Script;
 
 class ScriptPipeline {
     private array $sections;

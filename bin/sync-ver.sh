@@ -22,6 +22,7 @@ echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 declare -A PACKAGES
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
+PACKAGES["packages/evals"]="cognesy/instructor-evals"
 PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
@@ -29,22 +30,25 @@ PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
 PACKAGES["packages/setup"]="cognesy/instructor-setup"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
+PACKAGES["packages/templates"]="cognesy/instructor-templates"
 PACKAGES["packages/utils"]="cognesy/instructor-utils"
 
 # Define which packages go in which section of the main composer.json
 declare -A MAIN_REQUIRE_PACKAGES
-MAIN_REQUIRE_PACKAGES["packages/utils"]="cognesy/instructor-utils"
 MAIN_REQUIRE_PACKAGES["packages/addons"]="cognesy/instructor-addons"
-MAIN_REQUIRE_PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
+MAIN_REQUIRE_PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 MAIN_REQUIRE_PACKAGES["packages/instructor"]="cognesy/instructor-struct"
+MAIN_REQUIRE_PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
+MAIN_REQUIRE_PACKAGES["packages/setup"]="cognesy/instructor-setup"
+MAIN_REQUIRE_PACKAGES["packages/templates"]="cognesy/instructor-templates"
+MAIN_REQUIRE_PACKAGES["packages/utils"]="cognesy/instructor-utils"
 
 declare -A MAIN_REQUIRE_DEV_PACKAGES
 MAIN_REQUIRE_DEV_PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
-MAIN_REQUIRE_DEV_PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
-MAIN_REQUIRE_DEV_PACKAGES["packages/hub"]="cognesy/instructor-hub"
-MAIN_REQUIRE_DEV_PACKAGES["packages/setup"]="cognesy/instructor-setup"
-MAIN_REQUIRE_DEV_PACKAGES["packages/tell"]="cognesy/instructor-tell"
+MAIN_REQUIRE_DEV_PACKAGES["packages/evals"]="cognesy/instructor-evals"
 MAIN_REQUIRE_DEV_PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
+MAIN_REQUIRE_DEV_PACKAGES["packages/hub"]="cognesy/instructor-hub"
+MAIN_REQUIRE_DEV_PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then

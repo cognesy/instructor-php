@@ -2,8 +2,7 @@
 namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Utils\Template\Template;
+use Cognesy\Template\Template;
 use InvalidArgumentException;
 
 trait HandlesPrediction

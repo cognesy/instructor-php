@@ -16,7 +16,6 @@ This feature is useful for debugging and understanding the reasoning behind the 
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Str;
 
 //Debug::setEnabled();

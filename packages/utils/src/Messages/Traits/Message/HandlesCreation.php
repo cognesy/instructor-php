@@ -2,10 +2,10 @@
 
 namespace Cognesy\Utils\Messages\Traits\Message;
 
-use Cognesy\Utils\Image\Image;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessage;
 use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Utils\TextRepresentation;
+use Cognesy\Utils\Messages\Utils\Image;
+use Cognesy\Utils\TextRepresentation;
 use Exception;
 
 trait HandlesCreation

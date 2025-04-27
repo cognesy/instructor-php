@@ -4,6 +4,8 @@ set -e  # stops script on first error
 for dir in packages/*; do
   if [ -f "$dir/composer.json" ]; then
     echo "🔍 Updating dependencies in $dir"
+    composer --working-dir="$dir" clear-cache
+    composer --working-dir="$dir" dump-autoload
     composer --working-dir="$dir" install --no-scripts --no-progress
   fi
 done

@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\ChatTemplate;
 
+use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Script;
 
 trait HandlesCachedContext
 {

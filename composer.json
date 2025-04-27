@@ -30,8 +30,10 @@
       "Cognesy\\Addons\\": "packages/addons/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
       "Cognesy\\Instructor\\": "packages/instructor/src/",
+      "Cognesy\\Messages\\": "packages/messages/src/",
       "Cognesy\\Polyglot\\": "packages/polyglot/src/",
       "Cognesy\\Setup\\": "packages/setup/src/",
+      "Cognesy\\Template\\": "packages/templates/src/",
       "Cognesy\\Utils\\": "packages/utils/src/"
     },
     "files": []
@@ -50,9 +52,11 @@
       "Cognesy\\Http\\Tests\\": "packages/http-client/tests/",
       "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
       "Cognesy\\Instructor\\Tests\\": "packages/instructor/tests/",
+      "Cognesy\\Messages\\Tests\\": "packages/messages/tests/",
       "Cognesy\\Polyglot\\Tests\\": "packages/polyglot/tests/",
       "Cognesy\\Setup\\Tests\\": "packages/setup/tests/",
       "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
+      "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
       "Evals\\": "evals/",
       "Examples\\": "examples/",

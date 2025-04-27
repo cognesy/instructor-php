@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Features\Core\Data;
 
 use Cognesy\Polyglot\LLM\Enums\Mode;
-use Cognesy\Utils\Messages\Script;
+use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Settings;
 
 class ChatTemplate

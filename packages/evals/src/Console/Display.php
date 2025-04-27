@@ -4,9 +4,9 @@ namespace Cognesy\Evals\Console;
 
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Experiment;
+use Cognesy\Http\Debug\Debug;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
-use Cognesy\Utils\Debug\Debug;
 use Cognesy\Utils\Str;
 use Exception;
 
