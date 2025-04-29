@@ -19,7 +19,7 @@ trait HandlesSelfInference {
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        LLM                 $llm = null,
+        ?LLM                 $llm = null,
     ) : static {
         return (new Instructor(
             llm: $llm ?? new LLM()

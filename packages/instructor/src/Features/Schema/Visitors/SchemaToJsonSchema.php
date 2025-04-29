@@ -25,7 +25,7 @@ class SchemaToJsonSchema implements CanVisitSchema
     private $refCallback;
     private string $defsLabel = '$defs';
 
-    public function toArray(Schema $schema, callable $refCallback = null): array {
+    public function toArray(Schema $schema, ?callable $refCallback = null): array {
         $this->refCallback = $refCallback;
         $schema->accept($this);
         return $this->result;

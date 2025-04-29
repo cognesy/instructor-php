@@ -12,8 +12,8 @@ trait CreatesStructureFromClasses
 {
     static public function fromClass(
         string $class,
-        string $name = null,
-        string $description = null
+        ?string $name = null,
+        ?string $description = null
     ) : Structure {
         $classInfo = new ClassInfo($class);
         return self::fromClassInfo($classInfo, $name, $description);
@@ -21,8 +21,8 @@ trait CreatesStructureFromClasses
 
     static private function fromClassInfo(
         ClassInfo $classInfo,
-        string $name = null,
-        string $description = null
+        ?string $name = null,
+        ?string $description = null
     ) : Structure {
         $className = $name ?? $classInfo->getShortName();
         $classDescription = $description ?? $classInfo->getClassDescription();

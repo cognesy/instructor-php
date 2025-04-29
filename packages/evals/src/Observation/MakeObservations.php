@@ -64,7 +64,7 @@ class MakeObservations
 
     // INTERNAL ////////////////////////////////////////////////
 
-    private function observations(array $types = null) : array {
+    private function observations(?array $types = null) : array {
         $sources = [];
         foreach ($this->observers($this->observers, $types) as $observer) {
             $sources[] = match(true) {
@@ -110,7 +110,7 @@ class MakeObservations
         }
     }
 
-    private function observers(array $observers, array $types = null) : iterable {
+    private function observers(array $observers, ?array $types = null) : iterable {
         $instances = $this->makeInstances($observers);
         return match(true) {
             empty($types) => $instances,

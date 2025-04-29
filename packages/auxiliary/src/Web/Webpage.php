@@ -26,7 +26,7 @@ class Webpage implements CanProvideMessage
     protected array $links = [];
 
     public function __construct(
-        CanGetUrlContent $scraper = null,
+        ?CanGetUrlContent $scraper = null,
     ) {
         $this->scraper = $scraper ?? new BasicReader();
         $this->htmlProcessor = new HtmlProcessor();

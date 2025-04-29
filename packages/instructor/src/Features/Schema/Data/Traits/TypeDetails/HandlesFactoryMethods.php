@@ -16,7 +16,7 @@ trait HandlesFactoryMethods
         return (new TypeDetailsFactory)->fromTypeName($type);
     }
 
-    //static public function fromJsonTypeName(string $jsonType, array $details = null) : TypeDetails {
+    //static public function fromJsonTypeName(string $jsonType, ?array $details = null) : TypeDetails {
     //    $phpType = TypeDetails::toPhpType($jsonType);
     //    return (new TypeDetailsFactory)->fromTypeName($phpType);
     //}

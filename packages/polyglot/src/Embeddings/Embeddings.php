@@ -31,10 +31,10 @@ class Embeddings
 
     public function __construct(
         string               $connection = '',
-        EmbeddingsConfig     $config = null,
-        CanHandleHttpRequest $httpClient = null,
-        CanVectorize         $driver = null,
-        EventDispatcher      $events = null,
+        ?EmbeddingsConfig     $config = null,
+        ?CanHandleHttpRequest $httpClient = null,
+        ?CanVectorize         $driver = null,
+        ?EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->config = $config ?? EmbeddingsConfig::load($connection

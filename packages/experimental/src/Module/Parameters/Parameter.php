@@ -49,7 +49,7 @@ class Parameter
         $this->feedbackFn = $feedbackFn;
     }
 
-    public function backward(Feedback $feedback = null): void {
+    public function backward(?Feedback $feedback = null): void {
         if (!$this->requiresFeedback) {
             return;
         }

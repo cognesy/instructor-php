@@ -16,14 +16,14 @@ class SummarizeMessages implements CanSummarizeMessages
     private LLM $llm;
     private int $tokenLimit;
 
-    public function __construct(string $prompt = '', LLM $llm = null, string $model = '', int $tokenLimit = 1024) {
+    public function __construct(string $prompt = '', ?LLM $llm = null, string $model = '', int $tokenLimit = 1024) {
         $this->prompt = $prompt ?: $this->prompt;
         $this->llm = $llm ?? new LLM();
         $this->model = $model;
         $this->tokenLimit = $tokenLimit;
     }
 
-    public function summarize(Messages $messages, int $tokenLimit = null): string {
+    public function summarize(Messages $messages, ?int $tokenLimit = null): string {
         return (new Inference)->withLLM($this->llm)->create(
             messages: $messages->prependMessage(new Message(content: $this->prompt))->toArray(),
             model: $this->model,

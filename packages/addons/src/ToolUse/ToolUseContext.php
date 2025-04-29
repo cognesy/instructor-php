@@ -20,7 +20,7 @@ class ToolUseContext
     private Usage $usage;
 
     public function __construct(
-        Tools $tools = null,
+        ?Tools $tools = null,
     ) {
         $this->tools = $tools ?? new Tools();
         $this->messages = new Messages();

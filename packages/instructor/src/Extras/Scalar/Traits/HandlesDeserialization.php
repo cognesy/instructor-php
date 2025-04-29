@@ -11,7 +11,7 @@ trait HandlesDeserialization
     /**
      * Deserialize JSON into scalar value
      */
-    public function fromJson(string $jsonData, string $toolName = null) : static {
+    public function fromJson(string $jsonData, ?string $toolName = null) : static {
         if (empty($jsonData)) {
             $this->value = $this->defaultValue;
             return $this;

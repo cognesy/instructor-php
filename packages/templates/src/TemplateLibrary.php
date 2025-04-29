@@ -18,8 +18,8 @@ class TemplateLibrary
 
     public function __construct(
         string               $library = '',
-        TemplateEngineConfig $config = null,
-        CanHandleTemplate    $driver = null,
+        ?TemplateEngineConfig $config = null,
+        ?CanHandleTemplate    $driver = null,
     ) {
         $this->config = $config ?? TemplateEngineConfig::load(
             library: $library ?: Settings::get('prompt', "defaultLibrary")

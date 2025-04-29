@@ -56,11 +56,11 @@ class ResultChain
     private mixed $context;
 
     public function __construct(
-        Result $value = null,
-        callable $source = null,
+        ?Result $value = null,
+        ?callable $source = null,
         mixed $context = null,
         array $processors = [],
-        callable $finalizer = null,
+        ?callable $finalizer = null,
     ) {
         $this->carry = $value;
         $this->source = $source;
@@ -201,7 +201,7 @@ class ResultChain
      * @param callable|null $callback<Result>
      * @return ResultChain
      */
-    public function then(callable $callback = null): static {
+    public function then(?callable $callback = null): static {
         $this->finalizer = $callback;
         return $this;
     }
@@ -253,7 +253,7 @@ class ResultChain
      * @param callable|null $callback
      * @return Result
      */
-    public function result(callable $callback = null): Result {
+    public function result(?callable $callback = null): Result {
         return $this->process($callback, false);
     }
 

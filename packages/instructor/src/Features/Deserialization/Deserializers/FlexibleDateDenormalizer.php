@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class FlexibleDateDenormalizer implements DenormalizerInterface
 {
-    public function denormalize($data, string $type, string $format = null, array $context = []): mixed
+    public function denormalize($data, string $type, ?string $format = null, array $context = []): mixed
     {
         if (!is_string($data)) {
             throw new NotNormalizableValueException('The data is not a string, it cannot be converted to a DateTime.');
@@ -32,7 +32,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
         ];
     }
 
-    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool {
+    public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool {
         return in_array($type, [
             DateTimeInterface::class,
             DateTimeImmutable::class,

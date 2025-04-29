@@ -20,7 +20,7 @@ trait HandlesInference {
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        LLM                 $llm = null,
+        ?LLM                 $llm = null,
     ) : mixed {
         return (new Instructor(
             llm: $llm ?? new LLM()

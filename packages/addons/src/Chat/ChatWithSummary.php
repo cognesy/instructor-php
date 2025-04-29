@@ -31,13 +31,13 @@ class ChatWithSummary
     private int $summaryTokens = 0;
 
     public function __construct(
-        Script $script = null,
+        ?Script $script = null,
         int $maxChatTokens = 1024,
         int $maxBufferTokens = 1024,
         int $maxSummaryTokens = 1024,
         bool $autoBuffer = false,
         bool $autoSummarize = false,
-        CanSummarizeMessages $summarizer = null,
+        ?CanSummarizeMessages $summarizer = null,
     ) {
         $this->script = $script ?? new Script();
         $this->maxChatTokens = $maxChatTokens;

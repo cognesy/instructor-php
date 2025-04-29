@@ -23,7 +23,7 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
 
     public function __construct(
         string $name = 'default',
-        EventDispatcher $parent = null,
+        ?EventDispatcher $parent = null,
     ) {
         $this->name = $name;
         $this->parent = $parent;

@@ -27,8 +27,8 @@ class Template
     public function __construct(
         string               $path = '',
         string               $library = '',
-        TemplateEngineConfig $config = null,
-        CanHandleTemplate    $driver = null,
+        ?TemplateEngineConfig $config = null,
+        ?CanHandleTemplate    $driver = null,
     ) {
         $this->library = new TemplateLibrary($library, $config, $driver);
         $this->templateContent = $path ? $this->library->loadTemplate($path) : '';

@@ -20,11 +20,11 @@ class ToolUseStep
 
     public function __construct(
         string         $response = '',
-        ToolCalls      $toolCalls = null,
-        ToolExecutions $toolExecutions = null,
-        Messages       $messages = null,
-        Usage          $usage = null,
-        LLMResponse    $llmResponse = null,
+        ?ToolCalls      $toolCalls = null,
+        ?ToolExecutions $toolExecutions = null,
+        ?Messages       $messages = null,
+        ?Usage          $usage = null,
+        ?LLMResponse    $llmResponse = null,
     ) {
         $this->response = $response;
         $this->toolCalls = $toolCalls;

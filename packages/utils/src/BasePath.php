@@ -69,7 +69,7 @@ class BasePath
      * @param string|null $path The path to append
      * @return string The full path
      */
-    private static function makePath(string $path = null): string
+    private static function makePath(?string $path = null): string
     {
         return $path
             ? self::$basePath . DIRECTORY_SEPARATOR . ltrim($path, '/\\')

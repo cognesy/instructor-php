@@ -19,7 +19,7 @@ class ChatTemplate
     private ?StructuredOutputRequest $request;
     private Script $script;
 
-    public function __construct(StructuredOutputRequest $request = null) {
+    public function __construct(?StructuredOutputRequest $request = null) {
         $this->request = $request;
         $this->defaultRetryPrompt = Settings::get('llm', 'defaultRetryPrompt');
         $this->defaultPrompts[Mode::MdJson->value] = Settings::get('llm', 'defaultMdJsonPrompt');

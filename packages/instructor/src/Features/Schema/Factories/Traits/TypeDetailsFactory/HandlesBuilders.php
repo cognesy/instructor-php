@@ -96,7 +96,7 @@ trait HandlesBuilders
      * @param string $typeName
      * @return TypeDetails
      */
-    public function enumType(string $typeName, string $enumType = null, array $enumValues = null) : TypeDetails {
+    public function enumType(string $typeName, ?string $enumType = null, ?array $enumValues = null) : TypeDetails {
         $classInfo = new ClassInfo($typeName);
         // enum specific
         if (!$classInfo->isBackedEnum()) {

@@ -29,7 +29,7 @@ class Website
         $this->maxPages = $maxPages;
     }
 
-    public static function crawl(string $rootUrl, CanFilterContent $filter = null) : Website {
+    public static function crawl(string $rootUrl, ?CanFilterContent $filter = null) : Website {
         if (is_null($filter)) {
             $filter = new NoFilter();
         }

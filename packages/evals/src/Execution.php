@@ -46,7 +46,7 @@ class Execution
 
     public function __construct(
         array $case,
-        EventDispatcher $events = null,
+        ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->id = Uuid::uuid4();

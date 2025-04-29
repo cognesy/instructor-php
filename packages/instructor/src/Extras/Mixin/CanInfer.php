@@ -21,6 +21,6 @@ interface CanInfer
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        LLM                 $llm = null,
+        ?LLM                 $llm = null,
     ) : mixed;
 }

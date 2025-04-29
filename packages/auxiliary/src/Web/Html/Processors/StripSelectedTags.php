@@ -6,9 +6,9 @@ use Cognesy\Auxiliary\Web\Contracts\CanCleanHtml;
 
 class StripSelectedTags implements CanCleanHtml
 {
-    private $tags;
+    private array $tags;
 
-    public function __construct($tags = null)
+    public function __construct(?array $tags = null)
     {
         $this->tags = $tags;
     }

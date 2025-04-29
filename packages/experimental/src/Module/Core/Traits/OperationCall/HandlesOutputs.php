@@ -19,7 +19,7 @@ trait HandlesOutputs
         return array_keys($this->outputs());
     }
 
-    public function get(string $name = null) : mixed {
+    public function get(?string $name = null) : mixed {
         return match(true) {
             empty($name) => $this->result(),
             !$this->hasOutput($name) => throw new InvalidArgumentException("Output field `$name` not found"),

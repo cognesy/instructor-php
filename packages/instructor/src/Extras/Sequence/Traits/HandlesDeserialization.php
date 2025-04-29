@@ -9,7 +9,7 @@ trait HandlesDeserialization
 {
     private SymfonyDeserializer $deserializer;
 
-    public function fromJson(string $jsonData, string $toolName = null): static {
+    public function fromJson(string $jsonData, ?string $toolName = null): static {
         $deserializer = $this->deserializer;
         $data = Json::decode($jsonData);
 

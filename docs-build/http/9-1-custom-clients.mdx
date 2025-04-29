@@ -472,7 +472,7 @@ class CurlHttpResponse implements HttpClientResponse
         private string $body,
         $stream = null,
         bool $isStreaming = false,
-        string $tempFile = null
+        ?string $tempFile = null
     ) {
         $this->stream = $stream;
         $this->isStreaming = $isStreaming;

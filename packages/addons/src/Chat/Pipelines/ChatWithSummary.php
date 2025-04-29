@@ -13,7 +13,7 @@ class ChatWithSummary {
         int $maxChatTokens = 1024,
         int $maxBufferTokens = 1024,
         int $maxSummaryTokens = 1024,
-        CanSummarizeMessages $summarizer = null
+        ?CanSummarizeMessages $summarizer = null
     ) : ScriptPipeline {
         $sections = ['main', 'buffer', 'summary'];
         $processors = [

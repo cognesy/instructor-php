@@ -7,7 +7,7 @@ use Cognesy\Utils\Cli\Console;
 
 class Cli
 {
-    static public function str(string $output = '', string|array $color = null) : string {
+    static public function str(string $output = '', string|array|null $color = null) : string {
         if ($color) {
             $colorOut = is_array($color) ? implode('', $color) : $color;
             $output = $colorOut . $output . Color::RESET;
@@ -15,24 +15,24 @@ class Cli
         return $output;
     }
 
-    static public function strln(string $output = '', string|array $color = null) : string {
+    static public function strln(string $output = '', string|array|null $color = null) : string {
         return self::str($output . "\n", $color);
     }
 
-    static public function out(string $output = '', string|array $color = null) : void {
+    static public function out(string $output = '', string|array|null $color = null) : void {
         echo self::str($output, $color);
     }
 
-    static public function outln(string $output = '', string|array $color = null) : void {
+    static public function outln(string $output = '', string|array|null $color = null) : void {
         self::out($output . "\n", $color);
     }
 
-    static public function margin(string $output = '', int $size = 3, string|array $mcolor = null, string|array $color = null) : void {
+    static public function margin(string $output = '', int $size = 3, string|array|null $mcolor = null, string|array|null $color = null) : void {
         $margined = self::smargin($output, $size, $mcolor, $color);
         self::out($margined);
     }
 
-    static public function smargin(string $output = '', int $size = 3, string|array $mcolor = null, string|array $color = null) : string {
+    static public function smargin(string $output = '', int $size = 3, string|array|null $mcolor = null, string|array|null $color = null) : string {
         $lines = explode("\n", $output);
         $margined = [];
         foreach ($lines as $line) {

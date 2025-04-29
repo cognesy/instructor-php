@@ -50,7 +50,7 @@ trait HandlesConversion
     public static function asString(
         array $messages,
         string $separator = "\n",
-        callable $renderer = null
+        ?callable $renderer = null
     ) : string {
         $result = '';
         foreach ($messages as $message) {

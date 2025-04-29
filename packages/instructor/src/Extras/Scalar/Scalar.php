@@ -33,7 +33,7 @@ class Scalar implements CanProvideJsonSchema, CanDeserializeSelf, CanTransformSe
         ValueType $type = ValueType::STRING,
         bool $required = true,
         mixed $defaultValue = null,
-        string $enumType = null
+        ?string $enumType = null
     ) {
         $this->name = $name;
         $this->description = $description;

@@ -13,7 +13,7 @@ class Debug
 {
     private DebugConfig $config;
 
-    public function __construct(DebugConfig $config = null) {
+    public function __construct(?DebugConfig $config = null) {
         $this->config = $config ?? DebugConfig::load();
     }
 

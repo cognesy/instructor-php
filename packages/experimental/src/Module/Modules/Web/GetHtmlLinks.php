@@ -20,7 +20,7 @@ class GetHtmlLinks extends Module
         't.me',
     ];
 
-    public function __construct(array $blacklist = null) {
+    public function __construct(?array $blacklist = null) {
         $this->blacklist = $blacklist ?? $this->blacklist;
     }
 

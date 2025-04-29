@@ -22,7 +22,7 @@ class ResponseDeserializer
         private array $deserializers,
     ) {}
 
-    public function deserialize(string $json, ResponseModel $responseModel, string $toolName = null) : Result {
+    public function deserialize(string $json, ResponseModel $responseModel, ?string $toolName = null) : Result {
         $result = match(true) {
             $this->canDeserializeSelf($responseModel) => $this->deserializeSelf(
                 $json, $responseModel->instance(), $toolName
@@ -42,7 +42,7 @@ class ResponseDeserializer
         return $responseModel->instance() instanceof CanDeserializeSelf;
     }
 
-    protected function deserializeSelf(string $json, CanDeserializeSelf $response, string $toolName = null) : Result {
+    protected function deserializeSelf(string $json, CanDeserializeSelf $response, ?string $toolName = null) : Result {
         $this->events->dispatch(new CustomResponseDeserializationAttempt($response, $json));
         return Result::try(fn() => $response->fromJson($json, $toolName));
     }

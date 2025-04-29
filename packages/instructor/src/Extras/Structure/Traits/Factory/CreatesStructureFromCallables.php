@@ -10,22 +10,22 @@ use ReflectionFunction;
 
 trait CreatesStructureFromCallables
 {
-    static public function fromFunctionName(string $function, string $name = null, string $description = null) : Structure {
+    static public function fromFunctionName(string $function, ?string $name = null, ?string $description = null) : Structure {
         return self::fromFunctionInfo(FunctionInfo::fromFunctionName($function), $name, $description);
     }
 
-    static public function fromMethodName(string $class, string $method, string $name = null, string $description = null) : Structure {
+    static public function fromMethodName(string $class, string $method, ?string $name = null, ?string $description = null) : Structure {
         return self::fromFunctionInfo(FunctionInfo::fromMethodName($class, $method), $name, $description);
     }
 
-    static public function fromCallable(callable $callable, string $name = null, string $description = null) : Structure {
+    static public function fromCallable(callable $callable, ?string $name = null, ?string $description = null) : Structure {
         $functionInfo = new FunctionInfo(new ReflectionFunction($callable));
         return self::fromFunctionInfo($functionInfo, $name, $description);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////
 
-    static private function fromFunctionInfo(FunctionInfo $functionInfo, string $name = null, string $description = null) : Structure {
+    static private function fromFunctionInfo(FunctionInfo $functionInfo, string $name = null, ?string $description = null) : Structure {
         $functionName = $name ?? $functionInfo->getShortName();
         $functionDescription = $description ?? $functionInfo->getDescription();
         $arguments = self::makeArgumentFields($functionInfo);

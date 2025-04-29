@@ -15,7 +15,7 @@ trait HandlesDeserialization
     private SymfonyDeserializer $deserializer;
     protected bool $ignoreUnknownFields = true;
 
-    public function fromJson(string $jsonData, string $toolName = null): static {
+    public function fromJson(string $jsonData, ?string $toolName = null): static {
         $data = Json::decode($jsonData);
         return $this->fromArray($data);
     }

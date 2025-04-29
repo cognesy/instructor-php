@@ -20,7 +20,7 @@ class ResponseModel implements CanProvideJsonSchema
         mixed  $instance,
         Schema $schema,
         array  $jsonSchema,
-        ToolCallBuilder $toolCallBuilder = null,
+        ?ToolCallBuilder $toolCallBuilder = null,
     ) {
         $this->class = $class;
         $this->instance = $instance;

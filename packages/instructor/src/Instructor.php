@@ -41,8 +41,8 @@ class Instructor {
      * @return void
      */
     public function __construct(
-        LLM $llm = null,
-        EventDispatcher $events = null,
+        ?LLM $llm = null,
+        ?EventDispatcher $events = null,
     ) {
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
         $this->queueEvent(new InstructorStarted());

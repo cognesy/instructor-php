@@ -28,8 +28,8 @@ class Inference
      * @return void
      */
     public function __construct(
-        LLM                $llm = null,
-        EventDispatcher    $events = null,
+        ?LLM                $llm = null,
+        ?EventDispatcher    $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->llm = $llm ?? new LLM(events: $this->events);

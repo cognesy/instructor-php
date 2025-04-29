@@ -106,7 +106,7 @@ class ToolCall
         return (array) ($this->arguments[$key] ?? $default);
     }
 
-    public function objectValue(string $key, object $default = null) : object {
+    public function objectValue(string $key, ?object $default = null) : object {
         return (object) ($this->arguments[$key] ?? $default);
     }
 

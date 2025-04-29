@@ -13,7 +13,7 @@ class GetUrlContent extends Module
     protected Closure $getUrlFn;
 
     public function __construct(
-        Closure|string $scraper = null
+        Closure|string|null $scraper = null
     ) {
         $this->getUrlFn = match(true) {
             empty($scraper) => fn(string $url) => file_get_contents($url),

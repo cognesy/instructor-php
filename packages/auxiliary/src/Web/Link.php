@@ -13,8 +13,8 @@ class Link {
         string $url = '',
         string $title = '',
         string $baseUrl = '',
-        bool $isInternal = null,
-        string $domain = null,
+        ?bool $isInternal = null,
+        ?string $domain = null,
     ) {
         $this->title = $title;
         $this->isInternal = $isInternal ?? $this->isInternal($baseUrl, $url);

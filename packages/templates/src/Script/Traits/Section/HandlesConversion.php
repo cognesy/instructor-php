@@ -18,7 +18,7 @@ trait HandlesConversion
      * @param array<string,mixed>|null $parameters
      * @return array<string,mixed>
      */
-    public function toArray(array $parameters = null) : array {
+    public function toArray(?array $parameters = null) : array {
         return $this->renderMessages(
             messages: $this->messages()->toArray(),
             parameters: $parameters

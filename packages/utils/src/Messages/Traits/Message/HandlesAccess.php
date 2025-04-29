@@ -44,14 +44,14 @@ trait HandlesAccess
         return is_array($this->content);
     }
 
-    public function hasMeta(string $key = null) : bool {
+    public function hasMeta(?string $key = null) : bool {
         return match(true) {
             $key === null => !empty($this->metadata),
             default => isset($this->metadata[$key]),
         };
     }
 
-    public function meta(string $key = null) : mixed {
+    public function meta(?string $key = null) : mixed {
         return match(true) {
             $key === null => $this->metadata,
             default => $this->metadata[$key] ?? null,

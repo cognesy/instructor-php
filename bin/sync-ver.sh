@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # sync-ver.sh - Synchronizes versions across explicitly defined packages
 set -e  # Exit immediately if a command exits with non-zero status
 

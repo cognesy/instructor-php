@@ -12,7 +12,7 @@ trait HandlesConversion
      * @param array<string> $order
      * @return Messages
      */
-    public function toMessages(array $parameters = null) : Messages {
+    public function toMessages(?array $parameters = null) : Messages {
         $messages = new Messages();
         foreach ($this->sections as $section) {
             $content = match(true) {
@@ -36,7 +36,7 @@ trait HandlesConversion
      * @param array<string,mixed>|null $parameters
      * @return array<string,string|array>
      */
-    public function toArray(array $parameters = null, bool $raw = false) : array {
+    public function toArray(?array $parameters = null, bool $raw = false) : array {
         $array = $this->toMessages()->toArray();
 
         return match($raw) {
@@ -53,7 +53,7 @@ trait HandlesConversion
      * @param array<string,mixed>|null $parameters
      * @return string
      */
-    public function toString(string $separator = "\n", array $parameters = null) : string {
+    public function toString(string $separator = "\n", ?array $parameters = null) : string {
         if ($this->hasComposites()) {
             throw new RuntimeException('Script contains composite messages and cannot be converted to string.');
         }

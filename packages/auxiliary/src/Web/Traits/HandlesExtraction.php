@@ -31,7 +31,7 @@ trait HandlesExtraction
      * @param callable|null $callback Function to transform the selected item
      * @return Generator<\Cognesy\Auxiliary\Web\Webpage> a generator of Webpage objects
      */
-    public function selectMany(string $selector, callable $callback = null, int $limit = 0) : Generator {
+    public function selectMany(string $selector, ?callable $callback = null, int $limit = 0) : Generator {
         $count = 0;
         foreach ($this->htmlProcessor->selectMany($this->content, $selector) as $html) {
             if ($limit > 0 && $count++ >= $limit) {

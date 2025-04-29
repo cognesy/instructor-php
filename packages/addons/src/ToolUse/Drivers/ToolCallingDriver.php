@@ -35,7 +35,7 @@ class ToolCallingDriver implements CanUseTools
     private bool $parallelToolCalls = false;
 
     public function __construct(
-        LLM          $llm = null,
+        ?LLM          $llm = null,
         string|array $toolChoice = 'auto',
         array        $responseFormat = [],
         string       $model = '',

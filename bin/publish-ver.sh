@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # publish.sh - Main script for releasing a new version
 set -e  # Exit immediately if a command exits with non-zero status
 

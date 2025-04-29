@@ -23,7 +23,7 @@ static public function infer(
     int $maxRetries = 2,    // (optional) The number of retries in case of validation failure
     array $options = [],    // (optional) Additional data to pass to the Instructor or LLM API
     Mode $mode = Mode::Tools, // (optional) The mode to use for inference
-    LLM $llm = null         // (optional) LLM instance to use for inference
+    ?LLM $llm = null         // (optional) LLM instance to use for inference
 ) : static;
 ```
 

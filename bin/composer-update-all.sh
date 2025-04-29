@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e  # stops script on first error
 
 for dir in packages/*; do

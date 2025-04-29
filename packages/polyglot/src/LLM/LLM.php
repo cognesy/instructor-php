@@ -39,10 +39,10 @@ class LLM
      */
     public function __construct(
         string               $connection = '',
-        LLMConfig            $config = null,
-        CanHandleHttpRequest $httpClient = null,
-        CanHandleInference   $driver = null,
-        EventDispatcher      $events = null,
+        ?LLMConfig            $config = null,
+        ?CanHandleHttpRequest $httpClient = null,
+        ?CanHandleInference   $driver = null,
+        ?EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->config = $config ?? LLMConfig::load(

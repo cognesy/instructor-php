@@ -7,5 +7,5 @@ namespace Cognesy\Instructor\Features\Deserialization\Contracts;
  */
 interface CanDeserializeSelf
 {
-    public function fromJson(string $jsonData, string $toolName = null) : static;
+    public function fromJson(string $jsonData, ?string $toolName = null) : static;
 }

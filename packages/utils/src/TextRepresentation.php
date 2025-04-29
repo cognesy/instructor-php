@@ -30,7 +30,7 @@ class TextRepresentation
         };
     }
 
-    public static function fromParameter(mixed $value, string $key = null, array $parameters = []) : string {
+    public static function fromParameter(mixed $value, ?string $key = null, array $parameters = []) : string {
         return match (true) {
             is_scalar($value) => $value,
             is_array($value) => Json::encode($value),

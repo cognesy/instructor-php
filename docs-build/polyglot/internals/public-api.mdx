@@ -15,10 +15,10 @@ class Inference {
     // Create and manage the LLM instance
     public function __construct(
         string $connection = '',
-        LLMConfig $config = null,
-        CanHandleHttpRequest $httpClient = null,
-        CanHandleInference $driver = null,
-        EventDispatcher $events = null
+        ?LLMConfig $config = null,
+        ?CanHandleHttpRequest $httpClient = null,
+        ?CanHandleInference $driver = null,
+        ?EventDispatcher $events = null
     ) { ... }
 
     // Configure the instance
@@ -65,10 +65,10 @@ namespace Cognesy\Polyglot\Embeddings;
 class Embeddings {
     public function __construct(
         string $connection = '',
-        EmbeddingsConfig $config = null,
-        CanHandleHttpRequest $httpClient = null,
-        CanVectorize $driver = null,
-        EventDispatcher $events = null
+        ?EmbeddingsConfig $config = null,
+        ?CanHandleHttpRequest $httpClient = null,
+        ?CanVectorize $driver = null,
+        ?EventDispatcher $events = null
     ) { ... }
 
     // Configuration methods

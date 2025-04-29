@@ -81,7 +81,7 @@ class SelectObservations
     /**
      * @return \Cognesy\Evals\Observation[]
      */
-    public function get(string $key = null) : array {
+    public function get(?string $key = null) : array {
         return match(true) {
             ($key === null) => $this->observations,
             default => (new self($this->observations))->withKeys([$key])->all(),

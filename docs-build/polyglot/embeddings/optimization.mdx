@@ -50,7 +50,7 @@ class CachedEmbeddings {
     private $embeddings;
     private $cache = [];
 
-    public function __construct(Embeddings $embeddings = null) {
+    public function __construct(?Embeddings $embeddings = null) {
         $this->embeddings = $embeddings ?? new Embeddings();
     }
 

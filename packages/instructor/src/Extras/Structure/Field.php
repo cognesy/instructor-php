@@ -16,9 +16,9 @@ class Field {
     public function __construct(
         string $name = '',
         string $description = '',
-        TypeDetails $typeDetails = null,
-        Schema $customSchema = null,
-        Structure $prototype = null,
+        ?TypeDetails $typeDetails = null,
+        ?Schema $customSchema = null,
+        ?Structure $prototype = null,
     ) {
         if (empty($name)) {
             throw new \Exception('Field name cannot be empty');

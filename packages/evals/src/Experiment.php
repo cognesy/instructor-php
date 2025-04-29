@@ -52,7 +52,7 @@ class Experiment {
         CanRunExecution $executor,
         array|object    $processors,
         array|object    $postprocessors,
-        EventDispatcher $events = null,
+        ?EventDispatcher $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->id = Uuid::uuid4();

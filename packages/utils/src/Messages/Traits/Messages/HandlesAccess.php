@@ -93,7 +93,7 @@ trait HandlesAccess
         return array_map($callback, $this->messages);
     }
 
-    public function filter(callable $callback = null) : \Cognesy\Utils\Messages\Messages {
+    public function filter(?callable $callback = null) : \Cognesy\Utils\Messages\Messages {
         $messages = new \Cognesy\Utils\Messages\Messages();
         foreach ($this->messages as $message) {
             if ($message->isEmpty()) {

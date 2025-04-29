@@ -87,7 +87,7 @@ class ClassInfo {
         return $this->getProperty($property)->isPublic();
     }
 
-    public function isNullable(string $property = null) : bool {
+    public function isNullable(?string $property = null) : bool {
         if ($property === null) {
             return $this->isNullable;
         }

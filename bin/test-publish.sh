@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # test-publish.sh - Test version of the publish script
 # This version performs all operations except git commits, pushes, and releases
 

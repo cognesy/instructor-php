@@ -38,7 +38,7 @@ class HttpClient implements CanHandleHttpRequest
      * @param EventDispatcher|null $events The event dispatcher instance to use.
      * @return void
      */
-    public function __construct(string $client = '', EventDispatcher $events = null) {
+    public function __construct(string $client = '', ?EventDispatcher $events = null) {
         $this->events = $events ?? new EventDispatcher();
         $this->stack = new MiddlewareStack($this->events);
         $config = HttpClientConfig::load($client ?: Settings::get('http', "defaultClient"));
