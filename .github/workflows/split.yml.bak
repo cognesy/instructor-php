@@ -1,0 +1,100 @@
+name: Split packages
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+#env:
+#  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - local: 'packages/addons'
+            repo:  'cognesy/instructor-addons'
+            name:  'instructor-addons'
+          - local: 'packages/auxiliary'
+            repo:  'cognesy/instructor-aux'
+            name:  'instructor-aux'
+          - local: 'packages/evals'
+            repo:  'cognesy/instructor-evals'
+            name:  'instructor-evals'
+          - local: 'packages/http-client'
+            repo:  'cognesy/instructor-http-client'
+            name:  'instructor-http-client'
+          - local: 'packages/hub'
+            repo:  'cognesy/instructor-hub'
+            name:  'instructor-hub'
+          - local: 'packages/instructor'
+            repo:  'cognesy/instructor-struct'
+            name:  'instructor-struct'
+          - local: 'packages/polyglot'
+            repo:  'cognesy/instructor-polyglot'
+            name:  'instructor-polyglot'
+          - local: 'packages/setup'
+            repo:  'cognesy/instructor-setup'
+            name:  'instructor-setup'
+          - local: 'packages/tell'
+            repo:  'cognesy/instructor-tell'
+            name:  'instructor-tell'
+          - local: 'packages/templates'
+            repo:  'cognesy/instructor-templates'
+            name:  'instructor-templates'
+          - local: 'packages/utils'
+            repo:  'cognesy/instructor-utils'
+            name:  'instructor-utils'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper splitting
+
+      # Verify release notes exist for this package
+      - name: Verify release notes
+        id: check_notes
+        run: |
+          TAG_NAME=${{ github.ref_name }}
+          NOTES_PATH="${{ matrix.package.local }}/release_notes/${TAG_NAME}.md"
+          
+          if [ -f "$NOTES_PATH" ]; then
+            echo "NOTES_EXIST=true" >> $GITHUB_ENV
+            echo "Notes found at $NOTES_PATH"
+          else
+            echo "NOTES_EXIST=false" >> $GITHUB_ENV
+            echo "Warning: No release notes found at $NOTES_PATH"
+            # Create a minimal release note if none exists
+            mkdir -p "${{ matrix.package.local }}/release_notes"
+            echo "# ${TAG_NAME}\n\nThis release is part of the main monorepo release ${TAG_NAME}." > "$NOTES_PATH"
+            echo "Created minimal release notes"
+          fi
+
+      # ► push branch + tag
+      - name: Split Monorepo
+        uses: "danharrin/monorepo-split-github-action@v2.3.0"
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
+        with:
+          #github_token: ${{ secrets.SPLIT_TOKEN_4 }}      # PAT here
+          tag: ${{ github.ref_name }}             # e.g. v1.2.3
+          package_directory: ${{ matrix.package.local }}
+          repository_organization: cognesy
+          repository_name: ${{ matrix.package.name }}
+          user_name: 'ddebowczyk'
+          user_email: 'ddebowczyk@gmail.com'
+
+      # ► create GitHub Release with notes
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
+        with:
+          repository: ${{ matrix.package.repo }}          # target repo
+          tag_name: ${{ github.ref_name }}             # v1.2.3
+          body_path: ${{ matrix.package.local }}/release_notes/${{ github.ref_name }}.md
+          token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here

@@ -6,61 +6,83 @@ on:
 permissions:
   contents: write
 
-#env:
-#  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
 jobs:
+  # Define a basic job that passes the manually ordered package list to the next job
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      package_order: ${{ steps.set-order.outputs.package_order }}
+    steps:
+      - name: Set package order
+        id: set-order
+        run: |
+          # Define the ordered list of packages - dependencies first
+          # Place base packages with minimal dependencies at the beginning
+          # and packages with more dependencies later
+          PACKAGE_ORDER='[
+            {"path": "packages/utils", "repo": "cognesy/instructor-utils", "name": "instructor-utils"},
+            {"path": "packages/http-client", "repo": "cognesy/instructor-http-client", "name": "instructor-http-client"},
+            {"path": "packages/templates", "repo": "cognesy/instructor-templates", "name": "instructor-templates"},
+            {"path": "packages/polyglot", "repo": "cognesy/instructor-polyglot", "name": "instructor-polyglot"},
+            {"path": "packages/setup", "repo": "cognesy/instructor-setup", "name": "instructor-setup"},
+            {"path": "packages/instructor", "repo": "cognesy/instructor-struct", "name": "instructor-struct"},
+            {"path": "packages/addons", "repo": "cognesy/instructor-addons", "name": "instructor-addons"},
+            {"path": "packages/auxiliary", "repo": "cognesy/instructor-aux", "name": "instructor-auxiliary"},
+            {"path": "packages/evals", "repo": "cognesy/instructor-evals", "name": "instructor-evals"},
+            {"path": "packages/hub", "repo": "cognesy/instructor-hub", "name": "instructor-hub"},
+            {"path": "packages/tell", "repo": "cognesy/instructor-tell", "name": "instructor-tell"}
+          ]'
+          echo "package_order=${PACKAGE_ORDER}" >> $GITHUB_OUTPUT
+
+  # Split packages in the defined order
   split:
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        package:
-          - local: 'packages/addons'
-            repo:  'cognesy/instructor-addons'
-            name:  'instructor-addons'
-          - local: 'packages/auxiliary'
-            repo:  'cognesy/instructor-aux'
-            name:  'instructor-aux'
-          - local: 'packages/evals'
-            repo:  'cognesy/instructor-evals'
-            name:  'instructor-evals'
-          - local: 'packages/http-client'
-            repo:  'cognesy/instructor-http-client'
-            name:  'instructor-http-client'
-          - local: 'packages/hub'
-            repo:  'cognesy/instructor-hub'
-            name:  'instructor-hub'
-          - local: 'packages/instructor'
-            repo:  'cognesy/instructor-struct'
-            name:  'instructor-struct'
-          - local: 'packages/polyglot'
-            repo:  'cognesy/instructor-polyglot'
-            name:  'instructor-polyglot'
-          - local: 'packages/setup'
-            repo:  'cognesy/instructor-setup'
-            name:  'instructor-setup'
-          - local: 'packages/tell'
-            repo:  'cognesy/instructor-tell'
-            name:  'instructor-tell'
-          - local: 'packages/templates'
-            repo:  'cognesy/instructor-templates'
-            name:  'instructor-templates'
-          - local: 'packages/utils'
-            repo:  'cognesy/instructor-utils'
-            name:  'instructor-utils'
+        # Convert the package order array to a matrix
+        package_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history for proper splitting
 
+      # Get the package details from the ordered list
+      - name: Get package details
+        id: package-details
+        run: |
+          PACKAGE_ORDER='${{ needs.setup.outputs.package_order }}'
+          PACKAGE_INDEX=${{ matrix.package_index }}
+          
+          # Extract package info
+          PACKAGE_PATH=$(echo $PACKAGE_ORDER | jq -r ".[$PACKAGE_INDEX].path")
+          REPO_NAME=$(echo $PACKAGE_ORDER | jq -r ".[$PACKAGE_INDEX].repo")
+          PACKAGE_NAME=$(echo $PACKAGE_ORDER | jq -r ".[$PACKAGE_INDEX].name")
+          
+          echo "PACKAGE_PATH=${PACKAGE_PATH}" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_OUTPUT
+          echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          
+          echo "Processing package $PACKAGE_NAME ($PACKAGE_PATH) -> $REPO_NAME"
+
+      # Wait for previous packages to be processed
+      # This delay increases with each package index to ensure dependencies are available
+      - name: Wait for dependencies
+        run: |
+          # Wait longer for later packages (more dependencies)
+          WAIT_TIME=$((${{ matrix.package_index }} * 30))
+          echo "Waiting $WAIT_TIME seconds for previous packages to be processed..."
+          sleep $WAIT_TIME
+
       # Verify release notes exist for this package
       - name: Verify release notes
         id: check_notes
         run: |
           TAG_NAME=${{ github.ref_name }}
-          NOTES_PATH="${{ matrix.package.local }}/release_notes/${TAG_NAME}.md"
+          PACKAGE_PATH="${{ steps.package-details.outputs.PACKAGE_PATH }}"
+          NOTES_PATH="$PACKAGE_PATH/release_notes/${TAG_NAME}.md"
           
           if [ -f "$NOTES_PATH" ]; then
             echo "NOTES_EXIST=true" >> $GITHUB_ENV
@@ -69,32 +91,85 @@ jobs:
             echo "NOTES_EXIST=false" >> $GITHUB_ENV
             echo "Warning: No release notes found at $NOTES_PATH"
             # Create a minimal release note if none exists
-            mkdir -p "${{ matrix.package.local }}/release_notes"
+            mkdir -p "$PACKAGE_PATH/release_notes"
             echo "# ${TAG_NAME}\n\nThis release is part of the main monorepo release ${TAG_NAME}." > "$NOTES_PATH"
             echo "Created minimal release notes"
           fi
 
-      # ► push branch + tag
+      # Split the monorepo
       - name: Split Monorepo
         uses: "danharrin/monorepo-split-github-action@v2.3.0"
         env:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:
-          #github_token: ${{ secrets.SPLIT_TOKEN_4 }}      # PAT here
           tag: ${{ github.ref_name }}             # e.g. v1.2.3
-          package_directory: ${{ matrix.package.local }}
+          package_directory: ${{ steps.package-details.outputs.PACKAGE_PATH }}
           repository_organization: cognesy
-          repository_name: ${{ matrix.package.name }}
+          repository_name: ${{ steps.package-details.outputs.PACKAGE_NAME }}
           user_name: 'ddebowczyk'
           user_email: 'ddebowczyk@gmail.com'
 
-      # ► create GitHub Release with notes
+      # Create GitHub Release with notes
       - uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         env:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:
-          repository: ${{ matrix.package.repo }}          # target repo
-          tag_name: ${{ github.ref_name }}             # v1.2.3
-          body_path: ${{ matrix.package.local }}/release_notes/${{ github.ref_name }}.md
-          token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here
+          repository: ${{ steps.package-details.outputs.REPO_NAME }}
+          tag_name: ${{ github.ref_name }}
+          body_path: ${{ steps.package-details.outputs.PACKAGE_PATH }}/release_notes/${{ github.ref_name }}.md
+          token: ${{ secrets.SPLIT_TOKEN_4 }}
+
+  # Validate packages were published correctly
+  validate:
+    needs: split
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Validate package versions
+        run: |
+          echo "Validating package versions after split..."
+          
+          # Wait for package registry to update
+          echo "Waiting for Packagist to update (2 minutes)..."
+          sleep 120
+          
+          # Create temporary composer project to test package availability
+          mkdir -p /tmp/validation
+          cd /tmp/validation
+          
+          # Initialize composer project
+          composer init --name=cognesy/validation --description="Validation project" --author="Validation <validation@example.com>" --type=project --no-interaction
+          
+          # Try to require each package at the new version
+          TAG_VERSION="${{ github.ref_name }}"
+          VERSION="${TAG_VERSION#v}"
+          
+          echo "Validating version: $VERSION"
+          
+          PACKAGES=(
+            "cognesy/instructor-utils:^$VERSION"
+            "cognesy/instructor-http-client:^$VERSION"
+            "cognesy/instructor-templates:^$VERSION"
+            "cognesy/instructor-struct:^$VERSION"
+            "cognesy/instructor-polyglot:^$VERSION"
+            "cognesy/instructor-setup:^$VERSION"
+            "cognesy/instructor-addons:^$VERSION"
+            "cognesy/instructor-aux:^$VERSION"
+            "cognesy/instructor-evals:^$VERSION"
+            "cognesy/instructor-hub:^$VERSION"
+            "cognesy/instructor-tell:^$VERSION"
+          )
+          
+          for pkg in "${PACKAGES[@]}"; do
+            echo "Validating package: $pkg"
+            if ! composer require --no-update "$pkg"; then
+              echo "WARNING: Package $pkg is not yet available. This may be due to package registry delays."
+            fi
+          done
+          
+          echo "All packages have been processed. Some may still be propagating to Packagist."

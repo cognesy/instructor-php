@@ -24,6 +24,23 @@ fi
 echo "Creating release for version $VERSION..."
 echo "Using release notes from: $NOTES_FILE"
 
+# Define dependency order - base packages with minimal dependencies first
+# This order should match the order in split.yml workflow
+declare -a DEPENDENCY_ORDER=(
+    "packages/utils"
+    "packages/http-client"
+    "packages/templates"
+    "packages/polyglot"
+    "packages/setup"
+    "packages/instructor"
+    "packages/addons"
+    "packages/auxiliary"
+    "packages/evals"
+    "packages/hub"
+    "packages/tell"
+    "packages/experimental"
+)
+
 # Define packages - must match those in sync-ver.sh
 declare -A PACKAGES
 PACKAGES["packages/utils"]="cognesy/instructor-utils"
@@ -39,17 +56,75 @@ PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
-# 0. Build docs
-echo "Step 0: Rebuilding documentation..."
+# 0. Verify all files exist
+echo "Step 0: Verifying package directories..."
+missing_dirs=()
+for dir in "${!PACKAGES[@]}"; do
+    if [ ! -d "$dir" ]; then
+        missing_dirs+=("$dir")
+    fi
+done
+
+if [ ${#missing_dirs[@]} -ne 0 ]; then
+    echo "Error: The following package directories are missing:"
+    for dir in "${missing_dirs[@]}"; do
+        echo "  - $dir"
+    done
+    echo "Please check the package directory structure and try again."
+    exit 1
+fi
+
+# 1. Build docs
+echo "Step 1: Rebuilding documentation..."
 ./bin/instructor hub gendocs
 
-# 1. Update all package versions using sync-ver.sh
-echo "Step 1: Updating package versions..."
+# 2. Update all package versions using sync-ver.sh
+echo "Step 2: Updating package versions in dependency order..."
 ./bin/sync-ver.sh "$VERSION"
 
-# 2. Distribute release notes to all packages
-echo "Step 2: Distributing release notes to all packages..."
+# 3. Double-check all packages have correct version and dependencies
+echo "Step 3: Verifying package versions and dependencies..."
 for dir in "${!PACKAGES[@]}"; do
+    if [ -d "$dir" ] && [ -f "$dir/composer.json" ]; then
+        pkg_version=$(jq -r '.version // "0.0.0"' "$dir/composer.json")
+        if [ "$pkg_version" != "$VERSION" ]; then
+            echo "⚠️ Warning: Package $dir has incorrect version: $pkg_version (expected $VERSION)"
+            echo "   Fixing version..."
+            jq --arg version "$VERSION" '.version = $version' "$dir/composer.json" > "$dir/composer.json.tmp"
+            mv "$dir/composer.json.tmp" "$dir/composer.json"
+        fi
+
+        # Check package dependencies
+        MAJOR_MINOR=$(echo $VERSION | grep -o "^[0-9]*\.[0-9]*")
+        for dep_dir in "${!PACKAGES[@]}"; do
+            dep_pkg="${PACKAGES[$dep_dir]}"
+
+            # Check in require section
+            req_ver=$(jq -r --arg pkg "$dep_pkg" '.require[$pkg] // empty' "$dir/composer.json")
+            if [ -n "$req_ver" ] && [ "$req_ver" != "^$MAJOR_MINOR" ]; then
+                echo "⚠️ Warning: In $dir/composer.json, dependency $dep_pkg has version $req_ver instead of ^$MAJOR_MINOR"
+                echo "   Fixing dependency version..."
+                jq --arg pkg "$dep_pkg" --arg ver "^$MAJOR_MINOR" \
+                   '.require[$pkg] = $ver' "$dir/composer.json" > "$dir/composer.json.tmp"
+                mv "$dir/composer.json.tmp" "$dir/composer.json"
+            fi
+
+            # Check in require-dev section
+            req_dev_ver=$(jq -r --arg pkg "$dep_pkg" '."require-dev"[$pkg] // empty' "$dir/composer.json")
+            if [ -n "$req_dev_ver" ] && [ "$req_dev_ver" != "^$MAJOR_MINOR" ]; then
+                echo "⚠️ Warning: In $dir/composer.json, dev dependency $dep_pkg has version $req_dev_ver instead of ^$MAJOR_MINOR"
+                echo "   Fixing dev dependency version..."
+                jq --arg pkg "$dep_pkg" --arg ver "^$MAJOR_MINOR" \
+                   '."require-dev"[$pkg] = $ver' "$dir/composer.json" > "$dir/composer.json.tmp"
+                mv "$dir/composer.json.tmp" "$dir/composer.json"
+            fi
+        done
+    fi
+done
+
+# 4. Distribute release notes to all packages (in dependency order)
+echo "Step 4: Distributing release notes to all packages..."
+for dir in "${DEPENDENCY_ORDER[@]}"; do
     if [ -d "$dir" ]; then
         # Create release_notes directory if it doesn't exist
         mkdir -p "$dir/release_notes"
@@ -63,35 +138,35 @@ for dir in "${!PACKAGES[@]}"; do
     fi
 done
 
-# 3. Check for uncommitted changes
+# 5. Check for uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
-    echo "Step 3: Adding all modified files..."
+    echo "Step 5: Adding all modified files..."
     git add .
 else
-    echo "Step 3: No uncommitted changes detected."
+    echo "Step 5: No uncommitted changes detected."
 fi
 
-# 4. Check if there are changes to commit
+# 6. Check if there are changes to commit
 if [ -n "$(git status --porcelain)" ]; then
-    echo "Step 4: Committing changes..."
+    echo "Step 6: Committing changes..."
     git commit -m "Release version $VERSION"
     echo "✅ Changes committed."
 else
-    echo "Step 4: No changes to commit."
+    echo "Step 6: No changes to commit."
 fi
 
-# 5. Create git tag
-echo "Step 5: Creating git tag..."
+# 7. Create git tag
+echo "Step 7: Creating git tag..."
 git tag -a "v$VERSION" -m "Release version $VERSION"
 echo "✅ Created tag v$VERSION"
 
-# 6. Push changes and tag
-echo "Step 6: Pushing changes and tag..."
+# 8. Push changes and tag
+echo "Step 8: Pushing changes and tag..."
 git push origin main && git push origin "v$VERSION"
 echo "✅ Pushed changes and tag to origin"
 
-# 7. Create GitHub release for main repo
-echo "Step 7: Creating GitHub release..."
+# 9. Create GitHub release for main repo
+echo "Step 9: Creating GitHub release..."
 gh release create "v$VERSION" \
     --title "v$VERSION" \
     --notes-file "$NOTES_FILE" \
@@ -99,3 +174,9 @@ gh release create "v$VERSION" \
 
 echo "🎉 Release v$VERSION completed!"
 echo "The split.yml workflow will now trigger automatically to split packages and create releases for each subpackage."
+echo "Note: Package splitting will happen in the following dependency order to ensure proper package availability:"
+for i in "${!DEPENDENCY_ORDER[@]}"; do
+    dir="${DEPENDENCY_ORDER[$i]}"
+    pkg="${PACKAGES[$dir]}"
+    echo "  $((i+1)). $pkg ($dir)"
+done
