@@ -11,9 +11,9 @@ You can create a specialized client wrapper that encapsulates all the HTTP logic
 
 namespace YourNamespace\Api;
 
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Exceptions\RequestException;
 
 class WeatherApiClient
 {
@@ -152,7 +152,7 @@ For more complex APIs, you can create a resource factory pattern:
 
 namespace YourNamespace\Api;
 
-use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Http\HttpClient;
 
 class ApiClient
 {
@@ -347,9 +347,9 @@ You can extend the event system by creating custom event subscribers:
 
 namespace YourNamespace\Http\EventSubscribers;
 
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
-use Cognesy\Polyglot\Http\Events\HttpResponseReceived;
-use Cognesy\Polyglot\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Utils\Events\EventDispatcher;
 use Psr\Log\LoggerInterface;
 

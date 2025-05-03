@@ -163,13 +163,11 @@ Each client type can have its own configuration in the `config/http.php` file:
 
 ```php
 <?php
-use Cognesy\Http\Enums\HttpClientType;
-
 return [
     'defaultClient' => 'guzzle',
     'clients' => [
         'guzzle' => [
-            'httpClientType' => HttpClientType::Guzzle->value,
+            'httpClientType' => 'guzzle',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -178,7 +176,7 @@ return [
             'failOnError' => true,
         ],
         'symfony' => [
-            'httpClientType' => HttpClientType::Symfony->value,
+            'httpClientType' => 'symfony',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -187,7 +185,7 @@ return [
             'failOnError' => true,
         ],
         'laravel' => [
-            'httpClientType' => HttpClientType::Laravel->value,
+            'httpClientType' => 'laravel',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -206,32 +204,32 @@ You can define multiple configurations for the same client type, each with diffe
 ```php
 'clients' => [
     'guzzle' => [
-        'httpClientType' => HttpClientType::Guzzle->value,
+        'httpClientType' => 'guzzle',
         'connectTimeout' => 3,
         'requestTimeout' => 30,
         // Default settings for Guzzle
     ],
     'guzzle-short-timeout' => [
-        'httpClientType' => HttpClientType::Guzzle->value,
+        'httpClientType' => 'guzzle',
         'connectTimeout' => 1,
         'requestTimeout' => 5,
         // Short timeouts for quick operations
     ],
     'guzzle-long-timeout' => [
-        'httpClientType' => HttpClientType::Guzzle->value,
+        'httpClientType' => 'guzzle',
         'connectTimeout' => 5,
         'requestTimeout' => 120,
         // Long timeouts for operations that take time
     ],
     'guzzle-streaming' => [
-        'httpClientType' => HttpClientType::Guzzle->value,
+        'httpClientType' => 'guzzle',
         'connectTimeout' => 3,
         'requestTimeout' => 300,
         'idleTimeout' => 60,
         // Optimized for streaming responses
     ],
     'http-ollama' => [
-        'httpClientType' => HttpClientType::Guzzle->value,
+        'httpClientType' => 'guzzle',
         'connectTimeout' => 1,
         'requestTimeout' => 90, // Longer timeout for AI model inference
         'idleTimeout' => -1,

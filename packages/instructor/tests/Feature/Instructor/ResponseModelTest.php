@@ -8,6 +8,23 @@ use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
 
+dataset('user_response_model', [[[
+    'x-php-class' => 'Cognesy\Instructor\Tests\Examples\ResponseModel\User',
+    'type' => 'object',
+    'properties' => [
+        'name' => [
+            'type' => 'string'
+        ],
+        'email' => [
+            'type' => 'string'
+        ],
+    ],
+    "required" => [
+        0 => 'name',
+        1 => 'email',
+    ]
+]]]);
+
 it('can handle string class name', function() {
     $responseModelFactory = new ResponseModelFactory(
         new ToolCallBuilder(

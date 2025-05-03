@@ -8,10 +8,10 @@ The library includes a `MockHttpDriver` that's useful for testing. This driver d
 ## Basic Usage
 
 ```php
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
-use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpClientRequest;
 
 // Create a mock driver
 $mockDriver = new MockHttpDriver();
@@ -525,14 +525,13 @@ In the next chapter, we'll explore the middleware system, which allows you to ad
 Once you've implemented your custom driver, you can use it with the `HttpClient`:
 
 ```php
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Data\HttpClientConfig;
-use Cognesy\Polyglot\Http\Enums\HttpClientType;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpClientConfig;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Create a configuration for your custom driver
 $config = new HttpClientConfig(
-    httpClientType: HttpClientType::Custom->value,
+    httpClientType: 'custom',
     connectTimeout: 3,
     requestTimeout: 30,
     idleTimeout: -1,
@@ -560,10 +559,10 @@ The library includes a `MockHttpDriver` that's useful for testing. This driver d
 ### Basic Usage
 
 ```php
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
-use Cognesy\Polyglot\Http\Drivers\MockHttpDriver;
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpClientRequest;
 
 // Create a mock driver
 $mockDriver = new MockHttpDriver();

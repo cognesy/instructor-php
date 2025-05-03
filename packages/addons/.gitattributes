@@ -11,6 +11,8 @@
 
 # Project specific ignores
 /tests/           export-ignore
+/docs/            export-ignore
+/release-notes/   export-ignore
 
 # Line ending normalization
 # Ensure PHP, JS, and text files have consistent line endings

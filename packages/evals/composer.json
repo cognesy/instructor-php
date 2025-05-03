@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-evals",
-  "version": "0.15.2",
+  "version": "0.16.0",
   "description": "LLM evaluation tools for Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -26,9 +26,9 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.15",
-    "cognesy/instructor-polyglot": "^0.15",
-    "cognesy/instructor-struct": "^0.15"
+    "cognesy/instructor-utils": "^0.16",
+    "cognesy/instructor-polyglot": "^0.16",
+    "cognesy/instructor-struct": "^0.16"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

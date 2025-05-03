@@ -11,7 +11,6 @@ use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\Drivers\GuzzleDriver;
 use Cognesy\Http\Drivers\LaravelDriver;
 use Cognesy\Http\Drivers\SymfonyDriver;
-use Cognesy\Http\Enums\HttpClientType;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 use Cognesy\Utils\Events\EventDispatcher;
@@ -30,6 +29,7 @@ class HttpClient implements CanHandleHttpRequest
     protected EventDispatcher $events;
     protected CanHandleHttpRequest $driver;
     protected MiddlewareStack $stack;
+    protected static array $drivers = [];
 
     /**
      * Constructor method for initializing the HTTP client.
@@ -54,6 +54,23 @@ class HttpClient implements CanHandleHttpRequest
      */
     public static function make(string $client = '', ?EventDispatcher $events = null): CanHandleHttpRequest {
         return (new self($client, $events));
+    }
+
+    /**
+     * Registers a custom HTTP driver with the specified name and closure.
+     *
+     * @param string $name The name of the driver to register.
+     * @param class-string|callable $driver The closure that creates the driver instance, accepting following closure arguments:
+     *   - \Cognesy\Http\Data\HttpClientConfig $config: The configuration object for the HTTP client.
+     *   - \Cognesy\Utils\Events\EventDispatcher $events: The event dispatcher instance.
+     * @return void
+     */
+    public static function registerDriver(string $name, string|callable $driver): void {
+        self::$drivers[$name] = match(true) {
+            is_string($driver) => fn($config, $events) => new $driver($config, $events),
+            is_callable($driver) => $driver,
+            default => throw new InvalidArgumentException("Invalid driver provided for {$name} - must be a class name or callable."),
+        };
     }
 
     /**
@@ -143,12 +160,32 @@ class HttpClient implements CanHandleHttpRequest
      * @return \Cognesy\Http\Contracts\CanHandleHttpRequest The instantiated HTTP driver corresponding to the specified client type.
      * @throws InvalidArgumentException If the specified client type is not supported.
      */
-    private function makeDriver(HttpClientConfig $config): CanHandleHttpRequest {
-        return match ($config->httpClientType) {
-            HttpClientType::Guzzle->value => new GuzzleDriver(config: $config, events: $this->events),
-            HttpClientType::Symfony->value => new SymfonyDriver(config: $config, events: $this->events),
-            httpClientType::Laravel->value => new LaravelDriver(config: $config, events: $this->events),
-            default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType}"),
-        };
+    protected function makeDriver(HttpClientConfig $config): CanHandleHttpRequest {
+        $name = $config->httpClientType;
+        $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
+        if ($driverClosure === null) {
+            throw new InvalidArgumentException("Client not supported: {$name}");
+        }
+        return $driverClosure($config, $this->events);
+
+//        return match ($config->httpClientType) {
+//            'guzzle' => new GuzzleDriver(config: $config, events: $this->events),
+//            'symfony' => new SymfonyDriver(config: $config, events: $this->events),
+//            'laravel' => new LaravelDriver(config: $config, events: $this->events),
+//            default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType}"),
+//        };
+    }
+
+    /**
+     * Returns the default drivers available for the HTTP client.
+     *
+     * @return array An associative array of default drivers with their respective configuration closures.
+     */
+    private function defaultDrivers() : array {
+        return [
+            'guzzle' => fn($config, $events) => new GuzzleDriver(config: $config, events: $events),
+            'symfony' => fn($config, $events) => new SymfonyDriver(config: $config, events: $events),
+            'laravel' => fn($config, $events) => new LaravelDriver(config: $config, events: $events),
+        ];
     }
 }

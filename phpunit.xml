@@ -9,10 +9,36 @@
         <testsuite name="Test Suite">
             <directory suffix="Test.php">./tests</directory>
         </testsuite>
+        <testsuite name="Packages Tests">
+            <directory suffix="Test.php">./packages/addons/tests</directory>
+            <directory suffix="Test.php">./packages/auxiliary/tests</directory>
+            <directory suffix="Test.php">./packages/evals/tests</directory>
+            <directory suffix="Test.php">./packages/experimental/tests</directory>
+            <directory suffix="Test.php">./packages/http-client/tests</directory>
+            <directory suffix="Test.php">./packages/hub/tests</directory>
+            <directory suffix="Test.php">./packages/instructor/tests</directory>
+            <directory suffix="Test.php">./packages/polyglot/tests</directory>
+            <directory suffix="Test.php">./packages/setup/tests</directory>
+            <directory suffix="Test.php">./packages/tell/tests</directory>
+            <directory suffix="Test.php">./packages/templates/tests</directory>
+            <directory suffix="Test.php">./packages/utils/tests</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
             <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./packages/addons/tests</directory>
+            <directory suffix=".php">./packages/auxiliary/tests</directory>
+            <directory suffix=".php">./packages/evals/tests</directory>
+            <directory suffix=".php">./packages/experimental/tests</directory>
+            <directory suffix=".php">./packages/http-client/tests</directory>
+            <directory suffix=".php">./packages/hub/tests</directory>
+            <directory suffix=".php">./packages/instructor/tests</directory>
+            <directory suffix=".php">./packages/polyglot/tests</directory>
+            <directory suffix=".php">./packages/setup/tests</directory>
+            <directory suffix=".php">./packages/tell/tests</directory>
+            <directory suffix=".php">./packages/templates/tests</directory>
+            <directory suffix=".php">./packages/utils/tests</directory>
         </include>
         <exclude>
             <directory suffix=".php">./src/Contracts</directory>

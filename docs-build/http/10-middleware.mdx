@@ -227,7 +227,7 @@ The Instructor HTTP client API includes several built-in middleware components f
 The `DebugMiddleware` logs detailed information about HTTP requests and responses:
 
 ```php
-use Cognesy\Polyglot\Http\Middleware\Debug\DebugMiddleware;
+use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 
 // Enable debug middleware
 $client->withMiddleware(new DebugMiddleware());
@@ -267,7 +267,7 @@ return [
 The `BufferResponseMiddleware` stores response bodies and streaming chunks for reuse:
 
 ```php
-use Cognesy\Polyglot\Http\Middleware\BufferResponse\BufferResponseMiddleware;
+use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 
 // Add buffer response middleware
 $client->withMiddleware(new BufferResponseMiddleware());
@@ -280,7 +280,7 @@ This middleware is useful when you need to access a response body or stream mult
 The `StreamByLineMiddleware` processes streaming responses line by line:
 
 ```php
-use Cognesy\Polyglot\Http\Middleware\StreamByLine\StreamByLineMiddleware;
+use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
 
 // Add stream by line middleware
 $client->withMiddleware(new StreamByLineMiddleware());
@@ -305,7 +305,7 @@ $client->withMiddleware(new StreamByLineMiddleware($lineParser));
 The `RecordReplayMiddleware` records HTTP interactions and can replay them later:
 
 ```php
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\RecordReplayMiddleware;
+use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
 // Create a record/replay middleware in record mode
 $recordReplayMiddleware = new RecordReplayMiddleware(

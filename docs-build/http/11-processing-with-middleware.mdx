@@ -22,10 +22,10 @@ The most direct approach is to implement the `HttpMiddleware` interface:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class LoggingMiddleware implements HttpMiddleware
 {
@@ -79,9 +79,9 @@ For most cases, extending the `BaseMiddleware` abstract class is more convenient
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class AuthenticationMiddleware extends BaseMiddleware
 {
@@ -162,11 +162,11 @@ This middleware automatically retries failed requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Exceptions\RequestException;
 
 class RetryMiddleware extends BaseMiddleware
 {
@@ -231,10 +231,10 @@ This middleware throttles requests to respect API rate limits:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class RateLimitingMiddleware extends BaseMiddleware
 {
@@ -298,11 +298,11 @@ This middleware caches responses for GET requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Adapters\MockHttpResponse;
 use Psr\SimpleCache\CacheInterface;
 
 class CachingMiddleware extends BaseMiddleware
@@ -377,9 +377,9 @@ All response decorators should implement the `HttpClientResponse` interface. The
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseResponseDecorator;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseResponseDecorator;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 use Generator;
 
 class JsonStreamDecorator extends BaseResponseDecorator
@@ -451,9 +451,9 @@ To use a response decorator, you need to create a middleware that wraps the resp
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class JsonStreamMiddleware extends BaseMiddleware
 {
@@ -492,9 +492,9 @@ You can use response decoration to transform response content on-the-fly:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseResponseDecorator;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseResponseDecorator;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class XmlToJsonDecorator extends BaseResponseDecorator
 {
@@ -529,9 +529,9 @@ And the corresponding middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class XmlToJsonMiddleware extends BaseMiddleware
 {
@@ -566,9 +566,9 @@ This middleware collects analytics data about HTTP requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 
 class AnalyticsMiddleware extends BaseMiddleware
 {
@@ -621,12 +621,12 @@ This middleware implements the circuit breaker pattern to prevent repeated calls
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
-use Cognesy\Polyglot\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Adapters\MockHttpResponse;
 
 class CircuitBreakerMiddleware extends BaseMiddleware
 {
@@ -715,9 +715,9 @@ This middleware only applies to certain requests based on a condition:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 
 class ConditionalMiddleware implements HttpMiddleware

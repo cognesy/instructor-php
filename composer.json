@@ -58,11 +58,12 @@
       "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
       "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
+      "Tests\\": "tests/",
       "Evals\\": "evals/",
-      "Examples\\": "examples/",
-      "Tests\\": "tests/"
+      "Examples\\": "examples/"
     },
     "files": [
+      "packages/addons/tests/Examples/Call/test_functions.php",
       "packages/instructor/tests/Examples/Call/test_functions.php"
     ]
   },
@@ -73,11 +74,11 @@
     }
   ],
   "require-dev": {
+    "ext-SimpleXML": "*",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "ext-SimpleXML": "*",
     "ext-xmlreader": "*",
     "cebe/markdown": "^1.2",
     "eftec/bladeone": "^4.16",
@@ -87,7 +88,7 @@
     "league/html-to-markdown": "^5.1",
     "maglnet/composer-require-checker": "^4.16",
     "mockery/mockery": "^1.6",
-    "pestphp/pest": "^2.34",
+    "pestphp/pest": "^2.0",
     "phpstan/phpstan": "^1.11",
     "psr/http-factory-implementation": "*",
     "spatie/browsershot": "^4.1",
@@ -127,9 +128,9 @@
     "vlucas/phpdotenv": "^5.6"
   },
   "scripts": {
-    "tests": "@php vendor/bin/pest",
-    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php vendor/bin/psalm",
+    "tests": "@php ./vendor/bin/pest",
+    "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php ./vendor/bin/psalm",
     "instructor": "php ./bin/instructor"
   },
   "suggest": {

@@ -1,8 +1,6 @@
 <?php
-
 namespace Cognesy\Http\Data;
 
-use Cognesy\Http\Enums\HttpClientType;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
@@ -26,7 +24,7 @@ class HttpClientConfig
      * @param bool $failOnError Whether to fail on error.
      */
     public function __construct(
-        public string $httpClientType = HttpClientType::Guzzle->value,
+        public string $httpClientType = 'guzzle',
         public int $connectTimeout = 3,
         public int $requestTimeout = 30,
         public int $idleTimeout = -1,
@@ -48,7 +46,7 @@ class HttpClientConfig
             throw new InvalidArgumentException("Unknown client: $client");
         }
         return new HttpClientConfig(
-            httpClientType: Settings::get('http', "clients.$client.httpClientType", HttpClientType::Guzzle->value),
+            httpClientType: Settings::get('http', "clients.$client.httpClientType", 'guzzle'),
             connectTimeout: Settings::get(group: "http", key: "clients.$client.connectTimeout", default: 30),
             requestTimeout: Settings::get("http", "clients.$client.requestTimeout", 3),
             idleTimeout: Settings::get(group: "http", key: "clients.$client.idleTimeout", default: 0),
@@ -66,7 +64,7 @@ class HttpClientConfig
      */
     public static function fromArray(array $config) : HttpClientConfig {
         return new HttpClientConfig(
-            httpClientType: $config['httpClientType'] ?? HttpClientType::Guzzle->value,
+            httpClientType: $config['httpClientType'] ?? 'guzzle',
             connectTimeout: $config['connectTimeout'] ?? 3,
             requestTimeout: $config['requestTimeout'] ?? 30,
             idleTimeout: $config['idleTimeout'] ?? -1,

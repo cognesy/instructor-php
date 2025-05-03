@@ -15,13 +15,11 @@ This file defines the available client types and their settings:
 
 ```php
 <?php
-use Cognesy\Http\Enums\HttpClientType;
-
 return [
     'defaultClient' => 'guzzle',
     'clients' => [
         'guzzle' => [
-            'httpClientType' => HttpClientType::Guzzle->value,
+            'httpClientType' => 'guzzle',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -30,7 +28,7 @@ return [
             'failOnError' => true,
         ],
         'symfony' => [
-            'httpClientType' => HttpClientType::Symfony->value,
+            'httpClientType' => 'symfony',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -39,7 +37,7 @@ return [
             'failOnError' => true,
         ],
         'laravel' => [
-            'httpClientType' => HttpClientType::Laravel->value,
+            'httpClientType' => 'laravel',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -90,12 +88,12 @@ The `HttpClientConfig` class encapsulates the configuration options for HTTP cli
 
 ### Basic Connection Options
 
-| Option | Type | Description | Default |
-|--------|------|-------------|---------|
-| `httpClientType` | string | Type of HTTP client to use | `HttpClientType::Guzzle->value` |
-| `connectTimeout` | int | Connection timeout in seconds | 3 |
-| `requestTimeout` | int | Request timeout in seconds | 30 |
-| `idleTimeout` | int | Idle timeout in seconds (-1 for no timeout) | -1 |
+| Option | Type | Description | Default   |
+|--------|------|-------------|-----------|
+| `httpClientType` | string | Type of HTTP client to use | `'guzzle'` |
+| `connectTimeout` | int | Connection timeout in seconds | 3         |
+| `requestTimeout` | int | Request timeout in seconds | 30        |
+| `idleTimeout` | int | Idle timeout in seconds (-1 for no timeout) | -1        |
 
 ### Request Pool Options
 
@@ -161,11 +159,10 @@ For more dynamic configuration, you can create a custom `HttpClientConfig` objec
 
 ```php
 use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Enums\HttpClientType;
 
 // Create a custom configuration
 $config = new HttpClientConfig(
-    httpClientType: HttpClientType::Guzzle->value,
+    httpClientType: 'guzzle',
     connectTimeout: 5,
     requestTimeout: 60,
     idleTimeout: 30,
@@ -186,7 +183,7 @@ You can also create a configuration from an associative array:
 
 ```php
 $configArray = [
-    'httpClientType' => HttpClientType::Symfony->value,
+    'httpClientType' => 'symfony',
     'connectTimeout' => 2,
     'requestTimeout' => 45,
     'idleTimeout' => -1,
@@ -314,7 +311,7 @@ function configureHttpClient() {
         case 'testing':
             // Use mock driver for tests
             $config = new HttpClientConfig(
-                httpClientType: HttpClientType::Custom->value,
+                httpClientType: 'custom',
                 connectTimeout: 1,
                 requestTimeout: 1,
                 idleTimeout: 1,

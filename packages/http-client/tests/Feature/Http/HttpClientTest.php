@@ -7,7 +7,6 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Drivers\MockHttpDriver;
-use Cognesy\Http\Enums\HttpClientType;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
@@ -123,7 +122,7 @@ test('HTTP client with record/replay middleware', function() {
     // For this test, we'll create a real HTTP client (not a mock)
     // but we'll include the RecordReplayMiddleware for recording/replaying
     $config = new HttpClientConfig(
-        httpClientType: HttpClientType::Guzzle->value,
+        httpClientType: 'guzzle',
         connectTimeout: 5,
         requestTimeout: 10
     );

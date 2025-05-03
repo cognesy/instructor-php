@@ -38,7 +38,7 @@ class LLM
      * @return void
      */
     public function __construct(
-        string               $connection = '',
+        string                $connection = '',
         ?LLMConfig            $config = null,
         ?CanHandleHttpRequest $httpClient = null,
         ?CanHandleInference   $driver = null,

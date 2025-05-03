@@ -1,13 +1,14 @@
 ---
-title: Using Custom Clients
-description: 'Learn how to create and use custom HTTP client drivers using the Instructor HTTP client API.'
+title: Using Custom HTTP Clients
+description: 'Learn how to create and use custom HTTP client drivers.'
 ---
 
 While the Instructor HTTP client API provides built-in support for popular HTTP client libraries (Guzzle, Symfony, and Laravel), there may be cases where you need to integrate with other HTTP client libraries or create specialized implementations. This chapter covers how to create and use custom HTTP client drivers.
 
-## Creating Custom Drivers
+## Creating Custom HTTP Client Drivers
 
 Creating a custom HTTP client driver involves implementing the `CanHandleHttpRequest` interface and optionally the `CanHandleRequestPool` interface for pool support.
+
 
 ### Implementing the CanHandleHttpRequest Interface
 
@@ -27,14 +28,14 @@ Here's a template for creating a custom HTTP client driver:
 
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientConfig;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Events\HttpRequestFailed;
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
-use Cognesy\Polyglot\Http\Events\HttpResponseReceived;
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\RequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 
@@ -134,7 +135,7 @@ You also need to create a response adapter that implements the `HttpClientRespon
 
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpClientResponse;
 use Generator;
 
 class YourHttpClientResponse implements HttpClientResponse
@@ -192,19 +193,18 @@ class YourHttpClientResponse implements HttpClientResponse
 }
 ```
 
-### Using Your Custom Driver
+### Using Your Custom HTTP Client Driver
 
 Once you've implemented your custom driver, you can use it with the `HttpClient`:
 
 ```php
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Data\HttpClientConfig;
-use Cognesy\Polyglot\Http\Enums\HttpClientType;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpClientConfig;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Create a configuration for your custom driver
 $config = new HttpClientConfig(
-    httpClientType: HttpClientType::Custom->value,
+    httpClientType: 'custom',
     connectTimeout: 3,
     requestTimeout: 30,
     idleTimeout: -1,
@@ -234,14 +234,14 @@ Here's a practical example of implementing a custom driver using PHP's cURL exte
 
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Polyglot\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientConfig;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Events\HttpRequestFailed;
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
-use Cognesy\Polyglot\Http\Events\HttpResponseReceived;
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\RequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use YourNamespace\Http\Adapters\CurlHttpResponse;
 
@@ -454,7 +454,7 @@ And here's the corresponding response adapter:
 
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpClientResponse;
 use Generator;
 
 class CurlHttpResponse implements HttpClientResponse
@@ -543,4 +543,76 @@ class CurlHttpResponse implements HttpClientResponse
         }
     }
 }
+```
+
+## Registering Custom HTTP Client Drivers
+
+To register your custom driver, you can use the `registerDriver` method of the `HttpClient` class. This allows you to add your custom driver to the list of available drivers.
+
+```php
+use Cognesy\Http\HttpClient;
+use YourNamespace\Http\Drivers\CustomHttpDriver;
+
+// Register your custom driver
+HttpClient::registerDriver('my-custom-driver', fn($config, $events) => new CustomHttpDriver(
+    config: $config,
+    events: $events,
+));
+```
+
+## Adding Custom HTTP Client to Configuration
+
+Use your custom driver in the HTTP client configuration file (`config/http-client.php`):
+
+```php
+// http-client.php configuration file
+// ...
+    'clients' => [
+        'my-custom-client' => [
+            // Our custom driver type
+            'httpDriverType' => 'my-custom-driver',
+            // Other driver-specific options...
+            'httpClientType' => 'symfony',
+            'connectTimeout' => 1,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ],
+    ],
+// ...
+```
+
+## Using Your Custom HTTP Client
+
+After adding the driver to the configuration, you can use it in your code:
+
+```php
+use Cognesy\Http\HttpClient;
+
+// Create a client with your custom driver
+$client = HttpClient::make('my-custom-client');
+```
+
+## Using Custom HTTP Clients in Configuration Files
+
+Or you can refer to it in your LLM connections configuration:
+
+```php
+    // llm-connections.php configuration file
+    // ...
+        'a21' => [
+            'providerType' => LLMProviderType::A21->value,
+            'apiUrl' => 'https://api.ai21.com/studio/v1',
+            'apiKey' => Env::get('A21_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'jamba-1.5-mini',
+            'defaultMaxTokens' => 1024,
+            'contextLength' => 256_000,
+            'maxOutputLength' => 4096,
+            // Our custom HTTP client
+            'httpClient' => 'my-custom-client',
+        ],
+    // ...
 ```

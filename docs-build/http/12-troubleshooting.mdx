@@ -180,7 +180,7 @@ The Instructor HTTP client API provides several tools to help you debug HTTP req
 The `DebugMiddleware` is the primary tool for debugging HTTP interactions:
 
 ```php
-use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Http\HttpClient;
 
 // Method 1: Using the withDebug convenience method
 $client = new HttpClient();
@@ -218,9 +218,9 @@ return [
 The HTTP client dispatches events at key points in the request lifecycle:
 
 ```php
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
-use Cognesy\Polyglot\Http\Events\HttpResponseReceived;
-use Cognesy\Polyglot\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Utils\Events\EventDispatcher;
 
 // Create an event dispatcher with custom listeners
@@ -276,7 +276,7 @@ try {
 The `RecordReplayMiddleware` can be useful for debugging by recording HTTP interactions and replaying them later:
 
 ```php
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\RecordReplayMiddleware;
+use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
 // Record all HTTP interactions to a directory
 $recordReplayMiddleware = new RecordReplayMiddleware(
@@ -305,9 +305,9 @@ Create a custom logging middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 use Psr\Log\LoggerInterface;
 
 class DetailedLoggingMiddleware extends BaseMiddleware
@@ -397,9 +397,9 @@ For production environments, consider implementing distributed tracing with syst
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 use OpenTelemetry\API\Trace\TracerInterface;
 use OpenTelemetry\API\Trace\SpanKind;
 
@@ -469,7 +469,7 @@ Proper error handling is crucial for building robust applications. Here are some
 The simplest approach is to catch the `RequestException`:
 
 ```php
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\RequestException;
 
 try {
     $response = $client->handle($request);
@@ -687,9 +687,9 @@ Here's a comprehensive example that combines multiple error handling strategies:
 
 namespace YourNamespace;
 
-use Cognesy\Polyglot\Http\HttpClient;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
-use Cognesy\Polyglot\Http\Exceptions\RequestException;
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Exceptions\RequestException;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -1119,7 +1119,7 @@ The Instructor HTTP client API provides several tools to help you debug HTTP req
 The `DebugMiddleware` is the primary tool for debugging HTTP interactions:
 
 ```php
-use Cognesy\Polyglot\Http\HttpClient;
+use Cognesy\Http\HttpClient;
 
 // Method 1: Using the withDebug convenience method
 $client = new HttpClient();
@@ -1157,9 +1157,9 @@ return [
 The HTTP client dispatches events at key points in the request lifecycle:
 
 ```php
-use Cognesy\Polyglot\Http\Events\HttpRequestSent;
-use Cognesy\Polyglot\Http\Events\HttpResponseReceived;
-use Cognesy\Polyglot\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Utils\Events\EventDispatcher;
 
 // Create an event dispatcher with custom listeners
@@ -1215,7 +1215,7 @@ try {
 The `RecordReplayMiddleware` can be useful for debugging by recording HTTP interactions and replaying them later:
 
 ```php
-use Cognesy\Polyglot\Http\Middleware\RecordReplay\RecordReplayMiddleware;
+use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
 // Record all HTTP interactions to a directory
 $recordReplayMiddleware = new RecordReplayMiddleware(
@@ -1244,9 +1244,9 @@ Create a custom logging middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\Http\Data\HttpClientRequest;
+use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Data\HttpClientRequest;
 use Psr\Log\LoggerInterface;
 
 class DetailedLoggingMiddleware extends BaseMiddleware

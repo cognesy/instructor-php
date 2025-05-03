@@ -1,7 +1,4 @@
 <?php
-
-use Cognesy\Http\Enums\HttpClientType;
-
 return [
     'defaultClient' => 'guzzle',
 
@@ -13,7 +10,7 @@ return [
 
     'clients' => [
         'guzzle' => [
-            'httpClientType' => HttpClientType::Guzzle->value,
+            'httpClientType' => 'guzzle',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -22,7 +19,7 @@ return [
             'failOnError' => true,
         ],
         'symfony' => [
-            'httpClientType' => HttpClientType::Symfony->value,
+            'httpClientType' => 'symfony',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -31,7 +28,7 @@ return [
             'failOnError' => true,
         ],
         'laravel' => [
-            'httpClientType' => HttpClientType::Laravel->value,
+            'httpClientType' => 'laravel',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -40,7 +37,7 @@ return [
             'failOnError' => true,
         ],
         'http-ollama' => [
-            'httpClientType' => HttpClientType::Guzzle->value,
+            'httpClientType' => 'guzzle',
             'connectTimeout' => 1,
             'requestTimeout' => 90,
             'idleTimeout' => -1,
