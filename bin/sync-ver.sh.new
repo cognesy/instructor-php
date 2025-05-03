@@ -18,20 +18,36 @@ MAJOR_MINOR=$(echo $VERSION | grep -o "^[0-9]*\.[0-9]*")
 
 echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 
-# Define packages and their sections based on composer.json
+# Define packages in dependency order - base packages first
+# This order is critical - must match the order in split.yml
+declare -a DEPENDENCY_ORDER=(
+    "packages/utils"
+    "packages/http-client"
+    "packages/templates"
+    "packages/polyglot"
+    "packages/setup"
+    "packages/instructor"
+    "packages/addons"
+    "packages/auxiliary"
+    "packages/evals"
+    "packages/hub"
+    "packages/tell"
+)
+
+# Map package directories to package names
 declare -A PACKAGES
+PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
+PACKAGES["packages/templates"]="cognesy/instructor-templates"
+PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
+PACKAGES["packages/setup"]="cognesy/instructor-setup"
+PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 PACKAGES["packages/evals"]="cognesy/instructor-evals"
 #PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
-PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
-PACKAGES["packages/instructor"]="cognesy/instructor-struct"
-PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
-PACKAGES["packages/setup"]="cognesy/instructor-setup"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
-PACKAGES["packages/templates"]="cognesy/instructor-templates"
-PACKAGES["packages/utils"]="cognesy/instructor-utils"
 
 # Define which packages go in which section of the main composer.json
 declare -A MAIN_REQUIRE_PACKAGES
@@ -72,6 +88,13 @@ update_package_version() {
     fi
 
     echo "Updating $package_name in $package_dir..."
+
+    # Check if package version is already up to date
+    local current_version=$(jq -r '.version // "0.0.0"' "$package_dir/composer.json")
+    if [ "$current_version" = "$VERSION" ]; then
+        echo "✅ Package $package_name is already at version $VERSION"
+        return
+    fi
 
     # Update version field
     jq --arg version "$VERSION" '.version = $version' "$package_dir/composer.json" > "$package_dir/composer.json.tmp"
@@ -137,21 +160,58 @@ update_main_composer() {
 }
 
 # First, list the packages that will be processed
-echo "The following packages will be updated to version $VERSION:"
-for dir in "${!PACKAGES[@]}"; do
+echo "The following packages will be updated to version $VERSION (in dependency order):"
+for dir in "${DEPENDENCY_ORDER[@]}"; do
     pkg_name="${PACKAGES[$dir]}"
     echo "  - $pkg_name ($dir)"
 done
 
-# Update individual package versions
+# Update individual package versions in dependency order
 echo -e "\nUpdating package versions..."
-for dir in "${!PACKAGES[@]}"; do
+for dir in "${DEPENDENCY_ORDER[@]}"; do
     pkg_name="${PACKAGES[$dir]}"
     update_package_version "$dir" "$pkg_name"
 done
 
 # Update main composer.json
-#update_main_composer
+update_main_composer
 
 echo -e "\n🎉 Version sync complete!"
 echo "All packages and dependencies updated to version $VERSION"
+
+# Validate dependency consistency
+echo -e "\nValidating dependency consistency..."
+for dir in "${DEPENDENCY_ORDER[@]}"; do
+    if [ ! -f "$dir/composer.json" ]; then
+        continue
+    fi
+
+    # Check if all internal dependencies are set to the correct version
+    for dep_dir in "${!PACKAGES[@]}"; do
+        dep_pkg="${PACKAGES[$dep_dir]}"
+
+        # Check in require section
+        req_ver=$(jq -r --arg pkg "$dep_pkg" '.require[$pkg] // empty' "$dir/composer.json")
+        if [ -n "$req_ver" ] && [ "$req_ver" != "^$MAJOR_MINOR" ]; then
+            echo "⚠️ Warning: In $dir/composer.json, dependency $dep_pkg has version $req_ver instead of ^$MAJOR_MINOR"
+            # Automatically fix this
+            jq --arg pkg "$dep_pkg" --arg ver "^$MAJOR_MINOR" \
+               '.require[$pkg] = $ver' "$dir/composer.json" > "$dir/composer.json.tmp"
+            mv "$dir/composer.json.tmp" "$dir/composer.json"
+            echo "  ✅ Fixed: Updated to ^$MAJOR_MINOR"
+        fi
+
+        # Check in require-dev section
+        req_dev_ver=$(jq -r --arg pkg "$dep_pkg" '."require-dev"[$pkg] // empty' "$dir/composer.json")
+        if [ -n "$req_dev_ver" ] && [ "$req_dev_ver" != "^$MAJOR_MINOR" ]; then
+            echo "⚠️ Warning: In $dir/composer.json, dev dependency $dep_pkg has version $req_dev_ver instead of ^$MAJOR_MINOR"
+            # Automatically fix this
+            jq --arg pkg "$dep_pkg" --arg ver "^$MAJOR_MINOR" \
+               '."require-dev"[$pkg] = $ver' "$dir/composer.json" > "$dir/composer.json.tmp"
+            mv "$dir/composer.json.tmp" "$dir/composer.json"
+            echo "  ✅ Fixed: Updated to ^$MAJOR_MINOR"
+        fi
+    done
+done
+
+echo "✅ Dependency validation complete!"
