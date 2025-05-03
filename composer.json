@@ -97,12 +97,7 @@
     "toolkit/cli-utils": "^2.0",
     "twig/twig": "^3.0",
     "vimeo/psalm": "^6.0",
-    "webuni/front-matter": "^2.0",
-    "cognesy/instructor-auxiliary": "^0.16",
-    "cognesy/instructor-hub": "^0.16",
-    "cognesy/instructor-tell": "^0.16",
-    "cognesy/instructor-experimental": "^0.16",
-    "cognesy/instructor-evals": "^0.16"
+    "webuni/front-matter": "^2.0"
   },
   "config": {
     "allow-plugins": {
@@ -130,14 +125,7 @@
     "symfony/type-info": "^6.4|^7.1",
     "symfony/validator": "^6.4|^7.0",
     "symfony/var-dumper": "^5.4|^6.0|^7.0",
-    "vlucas/phpdotenv": "^5.6",
-    "cognesy/instructor-templates": "^0.16",
-    "cognesy/instructor-http-client": "^0.16",
-    "cognesy/instructor-addons": "^0.16",
-    "cognesy/instructor-utils": "^0.16",
-    "cognesy/instructor-struct": "^0.16",
-    "cognesy/instructor-setup": "^0.16",
-    "cognesy/instructor-polyglot": "^0.16"
+    "vlucas/phpdotenv": "^5.6"
   },
   "scripts": {
     "tests": "@php ./vendor/bin/pest",

@@ -52,7 +52,7 @@ PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 PACKAGES["packages/evals"]="cognesy/instructor-evals"
-PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
+#PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
 

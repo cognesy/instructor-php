@@ -33,7 +33,7 @@ declare -A PACKAGES
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 PACKAGES["packages/evals"]="cognesy/instructor-evals"
-PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
+#PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
 PACKAGES["packages/instructor"]="cognesy/instructor-struct"

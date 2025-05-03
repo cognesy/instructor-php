@@ -45,7 +45,7 @@ PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 PACKAGES["packages/evals"]="cognesy/instructor-evals"
-PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
+#PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/hub"]="cognesy/instructor-hub"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
@@ -62,7 +62,7 @@ MAIN_REQUIRE_PACKAGES["packages/utils"]="cognesy/instructor-utils"
 declare -A MAIN_REQUIRE_DEV_PACKAGES
 MAIN_REQUIRE_DEV_PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 MAIN_REQUIRE_DEV_PACKAGES["packages/evals"]="cognesy/instructor-evals"
-MAIN_REQUIRE_DEV_PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
+#MAIN_REQUIRE_DEV_PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 MAIN_REQUIRE_DEV_PACKAGES["packages/hub"]="cognesy/instructor-hub"
 MAIN_REQUIRE_DEV_PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
