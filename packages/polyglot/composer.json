@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-polyglot",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "license": "MIT",
   "description": "Unified LLM connectivity layer for PHP applications",
   "autoload": {
