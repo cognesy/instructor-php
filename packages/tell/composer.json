@@ -23,7 +23,7 @@
       "Cognesy\\Tell\\Tests\\": "tests/"
     }
   },
-  "version": "0.16.2",
+  "version": "0.16.3",
   "require": {
     "php": "^8.2",
     "cognesy/instructor-polyglot": "^0.16"
