@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-experimental",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "Experimental code used by Instructor and Polyglot libraries",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
