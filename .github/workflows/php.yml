@@ -42,17 +42,17 @@ jobs:
     - name: Regenerate Autoloader
       run: composer dump-autoload
 
-#    - name: Run test suite
-#      run: composer test
+    - name: Run test suite (all code local)
+      run: composer test
 
-    - name: Install dependencies in all packages
-      run: |
-        for dir in packages/*; do
-          if [ -f "$dir/composer.json" ]; then
-            echo "📦 Installing dependencies in $dir"
-            composer --working-dir="$dir" update --no-interaction ${{ matrix.composer }}
-          fi
-        done
+#    - name: Install dependencies in all packages
+#      run: |
+#        for dir in packages/*; do
+#          if [ -f "$dir/composer.json" ]; then
+#            echo "📦 Installing dependencies in $dir"
+#            composer --working-dir="$dir" update --no-interaction ${{ matrix.composer }}
+#          fi
+#        done
 
-    - name: Run all tests
-      run: ./bin/run-all-tests.sh
+#    - name: Run all tests
+#      run: ./bin/run-all-tests.sh

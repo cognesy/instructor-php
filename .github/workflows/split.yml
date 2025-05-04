@@ -98,3 +98,34 @@ jobs:
           tag_name: ${{ github.ref_name }}             # v1.2.3
           body_path: ${{ matrix.package.local }}/release_notes/${{ github.ref_name }}.md
           token: ${{ secrets.SPLIT_TOKEN_4 }}        # PAT here
+
+  wait-for-packagist:
+    needs: split
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Packagist
+        run: |
+          # Wait 1 minute(s) for Packagist to update
+          sleep 60
+          echo "Waited for Packagist to update"
+
+  tests:
+    needs: wait-for-packagist
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+        composer: ['--prefer-stable', '--prefer-lowest']
+    steps:
+      - name: Install dependencies in all packages
+        run: |
+          for dir in packages/*; do
+            if [ -f "$dir/composer.json" ]; then
+              echo "📦 Installing dependencies in $dir"
+              composer --working-dir="$dir" update --no-interaction ${{ matrix.composer }}
+            fi
+          done
+
+      - name: Run all tests
+        run: ./bin/run-all-tests.sh
