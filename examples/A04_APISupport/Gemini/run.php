@@ -19,7 +19,7 @@ Here's how you can use Instructor with Gemini API.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -50,7 +50,7 @@ $user = $instructor
         ]],
         model: 'gemini-1.5-flash',
         //options: ['stream' => true],
-        mode: Mode::Json,
+        mode: OutputMode::Json,
     );
 
 print("Completed response model:\n\n");

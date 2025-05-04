@@ -22,7 +22,7 @@ Here's how you can use Instructor with Groq API.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -58,7 +58,7 @@ $user = $instructor
         model: 'gemma2-9b-it',
         maxRetries: 2,
         options: ['temperature' => 0.5],
-        mode: Mode::Json,
+        mode: OutputMode::Json,
     );
 
 print("Completed response model:\n\n");

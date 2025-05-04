@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Contracts;
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 interface CanMapRequestBody
 {
@@ -13,6 +13,6 @@ interface CanMapRequestBody
         array|string $toolChoice,
         array $responseFormat,
         array $options,
-        Mode $mode
+        OutputMode $mode
     ): array;
 }

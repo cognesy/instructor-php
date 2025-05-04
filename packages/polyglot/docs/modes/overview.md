@@ -13,7 +13,7 @@ Polyglot supports multiple output modes through the `Mode` enum:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 // Available modes
 // Mode::Text       - Plain text output (default)

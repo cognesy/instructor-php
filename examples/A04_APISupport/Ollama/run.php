@@ -21,7 +21,7 @@ Supported modes:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -52,7 +52,7 @@ $user = $instructor->respond(
         'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @j90.',
         'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'j90', 'age' => 30],
     ]],
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 
 print("Completed response model:\n\n");

@@ -32,7 +32,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Str;
 
 class Project {
@@ -80,7 +80,7 @@ $project = $cached->respond(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
-    mode: Mode::MdJson,
+    mode: OutputMode::MdJson,
 );
 dump($project);
 assert($project instanceof Project);
@@ -99,7 +99,7 @@ $project = $cached->respond(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 dump($project);
 assert($project instanceof Project);

@@ -14,7 +14,7 @@ This example demonstrates how you can create task assignments based on a transcr
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract
@@ -66,7 +66,7 @@ $tasks = (new Instructor)->respond(
     messages: $text,
     responseModel: Tasks::class,
     model: 'gpt-4o',
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 
 // Step 4: Now you can use the extracted data in your application

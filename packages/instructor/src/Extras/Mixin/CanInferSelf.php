@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Mixin;
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\LLM;
 
 interface CanInferSelf
@@ -15,10 +15,10 @@ interface CanInferSelf
         string              $model = '',
         int                 $maxRetries = 2,
         array               $options = [],
-        Mode                $mode = Mode::Tools,
+        OutputMode          $mode = OutputMode::Tools,
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        ?LLM                 $llm = null,
+        ?LLM                $llm = null,
     ) : static;
 }

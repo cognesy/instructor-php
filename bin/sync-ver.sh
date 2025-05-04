@@ -20,18 +20,18 @@ echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 
 # Define packages and their sections based on composer.json
 declare -A PACKAGES
-PACKAGES["packages/addons"]="cognesy/instructor-addons"
-PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
-PACKAGES["packages/evals"]="cognesy/instructor-evals"
+PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/templates"]="cognesy/instructor-templates"
 #PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
 PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
-PACKAGES["packages/hub"]="cognesy/instructor-hub"
-PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
 PACKAGES["packages/setup"]="cognesy/instructor-setup"
+PACKAGES["packages/instructor"]="cognesy/instructor-struct"
 PACKAGES["packages/tell"]="cognesy/instructor-tell"
-PACKAGES["packages/templates"]="cognesy/instructor-templates"
-PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/evals"]="cognesy/instructor-evals"
+PACKAGES["packages/hub"]="cognesy/instructor-hub"
+PACKAGES["packages/addons"]="cognesy/instructor-addons"
+PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 
 # Define which packages go in which section of the main composer.json
 declare -A MAIN_REQUIRE_PACKAGES

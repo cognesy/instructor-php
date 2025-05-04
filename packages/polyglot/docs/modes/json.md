@@ -10,13 +10,13 @@ JSON mode instructs the model to return responses formatted as valid JSON object
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 
 $response = $inference->create(
     messages: 'List the top 3 most populous cities in the world with their populations.',
-    mode: Mode::Json
+    mode: OutputMode::Json
 )->toJson();
 
 // $response is now a PHP array parsed from the JSON
@@ -33,7 +33,7 @@ For best results, include clear instructions about the expected JSON structure:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 
@@ -55,7 +55,7 @@ EOT;
 
 $response = $inference->create(
     messages: $prompt,
-    mode: Mode::Json
+    mode: OutputMode::Json
 )->toJson();
 
 // Process the response
@@ -72,14 +72,14 @@ Some providers offer additional options for JSON mode:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 // OpenAI example
 $inference = new Inference()->withConnection('openai');
 
 $response = $inference->create(
     messages: 'List the top 3 most populous cities in the world.',
-    mode: Mode::Json,
+    mode: OutputMode::Json,
     options: [
         'response_format' => ['type' => 'json_object'],
         // Other OpenAI-specific options...

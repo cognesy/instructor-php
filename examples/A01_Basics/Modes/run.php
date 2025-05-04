@@ -27,7 +27,7 @@ methods.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class User {
     public int $age;
@@ -46,7 +46,7 @@ print("\n1. Extracting structured data using LLM - Mode::Tools\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
-    mode: Mode::Tools,
+    mode: OutputMode::Tools,
 );
 check($user);
 dump($user);
@@ -56,7 +56,7 @@ print("\n2. Extracting structured data using LLM - Mode::JsonSchema\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
-    mode: Mode::JsonSchema,
+    mode: OutputMode::JsonSchema,
 );
 check($user);
 dump($user);
@@ -66,7 +66,7 @@ print("\n3. Extracting structured data using LLM - Mode::Json\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 check($user);
 dump($user);
@@ -76,7 +76,7 @@ print("\n4. Extracting structured data using LLM - Mode::MdJson\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
-    mode: Mode::MdJson,
+    mode: OutputMode::MdJson,
 );
 check($user);
 dump($user);

@@ -11,7 +11,7 @@ Tools mode enables function calling, allowing the model to request specific acti
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference()->withConnection('openai');  // Tools are best supported by OpenAI
 
@@ -70,7 +70,7 @@ $response = $inference->create(
     messages: 'What\'s the weather like in Paris today?',
     tools: $tools,
     toolChoice: 'auto',  // Let the model decide which tool to use
-    mode: Mode::Tools
+    mode: OutputMode::Tools
 )->response();
 
 // Check if the model called a tool
@@ -146,7 +146,7 @@ You can control how tools are used with the `toolChoice` parameter:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference()->withConnection('openai');
 
@@ -155,7 +155,7 @@ $autoResponse = $inference->create(
     messages: 'What\'s the weather like in Paris?',
     tools: $tools,
     toolChoice: 'auto',
-    mode: Mode::Tools
+    mode: OutputMode::Tools
 )->response();
 
 // Always require the model to use a specific tool
@@ -168,7 +168,7 @@ $requiredToolResponse = $inference->create(
             'name' => 'get_weather'
         ]
     ],
-    mode: Mode::Tools
+    mode: OutputMode::Tools
 )->response();
 
 // Prevent tool usage
@@ -176,7 +176,7 @@ $noToolResponse = $inference->create(
     messages: 'What\'s the weather like in Paris?',
     tools: $tools,
     toolChoice: 'none',
-    mode: Mode::Tools
+    mode: OutputMode::Tools
 )->response();
 ```
 
@@ -188,7 +188,7 @@ You can also stream tool calls to provide real-time feedback:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference()->withConnection('openai');
 
@@ -196,7 +196,7 @@ $response = $inference->create(
     messages: 'What\'s the weather like in Paris today?',
     tools: $tools,
     toolChoice: 'auto',
-    mode: Mode::Tools,
+    mode: OutputMode::Tools,
     options: ['stream' => true]
 );
 

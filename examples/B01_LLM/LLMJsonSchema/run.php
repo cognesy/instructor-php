@@ -23,7 +23,7 @@ supported by all language model providers.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 
 $data = (new Inference)
@@ -60,7 +60,7 @@ $data = (new Inference)
             ],
         ],
         options: ['max_tokens' => 64],
-        mode: Mode::JsonSchema,
+        mode: OutputMode::JsonSchema,
     )
     ->toJson();
 

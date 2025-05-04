@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\LLM\Drivers\CohereV2;
 use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 
 class CohereV2BodyFormat implements CanMapRequestBody
@@ -16,13 +16,13 @@ class CohereV2BodyFormat implements CanMapRequestBody
     ) {}
 
     public function map(
-        array $messages = [],
-        string $model = '',
-        array $tools = [],
+        array        $messages = [],
+        string       $model = '',
+        array        $tools = [],
         string|array $toolChoice = '',
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
+        array        $responseFormat = [],
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Text,
     ) : array {
         unset($options['parallel_tool_calls']);
 
@@ -32,34 +32,39 @@ class CohereV2BodyFormat implements CanMapRequestBody
             'messages' => $this->messageFormat->map($messages),
         ]), $options);
 
-        if (!empty($tools)) {
-            $request['tools'] = $this->removeDisallowedEntries($tools);
-        }
-
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
 
     // INTERNAL //////////////////////////////////////////////
 
     protected function applyMode(
-        array $request,
-        Mode $mode,
-        array $tools,
+        array        $request,
+        OutputMode   $mode,
+        array        $tools,
         string|array $toolChoice,
-        array $responseFormat
+        array        $responseFormat
     ) : array {
         switch($mode) {
-            case Mode::Json:
-                $request['response_format'] = $responseFormat;
-                break;
-            case Mode::JsonSchema:
+            case OutputMode::Json:
+            case OutputMode::JsonSchema:
                 $request['response_format'] = [
                     'type' => 'json_object',
-                    'schema' => $responseFormat['json_schema']['schema'],
+                    'json_schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
                 ];
                 break;
+            case OutputMode::Text:
+            case OutputMode::MdJson:
+                $request['response_format'] = ['type' => 'text'];
+                break;
+            case OutputMode::Unrestricted:
+                $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
+                break;
         }
-        return $request;
+
+        $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
+        unset($request['tool_choice']);
+
+        return array_filter($request);
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {

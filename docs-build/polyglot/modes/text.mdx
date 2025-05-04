@@ -11,14 +11,14 @@ Text mode is the default and simplest output format, returning unstructured text
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 
 // Mode::Text is the default, so you don't need to specify it
 $response = $inference->create(
     messages: 'What is the capital of France?',
-    mode: Mode::Text  // Optional, this is the default
+    mode: OutputMode::Text  // Optional, this is the default
 )->toText();
 
 echo "Response: $response\n";

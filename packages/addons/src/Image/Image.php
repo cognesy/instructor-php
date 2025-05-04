@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Image;
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Utils\Image as ImageUtil;
 
 /**
@@ -54,19 +54,19 @@ class Image extends ImageUtil
      * @param array $examples Examples for the request.
      * @param int $maxRetries The maximum number of retries.
      * @param array $options Additional options for the request.
-     * @param Mode $mode The mode to use.
+     * @param OutputMode $mode The mode to use.
      * @return mixed
      */
     public function toData(
         string|array|object $responseModel,
-        string $prompt,
-        string $connection = '',
-        string $model = '',
-        string $system = '',
-        array $examples = [],
-        int $maxRetries = 0,
-        array $options = [],
-        Mode $mode = Mode::Tools,
+        string              $prompt,
+        string              $connection = '',
+        string              $model = '',
+        string              $system = '',
+        array               $examples = [],
+        int                 $maxRetries = 0,
+        array               $options = [],
+        OutputMode          $mode = OutputMode::Tools,
     ) : mixed {
         return (new Instructor)->withConnection($connection)->request(
             input: $this,

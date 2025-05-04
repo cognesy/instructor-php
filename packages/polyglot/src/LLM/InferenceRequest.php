@@ -2,7 +2,7 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\LLM\Data\CachedContext;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 /**
  * Represents a request for an inference operation, holding configuration parameters
@@ -17,17 +17,17 @@ class InferenceRequest
     public string|array $toolChoice = [];
     public array $responseFormat = [];
     public array $options = [];
-    public Mode $mode = Mode::Text;
+    public OutputMode $mode = OutputMode::Text;
     public ?CachedContext $cachedContext;
 
     public function __construct(
-        string|array $messages = [],
-        string $model = '',
-        array $tools = [],
-        string|array $toolChoice = [],
-        array $responseFormat = [],
-        array $options = [],
-        Mode $mode = Mode::Text,
+        string|array   $messages = [],
+        string         $model = '',
+        array          $tools = [],
+        string|array   $toolChoice = [],
+        array          $responseFormat = [],
+        array          $options = [],
+        OutputMode     $mode = OutputMode::Text,
         ?CachedContext $cachedContext = null,
     ) {
         $this->cachedContext = $cachedContext;
@@ -114,7 +114,7 @@ class InferenceRequest
      */
     public function tools() : array {
         return match($this->mode) {
-            Mode::Tools => $this->tools,
+            OutputMode::Tools => $this->tools,
             default => [],
         };
     }
@@ -137,7 +137,7 @@ class InferenceRequest
      */
     public function toolChoice() : string|array {
         return match($this->mode) {
-            Mode::Tools => $this->toolChoice,
+            OutputMode::Tools => $this->toolChoice,
             default => [],
         };
     }
@@ -161,24 +161,27 @@ class InferenceRequest
      *               existing response format configuration for other modes.
      */
     public function responseFormat() : array {
-        return match($this->mode) {
-            Mode::Json => [
-                'type' => 'json_object',
-                'schema' => $this->responseFormat['schema'] ?? [],
-            ],
-            Mode::JsonSchema => [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => $this->responseFormat['json_schema']['name'] ?? 'schema',
-                    'schema' => $this->responseFormat['json_schema']['schema'] ?? [],
-                    'strict' => $this->responseFormat['json_schema']['strict'] ?? true,
-                ],
-            ],
-            Mode::Tools => [],
-            Mode::MdJson => [],
-            Mode::Text => [],
-            default => $this->responseFormat,
-        };
+        return $this->responseFormat;
+
+//        return match($this->mode) {
+//            OutputMode::Json => [
+//                'type' => 'json_object',
+//                'schema' => $this->responseFormat['schema'] ?? [],
+//            ],
+//            OutputMode::JsonSchema => [
+//                'type' => 'json_schema',
+//                'json_schema' => [
+//                    'name' => $this->responseFormat['json_schema']['name'] ?? 'schema',
+//                    'schema' => $this->responseFormat['json_schema']['schema'] ?? [],
+//                    'strict' => $this->responseFormat['json_schema']['strict'] ?? true,
+//                ],
+//            ],
+//            OutputMode::Tools => [],
+//            OutputMode::MdJson => [],
+//            OutputMode::Text => [],
+//            OutputMode::Unrestricted => $this->responseFormat,
+//            default => $this->responseFormat,
+//        };
     }
 
     /**
@@ -215,19 +218,19 @@ class InferenceRequest
     /**
      * Retrieves the current mode of the object.
      *
-     * @return Mode The current mode instance.
+     * @return OutputMode The current mode instance.
      */
-    public function mode() : Mode {
+    public function mode() : OutputMode {
         return $this->mode;
     }
 
     /**
      * Sets the mode for the current instance and returns the updated instance.
      *
-     * @param Mode $mode The mode to be set.
+     * @param OutputMode $mode The mode to be set.
      * @return self The current instance with the updated mode.
      */
-    public function withMode(Mode $mode) : self {
+    public function withMode(OutputMode $mode) : self {
         $this->mode = $mode;
         return $this;
     }

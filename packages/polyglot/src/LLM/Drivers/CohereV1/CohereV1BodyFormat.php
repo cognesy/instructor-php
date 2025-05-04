@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\LLM\Drivers\CohereV1;
 use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Messages;
 
 class CohereV1BodyFormat implements CanMapRequestBody
@@ -22,7 +22,7 @@ class CohereV1BodyFormat implements CanMapRequestBody
         array|string $toolChoice,
         array $responseFormat,
         array $options,
-        Mode $mode
+        OutputMode $mode
     ): array {
         unset($options['parallel_tool_calls']);
 
@@ -47,20 +47,20 @@ class CohereV1BodyFormat implements CanMapRequestBody
     // INTERNAL /////////////////////////////////////////////
 
     private function applyMode(
-        array $request,
-        Mode $mode,
-        array $tools,
+        array        $request,
+        OutputMode   $mode,
+        array        $tools,
         string|array $toolChoice,
-        array $responseFormat
+        array        $responseFormat
     ) : array {
         switch($mode) {
-            case Mode::Json:
+            case OutputMode::Json:
                 $request['response_format'] = [
                     'type' => 'json_object',
                     'schema' => $responseFormat['schema'] ?? [],
                 ];
                 break;
-            case Mode::JsonSchema:
+            case OutputMode::JsonSchema:
                 $request['response_format'] = [
                     'type' => 'json_object',
                     'schema' => $responseFormat['json_schema']['schema'] ?? [],

@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\LLM\Drivers\Anthropic;
 use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Messages;
 
 class AnthropicBodyFormat implements CanMapRequestBody
@@ -23,7 +23,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
         array|string $toolChoice,
         array $responseFormat,
         array $options,
-        Mode $mode
+        OutputMode $mode
     ): array {
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
         unset($options['parallel_tool_calls']);
@@ -41,15 +41,30 @@ class AnthropicBodyFormat implements CanMapRequestBody
             ),
         ]), $options);
 
-        if (!empty($tools)) {
-            $request['tools'] = $this->toTools($tools);
-            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
-        }
+        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
 
         return $request;
     }
 
     // INTERNAL /////////////////////////////////////////////
+
+    protected function applyMode(
+        array        $request,
+        OutputMode   $mode,
+        array        $tools,
+        string|array $toolChoice,
+        array        $responseFormat
+    ) : array {
+        // Anthropic does not support response_format or JSON/JSON Schema mode
+        unset($request['response_format']);
+
+        if (!empty($tools)) {
+            $request['tools'] = $this->toTools($tools);
+            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
+        }
+
+        return array_filter($request);
+    }
 
     private function toTools(array $tools) : array {
         $result = [];

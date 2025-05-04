@@ -22,6 +22,7 @@ use Cognesy\Polyglot\LLM\Drivers\CohereV2\CohereV2RequestAdapter;
 use Cognesy\Polyglot\LLM\Drivers\CohereV2\CohereV2ResponseAdapter;
 use Cognesy\Polyglot\LLM\Drivers\CohereV2\CohereV2UsageFormat;
 use Cognesy\Polyglot\LLM\Drivers\Deepseek\DeepseekResponseAdapter;
+use Cognesy\Polyglot\LLM\Drivers\Fireworks\FireworksBodyFormat;
 use Cognesy\Polyglot\LLM\Drivers\Gemini\GeminiBodyFormat;
 use Cognesy\Polyglot\LLM\Drivers\Gemini\GeminiMessageFormat;
 use Cognesy\Polyglot\LLM\Drivers\Gemini\GeminiRequestAdapter;
@@ -69,6 +70,7 @@ class InferenceDriverFactory
             LLMProviderType::CohereV1->value => $this->cohereV1($config, $httpClient, $events),
             LLMProviderType::CohereV2->value => $this->cohereV2($config, $httpClient, $events),
             LLMProviderType::DeepSeek->value => $this->deepseek($config, $httpClient, $events),
+            LLMProviderType::Fireworks->value => $this->fireworks($config, $httpClient, $events),
             LLMProviderType::Gemini->value => $this->gemini($config, $httpClient, $events),
             LLMProviderType::GeminiOAI->value => $this->geminiOAI($config, $httpClient, $events),
             LLMProviderType::Groq->value => $this->groq($config, $httpClient, $events),
@@ -80,7 +82,6 @@ class InferenceDriverFactory
             LLMProviderType::XAi->value => $this->xAi($config, $httpClient, $events),
             // OpenAI compatible driver for generic OAI providers
             LLMProviderType::A21->value,
-            LLMProviderType::Fireworks->value,
             LLMProviderType::Moonshot->value,
             LLMProviderType::Ollama->value,
             LLMProviderType::OpenAICompatible->value,
@@ -163,6 +164,19 @@ class InferenceDriverFactory
                 new OpenAICompatibleBodyFormat($config, new OpenAIMessageFormat())
             ),
             new DeepseekResponseAdapter(new OpenAIUsageFormat()),
+            $httpClient,
+            $events
+        );
+    }
+
+    public function fireworks(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events) : CanHandleInference {
+        return new ModularLLMDriver(
+            $config,
+            new OpenAIRequestAdapter(
+                $config,
+                new FireworksBodyFormat($config, new OpenAIMessageFormat())
+            ),
+            new OpenAIResponseAdapter(new OpenAIUsageFormat()),
             $httpClient,
             $events
         );

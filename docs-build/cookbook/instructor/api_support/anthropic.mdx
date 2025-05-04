@@ -20,7 +20,7 @@ Mode compatibility:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -49,7 +49,7 @@ $user = $instructor->respond(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'claude-3-haiku-20240307',
-    mode: Mode::Tools,
+    mode: OutputMode::Tools,
 );
 
 print("Completed response model:\n\n");

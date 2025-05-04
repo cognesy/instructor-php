@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Chat\Utils;
 
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\LLM;
 use Cognesy\Utils\Messages\Message;
@@ -28,7 +28,7 @@ class SummarizeMessages implements CanSummarizeMessages
             messages: $messages->prependMessage(new Message(content: $this->prompt))->toArray(),
             model: $this->model,
             options: ['max_tokens' => $tokenLimit ?? $this->tokenLimit],
-            mode: Mode::Text,
+            mode: OutputMode::Text,
         )->toText();
     }
 }

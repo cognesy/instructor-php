@@ -23,7 +23,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 
 $city = Structure::define('city', [
@@ -47,7 +47,7 @@ $data = (new Inference)
             ],
         ],
         options: ['max_tokens' => 64],
-        mode: Mode::JsonSchema,
+        mode: OutputMode::JsonSchema,
     )
     ->toJson();
 

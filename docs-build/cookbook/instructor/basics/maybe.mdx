@@ -17,7 +17,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Maybe\Maybe;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class User
 {
@@ -33,7 +33,7 @@ $maybeUser = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class),
     model: 'gpt-4o-mini',
-    mode: Mode::MdJson,
+    mode: OutputMode::MdJson,
 );
 
 echo "\nOUTPUT:\n";

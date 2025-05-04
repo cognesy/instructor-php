@@ -15,7 +15,7 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class Property
 {
@@ -46,7 +46,7 @@ $text = <<<TEXT
 $user = (new Instructor)->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 
 dump($user);

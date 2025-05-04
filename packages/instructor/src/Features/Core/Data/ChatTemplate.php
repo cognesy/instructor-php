@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data;
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Settings;
 
@@ -22,9 +22,9 @@ class ChatTemplate
     public function __construct(?StructuredOutputRequest $request = null) {
         $this->request = $request;
         $this->defaultRetryPrompt = Settings::get('llm', 'defaultRetryPrompt');
-        $this->defaultPrompts[Mode::MdJson->value] = Settings::get('llm', 'defaultMdJsonPrompt');
-        $this->defaultPrompts[Mode::Json->value] = Settings::get('llm', 'defaultJsonPrompt');
-        $this->defaultPrompts[Mode::Tools->value] = Settings::get('llm', 'defaultToolsPrompt');
+        $this->defaultPrompts[OutputMode::MdJson->value] = Settings::get('llm', 'defaultMdJsonPrompt');
+        $this->defaultPrompts[OutputMode::Json->value] = Settings::get('llm', 'defaultJsonPrompt');
+        $this->defaultPrompts[OutputMode::Tools->value] = Settings::get('llm', 'defaultToolsPrompt');
     }
 
     public static function fromRequest(StructuredOutputRequest $request) : static {

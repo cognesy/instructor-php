@@ -21,7 +21,7 @@ require 'examples/boot.php';
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Features\Core\Data\Example;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class User {
     public int $age;
@@ -46,7 +46,7 @@ $user = (new Instructor)
                 template: "example input:\n<|input|>\noutput:\n```json\n<|output|>\n```\n",
             ),
         ],
-        mode: Mode::Json)
+        mode: OutputMode::Json)
     ->get();
 
 echo "\nOUTPUT:\n";

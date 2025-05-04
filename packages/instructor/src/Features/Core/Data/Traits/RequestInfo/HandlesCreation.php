@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\RequestInfo;
 
 use Cognesy\Instructor\Features\Core\Data\Example;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesCreation
 {
@@ -19,7 +19,7 @@ trait HandlesCreation
         $toolName = '',
         $toolDescription = '',
         $retryPrompt = '',
-        $mode = Mode::Tools,
+        $mode = OutputMode::Tools,
         $cachedContext = [],
     ) : static {
         $data = new static();
@@ -54,7 +54,7 @@ trait HandlesCreation
             toolName: $data['toolName'] ?? '',
             toolDescription: $data['toolDescription'] ?? '',
             retryPrompt: $data['retryPrompt'] ?? '',
-            mode: $data['mode'] ?? Mode::Tools,
+            mode: $data['mode'] ?? OutputMode::Tools,
             cachedContext: $data['cachedContext'] ?? [],
         );
     }

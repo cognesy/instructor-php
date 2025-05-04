@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data;
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class StructuredOutputRequestInfo
 {
@@ -22,7 +22,7 @@ class StructuredOutputRequestInfo
     public string $retryPrompt;
     public string $toolName;
     public string $toolDescription;
-    public Mode $mode;
+    public OutputMode $mode;
     public array $cachedContext = [];
 
     public function isStreamed() : bool {

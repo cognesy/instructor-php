@@ -8,7 +8,7 @@ use Cognesy\Evals\Executors\RunInstructor;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\Observers\Evaluate\ArrayMatchEval;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Evals\UseExamples\Company;
 use Evals\UseExamples\CompanyEval;
 
@@ -26,7 +26,7 @@ $data = new InstructorData(
 $experiment = new Experiment(
     cases: InferenceCases::except(
         connections: ['ollama'],
-        modes: [Mode::JsonSchema, Mode::Text],
+        modes: [OutputMode::JsonSchema, OutputMode::Text],
         stream: [true]
     ),
     executor: new RunInstructor($data),

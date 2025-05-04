@@ -7,7 +7,7 @@ use Cognesy\Evals\Executors\Data\InstructorData;
 use Cognesy\Evals\Executors\RunInstructor;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Evals\ComplexExtraction\ProjectEvents;
 use Evals\ComplexExtraction\ProjectsEval;
 
@@ -22,7 +22,7 @@ $data = new InstructorData(
 $experiment = new Experiment(
     cases: InferenceCases::only(
         connections: ['openai', 'anthropic', 'gemini', 'cohere'],
-        modes: [Mode::Tools],
+        modes: [OutputMode::Tools],
         stream: [false]
     ),
     executor: new RunInstructor($data),

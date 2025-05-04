@@ -13,7 +13,7 @@ use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Settings;
 use Exception;
 
@@ -37,7 +37,7 @@ trait HandlesInvocation
      * @param string $toolName The name of the tool to be used in Mode::Tools.
      * @param string $toolDescription A description of the tool to be used in Mode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
-     * @param Mode $mode The mode of operation for the request.
+     * @param OutputMode $mode The mode of operation for the request.
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
@@ -54,7 +54,7 @@ trait HandlesInvocation
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        Mode                $mode = Mode::Tools
+        OutputMode $mode = OutputMode::Tools
     ) : mixed {
         return $this->request(
             messages: $messages,
@@ -95,7 +95,7 @@ trait HandlesInvocation
             toolName: $request->toolName ?? '',
             toolDescription: $request->toolDescription ?? '',
             retryPrompt: $request->retryPrompt ?? '',
-            mode: $request->mode ?? Mode::Tools,
+            mode: $request->mode ?? OutputMode::Tools,
         );
     }
 
@@ -114,7 +114,7 @@ trait HandlesInvocation
      * @param string $toolName The name of the tool to be used in Mode::Tools.
      * @param string $toolDescription A description of the tool to be used in Mode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
-     * @param Mode $mode The mode of operation for the request.
+     * @param OutputMode $mode The mode of operation for the request.
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
@@ -131,7 +131,7 @@ trait HandlesInvocation
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        Mode                $mode = Mode::Tools,
+        OutputMode          $mode = OutputMode::Tools,
     ) : StructuredOutputResponse {
         $this->queueEvent(new RequestReceived());
         $this->dispatchQueuedEvents();
@@ -157,7 +157,7 @@ trait HandlesInvocation
             toolName: $toolName ?? '',
             toolDescription: $toolDescription ?? '',
             retryPrompt: $retryPrompt ?? '',
-            mode: $mode ?? Mode::Tools,
+            mode: $mode ?? OutputMode::Tools,
             cachedContext: $this->cachedContext ?? [],
         );
 

@@ -21,7 +21,7 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Debug\Debug;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -50,7 +50,7 @@ $user = $instructor->respond(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'Meta-Llama-3.1-8B-Instruct', // set your own value/source
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 
 print("Completed response model:\n\n");

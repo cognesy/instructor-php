@@ -16,7 +16,7 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 
 class City {
@@ -42,7 +42,7 @@ $data = (new Inference)
             ],
         ],
         options: ['max_tokens' => 64],
-        mode: Mode::JsonSchema,
+        mode: OutputMode::JsonSchema,
     )
     ->toJson();
 

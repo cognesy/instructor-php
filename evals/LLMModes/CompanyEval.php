@@ -6,7 +6,7 @@ use Cognesy\Evals\Contracts\CanGenerateObservations;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Observation;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Str;
 
 class CompanyEval implements CanGenerateObservations
@@ -35,8 +35,8 @@ class CompanyEval implements CanGenerateObservations
     public function correctness(Execution $execution): Observation {
         $mode = $execution->get('case.mode');
         $isCorrect = match ($mode) {
-            Mode::Text => $this->validateText($execution),
-            Mode::Tools => $this->validateToolsData($execution),
+            OutputMode::Text => $this->validateText($execution),
+            OutputMode::Tools => $this->validateToolsData($execution),
             default => $this->validateDefault($execution),
         };
         return Observation::make(

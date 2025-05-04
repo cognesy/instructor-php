@@ -5,7 +5,7 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Events\EventDispatcher;
 
 /**
@@ -59,7 +59,7 @@ class Inference
                 messages: $messages,
                 model: $model,
                 options: $options,
-                mode: Mode::Text,
+                mode: OutputMode::Text,
             )
             ->toText();
     }
@@ -197,7 +197,7 @@ class Inference
      * @param string|array $toolChoice The choice of tools for the inference.
      * @param array $responseFormat The format of the response.
      * @param array $options Additional options for the inference.
-     * @param Mode $mode The mode of operation for the inference.
+     * @param OutputMode $mode The mode of operation for the inference.
      *
      * @return InferenceResponse The response from the inference request.
      */
@@ -208,7 +208,7 @@ class Inference
         string|array $toolChoice = [],
         array        $responseFormat = [],
         array        $options = [],
-        Mode         $mode = Mode::Text
+        OutputMode $mode = OutputMode::Text
     ): InferenceResponse {
         return $this->withRequest(new InferenceRequest(
             messages: $messages,

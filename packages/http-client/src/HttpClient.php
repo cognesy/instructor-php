@@ -42,6 +42,10 @@ class HttpClient implements CanHandleHttpRequest
         $this->events = $events ?? new EventDispatcher();
         $this->stack = new MiddlewareStack($this->events);
         $config = HttpClientConfig::load($client ?: Settings::get('http', "defaultClient"));
+        $debugConfig = DebugConfig::load();
+        if ($debugConfig->httpEnabled) {
+            $this->withDebug($debugConfig->httpEnabled);
+        }
         $this->driver = $this->makeDriver($config);
     }
 
@@ -128,11 +132,12 @@ class HttpClient implements CanHandleHttpRequest
 
     public function withDebug(bool $debug = true) : self {
         if ($debug) {
+            // load debug config
+            $config = DebugConfig::load();
+            // force http enabled
+            $config->httpEnabled = true;
             $this->stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-            $this->stack->prepend(new DebugMiddleware(
-                new Debug(new DebugConfig(httpEnabled: true)), $this->events),
-                'internal:debug'
-            );
+            $this->stack->prepend(new DebugMiddleware(new Debug($config), $this->events), 'internal:debug');
         } else {
             $this->stack->remove('internal:debug');
             $this->stack->remove('internal:buffering');

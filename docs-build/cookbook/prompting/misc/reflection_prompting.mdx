@@ -20,7 +20,7 @@ use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class ReflectiveResponse implements CanValidateSelf {
     #[Instructions('Is problem solvable and what domain expertise it requires')]
@@ -54,7 +54,7 @@ $problem = 'Solve the equation x+y=x-y';
 $solution = (new Instructor)->withConnection('anthropic')->respond(
     messages: $problem,
     responseModel: ReflectiveResponse::class,
-    mode: Mode::MdJson,
+    mode: OutputMode::MdJson,
     options: ['max_tokens' => 2048]
 );
 

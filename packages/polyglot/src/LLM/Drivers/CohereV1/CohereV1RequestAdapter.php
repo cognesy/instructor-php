@@ -6,7 +6,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class CohereV1RequestAdapter implements ProviderRequestAdapter
 {
@@ -22,7 +22,7 @@ class CohereV1RequestAdapter implements ProviderRequestAdapter
         array|string $toolChoice,
         array $responseFormat,
         array $options,
-        Mode $mode
+        OutputMode $mode
     ): HttpClientRequest {
         return new HttpClientRequest(
             url: $this->toUrl($model, $options['stream'] ?? false),

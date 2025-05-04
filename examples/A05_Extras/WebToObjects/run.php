@@ -33,7 +33,7 @@ require 'examples/boot.php';
 use Cognesy\Auxiliary\Web\Webpage;
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class Company {
     public string $name = '';
@@ -64,7 +64,7 @@ foreach($companyGen as $companyDiv) {
     $company = $instructor->respond(
         messages: $companyDiv,
         responseModel: Company::class,
-        mode: Mode::Json
+        mode: OutputMode::Json
     );
     $companies[] = $company;
     dump($company);

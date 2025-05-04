@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\LLM\Drivers\Gemini;
 use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Messages\Messages;
 
@@ -23,7 +23,7 @@ class GeminiBodyFormat implements CanMapRequestBody
         array|string $toolChoice,
         array $responseFormat,
         array $options,
-        Mode $mode
+        OutputMode $mode
     ): array {
         $request = array_filter([
             'systemInstruction' => $this->toSystem($messages),
@@ -50,10 +50,10 @@ class GeminiBodyFormat implements CanMapRequestBody
     }
 
     protected function toOptions(
-        LLMConfig $config,
-        array $options,
-        array $responseFormat,
-        Mode $mode,
+        LLMConfig  $config,
+        array      $options,
+        array      $responseFormat,
+        OutputMode $mode,
     ) : array {
         return array_filter([
             "responseMimeType" => $this->toResponseMimeType($mode),
@@ -94,18 +94,18 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function toResponseMimeType(Mode $mode): string {
+    protected function toResponseMimeType(OutputMode $mode): string {
         return match($mode) {
-            Mode::Text => "text/plain",
-            Mode::MdJson => "text/plain",
-            Mode::Tools => "text/plain",
-            Mode::Json => "application/json",
-            Mode::JsonSchema => "application/json",
+            OutputMode::Text => "text/plain",
+            OutputMode::MdJson => "text/plain",
+            OutputMode::Tools => "text/plain",
+            OutputMode::Json => "application/json",
+            OutputMode::JsonSchema => "application/json",
             default => "application/json",
         };
     }
 
-    protected function toResponseSchema(array $responseFormat, Mode $mode) : array {
+    protected function toResponseSchema(array $responseFormat, OutputMode $mode) : array {
         return $this->removeDisallowedEntries($responseFormat['schema'] ?? []);
     }
 

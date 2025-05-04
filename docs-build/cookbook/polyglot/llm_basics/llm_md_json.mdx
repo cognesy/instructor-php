@@ -25,7 +25,7 @@ to guide the model in generating the correct response.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 
 $data = (new Inference)
@@ -35,7 +35,7 @@ $data = (new Inference)
            Respond with JSON data containing name", population and year of founding. \
            Example: {"name": "Berlin", "population": 3700000, "founded": 1237}']],
         options: ['max_tokens' => 64],
-        mode: Mode::MdJson,
+        mode: OutputMode::MdJson,
     )
     ->toJson();
 

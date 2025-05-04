@@ -25,7 +25,7 @@ Mode compatibility:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -59,7 +59,7 @@ $user = $instructor
         ]],
         model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
         //options: ['stream' => true ]
-        mode: Mode::Tools,
+        mode: OutputMode::Tools,
     );
 
 print("Completed response model:\n\n");

@@ -8,7 +8,7 @@ use Cognesy\Addons\ToolUse\ToolExecutions;
 use Cognesy\Addons\ToolUse\ToolUseContext;
 use Cognesy\Addons\ToolUse\ToolUseStep;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\LLM;
 use Cognesy\Utils\Json\Json;
@@ -30,17 +30,17 @@ class ToolCallingDriver implements CanUseTools
     private string|array $toolChoice;
     private string $model;
     private array $responseFormat;
-    private Mode $mode;
+    private OutputMode $mode;
     private array $options;
     private bool $parallelToolCalls = false;
 
     public function __construct(
-        ?LLM          $llm = null,
+        ?LLM         $llm = null,
         string|array $toolChoice = 'auto',
         array        $responseFormat = [],
         string       $model = '',
         array        $options = [],
-        Mode         $mode = Mode::Tools,
+        OutputMode   $mode = OutputMode::Tools,
     ) {
         $this->llm = $llm ?? new LLM();
 

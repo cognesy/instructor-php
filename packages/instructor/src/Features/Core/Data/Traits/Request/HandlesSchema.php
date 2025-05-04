@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Request;
 
 use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Str;
 
 trait HandlesSchema
@@ -35,11 +35,11 @@ trait HandlesSchema
 
     public function responseFormat() : array {
         return match($this->mode()) {
-            Mode::Json => [
+            OutputMode::Json => [
                 'type' => 'json_object',
                 'schema' => $this->jsonSchema(),
             ],
-            Mode::JsonSchema => [
+            OutputMode::JsonSchema => [
                 'type' => 'json_schema',
                 'description' => $this->toolDescription(),
                 'json_schema' => [

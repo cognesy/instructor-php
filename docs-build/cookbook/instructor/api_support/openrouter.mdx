@@ -22,7 +22,7 @@ in case of extraction issues.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -56,7 +56,7 @@ $user = $instructor->respond(
         ]],
     model: 'microsoft/phi-3.5-mini-128k-instruct',
     //options: ['stream' => true ]
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 
 print("Completed response model:\n\n");

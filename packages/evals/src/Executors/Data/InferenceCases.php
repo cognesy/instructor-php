@@ -3,7 +3,7 @@
 namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Evals\Utils\Combination;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Settings;
 use Generator;
 
@@ -120,11 +120,12 @@ class InferenceCases
 
     private function modes() : array {
         return [
-            Mode::Text,
-            Mode::MdJson,
-            Mode::Json,
-            Mode::JsonSchema,
-            Mode::Tools,
+            OutputMode::Text,
+            OutputMode::MdJson,
+            OutputMode::Json,
+            OutputMode::JsonSchema,
+            OutputMode::Tools,
+            OutputMode::Unrestricted,
         ];
     }
 }

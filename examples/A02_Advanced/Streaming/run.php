@@ -16,7 +16,7 @@ generated.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Cli\Console;
 
 class UserRole
@@ -67,7 +67,7 @@ $stream = (new Instructor)->withConnection('openai')->request(
     messages: $text,
     responseModel: UserDetail::class,
     options: ['stream' => true],
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 )->stream();
 
 foreach ($stream->partials() as $partial) {

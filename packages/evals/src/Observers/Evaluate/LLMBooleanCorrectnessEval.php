@@ -8,7 +8,7 @@ use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class LLMBooleanCorrectnessEval implements CanGenerateObservations
 {
@@ -82,7 +82,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
             prompt: 'Analyze the expected and actual results and determine if the actual result is correct.',
             toolName: 'correctness_evaluation',
             toolDescription: 'Respond with true or false to indicate if the actual result is correct.',
-            mode: Mode::Json,
+            mode: OutputMode::Json,
         )->get();
     }
 }

@@ -31,7 +31,7 @@ this feature in JSON mode (only in JSON Schema mode).
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 
 $data = (new Inference)
@@ -44,7 +44,7 @@ $data = (new Inference)
             'type' => 'json_object',
         ],
         options: ['max_tokens' => 64],
-        mode: Mode::Json,
+        mode: OutputMode::Json,
     )
     ->toJson();
 

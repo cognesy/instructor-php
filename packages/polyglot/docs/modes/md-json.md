@@ -11,14 +11,14 @@ Markdown JSON mode is a special mode that requests the model to format its respo
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 
 // This works with virtually any provider
 $response = $inference->create(
     messages: 'List three programming languages and their key features.',
-    mode: Mode::MdJson
+    mode: OutputMode::MdJson
 )->toJson();
 
 // The model will return JSON wrapped in Markdown, which Polyglot processes for you
@@ -42,7 +42,7 @@ While MdJson is more flexible across providers, you still need to provide clear 
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 

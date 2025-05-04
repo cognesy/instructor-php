@@ -11,7 +11,7 @@ JSON Schema mode takes JSON generation a step further by validating the response
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference()->withConnection('openai');  // Currently best supported by OpenAI
 
@@ -72,7 +72,7 @@ $response = $inference->create(
             'strict' => true,
         ],
     ],
-    mode: Mode::JsonSchema
+    mode: OutputMode::JsonSchema
 )->toJson();
 
 // The response will match the schema's structure exactly

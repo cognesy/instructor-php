@@ -16,7 +16,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $report = <<<'EOT'
     [2021-09-01]
@@ -114,7 +114,7 @@ $events = $instructor
             'max_tokens' => 2048,
             'stream' => true,
         ],
-        mode: Mode::Json,
+        mode: OutputMode::Json,
     )->get();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";

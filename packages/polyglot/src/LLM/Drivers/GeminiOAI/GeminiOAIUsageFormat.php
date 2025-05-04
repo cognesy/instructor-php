@@ -9,8 +9,8 @@ class GeminiOAIUsageFormat implements CanMapUsage
 {
     public function fromData(array $data): Usage {
         return new Usage(
-            inputTokens: $data['usage']['promptTokens'] ?? 0,
-            outputTokens: $data['usage']['completionTokens'] ?? 0,
+            inputTokens: $data['usage']['prompt_tokens'] ?? 0,
+            outputTokens: $data['usage']['completion_tokens'] ?? 0,
             cacheWriteTokens: 0,
             cacheReadTokens: 0,
             reasoningTokens: 0,

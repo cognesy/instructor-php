@@ -18,7 +18,7 @@ require 'examples/boot.php';
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Env;
 
 class User {
@@ -44,7 +44,7 @@ $instructor = (new Instructor)->withLLMConfig($config);
 $user = $instructor->respond(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
-    mode: Mode::Tools,
+    mode: OutputMode::Tools,
 );
 
 

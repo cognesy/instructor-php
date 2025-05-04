@@ -8,7 +8,8 @@ use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Evals\Executors\RunInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Http\Debug\Debug;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Settings;
 use Evals\LLMModes\CompanyEval;
 
@@ -44,8 +45,9 @@ $data = new InferenceData(
 
 //Debug::setEnabled();
 $connections = array_keys(Settings::get('llm', 'connections'));
-$modes = [Mode::Tools, Mode::JsonSchema, Mode::Json, Mode::MdJson, Mode::Text];
-$stream = [true, false];
+//$connections = ['gemini-oai'];
+$modes = [OutputMode::Tools];// OutputMode::Text, OutputMode::JsonSchema, OutputMode::MdJson, OutputMode::Tools, OutputMode::Unrestricted];
+$stream = [true];
 
 $experiment = new Experiment(
     cases: InferenceCases::only($connections, $modes, $stream),

@@ -9,7 +9,7 @@ use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
 use Cognesy\Polyglot\LLM\LLM;
@@ -48,8 +48,8 @@ class RequestHandler
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $llmResponse = $this->getInference($request)->response();
             $llmResponse->withContent(match($request->mode()) {
-                Mode::Text => $llmResponse->content(),
-                Mode::Tools => $llmResponse->toolCalls()->first()?->argsAsJson()
+                OutputMode::Text => $llmResponse->content(),
+                OutputMode::Tools => $llmResponse->toolCalls()->first()?->argsAsJson()
                     ?? $llmResponse->content() // fallback if no tool calls - some LLMs return just a string
                     ?? '',
                 default => Json::fromString($llmResponse->content())->toString(), // Mode::MdJson, Mode::Json, Mode::JsonSchema

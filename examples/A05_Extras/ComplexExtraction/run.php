@@ -17,7 +17,7 @@ require 'examples/boot.php';
 use Cognesy\Http\Debug\Debug;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $report = <<<'EOT'
     [2021-09-01]
@@ -108,7 +108,7 @@ $events = $instructor
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
         model: 'gpt-4o',
-        mode: Mode::Tools,
+        mode: OutputMode::Tools,
         options: [
             'max_tokens' => 2048,
             'stream' => true,

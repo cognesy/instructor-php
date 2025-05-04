@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data;
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Settings;
 
 class StructuredOutputRequest
@@ -15,17 +15,17 @@ class StructuredOutputRequest
         string|array|object $input,
         string|array|object $requestedSchema,
         ResponseModel $responseModel,
-        string $system,
-        string $prompt,
-        array $examples,
-        string $model,
-        int $maxRetries,
-        array $options,
-        string $toolName,
-        string $toolDescription,
-        string $retryPrompt,
-        Mode $mode,
-        array $cachedContext,
+        string        $system,
+        string        $prompt,
+        array         $examples,
+        string        $model,
+        int           $maxRetries,
+        array         $options,
+        string        $toolName,
+        string        $toolDescription,
+        string        $retryPrompt,
+        OutputMode    $mode,
+        array         $cachedContext,
     ) {
         $this->cachedContext = $cachedContext;
         $this->options = $options;

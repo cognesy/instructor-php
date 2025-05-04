@@ -18,7 +18,7 @@ response is received.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Cli\Console;
 
 class UserRole
@@ -72,7 +72,7 @@ $user = (new Instructor)
         messages: $text,
         responseModel: UserDetail::class,
         options: ['stream' => true],
-        mode: Mode::Json,
+        mode: OutputMode::Json,
     )->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";

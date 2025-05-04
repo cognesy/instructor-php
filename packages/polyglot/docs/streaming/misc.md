@@ -71,12 +71,12 @@ For streaming JSON responses, you need to accumulate content until you have vali
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 $response = $inference->create(
     messages: 'List 5 countries and their capitals in JSON format.',
-    mode: Mode::Json,  // Request JSON response
+    mode: OutputMode::Json,  // Request JSON response
     options: ['stream' => true]
 );
 

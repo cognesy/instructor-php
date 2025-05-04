@@ -80,7 +80,7 @@ For models that support function calling or tools:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $tools = [
     [
@@ -112,7 +112,7 @@ $response = $inference->create(
     messages: 'What is the weather in Paris?',
     tools: $tools,
     toolChoice: 'auto',  // Let the model decide when to use tools
-    mode: Mode::Tools    // Enable tools mode
+    mode: OutputMode::Tools    // Enable tools mode
 )->response();
 
 // Check if there are tool calls

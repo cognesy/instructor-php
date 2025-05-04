@@ -4,7 +4,7 @@ namespace Cognesy\Evals\Executors;
 
 use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
 
@@ -12,7 +12,7 @@ class InferenceAdapter
 {
     public function callInferenceFor(
         string          $connection,
-        Mode            $mode,
+        OutputMode      $mode,
         bool            $isStreamed,
         string|array    $messages,
         InferenceSchema $evalSchema,
@@ -24,11 +24,12 @@ class InferenceAdapter
             'stream' => $isStreamed
         ];
         $inferenceResponse = match($mode) {
-            Mode::Tools => $this->forModeTools($connection, $messages, $evalSchema, $options),
-            Mode::JsonSchema => $this->forModeJsonSchema($connection, $messages, $evalSchema, $options),
-            Mode::Json => $this->forModeJson($connection, $messages, $evalSchema, $options),
-            Mode::MdJson => $this->forModeMdJson($connection, $messages, $evalSchema, $options),
-            Mode::Text => $this->forModeText($connection, $messages, $options),
+            OutputMode::Tools => $this->forModeTools($connection, $messages, $evalSchema, $options),
+            OutputMode::JsonSchema => $this->forModeJsonSchema($connection, $messages, $evalSchema, $options),
+            OutputMode::Json => $this->forModeJson($connection, $messages, $evalSchema, $options),
+            OutputMode::MdJson => $this->forModeMdJson($connection, $messages, $evalSchema, $options),
+            OutputMode::Text => $this->forModeText($connection, $messages, $options),
+            OutputMode::Unrestricted => $this->forModeUnrestricted($connection, $messages, $evalSchema, $options),
         };
         return $inferenceResponse->response();
     }
@@ -41,7 +42,7 @@ class InferenceAdapter
                 tools: $schema->tools(),
                 toolChoice: $schema->toolChoice(),
                 options: $options,
-                mode: Mode::Tools,
+                mode: OutputMode::Tools,
             );
     }
 
@@ -55,7 +56,7 @@ class InferenceAdapter
                 ]),
                 responseFormat: $schema->responseFormatJsonSchema(),
                 options: $options,
-                mode: Mode::JsonSchema,
+                mode: OutputMode::JsonSchema,
             );
     }
 
@@ -69,7 +70,7 @@ class InferenceAdapter
                 ]),
                 responseFormat: $schema->responseFormatJson(),
                 options: $options,
-                mode: Mode::Json,
+                mode: OutputMode::Json,
             );
     }
 
@@ -83,7 +84,7 @@ class InferenceAdapter
                     ['role' => 'user', 'content' => '```json'],
                 ]),
                 options: $options,
-                mode: Mode::MdJson,
+                mode: OutputMode::MdJson,
             );
     }
 
@@ -93,7 +94,20 @@ class InferenceAdapter
             ->create(
                 messages: $messages,
                 options: $options,
-                mode: Mode::Text,
+                mode: OutputMode::Text,
+            );
+    }
+
+    public function forModeUnrestricted(string $connection, array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+        return (new Inference)
+            ->withConnection($connection)
+            ->create(
+                messages: $messages,
+                tools: $schema->tools(),
+                toolChoice: $schema->toolChoice(),
+                responseFormat: $schema->responseFormatJson(),
+                options: $options,
+                mode: OutputMode::Unrestricted,
             );
     }
 }

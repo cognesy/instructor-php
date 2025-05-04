@@ -26,7 +26,7 @@ Reasons Mode::Tools is not recommended:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';
@@ -55,7 +55,7 @@ $user = $instructor->respond(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'command-r-plus',
-    mode: Mode::Json,
+    mode: OutputMode::Json,
 );
 
 print("Completed response model:\n\n");

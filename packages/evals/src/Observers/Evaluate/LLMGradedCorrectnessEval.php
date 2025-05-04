@@ -8,7 +8,7 @@ use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\GradedCorrectnessAnalysis;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class LLMGradedCorrectnessEval implements CanGenerateObservations
 {
@@ -76,7 +76,7 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
             prompt: 'Analyze the expected and actual results and determine how correct the actual result is.',
             toolName: 'correctness_grade',
             toolDescription: 'Respond with grade of correctness to indicate to what extent the actual result is correct.',
-            mode: Mode::Json,
+            mode: OutputMode::Json,
         )->get();
     }
 }

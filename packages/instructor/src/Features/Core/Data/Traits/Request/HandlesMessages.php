@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Features\Core\Data\Traits\Request;
 
 use Cognesy\Instructor\Features\Core\Data\ChatTemplate;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesMessages
 {
@@ -15,7 +15,7 @@ trait HandlesMessages
     private array $examples;
     private array $cachedContext = [];
     private array $options = [];
-    private Mode $mode;
+    private OutputMode $mode;
 
     // PUBLIC /////////////////////////////////////////////////////////////////
 
@@ -38,7 +38,7 @@ trait HandlesMessages
         return $this->messages;
     }
 
-    public function mode() : Mode {
+    public function mode() : OutputMode {
         return $this->mode;
     }
 

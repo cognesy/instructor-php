@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data\Traits\RequestInfo;
 
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesMutation
 {
@@ -65,7 +65,7 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withMode(Mode $mode) : static {
+    public function withMode(OutputMode $mode) : static {
         $this->mode = $mode;
         return $this;
     }

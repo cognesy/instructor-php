@@ -20,7 +20,7 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Instructor;
-use Cognesy\Polyglot\LLM\Enums\Mode;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class User {
     public int $age;
@@ -37,7 +37,7 @@ $user = $instructor
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
-        mode: Mode::Tools
+        mode: OutputMode::Tools
     );
 echo "\nRESPONSE:\n";
 dump($user);
@@ -48,7 +48,7 @@ $user = $instructor
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
-        mode: Mode::Json
+        mode: OutputMode::Json
     );
 echo "\nRESPONSE:\n";
 dump($user);
@@ -59,7 +59,7 @@ $user = $instructor
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",
-        mode: Mode::MdJson
+        mode: OutputMode::MdJson
     );
 echo "\nRESPONSE:\n";
 dump($user);
