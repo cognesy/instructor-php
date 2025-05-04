@@ -21,12 +21,16 @@ class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
                     'type' => 'json_object',
                 ];
                 break;
-//            case OutputMode::Text:
-//            case OutputMode::MdJson:
-//                $request['response_format'] = ['type' => 'text'];
-//                break;
+            case OutputMode::Text:
+            case OutputMode::MdJson:
+                unset($request['response_format']);
+                break;
             case OutputMode::Unrestricted:
-                $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
+                if (!empty($request['response_format'])) {
+                    $request['response_format'] = [
+                        'type' => 'json_object',
+                    ];
+                }
                 break;
         }
 
@@ -35,20 +39,4 @@ class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
 
         return array_filter($request);
     }
-
-//    protected function applyMode(
-//        array        $request,
-//        OutputMode   $mode,
-//        array        $tools,
-//        string|array $toolChoice,
-//        array        $responseFormat
-//    ) : array {
-//        switch($mode) {
-//            case OutputMode::Json:
-//            case OutputMode::JsonSchema:
-//                $request['response_format'] = [ "type" => "json_object" ];
-//                break;
-//        }
-//        return $request;
-//    }
 }
