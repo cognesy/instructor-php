@@ -8,9 +8,9 @@ docname: 'google_gemini'
 Google offers Gemini models which perform well in benchmarks.
 
 Supported modes:
- - Mode::MdJson - fallback mode
- - Mode::Json - recommended
- - Mode::Tools - supported
+ - OutputMode::MdJson - fallback mode
+ - OutputMode::Json - recommended
+ - OutputMode::Tools - supported
 
 Here's how you can use Instructor with Gemini API.
 

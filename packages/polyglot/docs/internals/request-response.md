@@ -18,7 +18,7 @@ class InferenceRequest {
     public string|array $toolChoice = [];
     public array $responseFormat = [];
     public array $options = [];
-    public Mode $mode = Mode::Text;
+    public Mode $mode = OutputMode::Text;
     public ?CachedContext $cachedContext;
 
     public function __construct(...) { ... }

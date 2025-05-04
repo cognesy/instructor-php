@@ -8,10 +8,10 @@ docname: 'moonshotai'
 Support for MoonshotAI's API.
 
 Mode compatibility:
-- Mode::MdJson (supported)
-- Mode::Tools (supported)
-- Mode::Json (supported)
-- Mode::JsonSchema (not supported)
+- OutputMode::MdJson (supported)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (not supported)
 
 ## Example
 

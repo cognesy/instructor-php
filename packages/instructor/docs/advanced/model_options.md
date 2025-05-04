@@ -1,6 +1,10 @@
 ## Changing LLM model and options
 
-You can specify model and other options that will be passed to OpenAI / LLM endpoint.
+You can specify model and other options that will be passed to LLM endpoint.
+
+Commonly used option supported by many providers is `temperature`, which controls randomness of the output.
+
+Lower values make the output more deterministic, while higher values make it more random.
 
 ```php
 <?php
@@ -11,39 +15,44 @@ $person = (new Instructor)->respond(
     options: [
         // custom temperature setting
         'temperature' => 0.0
-        // ... other options
+        // ... other options - e.g. provider or model specific
     ],
 );
 ```
 
+> NOTE: Please note that many options might be specific to the provider or even some model that you are using.
 
-## Providing custom client
+## Customizing configuration
 
-You can pass a custom configured instance of client to the Instructor. This allows you to specify your own API key, base URI or organization.
+You can pass a custom LLM configuration to the Instructor.
+
+This allows you to specify your own API key, base URI or,
+which might be helpful in the case you are using OpenAI - organization.
 
 ```php
 <?php
-use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 
 // Create instance of OpenAI client initialized with custom parameters
-$driver = new OpenAIDriver(new LLMConfig(
-    apiUrl: 'https://api.openai.com/v1', // you can change base URI
+$config = new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1',
     apiKey: $yourApiKey,
     endpoint: '/chat/completions',
     metadata: ['organization' => ''],
     model: 'gpt-4o-mini',
     maxTokens: 128,
+    httpClient: 'guzzle',
+    providerType: LLMProviderType::OpenAI->value,
 ));
 
-/// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withDriver($driver);
+/// Get Instructor with the default configuration overridden with your own
+$instructor = (new Instructor)->withLLMConfig($driver);
 
 $person = $instructor->respond(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-    model: 'gpt-3.5-turbo',
     options: ['temperature' => 0.0],
 );
 ```

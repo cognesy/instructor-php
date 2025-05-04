@@ -9,11 +9,11 @@ Instructor supports Cohere API - you can find the details on how to configure
 the client in the example below.
 
 Mode compatibility:
- - Mode::MdJson - supported, recommended as a fallback from JSON mode
- - Mode::Json - supported, recommended
- - Mode::Tools - partially supported, not recommended
+ - OutputMode::MdJson - supported, recommended as a fallback from JSON mode
+ - OutputMode::Json - supported, recommended
+ - OutputMode::Tools - partially supported, not recommended
 
-Reasons Mode::Tools is not recommended:
+Reasons OutputMode::Tools is not recommended:
 
  - Cohere does not support JSON Schema, which only allows to extract very simple, flat data schemas.
  - Performance of the currently available versions of Cohere models in tools mode for Instructor use case (data extraction) is extremely poor.

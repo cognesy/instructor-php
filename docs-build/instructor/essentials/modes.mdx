@@ -1,9 +1,28 @@
 ## Extraction modes
 
-Instructor supports several ways to extract data from the response. The default mode is `Mode::Tools`, which leverages OpenAI-style tool calls.
+Instructor supports several ways to extract data from the response.
+
+### Output Modes
+
+Instructor supports multiple output modes to allow working with various models depending on their capabilities.
+- `OutputMode::Json` - generate structured output via LLM's native JSON generation
+- `OutputMode::JsonSchema` - use LLM's strict JSON Schema mode to enforce JSON Schema
+- `OutputMode::Tools` - use tool calling API to get LLM follow provided schema
+- `OutputMode::MdJson` - use prompting to generate structured output; fallback for the models that do not support JSON generation or tool calling
+
+Additionally, you can use `Text` and `Unrestricted` modes to get LLM to generate text output without any structured data extraction.
+
+Those modes are not useful for `Instructor` class (as it is focused on structured output generation) but can be used with `Inference` class.
+
+- `OutputMode::Text` - generate text output
+- `OutputMode::Unrestricted` - generate unrestricted output based on inputs provided by the user (with no enforcement of specific output format)
+
+### Example of Using Modes
 
 Mode can be set via parameter of `Instructor::response()` or `Instructor::request()`
 methods.
+
+The default mode is `OutputMode::Tools`, which leverages OpenAI-style tool calls.
 
 ```php
 <?php
@@ -15,7 +34,7 @@ $response = $instructor->respond(
     messages: "...",
     responseModel: ...,
     ...,
-    mode: Mode::Json
+    mode: OutputMode::Json
 );
 ```
 Mode can be also set via `request()` method.
@@ -26,13 +45,13 @@ $response = $instructor->request(
     messages: "...",
     responseModel: ...,
     ...,
-    mode: Mode::Json
+    mode: OutputMode::Json
 )->get();
 ```
 
 ## Modes
 
-### `Mode::Tools`
+### `OutputMode::Tools`
 
 This mode is the default one. It uses OpenAI tools to extract data from the
 response.
@@ -45,7 +64,7 @@ check their documentation for more information.
  - https://docs.mistral.ai/capabilities/function_calling/
 
 
-### `Mode::Json`
+### `OutputMode::Json`
 
 In this mode Instructor provides response format as JSONSchema and asks LLM
 to respond with JSON object following provided schema.
@@ -60,23 +79,23 @@ See more about JSON mode in:
  - https://docs.mistral.ai/capabilities/json_mode/
 
 
-### `Mode::JsonSchema`
+### `OutputMode::JsonSchema`
 
-In contrast to `Mode::Json` which may not always manage to meet the schema requirements,
-`Mode::JsonSchema` is strict and guarantees the response to be a valid JSON object that matches
+In contrast to `OutputMode::Json` which may not always manage to meet the schema requirements,
+`OutputMode::JsonSchema` is strict and guarantees the response to be a valid JSON object that matches
 the provided schema.
 
 It is currently supported only by new OpenAI models (check their docs for details).
 
 NOTE: OpenAI JsonSchema mode does not support optional properties. If you need to have optional
-properties in your schema, use `Mode::Tools` or `Mode::Json`.
+properties in your schema, use `OutputMode::Tools` or `OutputMode::Json`.
 
 See more about JSONSchema mode in:
 
  - https://platform.openai.com/docs/guides/structured-outputs
 
 
-### `Mode::MdJson`
+### `OutputMode::MdJson`
 
 In this mode Instructor asks LLM to answer with JSON object following provided schema and
 return answer as Markdown codeblock.

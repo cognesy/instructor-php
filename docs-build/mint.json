@@ -98,6 +98,7 @@
                 "instructor/advanced/partials",
                 "instructor/advanced/sequences",
                 "instructor/advanced/structures",
+                "instructor/advanced/structure-to-structure",
                 "instructor/advanced/prompts",
                 "instructor/advanced/function_calls"
             ]

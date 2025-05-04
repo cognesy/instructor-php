@@ -12,10 +12,10 @@ To receive partial results define `onPartialUpdate()` callback that will be call
 on every update of the deserializad object.
 
 Instructor is smart about updates, it calculates and compares hashes of the previous
-and newly  deserialized version of the model, so you won't get them on every token
+and newly deserialized version of the model, so you won't get them on every token
 received, but only when any property of the object is updated.
 
- 
+
 ```php
 <?php
 use Cognesy\Instructor\Instructor;
@@ -36,7 +36,7 @@ $person = (new Instructor)->request(
 $this->db->save($person); // ...for example: save to DB
 ```
 
-Partially updated data is not validated while they are received and deserialized.
+Partially updated data is not validated while it is received and deserialized.
 
 The object returned from `get()` call is fully validated, so you can safely work
 with it, e.g. save it to the database.

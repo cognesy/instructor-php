@@ -5,13 +5,13 @@ docname: 'fireworks'
 
 ## Overview
 
-Please note that the larger Mistral models support Mode::Json, which is much more
-reliable than Mode::MdJson.
+Please note that the larger Mistral models support OutputMode::Json, which is much more
+reliable than OutputMode::MdJson.
 
 Mode compatibility:
-- Mode::Tools - selected models
-- Mode::Json - selected models
-- Mode::MdJson
+- OutputMode::Tools - selected models
+- OutputMode::Json - selected models
+- OutputMode::MdJson
 
 
 ## Example

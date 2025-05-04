@@ -9,10 +9,10 @@ Support for Cerebras API which uses custom hardware for super fast inference.
 Cerebras provides Llama models.
 
 Mode compatibility:
-- Mode::Tools (supported)
-- Mode::Json (supported)
-- Mode::JsonSchema (supported)
-- Mode::MdJson (fallback)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
 
 ## Example
 

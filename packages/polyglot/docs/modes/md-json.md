@@ -67,7 +67,7 @@ EOT;
 
 $response = $inference->create(
 messages: $prompt,
-mode: Mode::MdJson
+mode: OutputMode::MdJson
 )->toJson();
 
 // Process as normal JSON

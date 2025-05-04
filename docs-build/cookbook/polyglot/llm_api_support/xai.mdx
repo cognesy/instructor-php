@@ -8,10 +8,10 @@ docname: 'xai'
 Support for xAI's API, which offers access to X.com's Grok model.
 
 Mode compatibility:
-- Mode::Tools (supported)
-- Mode::Json (supported)
-- Mode::JsonSchema (supported)
-- Mode::MdJson (fallback)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
 
 ## Example
 

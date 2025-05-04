@@ -10,9 +10,9 @@ You can use Instructor with local Ollama instance.
 Please note that, at least currently, OS models do not perform on par with OpenAI (GPT-3.5 or GPT-4) model for complex data schemas.
 
 Supported modes:
- - Mode::MdJson - fallback mode, works with any capable model
- - Mode::Json - recommended
- - Mode::Tools - supported (for selected models - check Ollama docs)
+ - OutputMode::MdJson - fallback mode, works with any capable model
+ - OutputMode::Json - recommended
+ - OutputMode::Tools - supported (for selected models - check Ollama docs)
 
 ## Example
 

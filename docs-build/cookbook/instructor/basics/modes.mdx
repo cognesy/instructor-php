@@ -7,12 +7,12 @@ docname: 'modes'
 
 Instructor supports several ways to extract data from the response:
 
- - `Mode::Tools` - uses OpenAI-style tool calls to get the language
+ - `OutputMode::Tools` - uses OpenAI-style tool calls to get the language
    model to generate JSON following the schema,
- - `Mode::JsonSchema` - guarantees output matching JSON Schema via
+ - `OutputMode::JsonSchema` - guarantees output matching JSON Schema via
    Context Free Grammar, does not support optional properties,
- - `Mode::Json` - JSON mode, response follows provided JSON Schema,
- - `Mode::MdJson` - uses prompting to get the language model to
+ - `OutputMode::Json` - JSON mode, response follows provided JSON Schema,
+ - `OutputMode::MdJson` - uses prompting to get the language model to
    generate JSON following the schema.
 
 Note: not all modes are supported by all models or providers.
@@ -41,8 +41,8 @@ print($text . "\n\n");
 
 $instructor = new Instructor;
 
-// CASE 1 - Mode::Tools
-print("\n1. Extracting structured data using LLM - Mode::Tools\n");
+// CASE 1 - OutputMode::Tools
+print("\n1. Extracting structured data using LLM - OutputMode::Tools\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
@@ -51,8 +51,8 @@ $user = $instructor->respond(
 check($user);
 dump($user);
 
-// CASE 2 - Mode::JsonSchema
-print("\n2. Extracting structured data using LLM - Mode::JsonSchema\n");
+// CASE 2 - OutputMode::JsonSchema
+print("\n2. Extracting structured data using LLM - OutputMode::JsonSchema\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
@@ -61,8 +61,8 @@ $user = $instructor->respond(
 check($user);
 dump($user);
 
-// CASE 3 - Mode::Json
-print("\n3. Extracting structured data using LLM - Mode::Json\n");
+// CASE 3 - OutputMode::Json
+print("\n3. Extracting structured data using LLM - OutputMode::Json\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,
@@ -71,8 +71,8 @@ $user = $instructor->respond(
 check($user);
 dump($user);
 
-// CASE 4 - Mode::MdJson
-print("\n4. Extracting structured data using LLM - Mode::MdJson\n");
+// CASE 4 - OutputMode::MdJson
+print("\n4. Extracting structured data using LLM - OutputMode::MdJson\n");
 $user = $instructor->respond(
     messages: $text,
     responseModel: User::class,

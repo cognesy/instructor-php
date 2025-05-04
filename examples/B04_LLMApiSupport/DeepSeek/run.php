@@ -8,10 +8,10 @@ docname: 'deepseek'
 Support for DeepSeek API which provides strong models at affordable price.
 
 Mode compatibility:
-- Mode::Tools (supported)
-- Mode::Json (supported)
-- Mode::JsonSchema (supported)
-- Mode::MdJson (fallback)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
 
 ## Example
 

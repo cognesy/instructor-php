@@ -8,10 +8,10 @@ docname: 'openai'
 This is the default client used by Instructor.
 
 Mode compatibility:
- - Mode::Tools (supported)
- - Mode::Json (supported)
- - Mode::JsonSchema (recommended for new models)
- - Mode::MdJson (fallback)
+ - OutputMode::Tools (supported)
+ - OutputMode::Json (supported)
+ - OutputMode::JsonSchema (recommended for new models)
+ - OutputMode::MdJson (fallback)
 
 ## Example
 

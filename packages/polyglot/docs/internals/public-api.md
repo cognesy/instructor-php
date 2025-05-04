@@ -37,7 +37,7 @@ class Inference {
         string|array $toolChoice = [],
         array $responseFormat = [],
         array $options = [],
-        Mode $mode = Mode::Text
+        Mode $mode = OutputMode::Text
     ): InferenceResponse { ... }
 
     // Static convenience method for simple text generation

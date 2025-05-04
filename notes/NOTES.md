@@ -11,7 +11,7 @@
 - Addon: ToolUse - apply context variables to message sequence (via ScriptParameters??)
 - Polyglot: Batch completion API
 - Polyglot: Async / parallel calls to multiple APIs
-- Polyglot: Mode::Any/Undetermined - do not force the response to be a specific type, follow provided parameters
+- Polyglot: OutputMode::Unrestricted - do not force the response to be a specific type, follow provided parameters
 
 ## Low priority
 

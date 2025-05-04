@@ -9,8 +9,8 @@ Instructor supports Anthropic API - you can find the details on how to configure
 the client in the example below.
 
 Mode compatibility:
-- Mode::MdJson, Mode::Json - supported
-- Mode::Tools - not supported yet
+- OutputMode::MdJson, OutputMode::Json - supported
+- OutputMode::Tools - not supported yet
 
 
 ## Example

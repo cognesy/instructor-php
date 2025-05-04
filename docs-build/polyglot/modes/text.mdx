@@ -15,7 +15,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 
-// Mode::Text is the default, so you don't need to specify it
+// OutputMode::Text is the default, so you don't need to specify it
 $response = $inference->create(
     messages: 'What is the capital of France?',
     mode: OutputMode::Text  // Optional, this is the default

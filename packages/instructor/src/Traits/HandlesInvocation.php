@@ -34,8 +34,8 @@ trait HandlesInvocation
      * @param string $model Specifies the model to be employed - check LLM documentation for more details.
      * @param int $maxRetries The maximum number of retries for the request in case of failure.
      * @param array $options Additional LLM options - check LLM documentation for more details.
-     * @param string $toolName The name of the tool to be used in Mode::Tools.
-     * @param string $toolDescription A description of the tool to be used in Mode::Tools.
+     * @param string $toolName The name of the tool to be used in OutputMode::Tools.
+     * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
      * @param OutputMode $mode The mode of operation for the request.
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
@@ -111,8 +111,8 @@ trait HandlesInvocation
      * @param string $model Specifies the model to be employed - check LLM documentation for more details.
      * @param int $maxRetries The maximum number of retries for the request in case of failure.
      * @param array $options Additional LLM options - check LLM documentation for more details.
-     * @param string $toolName The name of the tool to be used in Mode::Tools.
-     * @param string $toolDescription A description of the tool to be used in Mode::Tools.
+     * @param string $toolName The name of the tool to be used in OutputMode::Tools.
+     * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
      * @param OutputMode $mode The mode of operation for the request.
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.

@@ -9,10 +9,10 @@ Support for A21 Jamba - MAMBA architecture models, very strong at handling
 long context.
 
 Mode compatibility:
-- Mode::Tools (supported)
-- Mode::Json (supported)
-- Mode::JsonSchema (supported)
-- Mode::MdJson (fallback)
+- OutputMode::Tools (supported)
+- OutputMode::Json (supported)
+- OutputMode::JsonSchema (supported)
+- OutputMode::MdJson (fallback)
 
 ## Example
 

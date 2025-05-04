@@ -8,7 +8,7 @@ docname: 'demonstrations'
 To improve the results of LLM inference you can provide examples of the expected output.
 This will help LLM to understand the context and the expected structure of the output.
 
-It is typically useful in the `Mode::Json` and `Mode::MdJson` modes, where the output
+It is typically useful in the `OutputMode::Json` and `OutputMode::MdJson` modes, where the output
 is expected to be a JSON object.
 
 

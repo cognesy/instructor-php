@@ -31,7 +31,7 @@ $instructor = (new Instructor)
     // let's dump the request data to see how customized prompts look like in requests
     ->onEvent(HttpRequestSent::class, fn(HttpRequestSent $event) => dump($event));
 
-print("\n# Request for Mode::Tools:\n\n");
+print("\n# Request for OutputMode::Tools:\n\n");
 $user = $instructor
     ->respond(
         messages: "Our user Jason is 25 years old.",
@@ -42,7 +42,7 @@ $user = $instructor
 echo "\nRESPONSE:\n";
 dump($user);
 
-print("\n# Request for Mode::Json:\n\n");
+print("\n# Request for OutputMode::Json:\n\n");
 $user = $instructor
     ->respond(
         messages: "Our user Jason is 25 years old.",
@@ -53,7 +53,7 @@ $user = $instructor
 echo "\nRESPONSE:\n";
 dump($user);
 
-print("\n# Request for Mode::MdJson:\n\n");
+print("\n# Request for OutputMode::MdJson:\n\n");
 $user = $instructor
     ->respond(
         messages: "Our user Jason is 25 years old.",

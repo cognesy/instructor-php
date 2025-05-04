@@ -18,7 +18,7 @@ public function create(
     string|array $toolChoice = [],  // Tool selection preference
     array $responseFormat = [],     // Response format specification
     array $options = [],            // Additional request options
-    Mode $mode = Mode::Text         // Output mode (Text, JSON, etc.)
+    Mode $mode = OutputMode::Text         // Output mode (Text, JSON, etc.)
 ): InferenceResponse
 ```
 

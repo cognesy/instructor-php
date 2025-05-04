@@ -8,10 +8,10 @@ docname: 'minimaxi'
 Support for Minimaxi's API.
 
 Mode compatibility:
-- Mode::MdJson (supported)
-- Mode::Tools (not supported)
-- Mode::Json (not supported)
-- Mode::JsonSchema (not supported)
+- OutputMode::MdJson (supported)
+- OutputMode::Tools (not supported)
+- OutputMode::Json (not supported)
+- OutputMode::JsonSchema (not supported)
 
 ## Example
 

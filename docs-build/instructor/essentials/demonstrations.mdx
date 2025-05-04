@@ -3,7 +3,7 @@
 To improve the results of LLM inference you can provide examples of the expected output.
 This will help LLM to understand the context and the expected structure of the output.
 
-It is typically useful in the `Mode::Json` and `Mode::MdJson` modes, where the output
+It is typically useful in the `OutputMode::Json` and `OutputMode::MdJson` modes, where the output
 is expected to be a JSON object.
 
 Instructor's `request()` method accepts an array of examples as the `examples` parameter,
@@ -42,7 +42,7 @@ $user = (new Instructor)->respond(
             output: ['name' => 'Ian', 'age' => 27]
         ),
     ],
-    mode: Mode::Json
+    mode: OutputMode::Json
 );
 ?>
 ```
@@ -71,7 +71,7 @@ $user = (new Instructor)->respond(
             template: "EXAMPLE:\n{input} => {output}\n",
         ),
     ],
-    mode: Mode::Json
+    mode: OutputMode::Json
 );
 ```
 

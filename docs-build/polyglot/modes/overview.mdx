@@ -16,11 +16,11 @@ Polyglot supports multiple output modes through the `Mode` enum:
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 // Available modes
-// Mode::Text       - Plain text output (default)
-// Mode::Json       - JSON output
-// Mode::JsonSchema - JSON output validated against a schema
-// Mode::MdJson     - JSON wrapped in Markdown code blocks
-// Mode::Tools      - Function/tool calling
+// OutputMode::Text       - Plain text output (default)
+// OutputMode::Json       - JSON output
+// OutputMode::JsonSchema - JSON output validated against a schema
+// OutputMode::MdJson     - JSON wrapped in Markdown code blocks
+// OutputMode::Tools      - Function/tool calling
 ```
 
 Each mode influences:
@@ -33,11 +33,11 @@ Each mode influences:
 
 | Mode            | Description                                                                 | Best For                                      |
 |-----------------|-----------------------------------------------------------------------------|-----------------------------------------------|
-| `Mode::Text`     | Default mode, returns unstructured text                                     | Simple text generation                        |
-| `Mode::Json`     | Returns structured JSON data                                                | Structured data processing                    |
-| `Mode::JsonSchema` | Returns JSON data validated against a schema                               | Strictly typed data                           |
-| `Mode::MdJson`   | Returns JSON wrapped in Markdown code blocks                                | Compatibility across providers                |
-| `Mode::Tools`    | Returns function/tool calls                                                 | Function calling/external actions             |
+| `OutputMode::Text`     | Default mode, returns unstructured text                                     | Simple text generation                        |
+| `OutputMode::Json`     | Returns structured JSON data                                                | Structured data processing                    |
+| `OutputMode::JsonSchema` | Returns JSON data validated against a schema                               | Strictly typed data                           |
+| `OutputMode::MdJson`   | Returns JSON wrapped in Markdown code blocks                                | Compatibility across providers                |
+| `OutputMode::Tools`    | Returns function/tool calls                                                 | Function calling/external actions             |
 
 
 ### Choosing the Right Format
