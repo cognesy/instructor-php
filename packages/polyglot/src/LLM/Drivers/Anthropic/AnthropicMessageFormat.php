@@ -28,6 +28,8 @@ class AnthropicMessageFormat implements CanMapMessages
         return $list;
     }
 
+    // INTERNAL /////////////////////////////////////////////
+
     private function mapMessage(array $message) : array {
         return match(true) {
             ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? []) => $this->toNativeToolCall($message),

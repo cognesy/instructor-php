@@ -16,6 +16,7 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.17",
+    "cognesy/setup": "^0.17",
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.7"
   },

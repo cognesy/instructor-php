@@ -76,7 +76,7 @@ fi
 
 # 1. Build docs
 echo "Step 1: Rebuilding documentation..."
-./bin/instructor hub gendocs
+./bin/ins-hub gendocs
 
 # 2. Update all package versions using sync-ver.sh
 echo "Step 2: Updating package versions in dependency order..."

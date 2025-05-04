@@ -32,7 +32,7 @@ You can use the `.env-dist` file as a template.
 You can check the available tutorials and examples by running the following command in terminal:
 
 ```bash
-$ ./bin/instructor hub list
+$ ./bin/ins-hub list
 ```
 
 
@@ -40,18 +40,18 @@ $ ./bin/instructor hub list
 
 ### List Cookbooks
 
-Run `./bin/instructor hub list` you can see all the available tutorials and examples.
+Run `./bin/ins-hub list` you can see all the available tutorials and examples.
 
 ```bash
-$ ./bin/instructor hub list
+$ ./bin/ins-hub list
 ```
 
 ### Reading a Cookbook
 
-To read a tutorial, you can run `./bin/instructor hub show {id}` to see the full tutorial in the terminal.
+To read a tutorial, you can run `./bin/ins-hub show {id}` to see the full tutorial in the terminal.
 
 ```bash
-$ ./bin/instructor hub show {id}
+$ ./bin/ins-hub show {id}
 ```
 
 Currently, there is no way to page through the tutorial - feel free to contribute :)
@@ -60,17 +60,17 @@ Currently, there is no way to page through the tutorial - feel free to contribut
 
 ### Running a Cookbook
 
-To run a tutorial, you run `./bin/instructor hub run {id}` in terminal - it will execute the code and show the output. You need to have your OPENAI_API_KEY set in your environment (.env file in root directory of your copy of instructor-php repo).
+To run a tutorial, you run `./bin/ins-hub run {id}` in terminal - it will execute the code and show the output. You need to have your OPENAI_API_KEY set in your environment (.env file in root directory of your copy of instructor-php repo).
 
 ```bash
-$ ./bin/instructor hub run {id}
+$ ./bin/ins-hub run {id}
 ```
 
 
 ### Running all Cookbooks
 
-This is mostly for testing if cookbooks are executed properly, but you can run `./bin/instructor hub all {id}` to run all the tutorials and examples in the terminal, starting from the one you specify.
+This is mostly for testing if cookbooks are executed properly, but you can run `./bin/ins-hub all {id}` to run all the tutorials and examples in the terminal, starting from the one you specify.
 
 ```bash
-$ ./bin/instructor hub all {id}
+$ ./bin/ins-hub all {id}
 ```

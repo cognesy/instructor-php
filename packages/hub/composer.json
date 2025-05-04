@@ -42,8 +42,12 @@
   "scripts": {
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php vendor/bin/psalm"
+    "psalm": "@php vendor/bin/psalm",
+    "hub": "bin/ins-hub"
   },
+  "bin": [
+    "bin/ins-hub"
+  ],
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true

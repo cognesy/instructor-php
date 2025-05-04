@@ -33,6 +33,8 @@ class AnthropicRequestAdapter implements ProviderRequestAdapter
         );
     }
 
+    // INTERNAL /////////////////////////////////////////////
+
     protected function toHeaders(): array {
         return array_filter([
             'x-api-key' => $this->config->apiKey,

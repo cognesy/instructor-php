@@ -42,7 +42,7 @@ class ShowExample extends Command
         Cli::outln();
         Cli::outln("Run this example:", [Color::DARK_YELLOW]);
         Cli::out("> ", [Color::DARK_GRAY]);
-        Cli::outln("./bin/instructor hub run {$example->name}", [Color::BOLD, Color::WHITE]);
+        Cli::outln("./bin/ins-hub run {$example->name}", [Color::BOLD, Color::WHITE]);
         Cli::outln();
     }
 }

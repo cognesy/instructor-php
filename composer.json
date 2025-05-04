@@ -22,9 +22,6 @@
   ],
   "type": "library",
   "license": "MIT",
-  "bin": [
-    "bin/instructor"
-  ],
   "autoload": {
     "psr-4": {
       "Cognesy\\Addons\\": "packages/addons/src/",
@@ -131,8 +128,15 @@
     "tests": "@php ./vendor/bin/pest",
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
-    "instructor": "php ./bin/instructor"
+    "ins-setup": "bin/ins-setup",
+    "ins-hub": "bin/ins-hub",
+    "ins-tell": "bin/tell"
   },
+  "bin": [
+    "bin/ins-setup",
+    "bin/ins-hub",
+    "bin/tell"
+  ],
   "suggest": {
     "ext-dom": "Used by Cognesy\\Auxiliary\\Web\\Html for HTML parsing",
     "ext-fileinfo": "Used by Cognesy\\Addon\\Image\\Image for MIME information extraction",

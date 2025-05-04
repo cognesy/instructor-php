@@ -41,7 +41,7 @@ PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
 # 0. Build docs
 echo "Step 0: Rebuilding documentation..."
-./bin/instructor hub gendocs
+./bin/ins-hub gendocs
 
 # 1. Update all package versions using sync-ver.sh
 echo "Step 1: Updating package versions..."
@@ -62,6 +62,10 @@ for dir in "${!PACKAGES[@]}"; do
         echo "⚠️ Warning: Directory $dir does not exist, skipping..."
     fi
 done
+
+# 2.1. Copy resource files
+echo "Step 2.1: Copying resource files..."
+./bin/copy-resources.sh
 
 # 3. Check for uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
