@@ -127,5 +127,11 @@ jobs:
             fi
           done
 
-      - name: Run all tests
-        run: ./bin/run-all-tests.sh
+      - name: Run tests in all packages
+        run: |
+          for dir in packages/*; do
+            if [ -f "$dir/composer.json" ]; then
+              echo "🔍 Running tests in $dir"
+              composer --working-dir="$dir" test
+            fi
+          done
