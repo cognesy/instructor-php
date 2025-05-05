@@ -3,7 +3,7 @@
 # Copy resource files to subpackages
 
 SOURCE_DIR="."
-TARGET_DIR="./tmp/test"
+TARGET_DIR="."
 
 echo "Copying resource files to:"
 
