@@ -1,69 +1,82 @@
+#!/bin/bash
+
 # Copy resource files to subpackages
+
+SOURCE_DIR="."
+TARGET_DIR="./tmp/test"
 
 echo "Copying resource files to:"
 
 echo " ... ./packages/templates"
 # Copy resources
-mkdir -p ./packages/templates/config
-cp -R ./config/* ./packages/templates/config
-mkdir -p ./packages/templates/prompts
-cp -R ./prompts/* ./packages/templates/prompts
+mkdir -p "$TARGET_DIR/packages/templates/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/templates/config"
+mkdir -p "$TARGET_DIR/packages/templates/prompts"
+cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/templates/prompts"
 
 echo " ... ./packages/setup"
 # Copy resources
-cp ./.env-dist ./packages/setup/.env-dist
-mkdir -p ./packages/setup/prompts
-cp -R ./prompts/* ./packages/setup/prompts
-mkdir -p ./packages/setup/config
-cp -R ./config/* ./packages/setup/config
-mkdir -p ./packages/setup/bin
+mkdir -p "$TARGET_DIR/packages/setup/prompts"
+cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/setup/prompts"
+mkdir -p "$TARGET_DIR/packages/setup/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/setup/config"
+mkdir -p "$TARGET_DIR/packages/setup/bin"
+# copy .env-dist
+cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/setup/.env-dist"
 # copy setup script
-cp ./bin/ins-setup ./packages/setup/bin
-cp ./bin/bootstrap.php ./packages/setup/bin
+mkdir -p "$TARGET_DIR/packages/setup/bin"
+cp "$SOURCE_DIR/bin/ins-setup" "$TARGET_DIR/packages/setup/bin/"
+cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/setup/bin/"
 
 echo " ... ./packages/http-client"
 # Copy resources
-mkdir -p ./packages/http-client/config
-cp -R ./config/* ./packages/http-client/config
+mkdir -p "$TARGET_DIR/packages/http-client/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/http-client/config"
 
 echo " ... ./packages/polyglot"
 # Copy resources
-cp ./.env-dist ./packages/polyglot/.env-dist
-mkdir -p ./packages/polyglot/prompts
-cp -R ./prompts/* ./packages/polyglot/prompts
-mkdir -p ./packages/polyglot/config
-cp -R ./config/* ./packages/polyglot/config
+mkdir -p "$TARGET_DIR/packages/polyglot/prompts"
+cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/polyglot/prompts"
+mkdir -p "$TARGET_DIR/packages/polyglot/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/polyglot/config"
+# copy .env-dist
+cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/polyglot/.env-dist"
 
 echo " ... ./packages/instructor"
 # Copy resources
-cp ./.env-dist ./packages/instructor/.env-dist
-mkdir -p ./packages/instructor/prompts
-cp -R ./prompts/* ./packages/instructor/prompts
-mkdir -p ./packages/instructor/config
-cp -R ./config/* ./packages/instructor/config
+mkdir -p "$TARGET_DIR/packages/instructor/prompts"
+cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/instructor/prompts"
+mkdir -p "$TARGET_DIR/packages/instructor/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/instructor/config"
+# copy .env-dist
+cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/instructor/.env-dist"
 
 echo " ... ./packages/tell"
 # Copy resources
-cp ./.env-dist ./packages/tell/.env-dist
-mkdir -p ./packages/tell/config
-cp -R ./config/* ./packages/tell/config
-mkdir -p ./packages/tell/prompts
-cp -R ./prompts/* ./packages/tell/prompts
+mkdir -p "$TARGET_DIR/packages/tell/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/tell/config"
+mkdir -p "$TARGET_DIR/packages/tell/prompts"
+cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/tell/prompts"
+# copy .env-dist
+cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/tell/.env-dist"
 # Copy tell script
-cp ./bin/ins-tell ./packages/tell/bin
-cp ./bin/bootstrap.php ./packages/tell/bin
+mkdir -p "$TARGET_DIR/packages/tell/bin"
+cp "$SOURCE_DIR/bin/tell" "$TARGET_DIR/packages/tell/bin/"
+cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/tell/bin/"
 
 echo " ... ./packages/hub"
 # Copy resources
-cp ./.env-dist ./packages/hub/.env-dist
-mkdir -p ./packages/hub/config
-cp -R ./config/* ./packages/hub/config
-mkdir -p ./packages/hub/prompts
-cp -R ./prompts/* ./packages/hub/prompts
-mkdir -p ./packages/hub/examples
-cp -R ./examples/* ./packages/hub/examples
+mkdir -p "$TARGET_DIR/packages/hub/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/hub/config"
+mkdir -p "$TARGET_DIR/packages/hub/prompts"
+cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/hub/prompts"
+mkdir -p "$TARGET_DIR/packages/hub/examples"
+cp -R "$SOURCE_DIR/examples/"* "$TARGET_DIR/packages/hub/examples"
+# copy .env-dist
+cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/hub/.env-dist"
 # Copy hub script
-cp ./bin/ins-hub ./packages/hub/bin
-cp ./bin/bootstrap.php ./packages/hub/bin
+mkdir -p "$TARGET_DIR/packages/hub/bin"
+cp "$SOURCE_DIR/bin/ins-hub" "$TARGET_DIR/packages/hub/bin/"
+cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/hub/bin/"
 
 echo "Done!"

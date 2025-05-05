@@ -137,6 +137,17 @@
         {
             "group": "Release Notes",
             "pages": [
+                "release-notes/v0.17.4",
+                "release-notes/v0.17.3",
+                "release-notes/v0.17.1",
+                "release-notes/v0.17.0",
+                "release-notes/v0.16.0",
+                "release-notes/v0.15.2",
+                "release-notes/v0.15.1",
+                "release-notes/v0.15.0",
+                "release-notes/v0.14.7",
+                "release-notes/v0.14.6",
+                "release-notes/v0.14.5",
                 "release-notes/v0.14.4",
                 "release-notes/v0.14.3",
                 "release-notes/v0.14.2",

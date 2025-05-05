@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-evals",
-  "version": "0.17.3",
+  "version": "0.17.5",
   "description": "LLM evaluation tools for Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",

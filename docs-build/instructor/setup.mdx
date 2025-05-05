@@ -33,7 +33,7 @@ These files can be found in the `vendor/cognesy/instructor-php` directory:
 You can publish these files to your project directory by running following command:
 
 ```bash
-./vendor/bin/instructor publish \n
+./vendor/bin/ins-setup publish \n
   --target-config-dir=<target config dir location>
   --target-prompts-dir=<target prompts dir location>
   --target-env-file=<target .env file location>
@@ -92,7 +92,7 @@ INSTRUCTOR_CONFIG_PATH='/path/to/your/config/dir/'
 For Laravel applications, it's recommended to align with the framework's directory structure:
 
 ```bash
-./vendor/bin/instructor publish \
+./vendor/bin/ins-setup publish \
     --target-config-dir=config/instructor \
     --target-prompts-dir=resources/prompts \
     --target-env-file=.env
@@ -111,7 +111,7 @@ After publishing, you can load Instructor configuration in your `config/app.php`
 For Symfony applications, use the standard Symfony directory structure:
 
 ```bash
-./vendor/bin/instructor publish \
+./vendor/bin/ins-setup publish \
     --target-config-dir=config/packages/instructor \
     --target-prompts-dir=resources/instructor/prompts \
     --target-env-file=.env
@@ -144,7 +144,7 @@ and resources to your project, so you can modify them according to your needs. Y
 automatically using the provided CLI tool.
 
 ```bash
-./vendor/bin/instructor publish
+./vendor/bin/ins-setup publish
 ```
 
 By default, this command will:
@@ -163,7 +163,7 @@ By default, this command will:
 ### Example Usage
 
 ```bash
-./vendor/bin/instructor publish \
+./vendor/bin/ins-setup publish \
     --target-config-dir=./config/instructor \
     --target-prompts-dir=./resources/prompts \
     --target-env-file=.env

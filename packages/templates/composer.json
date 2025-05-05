@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-templates",
-  "version": "0.17.3",
+  "version": "0.17.5",
   "description": "Text and chat template tools used by Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
