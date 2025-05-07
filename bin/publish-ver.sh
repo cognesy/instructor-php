@@ -41,7 +41,7 @@ PACKAGES["packages/tell"]="cognesy/instructor-tell"
 
 # 0. Build docs
 echo "Step 0: Rebuilding documentation..."
-./bin/ins-hub gendocs
+./bin/instructor-hub gendocs
 
 # 1. Update all package versions using sync-ver.sh
 echo "Step 1: Updating package versions..."

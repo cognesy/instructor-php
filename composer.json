@@ -128,13 +128,13 @@
     "tests": "@php ./vendor/bin/pest",
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
-    "ins-setup": "bin/ins-setup",
-    "ins-hub": "bin/ins-hub",
-    "ins-tell": "bin/tell"
+    "setup": "bin/instructor-setup",
+    "hub": "bin/instructor-hub",
+    "tell": "bin/tell"
   },
   "bin": [
-    "bin/ins-setup",
-    "bin/ins-hub",
+    "bin/instructor-setup",
+    "bin/instructor-hub",
     "bin/tell"
   ],
   "suggest": {

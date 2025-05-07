@@ -149,7 +149,15 @@ By default, Polyglot looks for configuration files in the `config` directory rel
 INSTRUCTOR_CONFIG_PATH=/path/to/your/config
 ```
 
+### Overriding Configuration Location
 
+You can use `Settings` class static `setPath()` method to override the value of config path set in environment variable with your own value.
+
+```php
+use Cognesy\Utils\Settings;
+
+Settings::setPath('/your/path/to/config');
+```
 
 
 ## Troubleshooting

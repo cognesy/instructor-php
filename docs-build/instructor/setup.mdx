@@ -33,7 +33,7 @@ These files can be found in the `vendor/cognesy/instructor-php` directory:
 You can publish these files to your project directory by running following command:
 
 ```bash
-./vendor/bin/ins-setup publish \n
+./vendor/bin/instructor-setup publish \n
   --target-config-dir=<target config dir location>
   --target-prompts-dir=<target prompts dir location>
   --target-env-file=<target .env file location>
@@ -92,7 +92,7 @@ INSTRUCTOR_CONFIG_PATH='/path/to/your/config/dir/'
 For Laravel applications, it's recommended to align with the framework's directory structure:
 
 ```bash
-./vendor/bin/ins-setup publish \
+./vendor/bin/instructor-setup publish \
     --target-config-dir=config/instructor \
     --target-prompts-dir=resources/prompts \
     --target-env-file=.env
@@ -111,7 +111,7 @@ After publishing, you can load Instructor configuration in your `config/app.php`
 For Symfony applications, use the standard Symfony directory structure:
 
 ```bash
-./vendor/bin/ins-setup publish \
+./vendor/bin/instructor-setup publish \
     --target-config-dir=config/packages/instructor \
     --target-prompts-dir=resources/instructor/prompts \
     --target-env-file=.env
@@ -127,7 +127,7 @@ For Symfony Flex applications, you may want to create a recipe to automate this 
 
 ### Custom Framework Location
 
-You can use environment variables to set default locations:
+You can use environment variables to set the location of configuration files:
 ```
 INSTRUCTOR_CONFIG_PATH=/path/to/config
 ```
@@ -139,12 +139,12 @@ This allows you to maintain consistent paths across your application without spe
 
 ## Using CLI Tool
 
-After installing Instructor via Composer, you'll may want to publish the library's configuration files
+After installing Instructor via Composer, you may want to publish the library's configuration files
 and resources to your project, so you can modify them according to your needs. You can do this either
-automatically using the provided CLI tool.
+manually or automatically using the provided CLI tool.
 
 ```bash
-./vendor/bin/ins-setup publish
+./vendor/bin/instructor-setup publish
 ```
 
 By default, this command will:
@@ -163,7 +163,7 @@ By default, this command will:
 ### Example Usage
 
 ```bash
-./vendor/bin/ins-setup publish \
+./vendor/bin/instructor-setup publish \
     --target-config-dir=./config/instructor \
     --target-prompts-dir=./resources/prompts \
     --target-env-file=.env
@@ -181,7 +181,7 @@ If you prefer to set up Instructor manually or need more control over the proces
 ### Configuration Files
 
 ```bash
-# Create config directory
+# Create config in your preferred directory
 mkdir -p config/instructor
 
 # Copy configuration files
@@ -192,7 +192,7 @@ These files contain LLM API connection settings and Instructor's behavior config
 ### Prompt Templates
 
 ```bash
-# Create prompts directory
+# Create prompts in your preferred directory
 mkdir -p resources/prompts
 
 # Copy prompt templates
@@ -202,7 +202,7 @@ Prompt templates define how Instructor communicates with LLMs for different task
 
 ### Environment Configuration
 
-If .env doesn't exist, copy environment template:
+If .env doesn't exist, copy the environment template:
 
 ```bash
 [ ! -f .env ] && cp vendor/cognesy/instructor-php/config/.env-dist .env

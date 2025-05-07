@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-hub",
-  "version": "0.17.5",
+  "version": "0.17.6",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -43,10 +43,10 @@
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm",
-    "hub": "bin/ins-hub"
+    "hub": "bin/instructor-hub"
   },
   "bin": [
-    "bin/ins-hub"
+    "bin/instructor-hub"
   ],
   "config": {
     "allow-plugins": {

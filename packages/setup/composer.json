@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-setup",
-  "version": "0.17.5",
+  "version": "0.17.6",
   "description": "Setup tool for Instructor PHP library",
   "license": "MIT",
   "homepage": "https://polyglotphp.com",
@@ -43,10 +43,10 @@
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm",
-    "setup": "bin/ins-setup"
+    "setup": "bin/instructor-setup"
   },
   "bin": [
-    "bin/ins-setup"
+    "bin/instructor-setup"
   ],
   "config": {
     "allow-plugins": {

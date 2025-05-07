@@ -29,7 +29,7 @@ cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/setup/.env-dist"
 # copy setup script
 rm -rf "$TARGET_DIR/packages/setup/bin"
 mkdir -p "$TARGET_DIR/packages/setup/bin"
-cp "$SOURCE_DIR/bin/ins-setup" "$TARGET_DIR/packages/setup/bin/"
+cp "$SOURCE_DIR/bin/instructor-setup" "$TARGET_DIR/packages/setup/bin/"
 cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/setup/bin/"
 
 echo " ... ./packages/http-client"
@@ -92,7 +92,7 @@ cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/hub/.env-dist"
 # Copy hub script
 rm -rf "$TARGET_DIR/packages/hub/bin"
 mkdir -p "$TARGET_DIR/packages/hub/bin"
-cp "$SOURCE_DIR/bin/ins-hub" "$TARGET_DIR/packages/hub/bin/"
+cp "$SOURCE_DIR/bin/instructor-hub" "$TARGET_DIR/packages/hub/bin/"
 cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/hub/bin/"
 
 echo "Done!"
