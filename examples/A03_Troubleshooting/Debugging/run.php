@@ -81,6 +81,7 @@ try {
     );
 } catch (Exception $e) {
     $msg = Str::limit($e->getMessage(), 250);
+    echo "EXCEPTION WE EXPECTED:\n";
     echo "\nCaught exception: " . $msg . "\n";
 }
 ?>

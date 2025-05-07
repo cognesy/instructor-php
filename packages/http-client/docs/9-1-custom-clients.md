@@ -603,7 +603,7 @@ Or you can refer to it in your LLM connections configuration:
     // llm-connections.php configuration file
     // ...
         'a21' => [
-            'providerType' => LLMProviderType::A21->value,
+            'providerType' => 'a21',
             'apiUrl' => 'https://api.ai21.com/studio/v1',
             'apiKey' => Env::get('A21_API_KEY', ''),
             'endpoint' => '/chat/completions',

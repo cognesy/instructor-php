@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
@@ -18,7 +17,7 @@ class LLMConfig
         public int $contextLength = 8000,
         public int $maxOutputLength = 4096,
         public string $httpClient = '',
-        public string $providerType = LLMProviderType::OpenAICompatible->value,
+        public string $providerType = 'openai-compatible',
     ) {}
 
     public static function load(string $connection) : LLMConfig {
@@ -34,7 +33,7 @@ class LLMConfig
             maxTokens: Settings::get('llm', "connections.$connection.defaultMaxTokens", 1024),
             contextLength: Settings::get('llm', "connections.$connection.contextLength", 8000),
             httpClient: Settings::get('llm', "connections.$connection.httpClient", ''),
-            providerType: Settings::get('llm', "connections.$connection.providerType", LLMProviderType::OpenAICompatible->value),
+            providerType: Settings::get('llm', "connections.$connection.providerType", 'openai-compatible'),
         );
     }
 }

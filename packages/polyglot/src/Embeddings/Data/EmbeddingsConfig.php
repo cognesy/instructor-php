@@ -2,7 +2,6 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
@@ -17,7 +16,7 @@ class EmbeddingsConfig
         public int $maxInputs = 0,
         public array $metadata = [],
         public string $httpClient = '',
-        public string $providerType = LLMProviderType::OpenAI->value,
+        public string $providerType = 'openai',
     ) {}
 
     public static function load(string $connection) : EmbeddingsConfig {
@@ -33,7 +32,7 @@ class EmbeddingsConfig
             maxInputs: Settings::get('embed', "connections.$connection.maxInputs", 1),
             metadata: Settings::get('embed', "connections.$connection.metadata", []),
             httpClient: Settings::get('embed', "connections.$connection.httpClient", ''),
-            providerType: Settings::get('embed', "connections.$connection.providerType", LLMProviderType::OpenAI->value),
+            providerType: Settings::get('embed', "connections.$connection.providerType", 'openai'),
         );
     }
 }

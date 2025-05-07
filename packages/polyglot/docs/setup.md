@@ -80,7 +80,6 @@ The `llm.php` configuration file contains settings for LLM providers:
 <?php
 // Example of a simplified config/llm.php
 
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 return [
@@ -88,7 +87,7 @@ return [
 
     'connections' => [
         'openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -97,7 +96,7 @@ return [
         ],
 
         'anthropic' => [
-            'providerType' => LLMProviderType::Anthropic->value,
+            'providerType' => 'anthropic',
             'apiUrl' => 'https://api.anthropic.com/v1',
             'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
             'endpoint' => '/messages',
@@ -121,7 +120,6 @@ The `embed.php` configuration file contains settings for embeddings providers:
 <?php
 // Example of a simplified config/embed.php
 
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 return [
@@ -129,7 +127,7 @@ return [
 
     'connections' => [
         'openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/embeddings',

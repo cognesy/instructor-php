@@ -119,7 +119,6 @@ You can create a custom configuration for your embeddings provider, allowing you
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 
 // Create a custom embeddings configuration
 $embeddingsConfig = new EmbeddingsConfig(
@@ -129,7 +128,7 @@ $embeddingsConfig = new EmbeddingsConfig(
     model: 'text-embedding-3-large',
     dimensions: 3072,
     maxInputs: 100,
-    providerType: LLMProviderType::OpenAI->value
+    providerType: 'openai'
 );
 
 // Use the custom configuration

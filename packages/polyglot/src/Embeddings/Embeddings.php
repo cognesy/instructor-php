@@ -12,7 +12,6 @@ use Cognesy\Polyglot\Embeddings\Drivers\GeminiDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\JinaDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAIDriver;
 use Cognesy\Polyglot\Embeddings\Traits\HasFinders;
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
@@ -24,6 +23,7 @@ class Embeddings
 {
     use HasFinders;
 
+    protected static array $drivers = [];
     protected EventDispatcher $events;
     protected EmbeddingsConfig $config;
     protected CanHandleHttpRequest $httpClient;
@@ -45,6 +45,13 @@ class Embeddings
     }
 
     // PUBLIC ///////////////////////////////////////////////////
+
+    public static function registerDriver(string $name, string|callable $driver) {
+        self::$drivers[$name] = match(true) {
+            is_string($driver) => fn($config, $httpClient, $events) => new $driver($config, $httpClient, $events),
+            is_callable($driver) => $driver,
+        };
+    }
 
     /**
      * Configures the Embeddings instance with the given connection name.
@@ -126,15 +133,24 @@ class Embeddings
      * @return CanVectorize
      */
     protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient) : CanVectorize {
-        return match ($config->providerType) {
-            LLMProviderType::Azure->value => new AzureOpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::CohereV1->value => new CohereDriver($config, $httpClient, $this->events),
-            LLMProviderType::Gemini->value => new GeminiDriver($config, $httpClient, $this->events),
-            LLMProviderType::Mistral->value => new OpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::OpenAI->value => new OpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Ollama->value => new OpenAIDriver($config, $httpClient, $this->events),
-            LLMProviderType::Jina->value => new JinaDriver($config, $httpClient, $this->events),
-            default => throw new InvalidArgumentException("Unknown client: {$config->providerType}"),
+        $type = $config->type ?? 'openai';
+        $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
+        if (!$driver) {
+            throw new InvalidArgumentException("Unknown driver: {$type}");
+        }
+        return $driver($config, $httpClient, $this->events);
+    }
+
+    protected function getBundledDriver(string $type) : ?callable {
+        return match ($type) {
+            'azure' => fn($config, $httpClient, $events) => new AzureOpenAIDriver($config, $httpClient, $events),
+            'cohere1' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
+            'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
+            'mistral' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
+            'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
+            'ollama' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
+            'jina' => fn($config, $httpClient, $events) => new JinaDriver($config, $httpClient, $events),
+            default => null,
         };
     }
 }

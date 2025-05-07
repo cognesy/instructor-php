@@ -27,7 +27,6 @@ The `llm.php` configuration file has the following structure:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 return [
@@ -48,7 +47,7 @@ return [
     'connections' => [
         // OpenAI connection
         'openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -64,7 +63,7 @@ return [
 
         // Anthropic connection
         'anthropic' => [
-            'providerType' => LLMProviderType::Anthropic->value,
+            'providerType' => 'anthropic',
             'apiUrl' => 'https://api.anthropic.com/v1',
             'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
             'endpoint' => '/messages',
@@ -89,7 +88,6 @@ The `embed.php` configuration file follows a similar pattern:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 return [
@@ -100,7 +98,7 @@ return [
     'defaultConnection' => 'openai',
     'connections' => [
         'openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/embeddings',
@@ -138,6 +136,13 @@ For embedding connections, there are additional parameters:
 - **`maxInputs`**: Maximum number of inputs that can be processed in a single request
 
 
+## Connection name vs provider type
+
+Configuration file `llm.php` contains a list of connections with the default names that might resemble provider type names, but those are separate entities.
+
+Provider type name refers to one of the supported LLM API providers and its underlying driver implementation, either specific to this provider or a generic one - compatible with OpenAI ('openai-compatible').
+
+Connection name refers to LLM API provider endpoint configuration with specific provider type, but also URL, credentials, default model name, and default model parameter values.
 
 
 ## Managing API Keys
@@ -247,7 +252,7 @@ return [
 
     'connections' => [
         'custom_openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://custom.openai-proxy.com/v1',
             'apiKey' => Env::get('CUSTOM_OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -271,7 +276,6 @@ You can also create custom configurations at runtime using the `LLMConfig` class
 <?php
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 
 // Create a custom configuration
 $customConfig = new LLMConfig(
@@ -281,7 +285,7 @@ $customConfig = new LLMConfig(
     model: 'gpt-4-turbo',
     maxTokens: 2048,
     contextLength: 128000,
-    providerType: LLMProviderType::OpenAI->value
+    providerType: 'openai'
 );
 
 // Use the custom configuration
@@ -311,7 +315,6 @@ You might want to use different providers in different environments:
 <?php
 // config/llm.php
 
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 $environment = Env::get('APP_ENV', 'production');
@@ -321,7 +324,7 @@ return [
 
     'connections' => [
         'openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -330,7 +333,7 @@ return [
         ],
 
         'ollama' => [
-            'providerType' => LLMProviderType::Ollama->value,
+            'providerType' => 'ollama',
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => '',
             'endpoint' => '/chat/completions',

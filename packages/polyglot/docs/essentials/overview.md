@@ -200,7 +200,7 @@ the client connection.
         'groq' => [ ... ],
         'mistral' => [ ... ],
         'ollama' => [
-            'providerType' => LLMProviderType::Ollama->value,
+            'providerType' => 'ollama',
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',

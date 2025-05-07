@@ -17,7 +17,6 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Env;
 
@@ -34,7 +33,7 @@ $config = new LLMConfig(
     model: 'deepseek-chat',
     maxTokens: 128,
     httpClient: 'guzzle',
-    providerType: LLMProviderType::OpenAICompatible->value,
+    providerType: 'openai-compatible',
 );
 
 // Get Instructor with the default client component overridden with your own

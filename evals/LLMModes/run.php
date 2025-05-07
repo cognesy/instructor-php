@@ -45,8 +45,8 @@ $data = new InferenceData(
 
 //Debug::setEnabled();
 //$connections = array_keys(Settings::get('llm', 'connections'));
-$connections = ['sambanova'];
-$modes = [OutputMode::Json, OutputMode::Text, OutputMode::JsonSchema, OutputMode::MdJson, OutputMode::Tools, OutputMode::Unrestricted];
+$connections = ['deepseek'];
+$modes = [OutputMode::MdJson];//, OutputMode::Text, OutputMode::JsonSchema, OutputMode::MdJson, OutputMode::Tools, OutputMode::Unrestricted];
 $stream = [false, true];
 
 $experiment = new Experiment(

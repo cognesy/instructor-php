@@ -15,7 +15,6 @@ when you want to initialize LLM client with custom values.
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Env;
 use Cognesy\Utils\Str;
@@ -28,7 +27,7 @@ $config = new LLMConfig(
     model: 'deepseek-chat',
     maxTokens: 128,
     httpClient: 'guzzle',
-    providerType: LLMProviderType::OpenAICompatible->value,
+    providerType: 'deepseek',
 );
 
 $answer = (new Inference)

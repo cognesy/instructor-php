@@ -66,6 +66,10 @@ class LLM
         return new self(connection: $connection);
     }
 
+    public static function registerDriver(string $name, string|callable $driver) : void {
+        InferenceDriverFactory::registerDriver($name, $driver);
+    }
+
     // PUBLIC //////////////////////////////////////////////////////////////////
 
     /**
