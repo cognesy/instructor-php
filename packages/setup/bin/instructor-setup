@@ -21,6 +21,7 @@ function findAutoload()
 
 require findAutoload();
 
+use RuntimeException;
 use Symfony\Component\Console\Application;
 
 $application = new Application('Instructor setup tool', '1.0.0');
