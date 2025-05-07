@@ -1,4 +1,5 @@
 <?php
+
 return [
     'http' => [
         'enabled' => false, // enable/disable debug

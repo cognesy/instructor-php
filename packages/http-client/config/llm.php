@@ -1,6 +1,5 @@
 <?php
 
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 use Cognesy\Utils\Env;
 
 return [
@@ -16,7 +15,7 @@ return [
 
     'connections' => [
         'a21' => [
-            'providerType' => LLMProviderType::A21->value,
+            'providerType' => 'a21',
             'apiUrl' => 'https://api.ai21.com/studio/v1',
             'apiKey' => Env::get('A21_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -26,7 +25,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'anthropic' => [
-            'providerType' => LLMProviderType::Anthropic->value,
+            'providerType' => 'anthropic',
             'apiUrl' => 'https://api.anthropic.com/v1',
             'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
             'endpoint' => '/messages',
@@ -40,7 +39,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'azure' => [
-            'providerType' => LLMProviderType::Azure->value,
+            'providerType' => 'azure',
             'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',
             'apiKey' => Env::get('AZURE_OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -55,7 +54,7 @@ return [
             'maxOutputLength' => 16384,
         ],
         'cerebras' => [
-            'providerType' => LLMProviderType::Cerebras->value,
+            'providerType' => 'cerebras',
             'apiUrl' => 'https://api.cerebras.ai/v1',
             'apiKey' => Env::get('CEREBRAS_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -65,7 +64,7 @@ return [
             'maxOutputLength' => 2048,
         ],
         'cohere1' => [
-            'providerType' => LLMProviderType::CohereV1->value,
+            'providerType' => 'cohere1',
             'apiUrl' => 'https://api.cohere.ai/v1',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/chat',
@@ -75,7 +74,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'cohere2' => [
-            'providerType' => LLMProviderType::CohereV2->value,
+            'providerType' => 'cohere2',
             'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/chat',
@@ -85,7 +84,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'deepseek' => [
-            'providerType' => LLMProviderType::DeepSeek->value,
+            'providerType' => 'deepseek',
             'apiUrl' => 'https://api.deepseek.com',
             'apiKey' => Env::get('DEEPSEEK_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -95,7 +94,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'deepseek-r' => [
-            'providerType' => LLMProviderType::DeepSeek->value,
+            'providerType' => 'deepseek',
             'apiUrl' => 'https://api.deepseek.com',
             'apiKey' => Env::get('DEEPSEEK_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -105,7 +104,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'fireworks' => [
-            'providerType' => LLMProviderType::Fireworks->value,
+            'providerType' => 'fireworks',
             'apiUrl' => 'https://api.fireworks.ai/inference/v1',
             'apiKey' => Env::get('FIREWORKS_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -115,7 +114,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'gemini' => [
-            'providerType' => LLMProviderType::Gemini->value,
+            'providerType' => 'gemini',
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/models/{model}:generateContent',
@@ -125,7 +124,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'gemini-oai' => [
-            'providerType' => LLMProviderType::GeminiOAI->value,
+            'providerType' => 'gemini-oai',
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta/openai',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -135,7 +134,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'groq' => [
-            'providerType' => LLMProviderType::Groq->value,
+            'providerType' => 'groq',
             'apiUrl' => 'https://api.groq.com/openai/v1',
             'apiKey' => Env::get('GROQ_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -145,7 +144,7 @@ return [
             'maxOutputLength' => 2048,
         ],
         'minimaxi' => [
-            'providerType' => LLMProviderType::Minimaxi->value,
+            'providerType' => 'minimaxi',
             'apiUrl' => 'https://api.minimaxi.chat/v1',
             'apiKey' => Env::get('MINIMAXI_API_KEY', ''),
             'endpoint' => '/text/chatcompletion_v2',
@@ -155,7 +154,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'mistral' => [
-            'providerType' => LLMProviderType::Mistral->value,
+            'providerType' => 'mistral',
             'apiUrl' => 'https://api.mistral.ai/v1',
             'apiKey' => Env::get('MISTRAL_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -165,7 +164,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'moonshot-kimi' => [
-            'providerType' => LLMProviderType::Moonshot->value,
+            'providerType' => 'moonshot',
             'apiUrl' => 'https://api.moonshot.cn/v1',
             'apiKey' => Env::get('MOONSHOT_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -175,7 +174,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'ollama' => [
-            'providerType' => LLMProviderType::Ollama->value,
+            'providerType' => 'ollama',
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -186,7 +185,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'openai' => [
-            'providerType' => LLMProviderType::OpenAI->value,
+            'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -200,7 +199,7 @@ return [
             'maxOutputLength' => 16384,
         ],
         'openrouter' => [
-            'providerType' => LLMProviderType::OpenRouter->value,
+            'providerType' => 'openrouter',
             'apiUrl' => 'https://openrouter.ai/api/v1',
             'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -210,7 +209,7 @@ return [
             'maxOutputLength' => 8192,
         ],
         'perplexity' => [
-            'providerType' => LLMProviderType::Perplexity->value,
+            'providerType' => 'perplexity',
             'apiUrl' => 'https://api.perplexity.ai',
             'apiKey' => Env::get('PERPLEXITY_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -220,7 +219,7 @@ return [
             'maxOutputLength' => 2048,
         ],
         'sambanova' => [
-            'providerType' => LLMProviderType::SambaNova->value,
+            'providerType' => 'sambanova',
             'apiUrl' => 'https://api.sambanova.ai/v1',
             'apiKey' => Env::get('SAMBANOVA_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -230,7 +229,7 @@ return [
             'maxOutputLength' => 2048,
         ],
         'together' => [
-            'providerType' => LLMProviderType::Together->value,
+            'providerType' => 'together',
             'apiUrl' => 'https://api.together.xyz/v1',
             'apiKey' => Env::get('TOGETHER_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -240,7 +239,7 @@ return [
             'maxOutputLength' => 4096,
         ],
         'xai' => [
-            'providerType' => LLMProviderType::XAi->value,
+            'providerType' => 'xai',
             'apiUrl' => 'https://api.x.ai/v1',
             'apiKey' => Env::get('XAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
