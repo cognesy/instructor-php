@@ -216,6 +216,7 @@
         {
             "group": "Polyglot \\ Advanced",
             "pages": [
+                "polyglot/advanced/json-schema",
                 "polyglot/advanced/context-caching",
                 "polyglot/advanced/connection-mgmt",
                 "polyglot/advanced/custom-config",
