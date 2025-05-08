@@ -3,7 +3,6 @@ namespace Cognesy\Instructor\Features\Core;
 
 //use Cognesy\Experimental\Module\Signature\Contracts\HasOutputSchema;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
-use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Contracts\CanProvideSchema;
 use Cognesy\Instructor\Contracts\CanReceiveEvents;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
@@ -20,6 +19,7 @@ use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use InvalidArgumentException;
 
 class ResponseModelFactory
@@ -73,12 +73,18 @@ class ResponseModelFactory
         string $toolDescription = '',
     ) : ResponseModel {
         return match(true) {
+            // object and can provide JSON schema
             is_subclass_of($requestedModel, CanProvideJsonSchema::class) => $this->fromJsonSchemaProvider($requestedModel, $toolName, $toolDescription),
+            // object and can provide Schema object
             is_subclass_of($requestedModel, CanProvideSchema::class) => $this->fromSchemaProvider($requestedModel),
+            // object and is instance of Schema (specifically - ObjectSchema)
             $requestedModel instanceof ObjectSchema => $this->fromSchema($requestedModel),
             //is_subclass_of($requestedModel, HasOutputSchema::class) => $this->fromOutputSchemaProvider($requestedModel),
+            // is object and can provide OpenAI tool call
             is_subclass_of($requestedModel, CanHandleToolSelection::class) => $this->fromToolSelectionProvider($requestedModel),
+            // is string - so will be used as class-string
             is_string($requestedModel) => $this->fromClassString($requestedModel),
+            // is array - so will be used as JSON Schema
             is_array($requestedModel) => $this->fromJsonSchema($requestedModel, $toolName, $toolDescription),
             is_object($requestedModel) => $this->fromInstance($requestedModel),
             default => throw new InvalidArgumentException('Unsupported response model type: ' . gettype($requestedModel))

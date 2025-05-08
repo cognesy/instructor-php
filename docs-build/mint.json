@@ -352,6 +352,7 @@
                 "cookbook/instructor/extras/image_to_data_anthropic",
                 "cookbook/instructor/extras/image_to_data_gemini",
                 "cookbook/instructor/extras/schema",
+                "cookbook/instructor/extras/schema",
                 "cookbook/instructor/extras/schema_dynamic",
                 "cookbook/instructor/extras/transcription_to_tasks",
                 "cookbook/instructor/extras/translate_ui_fields",
@@ -365,7 +366,9 @@
                 "cookbook/polyglot/llm_basics/llm_json",
                 "cookbook/polyglot/llm_basics/llm_json_schema",
                 "cookbook/polyglot/llm_basics/llm_md_json",
-                "cookbook/polyglot/llm_basics/llm_tools"
+                "cookbook/polyglot/llm_basics/llm_tools",
+                "cookbook/polyglot/llm_basics/json_schema_api",
+                "cookbook/polyglot/llm_basics/json_schema_api"
             ]
         },
         {
@@ -373,6 +376,8 @@
             "pages": [
                 "cookbook/polyglot/llm_advanced/context_cache_llm",
                 "cookbook/polyglot/llm_advanced/custom_llm",
+                "cookbook/polyglot/llm_advanced/custom_embeddings_driver",
+                "cookbook/polyglot/llm_advanced/custom_llm_driver",
                 "cookbook/polyglot/llm_advanced/embeddings",
                 "cookbook/polyglot/llm_advanced/parallel_calls",
                 "cookbook/polyglot/llm_advanced/reasoning_content"

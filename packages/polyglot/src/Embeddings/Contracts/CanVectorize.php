@@ -13,7 +13,7 @@ interface CanVectorize
     /**
      * Generate embeddings for the input
      *
-     * @param array $input
+     * @param array<string> $input
      * @param array $options
      * @return EmbeddingsResponse
      */

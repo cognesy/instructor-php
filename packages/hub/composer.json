@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-hub",
-  "version": "0.17.8",
+  "version": "0.17.10",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
   "license": "MIT",
   "homepage": "https://instructorphp.com",

@@ -57,7 +57,7 @@ $user = $instructor
             'input' => 'We have a meeting with John, our new user. He is 30 years old - check his profile: @jx90.',
             'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => [], 'username' => 'jx90', 'age' => 30],
         ]],
-        model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
+        //model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
         //options: ['stream' => true ]
         mode: OutputMode::Tools,
     );

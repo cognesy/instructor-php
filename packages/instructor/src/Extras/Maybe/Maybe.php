@@ -1,13 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Extras\Maybe;
 
-use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
 use Cognesy\Utils\Json\Json;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
 {

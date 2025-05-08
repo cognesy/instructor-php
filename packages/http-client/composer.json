@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-http-client",
-  "version": "0.17.8",
+  "version": "0.17.10",
   "license": "MIT",
   "description": "Polyglot's unified HTTP connectivity layer",
   "autoload": {

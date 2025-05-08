@@ -33,7 +33,6 @@ which might be helpful in the case you are using OpenAI - organization.
 <?php
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\LLMProviderType;
 
 // Create instance of OpenAI client initialized with custom parameters
 $config = new LLMConfig(
@@ -44,7 +43,7 @@ $config = new LLMConfig(
     model: 'gpt-4o-mini',
     maxTokens: 128,
     httpClient: 'guzzle',
-    providerType: LLMProviderType::OpenAI->value,
+    providerType: 'openai',
 ));
 
 /// Get Instructor with the default configuration overridden with your own

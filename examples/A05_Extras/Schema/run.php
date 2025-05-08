@@ -16,8 +16,7 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Instructor\Instructor;
 
 class City {
     public string $name;
@@ -27,28 +26,18 @@ class City {
 
 $schema = (new SchemaFactory)->schema(City::class);
 
-$data = (new Inference)
-    ->withConnection('openai')
-    ->create(
-        messages: [['role' => 'user', 'content' => 'What is capital of France? \
-        Respond with JSON data.']],
-        responseFormat: [
-            'type' => 'json_schema',
-            'description' => 'City data',
-            'json_schema' => [
-                'name' => 'city_data',
-                'schema' => $schema->toJsonSchema(),
-                'strict' => true,
-            ],
-        ],
-        options: ['max_tokens' => 64],
-        mode: OutputMode::JsonSchema,
-    )
-    ->toJson();
+$city = (new Instructor)->respond(
+    messages: "What is capital of France",
+    responseModel: $schema,
+);
 
-echo "USER: What is capital of France\n";
-echo "ASSISTANT:\n";
-dump($data);
+dump($city);
+
+assert(gettype($city) === 'object');
+assert(get_class($city) === 'City');
+assert($city->name === 'Paris');
+assert(is_int($city->population));
+assert(is_int($city->founded));
 
 ?>
 ```

@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Features\Core\Data;
 
-use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
 {

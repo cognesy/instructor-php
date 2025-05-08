@@ -7,7 +7,6 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Drivers\InferenceDriverFactory;
 use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
@@ -51,7 +50,7 @@ class LLM
         $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
 
         $this->driverFactory = new InferenceDriverFactory();
-        $this->driver = $driver ?? $this->driverFactory->make($this->config, $this->httpClient, $this->events);
+        $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
@@ -81,7 +80,7 @@ class LLM
      */
     public function withConfig(LLMConfig $config): self {
         $this->config = $config;
-        $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
         return $this;
     }
 
@@ -97,7 +96,7 @@ class LLM
             return $this;
         }
         $this->config = LLMConfig::load($connection);
-        $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
         return $this;
     }
 
@@ -110,7 +109,7 @@ class LLM
      */
     public function withHttpClient(CanHandleHttpRequest $httpClient): self {
         $this->httpClient = $httpClient;
-        $this->driver = $this->driverFactory->make($this->config, $this->httpClient, $this->events);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
         return $this;
     }
 

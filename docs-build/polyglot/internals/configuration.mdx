@@ -22,7 +22,7 @@ class LLMConfig {
         public int $contextLength = 8000,
         public int $maxOutputLength = 4096,
         public string $httpClient = '',
-        public string $providerType = LLMProviderType::OpenAICompatible->value
+        public string $providerType = 'openai-compatible'
     ) { ... }
 
     public static function load(string $connection): LLMConfig { ... }
@@ -44,7 +44,7 @@ class EmbeddingsConfig {
         public int $maxInputs = 0,
         public array $metadata = [],
         public string $httpClient = '',
-        public string $providerType = LLMProviderType::OpenAI->value
+        public string $providerType = 'openai'
     ) { ... }
 
     public static function load(string $connection): EmbeddingsConfig { ... }

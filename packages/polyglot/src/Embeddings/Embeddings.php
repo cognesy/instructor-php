@@ -6,11 +6,6 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
-use Cognesy\Polyglot\Embeddings\Drivers\AzureOpenAIDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\CohereDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\GeminiDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\JinaDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\OpenAIDriver;
 use Cognesy\Polyglot\Embeddings\Traits\HasFinders;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
@@ -23,11 +18,11 @@ class Embeddings
 {
     use HasFinders;
 
-    protected static array $drivers = [];
     protected EventDispatcher $events;
     protected EmbeddingsConfig $config;
     protected CanHandleHttpRequest $httpClient;
     protected CanVectorize $driver;
+    protected EmbeddingsDriverFactory $driverFactory;
 
     public function __construct(
         string               $connection = '',
@@ -41,16 +36,14 @@ class Embeddings
             ?: Settings::get('embed', "defaultConnection")
         );
         $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
-        $this->driver = $driver ?? $this->getDriver($this->config, $this->httpClient);
+        $this->driverFactory = new EmbeddingsDriverFactory($this->events);
+        $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
     }
 
     // PUBLIC ///////////////////////////////////////////////////
 
     public static function registerDriver(string $name, string|callable $driver) {
-        self::$drivers[$name] = match(true) {
-            is_string($driver) => fn($config, $httpClient, $events) => new $driver($config, $httpClient, $events),
-            is_callable($driver) => $driver,
-        };
+        EmbeddingsDriverFactory::registerDriver($name, $driver);
     }
 
     /**
@@ -60,7 +53,7 @@ class Embeddings
      */
     public function withConnection(string $connection) : self {
         $this->config = EmbeddingsConfig::load($connection);
-        $this->driver = $this->getDriver($this->config, $this->httpClient);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
         return $this;
     }
 
@@ -71,7 +64,7 @@ class Embeddings
      */
     public function withConfig(EmbeddingsConfig $config) : self {
         $this->config = $config;
-        $this->driver = $this->getDriver($this->config, $this->httpClient);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
         return $this;
     }
 
@@ -93,7 +86,7 @@ class Embeddings
      */
     public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
         $this->httpClient = $httpClient;
-        $this->driver = $this->getDriver($this->config, $this->httpClient);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
         return $this;
     }
 
@@ -121,36 +114,5 @@ class Embeddings
             throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config->maxInputs}");
         }
         return $this->driver->vectorize($input, $options);
-    }
-
-    // INTERNAL /////////////////////////////////////////////////
-
-    /**
-     * Returns the driver for the specified configuration.
-     *
-     * @param EmbeddingsConfig $config
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient
-     * @return CanVectorize
-     */
-    protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient) : CanVectorize {
-        $type = $config->type ?? 'openai';
-        $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
-        if (!$driver) {
-            throw new InvalidArgumentException("Unknown driver: {$type}");
-        }
-        return $driver($config, $httpClient, $this->events);
-    }
-
-    protected function getBundledDriver(string $type) : ?callable {
-        return match ($type) {
-            'azure' => fn($config, $httpClient, $events) => new AzureOpenAIDriver($config, $httpClient, $events),
-            'cohere1' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
-            'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
-            'mistral' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
-            'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
-            'ollama' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
-            'jina' => fn($config, $httpClient, $events) => new JinaDriver($config, $httpClient, $events),
-            default => null,
-        };
     }
 }

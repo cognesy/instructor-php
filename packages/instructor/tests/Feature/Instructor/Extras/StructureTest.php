@@ -233,22 +233,22 @@ it('creates structure from JSON Schema', function() {
 
     expect($structure->fields())->toHaveCount(8);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
-    expect($structure->field('integerProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_INT);
+    expect($structure->field('integerProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_INT);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
-    expect($structure->field('stringProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('stringProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('boolProperty')->name())->toBe('boolProperty');
-    expect($structure->field('boolProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_BOOL);
+    expect($structure->field('boolProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_BOOL);
     expect($structure->field('floatProperty')->name())->toBe('floatProperty');
-    expect($structure->field('floatProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_FLOAT);
+    expect($structure->field('floatProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_FLOAT);
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
-    expect($structure->field('enumProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('enumProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('optionProperty')->name())->toBe('optionProperty');
-    expect($structure->field('optionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('optionProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
-    expect($structure->field('arrayProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
+    expect($structure->field('arrayProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_ARRAY);
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
-    expect($structure->field('collectionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_COLLECTION);
-    expect($structure->field('collectionProperty')->typeDetails()->nestedType->type)->toBe(TypeDetails::PHP_ENUM);
+    expect($structure->field('collectionProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_COLLECTION);
+    expect($structure->field('collectionProperty')->typeDetails()->nestedType->type())->toBe(TypeDetails::PHP_ENUM);
     expect($structure->field('collectionProperty')->typeDetails()->nestedType->class)->toBe(TestEnum::class);
     expect($structure->field('collectionProperty')->typeDetails()->nestedType->enumValues())->toBe(['A', 'B']);
 });
@@ -267,21 +267,21 @@ it('creates structure from array', function() {
 
     expect($structure->fields())->toHaveCount(8);
     expect($structure->field('integerProperty')->name())->toBe('integerProperty');
-    expect($structure->field('integerProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_INT);
+    expect($structure->field('integerProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_INT);
     expect($structure->field('stringProperty')->name())->toBe('stringProperty');
-    expect($structure->field('stringProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('stringProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('boolProperty')->name())->toBe('boolProperty');
-    expect($structure->field('boolProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_BOOL);
+    expect($structure->field('boolProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_BOOL);
     expect($structure->field('floatProperty')->name())->toBe('floatProperty');
-    expect($structure->field('floatProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_FLOAT);
+    expect($structure->field('floatProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_FLOAT);
     expect($structure->field('enumProperty')->name())->toBe('enumProperty');
-    expect($structure->field('enumProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('enumProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('optionProperty')->name())->toBe('optionProperty');
-    expect($structure->field('optionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_STRING);
+    expect($structure->field('optionProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_STRING);
     expect($structure->field('arrayProperty')->name())->toBe('arrayProperty');
-    expect($structure->field('arrayProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
+    expect($structure->field('arrayProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_ARRAY);
     expect($structure->field('collectionProperty')->name())->toBe('collectionProperty');
-    expect($structure->field('collectionProperty')->typeDetails()->type)->toBe(TypeDetails::PHP_ARRAY);
+    expect($structure->field('collectionProperty')->typeDetails()->type())->toBe(TypeDetails::PHP_ARRAY);
 });
 
 it('handles structure with collection field', function() {

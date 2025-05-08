@@ -10,6 +10,7 @@ use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Exception;
 
@@ -64,6 +65,13 @@ class ResponseDeserializer
                 return $result;
             }
         }
-        return Result::failure('No deserializer found for the response');
+
+        // no deserializer - return an anonymous object
+        return Result::success($this->toAnonymousObject($json));
+        //return Result::failure('No deserializer found for the response');
+    }
+
+    private function toAnonymousObject(string $json) : object {
+        return json_decode($json);
     }
 }

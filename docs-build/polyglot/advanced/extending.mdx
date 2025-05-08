@@ -69,7 +69,7 @@ Then, modify the `Embeddings` class to create your driver:
 protected function getDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient): CanVectorize {
     return match ($config->providerType) {
         // Existing providers...
-        LLMProviderType::NewProvider->value => new NewEmbeddingsDriver($config, $httpClient, $this->events),
+        'new-provider' => new NewEmbeddingsDriver($config, $httpClient, $this->events),
         default => throw new InvalidArgumentException("Unknown client: {$config->providerType}"),
     };
 }

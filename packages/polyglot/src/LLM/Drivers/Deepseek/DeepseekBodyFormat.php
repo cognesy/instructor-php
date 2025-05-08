@@ -24,12 +24,13 @@ class DeepseekBodyFormat implements CanMapRequestBody
         array        $options,
         OutputMode   $mode,
     ): array {
+        $model = $model ?: $this->config->model;
         $messages = match($model) {
             'deepseek-reasoner' => Messages::fromArray($messages)->toMergedPerRole()->toArray(),
             default => $messages,
         };
         $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
+            'model' => $model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($messages),
         ]), $options);

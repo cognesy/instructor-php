@@ -143,16 +143,16 @@ it('creates Schema object from JSON Schema array - scalar props', function ($jso
 
     expect($schema->properties['stringProperty']->name)->toBe('stringProperty');
     expect($schema->properties['stringProperty']->description)->toBe('String property');
-    expect($schema->properties['stringProperty']->typeDetails->type)->toBe('string');
+    expect($schema->properties['stringProperty']->typeDetails->type())->toBe('string');
     expect($schema->properties['integerProperty']->name)->toBe('integerProperty');
     expect($schema->properties['integerProperty']->description)->toBe('Integer property');
-    expect($schema->properties['integerProperty']->typeDetails->type)->toBe('int');
+    expect($schema->properties['integerProperty']->typeDetails->type())->toBe('int');
     expect($schema->properties['boolProperty']->name)->toBe('boolProperty');
     expect($schema->properties['boolProperty']->description)->toBe('Boolean property');
-    expect($schema->properties['boolProperty']->typeDetails->type)->toBe('bool');
+    expect($schema->properties['boolProperty']->typeDetails->type())->toBe('bool');
     expect($schema->properties['floatProperty']->name)->toBe('floatProperty');
     expect($schema->properties['floatProperty']->description)->toBe('Float property');
-    expect($schema->properties['floatProperty']->typeDetails->type)->toBe('float');
+    expect($schema->properties['floatProperty']->typeDetails->type())->toBe('float');
 })->with('schema_converter_json');
 
 it('creates Schema object from JSON Schema array - enum props', function ($jsonSchema) {
@@ -161,7 +161,7 @@ it('creates Schema object from JSON Schema array - enum props', function ($jsonS
 
     expect($schema->properties['enumProperty']->name)->toBe('enumProperty');
     expect($schema->properties['enumProperty']->description)->toBe('Enum property');
-    expect($schema->properties['enumProperty']->typeDetails->type)->toBe('enum');
+    expect($schema->properties['enumProperty']->typeDetails->type())->toBe('enum');
     expect($schema->properties['enumProperty']->typeDetails->class)->toBe('Cognesy\Instructor\Tests\Examples\SchemaConverter\TestEnum');
     expect($schema->properties['enumProperty']->typeDetails->enumType)->toBe('string');
     expect($schema->properties['enumProperty']->typeDetails->enumValues)->toBe(['one', 'two', 'three']);
@@ -174,12 +174,12 @@ it('creates Schema object from JSON Schema array - object props', function ($jso
 
     expect($schema->properties['objectProperty']->name)->toBe('objectProperty');
     expect($schema->properties['objectProperty']->description)->toBe('Object property');
-    expect($schema->properties['objectProperty']->typeDetails->type)->toBe('object');
+    expect($schema->properties['objectProperty']->typeDetails->type())->toBe('object');
     expect($schema->properties['objectProperty']->typeDetails->class)->toBe('Cognesy\Instructor\Tests\Examples\SchemaConverter\TestNestedObject');
     expect($schema->properties['objectProperty']->properties['nestedStringProperty']->name)->toBe('nestedStringProperty');
-    expect($schema->properties['objectProperty']->properties['nestedStringProperty']->typeDetails->type)->toBe('string');
+    expect($schema->properties['objectProperty']->properties['nestedStringProperty']->typeDetails->type())->toBe('string');
     expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->name)->toBe('nestedObjectProperty');
-    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->typeDetails->type)->toBe('object');
+    expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->typeDetails->type())->toBe('object');
     expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->typeDetails->class)->toBe('Cognesy\Instructor\Tests\Examples\SchemaConverter\TestDoubleNestedObject');
     expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->properties['nestedNestedStringProperty']->name)->toBe('nestedNestedStringProperty');
     expect($schema->properties['objectProperty']->properties['nestedObjectProperty']->properties['nestedNestedStringProperty']->typeDetails->type)->toBe('string');

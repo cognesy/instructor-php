@@ -2,7 +2,7 @@
 
 namespace Cognesy\Evals\Executors\Data;
 
-use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class InferenceSchema implements CanProvideJsonSchema
 {

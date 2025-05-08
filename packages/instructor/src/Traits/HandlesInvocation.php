@@ -23,7 +23,7 @@ use Exception;
 trait HandlesInvocation
 {
     /**
-     * Generates a response model via LLM based on provided string or OpenAI style message array
+     * Generates a response model via LLM based on the provided string or OpenAI style message array
      *
      * @param string|array $messages Text or chat sequence to be used for generating the response.
      * @param string|array|object $input Data or input to send with the request (optional).

@@ -145,6 +145,10 @@ Provider type name refers to one of the supported LLM API providers and its unde
 Connection name refers to LLM API provider endpoint configuration with specific provider type, but also URL, credentials, default model name, and default model parameter values.
 
 
+
+
+
+
 ## Managing API Keys
 
 API keys should be stored securely and never committed to your codebase. Polyglot uses environment variables for API keys.
@@ -234,6 +238,8 @@ $response = $inference->create(
     ]
 )->toText();
 ```
+
+
 
 
 
@@ -345,4 +351,51 @@ return [
         // Other connections...
     ],
 ];
+```
+
+
+
+
+## Creating Custom Inference Drivers
+
+In this example we will use an existing driver bundled with Polyglot (OpenAIDriver) as a base class for our custom driver.
+
+The driver can be any class that implements `CanHandleInference` interface.
+
+```php
+// we register new provider type - 'custom-driver'
+LLM::registerDriver('custom-driver', fn($config, $httpClient) => new class($config, $httpClient) extends OpenAIDriver {
+    public function handle(InferenceRequest $request): HttpClientResponse {
+        // some extra functionality to demonstrate our driver is being used
+        echo ">>> Handling request...\n";
+        return parent::handle($request);
+    }
+}
+);
+
+// in configuration we use newly defined provider type - 'custom-driver'
+$config = new LLMConfig(
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: Env::get('OPENAI_API_KEY'),
+    endpoint: '/chat/completions',
+    model: 'gpt-4o-mini',
+    maxTokens: 128,
+    httpClient: 'guzzle',
+    providerType: 'custom-driver',
+);
+
+// now we're calling inference using our configuration
+$answer = (new Inference)
+    ->withConfig($config)
+    ->create(
+        messages: [['role' => 'user', 'content' => 'What is the capital of France']],
+        options: ['max_tokens' => 64]
+    )
+    ->toText();
+```
+
+An alternative way of providing driver definition is via class-string:
+
+```php
+LLM::registerDriver('another-driver', AnotherDriver::class);
 ```

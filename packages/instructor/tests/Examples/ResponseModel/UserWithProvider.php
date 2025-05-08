@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Tests\Examples\ResponseModel;
 
-use Cognesy\Instructor\Contracts\CanProvideJsonSchema;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class UserWithProvider implements CanProvideJsonSchema {
     public function toJsonSchema() : array {
