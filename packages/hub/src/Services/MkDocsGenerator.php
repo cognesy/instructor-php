@@ -5,7 +5,7 @@ use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Views\DocGenView;
 use Cognesy\Utils\Str;
 
-class DocGenerator
+class MkDocsGenerator
 {
     private DocGenView $view;
 
