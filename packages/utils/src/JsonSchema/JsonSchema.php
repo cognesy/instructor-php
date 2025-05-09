@@ -4,12 +4,35 @@ namespace Cognesy\Utils\JsonSchema;
 
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
+/**
+ * JSON Schema definition API - helps to specify JSON Schema
+ * using static factory and fluent methods.
+ *
+ * EXAMPLE #1:
+ *
+ *    $schema = JsonSchema::object(
+ *        name: 'User',
+ *        description: 'User object',
+ *        properties: [
+ *            JsonSchema::string(name: 'id'),
+ *            JsonSchema::string(name: 'name'),
+ *        ],
+ *        required: ['id', 'name'],
+ *    );
+ *
+ * EXAMPLE #2:
+ *
+ *    $schema2 = JsonSchema::array('list')
+ *        ->withItemSchema(JsonSchema::string())
+ *        ->withRequired(['id', 'name']);
+ *
+ */
 class JsonSchema implements CanProvideJsonSchema
 {
-    use \Cognesy\Utils\JsonSchema\Traits\HandlesAccess;
-    use \Cognesy\Utils\JsonSchema\Traits\HandlesMutation;
-    use \Cognesy\Utils\JsonSchema\Traits\HandlesTypeFactory;
-    use \Cognesy\Utils\JsonSchema\Traits\HandlesTransformation;
+    use Traits\HandlesAccess;
+    use Traits\HandlesMutation;
+    use Traits\HandlesTypeFactory;
+    use Traits\HandlesTransformation;
 
     public string $type;
     public string $name;
@@ -157,18 +180,3 @@ class JsonSchema implements CanProvideJsonSchema
         return $keyedProperties;
     }
 }
-
-//EXAMPLES:
-//$schema = JsonSchema::object(
-//    name: 'User',
-//    description: 'User object',
-//    properties: [
-//        JsonSchema::string(name: 'id'),
-//        JsonSchema::string(name: 'name'),
-//    ],
-//    required: ['id', 'name'],
-//);
-//
-//$schema2 = JsonSchema::array('list')
-//    ->withItemSchema(JsonSchema::string())
-//    ->withRequired(['id', 'name']);

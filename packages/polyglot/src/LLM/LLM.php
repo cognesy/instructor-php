@@ -65,6 +65,11 @@ class LLM
         return new self(connection: $connection);
     }
 
+    public static function fromDsn(string $dsn): self {
+        $config = LLMConfig::fromDsn($dsn);
+        return new self(config: $config);
+    }
+
     public static function registerDriver(string $name, string|callable $driver) : void {
         InferenceDriverFactory::registerDriver($name, $driver);
     }

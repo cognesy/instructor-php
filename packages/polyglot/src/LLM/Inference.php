@@ -18,6 +18,7 @@ class Inference
     protected EventDispatcher $events;
     protected LLM $llm;
     protected CachedContext $cachedContext;
+    protected InferenceRequest $request;
 
     /**
      * Constructor for initializing dependencies and configurations.
@@ -33,6 +34,7 @@ class Inference
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->llm = $llm ?? new LLM(events: $this->events);
+        $this->request = new InferenceRequest();
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
@@ -62,6 +64,10 @@ class Inference
                 mode: OutputMode::Text,
             )
             ->toText();
+    }
+
+    public static function fromDsn(string $dsn): self {
+        return (new self)->withConfig(LLMConfig::fromDsn($dsn));
     }
 
     // PUBLIC //////////////////////////////////////////////////////////////////
@@ -220,5 +226,13 @@ class Inference
             mode: $mode,
             cachedContext: $this->cachedContext ?? null
         ));
+    }
+
+    public function llm() : LLM {
+        return $this->llm;
+    }
+
+    public function config() : LLMConfig {
+        return $this->llm->config();
     }
 }

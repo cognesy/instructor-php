@@ -46,6 +46,14 @@ class Embeddings
         EmbeddingsDriverFactory::registerDriver($name, $driver);
     }
 
+    public static function connection(string $connection = ''): self {
+        return new self(connection: $connection);
+    }
+
+    public static function fromDsn(string $dsn): self {
+        return new self(config: EmbeddingsConfig::fromDsn($dsn));
+    }
+
     /**
      * Configures the Embeddings instance with the given connection name.
      * @param string $connection

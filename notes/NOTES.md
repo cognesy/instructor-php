@@ -1,4 +1,4 @@
-# NOTES
+# CONSIDERATIONS
 
 ## Better control over underlying prompts
 
@@ -21,11 +21,16 @@
 - Addon: Generate unstructured, then format to structured - to improve reasoning
 - Addon: MCP support as addon
 
-## Partially done
-
-- Reasoning traces support in response objects (done: Deepseek, Anthropic)
 
 # BACKLOG
+
+## Refactorings
+
+- More modular design - serialization, validation, transformation should be a configurable pipeline
+- Rework Events so they have toArray() method, make __toString() use it
+- Role - should be enum, not string?
+- String >> Array >> Class - for example: prompts (they should be classes)
+- Prompt - should be a class, not a string; prompt translates to Section/Messages?; alt name: Instruction(s)
 
 ## Addon: Evals
 
@@ -50,14 +55,7 @@
 
 - Indexing to vector DB
 - pgvector? Scout + MeiliSearch / typesense?
-
-## Refactorings
-
-- More modular design - serialization, validation, transformation should be a configurable pipeline
-- Rework Events so they have toArray() method, make __toString() use it
-- Role - should be enum, not string?
-- String >> Array >> Class - for example: prompts (they should be classes)
-- Prompt - should be a class, not a string; prompt translates to Section/Messages; alt name: Instruction(s)
+- SEAL integration
 
 ## Infrastructure
 
@@ -89,10 +87,16 @@
 ## Docs
 
 - Better docs: add 'Output' section to each example, generate it and include in docs, so reader can see what they can expect
+- Extract code examples from docs to be executable (and stored as separate scripts; front-matter or comments to mark sections to be displayed or hidden in the documentation rendered to the user), so we are sure they are working as the library code is changing
+- How can we make the docs more modular, less rigid - so an individual file focuses on one specific topic or problem; how then we structure the docs then and turn them into logically connected flow, so the developer (persona) is not lost
+- Persona based docs - identify main types of users and core scenarios/use-cases, so the examples and docs are relevant to them
+- Examples from test cases
+- Examples from last release (release notes, diff between tags)
+- Throw-away docs - just for updates or situation specific; not included in the main documentation website
 
+# PARTIALLY DONE
 
-# Partially done
-
+- Reasoning traces support in response objects (done: Deepseek, Anthropic)
 - Better API for image / audio inputs
 - Make system, prompt, script etc. available for configuration by user
 - How to track API rate limits across multiple requests / parallel executions
@@ -104,7 +108,7 @@
 
 
 
-# Brain dump
+# BRAIN DUMP
 
 - Streaming JSON parser - https://github.com/kelunik/streaming-json
 - Retry - https://github.com/kelunik/retry
@@ -150,7 +154,7 @@
 
 
 
-# Other
+# OTHER
 
 ## Gaps or issues in docs or code
 
@@ -166,7 +170,7 @@ Catch up with the latest additions.
 
 
 
-# Done
+# DONE (TO BE CLEANED UP)
 
 > NOTE: Move notes here
 
@@ -178,4 +182,3 @@ Catch up with the latest additions.
 
 - Simplify contracts - currently 5 (!) contracts for observations
 - Add input, output, etc. tokens default metrics
-

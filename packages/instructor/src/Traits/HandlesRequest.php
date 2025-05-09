@@ -28,7 +28,17 @@ trait HandlesRequest
         return (new Instructor)->withConnection($connection);
     }
 
+    public static function fromDsn(string $dsn) : Instructor {
+        return (new Instructor)->withDsn($dsn);
+    }
+
     // PUBLIC /////////////////////////////////////////////////////////////////////
+
+    public function withDsn(string $dsn) : static {
+        $llm = LLM::fromDsn($dsn);
+        $this->llm = $llm;
+        return $this;
+    }
 
     public function withLLM(LLM $llm) : static {
         $this->llm = $llm;
