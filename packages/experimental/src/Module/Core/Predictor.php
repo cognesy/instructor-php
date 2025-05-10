@@ -8,7 +8,7 @@ use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesFeedback;
 use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesParametrization;
 use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesPrediction;
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Inference;
 

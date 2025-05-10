@@ -16,6 +16,8 @@ class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
         array        $options = [],
         OutputMode   $mode = OutputMode::Text,
     ) : array {
+        $options = array_merge($this->config->options, $options);
+
         $body = parent::map($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
 
         $body['max_completion_tokens'] = $body['max_tokens'] ?? -1;

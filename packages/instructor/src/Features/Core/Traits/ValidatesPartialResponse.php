@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Features\Core\Traits;
 
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;

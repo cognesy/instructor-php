@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor\Features\Core;
 
+use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\Sequenceable;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\PartialsGenerator\ChunkReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialJsonReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\PartialResponseGenerated;
@@ -12,8 +14,6 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedResponseReceived;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
-use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;

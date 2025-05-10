@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
-use Cognesy\Utils\Dsn\Dsn;
+use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
@@ -59,8 +59,8 @@ class LLMConfig
         );
     }
 
-    public static function fromDsn(string $dsn) : LLMConfig {
-        $data = Dsn::fromString($dsn)->params();
+    public static function fromDSN(string $dsn) : LLMConfig {
+        $data = DSN::fromString($dsn)->params();
         $connection = $data['connection'] ?? '';
         return match(true) {
             !empty($connection) => self::withOverrides(self::load($connection), $data),

@@ -3,8 +3,8 @@
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;

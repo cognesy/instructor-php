@@ -20,9 +20,9 @@ We can implement SG-ICL using Instructor as seen below.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Features\Core\Data\Example;
 use Cognesy\Instructor\Instructor;
 
 enum ReviewSentiment : string {

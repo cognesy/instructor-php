@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Features\Core;
 
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;

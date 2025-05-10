@@ -24,6 +24,8 @@ class OpenAICompatibleBodyFormat implements CanMapRequestBody
         array        $options = [],
         OutputMode   $mode = OutputMode::Text,
     ) : array {
+        $options = array_merge($this->config->options, $options);
+
         $request = array_merge(array_filter([
             'model' => $model ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,

@@ -25,6 +25,8 @@ class GeminiBodyFormat implements CanMapRequestBody
         array $options,
         OutputMode $mode
     ): array {
+        $options = array_merge($this->config->options, $options);
+
         $request = array_filter([
             'systemInstruction' => $this->toSystem($messages),
             'contents' => $this->messageFormat->map(Messages::fromArray($messages)->exceptRoles(['system'])->toArray()),

@@ -25,6 +25,8 @@ class AnthropicBodyFormat implements CanMapRequestBody
         array $options,
         OutputMode $mode
     ): array {
+        $options = array_merge($this->config->options, $options);
+
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
         unset($options['parallel_tool_calls']);
 

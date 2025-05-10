@@ -4,6 +4,8 @@ namespace Cognesy\InstructorHub\Services;
 
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Utils\Mintlify\MintlifyIndex;
+use Cognesy\InstructorHub\Utils\Mintlify\NavigationGroup;
+use Cognesy\InstructorHub\Utils\Mintlify\NavigationItem;
 use Cognesy\InstructorHub\Views\DocGenView;
 use Cognesy\Utils\BasePath;
 use Cognesy\Utils\Files;
@@ -52,32 +54,42 @@ class MintlifyDocGenerator
         $this->copySubpackageDocs('http-client', 'docs-build/http');
         Files::renameFileExtensions($this->docsTargetDir, 'md', 'mdx');
 
-        $groups = $this->examples->getExampleGroups();
-        foreach ($groups as $group) {
-            foreach ($group->examples as $example) {
-                $this->copyExample($example);
-            }
-        }
         // make backup copy of mint.json
         //$currentDateTime = date('Y-m-d_H-i-s');
         //$this->copy($this->mintlifyIndexFile, $this->mintlifyIndexFile . '_' . $currentDateTime);
-        // update mint.json
-        $this->updateHubIndex($groups);
+
+        // update mintlify index
+        $this->updateHubIndex();
+
         $this->view->renderResult(true);
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
-    private function updateHubIndex(array $exampleGroups) : bool {
+    private function updateHubIndex() : bool {
         // get the content of the hub index
         $index = MintlifyIndex::fromFile($this->mintlifySourceIndexFile);
         if ($index === false) {
             throw new \Exception("Failed to read hub index file");
         }
+
+        // release notes
+        $releaseNotesGroup = $this->getReleaseNotesGroup();
+        $index->navigation->removeGroups(['Release Notes']); // TODO: remove this after tests
+        $index->navigation->appendGroup($releaseNotesGroup);
+
+        // examples
+        $exampleGroups = $this->examples->getExampleGroups();
+        foreach ($exampleGroups as $exampleGroup) {
+            foreach ($exampleGroup->examples as $example) {
+                $this->copyExample($example);
+            }
+        }
         $index->navigation->removeGroups($this->dynamicGroups); // TODO: remove this after tests
         foreach ($exampleGroups as $exampleGroup) {
             $index->navigation->appendGroup($exampleGroup->toNavigationGroup());
         }
+
         return $index->saveFile($this->mintlifyTargetIndexFile);
     }
 
@@ -124,5 +136,29 @@ class MintlifyDocGenerator
             );
         }
         return true;
+    }
+
+    private function getReleaseNotesGroup() : NavigationGroup
+    {
+        // get all .mdx files from docs/release-notes
+        $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx'));
+        $pages = [];
+        foreach ($releaseNotesFiles as $releaseNotesFile) {
+            // get file name without extension
+            $fileName = pathinfo($releaseNotesFile, PATHINFO_FILENAME);
+            $pages[] = str_replace('v', '', $fileName);
+        }
+
+        // sort by version x.y.z in descending order
+        usort($pages, function($a, $b) {
+            return version_compare($b, $a);
+        });
+
+        // create release notes group
+        $releaseNotesGroup = new NavigationGroup('Release Notes');
+        foreach ($pages as $page) {
+            $releaseNotesGroup->pages[] = NavigationItem::fromString('release-notes/v' . $page);
+        }
+        return $releaseNotesGroup;
     }
 }

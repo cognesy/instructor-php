@@ -3,7 +3,7 @@
 namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Inference;
 

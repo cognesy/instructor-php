@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
+use Cognesy\Instructor\Contracts\CanGenerateResponse;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Response\ResponseConvertedToObject;
 use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
-use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;

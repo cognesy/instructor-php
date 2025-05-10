@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 

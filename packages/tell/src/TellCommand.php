@@ -33,7 +33,7 @@ class TellCommand extends Command
 
         $response = match(true) {
             empty($dsn) => $this->inferenceFromConnection($connection, $prompt, $model),
-            default => $this->inferenceFromDsn($dsn, $prompt),
+            default => $this->inferenceFromDSN($dsn, $prompt),
         };
 
         foreach ($response->stream()->responses() as $response) {
@@ -44,7 +44,7 @@ class TellCommand extends Command
         return Command::SUCCESS;
     }
 
-    protected function inferenceFromDsn(string $dsn, string $prompt) : InferenceResponse {
+    protected function inferenceFromDSN(string $dsn, string $prompt) : InferenceResponse {
         return Inference
             ::fromDsn($dsn)
             ->create(

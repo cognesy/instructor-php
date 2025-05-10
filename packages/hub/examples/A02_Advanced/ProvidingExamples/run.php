@@ -19,7 +19,7 @@ is expected to be a JSON object.
 require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Instructor\Features\Core\Data\Example;
+use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Instructor;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 

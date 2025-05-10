@@ -24,6 +24,8 @@ class CohereV2BodyFormat implements CanMapRequestBody
         array        $options = [],
         OutputMode   $mode = OutputMode::Text,
     ) : array {
+        $options = array_merge($this->config->options, $options);
+
         unset($options['parallel_tool_calls']);
 
         $request = array_merge(array_filter([

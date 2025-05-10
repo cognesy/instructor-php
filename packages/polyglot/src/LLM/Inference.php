@@ -67,7 +67,7 @@ class Inference
     }
 
     public static function fromDsn(string $dsn): self {
-        return (new self)->withConfig(LLMConfig::fromDsn($dsn));
+        return (new self)->withConfig(LLMConfig::fromDSN($dsn));
     }
 
     // PUBLIC //////////////////////////////////////////////////////////////////
@@ -228,10 +228,20 @@ class Inference
         ));
     }
 
+    /**
+     * Retrieves the LLM instance.
+     *
+     * @return LLM The LLM instance.
+     */
     public function llm() : LLM {
         return $this->llm;
     }
 
+    /**
+     * Retrieves the LLM configuration instance.
+     *
+     * @return LLMConfig The LLM configuration instance.
+     */
     public function config() : LLMConfig {
         return $this->llm->config();
     }

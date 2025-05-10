@@ -24,6 +24,8 @@ class CohereV1BodyFormat implements CanMapRequestBody
         array $options,
         OutputMode $mode
     ): array {
+        $options = array_merge($this->config->options, $options);
+
         unset($options['parallel_tool_calls']);
 
         $system = '';

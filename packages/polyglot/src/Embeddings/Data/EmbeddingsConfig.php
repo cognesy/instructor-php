@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
-use Cognesy\Utils\Dsn\Dsn;
+use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
@@ -52,8 +52,8 @@ class EmbeddingsConfig
         );
     }
 
-    public static function fromDsn(string $dsn) : EmbeddingsConfig {
-        $data = Dsn::fromString($dsn)->params();
+    public static function fromDSN(string $dsn) : EmbeddingsConfig {
+        $data = DSN::fromString($dsn)->params();
         $connection = $data['connection'] ?? '';
         return match(true) {
             !empty($connection) => self::withOverrides(self::load($connection), $data),

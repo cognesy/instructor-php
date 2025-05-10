@@ -50,8 +50,8 @@ class Embeddings
         return new self(connection: $connection);
     }
 
-    public static function fromDsn(string $dsn): self {
-        return new self(config: EmbeddingsConfig::fromDsn($dsn));
+    public static function fromDSN(string $dsn): self {
+        return new self(config: EmbeddingsConfig::fromDSN($dsn));
     }
 
     /**

@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\Instructor\Features\Core;
 
+use Cognesy\Instructor\Contracts\CanGeneratePartials;
+use Cognesy\Instructor\Contracts\CanGenerateResponse;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Features\Core\Contracts\CanGeneratePartials;
-use Cognesy\Instructor\Features\Core\Contracts\CanGenerateResponse;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequest;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;

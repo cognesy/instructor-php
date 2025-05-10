@@ -1,8 +1,8 @@
 <?php
 
+use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Features\Core\Data\ResponseModel;
 use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;

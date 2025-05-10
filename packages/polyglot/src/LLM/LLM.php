@@ -65,8 +65,8 @@ class LLM
         return new self(connection: $connection);
     }
 
-    public static function fromDsn(string $dsn): self {
-        $config = LLMConfig::fromDsn($dsn);
+    public static function fromDSN(string $dsn): self {
+        $config = LLMConfig::fromDSN($dsn);
         return new self(config: $config);
     }
 

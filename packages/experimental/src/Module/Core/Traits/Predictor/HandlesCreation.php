@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Experimental\Module\Signature\SignatureFactory;
-use Cognesy\Instructor\Features\Core\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use InvalidArgumentException;
 
 trait HandlesCreation
