@@ -16,7 +16,7 @@ better error handling without breaking the code flow.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Maybe\Maybe;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class User
@@ -29,12 +29,12 @@ class User
 $text = 'We have no information about our new developer.';
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = (new Instructor)->respond(
+$maybeUser = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class),
     model: 'gpt-4o-mini',
     mode: OutputMode::MdJson,
-);
+)->get();
 
 echo "\nOUTPUT:\n";
 
@@ -47,10 +47,10 @@ assert($maybeUser->get() === null);
 $text = "Jason is our new developer, he is 25 years old.";
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = (new Instructor)->respond(
+$maybeUser = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class)
-);
+)->get();
 
 echo "\nOUTPUT:\n";
 

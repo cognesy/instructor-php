@@ -19,7 +19,7 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Str;
 
@@ -45,10 +45,10 @@ class UserDetails
 
     private function hasPII() : bool {
         $data = implode('\n', $this->details);
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: "Context:\n$data\n",
             responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
-        );
+        )->getBoolean();
     }
 }
 
@@ -57,13 +57,13 @@ $text = <<<TEXT
     My phone number is +1 123 34 45 and social security number is 123-45-6789
     TEXT;
 
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->wiretap(fn(Event $e) => $e->print()) // let's check the internals of Instructor processing
-    ->respond(
+    ->create(
         messages: $text,
         responseModel: UserDetails::class,
         maxRetries: 2
-    );
+    )->get();
 
 dump($user);
 

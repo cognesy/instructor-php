@@ -20,7 +20,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Property
 {
@@ -57,11 +57,11 @@ $text = <<<TEXT
     a small house in Alamo. He likes to play guitar.
     TEXT;
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
     maxRetries: 1 // change to 0 to see validation error
-);
+)->get();
 
 dump($user);
 

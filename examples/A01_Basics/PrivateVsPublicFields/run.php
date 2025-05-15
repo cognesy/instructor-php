@@ -15,7 +15,7 @@ directly after extraction, consider providing default values for them.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class User
 {
@@ -54,10 +54,10 @@ $text = <<<TEXT
 
 // CASE 1: Class with public fields
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: $text,
     responseModel: User::class
-);
+)->get();
 
 echo "User with public fields\n";
 
@@ -70,10 +70,10 @@ assert($user->getPassword() === '123admin');
 
 // CASE 2: Class with some private fields
 
-$userPriv = (new Instructor)->respond(
+$userPriv = (new StructuredOutput)->create(
     messages: $text,
     responseModel: UserWithPrivateField::class,
-);
+)->get();
 
 echo "User with private 'password' and 'age' fields\n";
 

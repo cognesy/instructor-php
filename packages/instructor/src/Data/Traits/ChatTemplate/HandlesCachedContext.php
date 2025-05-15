@@ -33,8 +33,8 @@ trait HandlesCachedContext
         return $this->filterEmptySections($script);
     }
 
-    protected function withCacheMetaSections(Script $script) : Script {
-        if (empty($this->request->cachedContext())) {
+    protected function withCacheMetaSections(array $cachedContext, Script $script) : Script {
+        if (empty($cachedContext)) {
             return $script;
         }
 

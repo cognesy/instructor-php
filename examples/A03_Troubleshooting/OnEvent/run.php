@@ -5,7 +5,7 @@ docname: 'on_event'
 
 ## Overview
 
-`(new Instructor)->onEvent(string $class, callable $callback)` method allows
+`(new StructuredOutput)->onEvent(string $class, callable $callback)` method allows
 you to receive callback when specified type of event is dispatched by Instructor.
 
 This way you can plug into the execution process and monitor it, for example logging
@@ -26,7 +26,7 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Events\Event;
 
 class User
@@ -44,7 +44,7 @@ $logger = new class {
     }
 };
 
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->onEvent(HttpRequestSent::class, fn($event) => $logger->log($event))
     ->onEvent(HttpResponseReceived::class, fn($event) => $logger->log($event))
     ->request(

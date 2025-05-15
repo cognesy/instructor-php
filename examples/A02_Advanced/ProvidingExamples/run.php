@@ -20,7 +20,7 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class User {
@@ -29,7 +29,7 @@ class User {
 }
 
 echo "\nREQUEST:\n";
-$user = (new Instructor)
+$user = (new StructuredOutput)
     // let's dump the request data to see how examples are used in requests
     ->onEvent(HttpRequestSent::class, fn($event) => dump($event))
     ->request(

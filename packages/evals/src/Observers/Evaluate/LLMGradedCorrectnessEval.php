@@ -7,7 +7,7 @@ use Cognesy\Evals\Execution;
 use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\GradedCorrectnessAnalysis;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class LLMGradedCorrectnessEval implements CanGenerateObservations
@@ -18,9 +18,9 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
         private string $name,
         private array $expected,
         private array $actual,
-        private ?Instructor $instructor = null,
+        private ?StructuredOutput $structuredOutput = null,
     ) {
-        $this->instructor = $instructor ?? new Instructor();
+        $this->structuredOutput = $structuredOutput ?? new StructuredOutput();
     }
 
     public function accepts(mixed $subject): bool {
@@ -67,7 +67,7 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : GradedCorrectnessAnalysis {
-        return $this->instructor->respond(
+        return $this->structuredOutput->create(
             input: [
                 'expected_result' => $this->expected,
                 'actual_result' => $this->actual

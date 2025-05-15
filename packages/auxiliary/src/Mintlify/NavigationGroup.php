@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\InstructorHub\Utils\Mintlify;
+namespace Cognesy\Auxiliary\Mintlify;
 
 class NavigationGroup
 {

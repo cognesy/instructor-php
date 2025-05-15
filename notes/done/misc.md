@@ -1,4 +1,4 @@
-## Instructor::response()/request() default params
+## StructuredOutput::create() default params
 
 Default values are duplicated across method declarations and Request class.
 Clean it up.

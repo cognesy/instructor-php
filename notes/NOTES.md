@@ -1,4 +1,4 @@
-# CONSIDERATIONS
+# CURRENT CONSIDERATIONS
 
 ## Better control over underlying prompts
 
@@ -20,7 +20,7 @@
 - Polyglot: Predicted outputs API
 - Addon: Generate unstructured, then format to structured - to improve reasoning
 - Addon: MCP support as addon
-
+- Add support for 'developer' role in messages
 
 # BACKLOG
 

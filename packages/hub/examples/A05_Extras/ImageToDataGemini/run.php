@@ -27,7 +27,7 @@ Here's the image we're going to extract data from.
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class Vendor {
@@ -52,13 +52,13 @@ class Receipt {
     public float $total;
 }
 
-$receipt = (new Instructor)->withConnection('gemini')->respond(
+$receipt = (new StructuredOutput)->withConnection('gemini')->create(
     input: Image::fromFile(__DIR__ . '/receipt.png'),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',
     mode: OutputMode::Json,
     options: ['max_tokens' => 4096]
-);
+)->get();
 
 dump($receipt);
 

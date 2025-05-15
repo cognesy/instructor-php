@@ -20,6 +20,14 @@ class EmbeddingsConfig
         public string $providerType = 'openai',
     ) {}
 
+    public static function default() : EmbeddingsConfig {
+        $default = Settings::get('embed', "defaultConnection", null);
+        if (is_null($default)) {
+            throw new InvalidArgumentException("No default connection found in settings.");
+        }
+        return self::load($default);
+    }
+
     public static function load(string $connection) : EmbeddingsConfig {
         if (!Settings::has('embed', "connections.$connection")) {
             throw new InvalidArgumentException("Unknown connection: $connection");

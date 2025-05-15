@@ -29,8 +29,9 @@
 3. Use Instructor to run LLM inference and extract structured data.
    
 ### Example:
+
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class City {
     public string $name;
@@ -38,10 +39,10 @@ class City {
     public int $population;
 }
 
-$city = (new Instructor)->withConnection('openai')->respond(
+$city = (new StructuredOutput)->withConnection('openai')->create(
     messages: 'What is the capital of France?',
     responseModel: City::class,
-);
+)->get();
 
 var_dump($city); // Outputs structured data about Paris
 ```

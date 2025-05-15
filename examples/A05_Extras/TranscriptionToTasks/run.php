@@ -13,7 +13,7 @@ This example demonstrates how you can create task assignments based on a transcr
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 // Step 1: Define a class that represents the structure and semantics
@@ -62,12 +62,12 @@ print($text . "\n\n");
 
 // Step 3: Extract structured data using default language model API (OpenAI)
 print("Extracting structured data using LLM...\n\n");
-$tasks = (new Instructor)->respond(
+$tasks = (new StructuredOutput)->create(
     messages: $text,
     responseModel: Tasks::class,
     model: 'gpt-4o',
     mode: OutputMode::Json,
-);
+)->get();
 
 // Step 4: Now you can use the extracted data in your application
 print("Extracted data:\n");

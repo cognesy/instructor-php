@@ -55,7 +55,7 @@ $ composer require cognesy/instructor-php
 Step 2: Create run.php and use Instructor
 1require __DIR__ . '/vendor/autoload.php';
 2
-3use Cognesy\Instructor\Instructor;
+3use Cognesy\Instructor\StructuredOutput;
 4
 5// Set up OpenAI API key
 6$apiKey = 'your-openai-api-key';
@@ -70,10 +70,10 @@ Step 2: Create run.php and use Instructor
 15}
 16
 17// Step 2: Use Instructor to run LLM inference
-18$city = (new Instructor)->withConnection('openai')->respond(
+18$city = (new StructuredOutput)->withConnection('openai')->create(
 19 messages: 'What is the capital of France?',
 20 responseModel: City::class,
-21);
+21)->get();
 22
 23var_dump($city);
 Step 3: Execute run.php

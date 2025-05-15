@@ -18,7 +18,7 @@ better error handling without breaking the code flow.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class UserDetail
 {
@@ -39,10 +39,10 @@ class MaybeUser
     }
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => 'We don\'t know anything about this guy.']],
     responseModel: MaybeUser::class
-);
+)->get();
 
 
 dump($user);

@@ -14,70 +14,18 @@ use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Settings;
 use Exception;
 
 /**
- * Trait provides invocation handling functionality for the Instructor class.
+ * Trait provides invocation handling functionality for the StructuredOutput class.
  */
 trait HandlesInvocation
 {
     /**
-     * Generates a response model via LLM based on the provided string or OpenAI style message array
-     *
-     * @param string|array $messages Text or chat sequence to be used for generating the response.
-     * @param string|array|object $input Data or input to send with the request (optional).
-     * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
-     * @param string $system The system instructions (optional).
-     * @param string $prompt The prompt to guide the request's response generation (optional).
-     * @param array $examples Example data to provide additional context for the request (optional).
-     * @param string $model Specifies the model to be employed - check LLM documentation for more details.
-     * @param int $maxRetries The maximum number of retries for the request in case of failure.
-     * @param array $options Additional LLM options - check LLM documentation for more details.
-     * @param string $toolName The name of the tool to be used in OutputMode::Tools.
-     * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
-     * @param string $retryPrompt The prompt to be used during retries.
-     * @param OutputMode $mode The mode of operation for the request.
-     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
-     * @throws Exception If the response model is empty or invalid.
-     */
-    public function respond(
-        string|array        $messages = '',
-        string|array|object $input = '',
-        string|array|object $responseModel = [],
-        string              $system = '',
-        string              $prompt = '',
-        array               $examples = [],
-        string              $model = '',
-        int                 $maxRetries = 0,
-        array               $options = [],
-        string              $toolName = '',
-        string              $toolDescription = '',
-        string              $retryPrompt = '',
-        OutputMode $mode = OutputMode::Tools
-    ) : mixed {
-        return $this->request(
-            messages: $messages,
-            input: $input,
-            responseModel: $responseModel,
-            system: $system,
-            prompt: $prompt,
-            examples: $examples,
-            model: $model,
-            maxRetries: $maxRetries,
-            options: $options,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
-            mode: $mode,
-        )->get();
-    }
-
-    /**
      * Processes the provided request information and creates a new request to be executed.
      *
      * @param StructuredOutputRequestInfo $request The RequestInfo object containing all necessary data
-     *                             for generating the request.
+     * for generating the request.
      *
      * @return StructuredOutputResponse The response generated based on the provided request details.
      */
@@ -118,7 +66,7 @@ trait HandlesInvocation
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
-    public function request(
+    public function create(
         string|array        $messages = '',
         string|array|object $input = '',
         string|array|object $responseModel = [],
@@ -141,7 +89,12 @@ trait HandlesInvocation
         }
 
         $requestedSchema = $responseModel;
-        $responseModel = $this->makeResponseModel($requestedSchema, $toolName, $toolDescription);
+        $responseModel = $this->makeResponseModel(
+            $requestedSchema,
+            $toolName ?: $this->config->toolName(),
+            $toolDescription ?: $this->config->toolDescription(),
+            $this->config->useObjectReferences(),
+        );
 
         $request = new StructuredOutputRequest(
             messages: $messages ?? [],
@@ -200,12 +153,9 @@ trait HandlesInvocation
         string|array|object $requestedSchema,
         string $toolName,
         string $toolDescription,
+        bool $useObjectReferences = false,
     ) : ResponseModel {
-        $toolName = $toolName ?: Settings::get('llm', 'defaultToolName', 'extracted_data');
-        $toolDescription = $toolDescription ?: Settings::get('llm', 'defaultToolDescription', 'Function call based on user instructions.');
-        $schemaFactory = new SchemaFactory(
-            Settings::get('llm', 'useObjectReferences', false)
-        );
+        $schemaFactory = new SchemaFactory($useObjectReferences);
         $responseModelFactory = new ResponseModelFactory(
             new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
             $schemaFactory,

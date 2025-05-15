@@ -55,10 +55,10 @@ it('can process a closure task', function() {
 //        '{"user_name": "Jason", "user_age": 28}',
 //    ]);
 //
-//    $instructor = (new Instructor)->withHttpClient($mockLLM);
+//    $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
 //    $predict = new Transform(
 //        signature: 'text (email containing user data) -> user_name, user_age:int',
-//        instructor: $instructor
+//        structuredOutput: $structuredOutput
 //    );
 //    $prediction = $predict->withArgs(text: 'Jason is 28 years old');
 //
@@ -84,7 +84,7 @@ it('can process a closure task', function() {
 //
 //    $predict = new Transform(
 //        signature: EmailAnalysis::class,
-//        instructor: (new Instructor)->withHttpClient($mockLLM)
+//        structuredOutput: (new StructuredOutput)->withHttpClient($mockLLM)
 //    );
 //
 //    $analysis = $predict->withArgs(
@@ -124,23 +124,23 @@ it('can process a closure task', function() {
 //
 //        public function __construct(
 //        ) {
-//            $instructor = (new Instructor);//->withClient($mockLLM);
+//            $structuredOutput = (new StructuredOutput);//->withClient($mockLLM);
 //            $this->parse = new Transform(
 //                signature: 'text -> subject, body',
 //                instructions: 'Parse email into subject and body',
-//                instructor: $instructor
+//                structuredOutput: $structuredOutput
 //            );
 //
 //            $this->fix = new Transform(
 //                signature: 'subject, body -> subject, body',
 //                instructions: 'Fix typos and misspellings in email subject and body',
-//                instructor: $instructor
+//                structuredOutput: $structuredOutput
 //            );
 //
 //            $this->translate = new Transform(
 //                signature: 'subject, body, language -> translatedSubject, translatedBody',
 //                instructions: 'Translate email subject and body to <|language|>',
-//                instructor: $instructor
+//                structuredOutput: $structuredOutput
 //            );
 //        }
 //
@@ -179,11 +179,11 @@ it('can process a closure task', function() {
 //    private Predict $translate;
 //
 //    public function __construct() {
-//        $instructor = (new Instructor);//->withClient(new AnthropicClient(Env::get('ANTHROPIC_API_KEY')));//->wiretap(fn($e) => $e->printDump());
+//        $structuredOutput = (new StructuredOutput);//->withClient(new AnthropicClient(Env::get('ANTHROPIC_API_KEY')));//->wiretap(fn($e) => $e->printDump());
 //
-//        $this->parse = new Predict(signature: ParsedEmail::class, instructor: $instructor);
-//        $this->fix = new Predict(signature: FixedEmail::class, instructor: $instructor);
-//        $this->translate = new Predict(signature: EmailTranslation::class, instructor: $instructor);
+//        $this->parse = new Predict(signature: ParsedEmail::class, structuredOutput: $structuredOutput);
+//        $this->fix = new Predict(signature: FixedEmail::class, structuredOutput: $structuredOutput);
+//        $this->translate = new Predict(signature: EmailTranslation::class, structuredOutput: $structuredOutput);
 //    }
 //
 //    public function signature(): string {

@@ -23,7 +23,7 @@ Stylistic constraints can include:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Arrays;
 
 class Company {
@@ -38,13 +38,13 @@ class GenerateCompanyProfiles {
     public function __invoke(array $criteria, array $styles) : array {
         $criteriaStr = Arrays::toBullets($criteria);
         $stylesStr = Arrays::toBullets($styles);
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: [
                 ['role' => 'user', 'content' => "List companies meeting criteria:\n{$criteriaStr}\n\n"],
                 ['role' => 'user', 'content' => "Use following styles for descriptions:\n{$stylesStr}\n\n"],
             ],
             responseModel: Sequence::of(Company::class),
-        )->toArray();
+        )->get()->toArray();
     }
 }
 

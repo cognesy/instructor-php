@@ -19,7 +19,7 @@ chatbots or agents.
 require 'examples/boot.php';
 
 use Cognesy\Addons\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class DataStore
 {
@@ -31,10 +31,10 @@ class DataStore
 }
 
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new Instructor)->respond(
+$args = (new StructuredOutput)->create(
     messages: $text,
     responseModel: FunctionCall::fromMethodName(DataStore::class, 'saveUser'),
-);
+)->get();
 
 echo "\nCalling the function with the extracted arguments:\n";
 (new DataStore)->saveUser(...$args);

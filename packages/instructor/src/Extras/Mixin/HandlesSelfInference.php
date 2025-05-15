@@ -1,11 +1,37 @@
 <?php
 namespace Cognesy\Instructor\Extras\Mixin;
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\LLM;
 
+/**
+ * Handles self-inference for the class implementing this trait.
+ *
+ * This trait provides a static method `infer` that allows the class to perform inference
+ * using the provided parameters. It utilizes the `StructuredOutput` class to handle the
+ * inference process.
+ */
 trait HandlesSelfInference {
+    /**
+     * Performs inference on the class using the provided parameters.
+     *
+     * @param string|array $messages
+     * @param string|array|object $input
+     * @param string $system
+     * @param string $prompt
+     * @param array $examples
+     * @param string $model
+     * @param int $maxRetries
+     * @param array $options
+     * @param OutputMode $mode
+     * @param string $toolName
+     * @param string $toolDescription
+     * @param string $retryPrompt
+     * @param LLM|null $llm
+     * @return static
+     * @throws \Exception
+     */
     public static function infer(
         string|array        $messages = '',
         string|array|object $input = '',
@@ -21,9 +47,9 @@ trait HandlesSelfInference {
         string              $retryPrompt = '',
         ?LLM                $llm = null,
     ) : static {
-        return (new Instructor(
+        return (new StructuredOutput(
             llm: $llm ?? new LLM()
-        ))->respond(
+        ))->create(
             messages: $messages,
             input: $input,
             responseModel: self::class,
@@ -37,6 +63,6 @@ trait HandlesSelfInference {
             toolDescription: $toolDescription,
             retryPrompt: $retryPrompt,
             mode: $mode,
-        );
+        )->getInstanceOf(self::class);
     }
 }

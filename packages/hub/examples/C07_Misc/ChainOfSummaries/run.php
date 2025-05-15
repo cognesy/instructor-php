@@ -20,7 +20,7 @@ content which are most relevant and missing from the previous iteration.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 $report = <<<EOT
     [2021-09-01]
@@ -64,7 +64,7 @@ class ChainOfSummaries {
     public array $summaries;
 }
 
-$summaries = (new Instructor)
+$summaries = (new StructuredOutput)
     ->request(
         messages: $report,
         responseModel: ChainOfSummaries::class,

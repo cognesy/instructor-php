@@ -14,7 +14,7 @@ example, the TimeRange component is used for both `$workTime` and `$leisureTime`
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class TimeRange {
     /** The start time in hours. */
@@ -32,11 +32,11 @@ class UserDetail
     public TimeRange $leisureTime;
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => "Yesterday Jason worked from 9 for 5 hours. After that I watched 2 hour movie which I finished at 19."]],
     responseModel: UserDetail::class,
     model: 'gpt-4o',
-);
+)->get();
 
 dump($user);
 

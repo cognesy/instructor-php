@@ -20,13 +20,13 @@ Each Instructor event offers following methods, which make interacting with them
 
 Instructor allows you to receive detailed information at every stage of request and response processing via events.
 
- * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
- * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
+ * `(new StructuredOutput)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
+ * `(new StructuredOutput)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
 ```php
-$instructor = (new Instructor)
+$structuredOutput = (new StructuredOutput)
     // see requests to LLM
     ->onEvent(HttpRequestSent::class, fn($e) => dump($e))
     // see responses from LLM
@@ -36,10 +36,10 @@ $instructor = (new Instructor)
     // log all events in log-friendly format
     ->wiretap(fn($event) => YourLogger::log($event->asLog()))
 
-$instructor->respond(
+$structuredOutput->create(
     messages: "What is the population of Paris?",
     responseModel: Scalar::integer(),
-);
+)->get();
 // check your console for the details on the Instructor execution
 ```
 

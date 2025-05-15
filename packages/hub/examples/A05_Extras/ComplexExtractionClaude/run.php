@@ -15,7 +15,7 @@ the provided text with Anthropic Claude 3 model.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $report = <<<'EOT'
@@ -103,13 +103,13 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$instructor = (new Instructor)->withConnection('anthropic');
+$structuredOutput = (new StructuredOutput)->withConnection('anthropic');
 
 echo "PROJECT EVENTS:\n\n";
 
-$events = $instructor
+$events = $structuredOutput
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
-    ->request(
+    ->create(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
         model: 'claude-3-5-sonnet-20240620', // 'claude-3-haiku-20240307'

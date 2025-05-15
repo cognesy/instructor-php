@@ -31,7 +31,7 @@ that we want to extract or generate based on README file.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Str;
 
@@ -62,7 +62,7 @@ multiple requests.
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
-$cached = (new Instructor)->withConnection('anthropic')->withCachedContext(
+$cached = (new StructuredOutput)->withConnection('anthropic')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
     prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',
@@ -76,12 +76,12 @@ Let's start by asking the user to describe the project for a specific audience: 
 
 ```php
 <?php
-$project = $cached->respond(
+$project = $cached->create(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
     mode: OutputMode::MdJson,
-);
+)->get();
 dump($project);
 assert($project instanceof Project);
 assert(Str::contains($project->name, 'Instructor'));
@@ -95,12 +95,12 @@ which results in faster processing and lower costs.
 
 ```php
 <?php
-$project = $cached->respond(
+$project = $cached->create(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
     mode: OutputMode::Json,
-);
+)->get();
 dump($project);
 assert($project instanceof Project);
 assert(Str::contains($project->name, 'Instructor'));

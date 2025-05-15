@@ -29,10 +29,10 @@ class LLM
      * Constructor for initializing dependencies and configurations.
      *
      * @param string $connection The connection string.
-     * @param \Cognesy\Polyglot\LLM\Data\LLMConfig|null $config Configuration object.
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest|null $httpClient HTTP client handler.
+     * @param LLMConfig|null $config Configuration object.
+     * @param CanHandleHttpRequest|null $httpClient HTTP client handler.
      * @param CanHandleInference|null $driver Inference handler.
-     * @param \Cognesy\Utils\Events\EventDispatcher|null $events Event dispatcher.
+     * @param EventDispatcher|null $events Event dispatcher.
      *
      * @return void
      */
@@ -108,7 +108,7 @@ class LLM
     /**
      * Sets a custom HTTP client and updates the inference driver accordingly.
      *
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient The custom HTTP client handler.
+     * @param CanHandleHttpRequest $httpClient The custom HTTP client handler.
      *
      * @return self Returns the current instance for method chaining.
      */
@@ -145,7 +145,7 @@ class LLM
     /**
      * Returns the current configuration object.
      *
-     * @return \Cognesy\Polyglot\LLM\Data\LLMConfig
+     * @return LLMConfig
      */
     public function config() : LLMConfig {
         return $this->config;
@@ -164,7 +164,7 @@ class LLM
      * Returns the HTTP response object for given inference request
      *
      * @param InferenceRequest $request
-     * @return \Cognesy\Http\Contracts\HttpClientResponse
+     * @return HttpClientResponse
      */
     public function handleInferenceRequest(InferenceRequest $request) : HttpClientResponse {
         $this->events->dispatch(new InferenceRequested($request));

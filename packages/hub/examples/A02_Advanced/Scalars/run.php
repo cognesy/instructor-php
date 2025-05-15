@@ -17,7 +17,7 @@ a simplified API for such cases.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 enum CitizenshipGroup : string {
     case US = "US";
@@ -27,12 +27,11 @@ enum CitizenshipGroup : string {
 }
 
 $text = "His name is Jason, he is 28 years old American who lives in Germany.";
-$value = (new Instructor)->respond(
+$value = (new StructuredOutput)->create(
     messages: $text,
     prompt: 'What is user\'s citizenship?',
     responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),
-);
-
+)->get();
 
 dump($value);
 

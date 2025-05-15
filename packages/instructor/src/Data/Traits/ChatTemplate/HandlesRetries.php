@@ -1,35 +1,27 @@
 <?php
 namespace Cognesy\Instructor\Data\Traits\ChatTemplate;
 
+use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Arrays;
 
 trait HandlesRetries
 {
-    protected function addRetryMessages() : void {
-        $failedResponse = $this->request->lastFailedResponse();
-        if (!$failedResponse || !$this->request->hasLastResponseFailed()) {
-            return;
+    protected function addRetryMessages(StructuredOutputRequest $request, Script $script) : Script {
+        $failedResponse = $request->lastFailedResponse();
+        if (!$failedResponse || !$request->hasLastResponseFailed()) {
+            return $script;
         }
-        foreach($this->request->attempts() as $attempt) {
-            $messages = $this->makeRetryMessages(
-                [], $attempt->llmResponse()->content(), $attempt->errors()
-            );
-            $this->script->section('retries')->appendMessages($messages);
+
+        $newScript = $script->clone();
+        $messages = [];
+        foreach($request->attempts() as $attempt) {
+            $messages[] = ['role' => 'assistant', 'content' => $attempt->llmResponse()->content()];
+            $retryFeedback = ($request->retryPrompt() ?: $this->config->retryPrompt())
+                . Arrays::flatten($attempt->errors(), "; ");
+            $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
-    }
-
-    protected function makeRetryMessages(
-        array $messages,
-        string $jsonData,
-        array $errors
-    ) : array {
-        $retryFeedback = $this->makeRetryPrompt() . Arrays::flatten($errors, "; ");
-        $messages[] = ['role' => 'assistant', 'content' => $jsonData];
-        $messages[] = ['role' => 'user', 'content' => $retryFeedback];
-        return $messages;
-    }
-
-    protected function makeRetryPrompt() : string {
-        return $this->request->retryPrompt() ?: $this->defaultRetryPrompt;
+        $newScript->section('retries')->appendMessages($messages);
+        return $newScript;
     }
 }

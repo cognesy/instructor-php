@@ -4,13 +4,13 @@ namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Inference;
 
 trait HandlesParametrization
 {
     public function using(
-        Instructor                  $instructor = null,
+        Instructor                  $structuredOutput = null,
         StructuredOutputRequestInfo $requestInfo = null,
         Signature                   $signature = null,
         string                      $instructions = null,
@@ -18,7 +18,7 @@ trait HandlesParametrization
         array                       $options = null,
         string                      $model = null,
     ) : static {
-        $this->withInstructor($instructor);
+        $this->withInstructor($structuredOutput);
         $this->withRequestInfo($requestInfo);
         $this->withSignature($signature);
         $this->withInstructions($instructions);
@@ -28,10 +28,10 @@ trait HandlesParametrization
         return $this;
     }
 
-    public function withInstructor(?Instructor $instructor) : static {
+    public function withInstructor(?StructuredOutput $structuredOutput) : static {
         $this->instructor = match(true) {
-            !is_null($instructor) => $instructor,
-            !isset($this->instructor) => new Instructor(),
+            !is_null($structuredOutput) => $structuredOutput,
+            !isset($this->instructor) => new StructuredOutput(),
             default => $this->instructor,
         };
         return $this;

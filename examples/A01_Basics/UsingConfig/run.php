@@ -29,7 +29,7 @@ connection.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class User {
     public int $age;
@@ -37,13 +37,13 @@ class User {
 }
 
 // Get Instructor object with client defined in config.php under 'connections/openai' key
-$instructor = (new Instructor)->withConnection('openai');
+$structuredOutput = (new StructuredOutput)->withConnection('openai');
 
 // Call with custom model and execution mode
-$user = $instructor->respond(
+$user = $structuredOutput->create(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
-);
+)->get();
 
 // Use the results of LLM inference
 dump($user);

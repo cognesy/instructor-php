@@ -17,7 +17,7 @@ response is received.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Cli\Console;
 
@@ -65,7 +65,7 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->withConnection('openai')
     ->onPartialUpdate(partialUpdate(...))
     ->request(

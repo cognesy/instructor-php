@@ -10,7 +10,7 @@ docname: 'wiretap'
 Instructor allows you to receive detailed information at every stage of request
 and response processing via events.
 
-`(new Instructor)->wiretap(callable $callback)` method allows you to receive all
+`(new StructuredOutput)->wiretap(callable $callback)` method allows you to receive all
 events dispatched by Instructor.
 
 Example below demonstrates how `wiretap()` can help you to monitor the execution
@@ -26,7 +26,7 @@ console-formatted information about each event.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 enum Role : string {
     case CEO = 'ceo';
@@ -42,7 +42,7 @@ class UserDetail
     public int $age;
 }
 
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->wiretap(fn($event) => $event->print())
     ->request(
         messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Best regards, Tom"]],

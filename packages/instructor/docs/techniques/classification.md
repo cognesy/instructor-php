@@ -36,20 +36,20 @@ The function **`classify`** will perform the single-label classification.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 /**
  * Perform single-label classification on the input text. 
  */
 function classify(string $data) : SinglePrediction {
-    return (new Instructor())->respond(
+    return (new StructuredOutput())->create(
         messages: [[
             "role" => "user",
             "content" => "Classify the following text: $data",
         ]],
         responseModel: SinglePrediction::class,
         model: "gpt-3.5-turbo-0613",
-    );
+    )->get();
 }
 ```
 
@@ -99,18 +99,18 @@ The function **`multi_classify`** executes multi-label classification using LLM.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Perform single-label classification on the input text.
 function multi_classify(string $data) : Ticket {
-    return (new Instructor())->respond(
+    return (new StructuredOutput())->create(
         messages: [[
             "role" => "user",
             "content" => "Classify following support ticket: {$data}",
         ]],
         responseModel: Ticket::class,
         model: "gpt-3.5-turbo-0613",
-    );
+    )->get();
 }
 ```
 

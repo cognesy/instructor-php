@@ -2,10 +2,10 @@
 
 namespace Cognesy\InstructorHub\Services;
 
+use Cognesy\Auxiliary\Mintlify\MintlifyIndex;
+use Cognesy\Auxiliary\Mintlify\NavigationGroup;
+use Cognesy\Auxiliary\Mintlify\NavigationItem;
 use Cognesy\InstructorHub\Data\Example;
-use Cognesy\InstructorHub\Utils\Mintlify\MintlifyIndex;
-use Cognesy\InstructorHub\Utils\Mintlify\NavigationGroup;
-use Cognesy\InstructorHub\Utils\Mintlify\NavigationItem;
 use Cognesy\InstructorHub\Views\DocGenView;
 use Cognesy\Utils\BasePath;
 use Cognesy\Utils\Files;

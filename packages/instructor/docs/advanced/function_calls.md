@@ -13,7 +13,7 @@ chatbots or agents.
 ```php
 <?php
 use Cognesy\Addons\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 /** Save user data to storage */
 function saveUser(string $name, int $age, string $country) {
@@ -21,10 +21,10 @@ function saveUser(string $name, int $age, string $country) {
 }
 
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new Instructor)->respond(
+$args = (new StructuredOutput)->create(
     messages: $text,
     responseModel: FunctionCall::fromFunctionName('saveUser'),
-);
+)->get();
 
 // call the function with the extracted arguments
 saveUser(...$args);
@@ -38,7 +38,7 @@ saveUser(...$args);
 ```php
 <?php
 use Cognesy\Addons\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class DataStore {
     /** Save user data to storage */
@@ -48,10 +48,10 @@ class DataStore {
 }
 
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new Instructor)->respond(
+$args = (new StructuredOutput)->create(
     messages: $text,
     responseModel: FunctionCall::fromMethodName(Datastore::class, 'saveUser'),
-);
+)->get();
 
 // call the function with the extracted arguments
 (new DataStore)->saveUser(...$args);
@@ -65,7 +65,7 @@ $args = (new Instructor)->respond(
 ```php
 <?php
 use Cognesy\Addons\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 /** Save user data to storage */
 $callable = function saveUser(string $name, int $age, string $country) {
@@ -73,10 +73,10 @@ $callable = function saveUser(string $name, int $age, string $country) {
 }
 
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new Instructor)->respond(
+$args = (new StructuredOutput)->create(
     messages: $text,
     responseModel: FunctionCall::fromCallable($callable),
-);
+)->get();
 
 // call the function with the extracted arguments
 $callable(...$args);

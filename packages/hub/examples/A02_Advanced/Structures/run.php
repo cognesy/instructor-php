@@ -24,7 +24,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 enum Role : string {
     case Manager = 'manager';
@@ -57,10 +57,10 @@ $text = <<<TEXT
     TEXT;
 
 print("INPUT:\n$text\n\n");
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: $text,
     responseModel: $structure,
-);
+)->get();
 
 print("OUTPUT:\n");
 print("Name: " . $person->name . "\n");

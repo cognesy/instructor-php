@@ -21,7 +21,7 @@ completed item in a sequence, rather than on any property update.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Person
 {
@@ -36,9 +36,9 @@ $text = <<<TEXT
 print("INPUT:\n$text\n\n");
 
 print("OUTPUT:\n");
-$list = (new Instructor)
+$list = (new StructuredOutput)
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
-    ->request(
+    ->create(
         messages: $text,
         responseModel: Sequence::of(Person::class),
         options: ['stream' => true],

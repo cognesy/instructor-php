@@ -16,7 +16,7 @@ Let's start by defining the data structures.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Enumeration for single-label text classification.
 enum Label : string {
@@ -38,13 +38,13 @@ The function classify will perform the single-label classification.
 <?php
 // Perform single-label classification on the input text.
 function classify(string $data) : SinglePrediction {
-    return (new Instructor())->respond(
+    return (new StructuredOutput())->create(
         messages: [[
             "role" => "user",
             "content" => "Classify the following text: $data",
         ]],
         responseModel: SinglePrediction::class,
-    );
+    )->get();
 }
 ?>
 ```

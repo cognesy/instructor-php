@@ -2,7 +2,7 @@
 
 namespace Cognesy\InstructorHub\Data;
 
-use Cognesy\InstructorHub\Utils\Mintlify\NavigationGroup;
+use Cognesy\Auxiliary\Mintlify\NavigationGroup;
 
 class ExampleGroup
 {

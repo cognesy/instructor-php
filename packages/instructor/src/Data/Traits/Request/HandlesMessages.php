@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Data\Traits\Request;
 
-use Cognesy\Instructor\Data\ChatTemplate;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesMessages
@@ -71,7 +70,7 @@ trait HandlesMessages
     }
 
     public function toMessages() : array {
-        return ChatTemplate::fromRequest($this)->toMessages();
+        return $this->chatTemplate->toMessages($this);
     }
 
     public function withPrompt(string $prompt) : self {

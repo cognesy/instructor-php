@@ -22,7 +22,7 @@ use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
@@ -36,16 +36,16 @@ $text = "you can reply to me via jason wp.pl -- Jason";
 print("INPUT:\n$text\n\n");
 
 print("RESULTS:\n");
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->onEvent(HttpRequestSent::class, fn($event) => print("[ ] Requesting LLM response...\n"))
     ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".json_encode($event->response)."\n"))
     ->onEvent(ResponseValidationFailed::class, fn($event) => print("[!] Validation failed:\n    $event\n"))
     ->onEvent(ResponseValidated::class, fn($event) => print("[ ] Validation succeeded.\n"))
-    ->respond(
+    ->create(
         messages: $text,
         responseModel: UserDetails::class,
         maxRetries: 3,
-    );
+    )->get();
 
 print("\nOUTPUT:\n");
 

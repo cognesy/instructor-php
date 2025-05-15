@@ -22,7 +22,7 @@ Self-Ask is a technique which use a single prompt to:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class FollowUp {
     #[Description("Follow-up question")]
@@ -46,10 +46,10 @@ class RespondWithFollowUp {
     QUERY;
 
     public function __invoke(string $query) : Response {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: str_replace('{query}', $query, $this->prompt),
             responseModel: Response::class,
-        );
+        )->get();
     }
 }
 

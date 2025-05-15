@@ -24,7 +24,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class UserDetails
 {
@@ -46,14 +46,14 @@ class UserDetails
     }
 }
 
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->wiretap(fn($e) => $e->print())
-    ->respond(
+    ->create(
         messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 23.']],
         responseModel: UserDetails::class,
         model: 'gpt-3.5-turbo',
         maxRetries: 2,
-    );
+    )->get();
 
 
 dump($user);

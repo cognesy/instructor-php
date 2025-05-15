@@ -18,7 +18,7 @@ incorporating an `$id` and `$coworkers` fields.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class UserDetail
 {
@@ -47,10 +47,10 @@ $text = "Jason is 25 years old. He is a Python programmer of Apex website.\
  Amanda is a contractor working with Jason on Apex website. John is 40yo\
  and he's CEO - Jason reports to him.";
 
-$relationships = (new Instructor)->respond(
+$relationships = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserRelationships::class,
-);
+)->get();
 
 dump($relationships);
 

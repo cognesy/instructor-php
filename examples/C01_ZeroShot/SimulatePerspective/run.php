@@ -38,7 +38,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Arrays;
 
 class KnownFacts {
@@ -73,27 +73,27 @@ class SimulatePerspective {
     }
 
     private function getKnownFacts(string $context, string $query, string $entity) : array {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: str_replace(
                 ['{context}', '{query}', '{entity}'],
                 [$context, $query, $entity],
                 $this->extractionPrompt
             ),
             responseModel: KnownFacts::class,
-        )->facts;
+        )->get()->facts;
     }
 
     private function answerQuestion(string $entity, string $query, array $knownFacts) : string {
         $knowledge = Arrays::toBullets($knownFacts);
 
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: str_replace(
                 ['{entity}', '{knowledge}', '{query}'],
                 [$entity, $knowledge, $query],
                 $this->povPrompt
             ),
             responseModel: Scalar::string('location'),
-        );
+        )->getString();
     }
 }
 

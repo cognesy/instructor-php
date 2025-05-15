@@ -34,7 +34,7 @@ search query.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 enum SearchType : string {
     case TEXT = "text";
@@ -68,19 +68,19 @@ class SearchQuery
 
 The `segment` function takes a string `data` and segments it into multiple search queries.
 
-It uses the `Instructor::respond()` method to extract the data into the target object.
+It uses the `StructuredOutput::create()` method to extract the data into the target object.
 The `responseModel` parameter specifies `Search::class` as the model to use for extraction.
 
 ```php
 <?php
 function segment(string $data) : Search {
-    return (new Instructor)->respond(
+    return (new StructuredOutput)->create(
         messages: [[
             "role" => "user",
             "content" => "Consider the data below: '\n$data' and segment it into multiple search queries",
         ]],
         responseModel: Search::class,
-    );
+    )->get();
 }
 
 $search = segment("Find a picture of a cat and a video of a dog");

@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Mixin;
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\LLM;
 
@@ -22,9 +22,9 @@ trait HandlesInference {
         string              $retryPrompt = '',
         ?LLM                $llm = null,
     ) : mixed {
-        return (new Instructor(
+        return (new StructuredOutput(
             llm: $llm ?? new LLM()
-        ))->respond(
+        ))->create(
             messages: $messages,
             input: $input,
             responseModel: $responseModel,
@@ -38,6 +38,6 @@ trait HandlesInference {
             toolDescription: $toolDescription,
             retryPrompt: $retryPrompt,
             mode: $mode,
-        );
+        )->get();
     }
 }

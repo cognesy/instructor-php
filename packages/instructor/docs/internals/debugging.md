@@ -14,10 +14,10 @@ For more details see the [Events](events.mdx) section.
 The `Instructor` class has a `withDebug()` method that can be used to debug the request and response.
 
 ```php
-$result = (new Instructor)->withDebug()->respond(
+$result = (new StructuredOutput)->withDebug()->create(
     messages: "Jason is 25 years old",
     responseModel: User:class,
-);
+)->get();
 ```
 
 It displays detailed information about the request being sent to LLM API and response received from it,

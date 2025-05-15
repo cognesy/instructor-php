@@ -18,7 +18,7 @@ the accuracy of the response.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class TimeRange
 {
@@ -30,11 +30,11 @@ class TimeRange
     public int $endTime;
 }
 
-$timeRange = (new Instructor)->respond(
+$timeRange = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => "Workshop with Apex Industries started 9 and it took us 6 hours to complete."]],
     responseModel: TimeRange::class,
     maxRetries: 2
-);
+)->get();
 
 dump($timeRange);
 

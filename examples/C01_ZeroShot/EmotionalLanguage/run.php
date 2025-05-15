@@ -52,7 +52,7 @@ Here is how the results of the research can be applied to your code.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Arrays;
 
 class Company {
@@ -65,13 +65,13 @@ class Company {
 class RespondWithStimulus {
     public function __invoke(array $criteria, string $stimulus) : array {
         $criteriaStr = Arrays::toBullets($criteria);
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: [
                 ['role' => 'user', 'content' => "List companies meeting criteria:\n{$criteriaStr}"],
                 ['role' => 'user', 'content' => "{$stimulus}"],
             ],
             responseModel: Sequence::of(Company::class),
-        )->toArray();
+        )->get()->toArray();
     }
 }
 

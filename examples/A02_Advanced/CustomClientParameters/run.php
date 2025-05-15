@@ -15,7 +15,7 @@ other LLMs which support OpenAI API.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Env;
@@ -37,14 +37,14 @@ $config = new LLMConfig(
 );
 
 // Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withLLMConfig($config);
+$structuredOutput = (new StructuredOutput)->withLLMConfig($config);
 
 // Call with custom model and execution mode
-$user = $instructor->respond(
+$user = $structuredOutput->create(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     mode: OutputMode::Tools,
-);
+)->get();
 
 
 dump($user);

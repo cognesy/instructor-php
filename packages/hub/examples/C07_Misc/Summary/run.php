@@ -14,7 +14,7 @@ This is an example of a simple summarization with keyword extraction.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 $report = <<<EOT
     [2021-09-01]
@@ -47,7 +47,7 @@ class Summary {
     public array $keywords = [];
 }
 
-$summary = (new Instructor)
+$summary = (new StructuredOutput)
     ->withConnection('openai')
     ->request(
         input: $report,

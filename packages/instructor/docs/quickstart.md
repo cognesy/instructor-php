@@ -31,7 +31,7 @@ In your project directory, create a new PHP file `test-instructor.php`:
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Set up OpenAI API key
 $apiKey = 'your-openai-api-key';
@@ -46,10 +46,10 @@ class City {
 }
 
 // Step 2: Use Instructor to run LLM inference
-$city = (new Instructor)->withConnection('openai')->respond(
+$city = (new StructuredOutput)->withConnection('openai')->create(
     messages: 'What is the capital of France?',
     responseModel: City::class,
-);
+)->get();
 
 var_dump($city);
 ```

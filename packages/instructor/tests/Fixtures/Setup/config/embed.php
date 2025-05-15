@@ -24,7 +24,7 @@ return [
             'maxInputs' => 16,
         ],
         'cohere1' => [
-            'providerType' => 'cohere1',,
+            'providerType' => 'cohere1',
             'apiUrl' => 'https://api.cohere.ai/v1',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',

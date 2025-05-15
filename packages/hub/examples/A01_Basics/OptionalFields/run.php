@@ -15,7 +15,7 @@ defaults like empty strings.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class UserRole
 {
@@ -29,10 +29,10 @@ class UserDetail
     public ?UserRole $role;
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [["role" => "user",  "content" => "Jason is 25 years old."]],
     responseModel: UserDetail::class,
-);
+)->get();
 
 
 dump($user);

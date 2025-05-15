@@ -35,15 +35,15 @@ class UserDetail {
 
 #### Step 2: Extract
 
-Use the `Instructor::respond()` method to send a prompt and extract the data into the target object. The `responseModel` parameter specifies the model to use for extraction.
+Use the `StructuredOutput::create()` method to send a prompt and extract the data into the target object. The `responseModel` parameter specifies the model to use for extraction.
 
 ```php
 /** @var UserDetail */
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [["role": "user", "content": "Extract Jason is 25 years old"]],
     responseModel: UserDetail::class,
     model: "gpt-3.5-turbo",
-);
+)->get();
 
 assert($user->name == "Jason")
 assert($user->age == 25)
@@ -64,7 +64,7 @@ Validation can also be plugged into the same data model. If the response trigger
 Here, the `LeadReport` model is passed as the `$responseModel`, and `$maxRetries` is set to 2. It means that if the extracted data does not match the model, Instructor will re-ask the model 2 times before giving up.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
@@ -74,11 +74,11 @@ class UserDetails
     public string $email;
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => "you can reply to me via jason@gmailcom -- Jason"]],
     responseModel: UserDetails::class,
     maxRetries: 2
-);
+)->get();
 
 assert($user->email === "jason@gmail.com");
 ```
@@ -95,7 +95,7 @@ Instructor uses Symfony validation component to validate extracted data. You can
 See [Symfony docs](https://symfony.com/doc/current/reference/constraints/Callback.html) for more details on how to use Callback constraint.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
     
@@ -115,11 +115,11 @@ class UserDetails
     }
 }
     
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
-);
+)->get();
 
 assert($user->name === "JASON");
 ```

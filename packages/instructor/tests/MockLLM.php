@@ -10,7 +10,6 @@ use Mockery;
 class MockLLM
 {
     static public function get(array $args) : CanHandleHttpRequest {
-//        $mockLLM = Mockery::mock(OpenAIDriver::class);
         $mockHttp = Mockery::mock(GuzzleDriver::class);
         $mockResponse = Mockery::mock(HttpClientResponse::class);
 
@@ -20,14 +19,6 @@ class MockLLM
         }
 
         $mockHttp->shouldReceive('handle')->andReturn($mockResponse);
-
-//        $mockLLM->shouldReceive('getData')->andReturn('');
-//        $mockLLM->shouldReceive('handle')->andReturn($mockResponse);
-//        $mockLLM->shouldReceive('getEndpointUrl')->andReturn('');
-//        $mockLLM->shouldReceive('getRequestHeaders')->andReturn([]);
-//        $mockLLM->shouldReceive('getRequestBody')->andReturnUsing([]);
-//        $mockLLM->shouldReceive('toLLMResponse')->andReturnUsing(...$list);
-//        $mockLLM->shouldReceive('toPartialLLMResponse')->andReturn($mockLLM);
 
         $mockResponse->shouldReceive('statusCode')->andReturn(200);
         $mockResponse->shouldReceive('headers')->andReturn([]);

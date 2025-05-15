@@ -18,13 +18,13 @@ received, but only when any property of the object is updated.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
 }
 
-$person = (new Instructor)->request(
+$person = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]
@@ -62,9 +62,9 @@ One more method available on `Stream` is `final()`. It returns only the final re
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new Instructor)->request(
+$stream = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 )->stream();
@@ -86,9 +86,9 @@ $db->savePerson($person);
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new Instructor)->request(
+$stream = (new StructuredOutput)->create(
     messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
     responseModel: Sequence::of(Participant::class),
 )->stream();

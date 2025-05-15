@@ -27,7 +27,7 @@ Here's the image we're going to extract data from.
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Vendor {
     public ?string $name = '';
@@ -51,12 +51,12 @@ class Receipt {
     public float $total;
 }
 
-$receipt = (new Instructor)->respond(
+$receipt = (new StructuredOutput)->create(
     input: Image::fromFile(__DIR__ . '/receipt.png'),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt.',
     options: ['max_tokens' => 4096]
-);
+)->get();
 
 dump($receipt);
 

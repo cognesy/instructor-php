@@ -136,17 +136,17 @@ Now, let's extract the data from the message.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 $text = <<<TEXT
     Jane Doe lives in Springfield. She is 25 years old and works as a line worker. 
     McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
     TEXT;
 
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: $text,
     responseModel: $structure,
-);
+)->get();
 
 dump($person->toArray());
 // array [

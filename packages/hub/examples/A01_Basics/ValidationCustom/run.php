@@ -15,7 +15,7 @@ offers you #[Assert/Callback] annotation to build fully customized validation lo
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -35,11 +35,11 @@ class UserDetails
     }
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
-);
+)->get();
 
 dump($user);
 

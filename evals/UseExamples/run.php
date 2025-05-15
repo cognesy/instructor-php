@@ -3,7 +3,7 @@ require 'evals/boot.php';
 
 use Cognesy\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Evals\Executors\Data\InferenceCases;
-use Cognesy\Evals\Executors\Data\InstructorData;
+use Cognesy\Evals\Executors\Data\StructuredOutputData;
 use Cognesy\Evals\Executors\RunInstructor;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
@@ -12,7 +12,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Evals\UseExamples\Company;
 use Evals\UseExamples\CompanyEval;
 
-$data = new InstructorData(
+$data = new StructuredOutputData(
     messages: [
         ['role' => 'user', 'content' => 'YOUR GOAL: Use tools to store the information from context based on user questions.'],
         ['role' => 'user', 'content' => 'CONTEXT: Our company ACME was founded in 2020.'],

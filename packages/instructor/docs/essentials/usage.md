@@ -10,7 +10,7 @@ Response model class is a plain PHP class with typehints specifying the types of
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Step 0: Create .env file in your project root:
 // OPENAI_API_KEY=your_api_key
@@ -25,10 +25,10 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-);
+)->get();
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -58,12 +58,12 @@ You can provide a string instead of an array of messages. This is useful when yo
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$value = (new Instructor)->respond(
+$value = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
-);
+)->get();
 ?>
 ```
 
@@ -75,14 +75,14 @@ and then call `get()` to get the response.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$instructor = (new Instructor)->request(
+$structuredOutput = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 );
 
-$person = $instructor->get();
+$person = $structuredOutput->get();
 ?>
 ```
 
@@ -93,12 +93,12 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `respond()` and `request()` methods
+The `input` field of Instructor's `create()` method
 can be an object, but also an array or just a string.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Email {
     public function __construct(
@@ -114,11 +114,11 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new Instructor)->respond(
+$translation = (new StructuredOutput)->create(
     input: $email,
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
-);
+)->get();
 ?>
 ```
 
@@ -131,9 +131,9 @@ processing the data as soon as it is available.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new Instructor)->request(
+$stream = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]

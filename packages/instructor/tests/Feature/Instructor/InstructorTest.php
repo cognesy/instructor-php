@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Instructor\EventSink;
 use Cognesy\Instructor\Tests\Examples\Instructor\Person;
 use Cognesy\Instructor\Tests\MockLLM;
@@ -12,11 +12,11 @@ $mockLLM = MockLLM::get([
 $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($mockLLM, $text) {
-    $instructor = (new Instructor)->withHttpClient($mockLLM);
-    $person = $instructor->respond(
+    $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
+    $person = $structuredOutput->create(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-    );
+    )->get();
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
@@ -24,11 +24,11 @@ it('handles direct call', function () use ($mockLLM, $text) {
 
 it('handles onEvent()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withHttpClient($mockLLM);
-    $person = $instructor->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->respond(
+    $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
+    $person = $structuredOutput->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->create(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-    );
+    )->get();
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);
@@ -37,11 +37,11 @@ it('handles onEvent()', function () use ($mockLLM, $text) {
 
 it('handles wiretap()', function () use ($mockLLM, $text) {
     $events = new EventSink();
-    $instructor = (new Instructor)->withHttpClient($mockLLM);
-    $person = $instructor->wiretap(fn($e) => $events->onEvent($e))->respond(
+    $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
+    $person = $structuredOutput->wiretap(fn($e) => $events->onEvent($e))->create(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-    );
+    )->get();
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);

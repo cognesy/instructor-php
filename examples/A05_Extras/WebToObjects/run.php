@@ -32,7 +32,7 @@ require 'examples/boot.php';
 
 use Cognesy\Auxiliary\Web\Webpage;
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class Company {
@@ -47,7 +47,7 @@ class Company {
     public array $clients = [];
 }
 
-$instructor = (new Instructor)->withConnection('openai');
+$structuredOutput = (new StructuredOutput)->withConnection('openai');
 
 $companyGen = Webpage::withScraper('scrapfly')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
@@ -61,11 +61,11 @@ $companyGen = Webpage::withScraper('scrapfly')
 
 $companies = [];
 foreach($companyGen as $companyDiv) {
-    $company = $instructor->respond(
+    $company = $structuredOutput->create(
         messages: $companyDiv,
         responseModel: Company::class,
         mode: OutputMode::Json
-    );
+    )->get();
     $companies[] = $company;
     dump($company);
 }

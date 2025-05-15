@@ -15,7 +15,7 @@ the provided text with Cohere R models.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $report = <<<'EOT'
@@ -95,13 +95,13 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$instructor = (new Instructor)->withConnection('cohere2');
+$structuredOutput = (new StructuredOutput)->withConnection('cohere2');
 
 echo "PROJECT EVENTS:\n\n";
 
-$events = $instructor
+$events = $structuredOutput
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
-    ->request(
+    ->create(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
         model: 'command-r-plus-08-2024',

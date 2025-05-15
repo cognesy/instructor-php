@@ -3,19 +3,19 @@
 Get the task.
 
 ```php
-$instructor = new Instructor();
-$task = $instructor->respond(
+$structuredOutput = new StructuredOutput();
+$task = $structuredOutput->create(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
-);
+)->get();
 
 $this->updateView($task);
 ```
 or
 
 ```php
-$instructor = new Instructor();
-$task = $instructor->request(
+$structuredOutput = new StructuredOutput();
+$task = $structuredOutput->create(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
 )->get();
@@ -26,10 +26,11 @@ $this->updateView($task);
 Get partial updates of task.
 
 ```php
-$instructor = new Instructor();
-$stream = $instructor->request(
+$structuredOutput = new StructuredOutput();
+$stream = $structuredOutput->request(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
+    stream: true,
 )->stream();
 
 foreach($stream->partial as $taskUpdate) {
@@ -47,13 +48,13 @@ if($stream->complete) {
 Get the list of tasks, one by one.
 
 ```php
-$instructor = new Instructor();
-$stream = $instructor->request(
+$structuredOutput = new StructuredOutput();
+$list = $structuredOutput->create(
     messages: "Jason is 35 years old",
     responseModel: Sequence::of(Task::class),
 )->get();
 
-foreach($stream as $taskUpdate) {
+foreach($list as $taskUpdate) {
     // Partially updated model
     $this->updateView($taskUpdate);
 }
@@ -62,8 +63,8 @@ foreach($stream as $taskUpdate) {
 Get the list of tasks, one by one, with partial updates.
 
 ```php
-$instructor = new Instructor();
-$stream = $instructor->request(
+$structuredOutput = new StructuredOutput();
+$stream = $structuredOutput->create(
     messages: "Jason is 35 years old",
     responseModel: Sequence::of(Task::class),
     partials: true

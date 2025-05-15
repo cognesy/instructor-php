@@ -35,7 +35,7 @@ with some slight modifications.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Problem {
     public string $problemExplanation;
@@ -63,10 +63,10 @@ class SolvePerAnalogy {
     PROMPT;
 
     public function __invoke(string $query) : Response {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: str_replace(['{n}', '{query}'], [$this->n, $query], $this->prompt),
             responseModel: Response::class,
-        );
+        )->get();
     }
 }
 

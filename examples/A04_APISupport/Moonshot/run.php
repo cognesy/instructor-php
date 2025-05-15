@@ -20,7 +20,7 @@ Mode compatibility:
 require 'examples/boot.php';
 
 use Cognesy\Http\Debug\Debug;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
@@ -40,9 +40,9 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$instructor = (new Instructor)->withConnection('moonshot-kimi');
+$structuredOutput = (new StructuredOutput)->withConnection('moonshot-kimi');
 Debug::setEnabled();
-$user = $instructor->respond(
+$user = $structuredOutput->create(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     examples: [[
@@ -51,7 +51,7 @@ $user = $instructor->respond(
     ]],
     model: 'kimi-k1.5-preview', // set your own value/source
     mode: OutputMode::JsonSchema,
-);
+)->get();
 
 print("Completed response model:\n\n");
 

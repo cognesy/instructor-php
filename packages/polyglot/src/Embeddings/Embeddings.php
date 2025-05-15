@@ -32,15 +32,14 @@ class Embeddings
         ?EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->config = $config ?? EmbeddingsConfig::load($connection
-            ?: Settings::get('embed', "defaultConnection")
-        );
+        $connection = $connection ?: Settings::get('embeddings', "defaultConnection");
+        $this->config = $config ?? EmbeddingsConfig::load($connection);
         $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
         $this->driverFactory = new EmbeddingsDriverFactory($this->events);
         $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
     }
 
-    // PUBLIC ///////////////////////////////////////////////////
+    // PUBLIC static ////////////////////////////////////////////
 
     public static function registerDriver(string $name, string|callable $driver) {
         EmbeddingsDriverFactory::registerDriver($name, $driver);
@@ -53,6 +52,8 @@ class Embeddings
     public static function fromDSN(string $dsn): self {
         return new self(config: EmbeddingsConfig::fromDSN($dsn));
     }
+
+    // PUBLIC ///////////////////////////////////////////////////
 
     /**
      * Configures the Embeddings instance with the given connection name.

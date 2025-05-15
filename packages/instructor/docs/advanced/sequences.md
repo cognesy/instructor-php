@@ -19,10 +19,10 @@ $text = <<<TEXT
     and Anna is 2 years younger than him.
 TEXT;
 
-$list = (new Instructor)->respond(
+$list = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Sequence::of(Person::class),
-);
+)->get();
 ```
 
 
@@ -62,12 +62,12 @@ $text = <<<TEXT
     and Anna is 2 years younger than him.
 TEXT;
 
-$list = (new Instructor)->request(
+$list = (new StructuredOutput)->onSequenceUpdate(
+    fn($sequence) => updateUI($sequence->last()) // get last added object
+)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Sequence::of(Person::class),
     options: ['stream' => true]
-)->onSequenceUpdate(
-    fn($sequence) => updateUI($sequence->last()) // get last added object
 )->get();
 
 // now the list is fully extracted and validated

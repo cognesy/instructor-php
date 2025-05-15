@@ -16,7 +16,7 @@ the JSON Schema manually, which can be error-prone and time-consuming.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class City {
     public string $name;
@@ -26,10 +26,10 @@ class City {
 
 $schema = (new SchemaFactory)->schema(City::class);
 
-$city = (new Instructor)->respond(
+$city = (new StructuredOutput)->create(
     messages: "What is capital of France",
     responseModel: $schema,
-);
+)->get();
 
 dump($city);
 

@@ -26,7 +26,7 @@ To read about using more than one role, check out [Multi-Persona Self-Collaborat
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Utils\Arrays;
 
 class Company {
@@ -40,13 +40,13 @@ class GenerateLeads {
     public function __invoke(array $criteria, array $roles) : array {
         $criteriaStr = Arrays::toBullets($criteria);
         $rolesStr = Arrays::toBullets($roles);
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: [
                 ['role' => 'user', 'content' => "Your roles:\n{$rolesStr}\n\n"],
                 ['role' => 'user', 'content' => "List companies meeting criteria:\n{$criteriaStr}\n\n"],
             ],
             responseModel: Sequence::of(Company::class),
-        )->toArray();
+        )->get()->toArray();
     }
 }
 

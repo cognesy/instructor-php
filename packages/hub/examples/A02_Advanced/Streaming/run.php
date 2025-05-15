@@ -15,7 +15,7 @@ generated.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Cli\Console;
 
@@ -63,7 +63,7 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$stream = (new Instructor)->withConnection('openai')->request(
+$stream = (new StructuredOutput)->withConnection('openai')->request(
     messages: $text,
     responseModel: UserDetail::class,
     options: ['stream' => true],

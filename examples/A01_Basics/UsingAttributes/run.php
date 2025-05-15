@@ -16,7 +16,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract
@@ -39,10 +39,10 @@ print($text . "\n\n");
 
 // Step 3: Extract structured data using default language model API (OpenAI)
 print("Extracting structured data using LLM...\n\n");
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: $text,
     responseModel: User::class,
-);
+)->get();
 
 // Step 4: Now you can use the extracted data in your application
 print("Extracted data:\n");

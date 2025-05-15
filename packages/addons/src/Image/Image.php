@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Image;
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Utils\Image as ImageUtil;
 
@@ -68,7 +68,7 @@ class Image extends ImageUtil
         array               $options = [],
         OutputMode          $mode = OutputMode::Tools,
     ) : mixed {
-        return (new Instructor)->withConnection($connection)->request(
+        return (new StructuredOutput)->withConnection($connection)->request(
             input: $this,
             responseModel: $responseModel,
             system: $system,

@@ -23,7 +23,7 @@ require 'examples/boot.php';
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 enum ReviewSentiment : string {
     case Positive = 'positive';
@@ -40,23 +40,23 @@ class PredictSentiment {
     private int $n = 4;
 
     public function __invoke(string $review) : ReviewSentiment {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: [
                 ['role' => 'user', 'content' => "Review: {$review}"],
             ],
             responseModel: Scalar::enum(ReviewSentiment::class),
             examples: $this->generateExamples($review),
-        );
+        )->get();
     }
 
     private function generate(string $inputReview, ReviewSentiment $sentiment) : array {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: [
                 ['role' => 'user', 'content' => "Generate {$this->n} various {$sentiment->value} reviews based on the input review:\n{$inputReview}"],
                 ['role' => 'user', 'content' => "Generated review:"],
             ],
             responseModel: Sequence::of(GeneratedReview::class),
-        )->toArray();
+        )->get()->toArray();
     }
 
     private function generateExamples(string $inputReview) : array {

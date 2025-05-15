@@ -4,7 +4,7 @@ namespace Cognesy\Experimental\Module\Core;
 use Cognesy\Experimental\Module\Contracts\CanInitiateModuleCall;
 use Cognesy\Experimental\Module\Core\Traits\Module\HandlesCreation;
 use Cognesy\Experimental\Module\Core\Traits\Module\HandlesTraversal;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 /**
  * Why Module is designed this way
@@ -36,10 +36,10 @@ abstract class Module implements CanInitiateModuleCall
     }
 
     public function using(
-        Instructor $instructor = null,
+        Instructor $structuredOutput = null,
     ) : static {
         foreach($this->predictors() as $predictor) {
-            $predictor->using(instructor: $instructor);
+            $predictor->using(structuredOutput: $structuredOutput);
         }
         return $this;
     }

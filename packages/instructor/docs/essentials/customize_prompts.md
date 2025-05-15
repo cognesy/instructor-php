@@ -2,7 +2,7 @@
 
 In case you want to take control over the prompts sent by Instructor
 to LLM for different modes, you can use the `prompt` parameter in the
-`request()` or `respond()` methods.
+`create()` method.
 
 It will override the default Instructor prompts, allowing you to fully
 customize how LLM is instructed to process the input.
@@ -20,7 +20,7 @@ as tools are not used in these modes.
 
 ```php
 <?php
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
@@ -42,12 +42,12 @@ respond in JSON format rather than plain text.
 
 ```php
 <?php
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     prompt: "\nYour task is to respond correctly with JSON object.",
     mode: OutputMode::Json
-);
+)->get();
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
@@ -82,7 +82,7 @@ $jsonSchema = json_encode([
     "required" => ["name", "age"]
 ]);
 
-$user = $instructor
+$user = $structuredOutput
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
@@ -109,7 +109,7 @@ Example below demonstrates how to use a template string as a prompt:
 
 ```php
 <?php
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
@@ -137,7 +137,7 @@ is correctly structured and contains the expected data.
 
 ```php
 <?php
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->request(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,

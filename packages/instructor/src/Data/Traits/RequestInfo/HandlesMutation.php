@@ -20,6 +20,16 @@ trait HandlesMutation
         return $this;
     }
 
+    public function withResponseClass(string $class) : static {
+        $this->responseModel = $class;
+        return $this;
+    }
+
+    public function withResponseSchema(array $schema) : static {
+        $this->responseModel = $schema;
+        return $this;
+    }
+
     public function withModel(string $model) : static {
         $this->model = $model;
         return $this;

@@ -3,6 +3,8 @@
 namespace Cognesy\Instructor\Data\Traits\ChatTemplate;
 
 use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Exception;
@@ -66,8 +68,6 @@ trait HandlesSections
         return new Message(
             role: 'user',
             content: $prompt
-                ?: $this->defaultPrompts[$this->request->mode()->value]
-                ?? ''
         );
     }
 
@@ -78,7 +78,7 @@ trait HandlesSections
         return Messages::fromInput($input);
     }
 
-    protected function makeJsonSchema() : array {
-        return $this->request->responseModel()?->toJsonSchema();
+    protected function makeJsonSchema(?ResponseModel $responseModel) : array {
+        return $responseModel?->toJsonSchema() ?? [];
     }
 }

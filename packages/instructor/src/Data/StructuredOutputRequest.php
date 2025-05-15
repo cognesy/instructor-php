@@ -2,13 +2,16 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Settings;
 
 class StructuredOutputRequest
 {
-    use \Cognesy\Instructor\Data\Traits\Request\HandlesMessages;
-    use \Cognesy\Instructor\Data\Traits\Request\HandlesRetries;
-    use \Cognesy\Instructor\Data\Traits\Request\HandlesSchema;
+    use Traits\Request\HandlesMessages;
+    use Traits\Request\HandlesRetries;
+    use Traits\Request\HandlesSchema;
+
+    protected StructuredOutputConfig $config;
+    private StructuredOutputRequestInfo $requestInfo;
+    private ChatTemplate $chatTemplate;
 
     public function __construct(
         string|array $messages,
@@ -39,11 +42,13 @@ class StructuredOutputRequest
         $this->model = $model;
 
         $this->messages = $this->normalizeMessages($messages);
-        $this->toolName = $toolName ?: Settings::get('llm', 'defaultToolName');
-        $this->toolDescription = $toolDescription ?: Settings::get('llm', 'defaultToolDescription');
-
         $this->requestedSchema = $requestedSchema;
         $this->responseModel = $responseModel;
+
+        $this->config = StructuredOutputConfig::load();
+        $this->toolName = $toolName ?: $this->config->toolName();
+        $this->toolDescription = $toolDescription ?: $this->config->toolDescription();
+        $this->chatTemplate = new ChatTemplate($this->config);
     }
 
     public function toArray() : array {

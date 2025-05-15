@@ -23,7 +23,7 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class RewrittenTask {
     #[Description("Relevant context")]
@@ -45,18 +45,18 @@ class RefineAndSolve {
 
     public function __invoke(string $problem) : int {
         $rewrittenPrompt = $this->rewritePrompt($problem);
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: "{$rewrittenPrompt->relevantContext}\nQuestion: {$rewrittenPrompt->userQuery}",
             responseModel: Scalar::integer('answer'),
-        );
+        )->getInt();
     }
 
     private function rewritePrompt(string $query) : RewrittenTask {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: str_replace('{query}', $query, $this->prompt),
             responseModel: RewrittenTask::class,
             model: 'gpt-4o',
-        );
+        )->get();
     }
 }
 

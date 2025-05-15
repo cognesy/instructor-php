@@ -2,7 +2,7 @@
 
 ```php
 <?php
-$output = Instructor::transform(
+$output = StructuredOutput::transform(
     [
         'name' => 'name',
         'email' => 'email',

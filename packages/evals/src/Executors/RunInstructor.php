@@ -4,16 +4,16 @@ namespace Cognesy\Evals\Executors;
 
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
-use Cognesy\Evals\Executors\Data\InstructorData;
+use Cognesy\Evals\Executors\Data\StructuredOutputData;
 use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class RunInstructor implements CanRunExecution
 {
-    private InstructorData $instructorData;
+    private StructuredOutputData $structuredOutputData;
 
-    public function __construct(InstructorData $data) {
-        $this->instructorData = $data;
+    public function __construct(StructuredOutputData $data) {
+        $this->structuredOutputData = $data;
     }
 
     public function run(Execution $execution) : Execution {
@@ -24,25 +24,25 @@ class RunInstructor implements CanRunExecution
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeInstructorResponse(Execution $execution) : StructuredOutputResponse {
-        return (new Instructor)
+        return (new StructuredOutput)
             ->withConnection($execution->get('case.connection'))
             ->request(
-                messages: $this->instructorData->messages,
-                input: $this->instructorData->input,
-                responseModel: $this->instructorData->responseModel(),
-                system: $this->instructorData->system,
-                prompt: $this->instructorData->prompt,
-                examples: $this->instructorData->examples,
-                model: $this->instructorData->model,
-                maxRetries: $this->instructorData->maxRetries,
+                messages: $this->structuredOutputData->messages,
+                input: $this->structuredOutputData->input,
+                responseModel: $this->structuredOutputData->responseModel(),
+                system: $this->structuredOutputData->system,
+                prompt: $this->structuredOutputData->prompt,
+                examples: $this->structuredOutputData->examples,
+                model: $this->structuredOutputData->model,
+                maxRetries: $this->structuredOutputData->maxRetries,
                 options: [
-                    'max_tokens' => $this->instructorData->maxTokens,
-                    'temperature' => $this->instructorData->temperature,
+                    'max_tokens' => $this->structuredOutputData->maxTokens,
+                    'temperature' => $this->structuredOutputData->temperature,
                     'stream' => $execution->get('case.isStreamed'),
                 ],
-                toolName: $this->instructorData->toolName,
-                toolDescription: $this->instructorData->toolDescription,
-                retryPrompt: $this->instructorData->retryPrompt,
+                toolName: $this->structuredOutputData->toolName,
+                toolDescription: $this->structuredOutputData->toolDescription,
+                retryPrompt: $this->structuredOutputData->retryPrompt,
                 mode: $execution->get('case.mode'),
             );
     }

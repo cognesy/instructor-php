@@ -1,0 +1,63 @@
+<?php
+
+use Cognesy\Utils\Env;
+
+return [
+    'defaultConnection' => 'openai',
+
+    'azure-embed' => [
+        'providerType' => 'azure',
+        'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',
+        'apiKey' => Env::get('AZURE_OPENAI_EMBED_API_KEY', ''),
+        'endpoint' => '/embeddings',
+        'metadata' => [
+            'apiVersion' => '2023-05-15',
+            'resourceName' => 'instructor-dev',
+            'deploymentId' => 'text-embedding-3-small',
+        ],
+    ],
+    'cohere1-embed' => [
+        'providerType' => 'cohere1',
+        'apiUrl' => 'https://api.cohere.ai/v1',
+        'apiKey' => Env::get('COHERE_API_KEY', ''),
+        'endpoint' => '/embed',
+    ],
+    'gemini-embed' => [
+        'providerType' => 'gemini',
+        'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
+        'apiKey' => Env::get('GEMINI_API_KEY', ''),
+        'endpoint' => '/{model}:batchEmbedContents',
+    ],
+    'jina-embed' => [
+        'providerType' => 'jina',
+        'apiUrl' => 'https://api.jina.ai/v1',
+        'apiKey' => Env::get('JINA_API_KEY', ''),
+        'endpoint' => '/embeddings',
+        'metadata' => [
+            'organization' => ''
+        ],
+    ],
+    'mistral-embed' => [
+        'providerType' => 'mistral',
+        'apiUrl' => 'https://api.mistral.ai/v1',
+        'apiKey' => Env::get('MISTRAL_API_KEY', ''),
+        'endpoint' => '/embeddings',
+    ],
+    'ollama-embed' => [
+        'providerType' => 'ollama',
+        'apiUrl' => 'http://localhost:11434/v1',
+        'apiKey' => Env::get('OLLAMA_API_KEY', ''),
+        'endpoint' => '/embeddings',
+        'httpClient' => 'http-ollama',
+    ],
+    'openai-embed' => [
+        'providerType' => 'openai',
+        'apiUrl' => 'https://api.openai.com/v1',
+        'apiKey' => Env::get('OPENAI_API_KEY', ''),
+        'endpoint' => '/embeddings',
+        'metadata' => [
+            'organization' => ''
+        ],
+    ],
+
+];

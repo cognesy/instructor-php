@@ -9,7 +9,7 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `respond()` and `request()` methods
+The `input` field of Instructor's `create()` method
 can be an object, but also an array or just a string.
 
 
@@ -19,7 +19,7 @@ can be an object, but also an array or just a string.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Email {
     public function __construct(
@@ -35,11 +35,11 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translatedEmail = (new Instructor)->respond(
+$translatedEmail = (new StructuredOutput)->create(
     input: $email,
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
-);
+)->get();
 
 dump($translatedEmail);
 

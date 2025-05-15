@@ -21,7 +21,7 @@ require 'examples/boot.php';
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class TextElementModel
 {
@@ -39,11 +39,11 @@ $sourceModel = new TextElementModel(
 
 $validator = new class implements CanValidateObject {
     public function validate(object $dataObject): ValidationResult {
-        $isInGerman = (new Instructor)->respond(
+        $isInGerman = (new StructuredOutput)->create(
             input: $dataObject,
             responseModel: Scalar::boolean(),
             prompt: 'Are all content fields translated to German?',
-        );
+        )->get();
         return match($isInGerman) {
             true => ValidationResult::valid(),
             default => ValidationResult::invalid(['All input text fields have to be translated to German. Keep HTML tags unchanged.']),
@@ -51,16 +51,16 @@ $validator = new class implements CanValidateObject {
     }
 };
 
-$transformedModel = (new Instructor)
+$transformedModel = (new StructuredOutput)
     ->wiretap(fn($e)=>$e->print())
     ->addValidator($validator)
-    ->respond(
+    ->create(
         input: $sourceModel,
         responseModel: get_class($sourceModel),
         prompt: 'Translate all text fields to German. Keep HTML tags unchanged.',
         maxRetries: 2,
         options: ['temperature' => 0],
-);
+    )->get();
 
 dump($transformedModel);
 

@@ -7,7 +7,7 @@ use Cognesy\Evals\Execution;
 use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\BooleanCorrectnessAnalysis;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class LLMBooleanCorrectnessEval implements CanGenerateObservations
@@ -18,9 +18,9 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
         private string $name,
         private array $expected,
         private array $actual,
-        private ?Instructor $instructor = null,
+        private ?StructuredOutput $structuredOutput = null,
     ) {
-        $this->instructor = $instructor ?? new Instructor();
+        $this->structuredOutput = $structuredOutput ?? new StructuredOutput();
     }
 
     public function accepts(mixed $subject): bool {
@@ -73,7 +73,7 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : BooleanCorrectnessAnalysis {
-        return $this->instructor->request(
+        return $this->structuredOutput->request(
             input: [
                 'expected_result' => $this->expected,
                 'actual_result' => $this->actual

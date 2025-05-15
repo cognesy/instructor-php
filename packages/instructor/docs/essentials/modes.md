@@ -19,29 +19,28 @@ Those modes are not useful for `Instructor` class (as it is focused on structure
 
 ### Example of Using Modes
 
-Mode can be set via parameter of `Instructor::response()` or `Instructor::request()`
-methods.
+Mode can be set via parameter of `StructuredOutput::create()` method.
 
 The default mode is `OutputMode::Tools`, which leverages OpenAI-style tool calls.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$instructor = new Instructor();
+$structuredOutput = new StructuredOutput();
 
-$response = $instructor->respond(
+$response = $structuredOutput->create(
     messages: "...",
     responseModel: ...,
     ...,
     mode: OutputMode::Json
-);
+)->get();
 ```
 Mode can be also set via `request()` method.
 
 ```php
 <?php
-$response = $instructor->request(
+$response = $structuredOutput->request(
     messages: "...",
     responseModel: ...,
     ...,

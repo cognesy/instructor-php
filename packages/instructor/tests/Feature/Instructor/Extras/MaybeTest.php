@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Extraction\Person;
 use Cognesy\Instructor\Tests\MockLLM;
 
@@ -10,10 +10,10 @@ it('supports simple properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new Instructor)->withHttpClient($mockLLM)->respond(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
-    );
+    )->get();
     // dump($person);
     expect($person)->toBeInstanceOf(Person::class);
     expect($person->name)->toBe('Jason');

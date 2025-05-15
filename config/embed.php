@@ -3,11 +3,8 @@
 use Cognesy\Utils\Env;
 
 return [
-    'debug' => [
-        'enabled' => false,
-    ],
-
     'defaultConnection' => 'openai',
+
     'connections' => [
         'azure' => [
             'providerType' => 'azure',

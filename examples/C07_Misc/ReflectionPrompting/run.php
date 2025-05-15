@@ -19,7 +19,7 @@ require 'examples/boot.php';
 use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class ReflectiveResponse implements CanValidateSelf {
@@ -51,12 +51,12 @@ class ReflectiveResponse implements CanValidateSelf {
 }
 
 $problem = 'Solve the equation x+y=x-y';
-$solution = (new Instructor)->withConnection('anthropic')->respond(
+$solution = (new StructuredOutput)->withConnection('anthropic')->create(
     messages: $problem,
     responseModel: ReflectiveResponse::class,
     mode: OutputMode::MdJson,
     options: ['max_tokens' => 2048]
-);
+)->get();
 
 print("Problem:\n$problem\n\n");
 dump($solution);

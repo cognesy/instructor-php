@@ -13,7 +13,7 @@ abstractions.
 
 ### Simplicity
 
-1. Most users will only need to learn `responseModel` and `Instructor::respond()` to get started.
+1. Most users will only need to learn `responseModel` and `StructuredOutput::create()` to get started.
 2. No new prompting language to learn, no new abstractions to learn.
 
 
@@ -26,22 +26,22 @@ abstractions.
 ### Flexibility
 
 1. If you build a system with OpenAI directly, it is easy to incrementally adopt Instructor by just adding
-`Instructor::respond()` with data schemas fed in via `responseModel`.
+`StructuredOutput::create()` with data schemas fed in via `responseModel`.
 2. Use any class to define your data schema (no need to inherit from some base class).
 
 
 
-## The zen of `Instructor`
+## The zen of Instructor
 
 Maintain the flexibility and power of PHP classes, without unnecessary constraints.
 
 Begin with a function and a return type hint – simplicity is key. I've learned that the goal of a making a useful
 framework is minimizing regret, both for the author and hopefully for the user.
 
-1. Define data schema `class StructuredData { ... }`
+1. Define data schema `class SomeStructuredData { ... }`
 2. Define validators and methods on your schema.
-3. Encapsulate all your LLM logic into a function `function extract($input) : StructuredData`
-4. Define typed computations against your data with `function compute(StructuredData $data):` or call methods on your
+3. Encapsulate all your LLM logic into a function `function extract($input) : SomeStructuredData`
+4. Define typed computations against your data with `function compute(SomeStructuredData $data):` or call methods on your
 schema `$data->compute()`
 
 It should be that simple.
@@ -50,8 +50,7 @@ It should be that simple.
 
 ## Our Goals
 
-The goal for the library, [documentation](https://cognesy.github.io/instructor-php/), and
-[blog](https://cognesy.github.io/instructor-php/blog/), is to help you be a better programmer and, as a result,
+The goal for the library and [documentation](https://instructorphp.com/) is to help you be a better programmer and, as a result,
 a better AI engineer.
 
 - The library is a result of our desire for simplicity.

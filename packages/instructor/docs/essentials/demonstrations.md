@@ -29,7 +29,7 @@ class User {
     public string $name;
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     examples: [
@@ -43,7 +43,7 @@ $user = (new Instructor)->respond(
         ),
     ],
     mode: OutputMode::Json
-);
+)->get();
 ?>
 ```
 
@@ -61,7 +61,7 @@ In case input or output data is an array, Instructor will automatically convert 
 a JSON string before replacing the placeholders.
 
 ```php
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     examples: [
@@ -72,7 +72,7 @@ $user = (new Instructor)->respond(
         ),
     ],
     mode: OutputMode::Json
-);
+)->get();
 ```
 
 

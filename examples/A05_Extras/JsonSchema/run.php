@@ -16,7 +16,7 @@ runtime.
 require 'examples/boot.php';
 
 use Cognesy\Utils\JsonSchema\JsonSchema;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 $schema = JsonSchema::object(
     properties: [
@@ -26,10 +26,10 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'age'],
 );
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: "Jason is 25 years old and works as an engineer",
     responseModel: $schema,
-);
+)->get();
 
 dump($user);
 

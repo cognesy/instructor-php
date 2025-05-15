@@ -91,7 +91,7 @@ This is a simple example demonstrating how Instructor retrieves structured infor
 Response model class is a plain PHP class with typehints specifying the types of fields of the object.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Step 0: Create .env file in your project root:
 // OPENAI_API_KEY=your_api_key
@@ -106,10 +106,10 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: $text,
     responseModel: Person::class,
-);
+)->get();
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -144,10 +144,10 @@ class Person {
 }
 
 $text = "His name is Jason, he is -28 years old.";
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-);
+)->get();
 
 // if the resulting object does not validate, Instructor throws an exception
 ```
@@ -170,11 +170,11 @@ class Person {
 }
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     maxRetries: 3,
-);
+)->get();
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```

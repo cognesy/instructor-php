@@ -2,7 +2,7 @@
 
 namespace Cognesy\Evals\Executors\Data;
 
-class InstructorData
+class StructuredOutputData
 {
     public function __construct(
         public string|array $messages = '',

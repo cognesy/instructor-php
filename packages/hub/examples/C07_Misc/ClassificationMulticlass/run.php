@@ -14,7 +14,7 @@ to handle multiple labels.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 /** Potential ticket labels */
 enum Label : string {
@@ -41,13 +41,13 @@ The function `multi_classify` executes multi-label classification using LLM.
 <?php
 // Perform single-label classification on the input text.
 function multi_classify(string $data) : TicketLabels {
-    return (new Instructor())->respond(
+    return (new StructuredOutput())->create(
         messages: [[
             "role" => "user",
             "content" => "Label following support ticket: {$data}",
         ]],
         responseModel: TicketLabels::class,
-    );
+    )->get();
 }
 ?>
 ```

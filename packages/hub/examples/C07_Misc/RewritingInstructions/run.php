@@ -18,7 +18,7 @@ in the inference process.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 /**
  * Identify what kind of job the user is doing.
@@ -51,11 +51,11 @@ $text = <<<TEXT
     company.
     TEXT;
 
-$instructor = new Instructor;
-$user = $instructor->respond(
+$structuredOutput = new StructuredOutput;
+$user = $structuredOutput->create(
     messages: [["role" => "user",  "content" => $text]],
     responseModel: UserDetail::class,
-);
+)->get();
 
 dump($user);
 

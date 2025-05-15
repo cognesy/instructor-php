@@ -9,7 +9,7 @@ use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesParametrization;
 use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesPrediction;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Inference;
 
 class Predictor
@@ -20,7 +20,7 @@ class Predictor
     use HandlesParametrization;
     use HandlesPrediction;
 
-    protected Instructor $instructor;
+    protected StructuredOutput $structuredOutput;
     protected Inference $inference;
     protected string $connection;
 
@@ -38,7 +38,7 @@ class Predictor
         string $roleDescription = '',
         string $instructions = '',
     ) {
-        $this->instructor = new Instructor();
+        $this->structuredOutput = new StructuredOutput();
         $this->inference = new Inference();
         $this->requestInfo = new StructuredOutputRequestInfo();
         $this->signature = match(true) {

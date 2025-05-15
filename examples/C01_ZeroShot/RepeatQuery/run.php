@@ -26,7 +26,7 @@ A common critical thinking prompt is: "Let's think step by step."
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Response {
     #[Description("Repeat user's query.")]
@@ -38,10 +38,10 @@ class Response {
 
 class RereadAndRespond {
     public function __invoke(string $query) : Response {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: $query,
             responseModel: Response::class,
-        );
+        )->get();
     }
 }
 

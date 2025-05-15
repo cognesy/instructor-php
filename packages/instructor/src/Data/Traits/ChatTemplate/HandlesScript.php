@@ -28,7 +28,10 @@ trait HandlesScript
             $this->makeInput($request->input())
         );
         $script->section('prompt')->appendMessage(
-            $this->makePrompt($request->prompt())
+            $this->makePrompt($request->prompt()
+                ?: $this->config->prompt($request->mode())
+                ?? ''
+            )
         );
         $script->section('examples')->appendMessages(
             $this->makeExamples($request->examples())

@@ -21,7 +21,7 @@ Here's how you can use Instructor with Groq API.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 enum UserType : string {
@@ -41,10 +41,10 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$instructor = (new Instructor)->withConnection('groq');
+$structuredOutput = (new StructuredOutput)->withConnection('groq');
 
-$user = $instructor
-    ->respond(
+$user = $structuredOutput
+    ->create(
         messages: "Jason (@jxnlco) is 25 years old. He is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
         prompt: 'Parse the user data to JSON, respond using following JSON Schema: <|json_schema|>',
@@ -59,7 +59,7 @@ $user = $instructor
         maxRetries: 2,
         options: ['temperature' => 0.5],
         mode: OutputMode::Json,
-    );
+    )->get();
 
 print("Completed response model:\n\n");
 

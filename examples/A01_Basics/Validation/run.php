@@ -22,7 +22,7 @@ to validate the email field of response.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserDetails
@@ -36,7 +36,7 @@ class UserDetails
 
 $caughtException = false;
 try {
-    $user = (new Instructor)->request(
+    $user = (new StructuredOutput)->request(
         messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
         responseModel: UserDetails::class,
     )->get();

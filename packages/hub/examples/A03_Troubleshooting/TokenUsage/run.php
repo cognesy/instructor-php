@@ -18,7 +18,7 @@ streamed requests.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Data\Usage;
 
 class User {
@@ -36,7 +36,7 @@ function printUsage(Usage $usage) : void {
 
 echo "COUNTING TOKENS FOR SYNC RESPONSE\n";
 $text = "Jason is 25 years old and works as an engineer.";
-$response = (new Instructor)
+$response = (new StructuredOutput)
     ->request(
         messages: $text,
         responseModel: User::class,
@@ -49,7 +49,7 @@ printUsage($response->usage());
 
 echo "\n\nCOUNTING TOKENS FOR STREAMED RESPONSE\n";
 $text = "Anna is 19 years old.";
-$stream = (new Instructor)
+$stream = (new StructuredOutput)
     ->request(
         messages: $text,
         responseModel: User::class,

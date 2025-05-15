@@ -3,7 +3,7 @@ require 'evals/boot.php';
 
 use Cognesy\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Evals\Executors\Data\InferenceCases;
-use Cognesy\Evals\Executors\Data\InstructorData;
+use Cognesy\Evals\Executors\Data\StructuredOutputData;
 use Cognesy\Evals\Executors\RunInstructor;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
@@ -11,7 +11,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Evals\ComplexExtraction\ProjectEvents;
 use Evals\ComplexExtraction\ProjectsEval;
 
-$data = new InstructorData(
+$data = new StructuredOutputData(
     responseModel: ProjectEvents::class,
     maxTokens: 4096,
     prompt: 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>',

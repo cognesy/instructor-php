@@ -3,8 +3,8 @@
 ## No streaming
 
 ```php
-$instructor = new Instructor();
-$async = $instructor->request(
+$structuredOutput = new StructuredOutput();
+$async = $structuredOutput->request(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
     onDone: function (Task $task) {
@@ -21,8 +21,8 @@ $async = $instructor->request(
 ## With streaming / partials
 
 ```php
-$instructor = new Instructor();
-$async = $instructor->->request(
+$structuredOutput = new StructuredOutput();
+$async = $structuredOutput->->request(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
     onEachUpdate: function (Task $task) {

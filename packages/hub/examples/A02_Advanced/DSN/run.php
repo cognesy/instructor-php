@@ -15,7 +15,7 @@ CLI arguments or environment variables.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Env;
@@ -25,13 +25,13 @@ class User {
     public string $name;
 }
 
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ::fromDSN('connection=xai,model=grok-2')
-    ->respond(
+    ->create(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         mode: OutputMode::Tools,
-    );
+    )->get();
 
 dump($user);
 

@@ -160,7 +160,7 @@ This is a simple example demonstrating how Instructor retrieves structured infor
 Response model class is a plain PHP class with typehints specifying the types of fields of the object.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // Step 0: Create .env file in your project root:
 // OPENAI_API_KEY=your_api_key
@@ -175,10 +175,10 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: $text,
     responseModel: Person::class,
-);
+)->get();
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -248,12 +248,12 @@ method with the connection name.
 ```php
 <?php
 // ...
-$user = (new Instructor)
+$user = (new StructuredOutput)
     ->withConnection('ollama')
-    ->respond(
+    ->create(
         messages: "His name is Jason and he is 28 years old.",
         responseModel: Person::class,
-    );
+    )->get();
 // ...
 ```
 
@@ -269,12 +269,12 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `respond()` and `request()` methods
+The `input` field of Instructor's `create()` and `request()` methods
 can be an object, but also an array or just a string.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Email {
     public function __construct(
@@ -290,11 +290,11 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new Instructor)->respond(
+$translation = (new StructuredOutput)->create(
     input: $email,
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
-);
+)->get();
 
 assert($translation instanceof Email); // true
 dump($translation);
@@ -323,10 +323,10 @@ class Person {
 }
 
 $text = "His name is Jason, he is -28 years old.";
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-);
+)->get();
 
 // if the resulting object does not validate, Instructor throws an exception
 ```
@@ -349,11 +349,11 @@ class Person {
 }
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     maxRetries: 3,
-);
+)->get();
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```
@@ -364,13 +364,13 @@ $person = (new Instructor)->respond(
 You can call `request()` method to set the parameters of the request and then call `get()` to get the response.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$instructor = (new Instructor)->request(
+$structuredOutput = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 );
-$person = $instructor->get();
+$person = $structuredOutput->get();
 ```
 
 
@@ -381,9 +381,9 @@ processing the data as soon as it is available.
 
 ```php
 <?php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new Instructor)->request(
+$stream = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]
@@ -411,13 +411,13 @@ You can define `onPartialUpdate()` callback to receive partial results that can 
 > NOTE: Partial updates are not validated. The response is only validated after it is fully received.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
 }
 
-$person = (new Instructor)->request(
+$person = (new StructuredOutput)->request(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]
@@ -440,17 +440,17 @@ You can provide a string instead of an array of messages. This is useful when yo
 ```php
 // Usually, you work with sequences of messages:
 
-$value = (new Instructor)->respond(
+$value = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => "His name is Jason, he is 28 years old."]],
     responseModel: Person::class,
-);
+)->get();
 
 // ...but if you want to keep it simple, you can just pass a string:
 
-$value = (new Instructor)->respond(
+$value = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
-);
+)->get();
 ```
 
 
@@ -460,12 +460,12 @@ Sometimes we just want to get quick results without defining a class for the res
 
 ```php
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
-$value = (new Instructor)->respond(
+$value = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::integer('age'),
-);
+)->getInt();
 
 var_dump($value);
 // int(28)
@@ -480,7 +480,7 @@ Additionally, you can use Scalar adapter to extract one of the provided options 
 
 ```php
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 enum ActivityType : string {
     case Work = 'work';
@@ -489,10 +489,10 @@ enum ActivityType : string {
     case Other = 'other';
 }
 
-$value = (new Instructor)->respond(
+$value = (new StructuredOutput)->create(
     messages: "His name is Jason, he currently plays Doom Eternal.",
     responseModel: Scalar::enum(ActivityType::class, 'activityType'),
-);
+)->getInstanceOf(ActivityType::class);
 
 var_dump($value);
 // enum(ActivityType:Entertainment)
@@ -522,11 +522,11 @@ $text = <<<TEXT
     and Anna is 2 years younger than him.
 TEXT;
 
-$list = (new Instructor)->respond(
+$list = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Sequence::of(Person::class),
     options: ['stream' => true]
-);
+)->get();
 ```
 
 See more about sequences in the [Sequences](docs/sequences.md) section.
@@ -592,7 +592,7 @@ class Event {
 Instructor can retrieve complex data structures from text. Your response model can contain nested objects, arrays, and enums.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 // define a data structures to extract data into
 class Person {
@@ -615,10 +615,10 @@ enum SkillType {
 
 $text = "Alex is 25 years old software engineer, who knows PHP, Python and can play the guitar.";
 
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-); // client is passed explicitly, can specify e.g. different base URL
+)->get(); // client is passed explicitly, can specify e.g. different base URL
 
 // data is extracted into an object of given class
 assert($person instanceof Person); // true
@@ -684,10 +684,10 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 
-$person = (new Instructor)->respond(
+$person = (new StructuredOutput)->create(
     messages: 'Jason is 25 years old and is a manager.',
     responseModel: $structure,
-);
+)->get();
 
 // you can access structure data via field API...
 assert($person->field('name') === 'Jason');
@@ -707,7 +707,7 @@ You can specify model and other options that will be passed to OpenAI / LLM endp
 
 ```php
 use Cognesy\Instructor\Features\LLM\Drivers\OpenAIDriver;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\LLM\LLM\Data\LLMConfig;
 
 // OpenAI auth params
@@ -724,14 +724,14 @@ $driver = new OpenAIDriver(new LLMConfig(
 ));
 
 /// Get Instructor with the default client component overridden with your own
-$instructor = (new Instructor)->withDriver($driver);
+$structuredOutput = (new StructuredOutput)->withDriver($driver);
 
-$user = $instructor->respond(
+$user = $structuredOutput->create(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     model: 'gpt-3.5-turbo',
     options: ['stream' => true ]
-);
+)->get();
 ```
 
 
@@ -809,7 +809,7 @@ class User {
 Instructor uses Symfony validation component to validate extracted data. You can use #[Assert/Callback] annotation to build fully customized validation logic.
 
 ```php
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -829,11 +829,11 @@ class UserDetails
     }
 }
 
-$user = (new Instructor)->respond(
+$user = (new StructuredOutput)->create(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
-);
+)->get();
 
 assert($user->name === "JASON");
 ```
@@ -866,13 +866,13 @@ As Instructor for PHP processes your request, it goes through several stages:
 
 Instructor allows you to receive detailed information at every stage of request and response processing via events.
 
- * `(new Instructor)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
- * `(new Instructor)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
+ * `(new StructuredOutput)->onEvent(string $class, callable $callback)` method - receive callback when specified type of event is dispatched
+ * `(new StructuredOutput)->wiretap(callable $callback)` method - receive any event dispatched by Instructor, may be useful for debugging or performance analysis
 
 Receiving events can help you to monitor the execution process and makes it easier for a developer to understand and resolve any processing issues.
 
 ```php
-$instructor = (new Instructor)
+$structuredOutput = (new StructuredOutput)
     // see requests to LLM
     ->onEvent(HttpRequestSent::class, fn($e) => dump($e))
     // see responses from LLM
@@ -880,10 +880,10 @@ $instructor = (new Instructor)
     // see all events in console-friendly format
     ->wiretap(fn($event) => dump($event->toConsole()));
 
-$instructor->respond(
+$structuredOutput->create(
     messages: "What is the population of Paris?",
     responseModel: Scalar::integer(),
-);
+)->getInt();
 // check your console for the details on the Instructor execution
 ```
 
@@ -891,7 +891,7 @@ $instructor->respond(
 
 Instructor is able to process several types of input provided as response model, giving you more flexibility on how you interact with the library.
 
-The signature of `respond()` method of Instructor states the `responseModel` can be either string, object or array.
+The `responseModel` can be either string, object or array.
 
 #### Handling string $responseModel value
 

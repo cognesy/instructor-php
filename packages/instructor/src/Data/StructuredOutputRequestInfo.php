@@ -5,9 +5,9 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class StructuredOutputRequestInfo
 {
-    use \Cognesy\Instructor\Data\Traits\RequestInfo\HandlesMutation;
-    use \Cognesy\Instructor\Data\Traits\RequestInfo\HandlesCreation;
-    use \Cognesy\Instructor\Data\Traits\RequestInfo\HandlesSerialization;
+    use Traits\RequestInfo\HandlesMutation;
+    use Traits\RequestInfo\HandlesCreation;
+    use Traits\RequestInfo\HandlesSerialization;
 
     public string|array $messages;
     public string|array|object $input;

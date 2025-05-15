@@ -30,7 +30,7 @@ This can also be implemented as two-step RaR:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 
 class Response {
     public string $rephrasedQuestion;
@@ -44,10 +44,10 @@ class Disambiguate {
         PROMPT;
 
     public function __invoke(string $query) : Response {
-        return (new Instructor)->respond(
+        return (new StructuredOutput)->create(
             messages: str_replace('{query}', $query, $this->prompt),
             responseModel: Response::class,
-        );
+        )->get();
     }
 }
 

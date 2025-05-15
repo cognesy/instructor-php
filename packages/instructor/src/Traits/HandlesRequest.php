@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Instructor;
+use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLM;
@@ -12,24 +12,18 @@ use JetBrains\PhpStorm\Deprecated;
 
 trait HandlesRequest
 {
-    private LLM $llm;
-    private StructuredOutputRequest $request;
-    private array $cachedContext = [];
-
-    // PUBLIC /////////////////////////////////////////////////////////////////////
-
     /**
      * Initializes an Instructor instance with a specified connection.
      *
      * @param string $connection The connection string to be used.
-     * @return Instructor An instance of Instructor with the specified connection.
+     * @return StructuredOutput An instance of StructuredOutput with the specified connection.
      */
-    public static function using(string $connection) : Instructor {
-        return (new Instructor)->withConnection($connection);
+    public static function using(string $connection) : static {
+        return (new StructuredOutput)->withConnection($connection);
     }
 
-    public static function fromDSN(string $dsn) : Instructor {
-        return (new Instructor)->withDSN($dsn);
+    public static function fromDSN(string $dsn) : static {
+        return (new StructuredOutput)->withDSN($dsn);
     }
 
     // PUBLIC /////////////////////////////////////////////////////////////////////
@@ -45,22 +39,22 @@ trait HandlesRequest
         return $this;
     }
 
-    public function withLLMConfig(LLMConfig $config) : self {
+    public function withLLMConfig(LLMConfig $config) : static {
         $this->llm->withConfig($config);
         return $this;
     }
 
-    public function withDriver(CanHandleInference $driver) : self {
+    public function withDriver(CanHandleInference $driver) : static {
         $this->llm->withDriver($driver);
         return $this;
     }
 
-    public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
+    public function withHttpClient(CanHandleHttpRequest $httpClient) : static {
         $this->llm->withHttpClient($httpClient);
         return $this;
     }
 
-    public function withConnection(string $connection) : self {
+    public function withConnection(string $connection) : static {
         $this->llm->withConnection($connection);
         return $this;
     }
@@ -87,7 +81,7 @@ trait HandlesRequest
     }
 
     #[Deprecated]
-    public function withClient(string $client) : self {
+    public function withClient(string $client) : static {
         $this->llm->withConnection($client);
         return $this;
     }

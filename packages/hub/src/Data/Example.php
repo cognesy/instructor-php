@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\InstructorHub\Data;
 
-use Cognesy\InstructorHub\Utils\Mintlify\NavigationItem;
+use Cognesy\Auxiliary\Mintlify\NavigationItem;
 
 class Example
 {
