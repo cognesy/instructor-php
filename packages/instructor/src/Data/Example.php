@@ -6,10 +6,10 @@ use JsonSerializable;
 
 class Example implements CanProvideMessages, JsonSerializable
 {
-    use \Cognesy\Instructor\Data\Traits\Example\HandlesAccess;
-    use \Cognesy\Instructor\Data\Traits\Example\HandlesCreation;
-    use \Cognesy\Instructor\Data\Traits\Example\HandlesConversion;
-    use \Cognesy\Instructor\Data\Traits\Example\HandlesTemplates;
+    use Traits\Example\HandlesAccess;
+    use Traits\Example\HandlesCreation;
+    use Traits\Example\HandlesConversion;
+    use Traits\Example\HandlesTemplates;
 
     private mixed $input;
     private mixed $output;

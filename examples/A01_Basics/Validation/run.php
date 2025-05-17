@@ -36,10 +36,10 @@ class UserDetails
 
 $caughtException = false;
 try {
-    $user = (new StructuredOutput)->request(
+    $user = (new StructuredOutput)->generate(
         messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
         responseModel: UserDetails::class,
-    )->get();
+    );
     dump($user);
 } catch(Exception $e) {
     $caughtException = true;

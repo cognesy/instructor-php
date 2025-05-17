@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Instructor\Data\Traits\Request;
+namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 

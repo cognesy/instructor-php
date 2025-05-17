@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Data\Traits\Request;
+namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;

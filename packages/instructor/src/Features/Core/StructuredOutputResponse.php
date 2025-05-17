@@ -6,14 +6,22 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Json\Json;
 use Exception;
 use Generator;
 
 class StructuredOutputResponse
 {
+    use Traits\HandlesResultTypecasting;
+
+    private bool $cacheProcessedResponse = true;
+
     private RequestHandler $requestHandler;
     private EventDispatcher $events;
     private StructuredOutputRequest $request;
+
+    private LLMResponse $cachedResponse;
+    private array $cachedResponseStream;
 
     public function __construct(
         StructuredOutputRequest $request,
@@ -30,11 +38,27 @@ class StructuredOutputResponse
      */
     public function get() : mixed {
         if ($this->request->isStreamed()) {
-            return $this->stream()->final();
+            return $this->stream()->finalValue();
         }
         $response = $this->getResponse();
         $this->events->dispatch(new InstructorDone(['result' => $response]));
         return $response->value();
+    }
+
+    public function toJsonObject() : Json {
+        $response = match(true) {
+            $this->request->isStreamed() => $this->stream()->finalResponse(),
+            default => $this->getResponse()
+        };
+        return $response->findJsonData($this->request->mode());
+    }
+
+    public function toJson() : string {
+        return $this->toJsonObject()->toString();
+    }
+
+    public function toArray() : array {
+        return $this->toJsonObject()->toArray();
     }
 
     /**
@@ -50,7 +74,7 @@ class StructuredOutputResponse
      * Executes the request and returns the response stream
      */
     public function stream() : StructuredOutputStream {
-        // TODO: do we need this? cannot we just turn streaming on?
+        // TODO: do we need this? can't we just turn streaming on?
         if (!$this->request->isStreamed()) {
             throw new Exception('StructuredOutput::create()->stream() method requires response streaming: set "stream" = true in the request options.');
         }
@@ -58,121 +82,35 @@ class StructuredOutputResponse
         return new StructuredOutputStream($stream, $this->events);
     }
 
-    // TYPECASTING RESULTS //////////////////////////////////////
-
-    /**
-     * Returns the result as a boolean.
-     *
-     * @return bool
-     * @throws Exception
-     */
-    public function getBoolean() : bool {
-        $result = $this->get();
-        if (!is_bool($result)) {
-            throw new Exception('Result is not a boolean: ' . gettype($result));
-        }
-        return $result;
-    }
-
-    /**
-     * Returns the result as an integer.
-     *
-     * @return int
-     * @throws Exception
-     */
-    public function getInt() : int {
-        $result = $this->get();
-        if (is_int($result)) {
-            throw new Exception('Result is not an integer: ' . gettype($result));
-        }
-        return $result;
-    }
-
-    /**
-     * Returns the result as a float.
-     *
-     * @return float
-     * @throws Exception
-     */
-    public function getFloat() : float {
-        $result = $this->get();
-        if (is_float($result)) {
-            throw new Exception('Result is not a float: ' . gettype($result));
-        }
-        return $result;
-    }
-
-    /**
-     * Returns the result as a string.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getString() : string {
-        $result = $this->get();
-        if (is_string($result)) {
-            throw new Exception('Result is not a string: ' . gettype($result));
-        }
-        return $result;
-    }
-
-    /**
-     * Returns the result as an array.
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function getArray() : array {
-        $result = $this->get();
-        if (!is_array($result)) {
-            throw new Exception('Result is not an array: ' . gettype($result));
-        }
-        return $result;
-    }
-
-    /**
-     * Returns the result as an object.
-     *
-     * @return object
-     * @throws Exception
-     */
-    public function getObject() : object {
-        $result = $this->get();
-        if (!is_object($result)) {
-            throw new Exception('Result is not an object: ' . gettype($result));
-        }
-        return $result;
-    }
-
-    /**
-     * Returns the result as an instance of the specified class.
-     *
-     * @template T
-     * @param class-string<T> $class The class name of the returned object
-     * @return T
-     * @psalm-return T
-     * @throws Exception
-     */
-    public function getInstanceOf(string $class) : object {
-        $result = $this->get();
-        if (!is_object($result)) {
-            throw new Exception('Result is not an object: ' . gettype($result));
-        }
-        if (!is_a($result, $class)) {
-            throw new Exception('Cannot return type `' . gettype($result) . '` as an instance of: ' . $class);
-        }
-        return $result;
-    }
-
     // INTERNAL /////////////////////////////////////////////////
 
     private function getResponse() : LLMResponse {
-        // TODO: this should be called only once and result stored
-        return $this->requestHandler->responseFor($this->request);
+        // RESPONSE CACHING IS DISABLED
+        if (!$this->cacheProcessedResponse) {
+            return $this->requestHandler->responseFor($this->request);
+        }
+        // RESPONSE CACHING IS ENABLED
+        if (!isset($this->cachedResponse)) {
+            $this->cachedResponse = $this->requestHandler->responseFor($this->request);
+        }
+        return $this->cachedResponse;
     }
 
     private function getStream() : Generator {
-        // TODO: this should be called only once and result stored
-        return $this->requestHandler->streamResponseFor($this->request);
+        // RESPONSE CACHING IS DISABLED
+        if (!$this->cacheProcessedResponse) {
+            yield $this->requestHandler->streamResponseFor($this->request);
+            return;
+        }
+        // RESPONSE CACHING IS ENABLED
+        if (!isset($this->cachedResponseStream)) {
+            $this->cachedResponseStream = [];
+            foreach ($this->requestHandler->streamResponseFor($this->request) as $chunk) {
+                $this->cachedResponseStream[] = $chunk;
+                yield $chunk;
+            }
+            return;
+        }
+        yield from $this->cachedResponseStream;
     }
 }

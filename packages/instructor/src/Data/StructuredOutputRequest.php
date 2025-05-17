@@ -5,9 +5,9 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class StructuredOutputRequest
 {
-    use Traits\Request\HandlesMessages;
-    use Traits\Request\HandlesRetries;
-    use Traits\Request\HandlesSchema;
+    use Traits\StructuredOutputRequest\HandlesMessages;
+    use Traits\StructuredOutputRequest\HandlesRetries;
+    use Traits\StructuredOutputRequest\HandlesSchema;
 
     protected StructuredOutputConfig $config;
     private StructuredOutputRequestInfo $requestInfo;
@@ -29,6 +29,7 @@ class StructuredOutputRequest
         string        $retryPrompt,
         OutputMode    $mode,
         array         $cachedContext,
+        StructuredOutputConfig $config,
     ) {
         $this->cachedContext = $cachedContext;
         $this->options = $options;
@@ -45,7 +46,7 @@ class StructuredOutputRequest
         $this->requestedSchema = $requestedSchema;
         $this->responseModel = $responseModel;
 
-        $this->config = StructuredOutputConfig::load();
+        $this->config = $config;
         $this->toolName = $toolName ?: $this->config->toolName();
         $this->toolDescription = $toolDescription ?: $this->config->toolDescription();
         $this->chatTemplate = new ChatTemplate($this->config);

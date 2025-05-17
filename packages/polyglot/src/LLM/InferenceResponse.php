@@ -61,11 +61,11 @@ class InferenceResponse
     }
 
     /**
-     * Converts the current content to a JSON representation.
+     * Converts the response content to a JSON representation.
      *
      * @return array The JSON representation of the content as an associative array.
      */
-    public function toJson() : array {
+    public function asJsonData() : array {
         return Json::fromString($this->toText())->toArray();
     }
 

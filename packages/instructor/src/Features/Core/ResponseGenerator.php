@@ -10,6 +10,7 @@ use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
@@ -26,8 +27,8 @@ class ResponseGenerator implements CanGenerateResponse
         private EventDispatcher $events,
     ) {}
 
-    public function makeResponse(LLMResponse $response, ResponseModel $responseModel) : Result {
-        $result = ResultChain::from(fn() => $response->json()->toString())
+    public function makeResponse(LLMResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
+        $result = ResultChain::from(fn() => $response->findJsonData($mode)->toString())
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),
                 default => Result::success($responseJson)

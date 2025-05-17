@@ -56,7 +56,7 @@ class InferenceStream
     /**
      * Generates and yields partial LLM responses from the given stream.
      *
-     * @return Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse> A generator yielding partial LLM responses.
+     * @return Generator<PartialLLMResponse> A generator yielding partial LLM responses.
      */
     public function responses() : Generator {
         foreach ($this->makePartialLLMResponses($this->stream) as $partialLLMResponse) {
@@ -67,7 +67,7 @@ class InferenceStream
     /**
      * Retrieves all partial LLM responses from the given stream.
      *
-     * @return \Cognesy\Polyglot\LLM\Data\PartialLLMResponse[] An array of all partial LLM responses.
+     * @return PartialLLMResponse[] An array of all partial LLM responses.
      */
     public function all() : array {
         return $this->getAllPartialLLMResponses($this->stream);
@@ -77,7 +77,7 @@ class InferenceStream
      * Returns the last partial response for the stream.
      * It will contain accumulated content and finish reason.
      *
-     * @return ?\Cognesy\Polyglot\LLM\Data\LLMResponse
+     * @return ?LLMResponse
      */
     public function final() : ?LLMResponse {
         return $this->getFinalResponse($this->stream);
@@ -99,7 +99,7 @@ class InferenceStream
      * Retrieves the final LLM response from the given stream of partial responses.
      *
      * @param Generator<PartialLLMResponse> $stream A generator yielding raw partial LLM response strings.
-     * @return \Cognesy\Polyglot\LLM\Data\LLMResponse|null The final LLMResponse object or null if not available.
+     * @return LLMResponse|null The final LLMResponse object or null if not available.
      */
     protected function getFinalResponse(Generator $stream) : ?LLMResponse {
         if ($this->finalLLMResponse === null) {
@@ -125,7 +125,7 @@ class InferenceStream
      * Processes the given stream to generate partial LLM responses and enriches them with accumulated content and finish reason.
      *
      * @param Generator<string> $stream The stream to be processed to extract and enrich partial LLM responses.
-     * @return Generator<\Cognesy\Polyglot\LLM\Data\PartialLLMResponse> A generator yielding enriched PartialLLMResponse objects.
+     * @return Generator<PartialLLMResponse> A generator yielding enriched PartialLLMResponse objects.
      */
     private function makePartialLLMResponses(Generator $stream) : Generator {
         $content = '';

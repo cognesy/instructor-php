@@ -19,7 +19,7 @@ class StructuredOutputStream
 
     /**
      * @param Generator<PartialLLMResponse> $stream
-     * @param \Cognesy\Utils\Events\EventDispatcher $events
+     * @param EventDispatcher $events
      */
     public function __construct(
         private Generator $stream,
@@ -68,15 +68,22 @@ class StructuredOutputStream
     /**
      * Processes response stream and returns only the final update.
      */
-    public function final() : mixed {
+    public function finalValue() : mixed {
+        $result = $this->finalResponse()->value();
+        $this->events->dispatch(new ResponseGenerated($result));
+        $this->events->dispatch(new InstructorDone(['result' => $result]));
+        return $result;
+    }
+
+    /**
+     * Processes response stream and returns only the final response.
+     */
+    public function finalResponse() : LLMResponse {
         foreach ($this->stream as $partialResponse) {
             $this->lastResponse = $partialResponse;
             $this->usage->accumulate($partialResponse->usage());
         }
-        $result = $this->lastResponse->value();
-        $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone(['result' => $result]));
-        return $result;
+        return $this->lastResponse;
     }
 
     /**
@@ -110,6 +117,7 @@ class StructuredOutputStream
     /**
      * Returns a generator of partial LLM responses, which contain more detailed
      * information about the response, including usage data.
+     *
      * @return Generator<PartialLLMResponse>
      */
     public function responses() : Generator {

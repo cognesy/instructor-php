@@ -44,7 +44,7 @@ $data = (new Inference)
         options: ['max_tokens' => 64],
         mode: OutputMode::JsonSchema,
     )
-    ->toJson();
+    ->asJsonData();
 ```
 
 ## Why Use JsonSchema?
@@ -428,7 +428,7 @@ $userData = (new Inference)
         ],
         mode: OutputMode::JsonSchema,
     )
-    ->toJson();
+    ->asJsonData();
 
 print_r($userData);
 ```

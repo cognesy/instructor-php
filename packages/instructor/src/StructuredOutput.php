@@ -4,6 +4,7 @@ namespace Cognesy\Instructor;
 
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
@@ -32,6 +33,7 @@ class StructuredOutput
 {
     use HandlesEvents;
 
+    use Traits\HandlesFluentMethods;
     use Traits\HandlesInvocation;
     use Traits\HandlesOverrides;
     use Traits\HandlesPartialUpdates;
@@ -41,7 +43,6 @@ class StructuredOutput
 
     private LLM $llm;
     private StructuredOutputRequest $request;
-    private array $cachedContext = [];
 
     private ResponseDeserializer $responseDeserializer;
     private ResponseValidator $responseValidator;
@@ -73,6 +74,7 @@ class StructuredOutput
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
         $this->llm = $llm ?? new LLM(events: $this->events);
+        $this->requestInfo = new StructuredOutputRequestInfo();
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());

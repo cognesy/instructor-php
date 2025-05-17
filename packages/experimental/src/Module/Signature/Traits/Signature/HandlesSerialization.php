@@ -6,7 +6,7 @@ use Cognesy\Instructor\Features\Schema\Factories\JsonSchemaToSchema;
 
 trait HandlesSerialization
 {
-    public function toJson() {
+    public function toArray() : array {
         return [
             'shortSignature' => $this->shortSignature,
             'fullSignature' => $this->fullSignature,
@@ -16,7 +16,7 @@ trait HandlesSerialization
         ];
     }
 
-    public static function fromJson(array $data) : static {
+    public static function fromJsonData(array $data) : static {
         $converter = new JsonSchemaToSchema;
         return new static(
             $converter->fromJsonSchema($data['input']),

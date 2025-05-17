@@ -71,6 +71,10 @@ class StructuredOutputConfig
         return $this->modePrompts[$mode->value] ?? '';
     }
 
+    public function modePrompts() : array {
+        return $this->modePrompts;
+    }
+
     public function retryPrompt() : string {
         return $this->retryPrompt;
     }

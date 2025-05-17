@@ -19,7 +19,7 @@ $inference = new Inference();
 $response = $inference->create(
     messages: 'List three programming languages and their key features.',
     mode: OutputMode::MdJson
-)->toJson();
+)->asJsonData();
 
 // The model will return JSON wrapped in Markdown, which Polyglot processes for you
 foreach ($response['languages'] as $language) {

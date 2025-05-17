@@ -6,10 +6,10 @@ Sometimes we just want to get quick results without defining a class for the res
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->generate(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::integer('age'),
-)->get();
+);
 
 var_dump($value);
 // int(28)
@@ -26,10 +26,10 @@ Additionally, you can use Scalar adapter to extract enums via `Scalar::enum()`.
 
 ```php
 <?php
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->generate(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::string(name: 'firstName'),
-)->get();
+);
 // expect($value)->toBeString();
 // expect($value)->toBe("Jason");
 ```
@@ -38,10 +38,10 @@ $value = (new StructuredOutput)->create(
 
 ```php
 <?php
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->generate(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::integer('age'),
-)->get();
+);
 // expect($value)->toBeInt();
 // expect($value)->toBe(28);
 ```
@@ -50,10 +50,10 @@ $value = (new StructuredOutput)->create(
 
 ```php
 <?php
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->generate(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::boolean(name: 'isAdult'),
-)->get();
+);
 // expect($value)->toBeBool();
 // expect($value)->toBe(true);
 ```
@@ -62,10 +62,10 @@ $value = (new StructuredOutput)->create(
 
 ```php
 <?php
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->generate(
     messages: "His name is Jason, he is 28 years old and his 100m sprint record is 11.6 seconds.",
     responseModel: Scalar::float(name: 'recordTime'),
-)->get();
+);
 // expect($value)->toBeFloat();
 // expect($value)->toBe(11.6);
 ```

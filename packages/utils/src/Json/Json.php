@@ -53,6 +53,13 @@ class Json
         return json_decode($this->json, true);
     }
 
+    public function format(int $options = 0, ?int $depth = null) : string {
+        return match(true) {
+            is_null($depth) => json_encode($this->toArray(), $options),
+            default => json_encode($this->toArray(), $options, $depth),
+        };
+    }
+
     // STATIC /////////////////////////////////////////////////
 
     public static function decode(string $text, mixed $default = null) : mixed {

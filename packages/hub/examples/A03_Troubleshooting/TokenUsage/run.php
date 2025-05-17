@@ -57,7 +57,7 @@ $stream = (new StructuredOutput)
     )
     ->stream();
 
-$response = $stream->final();
+$response = $stream->finalValue();
 echo "\nTEXT: $text\n";
 assert($stream->usage()->total() > 0);
 printUsage($stream->usage());

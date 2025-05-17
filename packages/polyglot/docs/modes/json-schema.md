@@ -73,7 +73,7 @@ $response = $inference->create(
         ],
     ],
     mode: OutputMode::JsonSchema
-)->toJson();
+)->asJsonData();
 
 // The response will match the schema's structure exactly
 echo "Weather in {$response['location']}:\n";

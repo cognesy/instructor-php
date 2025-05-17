@@ -7,9 +7,9 @@ use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
 {
-    use \Cognesy\Instructor\Data\Traits\ResponseModel\HandlesToolCalls;
-    use \Cognesy\Instructor\Data\Traits\ResponseModel\HandlesInstance;
-    use \Cognesy\Instructor\Data\Traits\ResponseModel\HandlesSchema;
+    use Traits\ResponseModel\HandlesToolCalls;
+    use Traits\ResponseModel\HandlesInstance;
+    use Traits\ResponseModel\HandlesSchema;
 
     private string $class;
     private Schema $schema;

@@ -24,7 +24,7 @@ function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
 }
 
-$person = (new StructuredOutput)->request(
+$person = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]
@@ -64,7 +64,7 @@ One more method available on `Stream` is `final()`. It returns only the final re
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new StructuredOutput)->request(
+$stream = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 )->stream();

@@ -106,10 +106,10 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->generate(
     messages: $text,
     responseModel: Person::class,
-)->get();
+);
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -144,10 +144,10 @@ class Person {
 }
 
 $text = "His name is Jason, he is -28 years old.";
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->generate(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-)->get();
+);
 
 // if the resulting object does not validate, Instructor throws an exception
 ```
@@ -170,11 +170,11 @@ class Person {
 }
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->generate(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     maxRetries: 3,
-)->get();
+);
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```

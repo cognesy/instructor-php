@@ -118,8 +118,4 @@ class ToolCalls
         }
         return $list;
     }
-
-    public function json() : Json {
-        return Json::fromArray($this->toArray());
-    }
 }

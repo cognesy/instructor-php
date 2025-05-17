@@ -2,6 +2,7 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
@@ -14,6 +15,7 @@ use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 
 /**
@@ -91,9 +93,15 @@ trait HandlesInvocation
         $requestedSchema = $responseModel;
         $responseModel = $this->makeResponseModel(
             $requestedSchema,
-            $toolName ?: $this->config->toolName(),
-            $toolDescription ?: $this->config->toolDescription(),
-            $this->config->useObjectReferences(),
+            new StructuredOutputConfig(
+                retryPrompt: $this->config->retryPrompt(),
+                modePrompts: $this->config->modePrompts(),
+                chatStructure: $this->config->chatStructure(),
+                toolName: $toolName ?: $this->config->toolName(),
+                toolDescription: $toolDescription ?: $this->config->toolDescription(),
+                useObjectReferences: $this->config->useObjectReferences()
+            ),
+            $this->events,
         );
 
         $request = new StructuredOutputRequest(
@@ -112,6 +120,7 @@ trait HandlesInvocation
             retryPrompt: $retryPrompt ?? '',
             mode: $mode ?? OutputMode::Tools,
             cachedContext: $this->cachedContext ?? [],
+            config: $this->config,
         );
 
         $requestHandler = new RequestHandler(
@@ -138,29 +147,87 @@ trait HandlesInvocation
         );
     }
 
-    // INTERNAL /////////////////////////////////////////////////
+    /**
+     * Processes a request using provided input, system configurations, and response specifications
+     * and returns the result directly.
+     *
+     * @param string|array $messages Text or chat sequence to be used for generating the response.
+     * @param string|array|object $input Data or input to send with the request (optional).
+     * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
+     * @param string $system The system instructions (optional).
+     * @param string $prompt The prompt to guide the request's response generation (optional).
+     * @param array $examples Example data to provide additional context for the request (optional).
+     * @param string $model Specifies the model to be employed - check LLM documentation for more details.
+     * @param int $maxRetries The maximum number of retries for the request in case of failure.
+     * @param array $options Additional LLM options - check LLM documentation for more details.
+     * @param string $toolName The name of the tool to be used in OutputMode::Tools.
+     * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
+     * @param string $retryPrompt The prompt to be used during retries.
+     * @param OutputMode $mode The mode of operation for the request.
+     * @return mixed A result of processing the request transformed to the target value
+     * @throws Exception If the response model is empty or invalid.
+     */
+    public function generate(
+        string|array        $messages = '',
+        string|array|object $input = '',
+        string|array|object $responseModel = [],
+        string              $system = '',
+        string              $prompt = '',
+        array               $examples = [],
+        string              $model = '',
+        int                 $maxRetries = 0,
+        array               $options = [],
+        string              $toolName = '',
+        string              $toolDescription = '',
+        string              $retryPrompt = '',
+        OutputMode $mode = OutputMode::Tools
+    ) : mixed {
+        return $this->create(
+            messages: $messages,
+            input: $input,
+            responseModel: $responseModel,
+            system: $system,
+            prompt: $prompt,
+            examples: $examples,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+            retryPrompt: $retryPrompt,
+            mode: $mode,
+        )->get();
+    }
+
 
     /**
-     * Creates a ResponseModel instance utilizing the provided schema, tool name, and description.
+     * Creates a ResponseModel instance utilising the provided schema, tool name, and description.
      *
      * @param string|array|object $requestedSchema The schema to be used for creating the response model, provided as a string, array, or object.
      * @param string $toolName The name of the tool, which can be overridden by default settings if not provided.
      * @param string $toolDescription The description of the tool, which can be overridden by default settings if not provided.
+     * @param bool $useObjectReferences Indicates whether to use object references in the schema.
+     * @param EventDispatcher|null $events An event dispatcher for handling events during the response object creation process.
      *
      * @return ResponseModel Returns a ResponseModel object constructed using the requested schema, tool name, and description.
      */
     private function makeResponseModel(
         string|array|object $requestedSchema,
-        string $toolName,
-        string $toolDescription,
-        bool $useObjectReferences = false,
+        StructuredOutputConfig $config,
+        EventDispatcher $events,
     ) : ResponseModel {
-        $schemaFactory = new SchemaFactory($useObjectReferences);
+        $schemaFactory = new SchemaFactory($config->useObjectReferences());
+
         $responseModelFactory = new ResponseModelFactory(
             new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
             $schemaFactory,
-            $this->events
+            $events,
         );
-        return $responseModelFactory->fromAny($requestedSchema, $toolName, $toolDescription);
+
+        return $responseModelFactory->fromAny(
+            $requestedSchema,
+            $config->toolName(),
+            $config->toolDescription()
+        );
     }
 }

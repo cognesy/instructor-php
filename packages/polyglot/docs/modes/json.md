@@ -17,7 +17,7 @@ $inference = new Inference();
 $response = $inference->create(
     messages: 'List the top 3 most populous cities in the world with their populations.',
     mode: OutputMode::Json
-)->toJson();
+)->asJsonData();
 
 // $response is now a PHP array parsed from the JSON
 echo "Top cities:\n";
@@ -56,7 +56,7 @@ EOT;
 $response = $inference->create(
     messages: $prompt,
     mode: OutputMode::Json
-)->toJson();
+)->asJsonData();
 
 // Process the response
 echo "Top cities by population:\n";
@@ -84,7 +84,7 @@ $response = $inference->create(
         'response_format' => ['type' => 'json_object'],
         // Other OpenAI-specific options...
     ]
-)->toJson();
+)->asJsonData();
 
 // The response will be a JSON object
 ```

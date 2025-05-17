@@ -25,8 +25,13 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withResponseSchema(array $schema) : static {
-        $this->responseModel = $schema;
+    public function withResponseSchema(array $jsonSchema) : static {
+        $this->responseModel = $jsonSchema;
+        return $this;
+    }
+
+    public function withResponseHandler(object $handler) : static {
+        $this->responseModel = $handler;
         return $this;
     }
 

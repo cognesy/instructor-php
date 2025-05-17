@@ -72,7 +72,7 @@ class InferenceResponse {
     // Access methods
     public function isStreamed(): bool { ... }
     public function toText(): string { ... }
-    public function toJson(): array { ... }
+    public function toArray(): array { ... }
     public function stream(): InferenceStream { ... }
     public function response(): LLMResponse { ... }
 }

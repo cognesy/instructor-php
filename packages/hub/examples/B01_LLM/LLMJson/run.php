@@ -46,7 +46,7 @@ $data = (new Inference)
         options: ['max_tokens' => 64],
         mode: OutputMode::Json,
     )
-    ->toJson();
+    ->asJsonData();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";

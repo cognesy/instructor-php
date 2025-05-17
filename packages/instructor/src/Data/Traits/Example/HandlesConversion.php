@@ -45,7 +45,7 @@ trait HandlesConversion
         ]);
     }
 
-    public function toJson() : string {
+    public function toJsonString() : string {
         return Json::encode($this, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
 

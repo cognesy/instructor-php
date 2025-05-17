@@ -104,7 +104,7 @@ class RequestHandler
 
     protected function processResponse(StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : Result {
         // we have LLMResponse here - let's process it: deserialize, validate, transform
-        $processingResult = $this->responseGenerator->makeResponse($llmResponse, $request->responseModel());
+        $processingResult = $this->responseGenerator->makeResponse($llmResponse, $request->responseModel(), $request->mode());
 
         if ($processingResult->isFailure()) {
             // retry - we have not managed to deserialize, validate or transform the response

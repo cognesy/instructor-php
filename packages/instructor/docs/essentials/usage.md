@@ -25,10 +25,10 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->generate(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
-)->get();
+);
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -60,10 +60,10 @@ You can provide a string instead of an array of messages. This is useful when yo
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->generate(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
-)->get();
+);
 ?>
 ```
 
@@ -77,7 +77,7 @@ and then call `get()` to get the response.
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$structuredOutput = (new StructuredOutput)->request(
+$structuredOutput = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 );
@@ -114,11 +114,11 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new StructuredOutput)->create(
+$translation = (new StructuredOutput)->generate(
     input: $email,
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
-)->get();
+);
 ?>
 ```
 
@@ -133,7 +133,7 @@ processing the data as soon as it is available.
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new StructuredOutput)->request(
+$stream = (new StructuredOutput)->create(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]

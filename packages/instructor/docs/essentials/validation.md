@@ -14,10 +14,10 @@ class Person {
 
 $text = "His name is Jason, he is -28 years old.";
 
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->generate(
     messages: $text,
     responseModel: Person::class,
-)->get();
+);
 
 // if the resulting object does not validate, Instructor throws an exception
 ```
@@ -44,11 +44,11 @@ class Person {
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
 
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->generate(
     messages: $text,
     responseModel: Person::class,
     maxRetries: 3,
-)->get();
+);
 
 // if all LLM's attempts to self-correct the results fail, Instructor throws an exception
 ```
@@ -81,11 +81,11 @@ class UserDetails
     }
 }
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->generate(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
-)->get();
+);
 
 assert($user->name === "JASON");
 ```
@@ -136,11 +136,11 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->generate(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
-)->get();
+);
 
 assert($user->name === "JASON");
 ```

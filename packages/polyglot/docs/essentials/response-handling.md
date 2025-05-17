@@ -22,7 +22,7 @@ $text = $response->toText();
 echo "Text response: $text\n";
 
 // Get the response as a JSON object (for JSON responses)
-$json = $response->toJson();
+$json = $response->asJsonData();
 echo "JSON response: " . json_encode($json) . "\n";
 
 // Get the full response object

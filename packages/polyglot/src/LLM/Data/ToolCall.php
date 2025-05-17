@@ -114,10 +114,6 @@ class ToolCall
         return (float) ($this->arguments[$key] ?? $default);
     }
 
-    public function json() : Json {
-        return Json::fromArray($this->arguments);
-    }
-
     public function toArray() : array {
         return [
             'name' => $this->name,

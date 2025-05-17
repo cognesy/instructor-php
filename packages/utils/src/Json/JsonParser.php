@@ -70,6 +70,7 @@ class JsonParser
             if (empty($candidates)) {
                 continue;
             }
+
             if (is_string($candidates)) {
                 $candidates = [$candidates];
             }
@@ -119,7 +120,7 @@ class JsonParser
                 continue;
             }
             // If parse result is false, null, or empty string, skip
-            if ($data === false || $data === null || $data === '') {
+            if ($data === null || $data === false || $data === '') {
                 continue;
             }
             return $data;

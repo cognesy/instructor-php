@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\LLM\Data;
 
 use Cognesy\Polyglot\LLM\Enums\LLMFinishReason;
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
 
 /**
@@ -13,12 +14,12 @@ class LLMResponse
     private mixed $value = null;
 
     public function __construct(
-        private string $content = '',
-        private string $finishReason = '',
+        private string     $content = '',
+        private string     $finishReason = '',
         private ?ToolCalls $toolCalls = null,
-        private string $reasoningContent = '',
-        private ?Usage $usage = null,
-        private array  $responseData = [],
+        private string     $reasoningContent = '',
+        private ?Usage     $usage = null,
+        private array      $responseData = [],
     ) {
         $this->usage = $usage ?? new Usage();
     }
@@ -38,7 +39,7 @@ class LLMResponse
     // PUBLIC ////////////////////////////////////////////////
 
     /**
-     * Create an LLMResponse from a value.
+     * Checks if the response has a processed / transformed value.
      *
      * @param mixed $value
      * @return LLMResponse
@@ -117,17 +118,19 @@ class LLMResponse
     }
 
     /**
-     * Get the JSON representation of the response.
+     * Find the JSON data in the response - try checking for tool calls (if any are present)
+     * or find and extract JSON from the returned content.
+     *
      * @return Json
      */
-    public function json(): Json {
+    public function findJsonData(OutputMode $mode): Json {
         return match(true) {
-            $this->hasToolCalls() => match($this->toolCalls->hasSingle()) {
-                true => $this->toolCalls->first()?->json(),
-                default => $this->toolCalls->json(),
+            ($mode == OutputMode::Tools) && $this->hasToolCalls() => match($this->toolCalls->hasSingle()) {
+                true => Json::fromArray($this->toolCalls->first()?->args()),
+                default => Json::fromArray($this->toolCalls->toArray()),
             },
             $this->hasContent() => Json::fromString($this->content),
-            default => Json::none(),
+            default => [],
         };
     }
 
@@ -155,10 +158,10 @@ class LLMResponse
         return [
             'content' => $this->content,
             'reasoningContent' => $this->reasoningContent,
-            'responseData' => $this->responseData,
             'finishReason' => $this->finishReason,
             'toolCalls' => $this->toolCalls?->toArray() ?? [],
             'usage' => $this->usage->toArray(),
+            'responseData' => $this->responseData,
         ];
     }
 
