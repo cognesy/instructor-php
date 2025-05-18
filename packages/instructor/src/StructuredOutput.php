@@ -157,10 +157,20 @@ class StructuredOutput
 
     // ACCESSORS ////////////////////////////////////////////////////////
 
+    /**
+     * Returns the config object for the current instance.
+     *
+     * @return StructuredOutputConfig The config object for the current instance.
+     */
     public function config() : StructuredOutputConfig {
         return $this->config;
     }
 
+    /**
+     * Returns LLM connection object for the current instance.
+     *
+     * @return LLM The LLM object for the current instance.
+     */
     public function llm() : LLM {
         return $this->llm;
     }

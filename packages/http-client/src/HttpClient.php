@@ -8,9 +8,6 @@ use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Debug\Debug;
 use Cognesy\Http\Debug\DebugConfig;
-use Cognesy\Http\Drivers\GuzzleDriver;
-use Cognesy\Http\Drivers\LaravelDriver;
-use Cognesy\Http\Drivers\SymfonyDriver;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 use Cognesy\Utils\Events\EventDispatcher;
@@ -29,7 +26,7 @@ class HttpClient implements CanHandleHttpRequest
     protected EventDispatcher $events;
     protected CanHandleHttpRequest $driver;
     protected MiddlewareStack $stack;
-    protected static array $drivers = [];
+    protected HttpClientDriverFactory $driverFactory;
 
     /**
      * Constructor method for initializing the HTTP client.
@@ -40,13 +37,14 @@ class HttpClient implements CanHandleHttpRequest
      */
     public function __construct(string $client = '', ?EventDispatcher $events = null) {
         $this->events = $events ?? new EventDispatcher();
+        $this->driverFactory = new HttpClientDriverFactory($this->events);
         $this->stack = new MiddlewareStack($this->events);
         $config = HttpClientConfig::load($client ?: Settings::get('http', "defaultClient"));
         $debugConfig = DebugConfig::load();
         if ($debugConfig->httpEnabled) {
             $this->withDebug($debugConfig->httpEnabled);
         }
-        $this->driver = $this->makeDriver($config);
+        $this->driver = $this->driverFactory->makeDriver($config);
     }
 
     /**
@@ -61,23 +59,6 @@ class HttpClient implements CanHandleHttpRequest
     }
 
     /**
-     * Registers a custom HTTP driver with the specified name and closure.
-     *
-     * @param string $name The name of the driver to register.
-     * @param class-string|callable $driver The closure that creates the driver instance, accepting following closure arguments:
-     *   - \Cognesy\Http\Data\HttpClientConfig $config: The configuration object for the HTTP client.
-     *   - \Cognesy\Utils\Events\EventDispatcher $events: The event dispatcher instance.
-     * @return void
-     */
-    public static function registerDriver(string $name, string|callable $driver): void {
-        self::$drivers[$name] = match(true) {
-            is_string($driver) => fn($config, $events) => new $driver($config, $events),
-            is_callable($driver) => $driver,
-            default => throw new InvalidArgumentException("Invalid driver provided for {$name} - must be a class name or callable."),
-        };
-    }
-
-    /**
      * Configures the HttpClient instance with the given client name.
      *
      * @param string $name The name of the client to load the configuration for.
@@ -85,25 +66,25 @@ class HttpClient implements CanHandleHttpRequest
      */
     public function withClient(string $name): self {
         $config = HttpClientConfig::load($name);
-        $this->driver = $this->makeDriver($config);
+        $this->driver = $this->driverFactory->makeDriver($config);
         return $this;
     }
 
     /**
      * Configures the HttpClient instance with the given configuration.
      *
-     * @param \Cognesy\Http\Data\HttpClientConfig $config The configuration object to set up the HttpClient.
+     * @param HttpClientConfig $config The configuration object to set up the HttpClient.
      * @return self Returns the instance of the class for method chaining.
      */
     public function withConfig(HttpClientConfig $config): self {
-        $this->driver = $this->makeDriver($config);
+        $this->driver = $this->driverFactory->makeDriver($config);
         return $this;
     }
 
     /**
      * Sets the HTTP handler driver for the instance.
      *
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $driver The driver capable of handling HTTP requests.
+     * @param CanHandleHttpRequest $driver The driver capable of handling HTTP requests.
      * @return self Returns the instance of the class for method chaining.
      */
     public function withDriver(CanHandleHttpRequest $driver): self {
@@ -150,47 +131,9 @@ class HttpClient implements CanHandleHttpRequest
      * via a stack of middleware to process the request and response.
      *
      * @param HttpClientRequest $request The request to be processed.
-     * @return \Cognesy\Http\Contracts\HttpClientResponse The response indicating the access result after processing the request.
+     * @return HttpClientResponse The response indicating the access result after processing the request.
      */
     public function handle(HttpClientRequest $request): HttpClientResponse {
         return $this->stack->decorate($this->driver)->handle($request);
-    }
-
-    // INTERNAL ///////////////////////////////////////////////////////
-
-    /**
-     * Creates an HTTP driver instance based on the specified configuration.
-     *
-     * @param \Cognesy\Http\Data\HttpClientConfig $config The configuration object defining the type of HTTP client and its settings.
-     * @return \Cognesy\Http\Contracts\CanHandleHttpRequest The instantiated HTTP driver corresponding to the specified client type.
-     * @throws InvalidArgumentException If the specified client type is not supported.
-     */
-    protected function makeDriver(HttpClientConfig $config): CanHandleHttpRequest {
-        $name = $config->httpClientType;
-        $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
-        if ($driverClosure === null) {
-            throw new InvalidArgumentException("Client not supported: {$name}");
-        }
-        return $driverClosure($config, $this->events);
-
-//        return match ($config->httpClientType) {
-//            'guzzle' => new GuzzleDriver(config: $config, events: $this->events),
-//            'symfony' => new SymfonyDriver(config: $config, events: $this->events),
-//            'laravel' => new LaravelDriver(config: $config, events: $this->events),
-//            default => throw new InvalidArgumentException("Client not supported: {$config->httpClientType}"),
-//        };
-    }
-
-    /**
-     * Returns the default drivers available for the HTTP client.
-     *
-     * @return array An associative array of default drivers with their respective configuration closures.
-     */
-    private function defaultDrivers() : array {
-        return [
-            'guzzle' => fn($config, $events) => new GuzzleDriver(config: $config, events: $events),
-            'symfony' => fn($config, $events) => new SymfonyDriver(config: $config, events: $events),
-            'laravel' => fn($config, $events) => new LaravelDriver(config: $config, events: $events),
-        ];
     }
 }

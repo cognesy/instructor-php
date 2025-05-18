@@ -72,7 +72,6 @@ $user = (new StructuredOutput)
     ->withResponseClass(UserDetail::class)
     ->withOutputMode(OutputMode::Json)
     ->withStreaming()
-    ->create()
     ->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";

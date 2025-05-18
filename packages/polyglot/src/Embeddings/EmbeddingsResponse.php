@@ -20,7 +20,10 @@ class EmbeddingsResponse
      * Get the first vector
      * @return Vector
      */
-    public function first() : Vector {
+    public function first() : ?Vector {
+        if (count($this->vectors) === 0) {
+            return null;
+        }
         return $this->vectors[0];
     }
 
@@ -28,7 +31,10 @@ class EmbeddingsResponse
      * Get the last vector
      * @return Vector
      */
-    public function last() : Vector {
+    public function last() : ?Vector {
+        if (count($this->vectors) === 0) {
+            return null;
+        }
         return $this->vectors[count($this->vectors) - 1];
     }
 

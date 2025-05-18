@@ -11,6 +11,7 @@ use Cognesy\Instructor\Features\Core\RequestHandler;
 use Cognesy\Instructor\Features\Core\ResponseGenerator;
 use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
+use Cognesy\Instructor\Features\Core\StructuredOutputStream;
 use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
@@ -81,7 +82,7 @@ trait HandlesInvocation
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        OutputMode          $mode = OutputMode::Tools, // we should use model specific default output mode
+        ?OutputMode         $mode = null,
     ) : StructuredOutputResponse {
         $this->queueEvent(new RequestReceived());
         $this->dispatchQueuedEvents();
@@ -91,17 +92,15 @@ trait HandlesInvocation
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
 
-        $responseModel = $this->makeResponseModel(
-            $requestedSchema,
-            $this->config->withOverrides(
-                outputMode: $mode,
-                maxRetries: $maxRetries ?: $this->config->maxRetries(),
-                retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
-                toolName: $toolName ?: $this->config->toolName(),
-                toolDescription: $toolDescription ?: $this->config->toolDescription(),
-            ),
-            $this->events,
+        $this->config->withOverrides(
+            outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
+            maxRetries: $maxRetries ?: $this->config->maxRetries(),
+            retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
+            toolName: $toolName ?: $this->config->toolName(),
+            toolDescription: $toolDescription ?: $this->config->toolDescription(),
         );
+
+        $responseModel = $this->makeResponseModel($requestedSchema, $this->config, $this->events,);
 
         $request = new StructuredOutputRequest(
             messages: $messages ?: $this->requestInfo->messages(),
@@ -174,7 +173,7 @@ trait HandlesInvocation
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        OutputMode $mode = OutputMode::Tools
+        ?OutputMode         $mode = null,
     ) : mixed {
         return $this->create(
             messages: $messages,
@@ -193,6 +192,25 @@ trait HandlesInvocation
         )->get();
     }
 
+    /**
+     * Processes a request using provided input, system configurations,
+     * and response specifications and returns the result directly.
+     *
+     * @return mixed A result of processing the request transformed to the target value
+     */
+    public function get() : mixed {
+        return $this->create()->get();
+    }
+
+    /**
+     * Processes a request using provided input, system configurations,
+     * and response specifications and returns a streamed result object.
+     *
+     * @return StructuredOutputStream A stream of the response
+     */
+    public function stream() : StructuredOutputStream {
+        return $this->create()->stream();
+    }
 
     /**
      * Creates a ResponseModel instance utilising the provided schema, tool name, and description.

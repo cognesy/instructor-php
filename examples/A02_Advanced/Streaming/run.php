@@ -68,7 +68,6 @@ $stream = (new StructuredOutput)
     ->withResponseClass(UserDetail::class)
     ->withStreaming()
     ->withOutputMode(OutputMode::Json)
-    ->create()
     ->stream();
 
 foreach ($stream->partials() as $partial) {

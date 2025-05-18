@@ -52,7 +52,7 @@ $embeddings = new Embeddings();
 $result = $embeddings->create('The quick brown fox jumps over the lazy dog.');
 
 // Get the vector values from the first (and only) result
-$vector = $result->first()->values();
+$vector = $result->first()?->values();
 
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
 ```
@@ -154,17 +154,17 @@ $text = "Artificial intelligence is transforming industries worldwide.";
 // OpenAI embeddings
 $openaiEmbeddings = new Embeddings('openai');
 $openaiResult = $openaiEmbeddings->create($text);
-echo "OpenAI embedding dimensions: " . count($openaiResult->first()->values()) . "\n";
+echo "OpenAI embedding dimensions: " . count($openaiResult->first()?->values()) . "\n";
 
 // Cohere embeddings
 $cohereEmbeddings = new Embeddings('cohere1');
 $cohereResult = $cohereEmbeddings->create($text);
-echo "Cohere embedding dimensions: " . count($cohereResult->first()->values()) . "\n";
+echo "Cohere embedding dimensions: " . count($cohereResult->first()?->values()) . "\n";
 
 // Mistral embeddings
 $mistralEmbeddings = new Embeddings('mistral');
 $mistralResult = $mistralEmbeddings->create($text);
-echo "Mistral embedding dimensions: " . count($mistralResult->first()->values()) . "\n";
+echo "Mistral embedding dimensions: " . count($mistralResult->first()?->values()) . "\n";
 ```
 
 ### Provider-Specific Options
@@ -218,6 +218,6 @@ $embeddings = new Embeddings();
 $embeddings->withConfig($config);
 
 $response = $embeddings->create("Test text for large embedding model");
-echo "Vector dimensions: " . count($response->first()->values()) . "\n";
+echo "Vector dimensions: " . count($response->first()?->values()) . "\n";
 ```
 

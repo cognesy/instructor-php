@@ -22,7 +22,7 @@ trait HasFinders
         [$queryVector, $docVectors] = $this->create(array_merge([$query], $documents))->split(1);
 
         $docVectors = $docVectors->toValuesArray();
-        $queryVector = $queryVector->first()->values()
+        $queryVector = $queryVector->first()?->values()
             ?? throw new \InvalidArgumentException('Query vector not found');
 
         $matches = self::findTopK($queryVector, $docVectors, $topK);

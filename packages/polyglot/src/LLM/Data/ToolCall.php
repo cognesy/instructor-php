@@ -31,6 +31,7 @@ class ToolCall
         if (empty($toolCall['name'])) {
             return null;
         }
+
         return new ToolCall(
             name: $toolCall['name'] ?? '',
             args: match(true) {

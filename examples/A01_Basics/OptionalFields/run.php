@@ -5,9 +5,9 @@ docname: 'optional_fields'
 
 ## Overview
 
-Use PHP's nullable types by prefixing type name with question mark (?) to mark
-component fields which are optional and set a default value to prevent undesired
-defaults like empty strings.
+Use PHP's nullable types by prefixing type name with question mark (?) to declare
+component fields which are optional. Set a default value to prevent undesired
+defaults like nulls or empty strings.
 
 ## Example
 
@@ -17,26 +17,20 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 
-class UserRole
-{
-    public string $title;
-}
-
 class UserDetail
 {
     public int $age;
-    public string $name;
-    public ?UserRole $role;
+    public string $firstName;
+    public ?string $lastName;
 }
 
-$user = (new StructuredOutput)->create(
-    messages: [["role" => "user",  "content" => "Jason is 25 years old."]],
-    responseModel: UserDetail::class,
-)->get();
-
+$user = (new StructuredOutput)
+    ->withMessages('Jason is 25 years old.')
+    ->withResponseClass(UserDetail::class)
+    ->get();
 
 dump($user);
 
-assert(!isset($user->role));
+assert(!isset($user->lastName) || $user->lastName === '');
 ?>
 ```

@@ -46,7 +46,6 @@ $user = (new StructuredOutput)
         ),
     ])
     ->withOutputMode(OutputMode::Json)
-    ->create()
     ->get();
 
 echo "\nOUTPUT:\n";

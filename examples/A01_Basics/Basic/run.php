@@ -50,10 +50,11 @@ print($text . "\n\n");
 print("Extracting structured data using LLM...\n\n");
 $user = (new StructuredOutput)
     ->withConnection('openai')
-    ->withMessages($text)
-    ->withModel('gpt-3.5-turbo')
-    ->withResponseClass(User::class)
-    ->create()
+    ->create(
+        messages: $text,
+        responseModel: User::class,
+        model: 'gpt-3.5-turbo',
+    )
     ->get();
 
 // Step 4: Now you can use the extracted data in your application

@@ -56,6 +56,10 @@ class Vector
      * @param float[] $v2
      */
     public static function cosineSimilarity(array $v1, array $v2) : float {
+        if (count($v1) !== count($v2)) {
+            throw new \InvalidArgumentException("Vectors must be of the same length");
+        }
+
         $dotProduct = 0.0;
         $magnitudeV1 = 0.0;
         $magnitudeV2 = 0.0;
@@ -76,6 +80,10 @@ class Vector
      * @param float[] $v2
      */
     public static function euclideanDistance(array $v1, array $v2) : float {
+        if (count($v1) !== count($v2)) {
+            throw new \InvalidArgumentException("Vectors must be of the same length");
+        }
+
         $sum = 0;
         $count = count($v1);
         for ($i = 0; $i < $count; $i++) {
@@ -90,6 +98,10 @@ class Vector
      * @param float[] $v2
      */
     public static function dotProduct(array $v1, array $v2) : float {
+        if (count($v1) !== count($v2)) {
+            throw new \InvalidArgumentException("Vectors must be of the same length");
+        }
+
         $sum = 0;
         $count = count($v1);
         for ($i = 0; $i < $count; $i++) {
