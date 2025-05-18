@@ -11,14 +11,14 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
  */
 class InferenceRequest
 {
-    public array $messages = [];
-    public string $model = '';
-    public array $tools = [];
-    public string|array $toolChoice = [];
-    public array $responseFormat = [];
-    public array $options = [];
-    public OutputMode $mode = OutputMode::Text;
-    public ?CachedContext $cachedContext;
+    protected array $messages = [];
+    protected string $model = '';
+    protected array $tools = [];
+    protected string|array $toolChoice = [];
+    protected array $responseFormat = [];
+    protected array $options = [];
+    protected ?OutputMode $mode = null;
+    protected ?CachedContext $cachedContext = null;
 
     public function __construct(
         string|array   $messages = [],
@@ -27,7 +27,7 @@ class InferenceRequest
         string|array   $toolChoice = [],
         array          $responseFormat = [],
         array          $options = [],
-        OutputMode     $mode = OutputMode::Text,
+        ?OutputMode    $mode = null,
         ?CachedContext $cachedContext = null,
     ) {
         $this->cachedContext = $cachedContext;
@@ -162,26 +162,6 @@ class InferenceRequest
      */
     public function responseFormat() : array {
         return $this->responseFormat;
-
-//        return match($this->mode) {
-//            OutputMode::Json => [
-//                'type' => 'json_object',
-//                'schema' => $this->responseFormat['schema'] ?? [],
-//            ],
-//            OutputMode::JsonSchema => [
-//                'type' => 'json_schema',
-//                'json_schema' => [
-//                    'name' => $this->responseFormat['json_schema']['name'] ?? 'schema',
-//                    'schema' => $this->responseFormat['json_schema']['schema'] ?? [],
-//                    'strict' => $this->responseFormat['json_schema']['strict'] ?? true,
-//                ],
-//            ],
-//            OutputMode::Tools => [],
-//            OutputMode::MdJson => [],
-//            OutputMode::Text => [],
-//            OutputMode::Unrestricted => $this->responseFormat,
-//            default => $this->responseFormat,
-//        };
     }
 
     /**
@@ -220,7 +200,7 @@ class InferenceRequest
      *
      * @return OutputMode The current mode instance.
      */
-    public function mode() : OutputMode {
+    public function outputMode() : ?OutputMode {
         return $this->mode;
     }
 
@@ -230,7 +210,7 @@ class InferenceRequest
      * @param OutputMode $mode The mode to be set.
      * @return self The current instance with the updated mode.
      */
-    public function withMode(OutputMode $mode) : self {
+    public function withOutputMode(OutputMode $mode) : self {
         $this->mode = $mode;
         return $this;
     }
@@ -268,7 +248,7 @@ class InferenceRequest
             'tool_choice' => $this->toolChoice,
             'response_format' => $this->responseFormat,
             'options' => $this->options,
-            'mode' => $this->mode->value,
+            'mode' => $this->mode?->value,
         ];
     }
 

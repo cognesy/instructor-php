@@ -16,13 +16,13 @@ class DeepseekBodyFormat implements CanMapRequestBody
     ) {}
 
     public function map(
-        array        $messages,
-        string       $model,
-        array        $tools,
-        array|string $toolChoice,
-        array        $responseFormat,
-        array        $options,
-        OutputMode   $mode,
+        array        $messages = [],
+        string       $model = '',
+        array        $tools = [],
+        string|array $toolChoice = '',
+        array        $responseFormat = [],
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Unrestricted,
     ): array {
         $options = array_merge($this->config->options, $options);
 
@@ -43,6 +43,10 @@ class DeepseekBodyFormat implements CanMapRequestBody
 
         $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
 
+        if ($model === 'deepseek-reasoner') {
+            $request['response_format'] = ['type' => 'text'];
+        }
+
         return $request;
     }
 
@@ -55,8 +59,11 @@ class DeepseekBodyFormat implements CanMapRequestBody
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?? $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Json:
+            case OutputMode::JsonSchema:
                 $request['response_format'] = [
                     'type' => 'json_object'
                 ];
@@ -65,24 +72,11 @@ class DeepseekBodyFormat implements CanMapRequestBody
             case OutputMode::MdJson:
                 $request['response_format'] = ['type' => 'text'];
                 break;
-            case OutputMode::JsonSchema:
-                $request['response_format'] = [
-                    'type' => 'json_schema',
-                    'json_schema' => [
-                        'name' => $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema',
-                        'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
-                        'strict' => $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true,
-                    ],
-                ];
-                break;
-            case OutputMode::Unrestricted:
-                $request['response_format'] = $responseFormat ?? $request['response_format'] ?? [];
-                break;
         }
 
         $request['tools'] = $tools ?? [];
         $request['tool_choice'] = $toolChoice ?? [];
 
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }

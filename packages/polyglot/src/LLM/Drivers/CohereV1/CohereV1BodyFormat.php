@@ -6,6 +6,7 @@ use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Messages\Messages;
 
 class CohereV1BodyFormat implements CanMapRequestBody
@@ -16,13 +17,13 @@ class CohereV1BodyFormat implements CanMapRequestBody
     ) {}
 
     public function map(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        OutputMode $mode
+        array        $messages = [],
+        string       $model = '',
+        array        $tools = [],
+        string|array $toolChoice = '',
+        array        $responseFormat = [],
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Unrestricted,
     ): array {
         $options = array_merge($this->config->options, $options);
 
@@ -42,6 +43,8 @@ class CohereV1BodyFormat implements CanMapRequestBody
         if (!empty($tools)) {
             $request['tools'] = $this->toTools($tools);
         }
+
+        $request = $this->removeDisallowedEntries($request);
 
         return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
     }
@@ -69,6 +72,7 @@ class CohereV1BodyFormat implements CanMapRequestBody
                 ];
                 break;
         }
+
         return $request;
     }
 
@@ -105,5 +109,16 @@ class CohereV1BodyFormat implements CanMapRequestBody
             'object' => throw new \Exception('Object type not supported by Cohere'),
             default => throw new \Exception('Unknown type'),
         };
+    }
+
+    private function removeDisallowedEntries(array $jsonSchema) : array {
+        return Arrays::removeRecursively(
+            array: $jsonSchema,
+            keys: [
+                'x-title',
+                'x-php-class',
+                'additionalProperties',
+            ],
+        );
     }
 }

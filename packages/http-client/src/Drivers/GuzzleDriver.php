@@ -14,6 +14,7 @@ use Cognesy\Http\Exceptions\RequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 
 class GuzzleDriver implements CanHandleHttpRequest
 {
@@ -45,6 +46,26 @@ class GuzzleDriver implements CanHandleHttpRequest
                 'timeout' => $this->config->requestTimeout ?? 30,
                 'stream' => $streaming,
             ]);
+        } catch (GuzzleRequestException $e) {
+            // Get the response from the exception, if available
+            $responseContent = null;
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                $responseContent = $response->getBody()->getContents();
+            }
+
+            // Dispatch event with full error details
+            $this->events->dispatch(new HttpRequestFailed(
+                $url,
+                $method,
+                $headers,
+                $body,
+                $e->getMessage(),
+                $responseContent // Pass the response content to the event
+            ));
+
+            // Optionally, include response content in the thrown exception
+            throw new RequestException($e);
         } catch (Exception $e) {
             $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
             throw new RequestException($e);

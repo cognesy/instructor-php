@@ -15,6 +15,7 @@ class HttpRequestFailed extends Event
         public array $headers,
         public array $body,
         public string $errors,
+        public ?string $response = null,
     ) {
         parent::__construct();
     }
@@ -26,6 +27,7 @@ class HttpRequestFailed extends Event
             'headers' => $this->headers,
             'body' => $this->body,
             'errors' => $this->errors,
+            'response' => $this->response,
         ]);
     }
 }

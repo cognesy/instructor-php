@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
+use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
@@ -82,5 +83,22 @@ class LLMConfig
         $config->providerType = $overrides['providerType'] ?? $overrides['provider'] ?? $config->providerType;
         $config->options = $overrides['options'] ?? $config->options;
         return $config;
+    }
+
+    public function toArray() : array {
+        return [
+            'apiUrl' => $this->apiUrl,
+            'apiKey' => $this->apiKey,
+            'endpoint' => $this->endpoint,
+            'queryParams' => $this->queryParams,
+            'metadata' => $this->metadata,
+            'model' => $this->model,
+            'maxTokens' => $this->maxTokens,
+            'contextLength' => $this->contextLength,
+            'maxOutputLength' => $this->maxOutputLength,
+            'httpClient' => $this->httpClient,
+            'providerType' => $this->providerType,
+            'options' => $this->options,
+        ];
     }
 }

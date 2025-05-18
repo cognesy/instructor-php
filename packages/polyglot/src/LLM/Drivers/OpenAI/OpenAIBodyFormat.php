@@ -15,14 +15,14 @@ class OpenAIBodyFormat implements CanMapRequestBody
     ) {}
 
     public function map(
-        array        $messages,
-        string       $model,
-        array        $tools,
-        array|string $toolChoice,
-        array        $responseFormat,
-        array        $options,
-        OutputMode   $mode,
-    ): array {
+        array        $messages = [],
+        string       $model = '',
+        array        $tools = [],
+        string|array $toolChoice = '',
+        array        $responseFormat = [],
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Unrestricted,
+    ) : array {
         $options = array_merge($this->config->options, $options);
 
         $request = array_merge(array_filter([
@@ -49,6 +49,8 @@ class OpenAIBodyFormat implements CanMapRequestBody
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Json:
                 $request['response_format'] = [
@@ -70,13 +72,14 @@ class OpenAIBodyFormat implements CanMapRequestBody
                 ];
                 break;
             case OutputMode::Unrestricted:
-                $request['response_format'] = $responseFormat ?? $request['response_format'] ?? [];
+                if (isset($request['response_format']['type']) && $request['response_format']['type'] === 'json_object') {
+                    unset($request['response_format']['schema']);
+                }
                 break;
         }
 
         $request['tools'] = $tools ?? [];
         $request['tool_choice'] = $toolChoice ?? [];
-
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }

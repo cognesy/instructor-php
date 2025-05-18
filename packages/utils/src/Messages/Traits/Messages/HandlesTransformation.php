@@ -1,9 +1,12 @@
 <?php
 namespace Cognesy\Utils\Messages\Traits\Messages;
 
+use Cognesy\Utils\Messages\Message;
+use Cognesy\Utils\Messages\Messages;
+
 trait HandlesTransformation
 {
-    public function toMergedPerRole() : \Cognesy\Utils\Messages\Messages {
+    public function toMergedPerRole() : Messages {
         if ($this->isEmpty()) {
             return $this;
         }
@@ -15,8 +18,8 @@ trait HandlesTransformation
         return $messages;
     }
 
-    public function forRoles(array $roles) : \Cognesy\Utils\Messages\Messages {
-        $messages = new \Cognesy\Utils\Messages\Messages();
+    public function forRoles(array $roles) : Messages {
+        $messages = new Messages();
         foreach ($this->messages as $message) {
             if (in_array($message->role()->value, $roles)) {
                 $messages->appendMessage($message);
@@ -25,8 +28,8 @@ trait HandlesTransformation
         return $messages;
     }
 
-    public function exceptRoles(array $roles) : \Cognesy\Utils\Messages\Messages {
-        $messages = new \Cognesy\Utils\Messages\Messages();
+    public function exceptRoles(array $roles) : Messages {
+        $messages = new Messages();
         foreach ($this->messages as $message) {
             if (!in_array($message->role()->value, $roles)) {
                 $messages->appendMessage($message);
@@ -43,8 +46,8 @@ trait HandlesTransformation
         return $text;
     }
 
-    public function remapRoles(array $mapping) : \Cognesy\Utils\Messages\Messages {
-        $messages = new \Cognesy\Utils\Messages\Messages();
+    public function remapRoles(array $mapping) : Messages {
+        $messages = new Messages();
         foreach ($this->messages as $message) {
             $role = $message->role()->value;
             $messages->appendMessage($message->withRole($mapping[$role] ?? $role));
@@ -52,21 +55,21 @@ trait HandlesTransformation
         return $messages;
     }
 
-    public function reversed() : \Cognesy\Utils\Messages\Messages {
-        $messages = new \Cognesy\Utils\Messages\Messages();
+    public function reversed() : Messages {
+        $messages = new Messages();
         $messages->messages = array_reverse($this->messages);
         return $messages;
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
-    private function mergeRolesFlat() : \Cognesy\Utils\Messages\Messages {
+    private function mergeRolesFlat() : Messages {
         $role = $this->firstRole()->value;
-        $messages = new \Cognesy\Utils\Messages\Messages();
+        $messages = new Messages();
         $content = [];
         foreach ($this->messages as $message) {
             if ($role !== $message->role()->value || $message->isComposite()) {
-                $messages->appendMessage(new \Cognesy\Utils\Messages\Message(
+                $messages->appendMessage(new Message(
                     role: $role,
                     content: implode("\n\n", array_filter($content)),
                 ));
@@ -82,7 +85,7 @@ trait HandlesTransformation
         }
         // append remaining content
         if (!empty($content)) {
-            $messages->appendMessage(new \Cognesy\Utils\Messages\Message(
+            $messages->appendMessage(new Message(
                 role: $role,
                 content: implode("\n", array_filter($content)),
             ));
@@ -90,17 +93,17 @@ trait HandlesTransformation
         return $messages;
     }
 
-    private function mergeRolesComposites() : \Cognesy\Utils\Messages\Messages {
+    private function mergeRolesComposites() : Messages {
         $composites = $this->toAllComposites();
 
-        $messages = new \Cognesy\Utils\Messages\Messages();
+        $messages = new Messages();
         $role = $composites->firstRole()->value;
-        $message = new \Cognesy\Utils\Messages\Message($role, []);
+        $message = new Message($role, []);
         foreach ($composites->all() as $composite) {
             if ($role !== $composite->role()->value) {
                 $messages->appendMessage($message);
                 $role = $composite->role()->value;
-                $message = new \Cognesy\Utils\Messages\Message($role, []);
+                $message = new Message($role, []);
             }
             $message->addContentPart($composite->content(), $role);
         }
@@ -108,8 +111,8 @@ trait HandlesTransformation
         return $messages;
     }
 
-    private function toAllComposites() : \Cognesy\Utils\Messages\Messages {
-        $messages = new \Cognesy\Utils\Messages\Messages();
+    private function toAllComposites() : Messages {
+        $messages = new Messages();
         foreach ($this->messages as $message) {
             $messages->appendMessage(match(true) {
                 $message->isComposite() => $message,

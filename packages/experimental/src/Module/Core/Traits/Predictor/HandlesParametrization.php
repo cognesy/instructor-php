@@ -10,7 +10,7 @@ use Cognesy\Polyglot\LLM\Inference;
 trait HandlesParametrization
 {
     public function using(
-        Instructor                  $structuredOutput = null,
+        StructuredOutput            $structuredOutput = null,
         StructuredOutputRequestInfo $requestInfo = null,
         Signature                   $signature = null,
         string                      $instructions = null,
@@ -18,7 +18,7 @@ trait HandlesParametrization
         array                       $options = null,
         string                      $model = null,
     ) : static {
-        $this->withInstructor($structuredOutput);
+        $this->withStructuredOutput($structuredOutput);
         $this->withRequestInfo($requestInfo);
         $this->withSignature($signature);
         $this->withInstructions($instructions);
@@ -28,11 +28,11 @@ trait HandlesParametrization
         return $this;
     }
 
-    public function withInstructor(?StructuredOutput $structuredOutput) : static {
-        $this->instructor = match(true) {
+    public function withStructuredOutput(?StructuredOutput $structuredOutput) : static {
+        $this->structuredOutput = match(true) {
             !is_null($structuredOutput) => $structuredOutput,
-            !isset($this->instructor) => new StructuredOutput(),
-            default => $this->instructor,
+            !isset($this->structuredOutput) => new StructuredOutput(),
+            default => $this->structuredOutput,
         };
         return $this;
     }
@@ -53,7 +53,7 @@ trait HandlesParametrization
             default => $this->connection,
         };
         $this->inference->withConnection($this->connection);
-        $this->instructor->withConnection($this->connection);
+        $this->structuredOutput->withConnection($this->connection);
         return $this;
     }
 
@@ -85,29 +85,17 @@ trait HandlesParametrization
     }
 
     public function withExamples(?array $examples) : static {
-        $this->requestInfo->examples = match(true) {
-            !is_null($examples) => $examples,
-            !isset($this->requestInfo->examples) => [],
-            default => $this->requestInfo->examples,
-        };
+        $this->requestInfo->withExamples($examples ?? $this->requestInfo->examples());
         return $this;
     }
 
     public function withOptions(?array $options) : static {
-        $this->requestInfo->options = match(true) {
-            !is_null($options) => $options,
-            !isset($this->requestInfo->options) => [],
-            default => $this->requestInfo->options,
-        };
+        $this->requestInfo->withOptions($options ?? $this->requestInfo->options());
         return $this;
     }
 
     public function withModel(?string $model) : static {
-        $this->requestInfo->model = match(true) {
-            !is_null($model) => $model,
-            !isset($this->requestInfo->model) => '',
-            default => $this->requestInfo->model,
-        };
+        $this->requestInfo->withModel($model ?? $this->requestInfo->model());
         return $this;
     }
 

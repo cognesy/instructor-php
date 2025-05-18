@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 

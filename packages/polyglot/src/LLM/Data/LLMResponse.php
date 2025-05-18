@@ -123,14 +123,14 @@ class LLMResponse
      *
      * @return Json
      */
-    public function findJsonData(OutputMode $mode): Json {
+    public function findJsonData(OutputMode $mode = null): Json {
         return match(true) {
             ($mode == OutputMode::Tools) && $this->hasToolCalls() => match($this->toolCalls->hasSingle()) {
                 true => Json::fromArray($this->toolCalls->first()?->args()),
                 default => Json::fromArray($this->toolCalls->toArray()),
             },
             $this->hasContent() => Json::fromString($this->content),
-            default => [],
+            default => Json::fromString($this->content),
         };
     }
 

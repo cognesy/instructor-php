@@ -11,7 +11,7 @@ Mode compatibility:
 - OutputMode::MdJson (supported)
 - OutputMode::Tools (supported)
 - OutputMode::Json (supported)
-- OutputMode::JsonSchema (not supported)
+- OutputMode::JsonSchema (supported)
 
 ## Example
 
@@ -49,8 +49,8 @@ $user = $structuredOutput->create(
         'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
-    model: 'kimi-k1.5-preview', // set your own value/source
-    mode: OutputMode::JsonSchema,
+    model: 'kimi-latest', // set your own value/source
+    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

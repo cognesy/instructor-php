@@ -48,8 +48,6 @@ $user = $structuredOutput->create(
         'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
-    model: 'grok-2-1212', // set your own value/source
-    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

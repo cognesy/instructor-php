@@ -17,7 +17,7 @@ class AggregateExperimentObserver implements CanObserveExperiment
         private string $observationKey = '',
         private array $params = [],
         private NumberAggregationMethod $method = NumberAggregationMethod::Mean,
-        private bool $throwOnEmptyObservations = true,
+        private bool $throwOnEmptyObservations = false,
     ) {
         if (empty($name)) {
             throw new InvalidArgumentException('Name cannot be empty');

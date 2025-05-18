@@ -40,7 +40,7 @@ class EmbeddingsDriverFactory
      * @return CanVectorize
      */
     public function makeDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient) : CanVectorize {
-        $type = $config->type ?? 'openai';
+        $type = $config->providerType ?? 'openai';
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
         if (!$driver) {
             throw new InvalidArgumentException("Unknown driver: {$type}");
@@ -52,6 +52,7 @@ class EmbeddingsDriverFactory
         return match ($type) {
             'azure' => fn($config, $httpClient, $events) => new AzureOpenAIDriver($config, $httpClient, $events),
             'cohere1' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
+            'cohere2' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
             'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
             'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),

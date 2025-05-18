@@ -15,7 +15,7 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
         string|array $toolChoice = '',
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode   $mode = OutputMode::Text,
+        OutputMode   $mode = OutputMode::Unrestricted,
     ) : array {
         $options = array_merge($this->config->options, $options);
 
@@ -64,7 +64,7 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
         $request['tools'] = $tools ? $this->toNativeTools($tools) : [];
         $request['tool_choice'] = [];
 
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     protected function toNativeTools(array $tools) : array|string {

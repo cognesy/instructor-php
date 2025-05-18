@@ -68,12 +68,12 @@ $text = <<<TEXT
 $user = (new StructuredOutput)
     ->withConnection('openai')
     ->onPartialUpdate(partialUpdate(...))
-    ->request(
-        messages: $text,
-        responseModel: UserDetail::class,
-        options: ['stream' => true],
-        mode: OutputMode::Json,
-    )->get();
+    ->withMessages($text)
+    ->withResponseClass(UserDetail::class)
+    ->withOutputMode(OutputMode::Json)
+    ->withStreaming()
+    ->create()
+    ->get();
 
 echo "All tokens received, fully completed object available in `\$user` variable.\n";
 echo '$user = '."\n";

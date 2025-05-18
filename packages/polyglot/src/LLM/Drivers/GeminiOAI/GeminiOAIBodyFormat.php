@@ -14,6 +14,8 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Json:
             case OutputMode::JsonSchema:
@@ -26,14 +28,14 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
                 $request['response_format'] = ['type' => 'text'];
                 break;
             case OutputMode::Unrestricted:
-                $request['response_format'] = $request['response_format'] ?? ['type' => 'json_object'] ?? [];
+                $request['response_format'] = $request['response_format'] ? ['type' => 'json_object'] : [];
                 break;
         }
 
         $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
         $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
 
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }
 

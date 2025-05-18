@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\LLM;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Drivers\A21\A21Driver;
 use Cognesy\Polyglot\LLM\Drivers\Anthropic\AnthropicDriver;
 use Cognesy\Polyglot\LLM\Drivers\Azure\AzureDriver;
 use Cognesy\Polyglot\LLM\Drivers\Cerebras\CerebrasDriver;
@@ -15,6 +16,7 @@ use Cognesy\Polyglot\LLM\Drivers\Fireworks\FireworksDriver;
 use Cognesy\Polyglot\LLM\Drivers\Gemini\GeminiDriver;
 use Cognesy\Polyglot\LLM\Drivers\GeminiOAI\GeminiOAIDriver;
 use Cognesy\Polyglot\LLM\Drivers\Groq\GroqDriver;
+use Cognesy\Polyglot\LLM\Drivers\Meta\MetaDriver;
 use Cognesy\Polyglot\LLM\Drivers\Minimaxi\MinimaxiDriver;
 use Cognesy\Polyglot\LLM\Drivers\Mistral\MistralDriver;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
@@ -79,6 +81,7 @@ class InferenceDriverFactory
     protected function getBundledDriver(string $name) : ?callable {
         $drivers = [
             // Tailored drivers
+            'a21' => fn($config, $httpClient, $events) => new A21Driver($config, $httpClient, $events),
             'anthropic' => fn($config, $httpClient, $events) => new AnthropicDriver($config, $httpClient, $events),
             'azure' => fn($config, $httpClient, $events) => new AzureDriver($config, $httpClient, $events),
             'cerebras' => fn($config, $httpClient, $events) => new CerebrasDriver($config, $httpClient, $events),
@@ -89,6 +92,7 @@ class InferenceDriverFactory
             'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
             'gemini-oai' => fn($config, $httpClient, $events) => new GeminiOAIDriver($config, $httpClient, $events),
             'groq' => fn($config, $httpClient, $events) => new GroqDriver($config, $httpClient, $events),
+            'meta' => fn($config, $httpClient, $events) => new MetaDriver($config, $httpClient, $events),
             'minimaxi' => fn($config, $httpClient, $events) => new MinimaxiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new MistralDriver($config, $httpClient, $events),
             'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
@@ -96,7 +100,6 @@ class InferenceDriverFactory
             'sambanova' => fn($config, $httpClient, $events) => new SambaNovaDriver($config, $httpClient, $events),
             'xai' => fn($config, $httpClient, $events) => new XAiDriver($config, $httpClient, $events),
             // OpenAI compatible driver for generic OAI providers
-            'a21' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'moonshot' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'ollama' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'openai-compatible' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),

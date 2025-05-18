@@ -37,7 +37,7 @@ function printUsage(Usage $usage) : void {
 echo "COUNTING TOKENS FOR SYNC RESPONSE\n";
 $text = "Jason is 25 years old and works as an engineer.";
 $response = (new StructuredOutput)
-    ->request(
+    ->create(
         messages: $text,
         responseModel: User::class,
     )->response();
@@ -50,7 +50,7 @@ printUsage($response->usage());
 echo "\n\nCOUNTING TOKENS FOR STREAMED RESPONSE\n";
 $text = "Anna is 19 years old.";
 $stream = (new StructuredOutput)
-    ->request(
+    ->create(
         messages: $text,
         responseModel: User::class,
         options: ['stream' => true],

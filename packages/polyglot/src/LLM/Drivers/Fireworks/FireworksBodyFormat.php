@@ -14,6 +14,8 @@ class FireworksBodyFormat extends OpenAICompatibleBodyFormat
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
+
         switch($mode) {
             case OutputMode::Json:
                 $request['response_format'] = [
@@ -30,14 +32,11 @@ class FireworksBodyFormat extends OpenAICompatibleBodyFormat
                     'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
                 ];
                 break;
-            case OutputMode::Unrestricted:
-                $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
-                break;
         }
 
         $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
         $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
 
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }

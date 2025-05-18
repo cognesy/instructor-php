@@ -26,7 +26,7 @@ use Cognesy\Utils\Str;
 $answer = Inference::text('What is capital of Germany');
 
 echo "USER: What is capital of Germany\n";
-echo "ASSISTANT: $answer\n";
+echo "ASSISTANT: $answer\n\n";
 assert(Str::contains($answer, 'Berlin'));
 
 
@@ -42,7 +42,7 @@ $answer = (new Inference)
     ->toText();
 
 echo "USER: What is capital of France\n";
-echo "ASSISTANT: $answer\n";
+echo "ASSISTANT: $answer\n\n";
 assert(Str::contains($answer, 'Paris'));
 
 

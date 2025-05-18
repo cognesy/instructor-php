@@ -44,7 +44,7 @@ class UserDetail
 
 $user = (new StructuredOutput)
     ->wiretap(fn($event) => $event->print())
-    ->request(
+    ->create(
         messages: [["role" => "user",  "content" => "Contact our CTO, Jason is 28 years old -- Best regards, Tom"]],
         responseModel: UserDetail::class,
         options: ['stream' => true]

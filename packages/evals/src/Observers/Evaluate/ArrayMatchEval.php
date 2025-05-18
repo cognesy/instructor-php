@@ -51,7 +51,7 @@ class ArrayMatchEval implements CanGenerateObservations
     // INTERNAL /////////////////////////////////////////////////
 
     private function analyse(Execution $execution) : array {
-        $data = $execution->get('response')?->json()->toArray();
+        $data = $execution->get('response')?->findJsonData()->toArray();
         $totalCount = count((new Dot($data))->flatten());
         $mismatches = (new CompareNestedArrays)->compare($this->expected, $data);
         $mismatchCount = count($mismatches);
@@ -96,7 +96,7 @@ class ArrayMatchEval implements CanGenerateObservations
     }
 
     private function critique(Execution $execution): array {
-        $data = $execution->get('response')?->json()->toArray();
+        $data = $execution->get('response')?->findJsonData()->toArray();
         $differences = (new CompareNestedArrays)->compare($this->expected, $data);
         $feedback = $this->makeFeedback($differences) ?? Feedback::none();
         return array_map(

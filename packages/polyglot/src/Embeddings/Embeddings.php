@@ -23,6 +23,7 @@ class Embeddings
     protected CanHandleHttpRequest $httpClient;
     protected CanVectorize $driver;
     protected EmbeddingsDriverFactory $driverFactory;
+    private EmbeddingsRequest $request;
 
     public function __construct(
         string               $connection = '',
@@ -32,11 +33,12 @@ class Embeddings
         ?EventDispatcher      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $connection = $connection ?: Settings::get('embeddings', "defaultConnection");
+        $connection = $connection ?: Settings::get('embed', "defaultConnection");
         $this->config = $config ?? EmbeddingsConfig::load($connection);
         $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
         $this->driverFactory = new EmbeddingsDriverFactory($this->events);
         $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->request = new EmbeddingsRequest();
     }
 
     // PUBLIC static ////////////////////////////////////////////
@@ -109,19 +111,45 @@ class Embeddings
         return $this;
     }
 
+    public function withInput(string|array $input) : self {
+        $this->request->withAnyInput($input);
+        return $this;
+    }
+
     /**
      * Generates embeddings for the provided input data.
      * @param string|array $input
      * @param array $options
      * @return EmbeddingsResponse
      */
-    public function create(string|array $input, array $options = []) : EmbeddingsResponse {
-        if (is_string($input)) {
-            $input = [$input];
+    public function create(
+        string|array $input = [],
+        array $options = []
+    ) : EmbeddingsResponse {
+        $input = $input ?: $this->request->inputs();
+        if (empty($input)) {
+            throw new InvalidArgumentException("Input data is required");
         }
-        if (count($input) > $this->config->maxInputs) {
+
+        $options = array_merge($this->request->options(), $options);
+
+        if (count($this->request->inputs()) > $this->config->maxInputs) {
             throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config->maxInputs}");
         }
+
         return $this->driver->vectorize($input, $options);
+    }
+
+    /**
+     * Enable or disable debugging for the current instance.
+     *
+     * @param bool $debug Whether to enable debug mode. Default is true.
+     *
+     * @return self
+     */
+    public function withDebug(bool $debug = true) : self {
+        // TODO: it assumes we're using HttpClient class as a driver
+        $this->httpClient->withDebug($debug);
+        return $this;
     }
 }

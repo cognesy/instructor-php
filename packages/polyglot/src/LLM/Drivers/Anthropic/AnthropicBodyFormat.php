@@ -17,13 +17,13 @@ class AnthropicBodyFormat implements CanMapRequestBody
     ) {}
 
     public function map(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        OutputMode $mode
+        array        $messages = [],
+        string       $model = '',
+        array        $tools = [],
+        string|array $toolChoice = '',
+        array        $responseFormat = [],
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Unrestricted,
     ): array {
         $options = array_merge($this->config->options, $options);
 
@@ -65,7 +65,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
             $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
         }
 
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     private function toTools(array $tools) : array {

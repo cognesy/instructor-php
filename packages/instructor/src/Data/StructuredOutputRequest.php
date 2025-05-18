@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
-
 class StructuredOutputRequest
 {
     use Traits\StructuredOutputRequest\HandlesMessages;
@@ -22,22 +20,14 @@ class StructuredOutputRequest
         string        $prompt,
         array         $examples,
         string        $model,
-        int           $maxRetries,
         array         $options,
-        string        $toolName,
-        string        $toolDescription,
-        string        $retryPrompt,
-        OutputMode    $mode,
         array         $cachedContext,
         StructuredOutputConfig $config,
     ) {
         $this->cachedContext = $cachedContext;
         $this->options = $options;
-        $this->maxRetries = $maxRetries;
-        $this->mode = $mode;
         $this->input = $input;
         $this->prompt = $prompt;
-        $this->retryPrompt = $retryPrompt;
         $this->examples = $examples;
         $this->system = $system;
         $this->model = $model;
@@ -47,8 +37,6 @@ class StructuredOutputRequest
         $this->responseModel = $responseModel;
 
         $this->config = $config;
-        $this->toolName = $toolName ?: $this->config->toolName();
-        $this->toolDescription = $toolDescription ?: $this->config->toolDescription();
         $this->chatTemplate = new ChatTemplate($this->config);
     }
 
@@ -61,13 +49,10 @@ class StructuredOutputRequest
             'prompt' => $this->prompt,
             'examples' => $this->examples,
             'model' => $this->model,
-            'maxRetries' => $this->maxRetries,
             'options' => $this->options,
-            'toolName' => $this->toolName(),
-            'toolDescription' => $this->toolDescription(),
-            'retryPrompt' => $this->retryPrompt,
             'mode' => $this->mode(),
             'cachedContext' => $this->cachedContext,
+            'config' => $this->config->toArray(),
         ];
     }
 

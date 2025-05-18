@@ -22,7 +22,7 @@ class MistralBodyFormat implements CanMapRequestBody
         string|array $toolChoice = '',
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode   $mode = OutputMode::Text,
+        OutputMode   $mode = OutputMode::Unrestricted,
     ) : array {
         $options = array_merge($this->config->options, $options);
 
@@ -46,6 +46,8 @@ class MistralBodyFormat implements CanMapRequestBody
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Json:
                 $request['response_format'] = ['type' => 'json_object'];
@@ -55,24 +57,33 @@ class MistralBodyFormat implements CanMapRequestBody
                 $request['response_format'] = ['type' => 'text'];
                 break;
             case OutputMode::JsonSchema:
+                $isStrict = $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true;
                 $request['response_format'] = [
                     'type' => 'json_schema',
                     'json_schema' => [
                         'name' => $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema',
                         'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
-                        'strict' => $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true,
+                        'strict' => $isStrict,
                     ],
                 ];
                 break;
             case OutputMode::Unrestricted:
-                $request['response_format'] = $responseFormat ?? $request['response_format'] ?? [];
+                if (isset($request['response_format']['type']) && $request['response_format']['type'] === 'json_object') {
+                    unset($request['response_format']['schema']);
+                }
                 break;
         }
 
-        $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
+        $request['tools'] = $tools ?? [];
         $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
 
-        return array_filter($request);
+        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
+        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
+        if (empty($request['response_format'])) {
+            unset($request['response_format']);
+        }
+
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     private function toToolChoice(array $tools, array|string $toolChoice) : array|string {
@@ -90,11 +101,12 @@ class MistralBodyFormat implements CanMapRequestBody
     }
 
     private function removeDisallowedEntries(array $jsonSchema) : array {
-        return Arrays::removeRecursively($jsonSchema, [
-            'x-title',
-            //'description',
-            'x-php-class',
-            'additionalProperties',
-        ]);
+        return Arrays::removeRecursively(
+            array: $jsonSchema,
+            keys: [
+                'x-title',
+                'x-php-class',
+            ],
+        );
     }
 }

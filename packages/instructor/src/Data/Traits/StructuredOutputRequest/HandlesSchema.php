@@ -8,8 +8,6 @@ use Cognesy\Utils\Str;
 
 trait HandlesSchema
 {
-    private string $toolName;
-    private string $toolDescription;
     private string|array|object $requestedSchema;
     private ?ResponseModel $responseModel = null;
 
@@ -24,13 +22,13 @@ trait HandlesSchema
     public function toolName() : string {
         return $this->responseModel
             ? $this->responseModel->toolName()
-            : $this->toolName;
+            : $this->config->toolName();
     }
 
     public function toolDescription() : string {
         return $this->responseModel
             ? $this->responseModel->toolDescription()
-            : $this->toolDescription;
+            : $this->config->toolDescription();
     }
 
     public function responseFormat() : array {

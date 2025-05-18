@@ -35,9 +35,8 @@ class RewrittenTask {
 class RefineAndSolve {
     private string $prompt = <<<PROMPT
         Given the following text by a user, extract the part
-        that is actually relevant to their question. Please
-        include the actual question or query that the user
-        is asking.
+        that is actually relevant to their question. Include
+        the actual question or query that the user is asking.
         
         Text by user:
         {query}

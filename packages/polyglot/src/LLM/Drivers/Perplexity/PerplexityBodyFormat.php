@@ -15,7 +15,7 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
         string|array $toolChoice = '',
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode   $mode = OutputMode::Text,
+        OutputMode   $mode = OutputMode::Unrestricted,
     ) : array {
         $options = array_merge($this->config->options, $options);
 
@@ -38,6 +38,8 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Text:
             case OutputMode::MdJson:
@@ -59,10 +61,13 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
                 break;
         }
 
-        $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
+        $request['tools'] = $tools ?? [];
         $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
 
-        return array_filter($request);
+        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
+        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
+
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }
 

@@ -63,12 +63,13 @@ $text = <<<TEXT
     San Francisco. He likes to play soccer and climb mountains.
     TEXT;
 
-$stream = (new StructuredOutput)->withConnection('openai')->request(
-    messages: $text,
-    responseModel: UserDetail::class,
-    options: ['stream' => true],
-    mode: OutputMode::Json,
-)->stream();
+$stream = (new StructuredOutput)
+    ->withMessages($text)
+    ->withResponseClass(UserDetail::class)
+    ->withStreaming()
+    ->withOutputMode(OutputMode::Json)
+    ->create()
+    ->stream();
 
 foreach ($stream->partials() as $partial) {
     partialUpdate($partial);

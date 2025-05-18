@@ -47,7 +47,7 @@ $logger = new class {
 $user = (new StructuredOutput)
     ->onEvent(HttpRequestSent::class, fn($event) => $logger->log($event))
     ->onEvent(HttpResponseReceived::class, fn($event) => $logger->log($event))
-    ->request(
+    ->create(
         messages: "Jason is 28 years old",
         responseModel: User::class,
     )

@@ -3,7 +3,6 @@
 namespace Cognesy\Evals\Traits\Execution;
 
 use Cognesy\Evals\Contracts\CanRunExecution;
-use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observation\SelectObservations;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\DataMap;

@@ -62,7 +62,7 @@ class CompanyEval implements CanGenerateObservations
     }
 
     private function validateDefault(Execution $execution) : bool {
-        $decoded = $execution->get('response')?->json()->toArray();
+        $decoded = $execution->get('response')?->findJsonData()->toArray();
         return $this->expectations['company_name'] === ($decoded['company_name'] ?? '')
             && $this->expectations['founding_year'] === ($decoded['founding_year'] ?? 0);
     }

@@ -13,7 +13,7 @@ trait HandlesRetries
     private StructuredOutputAttempt $response;
 
     public function maxRetries() : int {
-        return $this->maxRetries;
+        return $this->config->maxRetries();
     }
 
     public function response() : StructuredOutputAttempt {

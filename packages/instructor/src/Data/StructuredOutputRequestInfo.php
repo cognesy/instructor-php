@@ -1,35 +1,23 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
-
 class StructuredOutputRequestInfo
 {
-    use Traits\RequestInfo\HandlesMutation;
-    use Traits\RequestInfo\HandlesCreation;
-    use Traits\RequestInfo\HandlesSerialization;
+    use Traits\StructuredOutputRequestInfo\HandlesAccess;
+    use Traits\StructuredOutputRequestInfo\HandlesMutation;
+    use Traits\StructuredOutputRequestInfo\HandlesCreation;
+    use Traits\StructuredOutputRequestInfo\HandlesSerialization;
 
-    public string|array $messages;
-    public string|array|object $input;
-    public string|array|object $responseModel;
-    public string $model;
-    public string $system;
-    public string $prompt;
-    public int $maxRetries;
-    public array $options;
+    protected string|array $messages = [];
+    protected string|array|object $input = [];
+    protected string|array|object $responseModel = [];
+    protected string $model = '';
+    protected string $system = '';
+    protected string $prompt = '';
+    protected array $options = [];
     /** @var Example[] */
-    public array $examples;
-    public string $retryPrompt;
-    public string $toolName;
-    public string $toolDescription;
-    public OutputMode $mode;
-    public array $cachedContext = [];
+    protected array $examples = [];
 
-    public function isStreamed() : bool {
-        return $this->options['stream'] ?? false;
-    }
-
-    public function toMessages() : array {
-        return $this->messages;
-    }
+    protected ?StructuredOutputConfig $config = null;
+    protected array $cachedContext = [];
 }

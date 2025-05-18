@@ -32,25 +32,25 @@ trait HandlesPrediction
     // INTERNAL ////////////////////////////////////////////////////////////
 
     protected function predictText(array $callArgs) : string {
-        $this->requestInfo->prompt = match(true) {
-            empty($this->requestInfo->prompt) => Template::arrowpipe()
+        $this->requestInfo->withPrompt(match(true) {
+            empty($this->requestInfo->prompt()) => Template::arrowpipe()
                 ->from($this->toTextTemplate())
                 ->with(array_merge([
                     'instructions' => $this->instructions(),
                     'input' => $callArgs,
                 ]))
                 ->toText(),
-            default => $this->requestInfo->prompt,
-        };
-        return $this->inference->create(messages: $this->requestInfo->prompt)->toText();
+            default => $this->requestInfo->prompt(),
+        });
+        return $this->inference->create(messages: $this->requestInfo->prompt())->toText();
     }
 
     protected function predictStructure(array $callArgs) : mixed {
-        $this->requestInfo->input = $callArgs;
-        $this->requestInfo->prompt = $this->instructions();
-        $this->requestInfo->responseModel = Signature::toStructure('prediction', $this->signature);
+        $this->requestInfo->withInput($callArgs);
+        $this->requestInfo->withPrompt($this->instructions());
+        $this->requestInfo->withResponseModel(Signature::toStructure('prediction', $this->signature));
         // TODO: replace with new Instructor API call
-        return $this->instructor->withRequest($this->requestInfo)->get();
+        return $this->structuredOutput->withRequest($this->requestInfo)->get();
     }
 
     protected function toTemplate(bool $textMode = false) : string {

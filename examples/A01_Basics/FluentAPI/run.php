@@ -28,6 +28,7 @@ print("Extracting structured data using LLM...\n\n");
 $user = (new StructuredOutput)
     ->withConnection('openai')
     ->withMessages($text)
+    ->withModel('gpt-3.5-turbo')
     ->withResponseClass(User::class)
     ->create()
     ->get();

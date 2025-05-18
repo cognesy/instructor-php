@@ -46,20 +46,21 @@ $data = new InferenceData(
 //Debug::setEnabled();
 //$connections = array_keys(Settings::get('llm', 'connections'));
 $connections = [
-    'openai',
-    'deepseek-r'
+//    'deepseek',
+//    'groq',
+    'gemini-oai',
 ];
 $modes = [
-    OutputMode::MdJson,
 //    OutputMode::Text,
-//    OutputMode::JsonSchema,
 //    OutputMode::MdJson,
+//    OutputMode::Json,
+//    OutputMode::JsonSchema,
 //    OutputMode::Tools,
-//    OutputMode::Unrestricted
+    OutputMode::Unrestricted
 ];
 $stream = [
     false,
-    true
+//    true
 ];
 
 $experiment = new Experiment(

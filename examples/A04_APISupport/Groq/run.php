@@ -55,10 +55,10 @@ $user = $structuredOutput
             'input' => 'We have a meeting with John, our new admin who likes surfing. He is 19 years old - check his profile: @jx90.',
             'output' => ['name' => 'John', 'role' => 'admin', 'hobbies' => ['surfing'], 'username' => 'jx90', 'age' => 19],
         ]],
-        model: 'gemma2-9b-it',
+        model: 'llama-3.3-70b-versatile', //'gemma2-9b-it',
         maxRetries: 2,
         options: ['temperature' => 0.5],
-        mode: OutputMode::Json,
+        mode: OutputMode::JsonSchema,
     )->get();
 
 print("Completed response model:\n\n");

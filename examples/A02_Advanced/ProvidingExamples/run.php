@@ -32,21 +32,21 @@ echo "\nREQUEST:\n";
 $user = (new StructuredOutput)
     // let's dump the request data to see how examples are used in requests
     ->onEvent(HttpRequestSent::class, fn($event) => dump($event))
-    ->request(
-        messages: "Our user Jason is 25 years old.",
-        responseModel: User::class,
-        examples: [
-            new Example(
-                input: "John is 50 and works as a teacher.",
-                output: ['name' => 'John', 'age' => 50]
-            ),
-            new Example(
-                input: "We have recently hired Ian, who is 27 years old.",
-                output: ['name' => 'Ian', 'age' => 27],
-                template: "example input:\n<|input|>\noutput:\n```json\n<|output|>\n```\n",
-            ),
-        ],
-        mode: OutputMode::Json)
+    ->withMessage("Our user Jason is 25 years old.")
+    ->withResponseClass(User::class)
+    ->withExamples([
+        new Example(
+            input: "John is 50 and works as a teacher.",
+            output: ['name' => 'John', 'age' => 50]
+        ),
+        new Example(
+            input: "We have recently hired Ian, who is 27 years old.",
+            output: ['name' => 'Ian', 'age' => 27],
+            template: "example input:\n<|input|>\noutput:\n```json\n<|output|>\n```\n",
+        ),
+    ])
+    ->withOutputMode(OutputMode::Json)
+    ->create()
     ->get();
 
 echo "\nOUTPUT:\n";

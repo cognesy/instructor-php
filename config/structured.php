@@ -1,6 +1,12 @@
 <?php
 
 return [
+    // default mode
+    'defaultMode' => 'json',
+
+    // max retries
+    'maxRetries' => 3,
+
     // should Instructor use object references or quote objects
     'useObjectReferences' => false,
 

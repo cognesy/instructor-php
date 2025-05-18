@@ -102,7 +102,11 @@ class InferenceAdapter
         return (new Inference)
             ->withConnection($connection)
             ->create(
-                messages: $messages,
+                messages: array_merge($messages, [
+                    ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
+                    ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
+                    ['role' => 'user', 'content' => '```json'],
+                ]),
                 tools: $schema->tools(),
                 toolChoice: $schema->toolChoice(),
                 responseFormat: $schema->responseFormatJson(),

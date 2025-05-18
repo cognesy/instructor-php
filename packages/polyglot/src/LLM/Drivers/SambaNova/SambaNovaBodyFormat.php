@@ -37,6 +37,6 @@ class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
         $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
         $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
 
-        return array_filter($request);
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }

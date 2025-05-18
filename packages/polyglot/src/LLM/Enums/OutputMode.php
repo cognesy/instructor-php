@@ -45,4 +45,15 @@ enum OutputMode : string
     public function isIn(array $modes) : bool {
         return in_array($this, $modes);
     }
+
+    public static function fromText(string $mode) : OutputMode {
+        return match($mode) {
+            'tool_call' => self::Tools,
+            'json' => self::Json,
+            'json_schema' => self::JsonSchema,
+            'md_json' => self::MdJson,
+            'text' => self::Text,
+            default => self::Unrestricted,
+        };
+    }
 }

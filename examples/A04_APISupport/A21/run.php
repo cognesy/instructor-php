@@ -45,12 +45,11 @@ $structuredOutput = (new StructuredOutput)->withConnection('a21');
 $user = $structuredOutput->create(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
-    model: 'jamba-1.5-mini', // set your own value/source
-    mode: OutputMode::Json,
     examples: [[
         'input' => 'Ive got email Frank - their developer, who\'s 30. His Twitter handle is @frankch. Btw, he plays on drums!',
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => '@frankch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
+    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

@@ -58,7 +58,7 @@ $user = $structuredOutput->create(
     ]],
     //model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
     //options: ['stream' => true ]
-    mode: OutputMode::Tools,
+    mode: OutputMode::Json,
 )->get();
 
 print("Completed response model:\n\n");

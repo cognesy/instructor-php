@@ -1,26 +1,23 @@
 <?php
-namespace Cognesy\Instructor\Data\Traits\RequestInfo;
+
+namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequestInfo;
 
 use Cognesy\Instructor\Data\Example;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Instructor\Data\StructuredOutputConfig;
 
 trait HandlesCreation
 {
     public static function with(
-        $messages = '',
-        $input = '',
-        $responseModel = '',
-        $system = '',
-        $prompt = '',
-        $examples = [],
-        $model = '',
-        $maxRetries = 0,
-        $options = [],
-        $toolName = '',
-        $toolDescription = '',
-        $retryPrompt = '',
-        $mode = OutputMode::Tools,
-        $cachedContext = [],
+        string|array $messages = '',
+        string|array|object $input = '',
+        string|array|object$responseModel = '',
+        string $system = '',
+        string $prompt = '',
+        array $examples = [],
+        string $model = '',
+        array $options = [],
+        array $cachedContext = [],
+        StructuredOutputConfig $config = null,
     ) : static {
         $data = new static();
         $data->messages = $messages;
@@ -30,13 +27,9 @@ trait HandlesCreation
         $data->prompt = $prompt;
         $data->examples = $examples;
         $data->model = $model;
-        $data->maxRetries = $maxRetries;
         $data->options = $options;
-        $data->toolName = $toolName;
-        $data->toolDescription = $toolDescription;
-        $data->retryPrompt = $retryPrompt;
-        $data->mode = $mode;
         $data->cachedContext = $cachedContext;
+        $data->config = $config;
         return $data;
     }
 
@@ -47,15 +40,12 @@ trait HandlesCreation
             responseModel: $data['responseModel'] ?? '',
             system: $data['system'] ?? '',
             prompt: $data['prompt'] ?? '',
-            examples: $data['examples'] ?? array_map(fn($example) => Example::fromArray($example), $data['examples'] ?? []),
+            examples: $data['examples']
+                ?? array_map(fn($example) => Example::fromArray($example), $data['examples'] ?? []),
             model: $data['model'] ?? '',
-            maxRetries: $data['maxRetries'] ?? 0,
             options: $data['options'] ?? [],
-            toolName: $data['toolName'] ?? '',
-            toolDescription: $data['toolDescription'] ?? '',
-            retryPrompt: $data['retryPrompt'] ?? '',
-            mode: $data['mode'] ?? OutputMode::Tools,
             cachedContext: $data['cachedContext'] ?? [],
+            config: $data['config'] ?? [],
         );
     }
 }

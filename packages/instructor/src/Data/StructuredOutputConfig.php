@@ -7,6 +7,9 @@ use Cognesy\Utils\Settings;
 
 class StructuredOutputConfig
 {
+    private OutputMode $outputMode = OutputMode::Tools;
+    private bool $useObjectReferences = false;
+    private int $maxRetries = 3;
     private string $retryPrompt = "JSON generated incorrectly, fix following errors:\n";
     private array $modePrompts = [
         OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
@@ -14,7 +17,6 @@ class StructuredOutputConfig
         OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
         OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
     ];
-    private bool $useObjectReferences;
     private string $toolName = 'extracted_data';
     private string $toolDescription = 'Function call based on user instructions.';
 
@@ -36,35 +38,47 @@ class StructuredOutputConfig
     ];
 
     public function __construct(
-        string $retryPrompt = '',
-        array $modePrompts = [],
-        array $chatStructure = [],
-        string $toolName = '',
-        string $toolDescription = '',
-        bool $useObjectReferences = false,
+        OutputMode $outputMode = null,
+        bool       $useObjectReferences = false,
+        int        $maxRetries = 0,
+        string     $retryPrompt = '',
+        array      $modePrompts = [],
+        string     $toolName = '',
+        string     $toolDescription = '',
+        array      $chatStructure = [],
     ) {
+        $this->outputMode = $outputMode ?: $this->outputMode;
+        $this->useObjectReferences = $useObjectReferences ?: $this->useObjectReferences;
+        $this->maxRetries = $maxRetries ?: $this->maxRetries;
         $this->retryPrompt = $retryPrompt ?: $this->retryPrompt;
         $this->modePrompts = $modePrompts ?: $this->modePrompts;
-        $this->chatStructure = $chatStructure ?: $this->chatStructure;
         $this->toolName = $toolName ?: $this->toolName;
         $this->toolDescription = $toolDescription ?: $this->toolDescription;
-        $this->useObjectReferences = $useObjectReferences;
+        $this->chatStructure = $chatStructure ?: $this->chatStructure;
     }
 
     public static function load() : static {
         return new static(
-            retryPrompt: Settings::get('structured', 'defaultRetryPrompt'),
+            outputMode: OutputMode::from(Settings::get('structured', 'defaultMode', '')),
+            useObjectReferences: Settings::get('structured', 'useObjectReferences', true),
+            maxRetries: Settings::get('structured', 'maxRetries', 3),
+            retryPrompt: Settings::get('structured', 'defaultRetryPrompt', ''),
             modePrompts: [
-                OutputMode::MdJson->value => Settings::get('structured', 'defaultMdJsonPrompt'),
-                OutputMode::Json->value => Settings::get('structured', 'defaultJsonPrompt'),
-                OutputMode::JsonSchema->value => Settings::get('structured', 'defaultJsonSchemaPrompt'),
-                OutputMode::Tools->value => Settings::get('structured', 'defaultToolsPrompt'),
+                OutputMode::MdJson->value => Settings::get('structured', 'defaultMdJsonPrompt', ''),
+                OutputMode::Json->value => Settings::get('structured', 'defaultJsonPrompt', ''),
+                OutputMode::JsonSchema->value => Settings::get('structured', 'defaultJsonSchemaPrompt', ''),
+                OutputMode::Tools->value => Settings::get('structured', 'defaultToolsPrompt', ''),
             ],
-            chatStructure: Settings::get('structured', 'defaultChatStructure'),
-            toolName: Settings::get('structured', 'defaultToolName'),
-            toolDescription: Settings::get('structured', 'defaultToolDescription'),
-            useObjectReferences: Settings::get('structured', 'useObjectReferences'),
+            toolName: Settings::get('structured', 'defaultToolName', ''),
+            toolDescription: Settings::get('structured', 'defaultToolDescription', ''),
+            chatStructure: Settings::get('structured', 'defaultChatStructure', []),
         );
+    }
+
+    // ACCESSORS ///////////////////////////////////////////////////////
+
+    public function outputMode() : OutputMode {
+        return $this->outputMode;
     }
 
     public function prompt(OutputMode $mode) : string {
@@ -93,5 +107,96 @@ class StructuredOutputConfig
 
     public function useObjectReferences() : bool {
         return $this->useObjectReferences;
+    }
+
+    public function maxRetries() : int {
+        return $this->maxRetries;
+    }
+
+
+    // MUTATORS ///////////////////////////////////////////////////////
+
+    public function withOutputMode(OutputMode $outputMode) : static
+    {
+        $this->outputMode = $outputMode;
+        return $this;
+    }
+
+    public function withMaxRetries(int $maxRetries) : static
+    {
+        $this->maxRetries = $maxRetries;
+        return $this;
+    }
+
+    public function withToolName(string $toolName) : static
+    {
+        $this->toolName = $toolName;
+        return $this;
+    }
+
+    public function withToolDescription(string $toolDescription) : static
+    {
+        $this->toolDescription = $toolDescription;
+        return $this;
+    }
+
+    public function withUseObjectReferences(bool $useObjectReferences) : static
+    {
+        $this->useObjectReferences = $useObjectReferences;
+        return $this;
+    }
+
+    public function withRetryPrompt(string $retryPrompt) : static
+    {
+        $this->retryPrompt = $retryPrompt;
+        return $this;
+    }
+
+    public function withModePrompt(OutputMode $mode, string $prompt) : static
+    {
+        $this->modePrompts[$mode->value] = $prompt;
+        return $this;
+    }
+
+    public function withModePrompts(array $modePrompts) : static
+    {
+        $this->modePrompts = $modePrompts;
+        return $this;
+    }
+
+    public function withChatStructure(array $chatStructure) : static
+    {
+        $this->chatStructure = $chatStructure;
+        return $this;
+    }
+
+    public function withOverrides(
+        ?OutputMode    $outputMode = null,
+        ?bool          $useObjectReferences = null,
+        ?int           $maxRetries = null,
+        ?string        $retryPrompt = null,
+        ?string        $toolName = null,
+        ?string        $toolDescription = null,
+    ) : static {
+        $this->outputMode = $outputMode ?? $this->outputMode;
+        $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
+        $this->maxRetries = $maxRetries ?? $this->maxRetries;
+        $this->toolName = $toolName ?? $this->toolName;
+        $this->toolDescription = $toolDescription ?? $this->toolDescription;
+        $this->retryPrompt = $retryPrompt ?? $this->retryPrompt;
+        return $this;
+    }
+
+    public function toArray() : array {
+        return [
+            'outputMode' => $this->outputMode->value,
+            'useObjectReferences' => $this->useObjectReferences,
+            'maxRetries' => $this->maxRetries,
+            'retryPrompt' => $this->retryPrompt,
+            'modePrompts' => $this->modePrompts,
+            'toolName' => $this->toolName,
+            'toolDescription' => $this->toolDescription,
+            'chatStructure' => $this->chatStructure,
+        ];
     }
 }

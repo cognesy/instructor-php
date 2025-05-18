@@ -65,7 +65,7 @@ class ChainOfSummaries {
 }
 
 $summaries = (new StructuredOutput)
-    ->request(
+    ->create(
         messages: $report,
         responseModel: ChainOfSummaries::class,
         prompt: 'Generate a denser summary based on the provided content.',

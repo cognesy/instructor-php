@@ -64,7 +64,8 @@ class DamageAssessment {
     public string $summary;
 }
 
-$assessment = Image::fromFile(__DIR__ . '/car-damage.jpg')
+$assessment = Image
+    ::fromFile(__DIR__ . '/car-damage.jpg')
     ->toData(
         responseModel: DamageAssessment::class,
         prompt: 'Identify and assess each car damage location and severity separately.',

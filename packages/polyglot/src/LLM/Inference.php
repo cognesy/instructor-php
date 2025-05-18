@@ -7,6 +7,7 @@ use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Traits\HandlesEvents;
 
 /**
  * Class Inference
@@ -15,7 +16,9 @@ use Cognesy\Utils\Events\EventDispatcher;
  */
 class Inference
 {
-    protected EventDispatcher $events;
+    use HandlesEvents;
+    use Traits\HandlesFluentMethods;
+
     protected LLM $llm;
     protected CachedContext $cachedContext;
     protected InferenceRequest $request;
@@ -80,17 +83,6 @@ class Inference
      */
     public function withLLM(LLM $llm): self {
         $this->llm = $llm;
-        return $this;
-    }
-
-    /**
-     * Sets the EventDispatcher instance to be used.
-     *
-     * @param EventDispatcher $events The EventDispatcher instance to set.
-     * @return self Returns the current instance.
-     */
-    public function withEventDispatcher(EventDispatcher $events) : self {
-        $this->events = $events;
         return $this;
     }
 
@@ -214,16 +206,16 @@ class Inference
         string|array $toolChoice = [],
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode $mode = OutputMode::Text
+        ?OutputMode   $mode = null,
     ): InferenceResponse {
         return $this->withRequest(new InferenceRequest(
-            messages: $messages,
-            model: $model,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            responseFormat: $responseFormat,
-            options: $options,
-            mode: $mode,
+            messages: $messages ?: $this->request->messages(),
+            model: $model ?: $this->request->model() ?: $this->config()->model,
+            tools: $tools ?: $this->request->tools(),
+            toolChoice: $toolChoice ?: $this->request->toolChoice(),
+            responseFormat: $responseFormat ?: $this->request->responseFormat(),
+            options: array_merge($this->request->options(), $options),
+            mode: $mode ?: $this->request->outputMode() ?: OutputMode::Unrestricted,
             cachedContext: $this->cachedContext ?? null
         ));
     }

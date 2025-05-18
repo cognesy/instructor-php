@@ -138,6 +138,7 @@ class LLM
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
+        // TODO: needs to be solved - it only works when we're using HttpClient class as a driver
         $this->httpClient->withDebug($debug);
         return $this;
     }

@@ -39,9 +39,10 @@ assert($response->reasoningContent() !== '');
 // EXAMPLE 2: streaming response
 $stream = (new Inference)
     ->withConnection('deepseek-r') // optional, default is set in /config/llm.php
+    ->withStreaming()
     ->create(
         messages: [['role' => 'user', 'content' => 'What is capital of Brasil. Answer with just a name.']],
-        options: ['max_tokens' => 128, 'stream' => true]
+        options: ['max_tokens' => 128]
     )
     ->stream();
 

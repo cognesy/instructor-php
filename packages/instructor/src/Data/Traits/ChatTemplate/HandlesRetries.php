@@ -17,7 +17,7 @@ trait HandlesRetries
         $messages = [];
         foreach($request->attempts() as $attempt) {
             $messages[] = ['role' => 'assistant', 'content' => $attempt->llmResponse()->content()];
-            $retryFeedback = ($request->retryPrompt() ?: $this->config->retryPrompt())
+            $retryFeedback = $this->config->retryPrompt()
                 . Arrays::flatten($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }

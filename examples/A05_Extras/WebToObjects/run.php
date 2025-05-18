@@ -47,8 +47,6 @@ class Company {
     public array $clients = [];
 }
 
-$structuredOutput = (new StructuredOutput)->withConnection('openai');
-
 $companyGen = Webpage::withScraper('scrapfly')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
     ->cleanup()
@@ -60,12 +58,16 @@ $companyGen = Webpage::withScraper('scrapfly')
     );
 
 $companies = [];
+echo "Extracting company data from:\n\n";
 foreach($companyGen as $companyDiv) {
-    $company = $structuredOutput->create(
-        messages: $companyDiv,
-        responseModel: Company::class,
-        mode: OutputMode::Json
-    )->get();
+    echo " > " . substr($companyDiv, 0, 32) . "...\n\n";
+    $company = (new StructuredOutput)
+        ->withConnection('openai')
+        ->create(
+            messages: $companyDiv,
+            responseModel: Company::class,
+            mode: OutputMode::Json
+        )->get();
     $companies[] = $company;
     dump($company);
 }

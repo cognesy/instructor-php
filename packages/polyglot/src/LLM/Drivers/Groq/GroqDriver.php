@@ -15,7 +15,6 @@ use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
-use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Events\EventDispatcher;
 
@@ -34,7 +33,7 @@ class GroqDriver implements CanHandleInference
         $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
         $this->requestAdapter = new OpenAIRequestAdapter(
             $config,
-            new OpenAICompatibleBodyFormat(
+            new GroqBodyFormat(
                 $config,
                 new OpenAIMessageFormat(),
             )
@@ -54,7 +53,7 @@ class GroqDriver implements CanHandleInference
             $request->toolChoice(),
             $request->responseFormat(),
             $request->options(),
-            $request->mode(),
+            $request->outputMode(),
         );
         return $this->httpClient->handle(
             (new HttpClientRequest(

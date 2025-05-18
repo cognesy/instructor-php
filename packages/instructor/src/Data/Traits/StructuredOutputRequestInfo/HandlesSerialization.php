@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Data\Traits\RequestInfo;
+namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequestInfo;
 
 trait HandlesSerialization
 {
@@ -12,14 +12,10 @@ trait HandlesSerialization
             'model' => $this->model,
             'system' => $this->system,
             'prompt' => $this->prompt,
-            'maxRetries' => $this->maxRetries,
             'options' => $this->options,
             'examples' => array_map(fn($example) => $example->jsonSerialize(), $this->examples),
-            'retryPrompt' => $this->retryPrompt,
-            'toolName' => $this->toolName,
-            'toolDescription' => $this->toolDescription,
-            'mode' => $this->mode->value,
             'cachedContext' => $this->cachedContext,
+            'config' => $this->config->toArray(),
         ];
     }
 }

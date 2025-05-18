@@ -131,21 +131,23 @@ class Arrays
      * @param callable $callback
      * @return array
      */
-    static public function removeRecursively(array $array, array $keys): array {
+    static public function removeRecursively(array $array, array $keys, array $skip = []): array {
         if (empty($array) || empty($keys)) {
             return $array;
         }
-        $remove = function($array, $keys) use(&$remove) {
+        $remove = function($array, $keys, $skip) use(&$remove) {
             foreach ($array as $key => $value) {
                 if (in_array($key, $keys)) {
                     unset($array[$key]);
                 } elseif (is_array($value)) {
-                    $array[$key] = $remove($value, $keys);
+                    if (!in_array($key, $skip)) {
+                        $array[$key] = $remove($value, $keys, $skip);
+                    }
                 }
             }
             return $array;
         };
-        return $remove($array, $keys);
+        return $remove($array, $keys, $skip);
     }
 
     /**

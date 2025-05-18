@@ -22,7 +22,7 @@ class CohereV2BodyFormat implements CanMapRequestBody
         string|array $toolChoice = '',
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode   $mode = OutputMode::Text,
+        OutputMode   $mode = OutputMode::Unrestricted,
     ) : array {
         $options = array_merge($this->config->options, $options);
 
@@ -46,6 +46,8 @@ class CohereV2BodyFormat implements CanMapRequestBody
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Json:
             case OutputMode::JsonSchema:
@@ -58,22 +60,25 @@ class CohereV2BodyFormat implements CanMapRequestBody
             case OutputMode::MdJson:
                 $request['response_format'] = ['type' => 'text'];
                 break;
-            case OutputMode::Unrestricted:
-                $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
-                break;
         }
 
-        $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
+        $request['tools'] = $tools ?? [];
         unset($request['tool_choice']);
 
-        return array_filter($request);
+        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
+        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
+
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
-        return Arrays::removeRecursively($jsonSchema, [
-            'x-title',
-            'x-php-class',
-            'additionalProperties',
-        ]);
+        return Arrays::removeRecursively(
+            array: $jsonSchema,
+            keys: [
+                'x-title',
+                'x-php-class',
+                'additionalProperties',
+            ],
+        );
     }
 }

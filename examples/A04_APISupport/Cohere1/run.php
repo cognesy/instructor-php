@@ -45,7 +45,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)->withConnection('cohere2');
+$structuredOutput = (new StructuredOutput)->withConnection('cohere1');
 
 $user = $structuredOutput->create(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
@@ -55,7 +55,7 @@ $user = $structuredOutput->create(
         'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
     ]],
     model: 'command-r-plus',
-    mode: OutputMode::Json,
+    mode: OutputMode::MdJson,
 )->get();
 
 print("Completed response model:\n\n");

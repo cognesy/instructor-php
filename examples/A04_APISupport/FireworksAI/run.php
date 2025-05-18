@@ -50,7 +50,7 @@ $user = $structuredOutput
             'input' => 'Ive got email Frank - their developer, who\'s 30. He asked to come back to him frank@hk.ch. Btw, he plays on drums!',
             'output' => ['age' => 30, 'name' => 'Frank', 'username' => 'frank@hk.ch', 'role' => 'developer', 'hobbies' => ['playing drums'],],
         ]],
-        model: 'accounts/fireworks/models/mixtral-8x7b-instruct',
+        model: 'accounts/fireworks/models/llama4-maverick-instruct-basic',
         mode: OutputMode::Json,
     )->get();
 

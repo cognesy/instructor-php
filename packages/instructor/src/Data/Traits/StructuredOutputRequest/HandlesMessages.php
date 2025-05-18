@@ -8,13 +8,11 @@ trait HandlesMessages
     private string|array $messages;
     private string $model;
     private string $prompt = '';
-    private string $retryPrompt;
     private string $system = '';
     private string|array|object $input = '';
     private array $examples;
-    private array $cachedContext = [];
     private array $options = [];
-    private OutputMode $mode;
+    private array $cachedContext = [];
 
     // PUBLIC /////////////////////////////////////////////////////////////////
 
@@ -38,7 +36,7 @@ trait HandlesMessages
     }
 
     public function mode() : OutputMode {
-        return $this->mode;
+        return $this->config->outputMode();
     }
 
     public function model() : string {
@@ -58,7 +56,7 @@ trait HandlesMessages
     }
 
     public function retryPrompt() : string {
-        return $this->retryPrompt;
+        return $this->config->retryPrompt();
     }
 
     public function setOption(string $key, mixed $value) : self {

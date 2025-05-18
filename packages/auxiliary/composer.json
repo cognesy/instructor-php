@@ -32,6 +32,7 @@
     "league/html-to-markdown": "^5.1",
     "phpdocumentor/reflection-docblock": "^5.4",
     "spatie/browsershot": "^5.0.6",
+    "symfony/css-selector": "^7.2",
     "symfony/dom-crawler": "^7.1"
   },
   "require-dev": {

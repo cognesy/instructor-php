@@ -17,13 +17,13 @@ class GeminiBodyFormat implements CanMapRequestBody
     ) {}
 
     public function map(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        OutputMode $mode
+        array        $messages = [],
+        string       $model = '',
+        array        $tools = [],
+        string|array $toolChoice = '',
+        array        $responseFormat = [],
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Unrestricted,
     ): array {
         $options = array_merge($this->config->options, $options);
 
@@ -112,10 +112,13 @@ class GeminiBodyFormat implements CanMapRequestBody
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
-        return Arrays::removeRecursively($jsonSchema, [
-            'x-title',
-            'x-php-class',
-            'additionalProperties',
-        ]);
+        return Arrays::removeRecursively(
+            array: $jsonSchema,
+            keys: [
+                'x-title',
+                'x-php-class',
+                'additionalProperties',
+            ],
+        );
     }
 }

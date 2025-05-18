@@ -22,19 +22,20 @@ trait CreatesFromRequest
         return new Signature(
             input: self::inputSchema($request)->withName($inputName),
             output: self::responseModel($request)->schema()->withName($outputName),
-            description: $request->prompt,
+            description: $request->prompt(),
         );
     }
 
     private static function inputSchema(StructuredOutputRequestInfo $request) : Schema {
+        // TODO: needs to be implmeneted
         return Schema::string(name: 'input', description: 'Input data');
     }
 
     private static function responseModel(StructuredOutputRequestInfo $request) : ResponseModel {
         return self::responseModelFactory()->fromAny(
-            requestedModel: $request->responseModel,
-            toolName: $request->toolName,
-            toolDescription: $request->toolDescription,
+            requestedModel: $request->responseModel(),
+            toolName: $request->config()->toolName(),
+            toolDescription: $request->config()->toolDescription(),
         );
     }
 

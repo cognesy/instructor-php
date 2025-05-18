@@ -54,9 +54,7 @@ $user = $structuredOutput->create(
         'input' => 'We have a meeting with John, our new admin who likes surfing. He is 19 years old - check his profile: @jig.',
         'output' => ['age' => 19, 'name' => 'John', 'username' => 'jig', 'role' => 'admin', 'hobbies' => ['surfing'],],
     ]],
-    //model: 'microsoft/phi-3.5-mini-128k-instruct',
-    //options: ['stream' => true ]
-    mode: OutputMode::Json,
+    mode: OutputMode::JsonSchema,
 )->get();
 
 print("Completed response model:\n\n");

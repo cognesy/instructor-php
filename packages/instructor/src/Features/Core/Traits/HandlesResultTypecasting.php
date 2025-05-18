@@ -30,7 +30,7 @@ trait HandlesResultTypecasting
      */
     public function getInt() : int {
         $result = $this->get();
-        if (is_int($result)) {
+        if (!is_int($result)) {
             throw new Exception('Result is not an integer: ' . gettype($result));
         }
         return $result;
@@ -44,7 +44,7 @@ trait HandlesResultTypecasting
      */
     public function getFloat() : float {
         $result = $this->get();
-        if (is_float($result)) {
+        if (!is_float($result)) {
             throw new Exception('Result is not a float: ' . gettype($result));
         }
         return $result;
@@ -58,7 +58,7 @@ trait HandlesResultTypecasting
      */
     public function getString() : string {
         $result = $this->get();
-        if (is_string($result)) {
+        if (!is_string($result)) {
             throw new Exception('Result is not a string: ' . gettype($result));
         }
         return $result;

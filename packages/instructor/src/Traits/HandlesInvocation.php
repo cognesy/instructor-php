@@ -32,20 +32,20 @@ trait HandlesInvocation
      * @return StructuredOutputResponse The response generated based on the provided request details.
      */
     public function withRequest(StructuredOutputRequestInfo $request) : StructuredOutputResponse {
-        return $this->request(
-            messages: $request->messages ?? [],
-            input: $request->input ?? [],
-            responseModel: $request->responseModel ?? [],
-            system: $request->system ?? '',
-            prompt: $request->prompt ?? '',
-            examples: $request->examples ?? [],
-            model: $request->model ?? '',
-            maxRetries: $request->maxRetries ?? 0,
-            options: $request->options ?? [],
-            toolName: $request->toolName ?? '',
-            toolDescription: $request->toolDescription ?? '',
-            retryPrompt: $request->retryPrompt ?? '',
-            mode: $request->mode ?? OutputMode::Tools,
+        return $this->create(
+            messages: $request->messages() ?? [],
+            input: $request->input() ?? [],
+            responseModel: $request->responseModel() ?? [],
+            system: $request->system() ?? '',
+            prompt: $request->prompt() ?? '',
+            examples: $request->examples() ?? [],
+            model: $request->model() ?? '',
+            maxRetries: $request->config()?->maxRetries() ?? 0,
+            options: $request->options() ?? [],
+            toolName: $request->config()?->toolName() ?? '',
+            toolDescription: $request->config()?->toolDescription() ?? '',
+            retryPrompt: $request->config()?->retryPrompt() ?? '',
+            mode: $request->config()?->outputMode() ?? OutputMode::Tools,
         );
     }
 
@@ -81,45 +81,39 @@ trait HandlesInvocation
         string              $toolName = '',
         string              $toolDescription = '',
         string              $retryPrompt = '',
-        OutputMode          $mode = OutputMode::Tools,
+        OutputMode          $mode = OutputMode::Tools, // we should use model specific default output mode
     ) : StructuredOutputResponse {
         $this->queueEvent(new RequestReceived());
         $this->dispatchQueuedEvents();
 
-        if (empty($responseModel)) {
+        $requestedSchema = $responseModel ?: $this->requestInfo->responseModel();
+        if (empty($requestedSchema)) {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
 
-        $requestedSchema = $responseModel;
         $responseModel = $this->makeResponseModel(
             $requestedSchema,
-            new StructuredOutputConfig(
-                retryPrompt: $this->config->retryPrompt(),
-                modePrompts: $this->config->modePrompts(),
-                chatStructure: $this->config->chatStructure(),
+            $this->config->withOverrides(
+                outputMode: $mode,
+                maxRetries: $maxRetries ?: $this->config->maxRetries(),
+                retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
                 toolName: $toolName ?: $this->config->toolName(),
                 toolDescription: $toolDescription ?: $this->config->toolDescription(),
-                useObjectReferences: $this->config->useObjectReferences()
             ),
             $this->events,
         );
 
         $request = new StructuredOutputRequest(
-            messages: $messages ?? [],
-            input: $input ?? [],
-            requestedSchema: $requestedSchema ?? [],
+            messages: $messages ?: $this->requestInfo->messages(),
+            input: $input ?: $this->requestInfo->input(),
+            requestedSchema: $requestedSchema,
             responseModel: $responseModel,
-            system: $system ?? '',
-            prompt: $prompt ?? '',
-            examples: $examples ?? [],
-            model: $model ?? '',
-            maxRetries: $maxRetries ?? 0,
-            options: $options ?? [],
-            toolName: $toolName ?? '',
-            toolDescription: $toolDescription ?? '',
-            retryPrompt: $retryPrompt ?? '',
-            mode: $mode ?? OutputMode::Tools,
-            cachedContext: $this->cachedContext ?? [],
+            system: $system ?: $this->requestInfo->system(),
+            prompt: $prompt ?: $this->requestInfo->prompt(),
+            examples: $examples ?: $this->requestInfo->examples(),
+            model: $model ?: $this->requestInfo->model(),
+            options: $options ?: $this->requestInfo->options(),
+            cachedContext: $this->requestInfo->cachedContext(),
             config: $this->config,
         );
 

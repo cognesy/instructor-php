@@ -68,7 +68,7 @@ class Image extends ImageUtil
         array               $options = [],
         OutputMode          $mode = OutputMode::Tools,
     ) : mixed {
-        return (new StructuredOutput)->withConnection($connection)->request(
+        return (new StructuredOutput)->withConnection($connection)->create(
             input: $this,
             responseModel: $responseModel,
             system: $system,

@@ -42,7 +42,7 @@ $query = "technology news";
 
 $connections = [
     'azure',
-    'cohere1',
+    'cohere2',
     'gemini',
     'jina',
     'mistral',

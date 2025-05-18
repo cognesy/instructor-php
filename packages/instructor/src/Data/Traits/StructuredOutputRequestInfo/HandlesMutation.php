@@ -1,12 +1,15 @@
 <?php
-namespace Cognesy\Instructor\Data\Traits\RequestInfo;
+namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequestInfo;
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Instructor\Data\StructuredOutputConfig;
 
 trait HandlesMutation
 {
     public function withMessages(string|array $messages) : static {
-        $this->messages = $messages;
+        $this->messages = match(true) {
+            is_string($messages) => [['role' => 'user', 'content' => $messages]],
+            is_array($messages) => $messages,
+        };
         return $this;
     }
 
@@ -55,38 +58,18 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withMaxRetries(int $maxRetries) : static {
-        $this->maxRetries = $maxRetries;
-        return $this;
-    }
-
     public function withOptions(array $options) : static {
         $this->options = $options;
         return $this;
     }
 
-    public function withRetryPrompt($retryPrompt) : static {
-        $this->retryPrompt = $retryPrompt;
-        return $this;
-    }
-
-    public function withToolName($toolName) : static {
-        $this->toolName = $toolName;
-        return $this;
-    }
-
-    public function withToolDescription($toolDescription) : static {
-        $this->toolDescription = $toolDescription;
-        return $this;
-    }
-
-    public function withMode(OutputMode $mode) : static {
-        $this->mode = $mode;
-        return $this;
-    }
-
     public function withCachedContext(array $cachedContext) : static {
         $this->cachedContext = $cachedContext;
+        return $this;
+    }
+
+    public function withConfig(StructuredOutputConfig $config) : static {
+        $this->config = $config;
         return $this;
     }
 }

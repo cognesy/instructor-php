@@ -22,7 +22,7 @@ class OpenAICompatibleBodyFormat implements CanMapRequestBody
         string|array $toolChoice = '',
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode   $mode = OutputMode::Text,
+        OutputMode   $mode = OutputMode::Unrestricted,
     ) : array {
         $options = array_merge($this->config->options, $options);
 
@@ -48,11 +48,12 @@ class OpenAICompatibleBodyFormat implements CanMapRequestBody
         string|array $toolChoice,
         array        $responseFormat
     ) : array {
+        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
+
         switch($mode) {
             case OutputMode::Json:
                 $request['response_format'] = [
                     'type' => 'json_object',
-                    'json_schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
                 ];
                 break;
             case OutputMode::Text:
@@ -61,28 +62,42 @@ class OpenAICompatibleBodyFormat implements CanMapRequestBody
                 break;
             case OutputMode::JsonSchema:
                 $request['response_format'] = [
-                    'type' => 'json_object',
-                    'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
+                    'type' => 'json_schema',
+                    'json_schema' => [
+                        'name' => $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema',
+                        'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
+                        'strict' => $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true,
+                    ],
                 ];
                 break;
+            case OutputMode::Tools:
             case OutputMode::Unrestricted:
                 $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
                 break;
         }
 
-        $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
+        $request['tools'] = $tools ?? [];
         $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
 
-        return array_filter($request);
+        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
+        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
+        if (empty($request['response_format'])) {
+            unset($request['response_format']);
+        }
+
+        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
-        return Arrays::removeRecursively($jsonSchema, [
-            'title',
-            'x-php-class',
-            'additionalProperties',
-        ]);
+        return Arrays::removeRecursively(
+            array: $jsonSchema,
+            keys: [
+                'x-title',
+                'x-php-class',
+                //'additionalProperties',
+            ],
+        );
     }
 
     protected function toToolChoice(array $tools, array|string $toolChoice) : array|string {

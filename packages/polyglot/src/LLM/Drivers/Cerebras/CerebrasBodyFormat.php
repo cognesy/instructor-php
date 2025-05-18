@@ -14,7 +14,7 @@ class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
         string|array $toolChoice = '',
         array        $responseFormat = [],
         array        $options = [],
-        OutputMode   $mode = OutputMode::Text,
+        ?OutputMode   $mode = null,
     ) : array {
         $options = array_merge($this->config->options, $options);
 
