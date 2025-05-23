@@ -26,7 +26,7 @@ use Cognesy\Utils\Str;
 // we will use existing, bundled driver as an example, but you can provide any class that implements
 // a required interface (CanHandleInference)
 
-LLM::registerDriver('custom-driver', fn($config, $httpClient) => new class($config, $httpClient) extends OpenAIDriver {
+LLM::registerDriver('custom-driver', fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
     public function handle(InferenceRequest $request): HttpClientResponse {
         // some extra functionality to demonstrate our driver is being used
         echo ">>> Handling request...\n";
@@ -48,10 +48,9 @@ $config = new LLMConfig(
 
 $answer = (new Inference)
     ->withConfig($config)
-    ->create(
-        messages: [['role' => 'user', 'content' => 'What is the capital of France']],
-        options: ['max_tokens' => 64]
-    )
+    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
+    ->withOptions(['max_tokens' => 64])
+    ->create()
     ->toText();
 
 echo "USER: What is capital of France\n";

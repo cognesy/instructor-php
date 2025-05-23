@@ -51,8 +51,9 @@ class Runner
         $this->timeStart = microtime(true);
         $output = $this->execute($example->runPath);
         $this->totalTime = $this->recordTimeElapsed();
+        $hasErrors = $this->hasErrors($output);
         $result = $this->processOutput($output, $example);
-        (new RunnerView)->renderOutput($this->errors, $this->totalTime);
+        (new RunnerView)->renderOutput($hasErrors, $this->totalTime);
         if (!$result) {
             if (!empty($this->errors)) {
                 (new RunnerView)->onError();
@@ -78,7 +79,7 @@ class Runner
 
     private function processOutput(string $output, Example $example) : bool
     {
-        if (strpos($output, 'Fatal error') !== false) {
+        if ($this->hasErrors($output)) {
             $this->errors[$example->name][] = new ErrorEvent($example->name, $output);
             $this->incorrect++;
             if ($this->stopOnError) {
@@ -96,5 +97,9 @@ class Runner
 
     private function recordTimeElapsed() : float {
         return microtime(true) - $this->timeStart;
+    }
+
+    private function hasErrors(string $output) : bool {
+        return strpos($output, 'Fatal error') !== false;
     }
 }

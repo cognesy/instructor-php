@@ -42,9 +42,9 @@ class RunnerView
         Cli::outln();
     }
 
-    public function renderOutput(array $errors, float $timeElapsed) : void {
+    public function renderOutput(bool $errors, float $timeElapsed) : void {
         Cli::grid([[1, ">", STR_PAD_RIGHT, Color::DARK_GRAY]]);
-        if (!empty($errors)) {
+        if ($errors) {
             Cli::grid([[8, "ERROR", STR_PAD_BOTH, [Color::WHITE, Color::BG_RED]]]);
         } else {
             Cli::grid([[8, "OK", STR_PAD_BOTH, [Color::WHITE, Color::BG_GREEN]]]);
