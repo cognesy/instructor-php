@@ -8,19 +8,19 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\RequestException;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class LaravelPool implements CanHandleRequestPool
 {
     public function __construct(
-        protected HttpFactory      $factory,
-        protected EventDispatcher  $events,
+        protected HttpFactory $factory,
+        protected EventDispatcherInterface $events,
         protected HttpClientConfig $config,
     ) {}
 

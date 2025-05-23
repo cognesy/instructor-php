@@ -83,9 +83,9 @@ The `llm.php` configuration file contains settings for LLM providers:
 use Cognesy\Utils\Env;
 
 return [
-    'defaultConnection' => 'openai',  // Default connection to use
+    'defaultPreset' => 'openai',  // Default connection to use
 
-    'connections' => [
+    'presets' => [
         'openai' => [
             'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
@@ -123,9 +123,9 @@ The `embed.php` configuration file contains settings for embeddings providers:
 use Cognesy\Utils\Env;
 
 return [
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
 
-    'connections' => [
+    'presets' => [
         'openai' => [
             'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',

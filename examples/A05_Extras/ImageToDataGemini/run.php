@@ -52,8 +52,8 @@ class Receipt {
     public float $total;
 }
 
-$receipt = (new StructuredOutput)->withConnection('gemini')->create(
-    input: Image::fromFile(__DIR__ . '/receipt.png'),
+$receipt = (new StructuredOutput)->using('gemini')->create(
+    messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',
     mode: OutputMode::Json,

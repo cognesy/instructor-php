@@ -9,7 +9,7 @@ use Cognesy\Polyglot\LLM\Inference;
 
 trait HandlesParametrization
 {
-    public function using(
+    public function with(
         StructuredOutput            $structuredOutput = null,
         StructuredOutputRequestInfo $requestInfo = null,
         Signature                   $signature = null,
@@ -46,14 +46,14 @@ trait HandlesParametrization
         return $this;
     }
 
-    public function withConnection(string $connection) : static {
-        $this->connection = match(true) {
-            !empty($connection) => $connection,
-            !isset($this->connection) => '',
-            default => $this->connection,
+    public function using(string $preset) : static {
+        $this->preset = match(true) {
+            !empty($preset) => $preset,
+            !isset($this->preset) => '',
+            default => $this->preset,
         };
-        $this->inference->withConnection($this->connection);
-        $this->structuredOutput->withConnection($this->connection);
+        $this->inference->using($this->preset);
+        $this->structuredOutput->using($this->preset);
         return $this;
     }
 

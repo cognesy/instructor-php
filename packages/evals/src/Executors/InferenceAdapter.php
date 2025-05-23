@@ -11,7 +11,7 @@ use Cognesy\Polyglot\LLM\InferenceResponse;
 class InferenceAdapter
 {
     public function callInferenceFor(
-        string          $connection,
+        string          $preset,
         OutputMode      $mode,
         bool            $isStreamed,
         string|array    $messages,
@@ -24,19 +24,19 @@ class InferenceAdapter
             'stream' => $isStreamed
         ];
         $inferenceResponse = match($mode) {
-            OutputMode::Tools => $this->forModeTools($connection, $messages, $evalSchema, $options),
-            OutputMode::JsonSchema => $this->forModeJsonSchema($connection, $messages, $evalSchema, $options),
-            OutputMode::Json => $this->forModeJson($connection, $messages, $evalSchema, $options),
-            OutputMode::MdJson => $this->forModeMdJson($connection, $messages, $evalSchema, $options),
-            OutputMode::Text => $this->forModeText($connection, $messages, $options),
-            OutputMode::Unrestricted => $this->forModeUnrestricted($connection, $messages, $evalSchema, $options),
+            OutputMode::Tools => $this->forModeTools($preset, $messages, $evalSchema, $options),
+            OutputMode::JsonSchema => $this->forModeJsonSchema($preset, $messages, $evalSchema, $options),
+            OutputMode::Json => $this->forModeJson($preset, $messages, $evalSchema, $options),
+            OutputMode::MdJson => $this->forModeMdJson($preset, $messages, $evalSchema, $options),
+            OutputMode::Text => $this->forModeText($preset, $messages, $options),
+            OutputMode::Unrestricted => $this->forModeUnrestricted($preset, $messages, $evalSchema, $options),
         };
         return $inferenceResponse->response();
     }
 
-    public function forModeTools(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeTools(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: $messages,
                 tools: $schema->tools(),
@@ -46,9 +46,9 @@ class InferenceAdapter
             );
     }
 
-    public function forModeJsonSchema(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
@@ -60,9 +60,9 @@ class InferenceAdapter
             );
     }
 
-    public function forModeJson(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
@@ -74,9 +74,9 @@ class InferenceAdapter
             );
     }
 
-    public function forModeMdJson(string $connection, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
@@ -88,9 +88,9 @@ class InferenceAdapter
             );
     }
 
-    public function forModeText(string $connection, string|array $messages, array $options) : InferenceResponse {
+    public function forModeText(string $preset, string|array $messages, array $options) : InferenceResponse {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: $messages,
                 options: $options,
@@ -98,9 +98,9 @@ class InferenceAdapter
             );
     }
 
-    public function forModeUnrestricted(string $connection, array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeUnrestricted(string $preset, array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],

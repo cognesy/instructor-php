@@ -62,4 +62,22 @@ class Message {
         $this->content = $content ?? '';
         $this->metadata = $metadata;
     }
+
+    /**
+     * Checks if given array is OpenAI formatted message
+     * @param array $message
+     * @return bool
+     */
+    public static function isMessage(array $message): bool {
+        return isset($message['role']) && isset($message['content']);
+    }
+
+    /**
+     * Checks if given array is OpenAI array of formatted messages
+     * @param array $messages
+     * @return bool
+     */
+    public static function isMessages(array $messages): bool {
+        return isset($messages[0]['role']) && isset($messages[0]['content']);
+    }
 }

@@ -73,16 +73,17 @@ class LLMBooleanCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : BooleanCorrectnessAnalysis {
-        return $this->structuredOutput->request(
-            input: [
+        return $this->structuredOutput
+            ->withInput([
                 'expected_result' => $this->expected,
                 'actual_result' => $this->actual
-            ],
-            responseModel: BooleanCorrectnessAnalysis::class,
-            prompt: 'Analyze the expected and actual results and determine if the actual result is correct.',
-            toolName: 'correctness_evaluation',
-            toolDescription: 'Respond with true or false to indicate if the actual result is correct.',
-            mode: OutputMode::Json,
-        )->get();
+            ])
+            ->withResponseClass(BooleanCorrectnessAnalysis::class)
+            ->withPrompt('Analyze the expected and actual results and determine if the actual result is correct.')
+            ->withSystem('You are a correctness evaluator. You will be given an expected result and an actual result. Your task is to determine if the actual result is correct. Follow schema: <|json_schema|>')
+            ->withToolName('correctness_evaluation')
+            ->withToolDescription('Respond with true or false to indicate if the actual result is correct.')
+            ->withOutputMode(OutputMode::Json)
+            ->get();
     }
 }

@@ -5,8 +5,8 @@ namespace Cognesy\Polyglot\LLM;
 use Closure;
 use Cognesy\Polyglot\LLM\Events\StreamDataParsed;
 use Cognesy\Polyglot\LLM\Events\StreamDataReceived;
-use Cognesy\Utils\Events\EventDispatcher;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Handles reading and processing event streams.
@@ -18,14 +18,14 @@ use Generator;
  */
 class EventStreamReader
 {
-    protected EventDispatcher $events;
+    protected EventDispatcherInterface $events;
     protected ?Closure $parser;
 
     public function __construct(
+        EventDispatcherInterface $events,
         ?Closure $parser = null,
-        ?EventDispatcher $events = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
         $this->parser = $parser;
     }
 

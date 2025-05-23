@@ -103,7 +103,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$structuredOutput = (new StructuredOutput)->withConnection('anthropic');
+$structuredOutput = (new StructuredOutput)->using('anthropic');
 
 echo "PROJECT EVENTS:\n\n";
 

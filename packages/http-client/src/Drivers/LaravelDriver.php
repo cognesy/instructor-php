@@ -17,18 +17,26 @@ use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class LaravelDriver implements CanHandleHttpRequest
 {
-    private HttpFactory $factory;
+    protected HttpClientConfig $config;
+    protected EventDispatcherInterface $events;
+    protected HttpFactory $factory;
 
     public function __construct(
-        protected HttpClientConfig $config,
-        protected ?HttpFactory     $httpClient = null,
-        protected ?EventDispatcher $events = null,
+        HttpClientConfig $config,
+        ?object $clientInstance = null,
+        ?EventDispatcherInterface $events = null,
     ) {
+        $this->config = $config;
         $this->events = $events ?? new EventDispatcher();
-        $this->factory = $httpClient ?? new HttpFactory();
+
+        if ($clientInstance && !($clientInstance instanceof HttpFactory)) {
+            throw new \InvalidArgumentException('Client instance must be of type Illuminate\Http\Client\Factory');
+        }
+        $this->factory = $clientInstance ?? new HttpFactory();
     }
 
     public function handle(HttpClientRequest $request): HttpClientResponse {

@@ -38,7 +38,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)->withConnection('gemini');
+$structuredOutput = (new StructuredOutput)->using('gemini');
 
 $user = $structuredOutput
     ->create(

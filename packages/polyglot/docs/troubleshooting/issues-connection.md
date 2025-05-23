@@ -1,5 +1,5 @@
 ---
-title: Connection
+title: Connection Issues
 description: 'Learn how to troubleshoot connection issues when using Polyglot.'
 ---
 

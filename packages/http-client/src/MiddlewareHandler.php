@@ -7,6 +7,7 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Wraps HTTP driver with a stack of middleware which can pre-
@@ -32,7 +33,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
     public function __construct(
         protected CanHandleHttpRequest $driver,
         protected array                $middleware = [],
-        protected ?EventDispatcher     $events = null,
+        protected ?EventDispatcherInterface      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
     }

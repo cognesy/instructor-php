@@ -15,7 +15,7 @@ it('streams synthetic OpenAI streaming data correctly without parser', function 
     $this->mockEventDispatcher->shouldReceive('dispatch')->times(2)->with(Mock::type(StreamDataReceived::class));
     $this->mockEventDispatcher->shouldReceive('dispatch')->times(2)->with(Mock::type(StreamDataParsed::class));
 
-    $reader = new EventStreamReader(events: $this->mockEventDispatcher);
+    $reader = new EventStreamReader(parser: null, events: $this->mockEventDispatcher);
 
     $generator = function () {
         yield '{"id": "cmpl-xyz", "object": "text_completion", "choices": [{"text": "Hello, ", "index": 0}]}'. "\n";

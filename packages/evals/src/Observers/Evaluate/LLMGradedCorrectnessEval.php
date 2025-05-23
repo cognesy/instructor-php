@@ -67,16 +67,16 @@ class LLMGradedCorrectnessEval implements CanGenerateObservations
     }
 
     private function llmEval() : GradedCorrectnessAnalysis {
-        return $this->structuredOutput->create(
-            input: [
+        return $this->structuredOutput
+            ->withInput([
                 'expected_result' => $this->expected,
-                'actual_result' => $this->actual
-            ],
-            responseModel: GradedCorrectnessAnalysis::class,
-            prompt: 'Analyze the expected and actual results and determine how correct the actual result is.',
-            toolName: 'correctness_grade',
-            toolDescription: 'Respond with grade of correctness to indicate to what extent the actual result is correct.',
-            mode: OutputMode::Json,
-        )->get();
+                'actual_result' => $this->actual,
+            ])
+            ->withResponseClass(GradedCorrectnessAnalysis::class)
+            ->withPrompt('Analyze the expected and actual results and determine how correct the actual result is.')
+            ->withToolName('correctness_grade')
+            ->withToolDescription('Respond with grade of correctness to indicate to what extent the actual result is correct.')
+            ->withOutputMode(OutputMode::Json)
+            ->get();
     }
 }

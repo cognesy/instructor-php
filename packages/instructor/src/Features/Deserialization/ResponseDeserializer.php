@@ -9,16 +9,16 @@ use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserialized;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseDeserializer
 {
     use Traits\ResponseDeserializer\HandlesMutation;
 
     public function __construct(
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
         private array $deserializers,
     ) {}
 

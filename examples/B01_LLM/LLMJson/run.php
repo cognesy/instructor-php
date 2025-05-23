@@ -35,7 +35,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 
 $data = (new Inference)
-    ->withConnection('openai') // optional, default is set in /config/llm.php
+    ->using('openai') // optional, default is set in /config/llm.php
     ->create(
         messages: [['role' => 'user', 'content' => 'What is capital of France? \
            Respond with JSON data containing name", population and year of founding. \

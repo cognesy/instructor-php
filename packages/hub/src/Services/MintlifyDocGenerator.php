@@ -37,11 +37,6 @@ class MintlifyDocGenerator
 
     public function clearDocs() : void {
         $this->view->renderHeader();
-        // get only subdirectories of mintlifyCookbookDir
-        //        $subdirs = array_filter(glob($this->cookbookTargetDir . '/*'), 'is_dir');
-        //        foreach ($subdirs as $subdir) {
-        //            $this->removeDir($subdir);
-        //        }
         Files::removeDirectory($this->docsTargetDir);
         $this->view->renderUpdate(true);
     }
@@ -156,6 +151,7 @@ class MintlifyDocGenerator
 
         // create release notes group
         $releaseNotesGroup = new NavigationGroup('Release Notes');
+        $releaseNotesGroup->pages[] = NavigationItem::fromString('release-notes/versions');
         foreach ($pages as $page) {
             $releaseNotesGroup->pages[] = NavigationItem::fromString('release-notes/v' . $page);
         }

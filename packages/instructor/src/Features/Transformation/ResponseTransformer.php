@@ -6,16 +6,16 @@ use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformObject;
 use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseTransformer
 {
     use Traits\ResponseTransformer\HandlesMutation;
 
     public function __construct(
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
         /** @var CanTransformObject[] $transformers */
         private array $transformers = []
     ) {}

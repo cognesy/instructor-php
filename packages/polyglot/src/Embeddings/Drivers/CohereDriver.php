@@ -4,23 +4,24 @@ namespace Cognesy\Polyglot\Embeddings\Drivers;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class CohereDriver implements CanVectorize
 {
     public function __construct(
         protected EmbeddingsConfig      $config,
         protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcher      $events = null,
+        protected ?EventDispatcherInterface      $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
+        $this->httpClient = $httpClient ?? (new HttpClientFactory($this->events))->default();
     }
 
     public function vectorize(array $input, array $options = []): EmbeddingsResponse {

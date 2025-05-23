@@ -150,11 +150,13 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Utils\Events\EventDispatcher;
 
 // Create with specific client
-$client = HttpClient::make('guzzle');
+$client = (new HttpClientFactory)->make('guzzle');
+// Equivalent to:
+$client = (new HttpClientFactory)->fromPreset('guzzle');
 
 // Create with default client and custom event dispatcher
 $events = new EventDispatcher();
-$client = HttpClient::make('', $events);
+$client = (new HttpClientFactory($events))->default();
 ```
 
 ## Client-Specific Configuration

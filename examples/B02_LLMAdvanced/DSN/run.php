@@ -19,7 +19,7 @@ use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;
 
 $answer = Inference
-    ::fromDSN('connection=xai,model=grok-2')
+    ::fromDSN('preset=xai,model=grok-2')
     ->create(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

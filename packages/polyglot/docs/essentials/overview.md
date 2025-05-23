@@ -54,7 +54,7 @@ echo "Answer: $answer";
 
 ## Specifying a Connection
 
-You can specify which connection to use:
+You can specify which connection preset to use:
 
 ```php
 <?php
@@ -62,7 +62,7 @@ use Cognesy\Polyglot\LLM\Inference;
 
 // Create an inference object with a specific connection
 $inference = new Inference();
-$answer = $inference->withConnection('anthropic')
+$answer = $inference->using('anthropic')
     ->create(
         messages: [['role' => 'user', 'content' => 'What is the capital of France?']]
     )->toText();
@@ -133,11 +133,10 @@ The `toText()` method returns text completion from the LLM response.
 use Cognesy\Polyglot\LLM\Inference;
 
 $answer = (new Inference)
-    ->withConnection('openai') // optional, default is set in /config/llm.php
-    ->create(
-        messages: [['role' => 'user', 'content' => 'What is capital of France']],
-        options: ['max_tokens' => 64]
-    )
+    ->using('openai') // optional, default is set in /config/llm.php
+    ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
+    ->withOptions(['max_tokens' => 64])
+    ->create()
     ->toText();
 
 echo "USER: What is capital of France\n";
@@ -156,10 +155,9 @@ the whole response is ready.
 use Cognesy\Polyglot\LLM\Inference;
 
 $stream = (new Inference)
-    ->create(
-        messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
-        options: ['max_tokens' => 128, 'stream' => true]
-    )
+    ->withMessages([['role' => 'user', 'content' => 'Describe capital of Brasil']])
+    ->withOptions(['max_tokens' => 512])
+    ->withStreaming()
     ->stream()
     ->responses();
 
@@ -187,9 +185,9 @@ the client connection.
 
 ```php
     // This is fragment of /config/llm.php file
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
     //...
-    'connections' => [
+    'presets' => [
         'anthropic' => [ ... ],
         'azure' => [ ... ],
         'cohere1' => [ ... ],
@@ -216,14 +214,14 @@ the client connection.
 To customize the available connections you can either modify existing entries or
 add your own.
 
-Connecting to LLM API via predefined connection is as simple as calling `withClient`
-method with the connection name.
+Connecting to LLM API via predefined connection is as simple as calling `withPreset`
+method with the connection preset name.
 
 ```php
 <?php
 // ...
 $answer = (new Inference)
-    ->withConnection('ollama') // see /config/llm.php
+    ->using('ollama') // see /config/llm.php
     ->create(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
@@ -259,7 +257,7 @@ $defaultResponse = $inference->create(
 echo "Default provider response: $defaultResponse\n\n";
 
 // Switch to Anthropic
-$anthropicResponse = $inference->withConnection('anthropic')
+$anthropicResponse = $inference->using('anthropic')
     ->create(
         messages: 'What is the capital of Germany?'
     )->toText();
@@ -267,7 +265,7 @@ $anthropicResponse = $inference->withConnection('anthropic')
 echo "Anthropic response: $anthropicResponse\n\n";
 
 // Switch to Mistral
-$mistralResponse = $inference->withConnection('mistral')
+$mistralResponse = $inference->using('mistral')
     ->create(
         messages: 'What is the capital of Italy?'
     )->toText();

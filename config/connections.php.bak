@@ -3,7 +3,7 @@
 use Cognesy\Utils\Env;
 
 return [
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
 
     'azure-embed' => [
         'providerType' => 'azure',
@@ -58,6 +58,165 @@ return [
         'metadata' => [
             'organization' => ''
         ],
+    ],
+
+
+    'a21' => [
+        'providerType' => 'a21',
+        'apiUrl' => 'https://api.ai21.com/studio/v1',
+        'apiKey' => Env::get('A21_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'anthropic' => [
+        'providerType' => 'anthropic',
+        'apiUrl' => 'https://api.anthropic.com/v1',
+        'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
+        'endpoint' => '/messages',
+        'metadata' => [
+            'apiVersion' => '2023-06-01',
+            'beta' => 'prompt-caching-2024-07-31',
+        ],
+    ],
+    'azure' => [
+        'providerType' => 'azure',
+        'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',
+        'apiKey' => Env::get('AZURE_OPENAI_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+        'metadata' => [
+            'apiVersion' => '2024-08-01-preview',
+            'resourceName' => 'instructor-dev',
+            'deploymentId' => 'gpt-4o-mini',
+        ],
+    ],
+    'cerebras' => [
+        'providerType' => 'cerebras',
+        'apiUrl' => 'https://api.cerebras.ai/v1',
+        'apiKey' => Env::get('CEREBRAS_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'cohere1' => [
+        'providerType' => 'cohere1',
+        'apiUrl' => 'https://api.cohere.ai/v1',
+        'apiKey' => Env::get('COHERE_API_KEY', ''),
+        'endpoint' => '/chat',
+    ],
+    'cohere2' => [
+        'providerType' => 'cohere2',
+        'apiUrl' => 'https://api.cohere.ai/v2',
+        'apiKey' => Env::get('COHERE_API_KEY', ''),
+        'endpoint' => '/chat',
+    ],
+    'deepseek' => [
+        'providerType' => 'deepseek',
+        'apiUrl' => 'https://api.deepseek.com',
+        'apiKey' => Env::get('DEEPSEEK_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'deepseek-r' => [
+        'providerType' => 'deepseek',
+        'apiUrl' => 'https://api.deepseek.com',
+        'apiKey' => Env::get('DEEPSEEK_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'fireworks' => [
+        'providerType' => 'fireworks',
+        'apiUrl' => 'https://api.fireworks.ai/inference/v1',
+        'apiKey' => Env::get('FIREWORKS_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'gemini' => [
+        'providerType' => 'gemini',
+        'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
+        'apiKey' => Env::get('GEMINI_API_KEY', ''),
+        'endpoint' => '/models/{model}:generateContent',
+    ],
+    'gemini-oai' => [
+        'providerType' => 'gemini-oai',
+        'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta/openai',
+        'apiKey' => Env::get('GEMINI_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'groq' => [
+        'providerType' => 'groq',
+        'apiUrl' => 'https://api.groq.com/openai/v1',
+        'apiKey' => Env::get('GROQ_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'meta' => [
+        'providerType' => 'meta',
+        'apiUrl' => 'https://openrouter.ai/api/v1',
+        'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'minimaxi' => [
+        'providerType' => 'minimaxi',
+        'apiUrl' => 'https://api.minimaxi.chat/v1',
+        'apiKey' => Env::get('MINIMAXI_API_KEY', ''),
+        'endpoint' => '/text/chatcompletion_v2',
+    ],
+    'minimaxi-oai' => [
+        'providerType' => 'minimaxi',
+        'apiUrl' => 'https://api.minimaxi.chat/v1',
+        'apiKey' => Env::get('MINIMAXI_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'mistral' => [
+        'providerType' => 'mistral',
+        'apiUrl' => 'https://api.mistral.ai/v1',
+        'apiKey' => Env::get('MISTRAL_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'moonshot-kimi' => [
+        'providerType' => 'moonshot',
+        'apiUrl' => 'https://api.moonshot.cn/v1',
+        'apiKey' => Env::get('MOONSHOT_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'ollama' => [
+        'providerType' => 'ollama',
+        'apiUrl' => 'http://localhost:11434/v1',
+        'apiKey' => Env::get('OLLAMA_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'openai' => [
+        'providerType' => 'openai',
+        'apiUrl' => 'https://api.openai.com/v1',
+        'apiKey' => Env::get('OPENAI_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+        'metadata' => [
+            'organization' => '',
+            'project' => '',
+        ],
+    ],
+    'openrouter' => [
+        'providerType' => 'openrouter',
+        'apiUrl' => 'https://openrouter.ai/api/v1',
+        'apiKey' => Env::get('OPENROUTER_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'perplexity' => [
+        'providerType' => 'perplexity',
+        'apiUrl' => 'https://api.perplexity.ai',
+        'apiKey' => Env::get('PERPLEXITY_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'sambanova' => [
+        'providerType' => 'sambanova',
+        'apiUrl' => 'https://api.sambanova.ai/v1',
+        'apiKey' => Env::get('SAMBANOVA_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'together' => [
+        'providerType' => 'together',
+        'apiUrl' => 'https://api.together.xyz/v1',
+        'apiKey' => Env::get('TOGETHER_API_KEY', ''),
+        'endpoint' => '/chat/completions',
+    ],
+    'xai' => [
+        'providerType' => 'xai',
+        'apiUrl' => 'https://api.x.ai/v1',
+        'apiKey' => Env::get('XAI_API_KEY', ''),
+        'endpoint' => '/chat/completions',
     ],
 
 ];

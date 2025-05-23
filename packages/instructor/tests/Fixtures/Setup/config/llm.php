@@ -4,7 +4,7 @@ use Cognesy\Utils\Env;
 
 return [
     'useObjectReferences' => false,
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
 
     'defaultToolName' => 'extracted_data',
     'defaultToolDescription' => 'Function call based on user instructions.',
@@ -13,7 +13,7 @@ return [
     'defaultJsonPrompt' => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
     'defaultToolsPrompt' => "Extract correct and accurate data from the input using provided tools.\n",
 
-    'connections' => [
+    'presets' => [
         'a21' => [
             'providerType' => 'a21',
             'apiUrl' => 'https://api.ai21.com/studio/v1',

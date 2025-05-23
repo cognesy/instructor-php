@@ -15,7 +15,7 @@ trait HandlesPartialUpdates
      */
     public function onPartialUpdate(callable $listener) : self {
         $this->onPartialResponse = $listener;
-        $this->events->addListener(
+        $this->listener->addListener(
             PartialResponseGenerated::class,
             $this->handlePartialResponse(...)
         );

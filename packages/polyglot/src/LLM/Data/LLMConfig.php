@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Settings;
 use InvalidArgumentException;
@@ -23,23 +22,30 @@ class LLMConfig
         public array $options = [],
     ) {}
 
-    public static function load(string $connection) : LLMConfig {
-        if (!Settings::has('llm', "connections.$connection")) {
-            throw new InvalidArgumentException("Unknown connection: $connection");
+    public static function default() : LLMConfig {
+        if (Settings::has('llm', 'defaultPreset')) {
+            return self::load(Settings::get('llm', 'defaultPreset'));
+        }
+        return new LLMConfig();
+    }
+
+    public static function load(string $preset) : LLMConfig {
+        if (!Settings::has('llm', "presets.$preset")) {
+            throw new InvalidArgumentException("Unknown preset: $preset");
         }
         return new LLMConfig(
-            apiUrl: Settings::get('llm', "connections.$connection.apiUrl"),
-            apiKey: Settings::get('llm', "connections.$connection.apiKey", ''),
-            endpoint: Settings::get('llm', "connections.$connection.endpoint"),
-            queryParams: Settings::get('llm', "connections.$connection.queryParams", []),
-            metadata: Settings::get('llm', "connections.$connection.metadata", []),
-            model: Settings::get('llm', "connections.$connection.defaultModel", ''),
-            maxTokens: Settings::get('llm', "connections.$connection.defaultMaxTokens", 1024),
-            contextLength: Settings::get('llm', "connections.$connection.contextLength", 8000),
-            maxOutputLength: Settings::get('llm', "connections.$connection.defaultMaxOutputLength", 4096),
-            httpClient: Settings::get('llm', "connections.$connection.httpClient", ''),
-            providerType: Settings::get('llm', "connections.$connection.providerType", 'openai-compatible'),
-            options: Settings::get('llm', "connections.$connection.options", []),
+            apiUrl: Settings::get('llm', "presets.$preset.apiUrl"),
+            apiKey: Settings::get('llm', "presets.$preset.apiKey", ''),
+            endpoint: Settings::get('llm', "presets.$preset.endpoint"),
+            queryParams: Settings::get('llm', "presets.$preset.queryParams", []),
+            metadata: Settings::get('llm', "presets.$preset.metadata", []),
+            model: Settings::get('llm', "presets.$preset.defaultModel", ''),
+            maxTokens: Settings::get('llm', "presets.$preset.defaultMaxTokens", 1024),
+            contextLength: Settings::get('llm', "presets.$preset.contextLength", 8000),
+            maxOutputLength: Settings::get('llm', "presets.$preset.defaultMaxOutputLength", 4096),
+            httpClient: Settings::get('llm', "presets.$preset.httpClient", ''),
+            providerType: Settings::get('llm', "presets.$preset.providerType", 'openai-compatible'),
+            options: Settings::get('llm', "presets.$preset.options", []),
         );
     }
 
@@ -62,9 +68,9 @@ class LLMConfig
 
     public static function fromDSN(string $dsn) : LLMConfig {
         $data = DSN::fromString($dsn)->params();
-        $connection = $data['connection'] ?? '';
+        $preset = $data['preset'] ?? '';
         return match(true) {
-            !empty($connection) => self::withOverrides(self::load($connection), $data),
+            !empty($preset) => self::withOverrides(self::load($preset), $data),
             default => self::fromArray($data),
         };
     }

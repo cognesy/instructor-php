@@ -1,49 +1,61 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Utils\Messages\Message;
+use Cognesy\Utils\Messages\Messages;
+
 class StructuredOutputRequest
 {
     use Traits\StructuredOutputRequest\HandlesMessages;
     use Traits\StructuredOutputRequest\HandlesRetries;
     use Traits\StructuredOutputRequest\HandlesSchema;
 
+    protected Messages $messages;
+    protected string $model = '';
+    protected string $prompt = '';
+    protected string $system = '';
+    /** @var Example[] */
+    protected array $examples = [];
+    protected array $options = [];
+    protected CachedContext $cachedContext;
+
+    protected string|array|object $requestedSchema = [];
+    protected ?ResponseModel $responseModel = null;
+
     protected StructuredOutputConfig $config;
-    private StructuredOutputRequestInfo $requestInfo;
-    private ChatTemplate $chatTemplate;
+    protected ChatTemplate $chatTemplate;
 
     public function __construct(
-        string|array $messages,
-        string|array|object $input,
-        string|array|object $requestedSchema,
-        ResponseModel $responseModel,
-        string        $system,
-        string        $prompt,
-        array         $examples,
-        string        $model,
-        array         $options,
-        array         $cachedContext,
-        StructuredOutputConfig $config,
+        string|array|Message|Messages|null $messages = null,
+        string|array|object|null $requestedSchema = null,
+        ?ResponseModel $responseModel = null,
+        ?string        $system = null,
+        ?string        $prompt = null,
+        ?array         $examples = null,
+        ?string        $model = null,
+        ?array         $options = null,
+        ?CachedContext $cachedContext = null,
+        ?StructuredOutputConfig $config = null,
     ) {
-        $this->cachedContext = $cachedContext;
-        $this->options = $options;
-        $this->input = $input;
-        $this->prompt = $prompt;
-        $this->examples = $examples;
-        $this->system = $system;
-        $this->model = $model;
-
         $this->messages = $this->normalizeMessages($messages);
         $this->requestedSchema = $requestedSchema;
         $this->responseModel = $responseModel;
 
+        $this->options = $options ?: [];
+        $this->prompt = $prompt ?: '';
+        $this->examples = $examples ?: [];
+        $this->system = $system ?: '';
+        $this->model = $model ?: '';
+
         $this->config = $config;
         $this->chatTemplate = new ChatTemplate($this->config);
+
+        $this->cachedContext = $cachedContext ?: new CachedContext();
     }
 
     public function toArray() : array {
         return [
-            'messages' => $this->messages,
-            'input' => $this->input,
+            'messages' => $this->messages->toArray(),
             'responseModel' => $this->responseModel,
             'system' => $this->system,
             'prompt' => $this->prompt,
@@ -51,7 +63,7 @@ class StructuredOutputRequest
             'model' => $this->model,
             'options' => $this->options,
             'mode' => $this->mode(),
-            'cachedContext' => $this->cachedContext,
+            'cachedContext' => $this->cachedContext?->toArray() ?? [],
             'config' => $this->config->toArray(),
         ];
     }

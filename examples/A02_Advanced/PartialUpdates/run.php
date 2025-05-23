@@ -66,7 +66,7 @@ $text = <<<TEXT
     TEXT;
 
 $user = (new StructuredOutput)
-    ->withConnection('openai')
+    ->using('openai')
     ->onPartialUpdate(partialUpdate(...))
     ->withMessages($text)
     ->withResponseClass(UserDetail::class)

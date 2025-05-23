@@ -8,9 +8,6 @@ use Cognesy\Utils\Str;
 
 trait HandlesSchema
 {
-    private string|array|object $requestedSchema;
-    private ?ResponseModel $responseModel = null;
-
     public function responseModel() : ?ResponseModel {
         return $this->responseModel;
     }

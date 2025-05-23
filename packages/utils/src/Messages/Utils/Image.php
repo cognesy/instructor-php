@@ -72,7 +72,7 @@ class Image implements CanProvideMessages
     /**
      * Get the image as Messages object.
      *
-     * @return \Cognesy\Utils\Messages\Messages
+     * @return Messages
      */
     public function toMessages(): Messages {
         return Messages::fromMessages([$this->toMessage()]);
@@ -81,7 +81,7 @@ class Image implements CanProvideMessages
     /**
      * Get the image as a Message object.
      *
-     * @return \Cognesy\Utils\Messages\Message
+     * @return Message
      */
     public function toMessage(): Message {
         return Message::fromArray($this->toArray());
@@ -96,7 +96,10 @@ class Image implements CanProvideMessages
         $array = [
             'role' => 'user',
             'content' => [
-                ['type' => 'image_url', 'image_url' => ['url' => $this->url ?: $this->base64bytes]],
+                [
+                    'type' => 'image_url',
+                    'image_url' => ['url' => $this->url ?: $this->base64bytes]
+                ],
             ],
         ];
         return $array;

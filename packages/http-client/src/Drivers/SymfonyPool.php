@@ -10,10 +10,10 @@ use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\RequestException;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -23,7 +23,7 @@ class SymfonyPool implements CanHandleRequestPool
     public function __construct(
         private HttpClientInterface $client,
         private HttpClientConfig $config,
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
     ) {}
 
     public function pool(array $requests, ?int $maxConcurrent = null): array {

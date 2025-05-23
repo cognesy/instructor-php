@@ -1,22 +1,16 @@
 <?php
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Messages\Message;
+use Cognesy\Utils\Messages\Messages;
 
 trait HandlesMessages
 {
-    private string|array $messages;
-    private string $model;
-    private string $prompt = '';
-    private string $system = '';
-    private string|array|object $input = '';
-    private array $examples;
-    private array $options = [];
-    private array $cachedContext = [];
-
     // PUBLIC /////////////////////////////////////////////////////////////////
 
-    public function cachedContext() : array {
+    public function cachedContext() : CachedContext {
         return $this->cachedContext;
     }
 
@@ -24,15 +18,8 @@ trait HandlesMessages
         return $this->examples;
     }
 
-    public function input(): string|array|object {
-        return $this->input;
-    }
-
     public function messages() : array {
-        if (is_string($this->messages)) {
-            return [['role' => 'user', 'content' => $this->messages]];
-        }
-        return $this->messages;
+        return $this->messages->toArray();
     }
 
     public function mode() : OutputMode {
@@ -89,14 +76,11 @@ trait HandlesMessages
     }
 
     protected function withMessages(array $messages) : self {
-        $this->messages = $messages;
+        $this->messages = $this->normalizeMessages($messages);
         return $this;
     }
 
-    protected function normalizeMessages(string|array $messages): array {
-        if (!is_array($messages)) {
-            return [['role' => 'user', 'content' => $messages]];
-        }
-        return $messages;
+    protected function normalizeMessages(string|array|Message|Messages $messages): Messages {
+        return Messages::fromAny($messages);
     }
 }

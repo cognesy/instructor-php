@@ -3,32 +3,29 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
-/**
- * This class represents an interface to Large Language Model provider APIs,
- * handling configurations, HTTP client integrations, inference drivers,
- * and event dispatching.
- */
 class LLM
 {
+    protected HttpClient $httpClient;
+    protected CanHandleInference $driver;
+
     protected LLMConfig $config;
 
-    protected EventDispatcher $events;
-    protected CanHandleHttpRequest $httpClient;
-    protected CanHandleInference $driver;
     protected InferenceDriverFactory $driverFactory;
+    protected HttpClientFactory $httpClientFactory;
+    protected EventDispatcherInterface $events;
 
     /**
      * Constructor for initializing dependencies and configurations.
      *
-     * @param string $connection The connection string.
+     * @param string $preset The connection preset.
      * @param LLMConfig|null $config Configuration object.
      * @param CanHandleHttpRequest|null $httpClient HTTP client handler.
      * @param CanHandleInference|null $driver Inference handler.
@@ -37,32 +34,30 @@ class LLM
      * @return void
      */
     public function __construct(
-        string                $connection = '',
-        ?LLMConfig            $config = null,
+        string $preset = '',
+        ?LLMConfig $config = null,
         ?CanHandleHttpRequest $httpClient = null,
-        ?CanHandleInference   $driver = null,
-        ?EventDispatcher      $events = null,
+        ?CanHandleInference $driver = null,
+        ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->config = $config ?? LLMConfig::load(
-            connection: $connection ?: Settings::get('llm', "defaultConnection")
+            preset: $preset ?: Settings::get('llm', "defaultPreset")
         );
-        $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
-
-        $this->driverFactory = new InferenceDriverFactory();
-        $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
+        $this->httpClientFactory = new HttpClientFactory($this->events);
+        $this->httpClient = $httpClient ?? $this->httpClientFactory->fromPreset($this->config->httpClient);
+        $this->driverFactory = new InferenceDriverFactory(events: $this->events);
+        $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
 
-    /**
-     * Creates a new LLM instance for the specified connection
-     *
-     * @param string $connection
-     * @return self
-     */
-    public static function connection(string $connection = ''): self {
-        return new self(connection: $connection);
+    public static function preset(string $preset = ''): self {
+        return new self(preset: $preset);
+    }
+
+    public static function connection(string $preset = ''): self {
+        return new self(preset: $preset);
     }
 
     public static function fromDSN(string $dsn): self {
@@ -77,31 +72,34 @@ class LLM
     // PUBLIC //////////////////////////////////////////////////////////////////
 
     /**
+     * Sets the connection and updates the configuration and driver.
+     *
+     * @param string $preset The connection preset to be used.
+     *
+     * @return self Returns the current instance with the updated connection.
+     */
+    public function using(string $preset): self {
+        if (empty($preset)) {
+            return $this;
+        }
+        $this->withConfig(LLMConfig::load($preset));
+        return $this;
+    }
+
+    /**
      * Updates the configuration and re-initializes the driver.
      *
-     * @param \Cognesy\Polyglot\LLM\Data\LLMConfig $config The configuration object to set.
+     * @param LLMConfig $config The configuration object to set.
      *
      * @return self
      */
     public function withConfig(LLMConfig $config): self {
         $this->config = $config;
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
-        return $this;
-    }
-
-    /**
-     * Sets the connection and updates the configuration and driver.
-     *
-     * @param string $connection The connection string to be used.
-     *
-     * @return self Returns the current instance with the updated connection.
-     */
-    public function withConnection(string $connection): self {
-        if (empty($connection)) {
-            return $this;
+        if (!empty($this->config->httpClient)) {
+            $this->withHttpClient($this->httpClientFactory->fromPreset($this->config->httpClient));
+        } else {
+            $this->driver = $this->driverFactory->makeDriver($this->config);
         }
-        $this->config = LLMConfig::load($connection);
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
         return $this;
     }
 
@@ -113,8 +111,7 @@ class LLM
      * @return self Returns the current instance for method chaining.
      */
     public function withHttpClient(CanHandleHttpRequest $httpClient): self {
-        $this->httpClient = $httpClient;
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient, $this->events);
+        $this->driver = $this->driverFactory->makeDriver($this->config, $httpClient);
         return $this;
     }
 
@@ -138,7 +135,6 @@ class LLM
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
-        // TODO: needs to be solved - it only works when we're using HttpClient class as a driver
         $this->httpClient->withDebug($debug);
         return $this;
     }
@@ -159,16 +155,5 @@ class LLM
      */
     public function driver() : CanHandleInference {
         return $this->driver;
-    }
-
-    /**
-     * Returns the HTTP response object for given inference request
-     *
-     * @param InferenceRequest $request
-     * @return HttpClientResponse
-     */
-    public function handleInferenceRequest(InferenceRequest $request) : HttpClientResponse {
-        $this->events->dispatch(new InferenceRequested($request));
-        return $this->driver->handle($request);
     }
 }

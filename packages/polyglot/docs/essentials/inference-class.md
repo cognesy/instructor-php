@@ -16,7 +16,7 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 
 // Create an inference instance with a specific connection
-$inference = new Inference()->withConnection('openai');
+$inference = new Inference()->using('openai');
 
 // Use the static method for simple, one-off requests
 $response = Inference::text('What is the capital of France?');

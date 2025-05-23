@@ -21,28 +21,28 @@ class EmbeddingsConfig
     ) {}
 
     public static function default() : EmbeddingsConfig {
-        $default = Settings::get('embed', "defaultConnection", null);
+        $default = Settings::get('embed', "defaultPreset", null);
         if (is_null($default)) {
-            throw new InvalidArgumentException("No default connection found in settings.");
+            throw new InvalidArgumentException("No default preset found in settings.");
         }
         return self::load($default);
     }
 
-    public static function load(string $connection) : EmbeddingsConfig {
-        if (!Settings::has('embed', "connections.$connection")) {
-            throw new InvalidArgumentException("Unknown connection: $connection");
+    public static function load(string $preset) : EmbeddingsConfig {
+        if (!Settings::has('embed', "presets.$preset")) {
+            throw new InvalidArgumentException("Unknown connection preset: $preset");
         }
 
         return new EmbeddingsConfig(
-            apiUrl: Settings::get('embed', "connections.$connection.apiUrl"),
-            apiKey: Settings::get('embed', "connections.$connection.apiKey", ''),
-            endpoint: Settings::get('embed', "connections.$connection.endpoint"),
-            model: Settings::get('embed', "connections.$connection.defaultModel", ''),
-            dimensions: Settings::get('embed', "connections.$connection.defaultDimensions", 0),
-            maxInputs: Settings::get('embed', "connections.$connection.maxInputs", 1),
-            metadata: Settings::get('embed', "connections.$connection.metadata", []),
-            httpClient: Settings::get('embed', "connections.$connection.httpClient", ''),
-            providerType: Settings::get('embed', "connections.$connection.providerType", 'openai'),
+            apiUrl: Settings::get('embed', "presets.$preset.apiUrl"),
+            apiKey: Settings::get('embed', "presets.$preset.apiKey", ''),
+            endpoint: Settings::get('embed', "presets.$preset.endpoint"),
+            model: Settings::get('embed', "presets.$preset.defaultModel", ''),
+            dimensions: Settings::get('embed', "presets.$preset.defaultDimensions", 0),
+            maxInputs: Settings::get('embed', "presets.$preset.maxInputs", 1),
+            metadata: Settings::get('embed', "presets.$preset.metadata", []),
+            httpClient: Settings::get('embed', "presets.$preset.httpClient", ''),
+            providerType: Settings::get('embed', "presets.$preset.providerType", 'openai'),
         );
     }
 
@@ -62,9 +62,9 @@ class EmbeddingsConfig
 
     public static function fromDSN(string $dsn) : EmbeddingsConfig {
         $data = DSN::fromString($dsn)->params();
-        $connection = $data['connection'] ?? '';
+        $preset = $data['preset'] ?? '';
         return match(true) {
-            !empty($connection) => self::withOverrides(self::load($connection), $data),
+            !empty($preset) => self::withOverrides(self::load($preset), $data),
             default => self::fromArray($data),
         };
     }

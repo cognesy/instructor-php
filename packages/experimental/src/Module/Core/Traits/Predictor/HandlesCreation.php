@@ -13,13 +13,13 @@ trait HandlesCreation
         string $description = ''
     ) : static {
         $instance = new static;
-        $instance->using(signature: $instance->makeSignature($signature, $description));
+        $instance->with(signature: $instance->makeSignature($signature, $description));
         return $instance;
     }
 
     public static function fromRequest(StructuredOutputRequestInfo $request, string $inputName, string $outputName) : static {
         $instance = new static;
-        $instance->using(
+        $instance->with(
             requestInfo: $request,
             signature: SignatureFactory::fromRequest($request, $inputName, $outputName),
         );

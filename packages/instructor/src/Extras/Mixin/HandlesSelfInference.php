@@ -34,7 +34,6 @@ trait HandlesSelfInference {
      */
     public static function infer(
         string|array        $messages = '',
-        string|array|object $input = '',
         string              $system = '',
         string              $prompt = '',
         array               $examples = [],
@@ -51,7 +50,6 @@ trait HandlesSelfInference {
             llm: $llm ?? new LLM()
         ))->create(
             messages: $messages,
-            input: $input,
             responseModel: self::class,
             system: $system,
             prompt: $prompt,

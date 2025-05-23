@@ -7,6 +7,7 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * MockHttpDriver
@@ -22,15 +23,15 @@ class MockHttpDriver implements CanHandleHttpRequest
     /** @var HttpClientRequest[] Array of received requests for inspection */
     private array $receivedRequests = [];
     
-    /** @var EventDispatcher|null Event dispatcher instance */
-    private ?EventDispatcher $events;
+    /** @var EventDispatcherInterface|null Event dispatcher instance */
+    private ?EventDispatcherInterface $events;
 
     /**
      * Constructor
      * 
      * @param EventDispatcher|null $events Optional event dispatcher
      */
-    public function __construct(?EventDispatcher $events = null)
+    public function __construct(?EventDispatcherInterface $events = null)
     {
         $this->events = $events ?? new EventDispatcher();
     }

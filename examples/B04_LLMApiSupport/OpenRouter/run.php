@@ -26,7 +26,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->withConnection('openrouter') // see /config/llm.php
+    ->using('openrouter') // see /config/llm.php
     ->withDebug()
     ->create(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],

@@ -57,14 +57,14 @@ class Display
 
     public function displayExecution(Execution $execution) : void {
         $id = Str::limit(text: $execution->id(), limit: 4, cutMarker: '', align: STR_PAD_LEFT);
-        $connection = $execution->get('case.connection');
+        $preset = $execution->get('case.preset');
         $mode = $execution->get('case.mode')->value;
         $streamed = $execution->get('case.isStreamed');
         $streamLabel = $streamed ? 'stream' : 'sync';
 
         Console::printColumns([
             [5, $id, STR_PAD_LEFT, Color::DARK_GRAY],
-            [10, $connection, STR_PAD_RIGHT, Color::WHITE],
+            [10, $preset, STR_PAD_RIGHT, Color::WHITE],
             [11, $mode, STR_PAD_RIGHT, Color::YELLOW],
             [8, $streamLabel, STR_PAD_LEFT, $streamed ? Color::BLUE : Color::DARK_BLUE],
         ], $this->terminalWidth);

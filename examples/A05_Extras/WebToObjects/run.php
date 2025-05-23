@@ -47,7 +47,7 @@ class Company {
     public array $clients = [];
 }
 
-$companyGen = Webpage::withScraper('scrapfly')
+$companyGen = Webpage::withScraper('none')
     ->get('https://themanifest.com/pl/software-development/laravel/companies?page=1')
     ->cleanup()
     ->select('.directory-providers__list')
@@ -62,7 +62,7 @@ echo "Extracting company data from:\n\n";
 foreach($companyGen as $companyDiv) {
     echo " > " . substr($companyDiv, 0, 32) . "...\n\n";
     $company = (new StructuredOutput)
-        ->withConnection('openai')
+        ->using('openai')
         ->create(
             messages: $companyDiv,
             responseModel: Company::class,

@@ -1,40 +1,38 @@
 <?php
 namespace Cognesy\Instructor\Data\Traits\ChatTemplate;
 
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Messages\Message;
 
 trait HandlesCachedContext
 {
-    protected function makeCachedScript(array $cachedContext) : Script {
-        if (empty($cachedContext)) {
+    protected function makeCachedScript(CachedContext $cachedContext) : Script {
+        if ($cachedContext->isEmpty()) {
             return new Script();
         }
 
         $script = new Script();
-        $messages = $this->normalizeMessages($cachedContext['messages']);
+        $messages = $this->normalizeMessages($cachedContext->messages());
 
         $script->section('system')->prependMessages(
-            $this->makeSystem($messages, $cachedContext['system'])
+            $this->makeSystem($messages, $cachedContext->system())
         );
         $script->section('cached-messages')->appendMessages(
             $this->makeMessages($messages)
         );
-        $script->section('cached-input')->appendMessages(
-            $this->makeInput($cachedContext['input'])
-        );
         $script->section('cached-prompt')->appendMessage(
-            Message::fromString($cachedContext['prompt'])
+            Message::fromString($cachedContext->prompt())
         );
         $script->section('cached-examples')->appendMessages(
-            $this->makeExamples($cachedContext['examples'])
+            $this->makeExamples($cachedContext->examples())
         );
 
         return $this->filterEmptySections($script);
     }
 
-    protected function withCacheMetaSections(array $cachedContext, Script $script) : Script {
-        if (empty($cachedContext)) {
+    protected function withCacheMetaSections(CachedContext $cachedContext, Script $script) : Script {
+        if ($cachedContext->isEmpty()) {
             return $script;
         }
 

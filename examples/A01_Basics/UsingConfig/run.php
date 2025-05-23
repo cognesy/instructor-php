@@ -1,15 +1,15 @@
 ---
-title: 'Using LLM API connections from config file'
+title: 'Using LLM API connection presets from config file'
 docname: 'using_config'
 ---
 
 ## Overview
 
-Instructor allows you to define multiple API connections in `llm.php` file.
+Instructor allows you to define multiple API connection presets in `llm.php` file.
 This is useful when you want to use different LLMs or API providers in your application.
 
-Connecting to LLM API via predefined connection is as simple as calling `withClient`
-method with the connection name.
+Connecting to LLM API via predefined connection is as simple as calling `withPreset`
+method with the preset name.
 
 ### Configuration file
 
@@ -19,9 +19,8 @@ of Instructor codebase.
 You can set the location of the configuration file via `INSTRUCTOR_CONFIG_PATH` environment
 variable. You can use a copy of the default configuration file as a starting point.
 
-LLM config file defines connections to LLM APIs and their parameters. It also specifies
-the default connection to be used when calling Instructor without specifying the client
-connection.
+LLM config file defines available connection presets to LLM APIs and their parameters.
+It also specifies the default provider and parameters to be used when calling Instructor.
 
 ## Example
 
@@ -36,8 +35,8 @@ class User {
     public string $name;
 }
 
-// Get Instructor object with client defined in config.php under 'connections/openai' key
-$structuredOutput = (new StructuredOutput)->withConnection('openai');
+// Get Instructor object with client defined in config.php under 'presets/openai' key
+$structuredOutput = (new StructuredOutput)->using('openai');
 
 // Call with custom model and execution mode
 $user = $structuredOutput->create(

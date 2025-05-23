@@ -5,7 +5,6 @@ namespace Cognesy\Polyglot\LLM\Drivers\Groq;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -16,7 +15,7 @@ use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class GroqDriver implements CanHandleInference
 {
@@ -24,13 +23,11 @@ class GroqDriver implements CanHandleInference
     protected ProviderResponseAdapter $responseAdapter;
 
     public function __construct(
-        protected LLMConfig             $config,
-        protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcher      $events = null,
+        protected LLMConfig $config,
+        protected CanHandleHttpRequest $httpClient,
+        protected EventDispatcherInterface $events,
     )
     {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
         $this->requestAdapter = new OpenAIRequestAdapter(
             $config,
             new GroqBodyFormat(

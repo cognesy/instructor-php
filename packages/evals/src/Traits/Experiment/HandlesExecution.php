@@ -61,7 +61,9 @@ trait HandlesExecution
             method_exists($case, 'toArray') => $case->toArray(),
             default => (array) $case,
         };
-        return (new Execution(case: $caseData))
+        return (new Execution(
+            case: $caseData,
+            events: $this->events))
             ->withExecutor($this->executor)
             ->withProcessors($this->processors)
             ->withPostprocessors($this->postprocessors);

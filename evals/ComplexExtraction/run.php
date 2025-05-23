@@ -12,16 +12,16 @@ use Evals\ComplexExtraction\ProjectEvents;
 use Evals\ComplexExtraction\ProjectsEval;
 
 $data = new StructuredOutputData(
+    messages: file_get_contents(__DIR__ . '/report.txt'),
     responseModel: ProjectEvents::class,
     maxTokens: 4096,
     prompt: 'Extract a list of project events with all the details from the provided input in JSON format using schema: <|json_schema|>',
-    input: file_get_contents(__DIR__ . '/report.txt'),
     examples: require 'examples.php',
 );
 
 $experiment = new Experiment(
     cases: InferenceCases::only(
-        connections: ['openai', 'anthropic', 'gemini', 'cohere'],
+        presets: ['openai', 'anthropic', 'gemini', 'cohere'],
         modes: [OutputMode::Tools],
         stream: [false]
     ),

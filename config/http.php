@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'defaultClient' => 'guzzle',
+    'defaultPreset' => 'guzzle',
 
-    'clients' => [
+    'clientPresets' => [
         'guzzle' => [
             'httpClientType' => 'guzzle',
             'connectTimeout' => 3,

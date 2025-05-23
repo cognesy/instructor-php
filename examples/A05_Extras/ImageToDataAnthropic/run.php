@@ -52,8 +52,8 @@ class Receipt {
     public float $total;
 }
 
-$receipt = (new StructuredOutput)->withConnection('anthropic')->create(
-    input: Image::fromFile(__DIR__ . '/receipt.png'),
+$receipt = (new StructuredOutput)->using('anthropic')->create(
+    messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt. Return result as JSON following this schema: <|json_schema|>',
     model: 'claude-3-5-sonnet-20240620',

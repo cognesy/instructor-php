@@ -18,9 +18,11 @@ use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseModelFactory
 {
@@ -30,10 +32,13 @@ class ResponseModelFactory
     public function __construct(
         private ToolCallBuilder $toolCallBuilder,
         private SchemaFactory $schemaFactory,
-        private EventDispatcher $events,
+        private ?EventDispatcherInterface $events = null,
+        private ?EventListenerInterface $listener = null,
     ) {
         $this->typeDetailsFactory = new TypeDetailsFactory;
         $this->schemaConverter = new JsonSchemaToSchema;
+        $this->events = $events ?? new EventDispatcher();
+        $this->listener = $listener ?? $this->events;
     }
 
     public function fromRequest(StructuredOutputRequest $request) : ResponseModel {
@@ -56,7 +61,7 @@ class ResponseModelFactory
 
         // connect response model to event dispatcher - if it can receive events
         if ($responseModel instanceof CanReceiveEvents) {
-            $this->events->wiretap(fn($event) => $responseModel->onEvent($event));
+            $this->listener->wiretap(fn($event) => $responseModel->onEvent($event));
         }
 
         $responseModel->withToolName($toolName);

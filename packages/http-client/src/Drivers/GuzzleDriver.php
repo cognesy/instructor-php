@@ -14,19 +14,27 @@ use Cognesy\Http\Exceptions\RequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class GuzzleDriver implements CanHandleHttpRequest
 {
-    protected Client $client;
+    protected HttpClientConfig $config;
+    protected EventDispatcherInterface $events;
+    protected ClientInterface $client;
 
     public function __construct(
-        protected HttpClientConfig $config,
-        protected ?Client $httpClient = null,
-        protected ?EventDispatcher $events = null,
+        HttpClientConfig $config,
+        ?object $clientInstance = null,
+        ?EventDispatcherInterface $events = null,
     ) {
+        $this->config = $config;
         $this->events = $events ?? new EventDispatcher();
-        $this->client = $httpClient ?? new Client();
+        if ($clientInstance && !($clientInstance instanceof ClientInterface)) {
+            throw new \InvalidArgumentException('Client instance must be of type GuzzleHttp\ClientInterface');
+        }
+        $this->client = $clientInstance ?? new Client();
     }
 
     public function handle(HttpClientRequest $request) : HttpClientResponse {

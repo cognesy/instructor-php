@@ -82,7 +82,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 $docs = ['Computer vision models are used to analyze images and videos.'];
 
 $embedding = (new Embeddings)
-    ->withConnection('openai')
+    ->using('openai')
     ->create(input: $docs)
     ->all();
 ?>

@@ -34,8 +34,8 @@ trait CreatesFromRequest
     private static function responseModel(StructuredOutputRequestInfo $request) : ResponseModel {
         return self::responseModelFactory()->fromAny(
             requestedModel: $request->responseModel(),
-            toolName: $request->config()->toolName(),
-            toolDescription: $request->config()->toolDescription(),
+            toolName: $request->config()?->toolName(),
+            toolDescription: $request->config()?->toolDescription(),
         );
     }
 

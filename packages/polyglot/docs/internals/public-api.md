@@ -22,7 +22,7 @@ class Inference {
     ) { ... }
 
     // Configure the instance
-    public function withConnection(string $connection): self { ... }
+    public function using(string $preset): self { ... }
     public function withConfig(LLMConfig $config): self { ... }
     public function withHttpClient(CanHandleHttpRequest $httpClient): self { ... }
     public function withDriver(CanHandleInference $driver): self { ... }
@@ -72,7 +72,7 @@ class Embeddings {
     ) { ... }
 
     // Configuration methods
-    public function withConnection(string $connection): self { ... }
+    public function using(string $preset): self { ... }
     public function withConfig(EmbeddingsConfig $config): self { ... }
     public function withModel(string $model): self { ... }
     public function withHttpClient(CanHandleHttpRequest $httpClient): self { ... }

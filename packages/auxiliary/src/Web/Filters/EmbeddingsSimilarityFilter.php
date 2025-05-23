@@ -12,16 +12,16 @@ class EmbeddingsSimilarityFilter implements CanFilterContent
 
     private Vector $compareTo;
     private float $threshold;
-    private string $connection;
+    private string $preset;
 
     public function __construct(
         string|Vector $compareTo,
         float $threshold = 0.7,
-        string $connection = 'openai',
+        string $preset = 'openai',
     ) {
-        $this->connection = $connection;
+        $this->preset = $preset;
         $this->threshold = $threshold;
-        $this->embeddings = (new Embeddings)->withConnection($this->connection);
+        $this->embeddings = (new Embeddings)->using($this->preset);
         if (is_string($compareTo)) {
             $this->compareTo = $this->embeddings->create($compareTo)->first();
         }

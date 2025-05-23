@@ -7,6 +7,7 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Debug\Debug;
 use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * DebugMiddleware
@@ -18,7 +19,7 @@ class DebugMiddleware extends BaseMiddleware
 {
     public function __construct(
         protected ?Debug $debug = null,
-        protected ?EventDispatcher $events = null,
+        protected ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->debug = $debug ?? new Debug();

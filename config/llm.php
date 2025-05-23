@@ -2,12 +2,10 @@
 
 use Cognesy\Utils\Env;
 
-
-
 return [
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
 
-    'connections' => [
+    'presets' => [
         'a21' => [
             'providerType' => 'a21',
             'apiUrl' => 'https://api.ai21.com/studio/v1',

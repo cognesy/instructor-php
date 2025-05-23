@@ -7,21 +7,21 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Features\Validation\Exceptions\ValidationException;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
 use Cognesy\Polyglot\LLM\LLM;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
-use Exception;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class RequestHandler
 {
-    protected EventDispatcher $events;
+    protected EventDispatcherInterface $events;
 
     protected int $retries = 0;
     protected array $errors = [];
@@ -31,7 +31,7 @@ class RequestHandler
         protected CanGenerateResponse     $responseGenerator,
         protected CanGeneratePartials     $partialsGenerator,
         protected LLM                     $llm,
-        EventDispatcher                   $events,
+        EventDispatcherInterface          $events,
     ) {
         $this->events = $events;
         $this->retries = 0;
@@ -117,7 +117,10 @@ class RequestHandler
     protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
-            throw new Exception("Validation recovery attempts limit reached after {$this->retries} attempts due to: ".implode(", ", $this->errors));
+            throw new ValidationException(
+                message: "Validation recovery attempts limit reached after {$this->retries} attempt(s) due to: ".implode(", ", $this->errors),
+                errors: $this->errors,
+            );
         }
 
         // get final value

@@ -23,7 +23,7 @@ class User {
 }
 
 $user = (new StructuredOutput)
-    ::fromDSN('connection=xai,model=grok-2')
+    ::fromDSN('preset=xai,model=grok-2')
     ->create(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,

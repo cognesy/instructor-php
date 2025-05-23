@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\A21\A21Driver;
@@ -24,8 +25,8 @@ use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleDriver;
 use Cognesy\Polyglot\LLM\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
-use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Factory class for creating inference driver instances based
@@ -34,6 +35,13 @@ use InvalidArgumentException;
 class InferenceDriverFactory
 {
     private static array $drivers = [];
+    private HttpClientFactory $httpClientFactory;
+
+    public function __construct(
+        protected EventDispatcherInterface $events,
+    ) {
+        $this->httpClientFactory = new HttpClientFactory($this->events);
+    }
 
     /**
      * Registers driver under given name
@@ -45,12 +53,17 @@ class InferenceDriverFactory
     public static function registerDriver(string $name, string|callable $driver) : void {
         self::$drivers[$name] = match(true) {
             is_callable($driver) => $driver,
-            is_string($driver) => fn($config, $httpClient, $events) => new $driver(
-                $config,
-                $httpClient,
-                $events
-            ),
+            is_string($driver) => fn($config, $httpClient, $events) => new $driver($config, $httpClient, $events),
         };
+    }
+
+    /**
+     * Returns the default driver instance.
+     *
+     * @return CanHandleInference A default driver instance.
+     */
+    public function default(): CanHandleInference {
+        return $this->makeDriver(LLMConfig::default());
     }
 
     /**
@@ -62,13 +75,26 @@ class InferenceDriverFactory
      * @return CanHandleInference A driver instance matching the specified provider type.
      * @throws InvalidArgumentException If the provider type is not supported.
      */
-    public function makeDriver(LLMConfig $config, CanHandleHttpRequest $httpClient, EventDispatcher $events): CanHandleInference {
+    public function makeDriver(LLMConfig $config, ?CanHandleHttpRequest $httpClient = null): CanHandleInference {
         $type = $config->providerType;
+        if (empty($type)) {
+            throw new InvalidArgumentException("Provider type not specified in the configuration.");
+        }
+
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
         if ($driver === null) {
             throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$type}");
         }
-        return $driver($config, $httpClient, $events);
+
+        return $driver(
+            config: $config,
+            httpClient: match(true) {
+                !is_null($httpClient) => $httpClient,
+                !empty($config->httpClient) => $this->httpClientFactory->fromPreset($httpClient),
+                default => $this->httpClientFactory->default(),
+            },
+            events: $this->events
+        );
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////

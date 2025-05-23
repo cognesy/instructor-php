@@ -10,19 +10,19 @@ use Cognesy\Polyglot\Embeddings\Drivers\CohereDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\GeminiDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\JinaDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAIDriver;
-use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EmbeddingsDriverFactory
 {
     protected static array $drivers = [];
 
-    protected EventDispatcher $events;
+    protected EventDispatcherInterface $events;
 
     public function __construct(
-        EventDispatcher $events = null,
+        EventDispatcherInterface $events,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
     }
 
     public static function registerDriver(string $name, string|callable $driver) {

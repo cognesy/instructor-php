@@ -7,7 +7,6 @@ trait HandlesSerialization
     public function toArray() : array {
         return [
             'messages' => $this->messages,
-            'input' => $this->input,
             'responseModel' => $this->responseModel,
             'model' => $this->model,
             'system' => $this->system,

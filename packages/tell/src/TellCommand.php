@@ -19,7 +19,7 @@ class TellCommand extends Command
         $this->setName(self::$defaultName)
             ->setDescription('Prompt AI')
             ->addArgument('prompt', InputArgument::REQUIRED, 'Prompt')
-            ->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'The connection option', 'openai')
+            ->addOption('connection', 'c', InputOption::VALUE_OPTIONAL, 'LLM connection preset', 'openai')
             ->addOption('model', 'm', InputOption::VALUE_OPTIONAL, 'The model option', '')
             ->addOption('dsn', 'd', InputOption::VALUE_OPTIONAL, 'The DSN option', '');
     }
@@ -28,12 +28,12 @@ class TellCommand extends Command
         $prompt = $input->getArgument('prompt');
 
         $dsn = $input->getOption('dsn');
-        $connection = $input->getOption('connection');
+        $preset = $input->getOption('connection');
         $model = $input->getOption('model');
 
         $response = match(true) {
-            empty($dsn) => $this->inferenceFromConnection($connection, $prompt, $model),
-            default => $this->inferenceFromDSN($dsn, $prompt),
+            empty($dsn) => $this->inferenceUsingPreset($preset, $prompt, $model),
+            default => $this->inferenceUsingDSN($dsn, $prompt),
         };
 
         foreach ($response->stream()->responses() as $response) {
@@ -44,7 +44,7 @@ class TellCommand extends Command
         return Command::SUCCESS;
     }
 
-    protected function inferenceFromDSN(string $dsn, string $prompt) : InferenceResponse {
+    protected function inferenceUsingDSN(string $dsn, string $prompt) : InferenceResponse {
         return Inference
             ::fromDsn($dsn)
             ->create(
@@ -53,10 +53,10 @@ class TellCommand extends Command
             );
     }
 
-    protected function inferenceFromConnection(string $connection, string $prompt, string $model = '') : InferenceResponse {
-        $model = $model ?: LLMConfig::load($connection)->model;
+    protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : InferenceResponse {
+        $model = $model ?: LLMConfig::load($preset)->model;
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: $prompt,
                 model: $model,

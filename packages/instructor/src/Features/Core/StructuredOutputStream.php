@@ -8,9 +8,9 @@ use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Data\Usage;
-use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StructuredOutputStream
 {
@@ -19,11 +19,11 @@ class StructuredOutputStream
 
     /**
      * @param Generator<PartialLLMResponse> $stream
-     * @param EventDispatcher $events
+     * @param EventDispatcherInterface $events
      */
     public function __construct(
         private Generator $stream,
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
     ) {
         $this->usage = new Usage();
     }

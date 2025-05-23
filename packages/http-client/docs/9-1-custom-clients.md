@@ -217,12 +217,10 @@ $config = new HttpClientConfig(
 $customDriver = new CustomHttpDriver($config);
 
 // Create a client with your driver
-$client = new HttpClient();
-$client->withDriver($customDriver);
+$client = (new HttpClient)->withDriver($customDriver);
 
 // Use the client as usual
-$request = new HttpClientRequest(/* ... */);
-$response = $client->handle($request);
+$response = $client->handle(new HttpClientRequest(/* ... */));
 ```
 
 ### Real-World Example: Creating a cURL Driver

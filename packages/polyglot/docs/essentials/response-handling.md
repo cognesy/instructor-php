@@ -107,7 +107,7 @@ $tools = [
     ],
 ];
 
-$inference = new Inference()->withConnection('openai');
+$inference = new Inference()->using('openai');
 $response = $inference->create(
     messages: 'What is the weather in Paris?',
     tools: $tools,

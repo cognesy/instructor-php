@@ -31,7 +31,7 @@ class User {
 
 // CASE 1.1 - normal flow, sync request
 
-$structuredOutput = (new StructuredOutput)->withConnection('openai');
+$structuredOutput = (new StructuredOutput)->using('openai');
 
 echo "\n### CASE 1.1 - Debugging sync request\n\n";
 $user = $structuredOutput->withDebug()->create(

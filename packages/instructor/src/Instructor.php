@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
@@ -33,7 +32,6 @@ class Instructor extends StructuredOutput
     ) : mixed {
         return $this->create(
             messages: $messages,
-            input: $input,
             responseModel: $responseModel,
             system: $system,
             prompt: $prompt,
@@ -69,7 +67,6 @@ class Instructor extends StructuredOutput
     ) : StructuredOutputResponse {
         return $this->create(
             messages: $messages,
-            input: $input,
             responseModel: $responseModel,
             system: $system,
             prompt: $prompt,

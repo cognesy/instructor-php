@@ -1,7 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequestInfo;
 
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
+use Cognesy\Utils\Messages\Messages;
+use Cognesy\Utils\TextRepresentation;
 
 trait HandlesMutation
 {
@@ -13,8 +16,8 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withInput(string|array|object $input) : static {
-        $this->input = $input;
+    public function withInput(mixed $input) : static {
+        $this->messages = Messages::fromAny(TextRepresentation::fromAny($input))->toArray();
         return $this;
     }
 
@@ -63,7 +66,7 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withCachedContext(array $cachedContext) : static {
+    public function withCachedContext(CachedContext $cachedContext) : static {
         $this->cachedContext = $cachedContext;
         return $this;
     }

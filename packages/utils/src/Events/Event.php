@@ -100,6 +100,7 @@ class Event implements JsonSerializable
      * @return array The event data as an array
      */
     public function toArray(): array {
+        // TODO: make this better
         return json_decode(json_encode($this), true);
     }
 

@@ -16,6 +16,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class GuzzlePool implements CanHandleRequestPool
@@ -23,8 +24,10 @@ class GuzzlePool implements CanHandleRequestPool
     public function __construct(
         protected HttpClientConfig $config,
         protected ClientInterface $client,
-        protected EventDispatcher $events,
-    ) {}
+        protected ?EventDispatcherInterface $events,
+    ) {
+        $this->events = $events ?? new EventDispatcher();
+    }
 
     public function pool(array $requests, ?int $maxConcurrent = null): array {
         $responses = [];

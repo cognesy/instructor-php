@@ -7,18 +7,18 @@ use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Drivers\GuzzleDriver;
 use Cognesy\Http\Drivers\LaravelDriver;
 use Cognesy\Http\Drivers\SymfonyDriver;
-use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class HttpClientDriverFactory
 {
     protected static array $drivers = [];
-    protected EventDispatcher $events;
+    protected EventDispatcherInterface $events;
 
     public function __construct(
-        ?EventDispatcher $events = null,
+        EventDispatcherInterface $events = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
     }
 
     /**
@@ -27,7 +27,7 @@ class HttpClientDriverFactory
      * @param string $name The name of the driver to register.
      * @param class-string|callable $driver The closure that creates the driver instance, accepting following closure arguments:
      *   - \Cognesy\Http\Data\HttpClientConfig $config: The configuration object for the HTTP client.
-     *   - \Cognesy\Utils\Events\EventDispatcher $events: The event dispatcher instance.
+     *   - \Cognesy\Utils\Events\EventDispatcherInterface $events: The event dispatcher instance.
      * @return void
      */
     public static function registerDriver(string $name, string|callable $driver): void {
@@ -45,13 +45,16 @@ class HttpClientDriverFactory
      * @return CanHandleHttpRequest The instantiated HTTP driver corresponding to the specified client type.
      * @throws InvalidArgumentException If the specified client type is not supported.
      */
-    public function makeDriver(HttpClientConfig $config): CanHandleHttpRequest {
+    public function makeDriver(
+        HttpClientConfig $config,
+        ?object $clientInstance = null,
+    ): CanHandleHttpRequest {
         $name = $config->httpClientType;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
         if ($driverClosure === null) {
             throw new InvalidArgumentException("Client not supported: {$name}");
         }
-        return $driverClosure($config, $this->events);
+        return $driverClosure(config: $config, clientInstance: $clientInstance, events: $this->events);
     }
 
     /**
@@ -61,9 +64,21 @@ class HttpClientDriverFactory
      */
     private function defaultDrivers() : array {
         return [
-            'guzzle' => fn($config, $events) => new GuzzleDriver(config: $config, events: $events),
-            'symfony' => fn($config, $events) => new SymfonyDriver(config: $config, events: $events),
-            'laravel' => fn($config, $events) => new LaravelDriver(config: $config, events: $events),
+            'guzzle' => fn($config, $clientInstance, $events) => new GuzzleDriver(
+                config: $config,
+                clientInstance: $clientInstance,
+                events: $events,
+            ),
+            'symfony' => fn($config, $clientInstance, $events) => new SymfonyDriver(
+                config: $config,
+                clientInstance: $clientInstance,
+                events: $events,
+            ),
+            'laravel' => fn($config, $clientInstance, $events) => new LaravelDriver(
+                config: $config,
+                clientInstance: $clientInstance,
+                events: $events,
+            ),
         ];
     }
 }

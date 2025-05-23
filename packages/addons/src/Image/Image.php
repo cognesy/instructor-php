@@ -48,7 +48,7 @@ class Image extends ImageUtil
      *
      * @param string|array|object $responseModel The response model.
      * @param string $prompt The prompt to extract data from the image.
-     * @param string $connection The connection string.
+     * @param string $preset The connection string.
      * @param string $model The model to use.
      * @param string $system The system string.
      * @param array $examples Examples for the request.
@@ -68,8 +68,8 @@ class Image extends ImageUtil
         array               $options = [],
         OutputMode          $mode = OutputMode::Tools,
     ) : mixed {
-        return (new StructuredOutput)->withConnection($connection)->create(
-            input: $this,
+        return (new StructuredOutput)->using($connection)->create(
+            messages: $this->toMessages(),
             responseModel: $responseModel,
             system: $system,
             prompt: $prompt,

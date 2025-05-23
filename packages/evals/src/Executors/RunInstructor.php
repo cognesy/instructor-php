@@ -25,10 +25,9 @@ class RunInstructor implements CanRunExecution
 
     private function makeInstructorResponse(Execution $execution) : StructuredOutputResponse {
         return (new StructuredOutput)
-            ->withConnection($execution->get('case.connection'))
+            ->using($execution->get('case.preset'))
             ->request(
                 messages: $this->structuredOutputData->messages,
-                input: $this->structuredOutputData->input,
                 responseModel: $this->structuredOutputData->responseModel(),
                 system: $this->structuredOutputData->system,
                 prompt: $this->structuredOutputData->prompt,

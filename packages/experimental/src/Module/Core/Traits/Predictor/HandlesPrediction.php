@@ -46,10 +46,9 @@ trait HandlesPrediction
     }
 
     protected function predictStructure(array $callArgs) : mixed {
-        $this->requestInfo->withInput($callArgs);
+        $this->requestInfo->withInput($callArgs); // removed input field
         $this->requestInfo->withPrompt($this->instructions());
         $this->requestInfo->withResponseModel(Signature::toStructure('prediction', $this->signature));
-        // TODO: replace with new Instructor API call
         return $this->structuredOutput->withRequest($this->requestInfo)->get();
     }
 

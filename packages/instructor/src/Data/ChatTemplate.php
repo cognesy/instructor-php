@@ -25,10 +25,7 @@ class ChatTemplate
 
         // Add meta sections
         $output = $this
-            ->withCacheMetaSections(
-                $request->cachedContext(),
-                $this->withSections($script)
-            )
+            ->withCacheMetaSections($request->cachedContext(), $this->withSections($script))
             ->select($this->config->chatStructure())
             ->toArray(
                 parameters: ['json_schema' => $this->makeJsonSchema($request->responseModel())],

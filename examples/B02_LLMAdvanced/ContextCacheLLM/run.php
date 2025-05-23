@@ -32,7 +32,7 @@ use Cognesy\Utils\Str;
 
 $data = file_get_contents(__DIR__ . '/../../../README.md');
 
-$inference = (new Inference)->withConnection('anthropic')->withCachedContext(
+$inference = (new Inference)->using('anthropic')->withCachedContext(
     messages: [
         ['role' => 'user', 'content' => 'Here is content of README.md file'],
         ['role' => 'user', 'content' => $data],

@@ -45,7 +45,7 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 
 // Using OpenAI
-$openAIResponse = $inference->withConnection('openai')
+$openAIResponse = $inference->using('openai')
     ->create(
         messages: 'Write a short poem about the ocean.'
     )->toText();
@@ -53,7 +53,7 @@ $openAIResponse = $inference->withConnection('openai')
 echo "OpenAI response:\n$openAIResponse\n\n";
 
 // Using Anthropic
-$anthropicResponse = $inference->withConnection('anthropic')
+$anthropicResponse = $inference->using('anthropic')
     ->create(
         messages: 'Write a short poem about the ocean.'
     )->toText();

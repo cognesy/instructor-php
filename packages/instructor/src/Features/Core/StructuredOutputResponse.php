@@ -5,10 +5,10 @@ namespace Cognesy\Instructor\Features\Core;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Instructor\InstructorDone;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Exception;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StructuredOutputResponse
 {
@@ -17,7 +17,7 @@ class StructuredOutputResponse
     private bool $cacheProcessedResponse = true;
 
     private RequestHandler $requestHandler;
-    private EventDispatcher $events;
+    private EventDispatcherInterface $events;
     private StructuredOutputRequest $request;
 
     private LLMResponse $cachedResponse;
@@ -26,7 +26,7 @@ class StructuredOutputResponse
     public function __construct(
         StructuredOutputRequest $request,
         RequestHandler          $requestHandler,
-        EventDispatcher         $events,
+        EventDispatcherInterface $events,
     ) {
         $this->events = $events;
         $this->requestHandler = $requestHandler;

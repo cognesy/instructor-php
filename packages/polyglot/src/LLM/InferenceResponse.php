@@ -7,9 +7,9 @@ use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Represents an inference response handling object that processes responses
@@ -18,7 +18,7 @@ use InvalidArgumentException;
  */
 class InferenceResponse
 {
-    protected EventDispatcher $events;
+    protected EventDispatcherInterface $events;
     protected HttpClientResponse $response;
     protected CanHandleInference $driver;
     protected string $responseContent = '';
@@ -26,13 +26,13 @@ class InferenceResponse
     protected bool $isStreamed = false;
 
     public function __construct(
-        HttpClientResponse    $response,
+        HttpClientResponse $response,
         CanHandleInference $driver,
         LLMConfig          $config,
-        bool               $isStreamed = false,
-        ?EventDispatcher   $events = null,
+        bool               $isStreamed,
+        EventDispatcherInterface $events,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
         $this->driver = $driver;
         $this->config = $config;
         $this->isStreamed = $isStreamed;

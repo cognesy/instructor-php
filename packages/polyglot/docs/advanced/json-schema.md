@@ -27,7 +27,7 @@ $schema = JsonSchema::object(
 
 // Use the schema with Inference
 $data = (new Inference)
-    ->withConnection('openai')
+    ->using('openai')
     ->create(
         messages: [
             ['role' => 'user', 'content' => 'What is capital of France? Respond with JSON data.']
@@ -412,7 +412,7 @@ $userSchema = JsonSchema::object(
 
 // Use the schema with Inference
 $userData = (new Inference)
-    ->withConnection('openai')
+    ->using('openai')
     ->create(
         messages: [
             ['role' => 'user', 'content' => 'Generate a profile for John Doe who lives in New York.']
@@ -465,7 +465,7 @@ $functionDefinition = $weatherParamsSchema->toFunctionCall(
 
 // Use with Polyglot's Inference API
 $result = (new Inference)
-    ->withConnection('openai')
+    ->using('openai')
     ->create(
         messages: [
             ['role' => 'user', 'content' => 'What\'s the weather like in Tokyo?']

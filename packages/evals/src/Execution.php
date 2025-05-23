@@ -8,10 +8,10 @@ use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Utils\DataMap;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Uuid;
 use DateTime;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  *
@@ -21,7 +21,7 @@ class Execution
     use Traits\Execution\HandlesAccess;
     use Traits\Execution\HandlesExecution;
 
-    private EventDispatcher $events;
+    private EventDispatcherInterface $events;
 
     /** @var CanObserveExecution[] */
     private array $defaultObservers = [
@@ -46,9 +46,9 @@ class Execution
 
     public function __construct(
         array $case,
-        ?EventDispatcher $events = null,
+        EventDispatcherInterface $events,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
         $this->id = Uuid::uuid4();
         $this->data = new DataMap();
         $this->data->set('case', $case);

@@ -44,8 +44,8 @@ $data = new InferenceData(
 );
 
 //Debug::setEnabled();
-//$connections = array_keys(Settings::get('llm', 'connections'));
-$connections = [
+//$presets = array_keys(Settings::get('llm', 'presets'));
+$presets = [
 //    'deepseek',
 //    'groq',
     'gemini-oai',
@@ -64,7 +64,7 @@ $stream = [
 ];
 
 $experiment = new Experiment(
-    cases: InferenceCases::only($connections, $modes, $stream),
+    cases: InferenceCases::only($presets, $modes, $stream),
     //cases: InferenceCases::all(),
     executor: new RunInference($data),
     processors: [

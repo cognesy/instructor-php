@@ -9,7 +9,7 @@ class StructuredOutputConfig
 {
     private OutputMode $outputMode = OutputMode::Tools;
     private bool $useObjectReferences = false;
-    private int $maxRetries = 3;
+    private int $maxRetries = 0;
     private string $retryPrompt = "JSON generated incorrectly, fix following errors:\n";
     private array $modePrompts = [
         OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
@@ -32,7 +32,6 @@ class StructuredOutputConfig
         // never cached
         'pre-prompt', 'prompt', 'post-prompt',
         'pre-examples', 'examples', 'post-examples',
-        'pre-input', 'input', 'post-input',
         'messages',
         'pre-retries', 'retries', 'post-retries'
     ];
@@ -40,7 +39,7 @@ class StructuredOutputConfig
     public function __construct(
         OutputMode $outputMode = null,
         bool       $useObjectReferences = false,
-        int        $maxRetries = 0,
+        int        $maxRetries = -1,
         string     $retryPrompt = '',
         array      $modePrompts = [],
         string     $toolName = '',
@@ -49,7 +48,7 @@ class StructuredOutputConfig
     ) {
         $this->outputMode = $outputMode ?: $this->outputMode;
         $this->useObjectReferences = $useObjectReferences ?: $this->useObjectReferences;
-        $this->maxRetries = $maxRetries ?: $this->maxRetries;
+        $this->maxRetries = ($maxRetries >= 0) ? $maxRetries : $this->maxRetries;
         $this->retryPrompt = $retryPrompt ?: $this->retryPrompt;
         $this->modePrompts = $modePrompts ?: $this->modePrompts;
         $this->toolName = $toolName ?: $this->toolName;
@@ -61,7 +60,7 @@ class StructuredOutputConfig
         return new static(
             outputMode: OutputMode::from(Settings::get('structured', 'defaultMode', '')),
             useObjectReferences: Settings::get('structured', 'useObjectReferences', true),
-            maxRetries: Settings::get('structured', 'maxRetries', 3),
+            maxRetries: Settings::get('structured', 'maxRetries', 0),
             retryPrompt: Settings::get('structured', 'defaultRetryPrompt', ''),
             modePrompts: [
                 OutputMode::MdJson->value => Settings::get('structured', 'defaultMdJsonPrompt', ''),

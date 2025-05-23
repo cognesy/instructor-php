@@ -11,12 +11,12 @@ use Cognesy\Instructor\Features\Validation\ResponseValidator;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\ResultChain;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseGenerator implements CanGenerateResponse
 {
@@ -24,7 +24,7 @@ class ResponseGenerator implements CanGenerateResponse
         private ResponseDeserializer $responseDeserializer,
         private ResponseValidator $responseValidator,
         private ResponseTransformer $responseTransformer,
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
     ) {}
 
     public function makeResponse(LLMResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {

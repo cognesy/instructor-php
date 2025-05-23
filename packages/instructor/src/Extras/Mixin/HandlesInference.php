@@ -8,7 +8,6 @@ use Cognesy\Polyglot\LLM\LLM;
 trait HandlesInference {
     public function infer(
         string|array        $messages = '',
-        string|array|object $input = '',
         string|array|object $responseModel = [],
         string              $system = '',
         string              $prompt = '',
@@ -26,7 +25,6 @@ trait HandlesInference {
             llm: $llm ?? new LLM()
         ))->create(
             messages: $messages,
-            input: $input,
             responseModel: $responseModel,
             system: $system,
             prompt: $prompt,

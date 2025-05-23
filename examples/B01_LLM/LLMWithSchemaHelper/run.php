@@ -29,7 +29,7 @@ $schema = JsonSchema::object(
 );
 
 $data = (new Inference)
-    ->withConnection('openai')
+    ->using('openai')
     ->create(
         messages: [
             ['role' => 'user', 'content' => 'What is capital of France? Respond with JSON data.']

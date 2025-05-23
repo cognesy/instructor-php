@@ -2,10 +2,10 @@
 
 return [
     // default mode
-    'defaultMode' => 'json',
+    'defaultMode' => 'tool_call',
 
     // max retries
-    'maxRetries' => 3,
+    'maxRetries' => 0,
 
     // should Instructor use object references or quote objects
     'useObjectReferences' => false,
@@ -34,8 +34,7 @@ return [
         // never cached
         'pre-prompt', 'prompt', 'post-prompt',
         'pre-examples', 'examples', 'post-examples',
-        'pre-input', 'input', 'post-input',
-        'messages',
+        'pre-messages', 'messages', 'post-messages',
         'pre-retries', 'retries', 'post-retries'
     ],
 ];

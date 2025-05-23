@@ -24,9 +24,6 @@ trait HandlesScript
         $script->section('messages')->appendMessages(
             $this->makeMessages($messages)
         );
-        $script->section('input')->appendMessages(
-            $this->makeInput($request->input())
-        );
         $script->section('prompt')->appendMessage(
             $this->makePrompt($request->prompt()
                 ?: $this->config->prompt($request->mode())
@@ -36,7 +33,6 @@ trait HandlesScript
         $script->section('examples')->appendMessages(
             $this->makeExamples($request->examples())
         );
-
         return $this->filterEmptySections($script);
     }
 
@@ -55,17 +51,6 @@ trait HandlesScript
             ]);
         }
 
-        if ($script->section('input')->notEmpty()) {
-            $script->section('pre-input')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "INPUT:",
-            ]);
-            $script->section('post-input')->appendMessageIfEmpty([
-                'role' => 'user',
-                'content' => "RESPONSE:",
-            ]);
-        }
-
         if ($script->section('retries')->notEmpty()) {
             $script->section('pre-retries')->appendMessageIfEmpty([
                 'role' => 'user',
@@ -75,6 +60,11 @@ trait HandlesScript
                 'role' => 'user',
                 'content' => "CORRECTED RESPONSE:",
             ]);
+        } else {
+            $script->section('post-retries')->appendMessageIfEmpty([
+                'role' => 'user',
+                'content' => "RESPONSE:",
+            ]);
         }
 
         return $script;
@@ -83,7 +73,6 @@ trait HandlesScript
     private function isRequestEmpty(StructuredOutputRequest $request) : bool {
         return match(true) {
             !empty($request->messages()) => false,
-            !empty($request->input()) => false,
             !empty($request->prompt()) => false,
             !empty($request->system()) => false, // ?
             !empty($request->examples()) => false, // ?

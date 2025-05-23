@@ -96,7 +96,7 @@ enum StakeholderRole: string {
 }
 
 //Debug::setEnabled();
-$structuredOutput = (new StructuredOutput)->withConnection('gemini');
+$structuredOutput = (new StructuredOutput)->using('gemini');
 
 echo "PROJECT EVENTS:\n\n";
 

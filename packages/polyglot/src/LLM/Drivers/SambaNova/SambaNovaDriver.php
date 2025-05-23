@@ -16,7 +16,7 @@ use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIUsageFormat;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class SambaNovaDriver implements CanHandleInference
 {
@@ -24,13 +24,11 @@ class SambaNovaDriver implements CanHandleInference
     protected ProviderResponseAdapter $responseAdapter;
 
     public function __construct(
-        protected LLMConfig             $config,
-        protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcher      $events = null,
+        protected LLMConfig $config,
+        protected CanHandleHttpRequest $httpClient,
+        protected EventDispatcherInterface $events,
     )
     {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
         $this->requestAdapter = new OpenAIRequestAdapter(
             $config,
             new SambaNovaBodyFormat(

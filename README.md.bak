@@ -200,22 +200,21 @@ var_dump($person);
 
 ### Connecting to various LLM API providers
 
-Instructor allows you to define multiple API connections in `llm.php` file.
+Instructor allows you to define multiple API connection presets in `llm.php` file.
 This is useful when you want to use different LLMs or API providers in your application.
 
 Default configuration is located in `/config/llm.php` in the root directory
-of Instructor codebase. It contains a set of predefined connections to all LLM APIs
+of Instructor codebase. It contains a set of predefined connection presets to all LLM APIs
 supported out-of-the-box by Instructor.
 
-Config file defines connections to LLM APIs and their parameters. It also specifies
-the default connection to be used when calling Instructor without specifying
-the client connection.
+Config file defines connection presets to LLM APIs and their parameters. It also specifies
+the default connection to be used when calling Instructor without specifying details.
 
 ```php
     // This is fragment of /config/llm.php file
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
     //...
-    'connections' => [
+    'presets' => [
         'anthropic' => [ ... ],
         'azure' => [ ... ],
         'cohere1' => [ ... ],
@@ -249,7 +248,7 @@ method with the connection name.
 <?php
 // ...
 $user = (new StructuredOutput)
-    ->withConnection('ollama')
+    ->using('ollama')
     ->create(
         messages: "His name is Jason and he is 28 years old.",
         responseModel: Person::class,

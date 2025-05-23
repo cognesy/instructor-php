@@ -18,7 +18,7 @@ use Cognesy\Utils\Str;
 require 'examples/boot.php';
 
 $answer = (new Inference)
-    ->withConnection('meta') // see /config/llm.php
+    ->using('meta') // see /config/llm.php
     ->withDebug()
     ->create(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],

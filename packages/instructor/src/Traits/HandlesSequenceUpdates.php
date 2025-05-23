@@ -15,7 +15,7 @@ trait HandlesSequenceUpdates
      */
     public function onSequenceUpdate(callable $listener) : self {
         $this->onSequenceUpdate = $listener;
-        $this->events->addListener(
+        $this->listener->addListener(
             SequenceUpdated::class,
             $this->handleSequenceUpdate(...)
         );

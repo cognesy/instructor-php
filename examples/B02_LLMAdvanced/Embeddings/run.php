@@ -40,7 +40,7 @@ $documents = [
 
 $query = "technology news";
 
-$connections = [
+$presets = [
     'azure',
     'cohere2',
     'gemini',
@@ -50,14 +50,14 @@ $connections = [
     'openai'
 ];
 
-foreach($connections as $connection) {
-    $bestMatches = (new Embeddings)->withConnection($connection)->findSimilar(
+foreach($presets as $preset) {
+    $bestMatches = (new Embeddings)->using($preset)->findSimilar(
         query: $query,
         documents: $documents,
         topK: 3
     );
 
-    echo "\n[$connection]\n";
+    echo "\n[$preset]\n";
     dump($bestMatches);
 }
 ?>

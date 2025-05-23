@@ -13,6 +13,7 @@ use Cognesy\Polyglot\LLM\Events\PartialLLMResponseReceived;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * The InferenceStream class is responsible for handling and processing streamed responses
@@ -21,7 +22,7 @@ use Generator;
  */
 class InferenceStream
 {
-    protected EventDispatcher $events;
+    protected EventDispatcherInterface $events;
     protected EventStreamReader $reader;
     protected Generator $stream;
     protected HttpClientResponse $response;
@@ -39,7 +40,7 @@ class InferenceStream
         HttpClientResponse $response,
         CanHandleInference $driver,
         LLMConfig          $config,
-        ?EventDispatcher   $events = null,
+        ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->driver = $driver;

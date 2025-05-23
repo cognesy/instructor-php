@@ -6,8 +6,11 @@ use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Utils\Events\EventDispatcher;
-use Cognesy\Utils\Events\Traits\HandlesEvents;
+use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
+use Cognesy\Utils\Events\Traits\HandlesEventListening;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class Inference
@@ -16,7 +19,8 @@ use Cognesy\Utils\Events\Traits\HandlesEvents;
  */
 class Inference
 {
-    use HandlesEvents;
+    use HandlesEventDispatching;
+    use HandlesEventListening;
     use Traits\HandlesFluentMethods;
 
     protected LLM $llm;
@@ -32,8 +36,8 @@ class Inference
      * @return void
      */
     public function __construct(
-        ?LLM                $llm = null,
-        ?EventDispatcher    $events = null,
+        ?LLM $llm = null,
+        ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->llm = $llm ?? new LLM(events: $this->events);
@@ -46,7 +50,7 @@ class Inference
      * Generates a text response based on the provided messages and configuration.
      *
      * @param string|array $messages The input messages to process.
-     * @param string $connection The connection string.
+     * @param string $preset The connection preset.
      * @param string $model The model identifier.
      * @param array $options Additional options for the inference.
      *
@@ -54,12 +58,12 @@ class Inference
      */
     public static function text(
         string|array $messages,
-        string       $connection = '',
+        string       $preset = '',
         string       $model = '',
         array        $options = []
     ): string {
         return (new Inference)
-            ->withConnection($connection)
+            ->using($preset)
             ->create(
                 messages: $messages,
                 model: $model,
@@ -101,15 +105,15 @@ class Inference
     /**
      * Sets the connection and updates the configuration and driver.
      *
-     * @param string $connection The connection string to be used.
+     * @param string $preset The connection string to be used.
      *
      * @return self Returns the current instance with the updated connection.
      */
-    public function withConnection(string $connection): self {
-        if (empty($connection)) {
+    public function using(string $preset): self {
+        if (empty($preset)) {
             return $this;
         }
-        $this->llm->withConnection($connection);
+        $this->llm->using($preset);
         return $this;
     }
 
@@ -177,9 +181,11 @@ class Inference
      * @return InferenceResponse The response from the inference request.
      */
     public function withRequest(InferenceRequest $request): InferenceResponse {
+        $this->events->dispatch(new InferenceRequested($request));
+        $inferenceDriver = $this->llm->driver();
         return new InferenceResponse(
-            response: $this->llm->handleInferenceRequest($request),
-            driver: $this->llm->driver(),
+            response: $inferenceDriver->handle($request),
+            driver: $inferenceDriver,
             config: $this->llm->config(),
             isStreamed: $request->isStreamed(),
             events: $this->events,

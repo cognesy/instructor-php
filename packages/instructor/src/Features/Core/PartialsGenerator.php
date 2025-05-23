@@ -21,12 +21,12 @@ use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Data\ToolCalls;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\ResultChain;
 use Exception;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * The PartialsGenerator class is responsible for generating
@@ -51,7 +51,7 @@ class PartialsGenerator implements CanGeneratePartials
     public function __construct(
         private ResponseDeserializer $responseDeserializer,
         private ResponseTransformer $responseTransformer,
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
     ) {
         $this->toolCalls = new ToolCalls();
         $this->sequenceableHandler = new SequenceableHandler($events);

@@ -13,7 +13,7 @@ JSON Schema mode takes JSON generation a step further by validating the response
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
-$inference = new Inference()->withConnection('openai');  // Currently best supported by OpenAI
+$inference = new Inference()->using('openai');  // Currently best supported by OpenAI
 
 // Define a schema for a weather report
 $schema = [

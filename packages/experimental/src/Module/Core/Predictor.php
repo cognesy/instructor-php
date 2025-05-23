@@ -8,6 +8,7 @@ use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesFeedback;
 use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesParametrization;
 use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesPrediction;
 use Cognesy\Experimental\Module\Signature\Signature;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Inference;
@@ -22,7 +23,7 @@ class Predictor
 
     protected StructuredOutput $structuredOutput;
     protected Inference $inference;
-    protected string $connection;
+    protected string $preset;
 
     protected StructuredOutputRequestInfo $requestInfo;
     protected ?Signature $signature;

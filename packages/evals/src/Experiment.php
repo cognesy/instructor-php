@@ -14,12 +14,13 @@ use Cognesy\Utils\Uuid;
 use DateTime;
 use Exception;
 use Generator;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class Experiment {
     use Traits\Experiment\HandlesAccess;
     use Traits\Experiment\HandlesExecution;
 
-    private EventDispatcher $events;
+    private EventDispatcherInterface $events;
     private array $defaultProcessors = [
         DurationObserver::class,
         TokenUsageObserver::class,
@@ -52,7 +53,7 @@ class Experiment {
         CanRunExecution $executor,
         array|object    $processors,
         array|object    $postprocessors,
-        ?EventDispatcher $events = null,
+        ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->id = Uuid::uuid4();

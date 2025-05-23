@@ -3,9 +3,9 @@
 use Cognesy\Utils\Env;
 
 return [
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
 
-    'connections' => [
+    'presets' => [
         'azure' => [
             'providerType' => 'azure',
             'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',

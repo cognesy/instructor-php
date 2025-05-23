@@ -3,14 +3,17 @@ title: Configuration Deep Dive
 description: 'Learn how to configure different LLM providers and models in Polyglot.'
 ---
 
-One of Polyglot's core strengths is its ability to work with multiple LLM providers through a unified API. This chapter covers how to configure, manage, and switch between different providers and models to get the most out of the library.
-
+One of Polyglot's core strengths is its ability to work with multiple LLM providers through
+a unified API. This chapter covers how to configure, manage, and switch between different
+providers and models to get the most out of the library.
 
 
 
 ## Understanding Provider Configuration
 
-Polyglot organizes provider settings through "connections" - named configurations that include all the details needed to communicate with a specific LLM provider. These connections are defined in the configuration files and can be selected at runtime.
+Polyglot organizes provider settings through connection presets - named configurations that include
+the details needed to communicate with a specific LLM provider. These connection presets are defined
+in the configuration files and can be selected at runtime.
 
 ### The Configuration Files
 
@@ -31,20 +34,10 @@ use Cognesy\Utils\Env;
 
 return [
     // Default connection to use when none is specified
-    'defaultConnection' => 'openai',
+    'defaultPreset' => 'openai',
 
-    // Default names for tools
-    'defaultToolName' => 'extracted_data',
-    'defaultToolDescription' => 'Function call based on user instructions.',
-
-    // Default prompts for different modes
-    'defaultRetryPrompt' => "JSON generated incorrectly, fix following errors:\n",
-    'defaultMdJsonPrompt' => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
-    'defaultJsonPrompt' => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
-    'defaultToolsPrompt' => "Extract correct and accurate data from the input using provided tools.\n",
-
-    // Connection definitions
-    'connections' => [
+    // Connection preset definitions
+    'presets' => [
         // OpenAI connection
         'openai' => [
             'providerType' => 'openai',
@@ -91,12 +84,9 @@ The `embed.php` configuration file follows a similar pattern:
 use Cognesy\Utils\Env;
 
 return [
-    'debug' => [
-        'enabled' => false,
-    ],
+    'defaultPreset' => 'openai',
 
-    'defaultConnection' => 'openai',
-    'connections' => [
+    'presets' => [
         'openai' => [
             'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
@@ -130,19 +120,29 @@ Each connection includes several parameters:
 - **`maxOutputLength`**: Maximum output length supported by the model
 - **`httpClient`**: (Optional) Custom HTTP client to use
 
-For embedding connections, there are additional parameters:
 
+For embedding connections, the parameters are:
+
+- **`providerType`**: The type of provider (OpenAI, Anthropic, etc.)
+- **`apiUrl`**: The base URL for the provider's API
+- **`apiKey`**: The API key for authentication
+- **`endpoint`**: The specific API endpoint for chat completions or embeddings
+- **`metadata`**: Additional provider-specific settings
+- **`defaultModel`**: The default model to use
 - **`defaultDimensions`**: The default dimensions of embedding vectors
 - **`maxInputs`**: Maximum number of inputs that can be processed in a single request
 
 
-## Connection name vs provider type
+## Connection preset name vs provider type
 
-Configuration file `llm.php` contains a list of connections with the default names that might resemble provider type names, but those are separate entities.
+Configuration file `llm.php` contains a list of connection presets with the default names that might resemble
+provider type names, but those are separate entities.
 
-Provider type name refers to one of the supported LLM API providers and its underlying driver implementation, either specific to this provider or a generic one - compatible with OpenAI ('openai-compatible').
+Provider type name refers to one of the supported LLM API providers and its underlying driver implementation,
+either specific to this provider or a generic one - for example compatible with OpenAI ('openai-compatible').
 
-Connection name refers to LLM API provider endpoint configuration with specific provider type, but also URL, credentials, default model name, and default model parameter values.
+Connection preset name refers to LLM API provider endpoint configuration with specific provider type, but also URL,
+credentials, default model name, and default model parameter values.
 
 
 
@@ -151,7 +151,8 @@ Connection name refers to LLM API provider endpoint configuration with specific 
 
 ## Managing API Keys
 
-API keys should be stored securely and never committed to your codebase. Polyglot uses environment variables for API keys.
+API keys should be stored securely and never committed to your codebase. Polyglot uses environment variables
+for API keys.
 
 ### Setting Up Environment Variables
 
@@ -184,7 +185,8 @@ Or in frameworks like Laravel, environment variables are automatically loaded.
 
 ### Rotating API Keys
 
-For better security, consider rotating your API keys regularly. You can update the environment variables without changing your code.
+For better security, consider rotating your API keys regularly. You can update the environment
+variables without changing your code.
 
 
 
@@ -192,7 +194,8 @@ For better security, consider rotating your API keys regularly. You can update t
 
 ## Provider-Specific Parameters
 
-Different providers may support unique parameters and features. You can pass these as options to the `create()` method.
+Different providers may support unique parameters and features. You can pass these as options to the
+`create()` method.
 
 ### OpenAI-Specific Parameters
 
@@ -245,7 +248,8 @@ $response = $inference->create(
 
 ## Creating Custom Provider Configurations
 
-You can create custom configurations for providers that aren't included in the default settings or to modify existing ones.
+You can create custom configurations for providers that aren't included in the default settings
+or to modify existing ones.
 
 ### Modifying Configuration Files
 
@@ -254,9 +258,9 @@ You can edit the `config/llm.php` and `config/embed.php` files directly:
 ```php
 // In config/llm.php
 return [
-    'defaultConnection' => 'custom_openai',
+    'defaultPreset' => 'custom_openai',
 
-    'connections' => [
+    'presets' => [
         'custom_openai' => [
             'providerType' => 'openai',
             'apiUrl' => 'https://custom.openai-proxy.com/v1',
@@ -295,8 +299,7 @@ $customConfig = new LLMConfig(
 );
 
 // Use the custom configuration
-$inference = new Inference();
-$inference->withConfig($customConfig);
+$inference = (new Inference)->withConfig($customConfig);
 
 $response = $inference->create(
     messages: 'What are the benefits of using custom configurations?'
@@ -326,9 +329,9 @@ use Cognesy\Utils\Env;
 $environment = Env::get('APP_ENV', 'production');
 
 return [
-    'defaultConnection' => $environment === 'production' ? 'openai' : 'ollama',
+    'defaultPreset' => $environment === 'production' ? 'openai' : 'ollama',
 
-    'connections' => [
+    'presets' => [
         'openai' => [
             'providerType' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
@@ -358,19 +361,22 @@ return [
 
 ## Creating Custom Inference Drivers
 
-In this example we will use an existing driver bundled with Polyglot (OpenAIDriver) as a base class for our custom driver.
+In this example we will use an existing driver bundled with Polyglot (OpenAIDriver) as a base class
+for our custom driver.
 
 The driver can be any class that implements `CanHandleInference` interface.
 
 ```php
 // we register new provider type - 'custom-driver'
-LLM::registerDriver('custom-driver', fn($config, $httpClient) => new class($config, $httpClient) extends OpenAIDriver {
-    public function handle(InferenceRequest $request): HttpClientResponse {
-        // some extra functionality to demonstrate our driver is being used
-        echo ">>> Handling request...\n";
-        return parent::handle($request);
+LLM::registerDriver(
+    'custom-driver',
+    fn($config, $httpClient) => new class($config, $httpClient) extends OpenAIDriver {
+        public function handle(InferenceRequest $request): HttpClientResponse {
+            // some extra functionality to demonstrate our driver is being used
+            echo ">>> Handling request...\n";
+            return parent::handle($request);
+        }
     }
-}
 );
 
 // in configuration we use newly defined provider type - 'custom-driver'

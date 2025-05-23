@@ -4,22 +4,17 @@ namespace Cognesy\Instructor\Features\Validation\Validators;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Features\Validation\ValidationError;
 use Cognesy\Instructor\Features\Validation\ValidationResult;
-use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Validator\Validation;
 
 class SymfonyValidator implements CanValidateObject
 {
     public function validate(object $dataObject) : ValidationResult {
         $validator = Validation::createValidatorBuilder()
-            ->addLoader(new AttributeLoader())
+            ->enableAttributeMapping()
             ->getValidator();
 
-        try {
-            $result = $validator->validate($dataObject);
-        } catch (\Exception $e) {
-            return ValidationResult::make($errors, $e->getMessage());
-        }
-        
+        $result = $validator->validate($dataObject);
+
         $errors = [];
         foreach ($result as $error) {
             $path = $error->getPropertyPath();

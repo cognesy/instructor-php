@@ -22,7 +22,7 @@ use Cognesy\Utils\Str;
 
 // EXAMPLE 1: regular API, allows to customize inference options
 $response = (new Inference)
-    ->withConnection('deepseek-r') // optional, default is set in /config/llm.php
+    ->using('deepseek-r') // optional, default is set in /config/llm.php
     ->create(
         messages: [['role' => 'user', 'content' => 'What is the capital of France. Answer with just a name.']],
         options: ['max_tokens' => 64]
@@ -38,7 +38,7 @@ assert($response->reasoningContent() !== '');
 
 // EXAMPLE 2: streaming response
 $stream = (new Inference)
-    ->withConnection('deepseek-r') // optional, default is set in /config/llm.php
+    ->using('deepseek-r') // optional, default is set in /config/llm.php
     ->withStreaming()
     ->create(
         messages: [['role' => 'user', 'content' => 'What is capital of Brasil. Answer with just a name.']],

@@ -53,7 +53,7 @@ $anthropicOptions = [
     'stream' => true,
 ];
 
-$inference = new Inference()->withConnection('anthropic');
+$inference = new Inference()->using('anthropic');
 $response = $inference->create(
     messages: 'Write a short poem about programming.',
     options: $anthropicOptions

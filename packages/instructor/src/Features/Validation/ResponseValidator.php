@@ -8,16 +8,16 @@ use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class ResponseValidator
 {
     use Traits\ResponseValidator\HandlesMutation;
 
     public function __construct(
-        private EventDispatcher $events,
+        private EventDispatcherInterface $events,
         /** @var CanValidateObject[]|class-string[] $validators */
         private array $validators,
     ) {}

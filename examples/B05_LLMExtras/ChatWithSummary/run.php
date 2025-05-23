@@ -75,7 +75,7 @@ for($i = 0; $i < $maxSteps; $i++) {
 
     $response = Inference::text(
         messages: $messages->toArray(),
-        connection: 'deepseek',
+        preset: 'deepseek',
         options: ['max_tokens' => 256],
     );
 

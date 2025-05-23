@@ -96,8 +96,6 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-Debug::setEnabled();
-
 $structuredOutput = new StructuredOutput;
 
 echo "PROJECT EVENTS:\n\n";
@@ -108,11 +106,12 @@ $events = $structuredOutput
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
         model: 'gpt-4o',
-        mode: OutputMode::Tools,
         options: [
             'max_tokens' => 2048,
             'stream' => true,
-        ])
+        ],
+        mode: OutputMode::Tools
+    )
     ->get();
 
 echo "TOTAL EVENTS: " . count($events) . "\n";

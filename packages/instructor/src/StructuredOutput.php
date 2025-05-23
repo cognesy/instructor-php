@@ -16,26 +16,22 @@ use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Events\EventDispatcher;
-use Cognesy\Utils\Events\Traits\HandlesEvents;
+use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
+use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use JetBrains\PhpStorm\Deprecated;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * The StructuredOutput class manages the lifecycle and functionalities of StructuredOutput instance.
  *
  * It uses various traits including event management, environment settings, and request handling.
- *
- * @uses HandlesEvents
- * @uses Traits\HandlesInvocation
- * @uses Traits\HandlesOverrides
- * @uses Traits\HandlesPartialUpdates
- * @uses Traits\HandlesQueuedEvents
- * @uses Traits\HandlesRequest
- * @uses Traits\HandlesSequenceUpdates
  */
 class StructuredOutput
 {
-    use HandlesEvents;
+    use HandlesEventDispatching;
+    use HandlesEventListening;
 
     use Traits\HandlesFluentMethods;
     use Traits\HandlesInvocation;
@@ -58,13 +54,14 @@ class StructuredOutput
 
     /**
      * @param LLM|null $llm An optional LLM object instance for LLM connection.
-     * @param EventDispatcher|null $events An optional EventDispatcher instance for managing events.
+     * @param EventDispatcherInterface|null $events An optional EventDispatcherInterface instance for managing events.
      * @return void
      */
     public function __construct(
         ?LLM $llm = null,
-        ?EventDispatcher $events = null,
         StructuredOutputConfig $config = null,
+        ?EventDispatcherInterface $events = null,
+        ?EventListenerInterface $listener = null,
     ) {
         // load config
         $this->config = $config ?? StructuredOutputConfig::load();
@@ -73,7 +70,11 @@ class StructuredOutput
         $this->queueEvent(new InstructorStarted());
 
         // main event dispatcher
-        $this->events = $events ?? new EventDispatcher('instructor');
+        if (is_null($events) || is_null($listener)) {
+            $defaultEventProcessor = new EventDispatcher('instructor');
+        }
+        $this->events = $events ?? $defaultEventProcessor;
+        $this->listener = $listener ?? $defaultEventProcessor;
 
         $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
@@ -84,16 +85,6 @@ class StructuredOutput
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());
-    }
-
-    /**
-     * Initializes a StructuredOutput instance with a specified connection.
-     *
-     * @param string $connection The connection string to be used.
-     * @return StructuredOutput An instance of StructuredOutput with the specified connection.
-     */
-    public static function using(string $connection) : static {
-        return (new StructuredOutput)->withConnection($connection);
     }
 
     /**
@@ -150,8 +141,8 @@ class StructuredOutput
         return $this;
     }
 
-    public function withConnection(string $connection) : static {
-        $this->llm->withConnection($connection);
+    public function using(string $preset) : static {
+        $this->llm->using($preset);
         return $this;
     }
 
@@ -167,13 +158,15 @@ class StructuredOutput
     }
 
     /**
-     * Returns LLM connection object for the current instance.
+     * Returns LLM configuration object for the current instance.
      *
      * @return LLM The LLM object for the current instance.
      */
     public function llm() : LLM {
         return $this->llm;
     }
+
+    // DEPRECATED  //////////////////////////////////////////////////////
 
     #[Deprecated('To be replaced with request() accessor')]
     public function getRequest() : StructuredOutputRequest {

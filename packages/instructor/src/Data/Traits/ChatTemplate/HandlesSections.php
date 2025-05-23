@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data\Traits\ChatTemplate;
 
 use Cognesy\Instructor\Data\Example;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Exception;
@@ -20,6 +19,10 @@ trait HandlesSections
 
         // EXTRACT SYSTEM ROLE FROM MESSAGES - until first non-system message
         foreach ($messages as $message) {
+            if (empty($message['role'])) {
+                dd($messages);
+                continue;
+            }
             if ($message['role'] !== 'system') {
                 break;
             }

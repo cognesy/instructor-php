@@ -5,7 +5,6 @@ namespace Cognesy\Polyglot\LLM\Drivers\Gemini;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -13,7 +12,7 @@ use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class GeminiDriver implements CanHandleInference
 {
@@ -21,13 +20,11 @@ class GeminiDriver implements CanHandleInference
     protected ProviderResponseAdapter $responseAdapter;
 
     public function __construct(
-        protected LLMConfig             $config,
-        protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcher      $events = null,
+        protected LLMConfig $config,
+        protected CanHandleHttpRequest $httpClient,
+        protected EventDispatcherInterface $events,
     )
     {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
         $this->requestAdapter = new GeminiRequestAdapter(
             $config,
             new GeminiBodyFormat(

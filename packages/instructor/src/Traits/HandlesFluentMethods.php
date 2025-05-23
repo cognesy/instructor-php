@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor\Traits;
 
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\TextRepresentation;
 
 trait HandlesFluentMethods
 {
@@ -15,6 +17,12 @@ trait HandlesFluentMethods
     public function withMessage(string $message) : static
     {
         $this->requestInfo->withMessages([['role' => 'user', 'content' => $message]]);
+        return $this;
+    }
+
+    public function withInput(mixed $input) : static
+    {
+        $this->requestInfo->withMessages(TextRepresentation::fromAny($input));
         return $this;
     }
 
@@ -45,12 +53,6 @@ trait HandlesFluentMethods
     public function withPrompt(string $prompt) : static
     {
         $this->requestInfo->withPrompt($prompt);
-        return $this;
-    }
-
-    public function withInput(mixed $input) : static
-    {
-        $this->requestInfo->withInput($input);
         return $this;
     }
 
@@ -118,18 +120,11 @@ trait HandlesFluentMethods
 
     public function withCachedContext(
         string|array $messages = '',
-        string|array|object $input = '',
         string $system = '',
         string $prompt = '',
         array $examples = [],
     ) : ?self {
-        $this->requestInfo->withCachedContext([
-            'messages' => $messages ?: $this->requestInfo->cachedContext()['messages'] ?? '',
-            'input' => $input ?: $this->requestInfo->cachedContext()['input'] ?? [],
-            'system' => $system ?: $this->requestInfo->cachedContext()['system'] ?? '',
-            'prompt' => $prompt ?: $this->requestInfo->cachedContext()['prompt'] ?? '',
-            'examples' => $examples ?: $this->requestInfo->cachedContext()['examples'] ?? [],
-        ]);
+        $this->requestInfo->withCachedContext(new CachedContext($messages, $system, $prompt, $examples));
         return $this;
     }
 }

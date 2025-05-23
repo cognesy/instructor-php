@@ -11,6 +11,7 @@ use Cognesy\Http\Middleware\RecordReplay\Events\HttpInteractionNotFound;
 use Cognesy\Http\Middleware\RecordReplay\Events\HttpInteractionReplayed;
 use Cognesy\Http\Middleware\RecordReplay\Exceptions\RecordingNotFoundException;
 use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * ReplayMiddleware
@@ -32,7 +33,7 @@ class ReplayMiddleware implements HttpMiddleware
     /**
      * @var EventDispatcher|null Event dispatcher
      */
-    private ?EventDispatcher $events;
+    private ?EventDispatcherInterface $events;
     
     /**
      * Constructor
@@ -44,7 +45,7 @@ class ReplayMiddleware implements HttpMiddleware
     public function __construct(
         string $storageDir,
         bool $fallbackToRealRequests = true,
-        ?EventDispatcher $events = null
+        ?EventDispatcherInterface $events = null
     ) {
         $this->records = new RequestRecords($storageDir);
         $this->fallbackToRealRequests = $fallbackToRealRequests;

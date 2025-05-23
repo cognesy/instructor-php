@@ -36,7 +36,7 @@ class User {
 
 // Get Instructor with specified LLM client connection
 // See: /config/llm.php to check or change LLM client connection configuration details
-$structuredOutput = (new StructuredOutput)->withConnection('azure');
+$structuredOutput = (new StructuredOutput)->using('azure');
 
 // Call with your model name and preferred execution mode
 $user = $structuredOutput->create(

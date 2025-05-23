@@ -25,7 +25,7 @@ $data = new StructuredOutputData(
 
 $experiment = new Experiment(
     cases: InferenceCases::except(
-        connections: ['ollama'],
+        presets: ['ollama'],
         modes: [OutputMode::JsonSchema, OutputMode::Text],
         stream: [true]
     ),

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequestInfo;
 
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 
 trait HandlesAccess
@@ -12,10 +13,6 @@ trait HandlesAccess
 
     public function messages() : array {
         return $this->messages;
-    }
-
-    public function input(): string|array|object {
-        return $this->input;
     }
 
     public function responseModel(): string|array|object {
@@ -46,7 +43,7 @@ trait HandlesAccess
         return $this->examples;
     }
 
-    public function cachedContext() : array {
+    public function cachedContext() : ?CachedContext {
         return $this->cachedContext;
     }
 

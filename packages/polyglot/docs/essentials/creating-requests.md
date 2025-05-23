@@ -96,6 +96,6 @@ $messages = [
     ]
 ];
 
-$inference = new Inference()->withConnection('openai');
+$inference = new Inference()->using('openai');
 $response = $inference->create(messages: $messages)->toText();
 ```

@@ -7,8 +7,8 @@ return [
         'enabled' => false,
     ],
 
-    'defaultConnection' => 'openai',
-    'connections' => [
+    'defaultPreset' => 'openai',
+    'presets' => [
         'azure' => [
             'providerType' => 'azure',
             'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',

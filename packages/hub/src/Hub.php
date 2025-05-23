@@ -57,7 +57,12 @@ class Hub extends CliApp
             ]
         );
 
-        $runner = new Runner($exampleRepo, true, 0, true);
+        $runner = new Runner(
+            examples: $exampleRepo,
+            displayErrors: true,
+            stopAfter: 0,
+            stopOnError: false
+        );
 
         $commands = [
             new GenerateDocs($docGen),

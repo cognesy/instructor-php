@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Utils\Events;
 
+use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
@@ -8,22 +9,25 @@ use Psr\EventDispatcher\StoppableEventInterface;
 /**
  * A class responsible for managing and dispatching events to corresponding listeners.
  *
- * The EventDispatcher provides functionality to register listeners for specific
- * event classes, notify those listeners when an event is dispatched, and manage
- * a hierarchical chain of dispatchers with an optional parent dispatcher to forward events.
+ * The EventDispatcher class provides functionality to register listeners for specific event classes,
+ * notify those listeners when an event is dispatched, and manage a hierarchical chain of dispatchers
+ * with an optional parent dispatcher to forward events.
+ *
  * Additionally, it supports wiretapping, enabling callbacks to observe all dispatched events.
+ *
+ * It implements PSR-14, which defines a standard for event dispatching in PHP.
  */
-class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface
+class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface, EventListenerInterface
 {
     private string $name;
-    private ?EventDispatcher $parent;
+    private ?EventDispatcherInterface $parent;
 
     private array $listeners = [];
     private array $wiretaps = [];
 
     public function __construct(
         string $name = 'default',
-        ?EventDispatcher $parent = null,
+        ?EventDispatcherInterface $parent = null,
     ) {
         $this->name = $name;
         $this->parent = $parent;
@@ -41,12 +45,23 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
     /**
      * Registers a listener for a specific event class.
      *
-     * @param string $eventClass The fully qualified name of the event class to listen for.
+     * @param string $name Event name - Instructor uses fully qualified name of the event class to listen for.
      * @param callable $listener A callable function or method that will handle the event.
      * @return self Returns the current instance for method chaining.
      */
-    public function addListener(string $eventClass, callable $listener): self {
-        $this->listeners[$eventClass][] = $listener;
+    public function addListener(string $name, callable $listener): static {
+        $this->listeners[$name][] = $listener;
+        return $this;
+    }
+
+    /**
+     * Adds a wiretap listener that will be triggered for all events.
+     *
+     * @param callable $listener A callable function or method to handle the events.
+     * @return self Returns the current instance for method chaining.
+     */
+    public function wiretap(callable $listener): static {
+        $this->wiretaps[] = $listener;
         return $this;
     }
 
@@ -56,13 +71,6 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
      * @param object $event The event object for which to retrieve listeners.
      * @return iterable An iterable list of listeners that are registered for the event's class or its parent classes.
      */
-//    public function getListenersForEvent(object $event): iterable {
-//        foreach ($this->listeners as $eventClass => $listeners) {
-//            if ($event instanceof $eventClass) {
-//                yield from $listeners;
-//            }
-//        }
-//    }
     public function getListenersForEvent(object $event): iterable {
         $listenersToReturn = [];
 
@@ -111,17 +119,6 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
             }
         }
         $this->wiretapDispatch($event);
-    }
-
-    /**
-     * Adds a wiretap listener that will be triggered for all events.
-     *
-     * @param callable $listener A callable function or method to handle the events.
-     * @return self Returns the current instance for method chaining.
-     */
-    public function wiretap(callable $listener): self {
-        $this->wiretaps[] = $listener;
-        return $this;
     }
 
     /**

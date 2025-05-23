@@ -40,7 +40,7 @@ $report = <<<EOT
     EOT;
 
 $summary = (new Inference)
-    ->withConnection('openai')
+    ->using('openai')
     ->create(
         messages: [
             ['role' => 'user', 'content' => 'Content to summarize:'],

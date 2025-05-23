@@ -3,13 +3,12 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Traits\HasFinders;
 use Cognesy\Utils\Events\EventDispatcher;
-use Cognesy\Utils\Settings;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Embeddings is a facade responsible for generating embeddings for provided input data
@@ -18,26 +17,17 @@ class Embeddings
 {
     use HasFinders;
 
-    protected EventDispatcher $events;
-    protected EmbeddingsConfig $config;
-    protected CanHandleHttpRequest $httpClient;
-    protected CanVectorize $driver;
-    protected EmbeddingsDriverFactory $driverFactory;
-    private EmbeddingsRequest $request;
+    protected EventDispatcherInterface $events;
+    protected EmbeddingsProvider $provider;
+    protected EmbeddingsRequest $request;
 
     public function __construct(
-        string               $connection = '',
-        ?EmbeddingsConfig     $config = null,
-        ?CanHandleHttpRequest $httpClient = null,
-        ?CanVectorize         $driver = null,
-        ?EventDispatcher      $events = null,
+        string                $preset = '',
+        EmbeddingsProvider    $provider = null,
+        ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $connection = $connection ?: Settings::get('embed', "defaultConnection");
-        $this->config = $config ?? EmbeddingsConfig::load($connection);
-        $this->httpClient = $httpClient ?? HttpClient::make(client: $this->config->httpClient, events: $this->events);
-        $this->driverFactory = new EmbeddingsDriverFactory($this->events);
-        $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->provider = $provider ?? new EmbeddingsProvider(preset: $preset, events: $this->events);
         $this->request = new EmbeddingsRequest();
     }
 
@@ -47,24 +37,32 @@ class Embeddings
         EmbeddingsDriverFactory::registerDriver($name, $driver);
     }
 
-    public static function connection(string $connection = ''): self {
-        return new self(connection: $connection);
+    public static function preset(string $preset = ''): self {
+        return new self(preset: $preset);
+    }
+
+    public static function connection(string $preset = ''): self {
+        return new self(preset: $preset);
     }
 
     public static function fromDSN(string $dsn): self {
-        return new self(config: EmbeddingsConfig::fromDSN($dsn));
+        return new self(provider: EmbeddingsProvider::fromDSN($dsn));
     }
 
     // PUBLIC ///////////////////////////////////////////////////
 
+    public function withProvider(EmbeddingsProvider $provider) : self {
+        $this->provider = $provider;
+        return $this;
+    }
+
     /**
      * Configures the Embeddings instance with the given connection name.
-     * @param string $connection
+     * @param string $preset
      * @return $this
      */
-    public function withConnection(string $connection) : self {
-        $this->config = EmbeddingsConfig::load($connection);
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+    public function using(string $preset) : self {
+        $this->provider->using($preset);
         return $this;
     }
 
@@ -74,8 +72,7 @@ class Embeddings
      * @return $this
      */
     public function withConfig(EmbeddingsConfig $config) : self {
-        $this->config = $config;
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->provider->withConfig($config);
         return $this;
     }
 
@@ -85,7 +82,7 @@ class Embeddings
      * @return $this
      */
     public function withModel(string $model) : self {
-        $this->config->model = $model;
+        $this->provider->withModel($model);
         return $this;
     }
 
@@ -96,8 +93,7 @@ class Embeddings
      * @return $this
      */
     public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
-        $this->httpClient = $httpClient;
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->provider->withHttpClient($httpClient);
         return $this;
     }
 
@@ -107,7 +103,7 @@ class Embeddings
      * @return $this
      */
     public function withDriver(CanVectorize $driver) : self {
-        $this->driver = $driver;
+        $this->provider->withDriver($driver);
         return $this;
     }
 
@@ -133,11 +129,11 @@ class Embeddings
 
         $options = array_merge($this->request->options(), $options);
 
-        if (count($this->request->inputs()) > $this->config->maxInputs) {
-            throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config->maxInputs}");
+        if (count($input) > $this->config()->maxInputs) {
+            throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config()->maxInputs}");
         }
 
-        return $this->driver->vectorize($input, $options);
+        return $this->driver()->vectorize($input, $options);
     }
 
     /**
@@ -148,8 +144,25 @@ class Embeddings
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
-        // TODO: it assumes we're using HttpClient class as a driver
-        $this->httpClient->withDebug($debug);
+        $this->provider->withDebug($debug);
         return $this;
+    }
+
+    /**
+     * Returns the config object for the current instance.
+     *
+     * @return EmbeddingsConfig The config object for the current instance.
+     */
+    public function config() : EmbeddingsConfig {
+        return $this->provider->config();
+    }
+
+    /**
+     * Returns the driver object for the current instance.
+     *
+     * @return CanVectorize The driver object for the current instance.
+     */
+    public function driver() : CanVectorize {
+        return $this->provider->driver();
     }
 }

@@ -16,8 +16,12 @@ use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
 use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
 use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Messages\Message;
+use Cognesy\Utils\Messages\Messages;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Trait provides invocation handling functionality for the StructuredOutput class.
@@ -35,13 +39,12 @@ trait HandlesInvocation
     public function withRequest(StructuredOutputRequestInfo $request) : StructuredOutputResponse {
         return $this->create(
             messages: $request->messages() ?? [],
-            input: $request->input() ?? [],
             responseModel: $request->responseModel() ?? [],
             system: $request->system() ?? '',
             prompt: $request->prompt() ?? '',
             examples: $request->examples() ?? [],
             model: $request->model() ?? '',
-            maxRetries: $request->config()?->maxRetries() ?? 0,
+            maxRetries: $request->config()?->maxRetries() ?? -1,
             options: $request->options() ?? [],
             toolName: $request->config()?->toolName() ?? '',
             toolDescription: $request->config()?->toolDescription() ?? '',
@@ -54,7 +57,6 @@ trait HandlesInvocation
      * Processes a request using provided input, system configurations, and response specifications.
      *
      * @param string|array $messages Text or chat sequence to be used for generating the response.
-     * @param string|array|object $input Data or input to send with the request (optional).
      * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
      * @param string $system The system instructions (optional).
      * @param string $prompt The prompt to guide the request's response generation (optional).
@@ -70,14 +72,13 @@ trait HandlesInvocation
      * @throws Exception If the response model is empty or invalid.
      */
     public function create(
-        string|array        $messages = '',
-        string|array|object $input = '',
+        string|array|Message|Messages $messages = '',
         string|array|object $responseModel = [],
         string              $system = '',
         string              $prompt = '',
         array               $examples = [],
         string              $model = '',
-        int                 $maxRetries = 0,
+        int                 $maxRetries = -1,
         array               $options = [],
         string              $toolName = '',
         string              $toolDescription = '',
@@ -94,17 +95,16 @@ trait HandlesInvocation
 
         $this->config->withOverrides(
             outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
-            maxRetries: $maxRetries ?: $this->config->maxRetries(),
+            maxRetries: ($maxRetries >= 0) ? $maxRetries : $this->config->maxRetries(),
             retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
             toolName: $toolName ?: $this->config->toolName(),
             toolDescription: $toolDescription ?: $this->config->toolDescription(),
         );
 
-        $responseModel = $this->makeResponseModel($requestedSchema, $this->config, $this->events,);
+        $responseModel = $this->makeResponseModel($requestedSchema, $this->config, $this->events, $this->listener);
 
         $request = new StructuredOutputRequest(
             messages: $messages ?: $this->requestInfo->messages(),
-            input: $input ?: $this->requestInfo->input(),
             requestedSchema: $requestedSchema,
             responseModel: $responseModel,
             system: $system ?: $this->requestInfo->system(),
@@ -145,7 +145,6 @@ trait HandlesInvocation
      * and returns the result directly.
      *
      * @param string|array $messages Text or chat sequence to be used for generating the response.
-     * @param string|array|object $input Data or input to send with the request (optional).
      * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
      * @param string $system The system instructions (optional).
      * @param string $prompt The prompt to guide the request's response generation (optional).
@@ -162,13 +161,12 @@ trait HandlesInvocation
      */
     public function generate(
         string|array        $messages = '',
-        string|array|object $input = '',
         string|array|object $responseModel = [],
         string              $system = '',
         string              $prompt = '',
         array               $examples = [],
         string              $model = '',
-        int                 $maxRetries = 0,
+        int                 $maxRetries = -1,
         array               $options = [],
         string              $toolName = '',
         string              $toolDescription = '',
@@ -177,7 +175,6 @@ trait HandlesInvocation
     ) : mixed {
         return $this->create(
             messages: $messages,
-            input: $input,
             responseModel: $responseModel,
             system: $system,
             prompt: $prompt,
@@ -226,14 +223,21 @@ trait HandlesInvocation
     private function makeResponseModel(
         string|array|object $requestedSchema,
         StructuredOutputConfig $config,
-        EventDispatcher $events,
+        ?EventDispatcherInterface $events = null,
+        ?EventListenerInterface $listener = null,
     ) : ResponseModel {
         $schemaFactory = new SchemaFactory($config->useObjectReferences());
+        if (is_null($events) || is_null($listener)) {
+            $default = new EventDispatcher();
+        }
+        $events = $events ?? $default;
+        $listener = $listener ?? $default;
 
         $responseModelFactory = new ResponseModelFactory(
             new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
             $schemaFactory,
             $events,
+            $listener,
         );
 
         return $responseModelFactory->fromAny(

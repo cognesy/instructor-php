@@ -106,7 +106,7 @@ it('tests pool method for SymfonyDriver with failOnError=true', function () {
         'failOnError' => true,
     ]);
 
-    $driver = new SymfonyDriver($config);
+    $driver = new SymfonyDriver(config: $config);
     $requests = [
         new HttpClientRequest('https://example.com', 'GET', [], [], []),
         new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
@@ -126,7 +126,7 @@ it('tests pool method for SymfonyDriver with failOnError=false', function () {
         'failOnError' => false,
     ]);
 
-    $driver = new SymfonyDriver($config);
+    $driver = new SymfonyDriver(config: $config);
     $requests = [
         new HttpClientRequest('https://example.com', 'GET', [], [], []),
         new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),

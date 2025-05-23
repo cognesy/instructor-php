@@ -1,4 +1,5 @@
- - (instructor) Breaking changes: the `Instructor` class is being replaced with `StructuredOutput` class; the old class will be kept for some time to allow for a smooth transition.
+ - (all) Multiple breaking changes - proceed with caution
+ - (instructor) the `Instructor` class is being replaced with `StructuredOutput` class; the old class will be kept for some time to allow for a smooth transition.
  - (examples) All examples have been updated to use the new `StructuredOutput` class and recommended create(), generate() methods
  - (docs) Updated documentation to reflect the new `StructuredOutput` class and its usage
  - (instructor) Extracted structured output config into a separate file config/structured.php (and removed from config/llm.php)
@@ -7,7 +8,7 @@
  - (instructor) Response and response streams are now cached after the first call, so multiple calls to `StructuredOutputResponse::response()` or `StructuredOutputResponse::stream()` do not cause re-processing (deserialization, validation, transformation) of the response value
  - (instructor) StructuredOutput class offers fluent API for creating structured output requests
  - (instructor) StructuredOutputResponse now offers getXxx() methods for getting the response value as a specific type (e.g. getString(), getInt(), getFloat(), getBool(), getArray(), getObject())
- - (examples) Added StructuredOutput fluent API example
+ - (instructor) Removed `input` argument from StructuredOutput methods and StructuredOutputRequest class - use `messages` instead - (examples) Added StructuredOutput fluent API example
  - (polyglot) Added fluent API calls to Inference class
  - (polyglot) Added fluent API calls to Embeddings class
  - (polyglot) Corrections in inference drivers, fixed defects in JSON/JSON Schema modes

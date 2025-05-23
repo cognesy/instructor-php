@@ -6,6 +6,7 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -14,6 +15,7 @@ use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * ModularLLMDriver is responsible for handling inference requests and managing
@@ -30,10 +32,10 @@ class ModularLLMDriver implements CanHandleInference {
         protected ProviderRequestAdapter  $requestAdapter,
         protected ProviderResponseAdapter $responseAdapter,
         protected ?CanHandleHttpRequest   $httpClient = null,
-        protected ?EventDispatcher        $events = null,
+        protected ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? HttpClient::make(events: $this->events);
+        $this->httpClient = $httpClient ?? (new HttpClientFactory(events: $this->events))->default();
     }
 
     /**

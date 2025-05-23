@@ -4,17 +4,20 @@ namespace Cognesy\Http;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class MiddlewareStack
 {
+    private EventDispatcherInterface $events;
     /** @var HttpMiddleware[] */
-    private array $stack = [];
+    private array $stack;
 
     public function __construct(
-        private ?EventDispatcher $events = null
+        EventDispatcherInterface $events,
+        array $middlewares = [],
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
+        $this->stack = $middlewares;
     }
 
     /**

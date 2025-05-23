@@ -13,19 +13,27 @@ use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\RequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SymfonyDriver implements CanHandleHttpRequest
 {
-    private CanHandleHttpRequest $client;
+    protected HttpClientConfig $config;
+    protected EventDispatcherInterface $events;
+    protected HttpClientInterface $client;
 
     public function __construct(
-        protected HttpClientConfig      $config,
-        protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcher      $events = null,
+        HttpClientConfig $config,
+        ?object $clientInstance = null,
+        ?EventDispatcherInterface $events = null,
     ) {
+        $this->config = $config;
         $this->events = $events ?? new EventDispatcher();
-        $this->client = $httpClient ?? HttpClient::create(['http_version' => '2.0']);
+        if ($clientInstance && !($clientInstance instanceof HttpClientInterface)) {
+            throw new \InvalidArgumentException('Client instance must be of type Symfony\Contracts\HttpClient\HttpClientInterface');
+        }
+        $this->client = $clientInstance ?? HttpClient::create(['http_version' => '2.0']);
     }
 
     public function handle(HttpClientRequest $request) : HttpClientResponse {
@@ -60,7 +68,4 @@ class SymfonyDriver implements CanHandleHttpRequest
             connectTimeout: $this->config->connectTimeout ?? 3,
         );
     }
-
-    // INTERNAL /////////////////////////////////////////////////
-
 }

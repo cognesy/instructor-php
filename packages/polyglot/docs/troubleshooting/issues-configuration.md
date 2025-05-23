@@ -11,6 +11,7 @@ description: How to troubleshoot provider configurations in Polyglot
 - Incorrect API keys or permissions
 - Missing or incorrect configuration parameters
 
+
 ## Solutions
 
 ### 1. Verify API Keys
@@ -22,28 +23,30 @@ Make sure your API keys are correct and have the necessary permissions:
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Http\Exceptions\RequestException;
 
-function testApiKey(string $connection): bool {
+function testApiKey(string $preset): bool {
     try {
-        $inference = new Inference($connection);
+        $llm = LLM::preset($preset);
+        $inference = new Inference($preset);
         $response = $inference->create(
             messages: 'Test message',
             options: ['max_tokens' => 5]
         )->toText();
 
-        echo "Connection '$connection' is working.\n";
+        echo "Connection preset '$preset' is working.\n";
         return true;
     } catch (RequestException $e) {
-        echo "Error with connection '$connection': " . $e->getMessage() . "\n";
+        echo "Error with connection '$preset': " . $e->getMessage() . "\n";
         return false;
     }
 }
 
 // Test each connection
-$connections = ['openai', 'anthropic', 'mistral'];
-foreach ($connections as $connection) {
-    testApiKey($connection);
+$presets = ['openai', 'anthropic', 'mistral'];
+foreach ($presets as $preset) {
+    testApiKey($preset);
 }
 ```
+
 
 ### 2. Enable Debug Mode
 
@@ -63,9 +66,13 @@ $response = $inference->create(
 )->toText();
 ```
 
+
+
 ### 3. Check Provider Status
 
 Some issues might be related to the provider's service status. Check their status pages or documentation.
+
+
 
 ### 4. Verify Configuration Parameters
 
@@ -75,11 +82,11 @@ Ensure all required configuration parameters are present and correctly formatted
 <?php
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 
-function verifyConfig(string $connection): void {
+function verifyConfig(string $preset): void {
     try {
-        $config = LLMConfig::load($connection);
+        $config = LLMConfig::load($preset);
 
-        echo "Configuration for '$connection':\n";
+        echo "Configuration for '$preset':\n";
         echo "API URL: {$config->apiUrl}\n";
         echo "Endpoint: {$config->endpoint}\n";
         echo "Default Model: {$config->model}\n";
@@ -94,14 +101,14 @@ function verifyConfig(string $connection): void {
             echo "Warning: Default model is not set\n";
         }
     } catch (\Exception $e) {
-        echo "Error loading configuration for '$connection': " . $e->getMessage() . "\n";
+        echo "Error loading configuration for '$preset': " . $e->getMessage() . "\n";
     }
 }
 
 // Verify configurations
-$connections = ['openai', 'anthropic', 'mistral'];
-foreach ($connections as $connection) {
-    verifyConfig($connection);
+$presets = ['openai', 'anthropic', 'mistral'];
+foreach ($presets as $preset) {
+    verifyConfig($preset);
     echo "\n";
 }
 ```

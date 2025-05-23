@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Features\Core;
 
 use Cognesy\Instructor\Contracts\Sequenceable;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
-use Cognesy\Utils\Events\EventDispatcher;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Handles dispatching SequenceUpdate events in the streaming mode
@@ -14,9 +14,9 @@ class SequenceableHandler
 {
     private ?Sequenceable $lastPartialSequence = null;
     private int $previousSequenceLength = 0;
-    private EventDispatcher $events;
+    private EventDispatcherInterface $events;
 
-    public function __construct(EventDispatcher $events) {
+    public function __construct(EventDispatcherInterface $events) {
         $this->events = $events;
     }
 

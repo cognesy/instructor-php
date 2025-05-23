@@ -29,6 +29,6 @@ class TextGradientDescent
     private function updateParameter(Predictor $param, Feedback $feedback) : void {
         $currentInstructions = $param->instructions();
         $newInstructions = $this->optimize->for($currentInstructions, $feedback);
-        $param->using(instructions: $newInstructions);
+        $param->with(instructions: $newInstructions);
     }
 }

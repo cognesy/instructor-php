@@ -21,7 +21,7 @@ $embeddings = new Embeddings();
 $embeddings = new Embeddings('openai');
 
 // Alternative method to specify connection
-$embeddings = (new Embeddings())->withConnection('openai');
+$embeddings = (new Embeddings())->using('openai');
 ```
 
 ### Key Methods
@@ -29,7 +29,7 @@ $embeddings = (new Embeddings())->withConnection('openai');
 The `Embeddings` class provides several important methods:
 
 - `create()`: Generates embeddings for input text
-- `withConnection()`: Specifies which connection to use
+- `using()`: Specifies which connection preset to use
 - `withConfig()`: Sets a custom configuration
 - `withHttpClient()`: Specifies a custom HTTP client
 - `withModel()`: Overrides the default model

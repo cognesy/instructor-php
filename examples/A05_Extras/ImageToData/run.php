@@ -52,7 +52,7 @@ class Receipt {
 }
 
 $receipt = (new StructuredOutput)->create(
-    input: Image::fromFile(__DIR__ . '/receipt.png'),
+    messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt.',
     options: ['max_tokens' => 4096]

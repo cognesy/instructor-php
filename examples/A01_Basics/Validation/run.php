@@ -24,14 +24,15 @@ require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
 use Symfony\Component\Validator\Constraints as Assert;
+use Cognesy\Instructor\Features\Validation\Exceptions\ValidationException;
 
 class UserDetails
 {
     public string $name;
     #[Assert\Email]
     #[Assert\NotBlank]
-    /** Find user's email provided in the text */
-    public string $email;
+    /** Find user's email provided in the text or empty if it is missing */
+    public ?string $email;
 }
 
 $caughtException = false;
@@ -40,12 +41,15 @@ try {
         messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
         responseModel: UserDetails::class,
     );
-    dump($user);
-} catch(Exception $e) {
+} catch (ValidationException $e) {
     $caughtException = true;
+    echo "Validation worked.\n";
+} catch (Throwable $e) {
+    // Catch any other exception
+    echo "Validation failed with unexpected exception: {$e->getMessage()}\n";
 }
 
-assert(!isset($user));
 assert($caughtException === true);
+assert(!isset($user));
 ?>
 ```

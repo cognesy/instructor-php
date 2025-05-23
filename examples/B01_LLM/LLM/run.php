@@ -22,7 +22,7 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;
 
-// EXAMPLE 1: simplified API, default connection for convenient ad-hoc calls
+// EXAMPLE 1: simplified API, default LLM connection preset for convenient ad-hoc calls
 $answer = Inference::text('What is capital of Germany');
 
 echo "USER: What is capital of Germany\n";
@@ -34,7 +34,7 @@ assert(Str::contains($answer, 'Berlin'));
 
 // EXAMPLE 2: regular API, allows to customize inference options
 $answer = (new Inference)
-    ->withConnection('openai') // optional, default is set in /config/llm.php
+    ->using('openai') // optional, default is set in /config/llm.php
     ->create(
         messages: [['role' => 'user', 'content' => 'What is capital of France']],
         options: ['max_tokens' => 64]
