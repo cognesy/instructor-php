@@ -143,7 +143,7 @@ $text = <<<TEXT
     McDonald's in Ney York is located at 456 Elm St, NYC, 12345.
     TEXT;
 
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: $text,
     responseModel: $structure,
 )->get();

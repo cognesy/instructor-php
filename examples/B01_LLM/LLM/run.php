@@ -35,7 +35,7 @@ assert(Str::contains($answer, 'Berlin'));
 // EXAMPLE 2: regular API, allows to customize inference options
 $answer = (new Inference)
     ->using('openai') // optional, default is set in /config/llm.php
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is capital of France']],
         options: ['max_tokens' => 64]
     )
@@ -50,7 +50,7 @@ assert(Str::contains($answer, 'Paris'));
 
 // EXAMPLE 3: streaming response
 $stream = (new Inference)
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
         options: ['max_tokens' => 128, 'stream' => true]
     )

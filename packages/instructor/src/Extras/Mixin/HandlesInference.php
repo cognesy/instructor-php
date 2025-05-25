@@ -23,7 +23,7 @@ trait HandlesInference {
     ) : mixed {
         return (new StructuredOutput(
             llm: $llm ?? new LLM()
-        ))->create(
+        ))->with(
             messages: $messages,
             responseModel: $responseModel,
             system: $system,

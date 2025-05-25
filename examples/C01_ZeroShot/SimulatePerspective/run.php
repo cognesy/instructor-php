@@ -73,7 +73,7 @@ class SimulatePerspective {
     }
 
     private function getKnownFacts(string $context, string $query, string $entity) : array {
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: str_replace(
                 ['{context}', '{query}', '{entity}'],
                 [$context, $query, $entity],
@@ -86,7 +86,7 @@ class SimulatePerspective {
     private function answerQuestion(string $entity, string $query, array $knownFacts) : string {
         $knowledge = Arrays::toBullets($knownFacts);
 
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: str_replace(
                 ['{entity}', '{knowledge}', '{query}'],
                 [$entity, $knowledge, $query],

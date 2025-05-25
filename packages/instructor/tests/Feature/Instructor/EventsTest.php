@@ -31,7 +31,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
     $person = (new StructuredOutput)->withHttpClient($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
-        ->create(
+        ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
             maxRetries: 2,
@@ -86,7 +86,7 @@ it('handles events for simple case - validation failure', function ($event) use 
     $this->expectException(\Exception::class);
     $person = (new StructuredOutput)->withHttpClient($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
-        ->create(
+        ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Person::class,
             maxRetries: 1,
@@ -136,7 +136,7 @@ it('handles events for custom case', function ($event) use ($text) {
     $events = new EventSink();
     $age = (new StructuredOutput)->withHttpClient($mockLLM)
         ->onEvent($event, fn($e) => $events->onEvent($e))
-        ->create(
+        ->with(
             messages: [['role' => 'user', 'content' => $text]],
             responseModel: Scalar::integer('age'),
         )->get();

@@ -8,7 +8,7 @@ If the model implements iterable, it can be used to return partial updates.
 
 ```php
 $structuredOutput = new StructuredOutput();
-$taskUpdates = $structuredOutput->create(
+$taskUpdates = $structuredOutput->with(
     messages: "Notify Jason about the upcoming meeting on Thursday at 10:00 AM",
     responseModel: Task::class,
     options: ['stream' => true]
@@ -29,7 +29,7 @@ Client receives partially updated model via callback, while `response()` will st
 
 ```php
 $structuredOutput = new StructuredOutput();
-$task = $structuredOutput->create(
+$task = $structuredOutput->with(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
     onEachUpdate: function (Task $partial) {

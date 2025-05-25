@@ -5,7 +5,8 @@ namespace Cognesy\Instructor;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\StructuredOutputRequestBuilder;
+use Cognesy\Instructor\Data\StructuredOutputRequestFactory;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
 use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
@@ -20,13 +21,10 @@ use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
-use JetBrains\PhpStorm\Deprecated;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
- * The StructuredOutput class manages the lifecycle and functionalities of StructuredOutput instance.
- *
- * It uses various traits including event management, environment settings, and request handling.
+ * The StructuredOutput is facade for handling structured output requests and responses.
  */
 class StructuredOutput
 {
@@ -42,7 +40,8 @@ class StructuredOutput
 
     private LLM $llm;
     private StructuredOutputRequest $request;
-    private StructuredOutputRequestInfo $requestInfo;
+    private StructuredOutputRequestFactory $requestFactory;
+    private StructuredOutputRequestBuilder $requestBuilder;
 
     private ResponseDeserializer $responseDeserializer;
     private ResponseValidator $responseValidator;
@@ -54,12 +53,13 @@ class StructuredOutput
 
     /**
      * @param LLM|null $llm An optional LLM object instance for LLM connection.
+     * @param StructuredOutputConfig|null $config An optional StructuredOutputConfig instance for configuration.
      * @param EventDispatcherInterface|null $events An optional EventDispatcherInterface instance for managing events.
-     * @return void
+     * @param EventListenerInterface|null $listener An optional EventListenerInterface instance for listening to events.
      */
     public function __construct(
         ?LLM $llm = null,
-        StructuredOutputConfig $config = null,
+        ?StructuredOutputConfig $config = null,
         ?EventDispatcherInterface $events = null,
         ?EventListenerInterface $listener = null,
     ) {
@@ -80,8 +80,14 @@ class StructuredOutput
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
+        $this->requestFactory = new StructuredOutputRequestFactory(
+            config: $this->config,
+            events: $this->events,
+            listener: $this->listener,
+        );
+        $this->requestBuilder = new StructuredOutputRequestBuilder(config: $this->config);
+
         $this->llm = $llm ?? new LLM(events: $this->events);
-        $this->requestInfo = new StructuredOutputRequestInfo();
 
         // queue 'READY' event
         $this->queueEvent(new InstructorReady());
@@ -166,9 +172,6 @@ class StructuredOutput
         return $this->llm;
     }
 
-    // DEPRECATED  //////////////////////////////////////////////////////
-
-    #[Deprecated('To be replaced with request() accessor')]
     public function getRequest() : StructuredOutputRequest {
         return $this->request;
     }

@@ -34,7 +34,7 @@ $city = Structure::define('city', [
 
 $data = (new Inference)
     ->using('openai')
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is capital of France? \
         Respond with JSON data.']],
         responseFormat: [

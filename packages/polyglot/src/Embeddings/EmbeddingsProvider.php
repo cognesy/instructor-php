@@ -7,7 +7,6 @@ use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Events\EventDispatcher;
-use Cognesy\Utils\Settings;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EmbeddingsProvider
@@ -19,32 +18,16 @@ class EmbeddingsProvider
     protected EmbeddingsDriverFactory $driverFactory;
 
     public function __construct(
-        string                $preset = '',
+        EventDispatcherInterface $events,
         ?EmbeddingsConfig     $config = null,
         ?CanHandleHttpRequest $httpClient = null,
         ?CanVectorize         $driver = null,
-        ?EventDispatcherInterface $events = null,
     ) {
-        $this->events = $events ?? new EventDispatcher();
-        $preset = $preset ?: Settings::get('embed', "defaultPreset");
-        $this->config = $config ?? EmbeddingsConfig::load($preset);
+        $this->events = $events;
+        $this->config = $config ?? EmbeddingsConfig::default();
         $this->httpClient = $httpClient ?? (new HttpClientFactory($this->events))->fromPreset($this->config->httpClient);
         $this->driverFactory = new EmbeddingsDriverFactory($this->events);
         $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
-    }
-
-    // PUBLIC static ////////////////////////////////////////////
-
-    public static function preset(string $preset = ''): self {
-        return new self(preset: $preset);
-    }
-
-    public static function connection(string $preset = ''): self {
-        return new self(preset: $preset);
-    }
-
-    public static function fromDSN(string $dsn): self {
-        return new self(config: EmbeddingsConfig::fromDSN($dsn));
     }
 
     // PUBLIC ///////////////////////////////////////////////////

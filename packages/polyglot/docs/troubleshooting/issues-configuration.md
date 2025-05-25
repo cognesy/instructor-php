@@ -27,7 +27,7 @@ function testApiKey(string $preset): bool {
     try {
         $llm = LLM::preset($preset);
         $inference = new Inference($preset);
-        $response = $inference->create(
+        $response = $inference->with(
             messages: 'Test message',
             options: ['max_tokens' => 5]
         )->toText();
@@ -61,7 +61,7 @@ $inference = new Inference('openai');
 $inference->withDebug(true);
 
 // Make a request
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Test message with debug enabled'
 )->toText();
 ```

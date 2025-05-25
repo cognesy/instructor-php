@@ -26,7 +26,7 @@ $schema = JsonSchema::object(
     requiredProperties: ['name', 'age'],
 );
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: "Jason is 25 years old and works as an engineer",
     responseModel: $schema,
 )->get();

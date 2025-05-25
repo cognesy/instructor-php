@@ -26,7 +26,7 @@ class City {
 
 $schema = (new SchemaFactory)->schema(City::class);
 
-$city = (new StructuredOutput)->create(
+$city = (new StructuredOutput)->with(
     messages: "What is capital of France",
     responseModel: $schema,
 )->get();

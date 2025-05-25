@@ -39,7 +39,7 @@ class City {
     public int $population;
 }
 
-$city = (new StructuredOutput)->using('openai')->create(
+$city = (new StructuredOutput)->using('openai')->with(
     messages: 'What is the capital of France?',
     responseModel: City::class,
 )->get();

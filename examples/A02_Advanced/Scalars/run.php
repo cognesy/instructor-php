@@ -27,7 +27,7 @@ enum CitizenshipGroup : string {
 }
 
 $text = "His name is Jason, he is 28 years old American who lives in Germany.";
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->with(
     messages: $text,
     prompt: 'What is user\'s citizenship?',
     responseModel: Scalar::enum(CitizenshipGroup::class, name: 'citizenshipGroup'),

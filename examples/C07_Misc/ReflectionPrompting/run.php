@@ -51,7 +51,7 @@ class ReflectiveResponse implements CanValidateSelf {
 }
 
 $problem = 'Solve the equation x+y=x-y';
-$solution = (new StructuredOutput)->using('anthropic')->create(
+$solution = (new StructuredOutput)->using('anthropic')->with(
     messages: $problem,
     responseModel: ReflectiveResponse::class,
     mode: OutputMode::MdJson,

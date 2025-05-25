@@ -32,7 +32,7 @@ class UserDetail
     public TimeRange $leisureTime;
 }
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => "Yesterday Jason worked from 9 for 5 hours. After that I watched 2 hour movie which I finished at 19."]],
     responseModel: UserDetail::class,
     model: 'gpt-4o',

@@ -70,7 +70,7 @@ Step 2: Create run.php and use Instructor
 15}
 16
 17// Step 2: Use Instructor to run LLM inference
-18$city = (new StructuredOutput)->using('openai')->create(
+18$city = (new StructuredOutput)->using('openai')->with(
 19 messages: 'What is the capital of France?',
 20 responseModel: City::class,
 21)->get();

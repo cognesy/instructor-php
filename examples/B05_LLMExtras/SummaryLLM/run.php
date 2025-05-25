@@ -41,7 +41,7 @@ $report = <<<EOT
 
 $summary = (new Inference)
     ->using('openai')
-    ->create(
+    ->with(
         messages: [
             ['role' => 'user', 'content' => 'Content to summarize:'],
             ['role' => 'user', 'content' => $report],

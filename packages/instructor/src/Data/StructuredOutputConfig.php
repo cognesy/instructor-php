@@ -75,6 +75,9 @@ class StructuredOutputConfig
     }
 
     // ACCESSORS ///////////////////////////////////////////////////////
+    public static function default() : self {
+        return new self();
+    }
 
     public function outputMode() : OutputMode {
         return $this->outputMode;

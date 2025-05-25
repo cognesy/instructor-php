@@ -5,8 +5,10 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\Traits\HasFinders;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -18,6 +20,8 @@ class Embeddings
     use HasFinders;
 
     protected EventDispatcherInterface $events;
+    protected EmbeddingsProviderFactory $embeddingsProviderFactory;
+
     protected EmbeddingsProvider $provider;
     protected EmbeddingsRequest $request;
 
@@ -27,26 +31,9 @@ class Embeddings
         ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
-        $this->provider = $provider ?? new EmbeddingsProvider(preset: $preset, events: $this->events);
+        $this->embeddingsProviderFactory = new EmbeddingsProviderFactory($this->events);
+        $this->provider = $provider ?? $this->embeddingsProviderFactory->fromPreset($preset ?: Settings::get('embeddings', "defaultPreset"));
         $this->request = new EmbeddingsRequest();
-    }
-
-    // PUBLIC static ////////////////////////////////////////////
-
-    public static function registerDriver(string $name, string|callable $driver) {
-        EmbeddingsDriverFactory::registerDriver($name, $driver);
-    }
-
-    public static function preset(string $preset = ''): self {
-        return new self(preset: $preset);
-    }
-
-    public static function connection(string $preset = ''): self {
-        return new self(preset: $preset);
-    }
-
-    public static function fromDSN(string $dsn): self {
-        return new self(provider: EmbeddingsProvider::fromDSN($dsn));
     }
 
     // PUBLIC ///////////////////////////////////////////////////
@@ -113,27 +100,59 @@ class Embeddings
     }
 
     /**
-     * Generates embeddings for the provided input data.
+     * Sets provided input and options data.
      * @param string|array $input
      * @param array $options
-     * @return EmbeddingsResponse
+     * @return self
      */
-    public function create(
+    public function with(
         string|array $input = [],
         array $options = []
-    ) : EmbeddingsResponse {
-        $input = $input ?: $this->request->inputs();
-        if (empty($input)) {
+    ) : static {
+        $this->request->withInput($input ?: $this->request->inputs());
+        $this->request->withOptions(array_merge($this->request->options(), $options));
+        return $this;
+    }
+
+    /**
+     * Generates embeddings for the provided input data.
+     * @return EmbeddingsResponse
+     */
+    public function create() : EmbeddingsResponse {
+        if (empty($this->request->inputs())) {
             throw new InvalidArgumentException("Input data is required");
         }
 
-        $options = array_merge($this->request->options(), $options);
-
-        if (count($input) > $this->config()->maxInputs) {
+        if (count($this->request->inputs()) > $this->config()->maxInputs) {
             throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config()->maxInputs}");
         }
 
-        return $this->driver()->vectorize($input, $options);
+        return $this->driver()->vectorize(
+            $this->request->inputs(),
+            $this->request->options(),
+        );
+    }
+
+    public function get() : EmbeddingsResponse {
+        return $this->create();
+    }
+
+    /**
+     * Returns all embeddings for the provided input data.
+     *
+     * @return Vector[] Array of embedding vectors
+     */
+    public function all() : array {
+        return $this->create()->all();
+    }
+
+    /**
+     * Returns the first embedding for the provided input data.
+     *
+     * @return Vector The first embedding vector
+     */
+    public function first() : EmbeddingsResponse {
+        return $this->create()->first();
     }
 
     /**

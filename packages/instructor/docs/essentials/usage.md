@@ -77,7 +77,7 @@ and then call `get()` to get the response.
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$structuredOutput = (new StructuredOutput)->create(
+$structuredOutput = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 );
@@ -133,7 +133,7 @@ processing the data as soon as it is available.
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new StructuredOutput)->create(
+$stream = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]

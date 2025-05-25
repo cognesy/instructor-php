@@ -48,9 +48,9 @@ class UserDetails
 
 $user = (new StructuredOutput)
     ->wiretap(fn($e) => $e->print())
-    ->create(
+    ->withResponseClass(UserDetails::class)
+    ->with(
         messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 23.']],
-        responseModel: UserDetails::class,
         model: 'gpt-3.5-turbo',
         maxRetries: 2,
     )->get();

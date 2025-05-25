@@ -37,10 +37,11 @@ class UserDetails
 
 $caughtException = false;
 try {
-    $user = (new StructuredOutput)->generate(
-        messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
-        responseModel: UserDetails::class,
-    );
+    $user = (new StructuredOutput)
+        ->withResponseClass(UserDetails::class)
+        ->generate(
+            messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
+        );
 } catch (ValidationException $e) {
     $caughtException = true;
     echo "Validation worked.\n";

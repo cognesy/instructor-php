@@ -28,7 +28,7 @@ class RunInstructor implements CanRunExecution
             ->using($execution->get('case.preset'))
             ->request(
                 messages: $this->structuredOutputData->messages,
-                responseModel: $this->structuredOutputData->responseModel(),
+                responseModel: $this->structuredOutputData->responseModel,
                 system: $this->structuredOutputData->system,
                 prompt: $this->structuredOutputData->prompt,
                 examples: $this->structuredOutputData->examples,

@@ -29,7 +29,7 @@ use Cognesy\Instructor\StructuredOutput;
 
 $structuredOutput = new StructuredOutput();
 
-$response = $structuredOutput->create(
+$response = $structuredOutput->with(
     messages: "...",
     responseModel: ...,
     ...,

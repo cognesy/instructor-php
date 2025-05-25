@@ -33,7 +33,7 @@ Here's a simple example of creating a request:
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is the capital of France?'
 )->toText();
 
@@ -50,7 +50,7 @@ For chat-based interactions, you can pass an array of messages:
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: [
         ['role' => 'system', 'content' => 'You are a helpful assistant who provides concise answers.'],
         ['role' => 'user', 'content' => 'What is the capital of France?'],
@@ -97,5 +97,5 @@ $messages = [
 ];
 
 $inference = new Inference()->using('openai');
-$response = $inference->create(messages: $messages)->toText();
+$response = $inference->with(messages: $messages)->toText();
 ```

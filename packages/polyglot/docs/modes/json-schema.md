@@ -62,7 +62,7 @@ $schema = [
 ];
 
 // Request a weather report
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Provide a weather report for Paris, France.',
     responseFormat: [
         'type' => 'json_schema',

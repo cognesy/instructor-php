@@ -109,7 +109,7 @@ echo "PROJECT EVENTS:\n\n";
 
 $events = $structuredOutput
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
-    ->create(
+    ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),
         model: 'claude-3-5-sonnet-20240620', // 'claude-3-haiku-20240307'

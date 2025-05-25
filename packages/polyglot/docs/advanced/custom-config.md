@@ -205,7 +205,7 @@ use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference('openai');
 
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Generate a creative story.',
     options: [
         'temperature' => 0.8,         // Controls randomness (0.0 to 1.0)
@@ -229,7 +229,7 @@ use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference('anthropic');
 
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Generate a creative story.',
     options: [
         'temperature' => 0.7,
@@ -301,7 +301,7 @@ $customConfig = new LLMConfig(
 // Use the custom configuration
 $inference = (new Inference)->withConfig($customConfig);
 
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What are the benefits of using custom configurations?'
 )->toText();
 
@@ -393,7 +393,7 @@ $config = new LLMConfig(
 // now we're calling inference using our configuration
 $answer = (new Inference)
     ->withConfig($config)
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )

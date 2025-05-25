@@ -19,7 +19,7 @@ trait HasFinders
      */
     public function findSimilar(string $query, array $documents, int $topK = 5) : array {
         // generate embeddings for query and documents (in a single request)
-        [$queryVector, $docVectors] = $this->create(array_merge([$query], $documents))->split(1);
+        [$queryVector, $docVectors] = $this->with(array_merge([$query], $documents))->create()->split(1);
 
         $docVectors = $docVectors->toValuesArray();
         $queryVector = $queryVector->first()?->values()

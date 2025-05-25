@@ -31,7 +31,7 @@ class DataStore
 }
 
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$args = (new StructuredOutput)->create(
+$args = (new StructuredOutput)->with(
     messages: $text,
     responseModel: FunctionCall::fromMethodName(DataStore::class, 'saveUser'),
 )->get();

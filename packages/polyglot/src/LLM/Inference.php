@@ -5,6 +5,7 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Utils\Events\EventDispatcher;
@@ -13,9 +14,7 @@ use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class Inference
- *
- * Handles LLM inference operations including configuration management, HTTP client handling, and event dispatching.
+ * Inference class is facade for handling inference requests and responses.
  */
 class Inference
 {
@@ -64,7 +63,7 @@ class Inference
     ): string {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: $messages,
                 model: $model,
                 options: $options,
@@ -205,7 +204,7 @@ class Inference
      *
      * @return InferenceResponse The response from the inference request.
      */
-    public function create(
+    public function with(
         string|array $messages = [],
         string       $model = '',
         array        $tools = [],
@@ -213,17 +212,52 @@ class Inference
         array        $responseFormat = [],
         array        $options = [],
         ?OutputMode   $mode = null,
-    ): InferenceResponse {
-        return $this->withRequest(new InferenceRequest(
-            messages: $messages ?: $this->request->messages(),
-            model: $model ?: $this->request->model() ?: $this->config()->model,
-            tools: $tools ?: $this->request->tools(),
-            toolChoice: $toolChoice ?: $this->request->toolChoice(),
-            responseFormat: $responseFormat ?: $this->request->responseFormat(),
-            options: array_merge($this->request->options(), $options),
-            mode: $mode ?: $this->request->outputMode() ?: OutputMode::Unrestricted,
+    ) : self {
+        $this->request = new InferenceRequest(
+            messages: $messages,
+            model: $model ?: $this->config()->model,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            responseFormat: $responseFormat,
+            options: $options,
+            mode: $mode ?: OutputMode::Unrestricted,
             cachedContext: $this->cachedContext ?? null
-        ));
+        );
+        return $this;
+    }
+
+    public function create(): InferenceResponse {
+        return $this->withRequest($this->request);
+//        return $this->withRequest(new InferenceRequest(
+//            messages: $messages ?: $this->request->messages(),
+//            model: $model ?: $this->request->model() ?: $this->config()->model,
+//            tools: $tools ?: $this->request->tools(),
+//            toolChoice: $toolChoice ?: $this->request->toolChoice(),
+//            responseFormat: $responseFormat ?: $this->request->responseFormat(),
+//            options: array_merge($this->request->options(), $options),
+//            mode: $mode ?: $this->request->outputMode() ?: OutputMode::Unrestricted,
+//            cachedContext: $this->cachedContext ?? null
+//        ));
+    }
+
+    public function get(): InferenceResponse {
+        return $this->create();
+    }
+
+    public function response(): LLMResponse {
+        return $this->create()->response();
+    }
+
+    public function toText(): string {
+        return $this->create()->toText();
+    }
+
+    public function toJson(): string {
+        return $this->create()->toJson();
+    }
+
+    public function stream(): InferenceStream {
+        return $this->create()->stream();
     }
 
     /**

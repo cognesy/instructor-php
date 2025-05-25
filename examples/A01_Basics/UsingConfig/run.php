@@ -39,7 +39,7 @@ class User {
 $structuredOutput = (new StructuredOutput)->using('openai');
 
 // Call with custom model and execution mode
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
 )->get();

@@ -38,7 +38,7 @@ print("INPUT:\n$text\n\n");
 print("OUTPUT:\n");
 $list = (new StructuredOutput)
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
-    ->create(
+    ->with(
         messages: $text,
         responseModel: Sequence::of(Person::class),
         options: ['stream' => true],

@@ -13,7 +13,7 @@ $text = "His name is Jason, he is 28 years old.";
 
 it('handles direct call', function () use ($mockLLM, $text) {
     $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
-    $person = $structuredOutput->create(
+    $person = $structuredOutput->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();
@@ -25,7 +25,7 @@ it('handles direct call', function () use ($mockLLM, $text) {
 it('handles onEvent()', function () use ($mockLLM, $text) {
     $events = new EventSink();
     $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
-    $person = $structuredOutput->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->create(
+    $person = $structuredOutput->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();
@@ -38,7 +38,7 @@ it('handles onEvent()', function () use ($mockLLM, $text) {
 it('handles wiretap()', function () use ($mockLLM, $text) {
     $events = new EventSink();
     $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
-    $person = $structuredOutput->wiretap(fn($e) => $events->onEvent($e))->create(
+    $person = $structuredOutput->wiretap(fn($e) => $events->onEvent($e))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();

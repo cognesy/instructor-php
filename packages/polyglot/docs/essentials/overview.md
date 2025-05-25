@@ -44,7 +44,7 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 
 // Generate text using the default connection
-$answer = $inference->create(
+$answer = $inference->with(
     messages: [['role' => 'user', 'content' => 'What is the capital of France?']]
 )->toText();
 
@@ -63,7 +63,7 @@ use Cognesy\Polyglot\LLM\Inference;
 // Create an inference object with a specific connection
 $inference = new Inference();
 $answer = $inference->using('anthropic')
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France?']]
     )->toText();
 
@@ -87,7 +87,7 @@ $messages = [
 ];
 
 $inference = new Inference();
-$answer = $inference->create(
+$answer = $inference->with(
     messages: $messages
 )->toText();
 
@@ -105,7 +105,7 @@ use Cognesy\Polyglot\LLM\Inference;
 
 // Create an inference with custom options
 $inference = new Inference();
-$answer = $inference->create(
+$answer = $inference->with(
     messages: [['role' => 'user', 'content' => 'Write a short poem about coding.']],
     model: 'gpt-4', // Override the default model
     options: [
@@ -136,7 +136,7 @@ $answer = (new Inference)
     ->using('openai') // optional, default is set in /config/llm.php
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
     ->withOptions(['max_tokens' => 64])
-    ->create()
+    ->with()
     ->toText();
 
 echo "USER: What is capital of France\n";
@@ -222,7 +222,7 @@ method with the connection preset name.
 // ...
 $answer = (new Inference)
     ->using('ollama') // see /config/llm.php
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )
@@ -250,7 +250,7 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 
 // Use the default provider (set in config)
-$defaultResponse = $inference->create(
+$defaultResponse = $inference->with(
     messages: 'What is the capital of France?'
 )->toText();
 
@@ -258,7 +258,7 @@ echo "Default provider response: $defaultResponse\n\n";
 
 // Switch to Anthropic
 $anthropicResponse = $inference->using('anthropic')
-    ->create(
+    ->with(
         messages: 'What is the capital of Germany?'
     )->toText();
 
@@ -266,7 +266,7 @@ echo "Anthropic response: $anthropicResponse\n\n";
 
 // Switch to Mistral
 $mistralResponse = $inference->using('mistral')
-    ->create(
+    ->with(
         messages: 'What is the capital of Italy?'
     )->toText();
 
@@ -279,9 +279,9 @@ $mistral = new Inference('mistral');
 
 // And use them independently
 $responses = [
-    'openai' => $openAI->create(messages: 'What is the capital of Spain?')->toText(),
-    'anthropic' => $anthropic->create(messages: 'What is the capital of Portugal?')->toText(),
-    'mistral' => $mistral->create(messages: 'What is the capital of Greece?')->toText(),
+    'openai' => $openAI->with(messages: 'What is the capital of Spain?')->toText(),
+    'anthropic' => $anthropic->with(messages: 'What is the capital of Portugal?')->toText(),
+    'mistral' => $mistral->with(messages: 'What is the capital of Greece?')->toText(),
 ];
 
 foreach ($responses as $provider => $response) {
@@ -303,18 +303,18 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference('openai');
 
 // Use the default model (set in config)
-$defaultModelResponse = $inference->create(
+$defaultModelResponse = $inference->with(
     messages: 'What is machine learning?'
 )->toText();
 
 // Use a specific model
-$specificModelResponse = $inference->create(
+$specificModelResponse = $inference->with(
     messages: 'What is machine learning?',
     model: 'gpt-4o'  // Override the default model
 )->toText();
 
 // You can also set the model and other options
-$customResponse = $inference->create(
+$customResponse = $inference->with(
     messages: 'What is machine learning?',
     model: 'gpt-4-turbo',
     options: [

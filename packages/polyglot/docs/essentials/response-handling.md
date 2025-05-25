@@ -13,7 +13,7 @@ Polyglot's `InferenceResponse` class provides methods to access the response in 
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is the capital of France?'
 );
 
@@ -47,7 +47,7 @@ For streaming responses, use the `stream()` method:
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Write a short story about a robot.',
     options: ['stream' => true]
 );
@@ -108,7 +108,7 @@ $tools = [
 ];
 
 $inference = new Inference()->using('openai');
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is the weather in Paris?',
     tools: $tools,
     toolChoice: 'auto',  // Let the model decide when to use tools
@@ -154,7 +154,7 @@ if ($response->hasToolCalls()) {
             ],
         ];
 
-        $finalResponse = $inference->create(
+        $finalResponse = $inference->with(
             messages: $newMessages
         )->toText();
 

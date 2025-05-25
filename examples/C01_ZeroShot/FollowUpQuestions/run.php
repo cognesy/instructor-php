@@ -46,7 +46,7 @@ class RespondWithFollowUp {
     QUERY;
 
     public function __invoke(string $query) : Response {
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: str_replace('{query}', $query, $this->prompt),
             responseModel: Response::class,
         )->get();

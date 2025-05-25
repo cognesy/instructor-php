@@ -44,14 +44,14 @@ class RefineAndSolve {
 
     public function __invoke(string $problem) : int {
         $rewrittenPrompt = $this->rewritePrompt($problem);
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: "{$rewrittenPrompt->relevantContext}\nQuestion: {$rewrittenPrompt->userQuery}",
             responseModel: Scalar::integer('answer'),
         )->getInt();
     }
 
     private function rewritePrompt(string $query) : RewrittenTask {
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: str_replace('{query}', $query, $this->prompt),
             responseModel: RewrittenTask::class,
             model: 'gpt-4o',

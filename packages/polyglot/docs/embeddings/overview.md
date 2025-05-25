@@ -59,7 +59,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 
 // Generate embeddings for a document
 $embeddings = new Embeddings();
-$result = $embeddings->create('The quick brown fox jumps over the lazy dog.');
+$result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->create();
 
 // Get the vector values from the first (and only) result
 $vector = $result->first()->values();
@@ -83,7 +83,7 @@ $docs = ['Computer vision models are used to analyze images and videos.'];
 
 $embedding = (new Embeddings)
     ->using('openai')
-    ->create(input: $docs)
+    ->with(input: $docs)
     ->all();
 ?>
 ```
@@ -98,11 +98,11 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 $embeddings = new Embeddings('openai');
 
 // Use the default model
-$defaultVector = $embeddings->create("Sample text")->first()->values();
+$defaultVector = $embeddings->with("Sample text")->first()->values();
 
 // Use a specific model
 $largeVector = $embeddings->withModel('text-embedding-3-large')
-    ->create("Sample text")
+    ->with("Sample text")
     ->first()
     ->values();
 
@@ -135,7 +135,7 @@ $embeddingsConfig = new EmbeddingsConfig(
 $embeddings = new Embeddings();
 $embeddings->withConfig($embeddingsConfig);
 
-$vector = $embeddings->create('Custom configuration example')
+$vector = $embeddings->with('Custom configuration example')
     ->first()
     ->values();
 

@@ -40,7 +40,7 @@ class GenerateLeads {
     public function __invoke(array $criteria, array $roles) : array {
         $criteriaStr = Arrays::toBullets($criteria);
         $rolesStr = Arrays::toBullets($roles);
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: [
                 ['role' => 'user', 'content' => "Your roles:\n{$rolesStr}\n\n"],
                 ['role' => 'user', 'content' => "List companies meeting criteria:\n{$criteriaStr}\n\n"],

@@ -39,7 +39,7 @@ Use the `StructuredOutput::create()` method to send a prompt and extract the dat
 
 ```php
 /** @var UserDetail */
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [["role": "user", "content": "Extract Jason is 25 years old"]],
     responseModel: UserDetail::class,
     model: "gpt-3.5-turbo",
@@ -74,7 +74,7 @@ class UserDetails
     public string $email;
 }
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => "you can reply to me via jason@gmailcom -- Jason"]],
     responseModel: UserDetails::class,
     maxRetries: 2
@@ -115,7 +115,7 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2

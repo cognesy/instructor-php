@@ -18,7 +18,7 @@ it('supports simple properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();
@@ -35,7 +35,7 @@ it('supports enum properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old. He is self-employed.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithJob::class,
     )->get();
@@ -53,7 +53,7 @@ it('supports object type property', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old. He lives in San Francisco.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddress::class,
     )->get();
@@ -71,7 +71,7 @@ it('supports arrays of objects property', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old. He lives in USA - he works from his home office in San Francisco, he also has an apartment in New York.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddresses::class,
     )->get();
@@ -97,7 +97,7 @@ it('can extract complex, multi-nested structure', function ($text) {
 
     $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM); //$mockLLM
     /** @var ProjectEvents $events */
-    $events = $structuredOutput->create(
+    $events = $structuredOutput->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: ProjectEvents::class,
         maxRetries: 2,

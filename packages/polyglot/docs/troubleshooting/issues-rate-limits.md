@@ -54,7 +54,7 @@ $inference = new Inference();
 
 try {
     $response = withRetry(function() use ($inference) {
-        return $inference->create(
+        return $inference->with(
             messages: 'What is the capital of France?'
         )->toText();
     });
@@ -97,7 +97,7 @@ $inference = new Inference();
 
 for ($i = 0; $i < 10; $i++) {
     $limiter->waitIfNeeded();
-    $response = $inference->create(
+    $response = $inference->with(
         messages: "This is request $i"
     )->toText();
     echo "Response $i: $response\n";
@@ -111,7 +111,7 @@ for ($i = 0; $i < 10; $i++) {
 $responses = [];
 foreach ($questions as $question) {
     // This would hit rate limits quickly
-    $responses[] = $inference->create(messages: $question)->toText();
+    $responses[] = $inference->with(messages: $question)->toText();
 }
 
 // Better: Use a context-aware batch approach
@@ -120,7 +120,7 @@ foreach ($questions as $i => $question) {
     $batchedQuestions .= ($i + 1) . ". $question\n";
 }
 
-$batchResponse = $inference->create(messages: $batchedQuestions)->toText();
+$batchResponse = $inference->with(messages: $batchedQuestions)->toText();
 // Then parse the batch response into individual answers
 ```
 

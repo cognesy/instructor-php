@@ -34,7 +34,7 @@ class User {
 $structuredOutput = (new StructuredOutput)->using('openai');
 
 echo "\n### CASE 1.1 - Debugging sync request\n\n";
-$user = $structuredOutput->withDebug()->create(
+$user = $structuredOutput->withDebug()->with(
     messages: "Jason is 25 years old.",
     responseModel: User::class,
     options: [ 'stream' => false ]
@@ -51,7 +51,7 @@ assert($user->age === 25);
 // CASE 1.2 - normal flow, streaming request
 
 echo "\n### CASE 1.2 - Debugging streaming request\n\n";
-$user2 = $structuredOutput->withDebug(true)->create(
+$user2 = $structuredOutput->withDebug(true)->with(
     messages: "Anna is 21 years old.",
     responseModel: User::class,
     options: [ 'stream' => true ]
@@ -74,7 +74,7 @@ $structuredOutput = (new StructuredOutput)
 
 echo "\n### CASE 2 - Debugging with HTTP exception\n\n";
 try {
-    $user = $structuredOutput->withDebug(true)->create(
+    $user = $structuredOutput->withDebug(true)->with(
         messages: "Jason is 25 years old.",
         responseModel: User::class,
         options: [ 'stream' => true ]

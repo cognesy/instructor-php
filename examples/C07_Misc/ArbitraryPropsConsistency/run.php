@@ -37,7 +37,7 @@ $text = "Jason is 25 years old. He is a Python programmer.\
  Amanda is UX designer.\
  John is 40yo and he's CEO.";
 
-$list = (new StructuredOutput)->create(
+$list = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetails::class,
 )->get();

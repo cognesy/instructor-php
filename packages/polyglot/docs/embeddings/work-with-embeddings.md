@@ -49,7 +49,7 @@ The core functionality of the `Embeddings` class is to transform text into vecto
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = new Embeddings();
-$result = $embeddings->create('The quick brown fox jumps over the lazy dog.');
+$result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->create();
 
 // Get the vector values from the first (and only) result
 $vector = $result->first()?->values();
@@ -73,7 +73,7 @@ $documents = [
     "Embeddings capture semantic relationships between words and documents."
 ];
 
-$result = $embeddings->create($documents);
+$result = $embeddings->with($documents)->create();
 
 // Get all vectors
 $vectors = $result->all();
@@ -92,7 +92,7 @@ The `create()` method returns an `EmbeddingsResponse` object with several useful
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = new Embeddings();
-$result = $embeddings->create('Sample text for embedding');
+$result = $embeddings->with('Sample text for embedding')->create();
 
 // Get the first vector
 $firstVector = $result->first();
@@ -122,7 +122,7 @@ Each vector in the response is represented by a `Vector` object with its own met
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
 $embeddings = new Embeddings();
-$result = $embeddings->create('Sample text for embedding');
+$result = $embeddings->with('Sample text for embedding')->create();
 $vector = $result->first();
 
 // Get vector values
@@ -132,7 +132,7 @@ $values = $vector->values();
 $id = $vector->id();
 
 // Compare with another vector
-$otherVector = $result->create('Another text for comparison')->first();
+$otherVector = $result->with('Another text for comparison')->first();
 $similarity = $vector->compareTo($otherVector, 'cosine');
 ```
 
@@ -153,17 +153,17 @@ $text = "Artificial intelligence is transforming industries worldwide.";
 
 // OpenAI embeddings
 $openaiEmbeddings = new Embeddings('openai');
-$openaiResult = $openaiEmbeddings->create($text);
+$openaiResult = $openaiEmbeddings->with($text)->create();
 echo "OpenAI embedding dimensions: " . count($openaiResult->first()?->values()) . "\n";
 
 // Cohere embeddings
 $cohereEmbeddings = new Embeddings('cohere1');
-$cohereResult = $cohereEmbeddings->create($text);
+$cohereResult = $cohereEmbeddings->with($text)->create();
 echo "Cohere embedding dimensions: " . count($cohereResult->first()?->values()) . "\n";
 
 // Mistral embeddings
 $mistralEmbeddings = new Embeddings('mistral');
-$mistralResult = $mistralEmbeddings->create($text);
+$mistralResult = $mistralEmbeddings->with($text)->create();
 echo "Mistral embedding dimensions: " . count($mistralResult->first()?->values()) . "\n";
 ```
 
@@ -177,23 +177,23 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 
 // Example with OpenAI-specific options
 $openaiEmbeddings = new Embeddings('openai');
-$response = $openaiEmbeddings->create(
+$response = $openaiEmbeddings->with(
     input: ["Sample text for embedding"],
     options: [
         'encoding_format' => 'float',  // Get float values instead of base64
         'dimensions' => 512,           // Request a specific vector size (if supported)
     ]
-);
+)->create();
 
 // Example with Cohere-specific options
 $cohereEmbeddings = new Embeddings('cohere1');
-$response = $cohereEmbeddings->create(
+$response = $cohereEmbeddings->with(
     input: ["Sample text for embedding"],
     options: [
         'input_type' => 'classification',  // Cohere-specific option
         'truncate' => 'END',               // How to handle texts that exceed the token limit
     ]
-);
+)->create();
 ```
 
 ### Models and Dimensions
@@ -217,7 +217,7 @@ $config = new EmbeddingsConfig(
 $embeddings = new Embeddings();
 $embeddings->withConfig($config);
 
-$response = $embeddings->create("Test text for large embedding model");
+$response = $embeddings->with("Test text for large embedding model")->create();
 echo "Vector dimensions: " . count($response->first()?->values()) . "\n";
 ```
 

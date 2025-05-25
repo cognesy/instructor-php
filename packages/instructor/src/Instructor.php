@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
@@ -30,7 +31,7 @@ class Instructor extends StructuredOutput
         string              $retryPrompt = '',
         OutputMode $mode = OutputMode::Tools
     ) : mixed {
-        return $this->create(
+        return $this->with(
             messages: $messages,
             responseModel: $responseModel,
             system: $system,
@@ -43,7 +44,8 @@ class Instructor extends StructuredOutput
             toolDescription: $toolDescription,
             retryPrompt: $retryPrompt,
             mode: $mode,
-        )->get();
+        )
+        ->get();
     }
 
     /**
@@ -65,7 +67,7 @@ class Instructor extends StructuredOutput
         string              $retryPrompt = '',
         OutputMode          $mode = OutputMode::Tools,
     ) : StructuredOutputResponse {
-        return $this->create(
+        return $this->with(
             messages: $messages,
             responseModel: $responseModel,
             system: $system,

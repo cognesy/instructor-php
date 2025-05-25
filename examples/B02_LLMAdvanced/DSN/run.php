@@ -20,7 +20,7 @@ use Cognesy\Utils\Str;
 
 $answer = Inference
     ::fromDSN('preset=xai,model=grok-2')
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )

@@ -76,7 +76,7 @@ Let's start by asking the user to describe the project for a specific audience: 
 
 ```php
 <?php
-$project = $cached->create(
+$project = $cached->with(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
@@ -95,7 +95,7 @@ which results in faster processing and lower costs.
 
 ```php
 <?php
-$project = $cached->create(
+$project = $cached->with(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
     responseModel: Project::class,
     options: ['max_tokens' => 4096],

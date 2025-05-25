@@ -30,7 +30,7 @@ class TimeRange
     public int $endTime;
 }
 
-$timeRange = (new StructuredOutput)->create(
+$timeRange = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => "Workshop with Apex Industries started 9 and it took us 6 hours to complete."]],
     responseModel: TimeRange::class,
     maxRetries: 2

@@ -66,7 +66,7 @@ $flightTool = [
 $tools = [$weatherTool, $flightTool];
 
 // Make a request that might require tools
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What\'s the weather like in Paris today?',
     tools: $tools,
     toolChoice: 'auto',  // Let the model decide which tool to use
@@ -90,7 +90,7 @@ if ($response->hasToolCalls()) {
             $weatherData = simulateWeatherApi($args['location'], $args['unit'] ?? 'celsius');
 
             // Send the tool result back to the model
-            $withToolResult = $inference->create(
+            $withToolResult = $inference->with(
                 messages: [
                     ['role' => 'user', 'content' => 'What\'s the weather like in Paris today?'],
                     [
@@ -151,7 +151,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 $inference = new Inference()->using('openai');
 
 // Let the model decide whether to use tools
-$autoResponse = $inference->create(
+$autoResponse = $inference->with(
     messages: 'What\'s the weather like in Paris?',
     tools: $tools,
     toolChoice: 'auto',
@@ -159,7 +159,7 @@ $autoResponse = $inference->create(
 )->response();
 
 // Always require the model to use a specific tool
-$requiredToolResponse = $inference->create(
+$requiredToolResponse = $inference->with(
     messages: 'What\'s the weather like in Paris?',
     tools: $tools,
     toolChoice: [
@@ -172,7 +172,7 @@ $requiredToolResponse = $inference->create(
 )->response();
 
 // Prevent tool usage
-$noToolResponse = $inference->create(
+$noToolResponse = $inference->with(
     messages: 'What\'s the weather like in Paris?',
     tools: $tools,
     toolChoice: 'none',
@@ -192,7 +192,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference()->using('openai');
 
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What\'s the weather like in Paris today?',
     tools: $tools,
     toolChoice: 'auto',

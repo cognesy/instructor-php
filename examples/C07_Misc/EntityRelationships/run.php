@@ -47,7 +47,7 @@ $text = "Jason is 25 years old. He is a Python programmer of Apex website.\
  Amanda is a contractor working with Jason on Apex website. John is 40yo\
  and he's CEO - Jason reports to him.";
 
-$relationships = (new StructuredOutput)->create(
+$relationships = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserRelationships::class,
 )->get();

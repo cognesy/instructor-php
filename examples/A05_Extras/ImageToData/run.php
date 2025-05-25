@@ -51,7 +51,7 @@ class Receipt {
     public float $total;
 }
 
-$receipt = (new StructuredOutput)->create(
+$receipt = (new StructuredOutput)->with(
     messages: Image::fromFile(__DIR__ . '/receipt.png')->toMessage(),
     responseModel: Receipt::class,
     prompt: 'Extract structured data from the receipt.',

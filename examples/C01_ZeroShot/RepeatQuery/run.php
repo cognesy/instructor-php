@@ -38,7 +38,7 @@ class Response {
 
 class RereadAndRespond {
     public function __invoke(string $query) : Response {
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: $query,
             responseModel: Response::class,
         )->get();

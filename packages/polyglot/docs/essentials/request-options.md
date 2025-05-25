@@ -31,7 +31,7 @@ $options = [
 ];
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $options
 )->toText();
@@ -54,7 +54,7 @@ $anthropicOptions = [
 ];
 
 $inference = new Inference()->using('anthropic');
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Write a short poem about programming.',
     options: $anthropicOptions
 )->toText();

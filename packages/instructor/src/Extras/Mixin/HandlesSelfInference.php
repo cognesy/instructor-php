@@ -46,21 +46,22 @@ trait HandlesSelfInference {
         string              $retryPrompt = '',
         ?LLM                $llm = null,
     ) : static {
-        return (new StructuredOutput(
-            llm: $llm ?? new LLM()
-        ))->create(
-            messages: $messages,
-            responseModel: self::class,
-            system: $system,
-            prompt: $prompt,
-            examples: $examples,
-            model: $model,
-            maxRetries: $maxRetries,
-            options: $options,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
-            mode: $mode,
-        )->getInstanceOf(self::class);
+        return (new StructuredOutput(llm: $llm ?? new LLM()))
+            ->with(
+                messages: $messages,
+                responseModel: self::class,
+                system: $system,
+                prompt: $prompt,
+                examples: $examples,
+                model: $model,
+                maxRetries: $maxRetries,
+                options: $options,
+                toolName: $toolName,
+                toolDescription: $toolDescription,
+                retryPrompt: $retryPrompt,
+                mode: $mode,
+            )
+            ->create()
+            ->getInstanceOf(self::class);
     }
 }

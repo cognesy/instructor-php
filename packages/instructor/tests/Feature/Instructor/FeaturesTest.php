@@ -7,7 +7,7 @@ use Cognesy\Instructor\Tests\MockLLM;
 it('accepts string as input', function () {
     $mockLLM = MockLLM::get(['{"name":"Jason","age":28}']);
 
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: "His name is Jason, he is 28 years old.",
         responseModel: Person::class,
     )->get();
@@ -25,7 +25,7 @@ it('self-corrects values extracted by LLM based on validation results', function
     ]);
 
     $text = "His name is JX, aka Jason, is -28 years old.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
         maxRetries: 2,

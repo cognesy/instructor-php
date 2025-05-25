@@ -39,7 +39,7 @@ class User {
 $structuredOutput = (new StructuredOutput)->using('azure');
 
 // Call with your model name and preferred execution mode
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     examples: [[

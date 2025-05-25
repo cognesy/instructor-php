@@ -63,7 +63,7 @@ foreach($companyGen as $companyDiv) {
     echo " > " . substr($companyDiv, 0, 32) . "...\n\n";
     $company = (new StructuredOutput)
         ->using('openai')
-        ->create(
+        ->with(
             messages: $companyDiv,
             responseModel: Company::class,
             mode: OutputMode::Json

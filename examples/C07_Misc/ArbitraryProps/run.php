@@ -43,7 +43,7 @@ $text = <<<TEXT
     in a small house in Alamo. He likes to play guitar.
     TEXT;
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: UserDetail::class,
     mode: OutputMode::Json,

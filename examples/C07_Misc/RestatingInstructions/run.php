@@ -49,7 +49,7 @@ $text = <<<TEXT
     TEXT;
 
 $structuredOutput = new StructuredOutput;
-$user = ($structuredOutput)->create(
+$user = ($structuredOutput)->with(
     messages: [["role" => "user",  "content" => $text]],
     responseModel: UserDetail::class,
 )->get();

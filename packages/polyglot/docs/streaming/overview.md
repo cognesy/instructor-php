@@ -28,7 +28,7 @@ Enabling streaming in Polyglot is straightforward - you need to set the `stream`
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Write a short story about a space explorer.',
     options: ['stream' => true]  // Enable streaming
 );
@@ -51,7 +51,7 @@ The most common way to process a stream is to iterate through the partial respon
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->create(
+$response = $inference->with(
     messages: 'Write a short story about a space explorer.',
     options: ['stream' => true]
 );

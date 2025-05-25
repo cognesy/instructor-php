@@ -38,7 +38,7 @@ class GenerateCompanyProfiles {
     public function __invoke(array $criteria, array $styles) : array {
         $criteriaStr = Arrays::toBullets($criteria);
         $stylesStr = Arrays::toBullets($styles);
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: [
                 ['role' => 'user', 'content' => "List companies meeting criteria:\n{$criteriaStr}\n\n"],
                 ['role' => 'user', 'content' => "Use following styles for descriptions:\n{$stylesStr}\n\n"],

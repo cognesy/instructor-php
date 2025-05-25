@@ -39,7 +39,7 @@ class MaybeUser
     }
 }
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => 'We don\'t know anything about this guy.']],
     responseModel: MaybeUser::class
 )->get();

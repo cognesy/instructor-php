@@ -33,7 +33,7 @@ $structuredOutput = (new StructuredOutput)
 
 print("\n# Request for OutputMode::Tools:\n\n");
 $user = $structuredOutput
-    ->create(
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to extract correct and accurate data from the messages using provided tools.\n",
@@ -44,7 +44,7 @@ dump($user);
 
 print("\n# Request for OutputMode::Json:\n\n");
 $user = $structuredOutput
-    ->create(
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with JSON object. Response must follow JSONSchema:\n<|json_schema|>\n",
@@ -55,7 +55,7 @@ dump($user);
 
 print("\n# Request for OutputMode::MdJson:\n\n");
 $user = $structuredOutput
-    ->create(
+    ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,
         prompt: "\nYour task is to respond correctly with strict JSON object containing extracted data within a ```json {} ``` codeblock. Object must validate against this JSONSchema:\n<|json_schema|>\n",

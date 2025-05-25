@@ -47,7 +47,7 @@ class TellCommand extends Command
     protected function inferenceUsingDSN(string $dsn, string $prompt) : InferenceResponse {
         return Inference
             ::fromDsn($dsn)
-            ->create(
+            ->with(
                 messages: $prompt,
                 options: ['stream' => true],
             );
@@ -57,7 +57,7 @@ class TellCommand extends Command
         $model = $model ?: LLMConfig::load($preset)->model;
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: $prompt,
                 model: $model,
                 options: ['stream' => true],

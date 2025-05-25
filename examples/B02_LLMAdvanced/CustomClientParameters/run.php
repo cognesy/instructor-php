@@ -32,7 +32,7 @@ $config = new LLMConfig(
 
 $answer = (new Inference)
     ->withConfig($config)
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )

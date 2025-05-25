@@ -14,7 +14,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 $inference = new Inference();
 
-$response = $inference->create(
+$response = $inference->with(
     messages: 'List the top 3 most populous cities in the world with their populations.',
     mode: OutputMode::Json
 )->asJsonData();
@@ -53,7 +53,7 @@ Return your answer as a JSON object with the following structure:
 }
 EOT;
 
-$response = $inference->create(
+$response = $inference->with(
     messages: $prompt,
     mode: OutputMode::Json
 )->asJsonData();
@@ -77,7 +77,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 // OpenAI example
 $inference = new Inference()->using('openai');
 
-$response = $inference->create(
+$response = $inference->with(
     messages: 'List the top 3 most populous cities in the world.',
     mode: OutputMode::Json,
     options: [

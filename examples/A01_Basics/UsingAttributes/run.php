@@ -39,7 +39,7 @@ print($text . "\n\n");
 
 // Step 3: Extract structured data using default language model API (OpenAI)
 print("Extracting structured data using LLM...\n\n");
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: $text,
     responseModel: User::class,
 )->get();

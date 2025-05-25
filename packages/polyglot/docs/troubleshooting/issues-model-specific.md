@@ -55,7 +55,7 @@ function withModelFallback(array $models, string $prompt): string {
 
     foreach ($models as $model) {
         try {
-            return $inference->create(
+            return $inference->with(
                 messages: $prompt,
                 model: $model
             )->toText();

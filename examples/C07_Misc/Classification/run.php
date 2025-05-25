@@ -38,7 +38,7 @@ The function classify will perform the single-label classification.
 <?php
 // Perform single-label classification on the input text.
 function classify(string $data) : SinglePrediction {
-    return (new StructuredOutput())->create(
+    return (new StructuredOutput())->with(
         messages: [[
             "role" => "user",
             "content" => "Classify the following text: $data",

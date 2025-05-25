@@ -41,7 +41,7 @@ $user = (new StructuredOutput)
     ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".json_encode($event->response)."\n"))
     ->onEvent(ResponseValidationFailed::class, fn($event) => print("[!] Validation failed:\n    $event\n"))
     ->onEvent(ResponseValidated::class, fn($event) => print("[ ] Validation succeeded.\n"))
-    ->create(
+    ->with(
         messages: $text,
         responseModel: UserDetails::class,
         maxRetries: 3,

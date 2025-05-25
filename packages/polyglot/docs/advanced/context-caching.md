@@ -27,7 +27,7 @@ $inference->withCachedContext(
 );
 
 // First query using the cached context
-$response1 = $inference->create(
+$response1 = $inference->with(
     messages: 'What is supervised learning?'
 )->response();
 
@@ -35,7 +35,7 @@ echo "Response 1: " . $response1->content() . "\n";
 echo "Tokens from cache: " . $response1->usage()->cacheReadTokens . "\n\n";
 
 // Second query, still using the same cached context
-$response2 = $inference->create(
+$response2 = $inference->with(
     messages: 'And what about unsupervised learning?'
 )->response();
 
@@ -83,7 +83,7 @@ $questions = [
 ];
 
 foreach ($questions as $index => $question) {
-    $response = $inference->create(messages: $question)->response();
+    $response = $inference->with(messages: $question)->response();
 
     echo "Question " . ($index + 1) . ": $question\n";
     echo "Answer: " . $response->content() . "\n";

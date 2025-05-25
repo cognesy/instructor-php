@@ -10,7 +10,7 @@ it('supports simple properties', function () {
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->create(
+    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();

@@ -42,7 +42,7 @@ use Cognesy\Instructor\StructuredOutput;
  * Perform single-label classification on the input text. 
  */
 function classify(string $data) : SinglePrediction {
-    return (new StructuredOutput())->create(
+    return (new StructuredOutput())->with(
         messages: [[
             "role" => "user",
             "content" => "Classify the following text: $data",
@@ -103,7 +103,7 @@ use Cognesy\Instructor\StructuredOutput;
 
 // Perform single-label classification on the input text.
 function multi_classify(string $data) : Ticket {
-    return (new StructuredOutput())->create(
+    return (new StructuredOutput())->with(
         messages: [[
             "role" => "user",
             "content" => "Classify following support ticket: {$data}",

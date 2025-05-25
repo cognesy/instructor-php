@@ -41,7 +41,7 @@ $inference = (new Inference)->using('anthropic')->withCachedContext(
     ],
 );
 
-$response = $inference->create(
+$response = $inference->with(
     messages: [['role' => 'user', 'content' => 'CTO of lead gen software vendor']],
     options: ['max_tokens' => 256],
 )->response();
@@ -56,7 +56,7 @@ assert(!empty($response->content()));
 assert(Str::contains($response->content(), 'Instructor'));
 assert(Str::contains($response->content(), 'lead', false));
 
-$response2 = $inference->create(
+$response2 = $inference->with(
     messages: [['role' => 'user', 'content' => 'CIO of insurance company']],
     options: ['max_tokens' => 256],
 )->response();

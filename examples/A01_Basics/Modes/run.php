@@ -42,7 +42,7 @@ $structuredOutput = new StructuredOutput;
 
 // CASE 1 - OutputMode::Tools
 print("\n1. Extracting structured data using LLM - OutputMode::Tools\n");
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: $text,
     responseModel: User::class,
     mode: OutputMode::Tools,
@@ -52,7 +52,7 @@ dump($user);
 
 // CASE 2 - OutputMode::JsonSchema
 print("\n2. Extracting structured data using LLM - OutputMode::JsonSchema\n");
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: $text,
     responseModel: User::class,
     mode: OutputMode::JsonSchema,
@@ -62,7 +62,7 @@ dump($user);
 
 // CASE 3 - OutputMode::Json
 print("\n3. Extracting structured data using LLM - OutputMode::Json\n");
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: $text,
     responseModel: User::class,
     mode: OutputMode::Json,
@@ -72,7 +72,7 @@ dump($user);
 
 // CASE 4 - OutputMode::MdJson
 print("\n4. Extracting structured data using LLM - OutputMode::MdJson\n");
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: $text,
     responseModel: User::class,
     mode: OutputMode::MdJson,

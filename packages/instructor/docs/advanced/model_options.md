@@ -8,7 +8,7 @@ Lower values make the output more deterministic, while higher values make it mor
 
 ```php
 <?php
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     model: 'gpt-3.5-turbo',
@@ -49,7 +49,7 @@ $config = new LLMConfig(
 /// Get Instructor with the default configuration overridden with your own
 $structuredOutput = (new StructuredOutput)->withLLMConfig($driver);
 
-$person = $structuredOutput->create(
+$person = $structuredOutput->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     options: ['temperature' => 0.0],

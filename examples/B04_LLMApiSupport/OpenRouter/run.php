@@ -28,7 +28,7 @@ require 'examples/boot.php';
 $answer = (new Inference)
     ->using('openrouter') // see /config/llm.php
     ->withDebug()
-    ->create(
+    ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )

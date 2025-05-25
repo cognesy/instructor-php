@@ -14,7 +14,7 @@ For more details see the [Events](events.mdx) section.
 The `Instructor` class has a `withDebug()` method that can be used to debug the request and response.
 
 ```php
-$result = (new StructuredOutput)->withDebug()->create(
+$result = (new StructuredOutput)->withDebug()->with(
     messages: "Jason is 25 years old",
     responseModel: User:class,
 )->get();

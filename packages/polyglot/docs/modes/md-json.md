@@ -16,7 +16,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 $inference = new Inference();
 
 // This works with virtually any provider
-$response = $inference->create(
+$response = $inference->with(
     messages: 'List three programming languages and their key features.',
     mode: OutputMode::MdJson
 )->asJsonData();
@@ -65,7 +65,7 @@ Respond with a JSON object following this structure:
 ```
 EOT;
 
-$response = $inference->create(
+$response = $inference->with(
 messages: $prompt,
 mode: OutputMode::MdJson
 )->toJson();

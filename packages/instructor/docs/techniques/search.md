@@ -50,7 +50,7 @@ The `segment` function takes a string `data` and segments it into multiple searc
 use Cognesy\Instructor\StructuredOutput;
 
 function segment(string $data) : Search {
-    return (new StructuredOutput())->create(
+    return (new StructuredOutput())->with(
         messages: [[
             "role" => "user",
             "content" => "Consider the data below: '\n$data' and segment it into multiple search queries",

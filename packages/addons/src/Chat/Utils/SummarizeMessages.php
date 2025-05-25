@@ -24,7 +24,7 @@ class SummarizeMessages implements CanSummarizeMessages
     }
 
     public function summarize(Messages $messages, ?int $tokenLimit = null): string {
-        return (new Inference)->withLLM($this->llm)->create(
+        return (new Inference)->withLLM($this->llm)->with(
             messages: $messages->prependMessage(new Message(content: $this->prompt))->toArray(),
             model: $this->model,
             options: ['max_tokens' => $tokenLimit ?? $this->tokenLimit],

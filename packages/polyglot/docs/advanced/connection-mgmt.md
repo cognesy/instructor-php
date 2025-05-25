@@ -20,15 +20,17 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 
 // Use OpenAI
-$openaiResponse = $inference->using('openai')
-    ->create(messages: 'What is the capital of France?')
+$openaiResponse = $inference
+    ->using('openai')
+    ->withMessages('What is the capital of France?')
     ->toText();
 
 echo "OpenAI response: $openaiResponse\n";
 
 // Switch to Anthropic
-$anthropicResponse = $inference->using('anthropic')
-    ->create(messages: 'What is the capital of Germany?')
+$anthropicResponse = $inference
+    ->using('anthropic')
+    ->withMessages('What is the capital of Germany?')
     ->toText();
 
 echo "Anthropic response: $anthropicResponse\n";
@@ -67,7 +69,7 @@ try {
     $providers = ['openai', 'anthropic', 'gemini'];
 
     $response = withFallback($providers, function($inference) {
-        return $inference->create(
+        return $inference->with(
             messages: 'What is the capital of France?'
         )->toText();
     });
@@ -114,7 +116,7 @@ class CostAwareLLM {
         $provider = $this->providers[$tier] ?? $this->providers['medium'];
 
         return $this->inference->using($provider['preset'])
-            ->create(
+            ->with(
                 messages: $question,
                 model: $provider['model']
             )
@@ -170,7 +172,7 @@ class GroupOfExperts {
 
         // Use the selected provider
         return $this->inference->using($preset)
-            ->create(messages: $question)
+            ->with(messages: $question)
             ->toText();
     }
 }

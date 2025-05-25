@@ -40,7 +40,7 @@ class PredictSentiment {
     private int $n = 4;
 
     public function __invoke(string $review) : ReviewSentiment {
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: [
                 ['role' => 'user', 'content' => "Review: {$review}"],
             ],
@@ -50,7 +50,7 @@ class PredictSentiment {
     }
 
     private function generate(string $inputReview, ReviewSentiment $sentiment) : array {
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: [
                 ['role' => 'user', 'content' => "Generate {$this->n} various {$sentiment->value} reviews based on the input review:\n{$inputReview}"],
                 ['role' => 'user', 'content' => "Generated review:"],

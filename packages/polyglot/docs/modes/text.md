@@ -16,10 +16,12 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 $inference = new Inference();
 
 // OutputMode::Text is the default, so you don't need to specify it
-$response = $inference->create(
-    messages: 'What is the capital of France?',
-    mode: OutputMode::Text  // Optional, this is the default
-)->toText();
+$response = $inference
+    ->with(
+        messages: 'What is the capital of France?',
+        mode: OutputMode::Text  // Optional, this is the default
+    )
+    ->toText();
 
 echo "Response: $response\n";
 // Output: Response: The capital of France is Paris.
@@ -45,18 +47,18 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 
 // Using OpenAI
-$openAIResponse = $inference->using('openai')
-    ->create(
-        messages: 'Write a short poem about the ocean.'
-    )->toText();
+$openAIResponse = $inference
+    ->using('openai')
+    ->withMessages('Write a short poem about the ocean.')
+    ->toText();
 
 echo "OpenAI response:\n$openAIResponse\n\n";
 
 // Using Anthropic
-$anthropicResponse = $inference->using('anthropic')
-    ->create(
-        messages: 'Write a short poem about the ocean.'
-    )->toText();
+$anthropicResponse = $inference
+    ->using('anthropic')
+    ->with('Write a short poem about the ocean.')
+    ->toText();
 
 echo "Anthropic response:\n$anthropicResponse\n\n";
 

@@ -31,7 +31,7 @@ class Employee {
 
 $text = 'He was working here for 5 years. Now, in 2019, he is a manager.';
 
-$employee = (new StructuredOutput)->create(
+$employee = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Employee::class
 )->get();

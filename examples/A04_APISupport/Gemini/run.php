@@ -41,7 +41,7 @@ class User {
 $structuredOutput = (new StructuredOutput)->using('gemini');
 
 $user = $structuredOutput
-    ->create(
+    ->with(
         messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
         responseModel: User::class,
         examples: [[

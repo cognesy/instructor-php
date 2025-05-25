@@ -50,7 +50,7 @@ print($text . "\n\n");
 print("Extracting structured data using LLM...\n\n");
 $user = (new StructuredOutput)
     ->using('openai')
-    ->create(
+    ->with(
         messages: $text,
         responseModel: User::class,
         model: 'gpt-3.5-turbo',

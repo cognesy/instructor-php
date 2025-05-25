@@ -24,13 +24,16 @@ function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
 }
 
-$person = (new StructuredOutput)->create(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-    options: ['stream' => true]
-)->onPartialUpdate(
-    fn($partial) => updateUI($partial)
-)->get();
+$person = (new StructuredOutput)
+    ->withResponseClass(Person::class)
+    ->with(
+        messages: "His name is Jason, he is 28 years old.",
+        options: ['stream' => true]
+    )
+    ->onPartialUpdate(
+        fn($partial) => updateUI($partial)
+    )
+    ->get();
 
 // Here you get completed and validated Person object
 $this->db->save($person); // ...for example: save to DB
@@ -64,7 +67,7 @@ One more method available on `Stream` is `final()`. It returns only the final re
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new StructuredOutput)->create(
+$stream = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 )->stream();
@@ -88,10 +91,12 @@ $db->savePerson($person);
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new StructuredOutput)->create(
-    messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
-    responseModel: Sequence::of(Participant::class),
-)->stream();
+$stream = (new StructuredOutput)
+    ->with(
+        messages: "Jason is 28 years old, Amanda is 26 and John (CEO) is 40.",
+        responseModel: Sequence::of(Participant::class),
+    )
+    ->stream();
 
 foreach ($stream->sequence() as $update) {
     // append last completed item from the sequence

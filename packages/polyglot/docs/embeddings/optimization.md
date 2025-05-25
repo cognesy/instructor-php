@@ -19,7 +19,7 @@ for ($i = 0; $i < count($allDocuments); $i += $batchSize) {
     $batch = array_slice($allDocuments, $i, $batchSize);
 
     try {
-        $response = $embeddings->create($batch);
+        $response = $embeddings->with($batch)->create();
         $batchVectors = $response->toValuesArray();
 
         // Add to our vectors array
@@ -63,7 +63,7 @@ class CachedEmbeddings {
                 return $this->cache[$cacheKey];
             }
 
-            $response = $this->embeddings->create($input, $options);
+            $response = $this->embeddings->with($input, $options)->create();
             $vector = $response->first()->values();
 
             $this->cache[$cacheKey] = $vector;
@@ -88,7 +88,7 @@ class CachedEmbeddings {
 
             // Generate embeddings for uncached inputs
             if (!empty($uncachedInputs)) {
-                $response = $this->embeddings->create($uncachedInputs, $options);
+                $response = $this->embeddings->with($uncachedInputs, $options)->create();
                 $vectors = $response->toValuesArray();
 
                 foreach ($vectors as $j => $vector) {

@@ -36,7 +36,7 @@ $structuredOutput = (new StructuredOutput)
     // log all events in log-friendly format
     ->wiretap(fn($event) => YourLogger::log($event->asLog()))
 
-$structuredOutput->create(
+$structuredOutput->with(
     messages: "What is the population of Paris?",
     responseModel: Scalar::integer(),
 )->get();

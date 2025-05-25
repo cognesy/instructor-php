@@ -45,7 +45,7 @@ class UserDetails
 
     private function hasPII() : bool {
         $data = implode('\n', $this->details);
-        return (new StructuredOutput)->create(
+        return (new StructuredOutput)->with(
             messages: "Context:\n$data\n",
             responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
         )->getBoolean();
@@ -59,7 +59,7 @@ $text = <<<TEXT
 
 $user = (new StructuredOutput)
     ->wiretap(fn(Event $e) => $e->print()) // let's check the internals of Instructor processing
-    ->create(
+    ->with(
         messages: $text,
         responseModel: UserDetails::class,
         maxRetries: 2

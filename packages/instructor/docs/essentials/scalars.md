@@ -75,7 +75,7 @@ $value = (new StructuredOutput)->generate(
 ```php
 <?php
 $text = "His name is Jason, he is 28 years old and he lives in Germany.";
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->with(
     messages: [
         ['role' => 'system', 'content' => $text],
         ['role' => 'user', 'content' => 'What is Jason\'s citizenship?'],

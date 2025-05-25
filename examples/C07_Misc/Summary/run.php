@@ -49,7 +49,7 @@ class Summary {
 
 $summary = (new StructuredOutput)
     ->using('openai')
-    ->create(
+    ->with(
         messages: $report,
         responseModel: Summary::class,
     )

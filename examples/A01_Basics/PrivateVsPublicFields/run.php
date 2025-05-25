@@ -54,7 +54,7 @@ $text = <<<TEXT
 
 // CASE 1: Class with public fields
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: $text,
     responseModel: User::class
 )->get();
@@ -70,7 +70,7 @@ assert($user->getPassword() === '123admin');
 
 // CASE 2: Class with some private fields
 
-$userPriv = (new StructuredOutput)->create(
+$userPriv = (new StructuredOutput)->with(
     messages: $text,
     responseModel: UserWithPrivateField::class,
 )->get();

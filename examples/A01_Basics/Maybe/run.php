@@ -29,7 +29,7 @@ class User
 $text = 'We have no information about our new developer.';
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = (new StructuredOutput)->create(
+$maybeUser = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class),
     model: 'gpt-4o-mini',
@@ -47,7 +47,7 @@ assert($maybeUser->get() === null);
 $text = "Jason is our new developer, he is 25 years old.";
 echo "\nINPUT:\n$text\n";
 
-$maybeUser = (new StructuredOutput)->create(
+$maybeUser = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Maybe::is(User::class)
 )->get();

@@ -57,7 +57,7 @@ $text = <<<TEXT
     TEXT;
 
 print("INPUT:\n$text\n\n");
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: $text,
     responseModel: $structure,
 )->get();

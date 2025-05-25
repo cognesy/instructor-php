@@ -4,7 +4,7 @@ Get the task.
 
 ```php
 $structuredOutput = new StructuredOutput();
-$task = $structuredOutput->create(
+$task = $structuredOutput->with(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
 )->get();
@@ -15,7 +15,7 @@ or
 
 ```php
 $structuredOutput = new StructuredOutput();
-$task = $structuredOutput->create(
+$task = $structuredOutput->with(
     messages: "Jason is 35 years old",
     responseModel: Task::class,
 )->get();
@@ -27,11 +27,13 @@ Get partial updates of task.
 
 ```php
 $structuredOutput = new StructuredOutput();
-$stream = $structuredOutput->request(
-    messages: "Jason is 35 years old",
-    responseModel: Task::class,
-    stream: true,
-)->stream();
+$stream = $structuredOutput
+    ->with(
+        messages: "Jason is 35 years old",
+        responseModel: Task::class,
+    )
+    ->withStreaming()
+    ->stream();
 
 foreach($stream->partial as $taskUpdate) {
     // Partially updated model
@@ -49,7 +51,7 @@ Get the list of tasks, one by one.
 
 ```php
 $structuredOutput = new StructuredOutput();
-$list = $structuredOutput->create(
+$list = $structuredOutput->with(
     messages: "Jason is 35 years old",
     responseModel: Sequence::of(Task::class),
 )->get();
@@ -64,7 +66,7 @@ Get the list of tasks, one by one, with partial updates.
 
 ```php
 $structuredOutput = new StructuredOutput();
-$stream = $structuredOutput->create(
+$stream = $structuredOutput->with(
     messages: "Jason is 35 years old",
     responseModel: Sequence::of(Task::class),
     partials: true

@@ -1,27 +1,17 @@
 <?php
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
-use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
 use Cognesy\Instructor\Features\Core\PartialsGenerator;
 use Cognesy\Instructor\Features\Core\RequestHandler;
 use Cognesy\Instructor\Features\Core\ResponseGenerator;
-use Cognesy\Instructor\Features\Core\ResponseModelFactory;
 use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Features\Core\StructuredOutputStream;
-use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Exception;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Trait provides invocation handling functionality for the StructuredOutput class.
@@ -37,7 +27,7 @@ trait HandlesInvocation
      * @return StructuredOutputResponse The response generated based on the provided request details.
      */
     public function withRequest(StructuredOutputRequestInfo $request) : StructuredOutputResponse {
-        return $this->create(
+        return $this->with(
             messages: $request->messages() ?? [],
             responseModel: $request->responseModel() ?? [],
             system: $request->system() ?? '',
@@ -54,7 +44,7 @@ trait HandlesInvocation
     }
 
     /**
-     * Processes a request using provided input, system configurations, and response specifications.
+     * Sets values for the request builder and configures the StructuredOutput instance
      *
      * @param string|array $messages Text or chat sequence to be used for generating the response.
      * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
@@ -71,7 +61,7 @@ trait HandlesInvocation
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
-    public function create(
+    public function with(
         string|array|Message|Messages $messages = '',
         string|array|object $responseModel = [],
         string              $system = '',
@@ -84,15 +74,7 @@ trait HandlesInvocation
         string              $toolDescription = '',
         string              $retryPrompt = '',
         ?OutputMode         $mode = null,
-    ) : StructuredOutputResponse {
-        $this->queueEvent(new RequestReceived());
-        $this->dispatchQueuedEvents();
-
-        $requestedSchema = $responseModel ?: $this->requestInfo->responseModel();
-        if (empty($requestedSchema)) {
-            throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
-        }
-
+    ) : static {
         $this->config->withOverrides(
             outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
             maxRetries: ($maxRetries >= 0) ? $maxRetries : $this->config->maxRetries(),
@@ -101,20 +83,39 @@ trait HandlesInvocation
             toolDescription: $toolDescription ?: $this->config->toolDescription(),
         );
 
-        $responseModel = $this->makeResponseModel($requestedSchema, $this->config, $this->events, $this->listener);
-
-        $request = new StructuredOutputRequest(
-            messages: $messages ?: $this->requestInfo->messages(),
-            requestedSchema: $requestedSchema,
+        $this->requestBuilder->with(
+            messages: $messages,
             responseModel: $responseModel,
-            system: $system ?: $this->requestInfo->system(),
-            prompt: $prompt ?: $this->requestInfo->prompt(),
-            examples: $examples ?: $this->requestInfo->examples(),
-            model: $model ?: $this->requestInfo->model(),
-            options: $options ?: $this->requestInfo->options(),
-            cachedContext: $this->requestInfo->cachedContext(),
-            config: $this->config,
+            system: $system,
+            prompt: $prompt,
+            examples: $examples,
+            model: $model,
+            maxRetries: $maxRetries,
+            options: $options,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+            retryPrompt: $retryPrompt,
+            mode: $mode,
         );
+
+        return $this;
+    }
+
+    /**
+     * Creates a new StructuredOutputResponse instance based on the current request builder and configuration.
+     *
+     * This method initializes the request factory, request handler, and response generator,
+     * and returns a StructuredOutputResponse object that can be used to handle the request.
+     *
+     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
+     */
+    public function create() : StructuredOutputResponse {
+        $this->queueEvent(new RequestReceived());
+        $this->dispatchQueuedEvents();
+
+        $request = $this->requestFactory
+            ->withConfig($this->config)
+            ->fromBuilder($this->requestBuilder);
 
         $requestHandler = new RequestHandler(
             request: $request,
@@ -173,7 +174,7 @@ trait HandlesInvocation
         string              $retryPrompt = '',
         ?OutputMode         $mode = null,
     ) : mixed {
-        return $this->create(
+        return $this->with(
             messages: $messages,
             responseModel: $responseModel,
             system: $system,
@@ -206,44 +207,46 @@ trait HandlesInvocation
      * @return StructuredOutputStream A stream of the response
      */
     public function stream() : StructuredOutputStream {
+        // turn on streaming mode
+        $this->requestBuilder->withStreaming();
         return $this->create()->stream();
     }
 
-    /**
-     * Creates a ResponseModel instance utilising the provided schema, tool name, and description.
-     *
-     * @param string|array|object $requestedSchema The schema to be used for creating the response model, provided as a string, array, or object.
-     * @param string $toolName The name of the tool, which can be overridden by default settings if not provided.
-     * @param string $toolDescription The description of the tool, which can be overridden by default settings if not provided.
-     * @param bool $useObjectReferences Indicates whether to use object references in the schema.
-     * @param EventDispatcher|null $events An event dispatcher for handling events during the response object creation process.
-     *
-     * @return ResponseModel Returns a ResponseModel object constructed using the requested schema, tool name, and description.
-     */
-    private function makeResponseModel(
-        string|array|object $requestedSchema,
-        StructuredOutputConfig $config,
-        ?EventDispatcherInterface $events = null,
-        ?EventListenerInterface $listener = null,
-    ) : ResponseModel {
-        $schemaFactory = new SchemaFactory($config->useObjectReferences());
-        if (is_null($events) || is_null($listener)) {
-            $default = new EventDispatcher();
-        }
-        $events = $events ?? $default;
-        $listener = $listener ?? $default;
-
-        $responseModelFactory = new ResponseModelFactory(
-            new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
-            $schemaFactory,
-            $events,
-            $listener,
-        );
-
-        return $responseModelFactory->fromAny(
-            $requestedSchema,
-            $config->toolName(),
-            $config->toolDescription()
-        );
-    }
+//    /**
+//     * Creates a ResponseModel instance utilising the provided schema, tool name, and description.
+//     *
+//     * @param string|array|object $requestedSchema The schema to be used for creating the response model, provided as a string, array, or object.
+//     * @param string $toolName The name of the tool, which can be overridden by default settings if not provided.
+//     * @param string $toolDescription The description of the tool, which can be overridden by default settings if not provided.
+//     * @param bool $useObjectReferences Indicates whether to use object references in the schema.
+//     * @param EventDispatcher|null $events An event dispatcher for handling events during the response object creation process.
+//     *
+//     * @return ResponseModel Returns a ResponseModel object constructed using the requested schema, tool name, and description.
+//     */
+//    private function makeResponseModel(
+//        string|array|object $requestedSchema,
+//        StructuredOutputConfig $config,
+//        ?EventDispatcherInterface $events = null,
+//        ?EventListenerInterface $listener = null,
+//    ) : ResponseModel {
+//        $schemaFactory = new SchemaFactory($config->useObjectReferences());
+//        if (is_null($events) || is_null($listener)) {
+//            $default = new EventDispatcher();
+//        }
+//        $events = $events ?? $default;
+//        $listener = $listener ?? $default;
+//
+//        $responseModelFactory = new ResponseModelFactory(
+//            new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
+//            $schemaFactory,
+//            $events,
+//            $listener,
+//        );
+//
+//        return $responseModelFactory->fromAny(
+//            $requestedSchema,
+//            $config->toolName(),
+//            $config->toolDescription()
+//        );
+//    }
 }

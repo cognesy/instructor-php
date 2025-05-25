@@ -65,7 +65,7 @@ class ToolCallingDriver implements CanUseTools
 
         $llmResponse = (new Inference)
             ->withLLM($this->llm)
-            ->create(
+            ->with(
                 messages: $messages->toArray(),
                 model: $this->model,
                 tools: $tools->toToolSchema(),

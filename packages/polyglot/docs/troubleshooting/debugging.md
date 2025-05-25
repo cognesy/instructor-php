@@ -22,7 +22,7 @@ $inference = new Inference()->withDebug();
 $inference->withDebug(true);
 
 // Make a request - debug output will show the request and response details
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is the capital of France?'
 )->toText();
 ```
@@ -60,7 +60,7 @@ $inference = new Inference();
 $inference->withHttpClient($httpClient);
 
 // Make a request
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is the capital of France?'
 )->toText();
 ```
@@ -96,7 +96,7 @@ $events->listen(LLMResponseReceived::class, function (LLMResponseReceived $event
 $inference = new Inference(events: $events);
 
 // Make a request
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is the capital of France?'
 )->toText();
 ```
@@ -146,7 +146,7 @@ $events->listen(LLMResponseReceived::class, function (LLMResponseReceived $event
 $inference = new Inference(events: $events);
 
 // Make a request
-$response = $inference->create(
+$response = $inference->with(
     messages: 'What is artificial intelligence?'
 )->toText();
 ```

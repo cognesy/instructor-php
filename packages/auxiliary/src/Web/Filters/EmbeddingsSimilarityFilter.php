@@ -23,12 +23,12 @@ class EmbeddingsSimilarityFilter implements CanFilterContent
         $this->threshold = $threshold;
         $this->embeddings = (new Embeddings)->using($this->preset);
         if (is_string($compareTo)) {
-            $this->compareTo = $this->embeddings->create($compareTo)->first();
+            $this->compareTo = $this->embeddings->with($compareTo)->first();
         }
     }
 
     public function filter(string $content): bool {
-        $vector = $this->embeddings->create($content)->first();
+        $vector = $this->embeddings->with($content)->first();
         return Vector::cosineSimilarity($vector, $this->compareTo) >= $this->threshold;
     }
 }

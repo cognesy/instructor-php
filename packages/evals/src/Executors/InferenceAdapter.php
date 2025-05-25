@@ -37,7 +37,7 @@ class InferenceAdapter
     public function forModeTools(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: $messages,
                 tools: $schema->tools(),
                 toolChoice: $schema->toolChoice(),
@@ -49,7 +49,7 @@ class InferenceAdapter
     public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
@@ -57,13 +57,14 @@ class InferenceAdapter
                 responseFormat: $schema->responseFormatJsonSchema(),
                 options: $options,
                 mode: OutputMode::JsonSchema,
-            );
+            )
+            ->create();
     }
 
     public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
@@ -71,13 +72,14 @@ class InferenceAdapter
                 responseFormat: $schema->responseFormatJson(),
                 options: $options,
                 mode: OutputMode::Json,
-            );
+            )
+            ->create();
     }
 
     public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
@@ -85,23 +87,25 @@ class InferenceAdapter
                 ]),
                 options: $options,
                 mode: OutputMode::MdJson,
-            );
+            )
+            ->create();
     }
 
     public function forModeText(string $preset, string|array $messages, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: $messages,
                 options: $options,
                 mode: OutputMode::Text,
-            );
+            )
+            ->create();
     }
 
     public function forModeUnrestricted(string $preset, array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->create(
+            ->with(
                 messages: array_merge($messages, [
                     ['role' => 'user', 'content' => 'Use JSON Schema: ' . json_encode($schema->schema())],
                     ['role' => 'user', 'content' => 'Respond correctly with strict JSON.'],
@@ -112,6 +116,7 @@ class InferenceAdapter
                 responseFormat: $schema->responseFormatJson(),
                 options: $options,
                 mode: OutputMode::Unrestricted,
-            );
+            )
+            ->create();
     }
 }

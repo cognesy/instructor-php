@@ -91,7 +91,7 @@ class RequestHandler
         return (new Inference)
             ->withLLM($this->llm)
             ->withEventDispatcher($this->events)
-            ->create(
+            ->with(
                 $request->toMessages(),
                 $request->model(),
                 $request->toolCallSchema(),
@@ -99,12 +99,17 @@ class RequestHandler
                 $request->responseFormat(),
                 $request->options(),
                 $request->mode()
-            );
+            )
+            ->create();
     }
 
     protected function processResponse(StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : Result {
         // we have LLMResponse here - let's process it: deserialize, validate, transform
-        $processingResult = $this->responseGenerator->makeResponse($llmResponse, $request->responseModel(), $request->mode());
+        $processingResult = $this->responseGenerator->makeResponse(
+            response: $llmResponse,
+            responseModel: $request->responseModel(),
+            mode: $request->mode()
+        );
 
         if ($processingResult->isFailure()) {
             // retry - we have not managed to deserialize, validate or transform the response

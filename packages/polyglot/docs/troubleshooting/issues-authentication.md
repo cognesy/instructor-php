@@ -45,7 +45,7 @@ function testApiKey(string $preset): bool {
     try {
         $llm = LLM::preset($preset);
         $inference = new Inference($llm);
-        $inference->create(
+        $inference->with(
             messages: 'Test message',
             options: ['max_tokens' => 5]
         )->toText();

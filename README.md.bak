@@ -175,10 +175,11 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new StructuredOutput)->create(
-    messages: $text,
-    responseModel: Person::class,
-)->get();
+$person = (new StructuredOutput)
+    ->withResponseClass(Person::class)
+    ->with(
+        messages: $text,
+    )->get();
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -249,7 +250,7 @@ method with the connection name.
 // ...
 $user = (new StructuredOutput)
     ->using('ollama')
-    ->create(
+    ->with(
         messages: "His name is Jason and he is 28 years old.",
         responseModel: Person::class,
     )->get();
@@ -289,7 +290,7 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new StructuredOutput)->create(
+$translation = (new StructuredOutput)->with(
     input: $email,
     responseModel: Email::class,
     prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
@@ -322,7 +323,7 @@ class Person {
 }
 
 $text = "His name is Jason, he is -28 years old.";
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
 )->get();
@@ -348,7 +349,7 @@ class Person {
 }
 
 $text = "His name is JX, aka Jason, he is -28 years old.";
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
     maxRetries: 3,
@@ -365,7 +366,7 @@ You can call `request()` method to set the parameters of the request and then ca
 ```php
 use Cognesy\Instructor\StructuredOutput;
 
-$structuredOutput = (new StructuredOutput)->create(
+$structuredOutput = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 );
@@ -382,7 +383,7 @@ processing the data as soon as it is available.
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$stream = (new StructuredOutput)->create(
+$stream = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]
@@ -416,7 +417,7 @@ function updateUI($person) {
     // Here you get partially completed Person object update UI with the partial result
 }
 
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
     options: ['stream' => true]
@@ -439,14 +440,14 @@ You can provide a string instead of an array of messages. This is useful when yo
 ```php
 // Usually, you work with sequences of messages:
 
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => "His name is Jason, he is 28 years old."]],
     responseModel: Person::class,
 )->get();
 
 // ...but if you want to keep it simple, you can just pass a string:
 
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Person::class,
 )->get();
@@ -461,7 +462,7 @@ Sometimes we just want to get quick results without defining a class for the res
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::integer('age'),
 )->getInt();
@@ -488,7 +489,7 @@ enum ActivityType : string {
     case Other = 'other';
 }
 
-$value = (new StructuredOutput)->create(
+$value = (new StructuredOutput)->with(
     messages: "His name is Jason, he currently plays Doom Eternal.",
     responseModel: Scalar::enum(ActivityType::class, 'activityType'),
 )->getInstanceOf(ActivityType::class);
@@ -521,7 +522,7 @@ $text = <<<TEXT
     and Anna is 2 years younger than him.
 TEXT;
 
-$list = (new StructuredOutput)->create(
+$list = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Sequence::of(Person::class),
     options: ['stream' => true]
@@ -614,7 +615,7 @@ enum SkillType {
 
 $text = "Alex is 25 years old software engineer, who knows PHP, Python and can play the guitar.";
 
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => $text]],
     responseModel: Person::class,
 )->get(); // client is passed explicitly, can specify e.g. different base URL
@@ -683,7 +684,7 @@ $structure = Structure::define('person', [
     Field::enum('role', Role::class),
 ]);
 
-$person = (new StructuredOutput)->create(
+$person = (new StructuredOutput)->with(
     messages: 'Jason is 25 years old and is a manager.',
     responseModel: $structure,
 )->get();
@@ -725,7 +726,7 @@ $driver = new OpenAIDriver(new LLMConfig(
 /// Get Instructor with the default client component overridden with your own
 $structuredOutput = (new StructuredOutput)->withDriver($driver);
 
-$user = $structuredOutput->create(
+$user = $structuredOutput->with(
     messages: "Jason (@jxnlco) is 25 years old and is the admin of this project. He likes playing football and reading books.",
     responseModel: User::class,
     model: 'gpt-3.5-turbo',
@@ -828,7 +829,7 @@ class UserDetails
     }
 }
 
-$user = (new StructuredOutput)->create(
+$user = (new StructuredOutput)->with(
     messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
     responseModel: UserDetails::class,
     maxRetries: 2
@@ -879,7 +880,7 @@ $structuredOutput = (new StructuredOutput)
     // see all events in console-friendly format
     ->wiretap(fn($event) => dump($event->toConsole()));
 
-$structuredOutput->create(
+$structuredOutput->with(
     messages: "What is the population of Paris?",
     responseModel: Scalar::integer(),
 )->getInt();
