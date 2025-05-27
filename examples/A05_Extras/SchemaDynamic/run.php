@@ -55,5 +55,10 @@ echo "USER: What is capital of France\n";
 echo "ASSISTANT:\n";
 dump($data);
 
+assert(is_array($data), 'Response should be an array');
+assert(isset($data['name']), 'Response should have "name" field');
+assert(strpos($data['name'], 'Paris') !== false, 'City name should be Paris');
+assert(isset($data['population']), 'Response should have "population" field');
+assert(isset($data['founded']), 'Response should have "founded" field');
 ?>
 ```

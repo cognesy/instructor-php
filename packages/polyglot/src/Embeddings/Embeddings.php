@@ -32,7 +32,7 @@ class Embeddings
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->embeddingsProviderFactory = new EmbeddingsProviderFactory($this->events);
-        $this->provider = $provider ?? $this->embeddingsProviderFactory->fromPreset($preset ?: Settings::get('embeddings', "defaultPreset"));
+        $this->provider = $provider ?? $this->embeddingsProviderFactory->fromPreset($preset ?: Settings::get('embed', "defaultPreset"));
         $this->request = new EmbeddingsRequest();
     }
 
@@ -109,7 +109,7 @@ class Embeddings
         string|array $input = [],
         array $options = []
     ) : static {
-        $this->request->withInput($input ?: $this->request->inputs());
+        $this->request->withAnyInput($input ?: $this->request->inputs());
         $this->request->withOptions(array_merge($this->request->options(), $options));
         return $this;
     }

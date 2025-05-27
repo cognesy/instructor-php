@@ -39,6 +39,22 @@ trait HandlesTransformation
         ];
     }
 
+    public function toResponseFormat(
+        string $schemaName = '',
+        string $schemaDescription = '',
+        bool $strict = true
+    ) : array {
+        return [
+            'type' => 'json_schema',
+            'description' => $schemaDescription,
+            'json_schema' => [
+                'name' => $schemaName,
+                'schema' => $this->toJsonSchema(),
+                'strict' => $strict,
+            ],
+        ];
+    }
+
     // MAPPING //////////////////////////////////////////////////////////////
 
     private function stringToArray() : array {

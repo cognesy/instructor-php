@@ -45,10 +45,12 @@ class UserDetails
 
     private function hasPII() : bool {
         $data = implode('\n', $this->details);
-        return (new StructuredOutput)->with(
-            messages: "Context:\n$data\n",
-            responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
-        )->create()->getBoolean();
+        return (new StructuredOutput)
+            ->with(
+                messages: "Context:\n$data\n",
+                responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
+            )
+            ->getBoolean();
     }
 }
 

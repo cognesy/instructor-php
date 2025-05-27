@@ -219,8 +219,8 @@ class Inference
             tools: $tools,
             toolChoice: $toolChoice,
             responseFormat: $responseFormat,
-            options: $options,
-            mode: $mode ?: OutputMode::Unrestricted,
+            options: array_merge($this->request->options(), $options),
+            mode: $mode ?? OutputMode::Unrestricted,
             cachedContext: $this->cachedContext ?? null
         );
         return $this;
@@ -228,17 +228,6 @@ class Inference
 
     public function create(): InferenceResponse {
         return $this->withRequest($this->request);
-
-//        return $this->withRequest(new InferenceRequest(
-//            messages: $messages ?: $this->request->messages(),
-//            model: $model ?: $this->request->model() ?: $this->config()->model,
-//            tools: $tools ?: $this->request->tools(),
-//            toolChoice: $toolChoice ?: $this->request->toolChoice(),
-//            responseFormat: $responseFormat ?: $this->request->responseFormat(),
-//            options: array_merge($this->request->options(), $options),
-//            mode: $mode ?: $this->request->outputMode() ?: OutputMode::Unrestricted,
-//            cachedContext: $this->cachedContext ?? null
-//        ));
     }
 
     public function get(): InferenceResponse {
@@ -259,6 +248,10 @@ class Inference
 
     public function stream(): InferenceStream {
         return $this->create()->stream();
+    }
+
+    public function asJsonData(): array {
+        return $this->create()->asJsonData();
     }
 
     /**

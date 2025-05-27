@@ -34,7 +34,7 @@ class InferenceRequest
 
         $this->model = $model;
         $this->options = $options;
-        $this->mode = $mode;
+        $this->mode = $mode ?? OutputMode::Unrestricted;
 
         $this->tools = $tools;
         $this->toolChoice = $toolChoice;

@@ -94,7 +94,6 @@ class SimulatePerspective {
                 ),
                 responseModel: Scalar::string('location'),
             )
-            ->create()
             ->getString();
     }
 }

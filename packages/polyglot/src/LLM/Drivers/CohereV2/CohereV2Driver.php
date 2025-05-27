@@ -50,15 +50,7 @@ class CohereV2Driver implements CanHandleInference
             $request->options(),
             $request->outputMode(),
         );
-        return $this->httpClient->handle(
-            (new HttpClientRequest(
-                url: $clientRequest->url(),
-                method: $clientRequest->method(),
-                headers: $clientRequest->headers(),
-                body: $clientRequest->body()->toArray(),
-                options: $clientRequest->options(),
-            ))->withStreaming($clientRequest->isStreamed())
-        );
+        return $this->httpClient->handle($clientRequest);
     }
 
     public function fromResponse(array $data): ?LLMResponse

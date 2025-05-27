@@ -203,6 +203,26 @@ trait HandlesInvocation
         return $this->create()->get();
     }
 
+    public function getString() : string {
+        return $this->create()->getString();
+    }
+
+    public function getFloat() : array {
+        return $this->create()->getFloat();
+    }
+
+    public function getInt() : int {
+        return $this->create()->getInt();
+    }
+
+    public function getBoolean() : array {
+        return $this->create()->getBoolean();
+    }
+
+    public function getObject() : object {
+        return $this->create()->getObject();
+    }
+
     /**
      * Processes a request using provided input, system configurations,
      * and response specifications and returns a streamed result object.

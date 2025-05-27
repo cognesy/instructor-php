@@ -34,15 +34,11 @@ $data = (new Inference)
         messages: [
             ['role' => 'user', 'content' => 'What is capital of France? Respond with JSON data.']
         ],
-        responseFormat: [
-            'type' => 'json_schema',
-            'description' => 'City data',
-            'json_schema' => [
-                'name' => 'city_data',
-                'schema' => $schema->toJsonSchema(),
-                'strict' => true,
-            ],
-        ],
+        responseFormat: $schema->toResponseFormat(
+            schemaName: 'city_data',
+            schemaDescription: 'City data',
+            strict: true,
+        ),
         options: ['max_tokens' => 64],
         mode: OutputMode::JsonSchema,
     )
