@@ -1,3 +1,15 @@
+# ATTENTION
+
+Version 1.0 of Instructor for PHP is coming with **many** breaking changes. Multiple APIs from 0.x have been remodelled.
+
+If you're using Instructor in production (and we haven't spoken yet), please ping me via DM on X/Twitter (@ddebowczyk) to discuss:
+
+ - the best way to roll it out to limit the disruption,
+ - what instructions might be needed,
+ - are upgrade scripts worth the effort.
+
+---
+
 # Instructor for PHP
 
 Structured data extraction in PHP, powered by LLMs. Designed for simplicity, transparency, and control.
