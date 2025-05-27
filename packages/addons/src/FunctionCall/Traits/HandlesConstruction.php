@@ -5,7 +5,7 @@ namespace Cognesy\Addons\FunctionCall\Traits;
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Instructor\Features\Schema\Utils\FunctionInfo;
+use Cognesy\Schema\Utils\FunctionInfo;
 use ReflectionFunction;
 
 trait HandlesConstruction

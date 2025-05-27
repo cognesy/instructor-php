@@ -3,6 +3,7 @@
 namespace Cognesy\Utils\JsonSchema;
 
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
+use Exception;
 
 /**
  * JSON Schema definition API - helps to specify JSON Schema
@@ -82,7 +83,7 @@ class JsonSchema implements CanProvideJsonSchema
         $this->title = $title;
         $this->meta = $meta;
 
-        $this->properties = $this->toKeyedProperties($properties);
+        $this->properties = self::toKeyedProperties($properties);
 
         $validator = new JsonSchemaValidator();
         $validator->validate($this);
@@ -96,7 +97,7 @@ class JsonSchema implements CanProvideJsonSchema
         }
 
         if (!isset($data['type'])) {
-            throw new \Exception('Invalid schema: missing "type"');
+            throw new Exception('Invalid schema: missing "type"');
         }
 
         $properties = [];
@@ -138,7 +139,7 @@ class JsonSchema implements CanProvideJsonSchema
                 continue;
             }
             // if key starts with x- add it to meta
-            if (strpos($key, 'x-') === 0) {
+            if (str_starts_with($key, 'x-')) {
                 $actualKey = substr($key, 2);
                 $meta[$actualKey] = $value;
             }
@@ -168,13 +169,13 @@ class JsonSchema implements CanProvideJsonSchema
             };
 
             if ($index === null) {
-                throw new \Exception('Missing property name: ' . print_r($property, true));
+                throw new Exception('Missing property name: ' . print_r($property, true));
             }
 
             $keyedProperties[$index] = match(true) {
                 $property instanceof JsonSchema => $property->withName($index),
-                is_array($property) => JsonSchema::fromArray($property)->withName($index),
-                default => throw new \Exception('Invalid property: ' . print_r($property, true)),
+                is_array($property) => JsonSchema::fromArray($property)?->withName($index),
+                default => throw new Exception('Invalid property: ' . print_r($property, true)),
             };
         }
         return $keyedProperties;

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
-use Cognesy\Instructor\Features\Validation\ValidationResult;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesValidation
 {

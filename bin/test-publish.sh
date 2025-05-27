@@ -31,6 +31,7 @@ echo "Using release notes from: $NOTES_FILE"
 # Define packages - must match those in sync-ver.sh
 declare -A PACKAGES
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
+PACKAGES["packages/schema"]="cognesy/instructor-schema"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 PACKAGES["packages/evals"]="cognesy/instructor-evals"
 #PACKAGES["packages/experimental"]="cognesy/instructor-experimental"

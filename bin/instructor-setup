@@ -1,7 +1,5 @@
 #!/usr/bin/env php
 <?php
-namespace Cognesy\Setup;
-
 function findAutoload()
 {
     $dir = __DIR__;
@@ -21,11 +19,10 @@ function findAutoload()
 
 require findAutoload();
 
-use RuntimeException;
 use Symfony\Component\Console\Application;
 
 $application = new Application('Instructor setup tool', '1.0.0');
-$application->add(new PublishCommand());
+$application->add(new Cognesy\Setup\PublishCommand());
 $application->run();
 
 exit(0);

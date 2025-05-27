@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
+use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
@@ -14,12 +14,14 @@ class ResponseModel implements CanProvideJsonSchema
     private string $class;
     private Schema $schema;
     private array $jsonSchema;
+    private string $schemaName;
 
     public function __construct(
         string $class,
         mixed  $instance,
         Schema $schema,
         array  $jsonSchema,
+        string $schemaName,
         ?ToolCallBuilder $toolCallBuilder = null,
     ) {
         $this->class = $class;
@@ -27,6 +29,7 @@ class ResponseModel implements CanProvideJsonSchema
         $this->schema = $schema;
         $this->jsonSchema = $jsonSchema;
         $this->toolCallBuilder = $toolCallBuilder;
+        $this->schemaName = $schemaName;
     }
 
     public function instanceClass() : string {

@@ -25,8 +25,8 @@ A common critical thinking prompt is: "Let's think step by step."
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
 
 class Response {
     #[Description("Repeat user's query.")]

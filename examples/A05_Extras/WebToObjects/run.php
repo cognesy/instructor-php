@@ -31,9 +31,9 @@ Commercial scrapers require API key, which can be set in the configuration file
 require 'examples/boot.php';
 
 use Cognesy\Auxiliary\Web\Webpage;
-use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Schema\Attributes\Instructions;
 
 class Company {
     public string $name = '';

@@ -16,8 +16,7 @@ test('creates a message with default values', function () {
     expect($message->role())->toBe(MessageRole::User)
         ->and($message->content())->toBe('')
         ->and($message->name())->toBe('')
-        ->and($message->meta())->toBe([])
-        ->and($message->id())->toBeString()->toMatch('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/');
+        ->and($message->meta())->toBe([]);
 });
 
 test('creates a message with specified values', function () {
@@ -151,8 +150,7 @@ test('creates a message from existing message through clone', function () {
 
     expect($cloned)->toBeInstanceOf(Message::class)
         ->and($cloned->role())->toBe(MessageRole::User)
-        ->and($cloned->content())->toBe('Original message')
-        ->and($cloned->id())->not->toBe($original->id());
+        ->and($cloned->content())->toBe('Original message');
 });
 
 test('creates a message from various source types', function () {
@@ -163,8 +161,7 @@ test('creates a message from various source types', function () {
 
     expect($stringMessage->content())->toBe('String message')
         ->and($arrayMessage->content())->toBe('Array message')
-        ->and($messageFromObject->content())->toBe('Object message')
-        ->and($messageFromObject->id())->not->toBe($messageObject->id());
+        ->and($messageFromObject->content())->toBe('Object message');
 });
 
 //test('throws exception for invalid message type in fromAnyMessage', function () {

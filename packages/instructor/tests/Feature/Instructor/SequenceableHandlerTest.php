@@ -1,17 +1,18 @@
 <?php
 
+use Cognesy\Instructor\Core\PartialsGenerator;
+use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
+use Cognesy\Instructor\Data\StructuredOutputConfig;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Features\Core\PartialsGenerator;
-use Cognesy\Instructor\Features\Core\ResponseModelFactory;
-use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Features\Schema\Factories\ToolCallBuilder;
-use Cognesy\Instructor\Features\Schema\Utils\ReferenceQueue;
-use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Factories\ToolCallBuilder;
+use Cognesy\Schema\Utils\ReferenceQueue;
 use Cognesy\Utils\Events\EventDispatcher;
 
 class SimpleItem
@@ -29,13 +30,18 @@ function createStreamingGenerator(array $chunks): Generator {
 }
 
 function makeResponseModel($sequence): ResponseModel {
+    $config = StructuredOutputConfig::default();
+    $schemaFactory = new SchemaFactory($config->useObjectReferences());
+    $events = new EventDispatcher();
     return (new ResponseModelFactory(
         toolCallBuilder: new ToolCallBuilder(
-            new SchemaFactory(),
+            $schemaFactory,
             new ReferenceQueue(),
         ),
-        schemaFactory: new SchemaFactory(),
-        events: new EventDispatcher(),
+        schemaFactory: $schemaFactory,
+        config: $config,
+        events: $events,
+        listener: $events,
     ))->fromAny($sequence);
 }
 

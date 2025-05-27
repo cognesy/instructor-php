@@ -9,11 +9,11 @@ use Cognesy\Addons\FunctionCall\Traits\HandlesMutation;
 use Cognesy\Addons\FunctionCall\Traits\HandlesSchema;
 use Cognesy\Addons\FunctionCall\Traits\HandlesTransformation;
 use Cognesy\Addons\FunctionCall\Traits\HandlesValidation;
-use Cognesy\Instructor\Contracts\CanProvideSchema;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
-use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
+use Cognesy\Schema\Contracts\CanProvideSchema;
 
 /**
  * Represents a function call that can be inferred from provided context

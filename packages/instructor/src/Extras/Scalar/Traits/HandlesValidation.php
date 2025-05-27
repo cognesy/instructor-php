@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Extras\Scalar\Traits;
 
-use Cognesy\Instructor\Features\Validation\ValidationError;
-use Cognesy\Instructor\Features\Validation\ValidationResult;
+use Cognesy\Instructor\Validation\ValidationError;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesValidation
 {

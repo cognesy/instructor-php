@@ -1,8 +1,8 @@
 <?php
 
-use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
 use Cognesy\Instructor\Tests\Examples\Extraction\Person;
 use Cognesy\Instructor\Tests\Examples\Extraction\PersonWithValidationMixin;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 
 it('validates using attribute rules', function () {
     $person = new Person();

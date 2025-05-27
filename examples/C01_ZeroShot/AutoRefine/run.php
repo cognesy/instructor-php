@@ -22,8 +22,8 @@ We implement this in two steps:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
 
 class RewrittenTask {
     #[Description("Relevant context")]
@@ -47,7 +47,7 @@ class RefineAndSolve {
         return (new StructuredOutput)->with(
             messages: "{$rewrittenPrompt->relevantContext}\nQuestion: {$rewrittenPrompt->userQuery}",
             responseModel: Scalar::integer('answer'),
-        )->getInt();
+        )->create()->getInt();
     }
 
     private function rewritePrompt(string $query) : RewrittenTask {

@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Experimental\Module\Signature\SignatureFactory;
-use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use InvalidArgumentException;
 
 trait HandlesCreation
@@ -17,10 +17,10 @@ trait HandlesCreation
         return $instance;
     }
 
-    public static function fromRequest(StructuredOutputRequestInfo $request, string $inputName, string $outputName) : static {
+    public static function fromRequest(StructuredOutputRequest $request, string $inputName, string $outputName) : static {
         $instance = new static;
         $instance->with(
-            requestInfo: $request,
+            request: $request,
             signature: SignatureFactory::fromRequest($request, $inputName, $outputName),
         );
         return $instance;

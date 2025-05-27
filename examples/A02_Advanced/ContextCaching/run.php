@@ -30,9 +30,9 @@ that we want to extract or generate based on README file.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Str;
 
 class Project {
@@ -62,7 +62,7 @@ multiple requests.
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
-$cached = (new StructuredOutput)->using('anthropic')->withDebug()->withCachedContext(
+$cached = (new StructuredOutput)->withDebug()->using('anthropic')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
     prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',

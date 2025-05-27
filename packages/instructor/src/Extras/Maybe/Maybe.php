@@ -1,11 +1,11 @@
 <?php
 namespace Cognesy\Instructor\Extras\Maybe;
 
-use Cognesy\Instructor\Features\Deserialization\Contracts\CanDeserializeSelf;
-use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Features\Schema\Visitors\SchemaToJsonSchema;
+use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Visitors\SchemaToJsonSchema;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 

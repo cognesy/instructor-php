@@ -4,7 +4,7 @@ namespace Cognesy\Evals\Feedback;
 
 use Cognesy\Evals\Enums\FeedbackType;
 use Cognesy\Evals\Observation;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Description;
 
 class FeedbackItem
 {

@@ -3,8 +3,7 @@
 namespace Cognesy\Evals\Observers\Evaluate\Data;
 
 use Cognesy\Evals\Enums\CorrectnessGrade;
-use Cognesy\Evals\Feedback\FeedbackItem;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Description;
 
 #[Description("The result of correctness evaluation.")]
 class GradedCorrectnessAnalysis

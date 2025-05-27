@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
 use BackedEnum;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Schema\Data\TypeDetails;
 use DateTime;
 use DateTimeImmutable;
 

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\Module\Signature\Traits\Signature;
 
-use Cognesy\Instructor\Features\Schema\Factories\JsonSchemaToSchema;
+use Cognesy\Schema\Factories\JsonSchemaToSchema;
 
 trait HandlesSerialization
 {

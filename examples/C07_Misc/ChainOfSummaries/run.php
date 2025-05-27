@@ -69,11 +69,12 @@ $summaries = (new StructuredOutput)
         messages: $report,
         responseModel: ChainOfSummaries::class,
         prompt: 'Generate a denser summary based on the provided content.',
-        toolName: 'summarizer',
-        toolDescription: 'Generates a summary based on the provided content.',
         options: [
             'max_tokens' => 4096,
-        ])
+        ],
+        toolName: 'summarizer',
+        toolDescription: 'Generates a summary based on the provided content.',
+    )
     ->get();
 
 print("\n# Summaries with increasing density:\n\n");

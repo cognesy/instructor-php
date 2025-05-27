@@ -8,7 +8,7 @@ use Cognesy\Experimental\Module\Signature\Traits\Signature\ConvertsToStructure;
 use Cognesy\Experimental\Module\Signature\Traits\Signature\HandlesAccess;
 use Cognesy\Experimental\Module\Signature\Traits\Signature\HandlesConversion;
 use Cognesy\Experimental\Module\Signature\Traits\Signature\HandlesSerialization;
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema\Schema;
 
 /**
  * Signature represents a specification of the module - its input and output schemas, and a description.

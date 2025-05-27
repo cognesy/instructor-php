@@ -37,8 +37,8 @@ This is implemented in two steps. Given an entity:
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Arrays;
 
 class KnownFacts {
@@ -87,13 +87,15 @@ class SimulatePerspective {
         $knowledge = Arrays::toBullets($knownFacts);
 
         return (new StructuredOutput)->with(
-            messages: str_replace(
-                ['{entity}', '{knowledge}', '{query}'],
-                [$entity, $knowledge, $query],
-                $this->povPrompt
-            ),
-            responseModel: Scalar::string('location'),
-        )->getString();
+                messages: str_replace(
+                    ['{entity}', '{knowledge}', '{query}'],
+                    [$entity, $knowledge, $query],
+                    $this->povPrompt
+                ),
+                responseModel: Scalar::string('location'),
+            )
+            ->create()
+            ->getString();
     }
 }
 

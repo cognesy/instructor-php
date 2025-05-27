@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Features\Transformation\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 

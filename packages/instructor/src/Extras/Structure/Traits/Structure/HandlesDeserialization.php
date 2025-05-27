@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Utils\Json\Json;
 use DateTime;
 use DateTimeImmutable;

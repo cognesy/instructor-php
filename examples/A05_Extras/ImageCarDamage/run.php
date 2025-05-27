@@ -27,7 +27,7 @@ Here's the image we're going to extract data from.
 require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Str;
 
 enum DamageSeverity : string {

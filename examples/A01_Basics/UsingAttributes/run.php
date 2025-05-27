@@ -14,9 +14,9 @@ context to the language model or to provide additional instructions to the model
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Instructions;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract

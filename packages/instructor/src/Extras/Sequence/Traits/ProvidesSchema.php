@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Extras\Sequence\Traits;
 
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\TypeDetails;
 
 trait ProvidesSchema
 {

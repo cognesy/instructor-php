@@ -2,7 +2,7 @@
 
 namespace Evals\SimpleExtraction;
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Description;
 
 class Company {
     #[Description("The name of the company")]

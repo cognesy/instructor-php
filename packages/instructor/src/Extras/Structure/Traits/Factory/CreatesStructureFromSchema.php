@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
 
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema\Schema;
 
 trait CreatesStructureFromSchema
 {

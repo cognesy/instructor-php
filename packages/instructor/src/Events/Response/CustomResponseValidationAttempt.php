@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 

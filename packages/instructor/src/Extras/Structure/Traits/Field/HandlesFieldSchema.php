@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\TypeDetails;
 
 trait HandlesFieldSchema
 {

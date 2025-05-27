@@ -6,14 +6,13 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequestBuilder;
-use Cognesy\Instructor\Data\StructuredOutputRequestFactory;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\Instructor\InstructorReady;
 use Cognesy\Instructor\Events\Instructor\InstructorStarted;
-use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Features\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Features\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Features\Validation\ResponseValidator;
-use Cognesy\Instructor\Features\Validation\Validators\SymfonyValidator;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLM;
@@ -40,7 +39,6 @@ class StructuredOutput
 
     private LLM $llm;
     private StructuredOutputRequest $request;
-    private StructuredOutputRequestFactory $requestFactory;
     private StructuredOutputRequestBuilder $requestBuilder;
 
     private ResponseDeserializer $responseDeserializer;
@@ -80,12 +78,11 @@ class StructuredOutput
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
-        $this->requestFactory = new StructuredOutputRequestFactory(
+        $this->requestBuilder = new StructuredOutputRequestBuilder(
             config: $this->config,
             events: $this->events,
             listener: $this->listener,
         );
-        $this->requestBuilder = new StructuredOutputRequestBuilder(config: $this->config);
 
         $this->llm = $llm ?? new LLM(events: $this->events);
 

@@ -9,7 +9,6 @@ use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesParametrization;
 use Cognesy\Experimental\Module\Core\Traits\Predictor\HandlesPrediction;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Inference;
 
@@ -25,7 +24,7 @@ class Predictor
     protected Inference $inference;
     protected string $preset;
 
-    protected StructuredOutputRequestInfo $requestInfo;
+    protected StructuredOutputRequest $requestInfo;
     protected ?Signature $signature;
     protected Feedback $feedback;
     protected Closure $feedbackFn;
@@ -41,7 +40,7 @@ class Predictor
     ) {
         $this->structuredOutput = new StructuredOutput();
         $this->inference = new Inference();
-        $this->requestInfo = new StructuredOutputRequestInfo();
+        $this->requestInfo = new StructuredOutputRequest();
         $this->signature = match(true) {
             !empty($signature) => $this->makeSignature($signature, $description),
             default => null,

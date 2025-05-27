@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Addons\FunctionCall\Traits;
 
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema\Schema;
 
 trait HandlesSchema
 {

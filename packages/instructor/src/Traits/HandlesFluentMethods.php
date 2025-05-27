@@ -67,6 +67,21 @@ trait HandlesFluentMethods
         return $this;
     }
 
+    public function withExamples(array $examples) : static {
+        $this->requestBuilder->withExamples($examples);
+        return $this;
+    }
+
+    public function withCachedContext(
+        string|array $messages = '',
+        string $system = '',
+        string $prompt = '',
+        array $examples = [],
+    ) : ?self {
+        $this->requestBuilder->withCachedContext(new CachedContext($messages, $system, $prompt, $examples));
+        return $this;
+    }
+
     public function withMaxRetries(int $maxRetries) : static {
         $this->config->withMaxRetries($maxRetries);
         return $this;
@@ -89,21 +104,6 @@ trait HandlesFluentMethods
 
     public function withOutputMode(OutputMode $mode) : static {
         $this->config->withOutputMode($mode);
-        return $this;
-    }
-
-    public function withExamples(array $examples) : static {
-        $this->requestBuilder->withExamples($examples);
-        return $this;
-    }
-
-    public function withCachedContext(
-        string|array $messages = '',
-        string $system = '',
-        string $prompt = '',
-        array $examples = [],
-    ) : ?self {
-        $this->requestBuilder->withCachedContext(new CachedContext($messages, $system, $prompt, $examples));
         return $this;
     }
 }

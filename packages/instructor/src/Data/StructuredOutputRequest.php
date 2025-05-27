@@ -1,12 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 
 class StructuredOutputRequest
 {
-    use Traits\StructuredOutputRequest\HandlesMessages;
+    use Traits\StructuredOutputRequest\HandlesAccess;
     use Traits\StructuredOutputRequest\HandlesRetries;
     use Traits\StructuredOutputRequest\HandlesSchema;
 
@@ -18,12 +19,9 @@ class StructuredOutputRequest
     protected array $examples = [];
     protected array $options = [];
     protected CachedContext $cachedContext;
-
     protected string|array|object $requestedSchema = [];
     protected ?ResponseModel $responseModel = null;
-
     protected StructuredOutputConfig $config;
-    protected ChatTemplate $chatTemplate;
 
     public function __construct(
         string|array|Message|Messages|null $messages = null,
@@ -37,7 +35,7 @@ class StructuredOutputRequest
         ?CachedContext $cachedContext = null,
         ?StructuredOutputConfig $config = null,
     ) {
-        $this->messages = $this->normalizeMessages($messages);
+        $this->messages = Messages::fromAny($messages);
         $this->requestedSchema = $requestedSchema;
         $this->responseModel = $responseModel;
 
@@ -48,7 +46,6 @@ class StructuredOutputRequest
         $this->model = $model ?: '';
 
         $this->config = $config;
-        $this->chatTemplate = new ChatTemplate($this->config);
 
         $this->cachedContext = $cachedContext ?: new CachedContext();
     }

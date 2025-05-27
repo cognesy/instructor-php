@@ -2,10 +2,14 @@
 
 namespace Cognesy\Instructor\Data\Traits\ResponseModel;
 
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\Schema\Schema;
 
 trait HandlesSchema
 {
+    public function schemaName() : string {
+        return $this->schemaName ?? $this->schema()->name();
+    }
+
     public function schema() : Schema {
         return $this->schema;
     }

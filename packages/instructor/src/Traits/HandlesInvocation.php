@@ -1,13 +1,15 @@
 <?php
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Core\PartialsGenerator;
+use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\ResponseGenerator;
+use Cognesy\Instructor\Core\StructuredOutputResponse;
+use Cognesy\Instructor\Core\StructuredOutputStream;
+use Cognesy\Instructor\Data\ChatTemplate;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Features\Core\PartialsGenerator;
-use Cognesy\Instructor\Features\Core\RequestHandler;
-use Cognesy\Instructor\Features\Core\ResponseGenerator;
-use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
-use Cognesy\Instructor\Features\Core\StructuredOutputStream;
+use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -21,12 +23,12 @@ trait HandlesInvocation
     /**
      * Processes the provided request information and creates a new request to be executed.
      *
-     * @param StructuredOutputRequestInfo $request The RequestInfo object containing all necessary data
+     * @param StructuredOutputRequest $request The RequestInfo object containing all necessary data
      * for generating the request.
      *
-     * @return StructuredOutputResponse The response generated based on the provided request details.
+     * @return \Cognesy\Instructor\Core\StructuredOutputResponse The response generated based on the provided request details.
      */
-    public function withRequest(StructuredOutputRequestInfo $request) : StructuredOutputResponse {
+    public function withRequest(StructuredOutputRequest $request) : StructuredOutputResponse {
         return $this->with(
             messages: $request->messages() ?? [],
             responseModel: $request->responseModel() ?? [],
@@ -63,17 +65,17 @@ trait HandlesInvocation
      */
     public function with(
         string|array|Message|Messages $messages = '',
-        string|array|object $responseModel = [],
-        string              $system = '',
-        string              $prompt = '',
-        array               $examples = [],
-        string              $model = '',
-        int                 $maxRetries = -1,
-        array               $options = [],
-        string              $toolName = '',
-        string              $toolDescription = '',
-        string              $retryPrompt = '',
-        ?OutputMode         $mode = null,
+        string|array|object           $responseModel = [],
+        string                        $system = '',
+        string                        $prompt = '',
+        array                         $examples = [],
+        string                        $model = '',
+        int                           $maxRetries = -1,
+        array                         $options = [],
+        string                        $toolName = '',
+        string                        $toolDescription = '',
+        string                        $retryPrompt = '',
+        ?OutputMode                   $mode = null,
     ) : static {
         $this->config->withOverrides(
             outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
@@ -85,60 +87,16 @@ trait HandlesInvocation
 
         $this->requestBuilder->with(
             messages: $messages,
-            responseModel: $responseModel,
+            requestedSchema: $responseModel,
             system: $system,
             prompt: $prompt,
             examples: $examples,
             model: $model,
-            maxRetries: $maxRetries,
             options: $options,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
-            mode: $mode,
+            config: $this->config,
         );
 
         return $this;
-    }
-
-    /**
-     * Creates a new StructuredOutputResponse instance based on the current request builder and configuration.
-     *
-     * This method initializes the request factory, request handler, and response generator,
-     * and returns a StructuredOutputResponse object that can be used to handle the request.
-     *
-     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
-     */
-    public function create() : StructuredOutputResponse {
-        $this->queueEvent(new RequestReceived());
-        $this->dispatchQueuedEvents();
-
-        $request = $this->requestFactory
-            ->withConfig($this->config)
-            ->fromBuilder($this->requestBuilder);
-
-        $requestHandler = new RequestHandler(
-            request: $request,
-            responseGenerator: new ResponseGenerator(
-                $this->responseDeserializer,
-                $this->responseValidator,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            partialsGenerator: new PartialsGenerator(
-                $this->responseDeserializer,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            llm: $this->llm,
-            events: $this->events,
-        );
-
-        return new StructuredOutputResponse(
-            request: $request,
-            requestHandler: $requestHandler,
-            events: $this->events,
-        );
     }
 
     /**
@@ -191,6 +149,51 @@ trait HandlesInvocation
     }
 
     /**
+     * Creates a new StructuredOutputResponse instance based on the current request builder and configuration.
+     *
+     * This method initializes the request factory, request handler, and response generator,
+     * and returns a StructuredOutputResponse object that can be used to handle the request.
+     *
+     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
+     */
+    public function create() : StructuredOutputResponse {
+        $this->queueEvent(new RequestReceived());
+        $this->dispatchQueuedEvents();
+
+        $request = $this->requestBuilder
+            ->withConfig($this->config)
+            ->build();
+
+        $requestHandler = new RequestHandler(
+            request: $request,
+            responseGenerator: new ResponseGenerator(
+                $this->responseDeserializer,
+                $this->responseValidator,
+                $this->responseTransformer,
+                $this->events,
+            ),
+            partialsGenerator: new PartialsGenerator(
+                $this->responseDeserializer,
+                $this->responseTransformer,
+                $this->events,
+            ),
+            requestMaterializer: new ChatTemplate($this->config),
+            llm: $this->llm,
+            events: $this->events,
+        );
+
+        return new StructuredOutputResponse(
+            request: $request,
+            requestHandler: $requestHandler,
+            events: $this->events,
+        );
+    }
+
+    public function response() : LLMResponse {
+        return $this->create()->response();
+    }
+
+    /**
      * Processes a request using provided input, system configurations,
      * and response specifications and returns the result directly.
      *
@@ -204,49 +207,11 @@ trait HandlesInvocation
      * Processes a request using provided input, system configurations,
      * and response specifications and returns a streamed result object.
      *
-     * @return StructuredOutputStream A stream of the response
+     * @return \Cognesy\Instructor\Core\StructuredOutputStream A stream of the response
      */
     public function stream() : StructuredOutputStream {
         // turn on streaming mode
         $this->requestBuilder->withStreaming();
         return $this->create()->stream();
     }
-
-//    /**
-//     * Creates a ResponseModel instance utilising the provided schema, tool name, and description.
-//     *
-//     * @param string|array|object $requestedSchema The schema to be used for creating the response model, provided as a string, array, or object.
-//     * @param string $toolName The name of the tool, which can be overridden by default settings if not provided.
-//     * @param string $toolDescription The description of the tool, which can be overridden by default settings if not provided.
-//     * @param bool $useObjectReferences Indicates whether to use object references in the schema.
-//     * @param EventDispatcher|null $events An event dispatcher for handling events during the response object creation process.
-//     *
-//     * @return ResponseModel Returns a ResponseModel object constructed using the requested schema, tool name, and description.
-//     */
-//    private function makeResponseModel(
-//        string|array|object $requestedSchema,
-//        StructuredOutputConfig $config,
-//        ?EventDispatcherInterface $events = null,
-//        ?EventListenerInterface $listener = null,
-//    ) : ResponseModel {
-//        $schemaFactory = new SchemaFactory($config->useObjectReferences());
-//        if (is_null($events) || is_null($listener)) {
-//            $default = new EventDispatcher();
-//        }
-//        $events = $events ?? $default;
-//        $listener = $listener ?? $default;
-//
-//        $responseModelFactory = new ResponseModelFactory(
-//            new ToolCallBuilder($schemaFactory, new ReferenceQueue()),
-//            $schemaFactory,
-//            $events,
-//            $listener,
-//        );
-//
-//        return $responseModelFactory->fromAny(
-//            $requestedSchema,
-//            $config->toolName(),
-//            $config->toolDescription()
-//        );
-//    }
 }

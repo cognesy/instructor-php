@@ -2,8 +2,8 @@
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Features\Schema\Utils\ClassInfo;
+use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Utils\ClassInfo;
 
 trait CreatesFromClasses
 {

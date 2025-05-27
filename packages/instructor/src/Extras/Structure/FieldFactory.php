@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Structure;
 
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
+use Cognesy\Schema\Data\TypeDetails;
 use Exception;
 
 class FieldFactory

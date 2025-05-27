@@ -10,9 +10,15 @@ return [
     // should Instructor use object references or quote objects
     'useObjectReferences' => false,
 
+    // default schema name
+    'defaultSchemaName' => 'default_schema',
+
     // default tool name and description
     'defaultToolName' => 'extracted_data',
     'defaultToolDescription' => 'Function call based on user instructions.',
+
+    // default output class
+    'defaultOutputClass' => 'Cognesy\Instructor\Extras\Structure\Structure',
 
     // default prompts
     'defaultRetryPrompt' => "JSON generated incorrectly, fix following errors:\n",
@@ -26,10 +32,9 @@ return [
         // potentially cached - predefined sections used to construct the script
         'system',
         'pre-cached',
-        'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-        'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-        'pre-cached-input', 'cached-input', 'post-cached-input',
-        'cached-messages',
+            'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+            'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+            'cached-messages',
         'post-cached',
         // never cached
         'pre-prompt', 'prompt', 'post-prompt',

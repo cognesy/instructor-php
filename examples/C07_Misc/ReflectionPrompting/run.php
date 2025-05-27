@@ -16,11 +16,11 @@ potentially leading to higher quality and more reliable outputs.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
-use Cognesy\Instructor\Features\Validation\Contracts\CanValidateSelf;
-use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Schema\Attributes\Instructions;
 
 class ReflectiveResponse implements CanValidateSelf {
     #[Instructions('Is problem solvable and what domain expertise it requires')]

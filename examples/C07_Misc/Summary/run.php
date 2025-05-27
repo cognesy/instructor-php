@@ -13,8 +13,8 @@ This is an example of a simple summarization with keyword extraction.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
 
 $report = <<<EOT
     [2021-09-01]

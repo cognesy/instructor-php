@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 
-use Cognesy\Instructor\Features\Validation\ValidationResult;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 trait HandlesFieldValidation
 {
@@ -38,7 +38,7 @@ trait HandlesFieldValidation
     /**
      * Validates the field value
      *
-     * @return ValidationResult
+     * @return \Cognesy\Instructor\Validation\ValidationResult
      */
     public function validate() : ValidationResult {
         if ($this->validator === null) {

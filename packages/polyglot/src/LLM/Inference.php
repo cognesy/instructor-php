@@ -211,7 +211,7 @@ class Inference
         string|array $toolChoice = [],
         array        $responseFormat = [],
         array        $options = [],
-        ?OutputMode   $mode = null,
+        ?OutputMode  $mode = null,
     ) : self {
         $this->request = new InferenceRequest(
             messages: $messages,
@@ -228,6 +228,7 @@ class Inference
 
     public function create(): InferenceResponse {
         return $this->withRequest($this->request);
+
 //        return $this->withRequest(new InferenceRequest(
 //            messages: $messages ?: $this->request->messages(),
 //            model: $model ?: $this->request->model() ?: $this->config()->model,

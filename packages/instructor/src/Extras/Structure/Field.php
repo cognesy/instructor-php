@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Extras\Structure;
 
-use Cognesy\Instructor\Features\Schema\Data\Schema\Schema;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Factories\SchemaFactory;
 
 class Field {
     use Traits\Field\HandlesFieldDefinitions;

@@ -16,10 +16,10 @@ to achieve using traditional, code-based validation.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
-use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
-use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Str;
 
@@ -48,7 +48,7 @@ class UserDetails
         return (new StructuredOutput)->with(
             messages: "Context:\n$data\n",
             responseModel: Scalar::boolean('hasPII', 'Does the context contain any PII?'),
-        )->getBoolean();
+        )->create()->getBoolean();
     }
 }
 

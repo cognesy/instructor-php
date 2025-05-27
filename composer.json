@@ -25,6 +25,7 @@
   "autoload": {
     "psr-4": {
       "Cognesy\\Addons\\": "packages/addons/src/",
+      "Cognesy\\Schema\\": "packages/schema/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
       "Cognesy\\Instructor\\": "packages/instructor/src/",
       "Cognesy\\Polyglot\\": "packages/polyglot/src/",
@@ -49,6 +50,7 @@
       "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
       "Cognesy\\Instructor\\Tests\\": "packages/instructor/tests/",
       "Cognesy\\Polyglot\\Tests\\": "packages/polyglot/tests/",
+      "Cognesy\\Schema\\Tests\\": "packages/schema/tests/",
       "Cognesy\\Setup\\Tests\\": "packages/setup/tests/",
       "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
       "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",

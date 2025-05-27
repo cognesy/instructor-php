@@ -23,8 +23,8 @@ to validate the email field of response.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\Exceptions\ValidationException;
 use Symfony\Component\Validator\Constraints as Assert;
-use Cognesy\Instructor\Features\Validation\Exceptions\ValidationException;
 
 class UserDetails
 {

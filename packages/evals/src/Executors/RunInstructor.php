@@ -5,7 +5,7 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\StructuredOutputData;
-use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
+use Cognesy\Instructor\Core\StructuredOutputResponse;
 use Cognesy\Instructor\StructuredOutput;
 
 class RunInstructor implements CanRunExecution

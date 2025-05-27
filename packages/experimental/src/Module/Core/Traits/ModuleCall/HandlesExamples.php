@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\Module\Core\Traits\ModuleCall;
 
-use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Extras\Example\Example;
 
 trait HandlesExamples
 {

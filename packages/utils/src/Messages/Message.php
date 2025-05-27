@@ -36,7 +36,6 @@ class Message {
 
     public const DEFAULT_ROLE = 'user';
 
-    protected string $id;
     protected string $role;
     protected string $name;
     protected string|array $content;
@@ -52,7 +51,6 @@ class Message {
         string $name = '',
         array $metadata = [],
     ) {
-        $this->id = Uuid::uuid4();
         $this->role = match(true) {
             $role instanceof MessageRole => $role->value,
             ($role === '') => self::DEFAULT_ROLE,

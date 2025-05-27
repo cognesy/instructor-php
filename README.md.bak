@@ -465,7 +465,7 @@ use Cognesy\Instructor\StructuredOutput;
 $value = (new StructuredOutput)->with(
     messages: "His name is Jason, he is 28 years old.",
     responseModel: Scalar::integer('age'),
-)->getInt();
+)->create()->getInt();
 
 var_dump($value);
 // int(28)
@@ -787,7 +787,7 @@ class Skill {
 You can use ValidationMixin trait to add ability of easy, custom data object validation.
 
 ```php
-use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
 class User {
     use ValidationMixin;
@@ -883,7 +883,7 @@ $structuredOutput = (new StructuredOutput)
 $structuredOutput->with(
     messages: "What is the population of Paris?",
     responseModel: Scalar::integer(),
-)->getInt();
+)->create()->getInt();
 // check your console for the details on the Instructor execution
 ```
 

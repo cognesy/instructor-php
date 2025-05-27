@@ -3,9 +3,9 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
-use Cognesy\Instructor\Features\Schema\Factories\SchemaFactory;
-use Cognesy\Instructor\Features\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Factories\SchemaFactory;
+use Cognesy\Schema\Factories\TypeDetailsFactory;
 use DateTime;
 
 trait HandlesFieldDefinitions

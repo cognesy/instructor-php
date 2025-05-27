@@ -17,22 +17,23 @@ class StructuredOutputConfig
         OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
         OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
     ];
+    private string $schemaName = 'default_schema';
     private string $toolName = 'extracted_data';
     private string $toolDescription = 'Function call based on user instructions.';
+    private string $defaultOutputClass = 'Cognesy\Instructor\Extras\Structure\Structure';
 
     private array $chatStructure = [
         // potentially cached - predefined sections used to construct the script
         'system',
         'pre-cached',
-        'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-        'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-        'pre-cached-input', 'cached-input', 'post-cached-input',
-        'cached-messages',
+            'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+            'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+            'cached-messages',
         'post-cached',
         // never cached
         'pre-prompt', 'prompt', 'post-prompt',
         'pre-examples', 'examples', 'post-examples',
-        'messages',
+        'pre-messages', 'messages', 'post-messages',
         'pre-retries', 'retries', 'post-retries'
     ];
 
@@ -42,24 +43,28 @@ class StructuredOutputConfig
         int        $maxRetries = -1,
         string     $retryPrompt = '',
         array      $modePrompts = [],
+        string     $schemaName = '',
         string     $toolName = '',
         string     $toolDescription = '',
         array      $chatStructure = [],
+        string     $defaultOutputClass = '',
     ) {
         $this->outputMode = $outputMode ?: $this->outputMode;
-        $this->useObjectReferences = $useObjectReferences ?: $this->useObjectReferences;
+        $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
         $this->maxRetries = ($maxRetries >= 0) ? $maxRetries : $this->maxRetries;
         $this->retryPrompt = $retryPrompt ?: $this->retryPrompt;
         $this->modePrompts = $modePrompts ?: $this->modePrompts;
+        $this->schemaName = $schemaName ?: $this->schemaName;
         $this->toolName = $toolName ?: $this->toolName;
         $this->toolDescription = $toolDescription ?: $this->toolDescription;
         $this->chatStructure = $chatStructure ?: $this->chatStructure;
+        $this->defaultOutputClass = $defaultOutputClass ?: $this->defaultOutputClass;
     }
 
     public static function load() : static {
         return new static(
             outputMode: OutputMode::from(Settings::get('structured', 'defaultMode', '')),
-            useObjectReferences: Settings::get('structured', 'useObjectReferences', true),
+            useObjectReferences: Settings::get('structured', 'useObjectReferences', null),
             maxRetries: Settings::get('structured', 'maxRetries', 0),
             retryPrompt: Settings::get('structured', 'defaultRetryPrompt', ''),
             modePrompts: [
@@ -68,9 +73,11 @@ class StructuredOutputConfig
                 OutputMode::JsonSchema->value => Settings::get('structured', 'defaultJsonSchemaPrompt', ''),
                 OutputMode::Tools->value => Settings::get('structured', 'defaultToolsPrompt', ''),
             ],
+            schemaName: Settings::get('structured', 'defaultSchemaName', ''),
             toolName: Settings::get('structured', 'defaultToolName', ''),
             toolDescription: Settings::get('structured', 'defaultToolDescription', ''),
             chatStructure: Settings::get('structured', 'defaultChatStructure', []),
+            defaultOutputClass: Settings::get('structured', 'defaultOutputClass', ''),
         );
     }
 
@@ -99,6 +106,10 @@ class StructuredOutputConfig
         return $this->chatStructure;
     }
 
+    public function schemaName() : string {
+        return $this->schemaName;
+    }
+
     public function toolName() : string {
         return $this->toolName;
     }
@@ -115,6 +126,9 @@ class StructuredOutputConfig
         return $this->maxRetries;
     }
 
+    public function defaultOutputClass() : string {
+        return $this->defaultOutputClass;
+    }
 
     // MUTATORS ///////////////////////////////////////////////////////
 
@@ -127,6 +141,11 @@ class StructuredOutputConfig
     public function withMaxRetries(int $maxRetries) : static
     {
         $this->maxRetries = $maxRetries;
+        return $this;
+    }
+
+    public function withSchemaName(string $schemaName) : static {
+        $this->schemaName = $schemaName;
         return $this;
     }
 
@@ -169,6 +188,12 @@ class StructuredOutputConfig
     public function withChatStructure(array $chatStructure) : static
     {
         $this->chatStructure = $chatStructure;
+        return $this;
+    }
+
+    public function withDefaultOutputClass(string $defaultOutputClass) : static
+    {
+        $this->defaultOutputClass = $defaultOutputClass;
         return $this;
     }
 

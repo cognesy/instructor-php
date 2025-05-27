@@ -3,9 +3,9 @@
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Instructor\Features\Schema\Data\TypeDetails;
 use Cognesy\Instructor\Tests\Examples\Structure\TestEnum;
 use Cognesy\Instructor\Tests\Examples\Structure\TestNestedObject;
+use Cognesy\Schema\Data\TypeDetails;
 
 it('creates structure', function () {
     $structure = Structure::define('TestStructure', [

@@ -2,13 +2,12 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Features\Core\StructuredOutputResponse;
+use Cognesy\Instructor\Core\StructuredOutputResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 /**
  * The Instructor class will be deprecated.
- * Use the StructuredOutput class instead.
+ * Use StructuredOutput class instead.
  */
 class Instructor extends StructuredOutput
 {

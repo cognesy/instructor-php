@@ -22,7 +22,7 @@ array data rendered as JSON text.
 
 ```php
 <?php
-use Cognesy\Instructor\Data\Example;
+use Cognesy\Instructor\Extras\Example\Example;
 
 class User {
     public int $age;

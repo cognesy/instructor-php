@@ -6,7 +6,7 @@ use Cognesy\Experimental\Module\Signature\Attributes\OutputField;
 use Cognesy\Experimental\Module\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\Description;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 it('creates signature from string', function () {

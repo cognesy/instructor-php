@@ -19,8 +19,8 @@ self-explain approach to generating the response.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Instructions;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Instructions;
 
 class Employee {
     #[Instructions('Think step by step to determine the correct year of employment.')]

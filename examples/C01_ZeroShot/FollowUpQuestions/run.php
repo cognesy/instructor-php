@@ -21,8 +21,8 @@ Self-Ask is a technique which use a single prompt to:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Schema\Attributes\Description;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Schema\Attributes\Description;
 
 class FollowUp {
     #[Description("Follow-up question")]

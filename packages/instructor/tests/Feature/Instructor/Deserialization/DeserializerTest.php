@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Instructor\Features\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Features\Deserialization\Exceptions\DeserializationException;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Instructor\Tests\Examples\Deserialization\Person;
 use Cognesy\Instructor\Tests\Examples\Deserialization\PersonWithArray;
 use Cognesy\Instructor\Tests\Examples\Deserialization\PersonWithNestedObject;

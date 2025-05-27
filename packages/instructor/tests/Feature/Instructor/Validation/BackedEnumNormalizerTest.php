@@ -1,9 +1,8 @@
 <?php
 
-use Cognesy\Instructor\Features\Deserialization\Deserializers\BackedEnumNormalizer;
-use Symfony\Component\Serializer\Exception\InvalidArgumentException;
+use Cognesy\Instructor\Deserialization\Deserializers\BackedEnumNormalizer;
 use Cognesy\Instructor\Tests\Examples\Validators\MockBackedEnum;
-
+use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 
 test('it normalizes BackedEnum object to its value', function () {
     $normalizer = new BackedEnumNormalizer();

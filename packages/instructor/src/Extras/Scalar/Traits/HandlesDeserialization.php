@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Extras\Scalar\Traits;
 
-use Cognesy\Instructor\Features\Deserialization\Exceptions\DeserializationException;
+use Cognesy\Instructor\Deserialization\Exceptions\DeserializationException;
 use Cognesy\Utils\Json\Json;
 use Exception;
 

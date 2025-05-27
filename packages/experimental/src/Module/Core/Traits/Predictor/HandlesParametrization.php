@@ -3,23 +3,23 @@
 namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Data\StructuredOutputRequestInfo;
+use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Inference;
 
 trait HandlesParametrization
 {
     public function with(
-        StructuredOutput            $structuredOutput = null,
-        StructuredOutputRequestInfo $requestInfo = null,
-        Signature                   $signature = null,
-        string                      $instructions = null,
-        array                       $examples = null,
-        array                       $options = null,
-        string                      $model = null,
+        StructuredOutput        $structuredOutput = null,
+        StructuredOutputRequest $request = null,
+        Signature               $signature = null,
+        string                  $instructions = null,
+        array                   $examples = null,
+        array                   $options = null,
+        string                  $model = null,
     ) : static {
         $this->withStructuredOutput($structuredOutput);
-        $this->withRequestInfo($requestInfo);
+        $this->withRequest($request);
         $this->withSignature($signature);
         $this->withInstructions($instructions);
         $this->withExamples($examples);
@@ -57,10 +57,10 @@ trait HandlesParametrization
         return $this;
     }
 
-    public function withRequestInfo(?StructuredOutputRequestInfo $requestInfo) : static {
+    public function withRequest(?StructuredOutputRequest $request) : static {
         $this->requestInfo = match(true) {
-            !is_null($requestInfo) => $requestInfo,
-            !isset($this->requestInfo) => new StructuredOutputRequestInfo(),
+            !is_null($request) => $request,
+            !isset($this->requestInfo) => new StructuredOutputRequest(),
             default => $this->requestInfo,
         };
         return $this;

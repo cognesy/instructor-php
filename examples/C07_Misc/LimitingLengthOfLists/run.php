@@ -18,9 +18,9 @@ a manageable set of properties.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
-use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\ValidationResult;
 
 class Property
 {

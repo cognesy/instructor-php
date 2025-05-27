@@ -15,7 +15,9 @@ Ultimately the implemented solution has much nicer DX:
 
 ```php
 $isAdult = (new StructuredOutput)->with(
-    messages: "Jason is 35 years old",
-    responseModel: Scalar::bool('isAdult')
-)->getBoolean();
+        messages: "Jason is 35 years old",
+        responseModel: Scalar::bool('isAdult')
+    )
+    ->create()
+    ->getBoolean();
 ```

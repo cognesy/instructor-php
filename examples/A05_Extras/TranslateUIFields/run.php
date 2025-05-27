@@ -19,9 +19,9 @@ structure-to-structure processing with LLM.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\Extras\Scalar\Scalar;
-use Cognesy\Instructor\Features\Validation\Contracts\CanValidateObject;
-use Cognesy\Instructor\Features\Validation\ValidationResult;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
+use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class TextElementModel

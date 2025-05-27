@@ -60,7 +60,7 @@ and defining validation logic in ```validate()``` method.
 
 ```php
 <?php
-use Cognesy\Instructor\Features\Validation\Traits\ValidationMixin;
+use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 
 class UserDetails
 {

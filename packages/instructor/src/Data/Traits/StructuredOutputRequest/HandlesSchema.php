@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Str;
 
 trait HandlesSchema
 {
@@ -58,22 +57,13 @@ trait HandlesSchema
     public function toolChoice() : string|array {
         return [
             'type' => 'function',
-            'function' => ['name' => $this->toolName()]
+            'function' => [
+                'name' => $this->toolName()
+            ]
         ];
     }
 
     public function schemaName() : string {
-        $requestedSchema = $this->requestedSchema();
-        $name = match(true) {
-            is_string($requestedSchema) => $requestedSchema,
-            is_array($requestedSchema) => $requestedSchema['name'] ?? 'default_schema',
-            is_object($requestedSchema) => get_class($requestedSchema),
-            default => 'default_schema',
-        };
-        if (Str::startsWith($name, '\\')) {
-            $name = substr($name, 1);
-        }
-        $name = str_replace('\\', '_', $name);
-        return $name;
+        return $this->responseModel?->schemaName() ?? $this->config->schemaName() ?? 'default_schema';
     }
 }
