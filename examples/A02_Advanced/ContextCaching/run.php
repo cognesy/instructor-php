@@ -62,7 +62,7 @@ multiple requests.
 <?php
 $content = file_get_contents(__DIR__ . '/../../../README.md');
 
-$cached = (new StructuredOutput)->withDebug()->using('anthropic')->withCachedContext(
+$cached = (new StructuredOutput)->using('anthropic')->withCachedContext(
     system: 'Your goal is to respond questions about the project described in the README.md file'
         . "\n\n# README.md\n\n" . $content,
     prompt: 'Respond with strict JSON object using schema:\n<|json_schema|>',

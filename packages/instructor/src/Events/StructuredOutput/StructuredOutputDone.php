@@ -1,12 +1,12 @@
 <?php
 
-namespace Cognesy\Instructor\Events\Instructor;
+namespace Cognesy\Instructor\Events\StructuredOutput;
 
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class InstructorDone extends Event
+class StructuredOutputDone extends Event
 {
     public $logLevel = LogLevel::INFO;
 

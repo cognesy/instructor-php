@@ -1,8 +1,8 @@
 <?php
 
 //use Cognesy\Instructor\Events\Instructor\ErrorRaised;
-use Cognesy\Instructor\Events\Instructor\RequestReceived;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;

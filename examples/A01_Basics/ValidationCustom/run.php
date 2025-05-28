@@ -35,11 +35,14 @@ class UserDetails
     }
 }
 
-$user = (new StructuredOutput)->with(
-    messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
-    responseModel: UserDetails::class,
-    maxRetries: 2
-)->get();
+$user = (new StructuredOutput)
+    ->wiretap(fn($e) => $e->print())
+    ->with(
+        messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
+        responseModel: UserDetails::class,
+        maxRetries: 2
+    )
+    ->get();
 
 dump($user);
 

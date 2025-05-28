@@ -50,7 +50,7 @@ $user = (new StructuredOutput)
     ->wiretap(fn($e) => $e->print())
     ->withResponseClass(UserDetails::class)
     ->with(
-        messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 23.']],
+        messages: [['role' => 'user', 'content' => 'Jason was born in 2000 and graduated in 18.']],
         model: 'gpt-3.5-turbo',
         maxRetries: 2,
     )->get();
@@ -58,6 +58,6 @@ $user = (new StructuredOutput)
 
 dump($user);
 
-assert($user->graduationYear === 2023);
+assert($user->graduationYear === 2018);
 ?>
 ```

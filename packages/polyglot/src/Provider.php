@@ -3,7 +3,6 @@
 namespace Cognesy\Polyglot;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;

@@ -2,9 +2,11 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Utils\Messages\Messages;
+
 class CachedContext
 {
-    private array $messages;
+    private Messages $messages;
     private string $system;
     private string $prompt;
     private array $examples;
@@ -16,15 +18,15 @@ class CachedContext
         array $examples = [],
     ) {
         $this->messages = match(true) {
-            is_string($messages) => [['role' => 'user', 'content' => $messages]],
-            is_array($messages) => $messages,
+            is_string($messages) => Messages::fromString($messages),
+            is_array($messages) => Messages::fromArray($messages),
         };
         $this->system = $system;
         $this->prompt = $prompt;
         $this->examples = $examples;
     }
 
-    public function messages() : array {
+    public function messages() : Messages {
         return $this->messages;
     }
 

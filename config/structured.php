@@ -42,4 +42,8 @@ return [
         'pre-messages', 'messages', 'post-messages',
         'pre-retries', 'retries', 'post-retries'
     ],
+
+    '' => [
+
+    ],
 ];

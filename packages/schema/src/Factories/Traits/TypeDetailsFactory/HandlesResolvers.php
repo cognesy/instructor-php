@@ -19,6 +19,7 @@ trait HandlesResolvers
         if ($anyType === null) {
             throw new \Exception('Instructor does not support mixed or unspecified property types');
         }
+
         $normalized = $this->normalizeIfCollection($anyType);
         return match (true) {
             ($normalized == TypeDetails::PHP_OBJECT) => throw new \Exception('Object type must have a class name'),

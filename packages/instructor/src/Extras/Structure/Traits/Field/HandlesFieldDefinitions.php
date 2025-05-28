@@ -10,8 +10,6 @@ use DateTime;
 
 trait HandlesFieldDefinitions
 {
-    private TypeDetailsFactory $typeDetailsFactory;
-
     static public function int(string $name, string $description = '') : self {
         $factory = new TypeDetailsFactory();
         $type = $factory->scalarType(TypeDetails::PHP_INT);

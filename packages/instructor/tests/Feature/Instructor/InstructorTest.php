@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Events\Instructor\RequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Instructor\EventSink;
 use Cognesy\Instructor\Tests\Examples\Instructor\Person;

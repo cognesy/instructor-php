@@ -19,4 +19,21 @@ enum MessageRole : string {
             default => self::User,
         };
     }
+
+    public function is(MessageRole $role) : bool {
+        return $this === $role;
+    }
+
+    public function oneOf(MessageRole ...$roles) : bool {
+        foreach ($roles as $role) {
+            if ($this->is($role)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function isSystem() : bool {
+        return $this->oneOf(self::System, self::Developer);
+    }
 }

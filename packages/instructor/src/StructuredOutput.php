@@ -8,8 +8,8 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Events\Instructor\InstructorReady;
-use Cognesy\Instructor\Events\Instructor\InstructorStarted;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputReady;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
@@ -65,7 +65,7 @@ class StructuredOutput
         $this->config = $config ?? StructuredOutputConfig::load();
 
         // queue 'STARTED' event, to dispatch it after user is ready to handle it
-        $this->queueEvent(new InstructorStarted());
+        $this->queueEvent(new StructuredOutputStarted());
 
         // main event dispatcher
         if (is_null($events) || is_null($listener)) {
@@ -87,7 +87,7 @@ class StructuredOutput
         $this->llm = $llm ?? new LLM(events: $this->events);
 
         // queue 'READY' event
-        $this->queueEvent(new InstructorReady());
+        $this->queueEvent(new StructuredOutputReady());
     }
 
     /**

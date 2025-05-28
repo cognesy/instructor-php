@@ -22,6 +22,16 @@
 - Addon: MCP support as addon
 - Add support for 'developer' role in messages
 
+# SCRATCHPAD
+
+- Make configurable per preset - merge per role, merge to string vs message sequence
+- Move script structure to text template
+- Add default template dialect to structured config file
+- Settings and config paths - make easier to configure
+- Clean up dependency on schema - make it very simple interface based API (object > json schema)
+- Simplify the code of structure class, extract it to a separate package (instructor-adhoc)
+
+
 # BACKLOG
 
 ## Refactorings

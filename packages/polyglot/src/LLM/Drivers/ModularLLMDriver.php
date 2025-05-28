@@ -4,8 +4,6 @@ namespace Cognesy\Polyglot\LLM\Drivers;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;

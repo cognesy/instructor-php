@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Core\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Events\Instructor\InstructorDone;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Utils\Json\Json;
 use Exception;
@@ -42,7 +42,7 @@ class StructuredOutputResponse
             return $this->stream()->finalValue();
         }
         $response = $this->getResponse();
-        $this->events->dispatch(new InstructorDone(['result' => $response]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $response]));
         return $response->value();
     }
 
@@ -67,7 +67,7 @@ class StructuredOutputResponse
      */
     public function response() : LLMResponse {
         $response = $this->getResponse();
-        $this->events->dispatch(new InstructorDone(['result' => $response->value()]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $response->value()]));
         return $response;
     }
 

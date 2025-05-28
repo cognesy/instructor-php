@@ -61,6 +61,16 @@ trait HandlesTransformation
         return $messages;
     }
 
+    public function trimmed() : Messages {
+        $messages = new Messages();
+        foreach ($this->messages as $message) {
+            if (!$message->isEmpty()) {
+                $messages->appendMessage($message);
+            }
+        }
+        return $messages;
+    }
+
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     private function mergeRolesFlat() : Messages {

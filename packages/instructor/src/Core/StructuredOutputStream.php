@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\Events\Instructor\InstructorDone;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
+use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
@@ -62,7 +62,7 @@ class StructuredOutputStream
             yield $result;
         }
         $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone(['result' => $result]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $result]));
     }
 
     /**
@@ -71,7 +71,7 @@ class StructuredOutputStream
     public function finalValue() : mixed {
         $result = $this->finalResponse()->value();
         $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone(['result' => $result]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $result]));
         return $result;
     }
 
@@ -111,7 +111,7 @@ class StructuredOutputStream
         // yield last, fully updated sequence instance
         yield $lastSequence;
         $this->events->dispatch(new ResponseGenerated($lastSequence));
-        $this->events->dispatch(new InstructorDone(['result' => $lastSequence]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $lastSequence]));
     }
 
     /**
@@ -127,7 +127,7 @@ class StructuredOutputStream
             yield $partialResponse;
         }
         $this->events->dispatch(new ResponseGenerated($this->lastResponse->value()));
-        $this->events->dispatch(new InstructorDone(['result' => $this->lastResponse->value()]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $this->lastResponse->value()]));
     }
 
     /**
@@ -152,7 +152,7 @@ class StructuredOutputStream
             $callback($partialResponse->value());
         }
         $this->events->dispatch(new ResponseGenerated($this->lastResponse));
-        $this->events->dispatch(new InstructorDone(['result' => $this->lastResponse]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $this->lastResponse]));
     }
 
     /**
@@ -165,7 +165,7 @@ class StructuredOutputStream
             $result[] = $callback($partialResponse->value());
         }
         $this->events->dispatch(new ResponseGenerated($this->lastResponse));
-        $this->events->dispatch(new InstructorDone(['result' => $result]));
+        $this->events->dispatch(new StructuredOutputDone(['result' => $result]));
         return $result;
     }
 
@@ -179,7 +179,7 @@ class StructuredOutputStream
             $result = $callback($partialResponse->value(), $result);
         }
         $this->events->dispatch(new ResponseGenerated($result));
-        $this->events->dispatch(new InstructorDone($result));
+        $this->events->dispatch(new StructuredOutputDone($result));
         return $result;
     }
 }

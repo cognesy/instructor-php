@@ -5,7 +5,7 @@ use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Events\Instructor\ResponseGenerated;
+use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Validation\Exceptions\ValidationException;
@@ -143,7 +143,7 @@ class RequestHandler
         // get final value
         $value = $processingResult->unwrap();
         // store response
-        $request->setResponse($request->messages(), $llmResponse, $partialResponses, $value); // TODO: tx messages to Scripts
+        $request->setResponse($request->messages()->toArray(), $llmResponse, $partialResponses, $value); // TODO: tx messages to Scripts
         // notify on response generation
         $this->events->dispatch(new ResponseGenerated($value));
 
@@ -155,7 +155,7 @@ class RequestHandler
         $this->errors = is_array($error) ? $error : [$error];
 
         // store failed response
-        $request->addFailedResponse($request->messages(), $llmResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
+        $request->addFailedResponse($request->messages()->toArray(), $llmResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
         $this->retries++;
         if (!$this->maxRetriesReached($request)) {
             $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $this->errors));

@@ -41,7 +41,6 @@ $user = $structuredOutput->withDebug()->with(
 )->get();
 
 echo "\nResult:\n";
-dump($user);
 
 assert(isset($user->name));
 assert(isset($user->age));

@@ -101,6 +101,7 @@ class PartialsGenerator implements CanGeneratePartials
             if (empty($maybeArgumentChunk)) {
                 continue;
             }
+
             $this->events->dispatch(new ChunkReceived($maybeArgumentChunk));
             $this->responseText .= $maybeArgumentChunk;
             $this->responseJson = Json::fromPartial($this->responseText)->toString();
@@ -133,6 +134,22 @@ class PartialsGenerator implements CanGeneratePartials
         }
         // finalize sequenceable
         $this->sequenceableHandler->finalize();
+    }
+
+    public function getCompleteResponse() : LLMResponse {
+        return LLMResponse::fromPartialResponses($this->partialResponses);
+    }
+
+    public function lastPartialResponse() : PartialLLMResponse {
+        if (empty($this->partialResponses)) {
+            throw new Exception('No partial responses found');
+        }
+        $index = count($this->partialResponses) - 1;
+        return $this->partialResponses[$index];
+    }
+
+    public function partialResponses() : array {
+        return $this->partialResponses;
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
@@ -184,22 +201,6 @@ class PartialsGenerator implements CanGeneratePartials
         }
         $this->previousHash = $currentHash;
         return $result;
-    }
-
-    public function getCompleteResponse() : LLMResponse {
-        return LLMResponse::fromPartialResponses($this->partialResponses);
-    }
-
-    public function lastPartialResponse() : PartialLLMResponse {
-        if (empty($this->partialResponses)) {
-            throw new Exception('No partial responses found');
-        }
-        $index = count($this->partialResponses) - 1;
-        return $this->partialResponses[$index];
-    }
-
-    public function partialResponses() : array {
-        return $this->partialResponses;
     }
 
     protected function newToolCall(string $name) : ToolCall {

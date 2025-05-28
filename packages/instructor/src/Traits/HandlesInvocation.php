@@ -8,7 +8,7 @@ use Cognesy\Instructor\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Core\StructuredOutputStream;
 use Cognesy\Instructor\Data\ChatTemplate;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Events\Instructor\RequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
@@ -26,7 +26,7 @@ trait HandlesInvocation
      * @param StructuredOutputRequest $request The RequestInfo object containing all necessary data
      * for generating the request.
      *
-     * @return \Cognesy\Instructor\Core\StructuredOutputResponse The response generated based on the provided request details.
+     * @return StructuredOutputResponse The response generated based on the provided request details.
      */
     public function withRequest(StructuredOutputRequest $request) : StructuredOutputResponse {
         return $this->with(
@@ -207,7 +207,7 @@ trait HandlesInvocation
         return $this->create()->getString();
     }
 
-    public function getFloat() : array {
+    public function getFloat() : float {
         return $this->create()->getFloat();
     }
 
@@ -215,7 +215,7 @@ trait HandlesInvocation
         return $this->create()->getInt();
     }
 
-    public function getBoolean() : array {
+    public function getBoolean() : bool {
         return $this->create()->getBoolean();
     }
 
@@ -223,11 +223,15 @@ trait HandlesInvocation
         return $this->create()->getObject();
     }
 
+    public function getArray() : array {
+        return $this->create()->getArray();
+    }
+
     /**
      * Processes a request using provided input, system configurations,
      * and response specifications and returns a streamed result object.
      *
-     * @return \Cognesy\Instructor\Core\StructuredOutputStream A stream of the response
+     * @return StructuredOutputStream A stream of the response
      */
     public function stream() : StructuredOutputStream {
         // turn on streaming mode

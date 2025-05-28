@@ -54,4 +54,17 @@ trait HandlesTransformation
         );
         return $script;
     }
+
+    public function trimmed() : static {
+        $script = new Script();
+        $script->withParams($this->parameters());
+        foreach ($this->sections as $section) {
+            $trimmed = $section->trimmed();
+            if ($trimmed->isEmpty()) {
+                continue;
+            }
+            $script->appendSection($trimmed);
+        }
+        return $script;
+    }
 }

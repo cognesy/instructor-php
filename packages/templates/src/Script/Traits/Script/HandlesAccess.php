@@ -6,7 +6,7 @@ use Cognesy\Template\Script\Section;
 
 trait HandlesAccess
 {
-    /** @return \Cognesy\Messages\\Cognesy\Template\Script\Section[] */
+    /** @return Section[] */
     public function sections() : array {
         return $this->sections;
     }

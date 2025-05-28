@@ -44,7 +44,7 @@ class ChatTemplate implements CanMaterializeRequest
         $script = new Script();
 
         // GET DATA
-        $messages = $this->normalizeMessages($request->messages());
+        $messages = $request->messages();
 
         // SYSTEM SECTION
         $script->section('system')->appendMessages(
@@ -62,7 +62,7 @@ class ChatTemplate implements CanMaterializeRequest
         $script->section('examples')->appendMessages(
             $this->makeExamples($request->examples())
         );
-        return $this->filterEmptySections($script);
+        return $script->trimmed();
     }
 
     protected function makeCachedScript(CachedContext $cachedContext) : Script {
@@ -71,7 +71,7 @@ class ChatTemplate implements CanMaterializeRequest
         }
 
         $script = new Script();
-        $messages = $this->normalizeMessages($cachedContext->messages());
+        $messages = $cachedContext->messages();
 
         $script->section('system')->prependMessages(
             $this->makeSystem($messages, $cachedContext->system())
@@ -86,7 +86,7 @@ class ChatTemplate implements CanMaterializeRequest
             $this->makeExamples($cachedContext->examples())
         );
 
-        return $this->filterEmptySections($script);
+        return $script->trimmed();
     }
 
     protected function withCacheMetaSections(CachedContext $cachedContext, Script $script) : Script {
@@ -183,7 +183,7 @@ class ChatTemplate implements CanMaterializeRequest
         };
     }
 
-    protected function makeSystem(array $messages, string $system) : Messages {
+    protected function makeSystem(Messages $messages, string $system) : Messages {
         $output = new Messages();
 
         if (!empty($system)) {
@@ -191,11 +191,8 @@ class ChatTemplate implements CanMaterializeRequest
         }
 
         // EXTRACT SYSTEM ROLE FROM MESSAGES - until first non-system message
-        foreach ($messages as $message) {
-            if (empty($message['role'])) {
-                continue;
-            }
-            if ($message['role'] !== 'system') {
+        foreach ($messages->each() as $message) {
+            if (!$message->role()->isSystem()) {
                 break;
             }
             $output->appendMessage($message);
@@ -204,21 +201,21 @@ class ChatTemplate implements CanMaterializeRequest
         return $output;
     }
 
-    protected function makeMessages(string|array $messages) : Messages {
+    protected function makeMessages(Messages $messages) : Messages {
         $output = new Messages();
-        if (empty($messages)) {
+        if ($messages->isEmpty()) {
             return $output;
         }
 
         // skip system messages
         $index = 0;
         foreach ($messages as $message) {
-            if ($message['role'] !== 'system') {
+            if (!$message->role()->isSystem()) {
                 break;
             }
             $index++;
         }
-        $output->appendMessages(array_slice($messages, $index));
+        $output->appendMessages(array_slice($messages->toArray(), $index));
         return $output;
     }
 
@@ -248,29 +245,5 @@ class ChatTemplate implements CanMaterializeRequest
 
     protected function makeJsonSchema(?ResponseModel $responseModel) : array {
         return $responseModel?->toJsonSchema() ?? [];
-    }
-
-    protected function normalizeMessages(string|array $messages): array {
-        if (!is_array($messages)) {
-            return [['role' => 'user', 'content' => $messages]];
-        }
-        return $messages;
-    }
-
-    protected function filterEmptySections(Script $script) : Script {
-        foreach ($script->sections() as $section) {
-            if ($this->isSectionEmpty($section->messages())) {
-                $script->removeSection($section->name());
-            }
-        }
-        return $script;
-    }
-
-    protected function isSectionEmpty(Message|Messages $content) : bool {
-        return match(true) {
-            $content instanceof Messages => $content->isEmpty(),
-            $content instanceof Message => $content->isEmpty() || $content->isNull(),
-            default => true,
-        };
     }
 }

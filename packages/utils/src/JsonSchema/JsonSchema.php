@@ -152,7 +152,7 @@ class JsonSchema implements CanProvideJsonSchema
             return [];
         }
 
-        // supported properties values:
+        // supported property values:
         //  a) string-key => array
         //  b) string-key => object
         //  c) int => array
