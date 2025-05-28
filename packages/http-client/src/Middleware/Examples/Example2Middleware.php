@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http\Middleware\Examples;
 
-use;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;

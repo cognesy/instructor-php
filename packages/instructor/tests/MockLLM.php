@@ -19,6 +19,7 @@ class MockLLM
         }
 
         $mockHttp->shouldReceive('handle')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('withDebug')->andReturn($mockHttp);
 
         $mockResponse->shouldReceive('statusCode')->andReturn(200);
         $mockResponse->shouldReceive('headers')->andReturn([]);
