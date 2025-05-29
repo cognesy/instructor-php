@@ -6,16 +6,19 @@ class EmbeddingsRequest
 {
     protected array $inputs = [];
     protected array $options = [];
+    protected string $model = '';
 
     public function __construct(
         string|array $input = [],
         array $options = [],
+        string $model = ''
     ) {
         $this->inputs = match(true) {
             is_string($input) => [$input],
             is_array($input) => $input,
             default => []
         };
+        $this->model = $model;
         $this->options = $options;
     }
 
@@ -43,6 +46,11 @@ class EmbeddingsRequest
         return $this;
     }
 
+    public function withModel(string $model) : static {
+        $this->model = $model;
+        return $this;
+    }
+
     public function inputs() : array {
         return $this->inputs;
     }
@@ -51,10 +59,15 @@ class EmbeddingsRequest
         return $this->options;
     }
 
+    public function model() : string {
+        return $this->model;
+    }
+
     public function toArray() : array {
         return [
             'inputs' => $this->inputs,
             'options' => $this->options,
+            'model' => $this->model,
         ];
     }
 }

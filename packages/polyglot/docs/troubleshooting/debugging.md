@@ -24,7 +24,7 @@ $inference->withDebug(true);
 // Make a request - debug output will show the request and response details
 $response = $inference->with(
     messages: 'What is the capital of France?'
-)->toText();
+)->get();
 ```
 
 
@@ -62,7 +62,7 @@ $inference->withHttpClient($httpClient);
 // Make a request
 $response = $inference->with(
     messages: 'What is the capital of France?'
-)->toText();
+)->get();
 ```
 
 
@@ -98,7 +98,7 @@ $inference = new Inference(events: $events);
 // Make a request
 $response = $inference->with(
     messages: 'What is the capital of France?'
-)->toText();
+)->get();
 ```
 
 
@@ -148,5 +148,5 @@ $inference = new Inference(events: $events);
 // Make a request
 $response = $inference->with(
     messages: 'What is artificial intelligence?'
-)->toText();
+)->get();
 ```

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Polyglot\LLM;
+namespace Cognesy\Polyglot\LLM\Utils;
 
 use Closure;
 use Cognesy\Polyglot\LLM\Events\StreamDataParsed;

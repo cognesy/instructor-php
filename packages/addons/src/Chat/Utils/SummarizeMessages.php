@@ -29,6 +29,6 @@ class SummarizeMessages implements CanSummarizeMessages
             model: $this->model,
             options: ['max_tokens' => $tokenLimit ?? $this->tokenLimit],
             mode: OutputMode::Text,
-        )->toText();
+        )->get();
     }
 }

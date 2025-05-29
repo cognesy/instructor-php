@@ -48,7 +48,7 @@ $summary = (new Inference)
             ['role' => 'user', 'content' => 'Concise summary of project report in 2-3 sentences:'],
         ]
     )
-    ->toText();
+    ->get();
 
 dump($summary);
 ?>

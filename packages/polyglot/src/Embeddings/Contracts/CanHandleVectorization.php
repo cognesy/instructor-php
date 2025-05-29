@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
+use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 
 /**
@@ -8,7 +9,7 @@ use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
  *
  * Defines the contract for embedding generation services
  */
-interface CanVectorize
+interface CanHandleVectorization
 {
     /**
      * Generate embeddings for the input
@@ -17,5 +18,5 @@ interface CanVectorize
      * @param array $options
      * @return EmbeddingsResponse
      */
-    public function vectorize(array $input, array $options = []) : EmbeddingsResponse;
+    public function handle(EmbeddingsRequest $request) : EmbeddingsResponse;
 }

@@ -53,20 +53,11 @@ class InferenceResponse
      *
      * @return string The textual representation of the response. If streaming, retrieves the final content; otherwise, retrieves the standard content.
      */
-    public function toText() : string {
+    public function get() : string {
         return match($this->isStreamed) {
             false => $this->makeLLMResponse()->content(),
             true => $this->stream()->final()?->content() ?? '',
         };
-    }
-
-    /**
-     * Converts the response content to a JSON representation.
-     *
-     * @return array The JSON representation of the content as an associative array.
-     */
-    public function asJsonData() : array {
-        return Json::fromString($this->toText())->toArray();
     }
 
     /**
@@ -88,6 +79,15 @@ class InferenceResponse
     }
 
     // AS API RESPONSE OBJECT ///////////////////////////////////
+
+    /**
+     * Converts the response content to a JSON representation.
+     *
+     * @return array The JSON representation of the content as an associative array.
+     */
+    public function asJsonData() : array {
+        return Json::fromString($this->get())->toArray();
+    }
 
     /**
      * Generates and returns an LLMResponse based on the streaming status.
@@ -116,8 +116,6 @@ class InferenceResponse
         $this->events->dispatch(new LLMResponseReceived($response));
         return $response;
     }
-
-    // PRIVATE /////////////////////////////////////////////////
 
     /**
      * Retrieves the content of the response. If the content has not been

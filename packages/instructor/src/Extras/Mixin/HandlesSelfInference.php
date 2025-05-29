@@ -46,7 +46,8 @@ trait HandlesSelfInference {
         string              $retryPrompt = '',
         ?LLM                $llm = null,
     ) : static {
-        return (new StructuredOutput(llm: $llm ?? new LLM()))
+        return (new StructuredOutput())
+            ->withLLM($llm ?? new LLM())
             ->with(
                 messages: $messages,
                 responseModel: self::class,

@@ -25,10 +25,12 @@ class Person {
 $text = "His name is Jason and he is 28 years old.";
 
 // Step 3: Use Instructor to run LLM inference
-$person = (new StructuredOutput)->generate(
-    messages: [['role' => 'user', 'content' => $text]],
-    responseModel: Person::class,
-);
+$person = (new StructuredOutput)
+    ->with(
+        messages: [['role' => 'user', 'content' => $text]],
+        responseModel: Person::class,
+    )
+    ->get();
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true
@@ -60,29 +62,12 @@ You can provide a string instead of an array of messages. This is useful when yo
 <?php
 use Cognesy\Instructor\StructuredOutput;
 
-$value = (new StructuredOutput)->generate(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-);
-?>
-```
-
-
-## Alternative way to get results
-
-You can call `request()` method to initiate Instructor with request data
-and then call `get()` to get the response.
-
-```php
-<?php
-use Cognesy\Instructor\StructuredOutput;
-
-$structuredOutput = (new StructuredOutput)->with(
-    messages: "His name is Jason, he is 28 years old.",
-    responseModel: Person::class,
-);
-
-$person = $structuredOutput->get();
+$value = (new StructuredOutput)
+    ->with(
+        messages: "His name is Jason, he is 28 years old.",
+        responseModel: Person::class,
+    )
+    ->get();
 ?>
 ```
 
@@ -114,11 +99,12 @@ $email = new Email(
     body: 'Your account has been updated.'
 );
 
-$translation = (new StructuredOutput)->generate(
-    input: $email,
-    responseModel: Email::class,
-    prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
-);
+$translation = (new StructuredOutput)->with(
+        input: $email,
+        responseModel: Email::class,
+        prompt: 'Translate the text fields of email to Spanish. Keep other fields unchanged.',
+    )
+    ->get();
 ?>
 ```
 

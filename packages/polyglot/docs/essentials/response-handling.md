@@ -18,7 +18,7 @@ $response = $inference->with(
 );
 
 // Get the response as plain text
-$text = $response->toText();
+$text = $response->get();
 echo "Text response: $text\n";
 
 // Get the response as a JSON object (for JSON responses)
@@ -67,7 +67,7 @@ foreach ($stream as $partialResponse) {
     }
 }
 
-echo "\n\nComplete response: " . $response->toText();
+echo "\n\nComplete response: " . $response->get();
 ```
 
 
@@ -156,7 +156,7 @@ if ($response->hasToolCalls()) {
 
         $finalResponse = $inference->with(
             messages: $newMessages
-        )->toText();
+        )->get();
 
         echo "Final response: $finalResponse\n";
     }

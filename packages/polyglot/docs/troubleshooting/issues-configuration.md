@@ -30,7 +30,7 @@ function testApiKey(string $preset): bool {
         $response = $inference->with(
             messages: 'Test message',
             options: ['max_tokens' => 5]
-        )->toText();
+        )->get();
 
         echo "Connection preset '$preset' is working.\n";
         return true;
@@ -63,7 +63,7 @@ $inference->withDebug(true);
 // Make a request
 $response = $inference->with(
     messages: 'Test message with debug enabled'
-)->toText();
+)->get();
 ```
 
 

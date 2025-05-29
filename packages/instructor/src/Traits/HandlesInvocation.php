@@ -5,11 +5,9 @@ use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\StructuredOutputResponse;
-use Cognesy\Instructor\Core\StructuredOutputStream;
 use Cognesy\Instructor\Data\ChatTemplate;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -25,10 +23,8 @@ trait HandlesInvocation
      *
      * @param StructuredOutputRequest $request The RequestInfo object containing all necessary data
      * for generating the request.
-     *
-     * @return StructuredOutputResponse The response generated based on the provided request details.
      */
-    public function withRequest(StructuredOutputRequest $request) : StructuredOutputResponse {
+    public function withRequest(StructuredOutputRequest $request) : static {
         return $this->with(
             messages: $request->messages() ?? [],
             responseModel: $request->responseModel() ?? [],
@@ -84,7 +80,6 @@ trait HandlesInvocation
             toolName: $toolName ?: $this->config->toolName(),
             toolDescription: $toolDescription ?: $this->config->toolDescription(),
         );
-
         $this->requestBuilder->with(
             messages: $messages,
             requestedSchema: $responseModel,
@@ -95,57 +90,7 @@ trait HandlesInvocation
             options: $options,
             config: $this->config,
         );
-
         return $this;
-    }
-
-    /**
-     * Processes a request using provided input, system configurations, and response specifications
-     * and returns the result directly.
-     *
-     * @param string|array $messages Text or chat sequence to be used for generating the response.
-     * @param string|array|object $responseModel The class, JSON schema, or object representing the response format.
-     * @param string $system The system instructions (optional).
-     * @param string $prompt The prompt to guide the request's response generation (optional).
-     * @param array $examples Example data to provide additional context for the request (optional).
-     * @param string $model Specifies the model to be employed - check LLM documentation for more details.
-     * @param int $maxRetries The maximum number of retries for the request in case of failure.
-     * @param array $options Additional LLM options - check LLM documentation for more details.
-     * @param string $toolName The name of the tool to be used in OutputMode::Tools.
-     * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
-     * @param string $retryPrompt The prompt to be used during retries.
-     * @param OutputMode $mode The mode of operation for the request.
-     * @return mixed A result of processing the request transformed to the target value
-     * @throws Exception If the response model is empty or invalid.
-     */
-    public function generate(
-        string|array        $messages = '',
-        string|array|object $responseModel = [],
-        string              $system = '',
-        string              $prompt = '',
-        array               $examples = [],
-        string              $model = '',
-        int                 $maxRetries = -1,
-        array               $options = [],
-        string              $toolName = '',
-        string              $toolDescription = '',
-        string              $retryPrompt = '',
-        ?OutputMode         $mode = null,
-    ) : mixed {
-        return $this->with(
-            messages: $messages,
-            responseModel: $responseModel,
-            system: $system,
-            prompt: $prompt,
-            examples: $examples,
-            model: $model,
-            maxRetries: $maxRetries,
-            options: $options,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
-            mode: $mode,
-        )->get();
     }
 
     /**
@@ -178,7 +123,7 @@ trait HandlesInvocation
                 $this->events,
             ),
             requestMaterializer: new ChatTemplate($this->config),
-            llm: $this->llm,
+            llm: $this->llm()->withHttpClient($this->httpClient),
             events: $this->events,
         );
 
@@ -187,55 +132,5 @@ trait HandlesInvocation
             requestHandler: $requestHandler,
             events: $this->events,
         );
-    }
-
-    public function response() : LLMResponse {
-        return $this->create()->response();
-    }
-
-    /**
-     * Processes a request using provided input, system configurations,
-     * and response specifications and returns the result directly.
-     *
-     * @return mixed A result of processing the request transformed to the target value
-     */
-    public function get() : mixed {
-        return $this->create()->get();
-    }
-
-    public function getString() : string {
-        return $this->create()->getString();
-    }
-
-    public function getFloat() : float {
-        return $this->create()->getFloat();
-    }
-
-    public function getInt() : int {
-        return $this->create()->getInt();
-    }
-
-    public function getBoolean() : bool {
-        return $this->create()->getBoolean();
-    }
-
-    public function getObject() : object {
-        return $this->create()->getObject();
-    }
-
-    public function getArray() : array {
-        return $this->create()->getArray();
-    }
-
-    /**
-     * Processes a request using provided input, system configurations,
-     * and response specifications and returns a streamed result object.
-     *
-     * @return StructuredOutputStream A stream of the response
-     */
-    public function stream() : StructuredOutputStream {
-        // turn on streaming mode
-        $this->requestBuilder->withStreaming();
-        return $this->create()->stream();
     }
 }

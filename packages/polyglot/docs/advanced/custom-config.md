@@ -218,7 +218,7 @@ $response = $inference->with(
             15043 => -100,  // Discourage a specific token
         ],
     ]
-)->toText();
+)->get();
 ```
 
 ### Anthropic-Specific Parameters
@@ -239,7 +239,7 @@ $response = $inference->with(
         'stop_sequences' => ["\n\nHuman:"],
         'system' => 'You are a creative storyteller who specializes in magical realism.',
     ]
-)->toText();
+)->get();
 ```
 
 
@@ -303,7 +303,7 @@ $inference = (new Inference)->withConfig($customConfig);
 
 $response = $inference->with(
     messages: 'What are the benefits of using custom configurations?'
-)->toText();
+)->get();
 
 echo $response;
 ```

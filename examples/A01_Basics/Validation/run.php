@@ -39,9 +39,8 @@ $caughtException = false;
 try {
     $user = (new StructuredOutput)
         ->withResponseClass(UserDetails::class)
-        ->generate(
-            messages: [['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]],
-        );
+        ->withMessages([['role' => 'user', 'content' => "you can reply to me via mail -- Jason"]])
+        ->get();
 } catch (ValidationException $e) {
     $caughtException = true;
     echo "Validation worked.\n";

@@ -24,7 +24,7 @@ $response = (new Inference)
         messages: [['role' => 'user', 'content' => 'What is the capital of Brasil']],
         options: ['max_tokens' => 128]
     )
-    ->toText();
+    ->get();
 
 echo "USER: What is capital of Brasil\n";
 echo "ASSISTANT: $response\n";

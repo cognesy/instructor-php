@@ -35,7 +35,7 @@ use Cognesy\Polyglot\LLM\Inference;
 $inference = new Inference();
 $response = $inference->with(
     messages: 'What is the capital of France?'
-)->toText();
+)->get();
 
 echo "Response: $response";
 ```
@@ -57,7 +57,7 @@ $response = $inference->with(
         ['role' => 'assistant', 'content' => 'Paris.'],
         ['role' => 'user', 'content' => 'And what about Germany?']
     ]
-)->toText();
+)->get();
 
 echo "Response: $response";
 ```

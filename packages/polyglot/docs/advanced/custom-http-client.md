@@ -30,7 +30,7 @@ $inference->withHttpClient($httpClient);
 // Make a request with the custom HTTP client
 $response = $inference->with(
     messages: 'This request uses a custom HTTP client.'
-)->toText();
+)->get();
 
 echo $response;
 ```

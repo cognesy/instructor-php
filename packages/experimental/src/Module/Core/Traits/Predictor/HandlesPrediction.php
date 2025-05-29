@@ -42,7 +42,7 @@ trait HandlesPrediction
                 ->toText(),
             default => $this->requestInfo->prompt(),
         });
-        return $this->inference->with(messages: $this->requestInfo->prompt())->toText();
+        return $this->inference->with(messages: $this->requestInfo->prompt())->get();
     }
 
     protected function predictStructure(array $callArgs) : mixed {

@@ -117,7 +117,7 @@ if ($response->hasToolCalls()) {
                         ],
                     ],
                 ]
-            )->toText();
+            )->get();
 
             echo "Final response: $withToolResult\n";
         }

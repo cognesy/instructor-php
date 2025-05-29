@@ -22,8 +22,10 @@ require 'examples/boot.php';
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;
 
-// EXAMPLE 1: simplified API, default LLM connection preset for convenient ad-hoc calls
-$answer = Inference::text('What is capital of Germany');
+// EXAMPLE 1: use default LLM connection preset for convenient ad-hoc calls
+$answer = (new Inference)
+    ->with(messages: 'What is capital of Germany')
+    ->get();
 
 echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n\n";
@@ -32,15 +34,14 @@ assert(Str::contains($answer, 'Berlin'));
 
 
 
-// EXAMPLE 2: regular API, allows to customize inference options
-$answer = (new Inference)
+// EXAMPLE 2: customize inference options using fluent API
+$response = (new Inference)
     ->using('openai') // optional, default is set in /config/llm.php
-    ->with(
-        messages: [['role' => 'user', 'content' => 'What is capital of France']],
-        options: ['max_tokens' => 64]
-    )
-    ->toText();
+    ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
+    ->withOptions(['max_tokens' => 64])
+    ->create();
 
+$answer = $response->get();
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n\n";
 assert(Str::contains($answer, 'Paris'));
@@ -50,10 +51,9 @@ assert(Str::contains($answer, 'Paris'));
 
 // EXAMPLE 3: streaming response
 $stream = (new Inference)
-    ->with(
-        messages: [['role' => 'user', 'content' => 'Describe capital of Brasil']],
-        options: ['max_tokens' => 128, 'stream' => true]
-    )
+    ->withMessages([['role' => 'user', 'content' => 'Describe capital of Brasil']])
+    ->withOptions(['max_tokens' => 128])
+    ->withStreaming()
     ->stream()
     ->responses();
 

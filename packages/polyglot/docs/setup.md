@@ -177,7 +177,7 @@ require 'vendor/autoload.php';
 use Cognesy\Polyglot\LLM\Inference;
 
 try {
-    $result = Inference::text('Say hello.');
+    $result = (new Inference)->with(messages: 'Say hello.')->get();
     echo "Successfully received response: $result\n";
     echo "Polyglot is working correctly!\n";
 } catch (\Exception $e) {

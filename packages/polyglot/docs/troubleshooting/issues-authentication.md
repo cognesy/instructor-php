@@ -43,12 +43,12 @@ use Cognesy\Http\Exceptions\RequestException;
 
 function testApiKey(string $preset): bool {
     try {
-        $llm = LLM::preset($preset);
+        $llm = (new LLMFactory)->fromPreset($preset);
         $inference = new Inference($llm);
         $inference->with(
             messages: 'Test message',
             options: ['max_tokens' => 5]
-        )->toText();
+        )->get();
 
         echo "Connection using '$connection' is working correctly\n";
         return true;

@@ -50,7 +50,7 @@ $answer = (new Inference)
     ->withConfig($config)
     ->withMessage(['role' => 'user', 'content' => 'What is the capital of France'])
     ->withOptions(['max_tokens' => 64])
-    ->toText();
+    ->get();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

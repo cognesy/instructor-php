@@ -28,7 +28,7 @@ $prompt = Template::twig()
 
 $answer = (new Inference)->with(
     messages: $prompt
-)->toText();
+)->get();
 
 echo "EXAMPLE 1: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";
@@ -44,7 +44,7 @@ $prompt = Template::text(
     variables: ['country' => 'Germany'],
 );
 
-$answer = (new Inference)->with(messages: $prompt)->toText();
+$answer = (new Inference)->with(messages: $prompt)->get();
 
 echo "EXAMPLE 2: prompt = $prompt\n";
 echo "ASSISTANT: $answer\n";

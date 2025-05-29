@@ -4,14 +4,15 @@ namespace Cognesy\Polyglot\Embeddings\Drivers;
 
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
+use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
+use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class JinaDriver implements CanVectorize
+class JinaDriver implements CanHandleVectorization
 {
     protected EmbeddingsConfig         $config;
     protected HttpClient      $httpClient;
@@ -27,15 +28,17 @@ class JinaDriver implements CanVectorize
         $this->config = $config;
     }
 
-    public function vectorize(array $input, array $options = []): EmbeddingsResponse {
-        $request = new HttpClientRequest(
+    public function handle(EmbeddingsRequest $request): EmbeddingsResponse {
+        $input = $request->inputs();
+        $options = $request->options();
+        $httpRequest = new HttpClientRequest(
             url: $this->getEndpointUrl(),
             method: 'POST',
             headers: $this->getRequestHeaders(),
             body: $this->getRequestBody($input, $options),
             options: [],
         );
-        $response = $this->httpClient->handle($request);
+        $response = $this->httpClient->handle($httpRequest);
         return $this->toResponse(json_decode($response->body(), true));
     }
 

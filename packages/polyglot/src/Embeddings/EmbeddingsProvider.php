@@ -4,9 +4,10 @@ namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
-use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
+use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Deferred;
+use Cognesy\Utils\Events\EventDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EmbeddingsProvider
@@ -25,8 +26,8 @@ class EmbeddingsProvider
     public function __construct(
         EventDispatcherInterface $events,
         EmbeddingsConfig         $config,
-        HttpClient      $httpClient,
-        CanVectorize             $driver,
+        HttpClient               $httpClient,
+        CanHandleVectorization   $driver,
     ) {
         $this->events = $events;
         $this->config = $config;
@@ -48,13 +49,15 @@ class EmbeddingsProvider
      * @param string $preset
      * @return $this
      */
-    public function using(string $preset) : self {
-        $this->config = EmbeddingsConfig::load($preset);
-        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
-            $this->config,
-            $this->httpClient->resolveUsing($debug)
-        ));
-        return $this;
+    public static function using(string $preset) : self {
+        $config = EmbeddingsConfig::load($preset);
+        $events = new EventDispatcher();
+        $httpClient = (new HttpClientFactory($events))->fromPreset($config->httpClient);
+        $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
+            $config,
+            $httpClient
+        );
+        return new self($events, $config, $httpClient, $driver);
     }
 
     /**
@@ -62,13 +65,15 @@ class EmbeddingsProvider
      * @param string $preset
      * @return $this
      */
-    public function withDsn(string $dsn) : self {
-        $this->config = EmbeddingsConfig::fromDSN($dsn);
-        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
-            $this->config,
-            $this->httpClient->resolveUsing($debug)
-        ));
-        return $this;
+    public static function fromDsn(string $dsn) : self {
+        $config = EmbeddingsConfig::fromDSN($dsn);
+        $events = new EventDispatcher();
+        $httpClient = (new HttpClientFactory($events))->fromPreset($config->httpClient);
+        $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
+            $config,
+            $httpClient
+        );
+        return new self($events, $config, $httpClient, $driver);
     }
 
     /**
@@ -76,23 +81,14 @@ class EmbeddingsProvider
      * @param EmbeddingsConfig $config
      * @return $this
      */
-    public function withConfig(EmbeddingsConfig $config) : self {
-        $this->config = $config;
-        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
-            $this->config,
-            $this->httpClient->resolveUsing($debug)
-        ));
-        return $this;
-    }
-
-    /**
-     * Configures the Embeddings instance with the given model name.
-     * @param string $model
-     * @return $this
-     */
-    public function withModel(string $model) : self {
-        $this->config->model = $model;
-        return $this;
+    public static function fromConfig(EmbeddingsConfig $config) : self {
+        $events = new EventDispatcher();
+        $httpClient = (new HttpClientFactory($events))->fromPreset($config->httpClient);
+        $driver = (new EmbeddingsDriverFactory($events))->makeDriver(
+            $config,
+            $httpClient
+        );
+        return new self($events, $config, $httpClient, $driver);
     }
 
     /**
@@ -112,10 +108,11 @@ class EmbeddingsProvider
 
     /**
      * Configures the Embeddings instance with the given driver.
-     * @param CanVectorize $driver
+     *
+     * @param CanHandleVectorization $driver
      * @return $this
      */
-    public function withDriver(CanVectorize $driver) : self {
+    public function withDriver(CanHandleVectorization $driver) : self {
         $this->driver->defer(fn() => $driver);
         return $this;
     }
@@ -144,9 +141,9 @@ class EmbeddingsProvider
     /**
      * Retrieves the current driver instance.
      *
-     * @return CanVectorize The current driver instance.
+     * @return CanHandleVectorization The current driver instance.
      */
-    public function driver() : CanVectorize {
+    public function driver(): CanHandleVectorization {
         return $this->driver->resolveUsing($this->debug);
     }
 }

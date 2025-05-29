@@ -33,7 +33,7 @@ $answer = (new Inference)
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )
-    ->toText();
+    ->get();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";

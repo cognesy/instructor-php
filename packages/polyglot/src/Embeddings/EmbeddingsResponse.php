@@ -39,11 +39,19 @@ class EmbeddingsResponse
     }
 
     /**
-     * Get all vectors
+     * Get result vectors
+     * @return Vector[]
+     */
+    public function get() : array {
+        return $this->vectors;
+    }
+
+    /**
+     * Get result vectors
      * @return Vector[]
      */
     public function all() : array {
-        return $this->vectors;
+        return $this->get();
     }
 
     /**

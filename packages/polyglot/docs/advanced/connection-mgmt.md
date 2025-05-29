@@ -23,7 +23,7 @@ $inference = new Inference();
 $openaiResponse = $inference
     ->using('openai')
     ->withMessages('What is the capital of France?')
-    ->toText();
+    ->get();
 
 echo "OpenAI response: $openaiResponse\n";
 
@@ -31,7 +31,7 @@ echo "OpenAI response: $openaiResponse\n";
 $anthropicResponse = $inference
     ->using('anthropic')
     ->withMessages('What is the capital of Germany?')
-    ->toText();
+    ->get();
 
 echo "Anthropic response: $anthropicResponse\n";
 ```
@@ -120,7 +120,7 @@ class CostAwareLLM {
                 messages: $question,
                 model: $provider['model']
             )
-            ->toText();
+            ->get();
     }
 }
 
@@ -173,7 +173,7 @@ class GroupOfExperts {
         // Use the selected provider
         return $this->inference->using($preset)
             ->with(messages: $question)
-            ->toText();
+            ->get();
     }
 }
 

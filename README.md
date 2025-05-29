@@ -120,9 +120,8 @@ $text = "His name is Jason and he is 28 years old.";
 // Step 3: Use Instructor to run LLM inference
 $person = (new StructuredOutput)
     ->withResponseClass(Person::class)
-    ->generate(
-        messages: $text,
-    );
+    ->withMessages($text)
+    ->get();
 
 // Step 4: Work with structured response data
 assert($person instanceof Person); // true

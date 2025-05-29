@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Traits;
 
+use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesFluentMethods
@@ -63,6 +64,26 @@ trait HandlesFluentMethods
     public function withOutputMode(OutputMode $mode): static
     {
         $this->request->withOutputMode($mode);
+        return $this;
+    }
+
+    /**
+     * Sets a cached context with provided messages, tools, tool choices, and response format.
+     *
+     * @param string|array $messages Messages to be cached in the context.
+     * @param array $tools Tools to be included in the cached context.
+     * @param string|array $toolChoice Tool choices for the cached context.
+     * @param array $responseFormat Format for responses in the cached context.
+     *
+     * @return self
+     */
+    public function withCachedContext(
+        string|array $messages = [],
+        array        $tools = [],
+        string|array $toolChoice = [],
+        array        $responseFormat = [],
+    ): self {
+        $this->cachedContext = new CachedContext($messages, $tools, $toolChoice, $responseFormat);
         return $this;
     }
 }

@@ -116,7 +116,11 @@ class LLM
      *
      * @return self Returns the current instance for method chaining.
      */
-    public function withHttpClient(HttpClient $httpClient): self {
+    public function withHttpClient(?HttpClient $httpClient): self {
+        if (is_null($httpClient)) {
+            return $this;
+        }
+
         $this->httpClient->defer(fn($debug) => $httpClient->withDebug($debug));
         $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
             $this->config,

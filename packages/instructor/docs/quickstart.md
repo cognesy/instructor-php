@@ -49,9 +49,8 @@ class City {
 $city = (new StructuredOutput)
     ->using('openai')
     ->withResponseClass(City::class)
-    ->generate(
-        messages: 'What is the capital of France?',
-    );
+    ->withMessages('What is the capital of France?')
+    ->get();
 
 var_dump($city);
 ```

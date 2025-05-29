@@ -10,6 +10,7 @@ use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
 use Cognesy\Polyglot\LLM\Events\PartialLLMResponseReceived;
+use Cognesy\Polyglot\LLM\Utils\EventStreamReader;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Generator;

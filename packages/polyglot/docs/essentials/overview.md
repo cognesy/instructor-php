@@ -21,7 +21,7 @@ Simplified inference API uses the default connection for convenient ad-hoc calls
 use Cognesy\Polyglot\LLM\Inference;
 
 // Generate text using the default connection
-$answer = Inference::text('What is the capital of France?');
+$answer = (new Inference)->with(messages: 'What is the capital of France?')->get();
 
 echo "Answer: $answer";
 
@@ -46,7 +46,7 @@ $inference = new Inference();
 // Generate text using the default connection
 $answer = $inference->with(
     messages: [['role' => 'user', 'content' => 'What is the capital of France?']]
-)->toText();
+)->get();
 
 echo "Answer: $answer";
 ```
@@ -65,7 +65,7 @@ $inference = new Inference();
 $answer = $inference->using('anthropic')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France?']]
-    )->toText();
+    )->get();
 
 echo "Answer (using Anthropic): $answer";
 ```
@@ -89,7 +89,7 @@ $messages = [
 $inference = new Inference();
 $answer = $inference->with(
     messages: $messages
-)->toText();
+)->get();
 
 echo "Answer: $answer";
 ```
@@ -112,7 +112,7 @@ $answer = $inference->with(
         'temperature' => 0.7,
         'max_tokens' => 100,
     ]
-)->toText();
+)->get();
 
 echo "Poem: $answer";
 ```
@@ -137,7 +137,7 @@ $answer = (new Inference)
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->with()
-    ->toText();
+    ->get();
 
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: $answer\n";
@@ -252,7 +252,7 @@ $inference = new Inference();
 // Use the default provider (set in config)
 $defaultResponse = $inference->with(
     messages: 'What is the capital of France?'
-)->toText();
+)->get();
 
 echo "Default provider response: $defaultResponse\n\n";
 
@@ -260,7 +260,7 @@ echo "Default provider response: $defaultResponse\n\n";
 $anthropicResponse = $inference->using('anthropic')
     ->with(
         messages: 'What is the capital of Germany?'
-    )->toText();
+    )->get();
 
 echo "Anthropic response: $anthropicResponse\n\n";
 
@@ -268,7 +268,7 @@ echo "Anthropic response: $anthropicResponse\n\n";
 $mistralResponse = $inference->using('mistral')
     ->with(
         messages: 'What is the capital of Italy?'
-    )->toText();
+    )->get();
 
 echo "Mistral response: $mistralResponse\n\n";
 
@@ -279,9 +279,9 @@ $mistral = new Inference('mistral');
 
 // And use them independently
 $responses = [
-    'openai' => $openAI->with(messages: 'What is the capital of Spain?')->toText(),
-    'anthropic' => $anthropic->with(messages: 'What is the capital of Portugal?')->toText(),
-    'mistral' => $mistral->with(messages: 'What is the capital of Greece?')->toText(),
+    'openai' => $openAI->with(messages: 'What is the capital of Spain?')->get(),
+    'anthropic' => $anthropic->with(messages: 'What is the capital of Portugal?')->get(),
+    'mistral' => $mistral->with(messages: 'What is the capital of Greece?')->get(),
 ];
 
 foreach ($responses as $provider => $response) {
@@ -305,13 +305,13 @@ $inference = new Inference('openai');
 // Use the default model (set in config)
 $defaultModelResponse = $inference->with(
     messages: 'What is machine learning?'
-)->toText();
+)->get();
 
 // Use a specific model
 $specificModelResponse = $inference->with(
     messages: 'What is machine learning?',
     model: 'gpt-4o'  // Override the default model
-)->toText();
+)->get();
 
 // You can also set the model and other options
 $customResponse = $inference->with(
@@ -321,5 +321,5 @@ $customResponse = $inference->with(
         'temperature' => 0.7,
         'max_tokens' => 500,
     ]
-)->toText();
+)->get();
 ```

@@ -84,7 +84,7 @@ $docs = ['Computer vision models are used to analyze images and videos.'];
 $embedding = (new Embeddings)
     ->using('openai')
     ->with(input: $docs)
-    ->all();
+    ->get();
 ?>
 ```
 

@@ -44,6 +44,7 @@ if (!$modelSupportsVision) {
 ```
 
 4. **Fallback Models**: Implement fallbacks to other models when preferred models fail
+
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
@@ -58,7 +59,7 @@ function withModelFallback(array $models, string $prompt): string {
             return $inference->with(
                 messages: $prompt,
                 model: $model
-            )->toText();
+            )->get();
         } catch (RequestException $e) {
             $lastException = $e;
             echo "Model '$model' failed: " . $e->getMessage() . "\n";

@@ -45,8 +45,8 @@ class TellCommand extends Command
     }
 
     protected function inferenceUsingDSN(string $dsn, string $prompt) : InferenceResponse {
-        return Inference
-            ::fromDsn($dsn)
+        return (new Inference)
+            ->fromDsn($dsn)
             ->with(
                 messages: $prompt,
                 options: ['stream' => true],

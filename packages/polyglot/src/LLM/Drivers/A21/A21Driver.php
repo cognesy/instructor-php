@@ -50,7 +50,6 @@ class A21Driver implements CanHandleInference
             $request->options(),
             $request->outputMode(),
         );
-dd($clientRequest->body()->toArray());
         return $this->httpClient->handle($clientRequest);
     }
 

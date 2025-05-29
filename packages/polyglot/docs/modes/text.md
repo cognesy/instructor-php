@@ -21,7 +21,7 @@ $response = $inference
         messages: 'What is the capital of France?',
         mode: OutputMode::Text  // Optional, this is the default
     )
-    ->toText();
+    ->get();
 
 echo "Response: $response\n";
 // Output: Response: The capital of France is Paris.
@@ -50,7 +50,7 @@ $inference = new Inference();
 $openAIResponse = $inference
     ->using('openai')
     ->withMessages('Write a short poem about the ocean.')
-    ->toText();
+    ->get();
 
 echo "OpenAI response:\n$openAIResponse\n\n";
 
@@ -58,7 +58,7 @@ echo "OpenAI response:\n$openAIResponse\n\n";
 $anthropicResponse = $inference
     ->using('anthropic')
     ->with('Write a short poem about the ocean.')
-    ->toText();
+    ->get();
 
 echo "Anthropic response:\n$anthropicResponse\n\n";
 

@@ -136,11 +136,13 @@ class UserDetails
     }
 }
     
-$user = (new StructuredOutput)->generate(
-    messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
-    responseModel: UserDetails::class,
-    maxRetries: 2
-);
+$user = (new StructuredOutput)
+    ->with(
+        messages: [['role' => 'user', 'content' => 'jason is 25 years old']],
+        responseModel: UserDetails::class,
+        maxRetries: 2
+    )
+    ->get();
 
 assert($user->name === "JASON");
 ```
