@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\LLM;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
@@ -119,11 +119,11 @@ class Inference
     /**
      * Sets a custom HTTP client and updates the inference driver accordingly.
      *
-     * @param CanHandleHttpRequest $httpClient The custom HTTP client handler.
+     * @param HttpClient $httpClient The custom HTTP client handler.
      *
      * @return self Returns the current instance for method chaining.
      */
-    public function withHttpClient(CanHandleHttpRequest $httpClient): self {
+    public function withHttpClient(HttpClient $httpClient): self {
         $this->llm->withHttpClient($httpClient);
         return $this;
     }

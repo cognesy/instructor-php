@@ -25,11 +25,12 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * @property CanHandleHttpRequest $driver Instance that handles HTTP requests.
  * @property MiddlewareStack $stack Stack of middleware for processing requests and responses.
  */
-class HttpClient implements CanHandleHttpRequest
+class HttpClient
 {
     protected EventDispatcherInterface $events;
     protected CanHandleHttpRequest $driver;
     protected MiddlewareStack $stack;
+    protected DebugConfig $debugConfig;
 
     /**
      * Constructor method for initializing the HTTP client.
@@ -39,13 +40,14 @@ class HttpClient implements CanHandleHttpRequest
      * @return void
      */
     public function __construct(
-        CanHandleHttpRequest $driver = null,
-        EventDispatcherInterface $events = null,
-        MiddlewareStack $stack = null,
+        CanHandleHttpRequest $driver,
+        EventDispatcherInterface $events,
+        MiddlewareStack $stack,
     ) {
-        $this->events = $events;
         $this->driver = $driver;
+        $this->events = $events;
         $this->stack = $stack;
+        $this->debugConfig = DebugConfig::load();
     }
 
     /**
@@ -68,16 +70,15 @@ class HttpClient implements CanHandleHttpRequest
         return $this;
     }
 
-    public function withDebug(bool $debug = true) : self {
+    public function withDebug(?bool $debug = true) : self {
         if ($debug) {
-            // load debug config
-            $config = DebugConfig::load();
             // force http enabled
-            $config->httpEnabled = true;
+            $this->debugConfig->httpEnabled = true;
             $this->stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-            $this->stack->prepend(new DebugMiddleware(new Debug($config), $this->events), 'internal:debug');
+            $this->stack->prepend(new DebugMiddleware(new Debug($this->debugConfig), $this->events), 'internal:debug');
         } else {
             // remove debug middleware
+            $this->debugConfig->httpEnabled = false;
             $this->stack->remove('internal:debug');
             $this->stack->remove('internal:buffering');
         }

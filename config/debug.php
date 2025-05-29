@@ -2,7 +2,7 @@
 
 return [
     'http' => [
-        'enabled' => false, // enable/disable debug
+        'enabled' => true, // enable/disable debug
         'trace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
         'requestUrl' => true, // dump request URL to console
         'requestHeaders' => true, // dump request headers to console

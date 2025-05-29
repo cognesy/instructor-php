@@ -14,10 +14,15 @@ when you want to initialize LLM client with custom values.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Drivers\SymfonyDriver;
+use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Env;
+use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Str;
+use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(
@@ -30,8 +35,27 @@ $config = new LLMConfig(
     providerType: 'deepseek',
 );
 
+// Build fully customized HTTP client
+$events = new EventDispatcher();
+$httpConfig = new HttpClientConfig(
+    httpClientType: 'symfony',
+    connectTimeout: 5,
+    requestTimeout: 60,
+    idleTimeout: -1,
+    maxConcurrent: 5,
+    poolTimeout: 60,
+    failOnError: true,
+);
+$driver = new SymfonyDriver(
+    config: $httpConfig,
+    clientInstance: SymfonyHttpClient::create(['http_version' => '2.0']),
+    events: $events,
+);
+$customClient = (new HttpClientFactory($events))->fromDriver($driver);
+
 $answer = (new Inference)
     ->withConfig($config)
+    ->withHttpClient($customClient)
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

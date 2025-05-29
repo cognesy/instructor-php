@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequestBuilder;
@@ -139,7 +139,7 @@ class StructuredOutput
         return $this;
     }
 
-    public function withHttpClient(CanHandleHttpRequest $httpClient) : static {
+    public function withHttpClient(HttpClient $httpClient) : static {
         $this->llm->withHttpClient($httpClient);
         return $this;
     }

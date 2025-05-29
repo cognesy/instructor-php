@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Drivers\AzureOpenAIDriver;
@@ -36,10 +36,10 @@ class EmbeddingsDriverFactory
      * Returns the driver for the specified configuration.
      *
      * @param EmbeddingsConfig $config
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient
+     * @param HttpClient $httpClient
      * @return CanVectorize
      */
-    public function makeDriver(EmbeddingsConfig $config, CanHandleHttpRequest $httpClient) : CanVectorize {
+    public function makeDriver(EmbeddingsConfig $config, HttpClient $httpClient) : CanVectorize {
         $type = $config->providerType ?? 'openai';
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
         if (!$driver) {
@@ -47,6 +47,8 @@ class EmbeddingsDriverFactory
         }
         return $driver($config, $httpClient, $this->events);
     }
+
+    // INTERNAL ////////////////////////////////////////////////////
 
     protected function getBundledDriver(string $type) : ?callable {
         return match ($type) {

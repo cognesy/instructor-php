@@ -10,15 +10,15 @@ use Cognesy\Instructor\Tests\Examples\Extraction\Person;
 use Cognesy\Instructor\Tests\Examples\Extraction\PersonWithAddress;
 use Cognesy\Instructor\Tests\Examples\Extraction\PersonWithAddresses;
 use Cognesy\Instructor\Tests\Examples\Extraction\PersonWithJob;
-use Cognesy\Instructor\Tests\MockLLM;
+use Cognesy\Instructor\Tests\MockHttp;
 
 it('supports simple properties', function () {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"name":"Jason","age":28}'
     ]);
 
     $text = "His name is Jason, he is 28 years old.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
+    $person = (new StructuredOutput)->withHttpClient($mockHttp)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();
@@ -30,12 +30,12 @@ it('supports simple properties', function () {
 
 
 it('supports enum properties', function () {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"name":"Jason","age":28,"jobType":"self-employed"}'
     ]);
 
     $text = "His name is Jason, he is 28 years old. He is self-employed.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
+    $person = (new StructuredOutput)->withHttpClient($mockHttp)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithJob::class,
     )->get();
@@ -48,12 +48,12 @@ it('supports enum properties', function () {
 
 
 it('supports object type property', function () {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"name":"Jason","age":28,"address":{"country":"USA","city":"San Francisco"}}'
     ]);
 
     $text = "His name is Jason, he is 28 years old. He lives in San Francisco.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
+    $person = (new StructuredOutput)->withHttpClient($mockHttp)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddress::class,
     )->get();
@@ -66,12 +66,12 @@ it('supports object type property', function () {
 
 
 it('supports arrays of objects property', function () {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"name":"Jason","age":28,"addresses":[{"country":"USA","city":"San Francisco"},{"country":"USA","city":"New York"}]}',
     ]);
 
     $text = "His name is Jason, he is 28 years old. He lives in USA - he works from his home office in San Francisco, he also has an apartment in New York.";
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)->with(
+    $person = (new StructuredOutput)->withHttpClient($mockHttp)->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: PersonWithAddresses::class,
     )->get();
@@ -91,11 +91,11 @@ dataset('project_report', [
 ]);
 
 it('can extract complex, multi-nested structure', function ($text) {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"events":[{"title":"Project Status RED","description":"Acme Insurance project to implement SalesTech CRM solution is currently in RED status due to delayed delivery of document production system, led by 3rd party vendor - Alfatech.","type":"risk","status":"open","stakeholders":[{"name":"Alfatech","role":"vendor"},{"name":"Acme","role":"customer"}],"date":"2021-09-01"},{"title":"Ecommerce Track Delay","description":"Due to dependencies, the ecommerce track will be delayed by 2 sprints because of the delayed delivery of the document production system.","type":"issue","status":"open","stakeholders":[{"name":"Acme","role":"customer"},{"name":"SysCorp","role":"system integrator"}]},{"title":"Test Data Availability Issue","description":"customer is not able to provide the test data for the ecommerce track, which will impact the stabilization schedule unless resolved by the end of the month.","type":"issue","status":"open","stakeholders":[{"name":"Acme","role":"customer"},{"name":"SysCorp","role":"system integrator"}]},{"title":"Steerco Maintains Schedule","description":"Steerco insists on maintaining the release schedule due to marketing campaign already ongoing, regardless of the project issues.","type":"issue","status":"open","stakeholders":[{"name":"Acme","role":"customer"}]},{"title":"Communication Issues","description":"SalesTech team struggling with communication issues as SysCorp team has not shown up on 2 recent calls, leading to lack of insight. This has been escalated to SysCorp\'s leadership team.","type":"issue","status":"open","stakeholders":[{"name":"SysCorp","role":"system integrator"},{"name":"Acme","role":"customer"}]},{"title":"Integration Proxy Issue Resolved","description":"The previously reported Integration Proxy connectivity issue, which was blocking the policy track, has been resolved.","type":"progress","status":"closed","stakeholders":[{"name":"SysCorp","role":"system integrator"}],"date":"2021-08-30"},{"title":"Finalized Production Deployment Plan","description":"Production deployment plan has been finalized on Aug 15th and is awaiting customer approval.","type":"progress","status":"open","stakeholders":[{"name":"Acme","role":"customer"}],"date":"2021-08-15"}]}'
     ]);
 
-    $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM); //$mockLLM
+    $structuredOutput = (new StructuredOutput)->withHttpClient($mockHttp); //$mockHttp
     /** @var ProjectEvents $events */
     $events = $structuredOutput->with(
         messages: [['role' => 'user', 'content' => $text]],

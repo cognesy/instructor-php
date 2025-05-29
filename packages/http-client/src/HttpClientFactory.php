@@ -25,11 +25,11 @@ class HttpClientFactory
      * Gets the default config of HttpClient
      */
     public function default(): HttpClient {
-        return $this->makeDriver();
+        return $this->makeClient();
     }
 
     public function make(string $name): HttpClient {
-        return $this->makeDriver(preset: $name);
+        return $this->makeClient(preset: $name);
     }
 
     /**
@@ -39,7 +39,7 @@ class HttpClientFactory
      * @return self Returns the instance of the class for method chaining.
      */
     public function fromPreset(string $name): HttpClient {
-        return $this->makeDriver(preset: $name);
+        return $this->makeClient(preset: $name);
     }
 
     /**
@@ -49,7 +49,7 @@ class HttpClientFactory
      * @return self Returns the instance of the class for method chaining.
      */
     public function fromConfig(HttpClientConfig $config): HttpClient {
-        return $this->makeDriver(config: $config);
+        return $this->makeClient(config: $config);
     }
 
     /**
@@ -58,16 +58,16 @@ class HttpClientFactory
      * @param CanHandleHttpRequest $driver The driver capable of handling HTTP requests.
      * @return self Returns the instance of the class for method chaining.
      */
-    public function fromDriver(CanHandleHttpRequest $driver): HttpClient {
+    public function fromDriver(CanHandleHttpRequest $driver, ?object $clientInstance = null): HttpClient {
         if ($driver instanceof HttpClient) {
             return $driver;
         }
-        return $this->makeDriver(driver: $driver);
+        return $this->makeClient(driver: $driver, clientInstance: $clientInstance);
     }
 
     // INTERNAL //////////////////////////////////////////////////////
 
-    private function makeDriver(
+    private function makeClient(
         string $preset = '',
         ?HttpClientConfig $config = null,
         ?CanHandleHttpRequest $driver = null,

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
@@ -28,7 +28,7 @@ class LLM
      *
      * @param string $preset The connection preset.
      * @param LLMConfig|null $config Configuration object.
-     * @param CanHandleHttpRequest|null $httpClient HTTP client handler.
+     * @param HttpClient|null $httpClient HTTP client.
      * @param CanHandleInference|null $driver Inference handler.
      * @param EventDispatcher|null $events Event dispatcher.
      *
@@ -37,7 +37,7 @@ class LLM
     public function __construct(
         string $preset = '',
         ?LLMConfig $config = null,
-        ?CanHandleHttpRequest $httpClient = null,
+        ?HttpClient $httpClient = null,
         ?CanHandleInference $driver = null,
         ?EventDispatcherInterface $events = null,
     ) {
@@ -48,7 +48,10 @@ class LLM
         $this->httpClientFactory = new HttpClientFactory($this->events);
         $this->httpClient = new Deferred(fn($debug) => $httpClient ?? $this->httpClientFactory->fromPreset($this->config->httpClient)->withDebug($debug));
         $this->driverFactory = new InferenceDriverFactory(events: $this->events);
-        $this->driver = new Deferred(fn($debug) => $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient->resolveUsing($debug)));
+        $this->driver = new Deferred(fn($debug) => $driver ?? $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
     }
 
     // STATIC //////////////////////////////////////////////////////////////////
@@ -99,19 +102,26 @@ class LLM
         if (!empty($this->config->httpClient)) {
             $this->httpClient->defer(fn($debug) => $this->httpClientFactory->fromPreset($this->config->httpClient)->withDebug($debug));
         }
-        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver($this->config, $this->httpClient->resolveUsing($debug)));
+        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
         return $this;
     }
 
     /**
      * Sets a custom HTTP client and updates the inference driver accordingly.
      *
-     * @param CanHandleHttpRequest $httpClient The custom HTTP client handler.
+     * @param HttpClient $httpClient The custom HTTP client handler.
      *
      * @return self Returns the current instance for method chaining.
      */
-    public function withHttpClient(CanHandleHttpRequest $httpClient): self {
-        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver($this->config, $httpClient->withDebug($debug)));
+    public function withHttpClient(HttpClient $httpClient): self {
+        $this->httpClient->defer(fn($debug) => $httpClient->withDebug($debug));
+        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
         return $this;
     }
 

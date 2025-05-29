@@ -13,7 +13,7 @@ interface CanHandleHttpRequest
     /**
      * Handle an HTTP request
      *
-     * @param \Cognesy\Http\Data\HttpClientRequest $request
+     * @param HttpClientRequest $request
      * @return HttpClientResponse
      */
     public function handle(HttpClientRequest $request) : HttpClientResponse;

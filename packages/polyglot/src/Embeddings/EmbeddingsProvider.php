@@ -2,32 +2,43 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Deferred;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EmbeddingsProvider
 {
     protected EventDispatcherInterface $events;
     protected EmbeddingsConfig $config;
-    protected CanHandleHttpRequest $httpClient;
-    protected CanVectorize $driver;
+
+    protected Deferred $httpClient;
+    protected Deferred $driver;
+
     protected EmbeddingsDriverFactory $driverFactory;
+    protected HttpClientFactory $httpClientFactory;
+
+    protected bool $debug = false;
 
     public function __construct(
         EventDispatcherInterface $events,
-        ?EmbeddingsConfig     $config = null,
-        ?CanHandleHttpRequest $httpClient = null,
-        ?CanVectorize         $driver = null,
+        EmbeddingsConfig         $config,
+        HttpClient      $httpClient,
+        CanVectorize             $driver,
     ) {
         $this->events = $events;
-        $this->config = $config ?? EmbeddingsConfig::default();
-        $this->httpClient = $httpClient ?? (new HttpClientFactory($this->events))->fromPreset($this->config->httpClient);
+        $this->config = $config;
+
         $this->driverFactory = new EmbeddingsDriverFactory($this->events);
-        $this->driver = $driver ?? $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->httpClientFactory = new HttpClientFactory($this->events);
+
+        $this->httpClient = new Deferred(fn($debug) => $httpClient ?? $this->httpClientFactory->fromPreset($this->config->httpClient)->withDebug($debug));
+        $this->driver = new Deferred(fn($debug) => $driver ?? $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug),
+        ));
     }
 
     // PUBLIC ///////////////////////////////////////////////////
@@ -39,7 +50,10 @@ class EmbeddingsProvider
      */
     public function using(string $preset) : self {
         $this->config = EmbeddingsConfig::load($preset);
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
         return $this;
     }
 
@@ -50,7 +64,10 @@ class EmbeddingsProvider
      */
     public function withDsn(string $dsn) : self {
         $this->config = EmbeddingsConfig::fromDSN($dsn);
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
         return $this;
     }
 
@@ -61,7 +78,10 @@ class EmbeddingsProvider
      */
     public function withConfig(EmbeddingsConfig $config) : self {
         $this->config = $config;
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
         return $this;
     }
 
@@ -78,12 +98,15 @@ class EmbeddingsProvider
     /**
      * Configures the Embeddings instance with the given HTTP client.
      *
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient
+     * @param HttpClient $httpClient
      * @return $this
      */
-    public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
-        $this->httpClient = $httpClient;
-        $this->driver = $this->driverFactory->makeDriver($this->config, $this->httpClient);
+    public function withHttpClient(HttpClient $httpClient) : self {
+        $this->httpClient->defer(fn($debug) => $httpClient->withDebug($debug));
+        $this->driver->defer(fn($debug) => $this->driverFactory->makeDriver(
+            $this->config,
+            $this->httpClient->resolveUsing($debug)
+        ));
         return $this;
     }
 
@@ -93,7 +116,7 @@ class EmbeddingsProvider
      * @return $this
      */
     public function withDriver(CanVectorize $driver) : self {
-        $this->driver = $driver;
+        $this->driver->defer(fn() => $driver);
         return $this;
     }
 
@@ -105,8 +128,7 @@ class EmbeddingsProvider
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
-        // TODO: it assumes we're using HttpClient class as a driver
-        $this->httpClient->withDebug($debug);
+        $this->debug = $debug;
         return $this;
     }
 
@@ -125,19 +147,6 @@ class EmbeddingsProvider
      * @return CanVectorize The current driver instance.
      */
     public function driver() : CanVectorize {
-        return $this->driver;
-    }
-
-    /**
-     * Handles the embeddings request and returns the response.
-     *
-     * @param EmbeddingsRequest $request The embeddings request object.
-     * @return EmbeddingsResponse The embeddings response object.
-     */
-    public function handleEmbeddingsRequest(EmbeddingsRequest $request) : EmbeddingsResponse {
-        return $this->driver->vectorize(
-            $request->inputs(),
-            $request->options(),
-        );
+        return $this->driver->resolveUsing($this->debug);
     }
 }

@@ -2,15 +2,14 @@
 
 namespace Cognesy\Instructor\Tests;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Drivers\GuzzleDriver;
+use Cognesy\Http\HttpClient;
 use Mockery;
 
-class MockLLM
+class MockHttp
 {
-    static public function get(array $args) : CanHandleHttpRequest {
-        $mockHttp = Mockery::mock(GuzzleDriver::class);
+    static public function get(array $args) : HttpClient {
+        $mockHttp = Mockery::mock(HttpClient::class);
         $mockResponse = Mockery::mock(HttpClientResponse::class);
 
         $list = [];

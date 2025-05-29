@@ -106,6 +106,10 @@ trait HandlesAccess
         return $messages;
     }
 
+    public function count() : int {
+        return count($this->messages);
+    }
+
     // CONVENIENCE METHODS ///////////////////////////////////////////////////
 
     public function firstRole() : MessageRole {

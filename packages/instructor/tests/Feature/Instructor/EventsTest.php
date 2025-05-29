@@ -18,17 +18,17 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Extraction\Person;
 use Cognesy\Instructor\Tests\Examples\Instructor\EventSink;
-use Cognesy\Instructor\Tests\MockLLM;
+use Cognesy\Instructor\Tests\MockHttp;
 
 $text = "His name is J, he is 28 years old. J is also known as Jason.";
 
 it('handles events for simple case w/reattempt on validation - success', function ($event) use ($text) {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"name": "Jason", "age":-28}',
         '{"name": "Jason", "age":28}',
     ]);
     $events = new EventSink();
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)
+    $person = (new StructuredOutput)->withHttpClient($mockHttp)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         //->wiretap(fn($e) => dump($e))
         ->with(
@@ -76,7 +76,7 @@ it('handles events for simple case w/reattempt on validation - success', functio
 
 
 it('handles events for simple case - validation failure', function ($event) use ($text) {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"name": "J", "age":-28}',
         '{"name": "J", "age":-28}',
     ]);
@@ -84,7 +84,7 @@ it('handles events for simple case - validation failure', function ($event) use 
 
     // expect exception
     $this->expectException(\Exception::class);
-    $person = (new StructuredOutput)->withHttpClient($mockLLM)
+    $person = (new StructuredOutput)->withHttpClient($mockHttp)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->with(
             messages: [['role' => 'user', 'content' => $text]],
@@ -130,11 +130,11 @@ it('handles events for simple case - validation failure', function ($event) use 
 ]);
 
 it('handles events for custom case', function ($event) use ($text) {
-    $mockLLM = MockLLM::get([
+    $mockHttp = MockHttp::get([
         '{"age":28}'
     ]);
     $events = new EventSink();
-    $age = (new StructuredOutput)->withHttpClient($mockLLM)
+    $age = (new StructuredOutput)->withHttpClient($mockHttp)
         ->onEvent($event, fn($e) => $events->onEvent($e))
         ->with(
             messages: [['role' => 'user', 'content' => $text]],

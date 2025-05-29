@@ -2,7 +2,9 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
+use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -46,13 +48,21 @@ class EmbeddingsProviderFactory
         return $this->makeProvider(config: $config);
     }
 
+    public function fromDriver(CanVectorize $driver, ?HttpClient $httpClient = null) : EmbeddingsProvider {
+        $config = EmbeddingsConfig::default();
+        return $this->makeProvider(config: $config, driver: $driver, httpClient: $httpClient);
+    }
+
+
     // INTERNAL ////////////////////////////////////////////////////
 
     private function makeProvider(
         EmbeddingsConfig $config,
+        ?HttpClient $httpClient = null,
+        ?CanVectorize $driver = null,
     ) : EmbeddingsProvider {
-        $httpClient = $this->httpClientFactory->fromPreset($config->httpClient);
-        $driver = $this->driverFactory->makeDriver($config, $httpClient);
+        $client = $httpClient ?? $this->httpClientFactory->fromPreset($config->httpClient);
+        $driver = $driver ?? $this->driverFactory->makeDriver($config, $client);
         return new EmbeddingsProvider(
             events: $this->events,
             config: $config,

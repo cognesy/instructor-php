@@ -52,7 +52,7 @@ class CachedContext
     }
 
     public function isEmpty() : bool {
-        return empty($this->messages)
+        return $this->messages->isEmpty()
             && empty($this->system)
             && empty($this->prompt)
             && empty($this->examples);

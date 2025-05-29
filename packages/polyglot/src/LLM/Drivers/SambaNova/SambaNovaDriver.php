@@ -1,8 +1,8 @@
 <?php
 
 namespace Cognesy\Polyglot\LLM\Drivers\SambaNova;
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -23,7 +23,7 @@ class SambaNovaDriver implements CanHandleInference
 
     public function __construct(
         protected LLMConfig $config,
-        protected CanHandleHttpRequest $httpClient,
+        protected HttpClient $httpClient,
         protected EventDispatcherInterface $events,
     )
     {

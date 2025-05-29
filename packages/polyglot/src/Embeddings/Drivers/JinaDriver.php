@@ -2,26 +2,29 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\HttpClientFactory;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 use Cognesy\Polyglot\LLM\Data\Usage;
-use Cognesy\Utils\Events\EventDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class JinaDriver implements CanVectorize
 {
+    protected EmbeddingsConfig         $config;
+    protected HttpClient      $httpClient;
+    protected EventDispatcherInterface $events;
+
     public function __construct(
-        protected EmbeddingsConfig      $config,
-        protected ?CanHandleHttpRequest $httpClient = null,
-        protected ?EventDispatcherInterface      $events = null,
+        EmbeddingsConfig         $config,
+        HttpClient      $httpClient,
+        EventDispatcherInterface $events,
     ) {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? (new HttpClientFactory($this->events))->default();
+        $this->events = $events;
+        $this->httpClient = $httpClient;
+        $this->config = $config;
     }
 
     public function vectorize(array $input, array $options = []): EmbeddingsResponse {

@@ -2,9 +2,8 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\HttpClientFactory;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -12,7 +11,6 @@ use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Utils\Events\EventDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -29,17 +27,14 @@ class ModularLLMDriver implements CanHandleInference {
         protected LLMConfig               $config,
         protected ProviderRequestAdapter  $requestAdapter,
         protected ProviderResponseAdapter $responseAdapter,
-        protected ?CanHandleHttpRequest   $httpClient = null,
-        protected ?EventDispatcherInterface $events = null,
-    ) {
-        $this->events = $events ?? new EventDispatcher();
-        $this->httpClient = $httpClient ?? (new HttpClientFactory(events: $this->events))->default();
-    }
+        protected HttpClient $httpClient,
+        protected EventDispatcherInterface $events,
+    ) {}
 
     /**
      * Processes the given inference request and handles it through the HTTP client.
      *
-     * @param \Cognesy\Polyglot\LLM\InferenceRequest $request The request to be processed, including messages, model, tools, and other parameters.
+     * @param InferenceRequest $request The request to be processed, including messages, model, tools, and other parameters.
      * @return HttpClientResponse The response indicating the access result after processing the request.
      */
     public function handle(InferenceRequest $request): HttpClientResponse {
@@ -61,7 +56,7 @@ class ModularLLMDriver implements CanHandleInference {
      * into an LLMResponse object using the response adapter.
      *
      * @param array $data The response data to be converted.
-     * @return \Cognesy\Polyglot\LLM\Data\LLMResponse|null The converted LLMResponse object or null if conversion fails.
+     * @return LLMResponse|null The converted LLMResponse object or null if conversion fails.
      */
     public function fromResponse(array $data): ?LLMResponse {
         return $this->responseAdapter->fromResponse($data);
@@ -72,7 +67,7 @@ class ModularLLMDriver implements CanHandleInference {
      * and converts it into a PartialLLMResponse object.
      *
      * @param array $data An array containing the stream response data to process.
-     * @return \Cognesy\Polyglot\LLM\Data\PartialLLMResponse|null The converted PartialLLMResponse object, or null if the conversion is not possible.
+     * @return PartialLLMResponse|null The converted PartialLLMResponse object, or null if the conversion is not possible.
      */
     public function fromStreamResponse(array $data): ?PartialLLMResponse {
         return $this->responseAdapter->fromStreamResponse($data);

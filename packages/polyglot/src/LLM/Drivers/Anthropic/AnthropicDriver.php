@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\Anthropic;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -20,7 +20,7 @@ class AnthropicDriver implements CanHandleInference
 
     public function __construct(
         protected LLMConfig $config,
-        protected CanHandleHttpRequest $httpClient,
+        protected HttpClient $httpClient,
         protected EventDispatcherInterface $events,
     ) {
         $this->requestAdapter = new AnthropicRequestAdapter(

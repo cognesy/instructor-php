@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanVectorize;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
@@ -38,18 +38,13 @@ class Embeddings
 
     // PUBLIC ///////////////////////////////////////////////////
 
-    public function withProvider(EmbeddingsProvider $provider) : self {
-        $this->provider = $provider;
-        return $this;
-    }
-
     /**
      * Configures the Embeddings instance with the given connection name.
      * @param string $preset
      * @return $this
      */
     public function using(string $preset) : self {
-        $this->provider->using($preset);
+        $this->provider = $this->embeddingsProviderFactory->fromPreset($preset);
         return $this;
     }
 
@@ -59,7 +54,22 @@ class Embeddings
      * @return $this
      */
     public function withConfig(EmbeddingsConfig $config) : self {
-        $this->provider->withConfig($config);
+        $this->provider = $this->embeddingsProviderFactory->fromConfig($config);
+        return $this;
+    }
+
+    /**
+     * Configures the Embeddings instance with the given driver.
+     * @param CanVectorize $driver
+     * @return $this
+     */
+    public function withDriver(CanVectorize $driver) : self {
+        $this->provider = $this->embeddingsProviderFactory->fromDriver($driver);
+        return $this;
+    }
+
+    public function withProvider(EmbeddingsProvider $provider) : self {
+        $this->provider = $provider;
         return $this;
     }
 
@@ -76,21 +86,11 @@ class Embeddings
     /**
      * Configures the Embeddings instance with the given HTTP client.
      *
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $httpClient
+     * @param HttpClient $httpClient
      * @return $this
      */
-    public function withHttpClient(CanHandleHttpRequest $httpClient) : self {
+    public function withHttpClient(HttpClient $httpClient) : self {
         $this->provider->withHttpClient($httpClient);
-        return $this;
-    }
-
-    /**
-     * Configures the Embeddings instance with the given driver.
-     * @param CanVectorize $driver
-     * @return $this
-     */
-    public function withDriver(CanVectorize $driver) : self {
-        $this->provider->withDriver($driver);
         return $this;
     }
 

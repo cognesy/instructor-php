@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\A21;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
@@ -24,7 +24,7 @@ class A21Driver implements CanHandleInference
 
     public function __construct(
         protected LLMConfig $config,
-        protected CanHandleHttpRequest $httpClient,
+        protected HttpClient $httpClient,
         protected EventDispatcherInterface $events,
     ) {
         $this->requestAdapter = new OpenAIRequestAdapter(
@@ -50,6 +50,7 @@ class A21Driver implements CanHandleInference
             $request->options(),
             $request->outputMode(),
         );
+dd($clientRequest->body()->toArray());
         return $this->httpClient->handle($clientRequest);
     }
 

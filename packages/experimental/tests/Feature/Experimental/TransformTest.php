@@ -51,11 +51,11 @@ it('can process a closure task', function() {
 })->skip("To be reimplemented using new module system");
 
 //it('can process predict task', function() {
-//    $mockLLM = MockLLM::get([
+//    $mockHttp = MockHttp::get([
 //        '{"user_name": "Jason", "user_age": 28}',
 //    ]);
 //
-//    $structuredOutput = (new StructuredOutput)->withHttpClient($mockLLM);
+//    $structuredOutput = (new StructuredOutput)->withHttpClient($mockHttp);
 //    $predict = new Transform(
 //        signature: 'text (email containing user data) -> user_name, user_age:int',
 //        structuredOutput: $structuredOutput
@@ -69,7 +69,7 @@ it('can process a closure task', function() {
 //});
 
 //it('can process predict task with multiple outputs', function() {
-//    $mockLLM = MockLLM::get([
+//    $mockHttp = MockHttp::get([
 //        '{"topic": "sales", "sentiment": "neutral"}',
 //    ]);
 //
@@ -84,7 +84,7 @@ it('can process a closure task', function() {
 //
 //    $predict = new Transform(
 //        signature: EmailAnalysis::class,
-//        structuredOutput: (new StructuredOutput)->withHttpClient($mockLLM)
+//        structuredOutput: (new StructuredOutput)->withHttpClient($mockHttp)
 //    );
 //
 //    $analysis = $predict->withArgs(
@@ -97,7 +97,7 @@ it('can process a closure task', function() {
 //});
 
 //it('can process composite language program', function() {
-//    $mockLLM = MockLLM::get([
+//    $mockHttp = MockHttp::get([
 //        '{"subject": "Hello", "body": "How are you?", "language": "es"}',
 //        '{"translatedSubject": "Hola", "translatedBody": "¿Cómo estás?"}',
 //    ]);
@@ -124,7 +124,7 @@ it('can process a closure task', function() {
 //
 //        public function __construct(
 //        ) {
-//            $structuredOutput = (new StructuredOutput);//->withClient($mockLLM);
+//            $structuredOutput = (new StructuredOutput);//->withClient($mockHttp);
 //            $this->parse = new Transform(
 //                signature: 'text -> subject, body',
 //                instructions: 'Parse email into subject and body',

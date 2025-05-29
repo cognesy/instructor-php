@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
@@ -70,12 +70,12 @@ class InferenceDriverFactory
      * Creates and returns an appropriate driver instance based on the given configuration.
      *
      * @param LLMConfig $config Configuration object specifying the provider type and other necessary settings.
-     * @param CanHandleHttpRequest $httpClient An HTTP client instance to handle HTTP requests.
+     * @param HttpClient $httpClient An HTTP client instance to handle HTTP requests.
      *
      * @return CanHandleInference A driver instance matching the specified provider type.
      * @throws InvalidArgumentException If the provider type is not supported.
      */
-    public function makeDriver(LLMConfig $config, ?CanHandleHttpRequest $httpClient = null): CanHandleInference {
+    public function makeDriver(LLMConfig $config, ?HttpClient $httpClient = null): CanHandleInference {
         $type = $config->providerType;
         if (empty($type)) {
             throw new InvalidArgumentException("Provider type not specified in the configuration.");

@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientFactory;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Settings;
@@ -59,7 +60,7 @@ class Provider
     /**
      * Updates the configuration and re-initializes the driver.
      *
-     * @param \Cognesy\Polyglot\LLM\Data\LLMConfig $config The configuration object to set.
+     * @param ProviderConfig $config The configuration object to set.
      *
      * @return self
      */
@@ -86,11 +87,11 @@ class Provider
     /**
      * Sets a custom HTTP client and updates the inference driver accordingly.
      *
-     * @param CanHandleHttpRequest $httpClient The custom HTTP client handler.
+     * @param HttpClient $httpClient The custom HTTP client handler.
      *
      * @return self Returns the current instance for method chaining.
      */
-    public function withHttpClient(CanHandleHttpRequest $httpClient): self {
+    public function withHttpClient(HttpClient $httpClient): self {
         $this->httpClient = $httpClient;
         return $this;
     }
