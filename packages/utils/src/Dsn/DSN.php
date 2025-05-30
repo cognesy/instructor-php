@@ -26,11 +26,27 @@ class DSN
         return $this->params->all();
     }
 
-    public function param(string $key, $default = null) {
+    public function param(string $key, $default = null) : mixed {
         if ($this->params->has($key)) {
             return $this->params->get($key);
         }
         return $default;
+    }
+
+    public function intParam(string $key, int $default = 0) : int {
+        return (int) $this->param($key, $default);
+    }
+
+    public function stringParam(string $key, string $default = '') : string {
+        return $this->param($key, $default);
+    }
+
+    public function boolParam(string $key, bool $default = false) : bool {
+        return (bool) $this->param($key, $default);
+    }
+
+    public function floatParam(string $key, float $default = 0.0) : float {
+        return (float) $this->param($key, $default);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////

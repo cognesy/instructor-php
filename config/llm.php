@@ -147,6 +147,20 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 2048,
         ],
+        'huggingface' => [
+            'providerType' => 'huggingface',
+            'apiUrl' => 'https://router.huggingface.co/{providerId}/v1',
+            'apiKey' => Env::get('HUGGINGFACE_API_KEY', ''),
+            'endpoint' => '/chat/completions',
+            'metadata' => [
+                'providerId' => 'hf-inference/models/microsoft/phi-4',
+            ],
+            'defaultModel' => 'microsoft/phi-4',
+            'defaultOutputMode' => 'text',
+            'defaultMaxTokens' => 1024,
+            'contextLength' => 32_000,
+            'maxOutputLength' => 4096,
+        ],
         'meta' => [
             'providerType' => 'meta',
             'apiUrl' => 'https://openrouter.ai/api/v1',

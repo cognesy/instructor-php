@@ -8,10 +8,6 @@ use Cognesy\Utils\Messages\Messages;
 
 trait HandlesAccess
 {
-    public function isStreamed() : bool {
-        return $this->options['stream'] ?? false;
-    }
-
     public function messages() : Messages {
         return $this->messages;
     }
@@ -22,6 +18,10 @@ trait HandlesAccess
 
     public function option(string $name) : mixed {
         return $this->options[$name] ?? null;
+    }
+
+    public function isStreamed() : bool {
+        return $this->options['stream'] ?? false;
     }
 
     public function prompt() : string {
@@ -48,12 +48,7 @@ trait HandlesAccess
         return $this->config;
     }
 
-
     public function mode() : OutputMode {
         return $this->config->outputMode();
-    }
-
-    public function retryPrompt() : string {
-        return $this->config->retryPrompt();
     }
 }

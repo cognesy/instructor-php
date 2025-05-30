@@ -56,11 +56,11 @@ trait HandlesInvocation
         $this->events->dispatch(new InferenceRequested($this->request));
         $inferenceDriver = $this->llm->driver();
         return new InferenceResponse(
-            response: $inferenceDriver->handle($this->request),
-            driver: $inferenceDriver,
-            config: $this->llm->config(),
-            isStreamed: $this->request->isStreamed(),
-            events: $this->events,
+            httpResponse: $inferenceDriver->handle($this->request),
+            driver      : $inferenceDriver,
+            config      : $this->llm->config(),
+            isStreamed  : $this->request->isStreamed(),
+            events      : $this->events,
         );
     }
 }

@@ -8,6 +8,7 @@
 
 ## High priority
 
+- Polyglot/Instructor: Add (optional) automatic continuation if the finish reason is 'length' - this will allow to continue the response in the next call, if the model did not finish the response due to length limit
 - Addon: ToolUse - apply context variables to message sequence (via ScriptParameters??)
 - Polyglot: Batch completion API
 - Polyglot: Async / parallel calls to multiple APIs

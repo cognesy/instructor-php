@@ -31,7 +31,7 @@ class SymfonyDriver implements CanHandleHttpRequest
         $this->config = $config;
         $this->events = $events ?? new EventDispatcher();
         if ($clientInstance && !($clientInstance instanceof HttpClientInterface)) {
-            throw new \InvalidArgumentException('Client instance must be of type Symfony\Contracts\HttpClient\HttpClientInterface');
+            throw new \InvalidArgumentException('Client instance of SymfonyDriver must be of type Symfony\Contracts\HttpClient\HttpClientInterface');
         }
         $this->client = $clientInstance ?? HttpClient::create(['http_version' => '2.0']);
     }

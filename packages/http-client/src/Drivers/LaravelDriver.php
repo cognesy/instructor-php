@@ -34,7 +34,7 @@ class LaravelDriver implements CanHandleHttpRequest
         $this->events = $events ?? new EventDispatcher();
 
         if ($clientInstance && !($clientInstance instanceof HttpFactory)) {
-            throw new \InvalidArgumentException('Client instance must be of type Illuminate\Http\Client\Factory');
+            throw new \InvalidArgumentException('Client instance of LaravelDriver must be of type Illuminate\Http\Client\Factory');
         }
         $this->factory = $clientInstance ?? new HttpFactory();
     }

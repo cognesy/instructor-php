@@ -26,7 +26,7 @@ class InferenceStream
     protected EventDispatcherInterface $events;
     protected EventStreamReader $reader;
     protected Generator $stream;
-    protected HttpClientResponse $response;
+    protected HttpClientResponse $httpResponse;
     protected CanHandleInference $driver;
     protected bool $streamReceived = false;
     protected array $streamEvents = [];
@@ -38,17 +38,17 @@ class InferenceStream
     protected ?Closure $onPartialResponse = null;
 
     public function __construct(
-        HttpClientResponse $response,
-        CanHandleInference $driver,
-        LLMConfig          $config,
+        HttpClientResponse        $httpResponse,
+        CanHandleInference        $driver,
+        LLMConfig                 $config,
         ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->driver = $driver;
         $this->config = $config;
-        $this->response = $response;
+        $this->httpResponse = $httpResponse;
 
-        $this->stream = $this->response->stream();
+        $this->stream = $this->httpResponse->stream();
         $this->reader = new EventStreamReader(
             parser: $this->driver->fromStreamData(...),
             events: $this->events,

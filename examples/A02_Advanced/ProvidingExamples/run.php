@@ -32,7 +32,7 @@ echo "\nREQUEST:\n";
 $user = (new StructuredOutput)
     // let's dump the request data to see how examples are used in requests
     ->onEvent(HttpRequestSent::class, fn($event) => dump($event))
-    ->withMessage("Our user Jason is 25 years old.")
+    ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->withExamples([
         new Example(

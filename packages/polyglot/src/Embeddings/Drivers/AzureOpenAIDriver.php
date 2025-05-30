@@ -13,8 +13,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class AzureOpenAIDriver implements CanHandleVectorization
 {
-    protected EmbeddingsConfig         $config;
-    protected HttpClient      $httpClient;
+    protected EmbeddingsConfig $config;
+    protected HttpClient $httpClient;
     protected EventDispatcherInterface $events;
 
     public function __construct(

@@ -38,7 +38,7 @@ echo "Anthropic API key format is incorrect\n";
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Http\Exceptions\RequestException;
 
 function testApiKey(string $preset): bool {

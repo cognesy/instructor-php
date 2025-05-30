@@ -18,8 +18,7 @@ trait HandlesShortcuts
      * @return StructuredOutputStream A streamed version of the response
      */
     public function stream() : StructuredOutputStream {
-        // turn on streaming mode
-        $this->requestBuilder->withStreaming();
+        $this->withStreaming();
         return $this->create()->stream();
     }
 

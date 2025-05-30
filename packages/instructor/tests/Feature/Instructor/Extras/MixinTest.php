@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Instructor\Tests\Examples\Mixin\PersonWithMixin;
 use Cognesy\Instructor\Tests\MockHttp;
 
@@ -9,7 +9,7 @@ it('supports HandlesExtraction mixin', function () {
         '{"name":"Jason","age":28}'
     ]);
 
-    $customLLM = (new LLM)->withHttpClient($mockHttp);
+    $customLLM = (new LLMProvider)->withHttpClient($mockHttp);
     $person = PersonWithMixin::infer(
         messages: "His name is Jason, he is 28 years old.",
         llm: $customLLM

@@ -18,7 +18,6 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\LLM;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Env;
 use Cognesy\Utils\Str;
@@ -26,14 +25,13 @@ use Cognesy\Utils\Str;
 // we will use existing, bundled driver as an example, but you can provide any class that implements
 // a required interface (CanHandleInference)
 
-LLM::registerDriver('custom-driver', fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
+Inference::registerDriver('custom-driver', fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
     public function handle(InferenceRequest $request): HttpClientResponse {
         // some extra functionality to demonstrate our driver is being used
         echo ">>> Handling request...\n";
         return parent::handle($request);
     }
-}
-);
+});
 
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(
@@ -48,7 +46,7 @@ $config = new LLMConfig(
 
 $answer = (new Inference)
     ->withConfig($config)
-    ->withMessage(['role' => 'user', 'content' => 'What is the capital of France'])
+    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withOptions(['max_tokens' => 64])
     ->get();
 

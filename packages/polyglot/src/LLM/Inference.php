@@ -14,10 +14,13 @@ class Inference
 {
     use HandlesEventDispatching;
     use HandlesEventListening;
-    use Traits\HandlesFluentMethods;
+
     use Traits\HandleInitMethods;
+    use Traits\HandlesFluentMethods;
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
+
+    protected ?LLMProvider $llm;
 
     protected CachedContext $cachedContext;
     protected InferenceRequest $request;
@@ -25,17 +28,27 @@ class Inference
     /**
      * Constructor for initializing dependencies and configurations.
      *
-     * @param LLM|null $llm LLM object.
+     * @param LLMProvider|null $llm LLM object.
      * @param EventDispatcher|null $events Event dispatcher.
      *
      * @return void
      */
     public function __construct(
-        ?LLM $llm = null,
         ?EventDispatcherInterface $events = null,
+        ?EventDispatcherInterface $listener = null
     ) {
-        $this->events = $events ?? new EventDispatcher();
-        $this->llm = $llm ?? new LLM(events: $this->events);
+        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('inference') : null;
+        $this->events = $events ?? $default;
+        $this->listener = $listener ?? $default;
+
+        $this->llm = new LLMProvider(
+            $this->events,
+            $this->listener,
+        );
         $this->request = new InferenceRequest();
+    }
+
+    public static function registerDriver(string $name, string|callable $driver): void {
+        InferenceDriverFactory::registerDriver($name, $driver);
     }
 }

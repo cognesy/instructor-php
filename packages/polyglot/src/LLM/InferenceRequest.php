@@ -12,12 +12,14 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 class InferenceRequest
 {
     protected array $messages = [];
-    protected string $model = '';
     protected array $tools = [];
     protected string|array $toolChoice = [];
     protected array $responseFormat = [];
+
+    protected string $model = '';
     protected array $options = [];
     protected ?OutputMode $mode = null;
+
     protected ?CachedContext $cachedContext = null;
 
     public function __construct(
@@ -53,6 +55,75 @@ class InferenceRequest
     }
 
     /**
+     * Retrieves the model.
+     *
+     * @return string The model of the object.
+     */
+    public function model() : string {
+        return $this->model;
+    }
+
+    /**
+     * Determines whether the content or resource is being streamed.
+     *
+     * @return bool True if streaming is enabled, false otherwise.
+     */
+    public function isStreamed() : bool {
+        return $this->options['stream'] ?? false;
+    }
+
+    /**
+     * Retrieves the list of tools based on the current mode.
+     *
+     * @return array An array of tools if the mode is set to Tools, otherwise an empty array.
+     */
+    public function tools() : array {
+        return match($this->mode) {
+            OutputMode::Tools => $this->tools,
+            default => [],
+        };
+     }
+
+    /**
+     * Retrieves the tool choice based on the current mode.
+     *
+     * @return string|array The tool choice if the mode is set to 'Tools', otherwise an empty array.
+     */
+    public function toolChoice() : string|array {
+        return match($this->mode) {
+            OutputMode::Tools => $this->toolChoice,
+            default => [],
+        };
+    }
+
+    /**
+     * Retrieves the array of options configured for the current instance.
+     *
+     * @return array The array of options.
+     */
+    public function options() : array {
+        return $this->options;
+    }
+
+    /**
+     * Retrieves the current mode of the object.
+     *
+     * @return OutputMode The current mode instance.
+     */
+    public function outputMode() : ?OutputMode {
+        return $this->mode;
+    }
+
+    /**
+     * Retrieves the cached context if available.
+     *
+     * @return CachedContext|null The cached context instance or null if not set.
+     */
+    public function cachedContext() : ?CachedContext {
+        return $this->cachedContext;
+    }
+
+    /**
      * Sets the messages for the current instance.
      *
      * @param string|array $messages The message content to set. Can be either a string, which is converted
@@ -68,15 +139,6 @@ class InferenceRequest
     }
 
     /**
-     * Retrieves the model.
-     *
-     * @return string The model of the object.
-     */
-    public function model() : string {
-        return $this->model;
-    }
-
-    /**
      * Sets the model to be used and returns the current instance.
      *
      * @param string $model The name of the model to set.
@@ -85,15 +147,6 @@ class InferenceRequest
     public function withModel(string $model) : self {
         $this->model = $model;
         return $this;
-    }
-
-    /**
-     * Determines whether the content or resource is being streamed.
-     *
-     * @return bool True if streaming is enabled, false otherwise.
-     */
-    public function isStreamed() : bool {
-        return $this->options['stream'] ?? false;
     }
 
     /**
@@ -108,18 +161,6 @@ class InferenceRequest
     }
 
     /**
-     * Retrieves the list of tools based on the current mode.
-     *
-     * @return array An array of tools if the mode is set to Tools, otherwise an empty array.
-     */
-    public function tools() : array {
-        return match($this->mode) {
-            OutputMode::Tools => $this->tools,
-            default => [],
-        };
-    }
-
-    /**
      * Sets the tools to be used and returns the current instance.
      *
      * @param array $tools An array of tools to be assigned.
@@ -128,18 +169,6 @@ class InferenceRequest
     public function withTools(array $tools) : self {
         $this->tools = $tools;
         return $this;
-    }
-
-    /**
-     * Retrieves the tool choice based on the current mode.
-     *
-     * @return string|array The tool choice if the mode is set to 'Tools', otherwise an empty array.
-     */
-    public function toolChoice() : string|array {
-        return match($this->mode) {
-            OutputMode::Tools => $this->toolChoice,
-            default => [],
-        };
     }
 
     /**
@@ -176,15 +205,6 @@ class InferenceRequest
     }
 
     /**
-     * Retrieves the array of options configured for the current instance.
-     *
-     * @return array The array of options.
-     */
-    public function options() : array {
-        return $this->options;
-    }
-
-    /**
      * Sets the options for the current instance and returns it.
      *
      * @param array $options An associative array of options to configure the instance.
@@ -196,15 +216,6 @@ class InferenceRequest
     }
 
     /**
-     * Retrieves the current mode of the object.
-     *
-     * @return OutputMode The current mode instance.
-     */
-    public function outputMode() : ?OutputMode {
-        return $this->mode;
-    }
-
-    /**
      * Sets the mode for the current instance and returns the updated instance.
      *
      * @param OutputMode $mode The mode to be set.
@@ -213,15 +224,6 @@ class InferenceRequest
     public function withOutputMode(OutputMode $mode) : self {
         $this->mode = $mode;
         return $this;
-    }
-
-    /**
-     * Retrieves the cached context if available.
-     *
-     * @return CachedContext|null The cached context instance or null if not set.
-     */
-    public function cachedContext() : ?CachedContext {
-        return $this->cachedContext;
     }
 
     /**
@@ -268,6 +270,7 @@ class InferenceRequest
         $cloned->tools = empty($this->tools) ? $this->cachedContext->tools : $this->tools;
         $cloned->toolChoice = empty($this->toolChoice) ? $this->cachedContext->toolChoice : $this->toolChoice;
         $cloned->responseFormat = empty($this->responseFormat) ? $this->cachedContext->responseFormat : $this->responseFormat;
+        // other properties like model, options, and mode remain unchanged
         return $cloned;
     }
 }

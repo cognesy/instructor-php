@@ -79,6 +79,7 @@ class Instructor extends StructuredOutput
             toolDescription: $toolDescription,
             retryPrompt: $retryPrompt,
             mode: $mode,
-        );
+        )
+        ->create();
     }
 }

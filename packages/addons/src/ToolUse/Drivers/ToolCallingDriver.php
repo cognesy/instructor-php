@@ -10,7 +10,7 @@ use Cognesy\Addons\ToolUse\ToolUseStep;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -26,7 +26,7 @@ use Cognesy\Utils\Result\Success;
  */
 class ToolCallingDriver implements CanUseTools
 {
-    private LLM $llm;
+    private LLMProvider $llm;
     private string|array $toolChoice;
     private string $model;
     private array $responseFormat;
@@ -35,14 +35,14 @@ class ToolCallingDriver implements CanUseTools
     private bool $parallelToolCalls = false;
 
     public function __construct(
-        ?LLM         $llm = null,
+        ?LLMProvider $llm = null,
         string|array $toolChoice = 'auto',
         array        $responseFormat = [],
         string       $model = '',
         array        $options = [],
         OutputMode   $mode = OutputMode::Tools,
     ) {
-        $this->llm = $llm ?? new LLM();
+        $this->llm = $llm ?? new LLMProvider();
 
         $this->toolChoice = $toolChoice;
         $this->model = $model;
@@ -64,7 +64,7 @@ class ToolCallingDriver implements CanUseTools
         $tools = $context->tools();
 
         $llmResponse = (new Inference)
-            ->withLLM($this->llm)
+            ->withLLMProvider($this->llm)
             ->with(
                 messages: $messages->toArray(),
                 model: $this->model,

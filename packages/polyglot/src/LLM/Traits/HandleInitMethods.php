@@ -5,20 +5,17 @@ namespace Cognesy\Polyglot\LLM\Traits;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 
 trait HandleInitMethods
 {
-    protected ?LLM $llm;
-    protected ?HttpClient $httpClient;
-
     /**
      * Sets the LLM instance to be used.
      *
-     * @param LLM $llm The LLM instance to set.
+     * @param LLMProvider $llm The LLM instance to set.
      * @return self Returns the current instance.
      */
-    public function withLLM(LLM $llm): self {
+    public function withLLMProvider(LLMProvider $llm): self {
         $this->llm = $llm;
         return $this;
     }
@@ -35,7 +32,7 @@ trait HandleInitMethods
         return $this;
     }
 
-    public function fromDsn(string $dsn): self {
+    public function withDsn(string $dsn): self {
         return $this->withConfig(LLMConfig::fromDSN($dsn));
     }
 
@@ -93,9 +90,9 @@ trait HandleInitMethods
     /**
      * Retrieves the LLM instance.
      *
-     * @return LLM The LLM instance.
+     * @return LLMProvider The LLM instance.
      */
-    public function llm() : LLM {
+    public function llm() : LLMProvider {
         return $this->llm;
     }
 

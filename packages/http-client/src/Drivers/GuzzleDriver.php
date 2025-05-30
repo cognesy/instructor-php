@@ -32,7 +32,7 @@ class GuzzleDriver implements CanHandleHttpRequest
         $this->config = $config;
         $this->events = $events ?? new EventDispatcher();
         if ($clientInstance && !($clientInstance instanceof ClientInterface)) {
-            throw new \InvalidArgumentException('Client instance must be of type GuzzleHttp\ClientInterface');
+            throw new \InvalidArgumentException('Client instance of GuzzleDriver must be of type GuzzleHttp\ClientInterface');
         }
         $this->client = $clientInstance ?? new Client();
     }

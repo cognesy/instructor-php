@@ -25,9 +25,10 @@ $response = (new Inference)
     ->using('deepseek-r') // optional, default is set in /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France. Answer with just a name.']],
-        options: ['max_tokens' => 64]
+        options: ['max_tokens' => 128]
     )
     ->response();
+dd($response);
 echo "\nCASE #1: Sync response\n";
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: {$response->content()}\n";
@@ -39,11 +40,11 @@ assert($response->reasoningContent() !== '');
 // EXAMPLE 2: streaming response
 $stream = (new Inference)
     ->using('deepseek-r') // optional, default is set in /config/llm.php
-    ->withStreaming()
     ->with(
         messages: [['role' => 'user', 'content' => 'What is capital of Brasil. Answer with just a name.']],
         options: ['max_tokens' => 128]
     )
+    ->withStreaming()
     ->stream();
 
 echo "\nCASE #2: Streamed response\n";

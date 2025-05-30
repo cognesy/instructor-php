@@ -18,7 +18,7 @@ require 'examples/boot.php';
 use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\LLMFactory;
+use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 
@@ -33,7 +33,7 @@ $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
 $summarizer = new SummarizeMessages(
     //prompt: 'Summarize the messages.',
-    llm: (new LLMFactory)->fromPreset('deepseek'),
+    llm: (new LLMProvider)->using('deepseek'),
     //model: 'gpt-4o-mini',
     tokenLimit: 1024,
 );

@@ -2,10 +2,9 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\Embeddings\Traits\HasFinders;
 use Cognesy\Utils\Events\EventDispatcher;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
+use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -13,29 +12,31 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class Embeddings
 {
-    use HasFinders;
+    use HandlesEventDispatching;
+    use HandlesEventListening;
+
+    use Traits\HandlesInitMethods;
     use Traits\HandlesFluentMethods;
     use Traits\HandlesShortcuts;
-    use Traits\HandlesInitMethods;
     use Traits\HandlesInvocation;
 
-    protected EventDispatcherInterface $events;
-    protected EmbeddingsProviderFactory $embeddingsProviderFactory;
+    use Traits\HasFinders;
 
     protected EmbeddingsProvider $provider;
     protected EmbeddingsRequest $request;
 
-    protected ?string $model = null;
-    protected ?HttpClient $httpClient = null;
-
     public function __construct(
-        string                $preset = '',
-        EmbeddingsProvider    $provider = null,
         ?EventDispatcherInterface $events = null,
+        ?EventDispatcherInterface $listener = null
     ) {
-        $this->events = $events ?? new EventDispatcher();
-        $this->embeddingsProviderFactory = new EmbeddingsProviderFactory($this->events);
-        $this->provider = $provider ?? $this->embeddingsProviderFactory->fromPreset($preset ?: Settings::get('embed', "defaultPreset"));
+        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('embeddings') : null;
+        $this->events = $events ?? $default;
+        $this->listener = $listener ?? $default;
         $this->request = new EmbeddingsRequest();
+        $this->provider = new EmbeddingsProvider($this->events, $this->listener);
+    }
+
+    public static function registerDriver(string $name, string|callable $driver) {
+        EmbeddingsDriverFactory::registerDriver($name, $driver);
     }
 }

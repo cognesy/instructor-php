@@ -7,7 +7,6 @@ use Cognesy\Polyglot\LLM\Data\LLMResponse;
 
 trait HandlesRetries
 {
-    private int $maxRetries;
     /** @var StructuredOutputAttempt[] */
     private array $failedResponses = [];
     private StructuredOutputAttempt $response;

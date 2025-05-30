@@ -17,7 +17,7 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Drivers\SymfonyDriver;
-use Cognesy\Http\HttpClientFactory;
+use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
@@ -30,6 +30,28 @@ class User {
     public string $name;
 }
 
+// Build fully customized HTTP client
+$events = new EventDispatcher();
+
+$httpConfig = new HttpClientConfig(
+    httpClientType: 'symfony',
+    connectTimeout: 5,
+    requestTimeout: 60,
+    idleTimeout: -1,
+    maxConcurrent: 5,
+    poolTimeout: 60,
+    failOnError: true,
+);
+
+$customClient = (new HttpClient)
+    ->withEventDispatcher($events)
+    ->withEventListener($events)
+    ->withDriver(new SymfonyDriver(
+        config: $httpConfig,
+        clientInstance: SymfonyHttpClient::create(['http_version' => '2.0']),
+        events: $events,
+    ));
+
 // Create instance of LLM connection preset initialized with custom parameters
 $llmConfig = new LLMConfig(
     apiUrl: 'https://api.deepseek.com',
@@ -41,26 +63,10 @@ $llmConfig = new LLMConfig(
     providerType: 'openai-compatible',
 );
 
-// Build fully customized HTTP client
-$events = new EventDispatcher();
-$httpConfig = new HttpClientConfig(
-    httpClientType: 'symfony',
-    connectTimeout: 5,
-    requestTimeout: 60,
-    idleTimeout: -1,
-    maxConcurrent: 5,
-    poolTimeout: 60,
-    failOnError: true,
-);
-$driver = new SymfonyDriver(
-    config: $httpConfig,
-    clientInstance: SymfonyHttpClient::create(['http_version' => '2.0']),
-    events: $events,
-);
-$customClient = (new HttpClientFactory($events))->fromDriver($driver);
-
 // Get Instructor with the default client component overridden with your own
 $structuredOutput = (new StructuredOutput)
+    ->withEventDispatcher($events)
+    ->withEventListener($events)
     ->withLLMConfig($llmConfig)
     ->withHttpClient($customClient);
 
@@ -74,6 +80,7 @@ $user = $structuredOutput
     )
     ->withStreaming()
     ->get();
+
 dump($user);
 
 assert(isset($user->name));

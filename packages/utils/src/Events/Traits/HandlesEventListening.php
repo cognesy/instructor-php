@@ -19,7 +19,7 @@ trait HandlesEventListening
     }
 
     /**
-     * Listens to all events
+     * Registers callback listening to all events
      *
      * @param callable $listener The listener callable to be invoked on any event
      */
@@ -29,7 +29,7 @@ trait HandlesEventListening
     }
 
     /**
-     * Listens to a specific event
+     * Registers callback listening to a specific event type
      *
      * @param string $class The event class
      * @param callable $listener The listener callable to be invoked on event

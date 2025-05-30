@@ -22,6 +22,8 @@ class EmbeddingsRequest
         $this->options = $options;
     }
 
+    // MUTATORS
+
     public function withAnyInput(array|string $input) : static {
         $this->inputs = match(true) {
             is_string($input) => [$input],
@@ -51,6 +53,8 @@ class EmbeddingsRequest
         return $this;
     }
 
+    // ACCESSORS
+
     public function inputs() : array {
         return $this->inputs;
     }
@@ -62,6 +66,8 @@ class EmbeddingsRequest
     public function model() : string {
         return $this->model;
     }
+
+    // TRANSFORMATIONS
 
     public function toArray() : array {
         return [

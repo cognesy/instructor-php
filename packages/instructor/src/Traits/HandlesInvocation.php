@@ -3,9 +3,9 @@ namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\RequestMaterializer;
 use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\StructuredOutputResponse;
-use Cognesy\Instructor\Data\ChatTemplate;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
@@ -56,7 +56,6 @@ trait HandlesInvocation
      * @param string $toolDescription A description of the tool to be used in OutputMode::Tools.
      * @param string $retryPrompt The prompt to be used during retries.
      * @param OutputMode $mode The mode of operation for the request.
-     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      * @throws Exception If the response model is empty or invalid.
      */
     public function with(
@@ -80,16 +79,18 @@ trait HandlesInvocation
             toolName: $toolName ?: $this->config->toolName(),
             toolDescription: $toolDescription ?: $this->config->toolDescription(),
         );
-        $this->requestBuilder->with(
-            messages: $messages,
-            requestedSchema: $responseModel,
-            system: $system,
-            prompt: $prompt,
-            examples: $examples,
-            model: $model,
-            options: $options,
-            config: $this->config,
-        );
+
+        $this->messages = match (true) {
+            empty($messages) => $this->messages,
+            default => Messages::fromAny($messages),
+        };
+        $this->requestedSchema = $responseModel ?: $this->requestedSchema;
+        $this->system = $system ?: $this->system;
+        $this->prompt = $prompt ?: $this->prompt;
+        $this->examples = $examples ?: $this->examples;
+        $this->model = $model ?: $this->model;
+        $this->options = array_merge($this->options, $options);
+
         return $this;
     }
 
@@ -105,9 +106,7 @@ trait HandlesInvocation
         $this->queueEvent(new RequestReceived());
         $this->dispatchQueuedEvents();
 
-        $request = $this->requestBuilder
-            ->withConfig($this->config)
-            ->build();
+        $request = $this->build();
 
         $requestHandler = new RequestHandler(
             request: $request,
@@ -122,8 +121,8 @@ trait HandlesInvocation
                 $this->responseTransformer,
                 $this->events,
             ),
-            requestMaterializer: new ChatTemplate($this->config),
-            llm: $this->llm()->withHttpClient($this->httpClient),
+            requestMaterializer: new RequestMaterializer($this->config),
+            llm: $this->llm(),
             events: $this->events,
         );
 

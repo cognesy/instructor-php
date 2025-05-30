@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 
 /**
  * Handles self-inference for the class implementing this trait.
@@ -28,26 +28,26 @@ trait HandlesSelfInference {
      * @param string $toolName
      * @param string $toolDescription
      * @param string $retryPrompt
-     * @param LLM|null $llm
+     * @param LLMProvider|null $llm
      * @return static
      * @throws \Exception
      */
     public static function infer(
         string|array        $messages = '',
-        string              $system = '',
-        string              $prompt = '',
-        array               $examples = [],
-        string              $model = '',
-        int                 $maxRetries = 2,
-        array               $options = [],
-        OutputMode          $mode = OutputMode::Tools,
-        string              $toolName = '',
-        string              $toolDescription = '',
-        string              $retryPrompt = '',
-        ?LLM                $llm = null,
+        string       $system = '',
+        string       $prompt = '',
+        array        $examples = [],
+        string       $model = '',
+        int          $maxRetries = 2,
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Tools,
+        string       $toolName = '',
+        string       $toolDescription = '',
+        string       $retryPrompt = '',
+        ?LLMProvider $llm = null,
     ) : static {
-        return (new StructuredOutput())
-            ->withLLM($llm ?? new LLM())
+        return (new StructuredOutput)
+            ->withLLMProvider($llm ?? new LLMProvider())
             ->with(
                 messages: $messages,
                 responseModel: self::class,

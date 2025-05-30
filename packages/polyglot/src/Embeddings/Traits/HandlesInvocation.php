@@ -24,9 +24,11 @@ trait HandlesInvocation
         array $options = [],
         string $model = '',
     ) : static {
-        $this->request->withAnyInput($input ?: $this->request->inputs());
-        $this->request->withOptions(array_merge($this->request->options(), $options));
-        $this->request->withModel($model ?: $this->request->model());
+        $this->request = new EmbeddingsRequest(
+            input: $input ?: $this->request->inputs(),
+            options: array_merge($this->request->options(), $options),
+            model: $model ?: $this->request->model(),
+        );
         return $this;
     }
 

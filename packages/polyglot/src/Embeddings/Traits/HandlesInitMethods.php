@@ -15,7 +15,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function using(string $preset) : self {
-        $this->provider = $this->embeddingsProviderFactory->fromPreset($preset);
+        $this->provider->withPreset($preset);
         return $this;
     }
 
@@ -25,7 +25,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withConfig(EmbeddingsConfig $config) : self {
-        $this->provider = $this->embeddingsProviderFactory->fromConfig($config);
+        $this->provider->withConfig($config);
         return $this;
     }
 
@@ -36,7 +36,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withDriver(CanHandleVectorization $driver) : self {
-        $this->provider = $this->embeddingsProviderFactory->fromDriver($driver);
+        $this->provider->withDriver($driver);
         return $this;
     }
 
@@ -52,10 +52,9 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withHttpClient(HttpClient $httpClient) : self {
-        $this->httpClient = $httpClient;
+        $this->provider->withHttpClient($httpClient);
         return $this;
     }
-
 
     /**
      * Enable or disable debugging for the current instance.

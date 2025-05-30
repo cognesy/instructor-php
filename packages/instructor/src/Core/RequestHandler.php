@@ -5,16 +5,16 @@ use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
+use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Validation\Exceptions\ValidationException;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Generator;
@@ -26,7 +26,7 @@ class RequestHandler
     protected CanGenerateResponse      $responseGenerator;
     protected CanGeneratePartials      $partialsGenerator;
     protected CanMaterializeRequest    $requestMaterializer;
-    protected LLM                      $llm;
+    protected LLMProvider              $llm;
     protected EventDispatcherInterface $events;
 
     protected int $retries = 0;
@@ -37,7 +37,7 @@ class RequestHandler
         CanGenerateResponse      $responseGenerator,
         CanGeneratePartials      $partialsGenerator,
         CanMaterializeRequest    $requestMaterializer,
-        LLM                      $llm,
+        LLMProvider              $llm,
         EventDispatcherInterface $events,
     ) {
         $this->request = $request;
@@ -101,7 +101,7 @@ class RequestHandler
 
     protected function getInference(StructuredOutputRequest $request) : InferenceResponse {
         return (new Inference)
-            ->withLLM($this->llm)
+            ->withLLMProvider($this->llm)
             ->withEventDispatcher($this->events)
             ->with(
                 messages: $this->requestMaterializer->toMessages($request),

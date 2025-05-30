@@ -4,12 +4,18 @@ namespace Cognesy\Http;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
+use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Debug\Debug;
 use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
+use Cognesy\Utils\Deferred;
+use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
+use Cognesy\Utils\Events\Traits\HandlesEventListening;
+use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -20,34 +26,58 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * It enriches any underlying HTTP client or mechanism with:
  *  - a middleware stack for processing HTTP requests
  *  - unified support for extra capabilities like debugging or buffering
- *
- * @property EventDispatcherInterface $events  Instance for dispatching events.
- * @property CanHandleHttpRequest $driver Instance that handles HTTP requests.
- * @property MiddlewareStack $stack Stack of middleware for processing requests and responses.
  */
 class HttpClient
 {
-    protected EventDispatcherInterface $events;
-    protected CanHandleHttpRequest $driver;
-    protected MiddlewareStack $stack;
-    protected DebugConfig $debugConfig;
+    use HandlesEventDispatching;
+    use HandlesEventListening;
+
+    protected ?bool $debug = null;
+
+    protected Deferred $debugConfig;
+    protected Deferred $stack;
+    protected Deferred $config;
+    protected Deferred $driver;
 
     /**
      * Constructor method for initializing the HTTP client.
-     *
-     * @param string $client The client configuration name to load.
-     * @param EventDispatcher|null $events The event dispatcher instance to use.
-     * @return void
      */
     public function __construct(
-        CanHandleHttpRequest $driver,
-        EventDispatcherInterface $events,
-        MiddlewareStack $stack,
+        ?EventDispatcherInterface $events = null,
+        ?EventListenerInterface $listener = null,
     ) {
-        $this->driver = $driver;
-        $this->events = $events;
-        $this->stack = $stack;
-        $this->debugConfig = DebugConfig::load();
+        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('http-client') : null;
+        $this->events = $events ?? $default;
+        $this->listener = $listener ?? $default;
+
+        $this->stack = $this->deferMiddlewareStackCreation();
+        $this->driver = $this->deferHttpClientDriverCreation();
+        $this->debugConfig = $this->deferDebugConfigCreation();
+        $this->config = $this->deferHttpClientConfigCreation();
+    }
+
+    public function using(string $preset): self {
+        return $this->withPreset($preset);
+    }
+
+    public function withPreset(string $preset): self {
+        $this->config = $this->deferHttpClientConfigCreation(preset: $preset);
+        return $this;
+    }
+
+    public function withConfig(HttpClientConfig $config): self {
+        $this->config = $this->deferHttpClientConfigCreation(config: $config);
+        return $this;
+    }
+
+    public function withDriver(CanHandleHttpRequest $driver): self {
+        $this->driver = $this->deferHttpClientDriverCreation($driver);
+        return $this;
+    }
+
+    public function withClientInstance(object $clientInstance): self {
+        $this->driver = $this->deferHttpClientDriverCreation(clientInstance: $clientInstance);
+        return $this;
     }
 
     /**
@@ -55,7 +85,7 @@ class HttpClient
      * Allows to manipulate the middleware stack directly.
      */
     public function middleware(): MiddlewareStack {
-        return $this->stack;
+        return $this->makeStack();
     }
 
     /**
@@ -66,22 +96,12 @@ class HttpClient
      * @throws InvalidArgumentException If the specified client type is not supported.
      */
     public function withMiddleware(HttpMiddleware ...$middleware): self {
-        $this->stack->appendMany($middleware);
+        $this->makeStack()->appendMany($middleware);
         return $this;
     }
 
     public function withDebug(?bool $debug = true) : self {
-        if ($debug) {
-            // force http enabled
-            $this->debugConfig->httpEnabled = true;
-            $this->stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-            $this->stack->prepend(new DebugMiddleware(new Debug($this->debugConfig), $this->events), 'internal:debug');
-        } else {
-            // remove debug middleware
-            $this->debugConfig->httpEnabled = false;
-            $this->stack->remove('internal:debug');
-            $this->stack->remove('internal:buffering');
-        }
+        $this->debug = $debug;
         return $this;
     }
 
@@ -93,6 +113,110 @@ class HttpClient
      * @return HttpClientResponse The response indicating the access result after processing the request.
      */
     public function handle(HttpClientRequest $request): HttpClientResponse {
-        return $this->stack->decorate($this->driver)->handle($request);
+        return $this
+            ->makeStack()
+            ->decorate($this->makeHttpClientDriver())
+            ->handle($request);
+    }
+
+    // INTERNAL //////////////////////////////////////////////////////
+
+    private function deferHttpClientDriverCreation(
+        ?CanHandleHttpRequest $driver = null,
+        ?object $clientInstance = null,
+    ): Deferred {
+        return new Deferred(
+            function() use ($driver, $clientInstance) {
+                if ($driver !== null) {
+                    return $driver;
+                }
+                return (new HttpClientDriverFactory($this->events))->makeDriver(
+                    config: $this->makeHttpClientConfig(),
+                    clientInstance: $clientInstance,
+                );
+            }
+        );
+    }
+
+    private function deferHttpClientConfigCreation(
+        ?string $preset = null,
+        ?HttpClientConfig $config = null,
+    ): Deferred {
+        return new Deferred(
+            fn() => $config ?? HttpClientConfig::load(
+                $preset ?: Settings::get('http', 'defaultPreset')
+            )
+        );
+    }
+
+    private function deferDebugConfigCreation(
+        ?DebugConfig $debugConfig = null,
+    ): Deferred {
+        return new Deferred(
+            function(?bool $debug) use ($debugConfig) {
+                $result = $debugConfig ?? DebugConfig::load();
+                if ($debug !== null) {
+                    $result->httpEnabled = $debug;
+                }
+                return $result;
+            }
+        );
+    }
+
+    private function deferMiddlewareStackCreation(
+        ?MiddlewareStack $stack = null,
+    ): Deferred {
+        return new Deferred(
+            function(?bool $debug) use ($stack) {
+                return $this->applyDebug(
+                    $stack ?? new MiddlewareStack($this->events),
+                    $this->makeDebugConfig(),
+                    $debug,
+                );
+            }
+        );
+    }
+
+    private function makeHttpClientDriver() : CanHandleHttpRequest {
+        return $this->driver->resolve();
+    }
+
+    private function makeStack() : MiddlewareStack {
+        return $this->stack->resolveUsing($this->debug);
+    }
+
+    private function makeHttpClientConfig() : HttpClientConfig {
+        return $this->config->resolve();
+    }
+
+    private function makeDebugConfig() : DebugConfig {
+        return $this->debugConfig->resolveUsing($this->debug);
+    }
+
+    private function applyDebug(
+        MiddlewareStack $stack,
+        DebugConfig $debugConfig,
+        ?bool $debug,
+    ) : MiddlewareStack {
+        if ($debug === null && !$debugConfig->httpEnabled) {
+            return $stack;
+        }
+
+        if ($debug === null && $debugConfig->httpEnabled) {
+            $debug = true;
+        }
+
+        if ($debug) {
+            // force http enabled
+            $debugConfig->httpEnabled = true;
+            $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
+            $stack->prepend(new DebugMiddleware(new Debug($debugConfig), $this->events), 'internal:debug');
+        } else {
+            // remove debug middleware
+            $debugConfig->httpEnabled = false;
+            $stack->remove('internal:debug');
+            $stack->remove('internal:buffering');
+        }
+        return $stack;
     }
 }

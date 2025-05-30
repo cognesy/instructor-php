@@ -19,24 +19,24 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceResponse
 {
     protected EventDispatcherInterface $events;
-    protected HttpClientResponse $response;
+    protected HttpClientResponse $httpResponse;
     protected CanHandleInference $driver;
     protected string $responseContent = '';
     protected LLMConfig $config;
     protected bool $isStreamed = false;
 
     public function __construct(
-        HttpClientResponse $response,
+        HttpClientResponse $httpResponse,
         CanHandleInference $driver,
-        LLMConfig          $config,
-        bool               $isStreamed,
+        LLMConfig $config,
+        bool $isStreamed,
         EventDispatcherInterface $events,
     ) {
         $this->events = $events;
         $this->driver = $driver;
         $this->config = $config;
         $this->isStreamed = $isStreamed;
-        $this->response = $response;
+        $this->httpResponse = $httpResponse;
     }
 
     /**
@@ -71,7 +71,7 @@ class InferenceResponse
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
         return new InferenceStream(
-            response: $this->response,
+            httpResponse: $this->httpResponse,
             driver: $this->driver,
             config: $this->config,
             events: $this->events
@@ -136,6 +136,6 @@ class InferenceResponse
      * @return string The contents of the response.
      */
     private function readFromResponse() : string {
-        return $this->response->body();
+        return $this->httpResponse->body();
     }
 }

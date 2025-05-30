@@ -13,15 +13,6 @@ trait HandlesFluentMethods
         return $this;
     }
 
-    public function withMessage(string|array $message): static
-    {
-        $this->request->withMessages(match(true) {
-            is_array($message) => [$message],
-            is_string($message) => [['role' => 'user', 'content' => $message]],
-        });
-        return $this;
-    }
-
     public function withModel(string $model): static
     {
         $this->request->withModel($model);

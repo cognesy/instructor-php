@@ -26,11 +26,11 @@ trait HandlesEventDispatching
     }
 
     /**
-     * Emits an event
+     * Dispatches an event
      *
      * @param Event $event The event to be emitted
      */
-    public function emit(Event $event) : void {
+    public function dispatch(Event $event) : void {
         $this->events->dispatch($event);
     }
 }

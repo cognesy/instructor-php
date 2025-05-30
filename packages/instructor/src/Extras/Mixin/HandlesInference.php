@@ -3,26 +3,26 @@ namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\LLM;
+use Cognesy\Polyglot\LLM\LLMProvider;
 
 trait HandlesInference {
     public function infer(
         string|array        $messages = '',
         string|array|object $responseModel = [],
-        string              $system = '',
-        string              $prompt = '',
-        array               $examples = [],
-        string              $model = '',
-        int                 $maxRetries = 2,
-        array               $options = [],
-        OutputMode          $mode = OutputMode::Tools,
-        string              $toolName = '',
-        string              $toolDescription = '',
-        string              $retryPrompt = '',
-        ?LLM                $llm = null,
+        string       $system = '',
+        string       $prompt = '',
+        array        $examples = [],
+        string       $model = '',
+        int          $maxRetries = 2,
+        array        $options = [],
+        OutputMode   $mode = OutputMode::Tools,
+        string       $toolName = '',
+        string       $toolDescription = '',
+        string       $retryPrompt = '',
+        ?LLMProvider $llm = null,
     ) : mixed {
         return (new StructuredOutput(
-            llm: $llm ?? new LLM()
+            llm: $llm ?? new LLMProvider()
         ))->with(
             messages: $messages,
             responseModel: $responseModel,

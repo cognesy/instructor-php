@@ -3,7 +3,6 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\HttpClientFactory;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\A21\A21Driver;
@@ -17,6 +16,7 @@ use Cognesy\Polyglot\LLM\Drivers\Fireworks\FireworksDriver;
 use Cognesy\Polyglot\LLM\Drivers\Gemini\GeminiDriver;
 use Cognesy\Polyglot\LLM\Drivers\GeminiOAI\GeminiOAIDriver;
 use Cognesy\Polyglot\LLM\Drivers\Groq\GroqDriver;
+use Cognesy\Polyglot\LLM\Drivers\HuggingFace\HuggingFaceDriver;
 use Cognesy\Polyglot\LLM\Drivers\Meta\MetaDriver;
 use Cognesy\Polyglot\LLM\Drivers\Minimaxi\MinimaxiDriver;
 use Cognesy\Polyglot\LLM\Drivers\Mistral\MistralDriver;
@@ -25,6 +25,7 @@ use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleDriver;
 use Cognesy\Polyglot\LLM\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
+use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -35,20 +36,14 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceDriverFactory
 {
     private static array $drivers = [];
-    private HttpClientFactory $httpClientFactory;
 
     public function __construct(
         protected EventDispatcherInterface $events,
-    ) {
-        $this->httpClientFactory = new HttpClientFactory($this->events);
-    }
+        protected EventListenerInterface $listener,
+    ) {}
 
     /**
      * Registers driver under given name
-     *
-     * @param string $name
-     * @param string|callable $driver
-     * @return void
      */
     public static function registerDriver(string $name, string|callable $driver) : void {
         self::$drivers[$name] = match(true) {
@@ -59,8 +54,6 @@ class InferenceDriverFactory
 
     /**
      * Returns the default driver instance.
-     *
-     * @return CanHandleInference A default driver instance.
      */
     public function default(): CanHandleInference {
         return $this->makeDriver(LLMConfig::default());
@@ -68,12 +61,6 @@ class InferenceDriverFactory
 
     /**
      * Creates and returns an appropriate driver instance based on the given configuration.
-     *
-     * @param LLMConfig $config Configuration object specifying the provider type and other necessary settings.
-     * @param HttpClient $httpClient An HTTP client instance to handle HTTP requests.
-     *
-     * @return CanHandleInference A driver instance matching the specified provider type.
-     * @throws InvalidArgumentException If the provider type is not supported.
      */
     public function makeDriver(LLMConfig $config, ?HttpClient $httpClient = null): CanHandleInference {
         $type = $config->providerType;
@@ -90,8 +77,8 @@ class InferenceDriverFactory
             config: $config,
             httpClient: match(true) {
                 !is_null($httpClient) => $httpClient,
-                !empty($config->httpClient) => $this->httpClientFactory->fromPreset($httpClient),
-                default => $this->httpClientFactory->default(),
+                !empty($config->httpClient) => (new HttpClient($this->events, $this->listener))->withPreset($config->httpClient),
+                default => (new HttpClient($this->events, $this->listener)),
             },
             events: $this->events
         );
@@ -101,8 +88,6 @@ class InferenceDriverFactory
 
     /**
      * Returns factory to create LLM driver instance
-     * @param string $name
-     * @return callable|null
      */
     protected function getBundledDriver(string $name) : ?callable {
         $drivers = [
@@ -118,6 +103,7 @@ class InferenceDriverFactory
             'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
             'gemini-oai' => fn($config, $httpClient, $events) => new GeminiOAIDriver($config, $httpClient, $events),
             'groq' => fn($config, $httpClient, $events) => new GroqDriver($config, $httpClient, $events),
+            'huggingface' => fn($config, $httpClient, $events) => new HuggingFaceDriver($config, $httpClient, $events),
             'meta' => fn($config, $httpClient, $events) => new MetaDriver($config, $httpClient, $events),
             'minimaxi' => fn($config, $httpClient, $events) => new MinimaxiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new MistralDriver($config, $httpClient, $events),
@@ -132,6 +118,6 @@ class InferenceDriverFactory
             'openrouter' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'together' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
        ];
-        return $drivers[$name] ?? null;
+       return $drivers[$name] ?? null;
     }
 }
