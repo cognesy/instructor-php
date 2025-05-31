@@ -43,15 +43,7 @@ class AzureDriver implements CanHandleInference
     public function handle(InferenceRequest $request): HttpClientResponse
     {
         $request = $request->withCacheApplied();
-        $clientRequest = $this->requestAdapter->toHttpClientRequest(
-            $request->messages(),
-            $request->model(),
-            $request->tools(),
-            $request->toolChoice(),
-            $request->responseFormat(),
-            $request->options(),
-            $request->outputMode(),
-        );
+        $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
         return $this->httpClient->handle($clientRequest);
     }
 

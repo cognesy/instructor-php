@@ -18,10 +18,14 @@ class OpenAIMessageFormat implements CanMapMessages
         return $list;
     }
 
+    // INTERNAL /////////////////////////////////////////////
+
     protected function mapMessage(array $message) : array {
         return match(true) {
-            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? []) => $this->toNativeToolCall($message),
-            ($message['role'] ?? '') === 'tool' => $this->toNativeToolResult($message),
+            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? [])
+                => $this->toNativeToolCall($message),
+            ($message['role'] ?? '') === 'tool'
+                => $this->toNativeToolResult($message),
             default => $message,
         };
     }

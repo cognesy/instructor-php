@@ -56,11 +56,10 @@ class GuzzleDriver implements CanHandleHttpRequest
             ]);
         } catch (GuzzleRequestException $e) {
             // Get the response from the exception, if available
-            $responseContent = null;
-            if ($e->hasResponse()) {
-                $response = $e->getResponse();
-                $responseContent = $response->getBody()->getContents();
-            }
+            $message = match(true) {
+                $e->hasResponse() && $e->getResponse() => (string) $e->getResponse()?->getBody(),
+                default => $e->getMessage(),
+            };
 
             // Dispatch event with full error details
             $this->events->dispatch(new HttpRequestFailed(
@@ -68,12 +67,11 @@ class GuzzleDriver implements CanHandleHttpRequest
                 $method,
                 $headers,
                 $body,
-                $e->getMessage(),
-                $responseContent // Pass the response content to the event
+                $message,
             ));
 
             // Optionally, include response content in the thrown exception
-            throw new RequestException($e);
+            throw new RequestException(message: $message);
         } catch (Exception $e) {
             $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
             throw new RequestException($e);

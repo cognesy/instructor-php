@@ -19,11 +19,15 @@ class HttpRequestSent extends Event
     }
 
     public function __toString(): string {
-        return Json::encode([
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
             'url' => $this->url,
             'method' => $this->method,
             'headers' => $this->headers,
             'body' => $this->body,
-        ]);
+        ];
     }
 }

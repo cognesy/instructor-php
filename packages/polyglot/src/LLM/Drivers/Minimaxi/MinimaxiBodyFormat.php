@@ -4,67 +4,38 @@ namespace Cognesy\Polyglot\LLM\Drivers\Minimaxi;
 
 use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Json\Json;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 {
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ) : array {
-        $options = array_merge($this->config->options, $options);
-
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
-            'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->messageFormat->map($messages),
-        ]), $options);
-
-        if ($options['stream'] ?? false) {
-            $request['stream_options']['include_usage'] = true;
-        }
-
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
-    }
-
-    // OVERRIDES - HELPERS ///////////////////////////////////
-
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        switch($mode) {
+    public function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
+        switch ($mode) {
             case OutputMode::Text:
             case OutputMode::MdJson:
-                $request['response_format'] = [];
+                $result = [];
                 break;
             case OutputMode::Json:
             case OutputMode::JsonSchema:
-                $request['response_format'] = [
-                    'type' => 'json_schema',
-                    'json_schema' => [
-                        'name' => $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema',
-                        'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
-                    ],
-                ];
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $schema = $this->toNativeSchema($schema, $schemaName, $schemaStrict);
+                $result = ['type' => 'json_schema', 'json_schema' => ['name' => $schemaName, 'schema' => $schema]];
                 break;
-            case OutputMode::Unrestricted:
-                $request['response_format'] = $responseFormat ?? $request['response_format'] ?? [];
-                break;
+            default:
+                $result = [];
         }
 
-        $request['tools'] = $tools ? $this->toNativeTools($tools) : [];
-        $request['tool_choice'] = [];
+        return $result;
+    }
 
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
+    protected function toTools(InferenceRequest $request) : array {
+        return $request->hasTools()
+            ? $this->toNativeTools($request->tools())
+            : [];
+    }
+
+    protected function toToolChoice(InferenceRequest $request) : array|string {
+        return [];
     }
 
     protected function toNativeTools(array $tools) : array|string {
@@ -75,10 +46,17 @@ class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
         return [
             'type' => 'function',
             'function' => [
-                'name' => $tool['function']['name'],
-                'description' => $tool['function']['description'],
-                'parameters' => Json::encode($tool['function']['parameters']),
+                'name' => $tool['function']['name'] ?? $tool['name'] ?? '',
+                'description' => $tool['function']['description'] ?? $tool['description'] ?? '',
+                'parameters' => $tool['function']['parameters'] ?? $tool['parameters'] ?? [],
             ],
         ];
+    }
+
+    private function toNativeSchema(array $schema) : array {
+        $json = json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        // replace 'integer' or "integer" with 'number'
+        $json = str_replace(['"integer"', "'integer'"], '"number"', $json);
+        return json_decode($json, true) ?? [];
     }
 }

@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\LLM\Drivers\Anthropic;
 use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Messages\Messages;
 
 class AnthropicBodyFormat implements CanMapRequestBody
@@ -16,59 +16,40 @@ class AnthropicBodyFormat implements CanMapRequestBody
         protected bool $parallelToolCalls = false
     ) {}
 
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ): array {
-        $options = array_merge($this->config->options, $options);
+    public function toRequestBody(InferenceRequest $request): array {
+        $options = array_merge($this->config->options, $request->options());
 
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
         unset($options['parallel_tool_calls']);
 
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
+        $requestData = array_merge(array_filter([
+            'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
-            'system' => Messages::fromArray($messages)
+            'system' => Messages::fromArray($request->messages())
                 ->forRoles(['system'])
                 ->toString(),
             'messages' => $this->messageFormat->map(
-                Messages::fromArray($messages)
+                Messages::fromArray($request->messages())
                     ->exceptRoles(['system'])
                     ->toArray()
             ),
         ]), $options);
 
-        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+        // Anthropic does not support response_format or JSON/JSON Schema mode
+        unset($requestData['response_format']);
 
-        return $request;
+        if ($request->hasTools()) {
+            $requestData['tools'] = $this->toTools($request);
+            $requestData['tool_choice'] = $this->toToolChoice($request);
+        }
+
+        return array_filter($requestData, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        // Anthropic does not support response_format or JSON/JSON Schema mode
-        unset($request['response_format']);
-
-        if (!empty($tools)) {
-            $request['tools'] = $this->toTools($tools);
-            $request['tool_choice'] = $this->toToolChoice($toolChoice, $tools);
-        }
-
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
-    }
-
-    private function toTools(array $tools) : array {
+    private function toTools(InferenceRequest $request) : array {
+        $tools = $request->tools();
         $result = [];
         foreach ($tools as $tool) {
             $result[] = [
@@ -80,7 +61,10 @@ class AnthropicBodyFormat implements CanMapRequestBody
         return $result;
     }
 
-    private function toToolChoice(string|array $toolChoice, array $tools) : array {
+    private function toToolChoice(InferenceRequest $request) : array {
+        $toolChoice = $request->toolChoice();
+        $tools = $request->tools();
+
         return match(true) {
             empty($tools) => [],
             empty($toolChoice) => [

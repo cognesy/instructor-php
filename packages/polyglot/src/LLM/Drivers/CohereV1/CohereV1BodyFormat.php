@@ -6,6 +6,7 @@ use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Messages\Messages;
 
@@ -16,67 +17,50 @@ class CohereV1BodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat,
     ) {}
 
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ): array {
-        $options = array_merge($this->config->options, $options);
+    public function toRequestBody(InferenceRequest $request): array {
+        $options = array_merge($this->config->options, $request->options());
 
         unset($options['parallel_tool_calls']);
 
         $system = '';
         $chatHistory = [];
-        $nativeMessages = Messages::asString($this->messageFormat->map($messages));
+        $nativeMessages = Messages::asString($this->messageFormat->map($request->messages()));
 
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
+        $requestData = array_merge(array_filter([
+            'model' => $request->model() ?: $this->config->model,
             'preamble' => $system,
             'chat_history' => $chatHistory,
             'message' => $nativeMessages,
         ]), $options);
 
-        if (!empty($tools)) {
-            $request['tools'] = $this->toTools($tools);
+        $requestData['response_format'] = $this->toResponseFormat($request);
+        if ($request->hasTools()) {
+            $requestData['tools'] = $this->toTools($request);
         }
 
-        $request = $this->removeDisallowedEntries($request);
-
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+        return $this->filterEmptyValues($requestData);
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        switch($mode) {
+    private function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
+        switch ($mode) {
             case OutputMode::Json:
-                $request['response_format'] = [
-                    'type' => 'json_object',
-                    'schema' => $responseFormat['schema'] ?? [],
-                ];
-                break;
             case OutputMode::JsonSchema:
-                $request['response_format'] = [
-                    'type' => 'json_object',
-                    'schema' => $responseFormat['json_schema']['schema'] ?? [],
-                ];
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $result = ['type' => 'json_object', 'schema' => $schema];
                 break;
+            default:
+                $result = [];
         }
 
-        return $request;
+        return $result;
     }
 
-    private function toTools(array $tools): array {
+    private function toTools(InferenceRequest $request): array {
+        $tools = $request->tools();
+
         $result = [];
         foreach ($tools as $tool) {
             $parameters = [];
@@ -120,5 +104,46 @@ class CohereV1BodyFormat implements CanMapRequestBody
                 'additionalProperties',
             ],
         );
+    }
+
+    private function filterEmptyValues(array $data) : array {
+        return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
+    }
+
+        protected function toSchemaData(InferenceRequest $request) : array {
+        $responseFormat = $request->responseFormat();
+
+        $schema = $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [];
+        $schema = $this->removeDisallowedEntries($schema);
+
+        $schemaName = $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema';
+        $schemaStrict = $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true;
+
+        return [
+            $schema,
+            $schemaName,
+            $schemaStrict,
+        ];
+    }
+
+    protected function toResponseFormatMode(InferenceRequest $request) : ?OutputMode {
+        if (!$request->outputMode()?->is(OutputMode::Unrestricted)) {
+            return $request->outputMode();
+        }
+        if ($request->hasTextResponseFormat()) {
+            return OutputMode::Text;
+        }
+        if (!$request->hasResponseFormat()) {
+            return null;
+        }
+
+        $responseFormat = $request->responseFormat();
+        $type = $responseFormat['type'] ?? $responseFormat['json_schema']['type'] ?? '';
+        return match($type) {
+            'json' => OutputMode::Json,
+            'json_object' => OutputMode::Json,
+            'json_schema' => OutputMode::JsonSchema,
+            default => null,
+        };
     }
 }

@@ -14,6 +14,12 @@ class ResponseValidationAttempt extends Event
     }
 
     public function __toString(): string {
-        return Json::encode($this->response);
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'response' => $this->response,
+        ];
     }
 }

@@ -6,6 +6,7 @@ use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Messages\Messages;
 
@@ -16,34 +17,25 @@ class GeminiBodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat,
     ) {}
 
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ): array {
-        $options = array_merge($this->config->options, $options);
-
-        $request = array_filter([
-            'systemInstruction' => $this->toSystem($messages),
-            'contents' => $this->messageFormat->map(Messages::fromArray($messages)->exceptRoles(['system'])->toArray()),
-            'generationConfig' => $this->toOptions($this->config, $options, $responseFormat, $mode),
+    public function toRequestBody(InferenceRequest $request) : array {
+        $requestData = $this->filterEmptyValues([
+            'systemInstruction' => $this->toSystem($request),
+            'contents' => $this->toMessages($request),
+            'generationConfig' => $this->toOptions($request),
         ]);
 
-        if (!empty($tools)) {
-            $request['tools'] = $this->toTools($tools);
-            $request['tool_config'] = $this->toToolChoice($toolChoice);
+        if ($request->hasTools() && !empty($request->tools())) {
+            $requestData['tools'] = $this->toTools($request);
+            $requestData['tool_config'] = $this->toToolChoice($request);
         }
 
-        return $request;
+        return $requestData;
     }
 
     // INTERNAL //////////////////////////////////////////////
 
-    private function toSystem(array $messages) : array {
+    protected function toSystem(InferenceRequest $request) : array {
+        $messages = $request->messages();
         $system = Messages::fromArray($messages)
             ->forRoles(['system'])
             ->toString();
@@ -51,29 +43,42 @@ class GeminiBodyFormat implements CanMapRequestBody
         return empty($system) ? [] : ['parts' => ['text' => $system]];
     }
 
+    protected function toMessages(InferenceRequest $request): array {
+        $messages = Messages::fromArray($request->messages())
+            ->exceptRoles(['system'])
+            ->toArray();
+
+        return $this->messageFormat->map($messages);
+    }
+
     protected function toOptions(
-        LLMConfig  $config,
-        array      $options,
-        array      $responseFormat,
-        OutputMode $mode,
+        InferenceRequest $request,
     ) : array {
-        return array_filter([
+        $options = array_merge($this->config->options, $request->options());
+        $responseFormat = $request->responseFormat();
+        $mode = $request->outputMode() ?? OutputMode::Unrestricted;
+
+        return $this->filterEmptyValues([
             "responseMimeType" => $this->toResponseMimeType($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
             "candidateCount" => 1,
-            "maxOutputTokens" => $options['max_tokens'] ?? $config->maxTokens,
+            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
             "temperature" => $options['temperature'] ?? 1.0,
         ]);
     }
 
-    protected function toTools(array $tools) : array {
+    protected function toTools(InferenceRequest $request) : array {
+        $tools = $request->tools();
+
         return ['function_declarations' => array_map(
             callback: fn($tool) => $this->removeDisallowedEntries($tool['function']),
             array: $tools
         )];
     }
 
-    protected function toToolChoice(string|array $toolChoice): string|array {
+    protected function toToolChoice(InferenceRequest $request): string|array {
+        $toolChoice = $request->toolChoice();
+
         return match(true) {
             empty($toolChoice) => ["function_calling_config" => ["mode" => "ANY"]],
             is_string($toolChoice) => ["function_calling_config" => ["mode" => $this->mapToolChoice($toolChoice)]],
@@ -96,7 +101,7 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function toResponseMimeType(OutputMode $mode): string {
+    protected function toResponseMimeType(?OutputMode $mode): string {
         return match($mode) {
             OutputMode::Text => "text/plain",
             OutputMode::MdJson => "text/plain",
@@ -107,8 +112,20 @@ class GeminiBodyFormat implements CanMapRequestBody
         };
     }
 
-    protected function toResponseSchema(array $responseFormat, OutputMode $mode) : array {
-        return $this->removeDisallowedEntries($responseFormat['schema'] ?? []);
+    protected function toResponseSchema(array $responseFormat, ?OutputMode $mode) : array {
+        $schema = $responseFormat['schema'] ?? $responseFormat['json_schema']['schema'] ?? [];
+
+        $responseSchema = match($mode) {
+            OutputMode::Json,
+            OutputMode::JsonSchema,
+            OutputMode::Unrestricted => $this->removeDisallowedEntries($schema),
+            OutputMode::Text,
+            OutputMode::MdJson,
+            OutputMode::Tools => [],
+            default  => [],
+        };
+
+        return $responseSchema;
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
@@ -120,5 +137,9 @@ class GeminiBodyFormat implements CanMapRequestBody
                 'additionalProperties',
             ],
         );
+    }
+
+    protected function filterEmptyValues(array $data) : array {
+        return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 }

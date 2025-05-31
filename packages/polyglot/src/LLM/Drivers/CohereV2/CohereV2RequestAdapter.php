@@ -3,10 +3,11 @@
 namespace Cognesy\Polyglot\LLM\Drivers\CohereV2;
 
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class CohereV2RequestAdapter extends OpenAIRequestAdapter
 {
-    protected function toHeaders(): array {
+    protected function toHeaders(InferenceRequest $request): array {
         $optional = [
             'X-Client-Name' => $this->config->metadata['client_name'] ?? '',
         ];

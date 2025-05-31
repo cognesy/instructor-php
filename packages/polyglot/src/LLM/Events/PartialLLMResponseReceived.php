@@ -14,6 +14,12 @@ class PartialLLMResponseReceived extends Event
     }
 
     public function __toString() : string {
-        return Json::encode($this->partialLLMResponse);
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray() : array {
+        return [
+            'partialLLMResponse' => $this->partialLLMResponse->toArray()
+        ];
     }
 }

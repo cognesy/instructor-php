@@ -14,6 +14,12 @@ class LLMResponseReceived extends Event
     }
 
     public function __toString() : string {
-        return Json::encode($this->llmResponse);
+        return Json::encode($this->llmResponse->toArray());
+    }
+
+    public function toArray() : array {
+        return [
+            'llmResponse' => $this->llmResponse->toArray()
+        ];
     }
 }

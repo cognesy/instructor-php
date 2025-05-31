@@ -17,4 +17,8 @@ class RequestReceived extends Event
     public function __toString(): string {
         return 'OK';
     }
+
+    public function toArray(): array {
+        return [];
+    }
 }

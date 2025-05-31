@@ -8,7 +8,6 @@ use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Evals\Executors\RunInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
-use Cognesy\Http\Debug\Debug;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Settings;
 use Evals\LLMModes\CompanyEval;
@@ -44,12 +43,12 @@ $data = new InferenceData(
 );
 
 //Debug::setEnabled();
-//$presets = array_keys(Settings::get('llm', 'presets'));
-$presets = [
-//    'deepseek',
-//    'groq',
-    'gemini-oai',
-];
+$presets = array_keys(Settings::get('llm', 'presets'));
+//$presets = [
+//    'deepseek-r', // stream > text - will be solved by removing outputmode
+//    'minimaxi', // stream sync > unrestricted json_schema json
+//    'minimaxi-oai', // stream sync > unrestricted json_schema json
+//];
 $modes = [
 //    OutputMode::Text,
 //    OutputMode::MdJson,
@@ -60,13 +59,15 @@ $modes = [
 ];
 $stream = [
     false,
-//    true
+//    true,
 ];
 
 $experiment = new Experiment(
     cases: InferenceCases::only($presets, $modes, $stream),
     //cases: InferenceCases::all(),
-    executor: new RunInference($data),
+    executor: (new RunInference($data))
+        ->withDebug(true),
+        //->wiretap(fn($e) => $e->printLog()),
     processors: [
         new CompanyEval(
             key: 'execution.is_correct',

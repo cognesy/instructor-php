@@ -4,39 +4,31 @@ namespace Cognesy\Polyglot\LLM\Drivers\Fireworks;
 
 use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class FireworksBodyFormat extends OpenAICompatibleBodyFormat
 {
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        $request['response_format'] = $request['response_format'] ?? $responseFormat ?? [];
-
-        switch($mode) {
+    public function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
+        switch ($mode) {
             case OutputMode::Json:
-                $request['response_format'] = [
-                    'type' => 'json_object'
-                ];
+                $result = ['type' => 'json_object'];
                 break;
             case OutputMode::Text:
             case OutputMode::MdJson:
-                $request['response_format'] = ['type' => 'text'];
+                $result = ['type' => 'text'];
                 break;
             case OutputMode::JsonSchema:
-                $request['response_format'] = [
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $result = [
                     'type' => 'json_object',
-                    'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
+                    'schema' => $schema,
                 ];
                 break;
+            default:
+                $result = [];
         }
 
-        $request['tools'] = $tools ? $this->removeDisallowedEntries($tools) : [];
-        $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
-
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return $result;
     }
 }

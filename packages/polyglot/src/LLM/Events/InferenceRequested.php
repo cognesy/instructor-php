@@ -15,6 +15,12 @@ class InferenceRequested extends Event
     }
 
     public function __toString(): string {
-        return Json::encode($this->request);
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'request' => $this->request->toArray()
+        ];
     }
 }

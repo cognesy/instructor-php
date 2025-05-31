@@ -11,6 +11,7 @@ use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;
+use JetBrains\PhpStorm\Deprecated;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -22,6 +23,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * to handle inference requests, convert responses from the LLM backend,
  * and manage streaming responses where applicable.
  */
+#[Deprecated('Use individual drivers instead')]
 class ModularLLMDriver implements CanHandleInference {
     public function __construct(
         protected LLMConfig               $config,

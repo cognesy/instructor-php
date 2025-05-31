@@ -45,6 +45,8 @@ class InferenceRequest
         $this->withMessages($messages);
     }
 
+    // ACCESSORS //////////////////////////////////////
+
     /**
      * Retrieves the array of messages.
      *
@@ -122,6 +124,8 @@ class InferenceRequest
     public function cachedContext() : ?CachedContext {
         return $this->cachedContext;
     }
+
+    // MUTATORS //////////////////////////////////////
 
     /**
      * Sets the messages for the current instance.
@@ -237,6 +241,52 @@ class InferenceRequest
         return $this;
     }
 
+    // IS/HAS METHODS //////////////////////////////////////
+
+    public function hasResponseFormat() : bool {
+        return !empty($this->responseFormat)
+            || !empty($this->cachedContext?->responseFormat);
+    }
+
+    public function hasTextResponseFormat() : bool {
+        return $this->hasResponseFormat() && (
+            ($this->responseFormat['type'] ?? '') === 'text'
+            || ($this->cachedContext?->responseFormat['type'] ?? '') === 'text'
+        );
+    }
+
+    public function hasNonTextResponseFormat() : bool {
+        return $this->hasResponseFormat() && (
+            ($this->responseFormat['type'] ?? '') !== 'text'
+            || ($this->cachedContext?->responseFormat['type'] ?? '') !== 'text'
+        );
+    }
+
+    public function hasTools() : bool {
+        return !empty($this->tools)
+            || !empty($this->cachedContext?->tools);
+    }
+
+    public function hasToolChoice() : bool {
+        return !empty($this->toolChoice)
+            || !empty($this->cachedContext?->toolChoice);
+    }
+
+    public function hasMessages() : bool {
+        return !empty($this->messages)
+            || !empty($this->cachedContext?->messages);
+    }
+
+    public function hasModel() : bool {
+        return !empty($this->model);
+    }
+
+    public function hasOptions() : bool {
+        return !empty($this->options);
+    }
+
+    // MISC METHODS //////////////////////////////////////
+
     /**
      * Converts the current object state into an associative array.
      *
@@ -270,7 +320,9 @@ class InferenceRequest
         $cloned->tools = empty($this->tools) ? $this->cachedContext->tools : $this->tools;
         $cloned->toolChoice = empty($this->toolChoice) ? $this->cachedContext->toolChoice : $this->toolChoice;
         $cloned->responseFormat = empty($this->responseFormat) ? $this->cachedContext->responseFormat : $this->responseFormat;
+
         // other properties like model, options, and mode remain unchanged
+
         return $cloned;
     }
 }

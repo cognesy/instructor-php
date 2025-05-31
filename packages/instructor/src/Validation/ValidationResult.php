@@ -78,4 +78,12 @@ class ValidationResult
         }
         return implode("\n", $output);
     }
+
+    public function toArray(): array {
+        return [
+            'isValid' => $this->isValid,
+            'errors' => $this->errors,
+            'message' => $this->message,
+        ];
+    }
 }

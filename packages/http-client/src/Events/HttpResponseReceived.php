@@ -16,8 +16,12 @@ class HttpResponseReceived extends Event
     }
 
     public function __toString(): string {
-        return Json::encode([
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
             'statusCode' => $this->statusCode
-        ]);
+        ];
     }
 }

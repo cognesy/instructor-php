@@ -64,8 +64,8 @@ class Display
 
         Console::printColumns([
             [5, $id, STR_PAD_LEFT, Color::DARK_GRAY],
-            [10, $preset, STR_PAD_RIGHT, Color::WHITE],
-            [11, $mode, STR_PAD_RIGHT, Color::YELLOW],
+            [16, $preset, STR_PAD_RIGHT, Color::WHITE],
+            [16, $mode, STR_PAD_RIGHT, Color::YELLOW],
             [8, $streamLabel, STR_PAD_LEFT, $streamed ? Color::BLUE : Color::DARK_BLUE],
         ], $this->terminalWidth);
         Console::print('', [Color::GRAY, Color::BG_BLACK]);

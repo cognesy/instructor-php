@@ -16,8 +16,13 @@ class ResponseGenerated extends Event
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
-        return Json::encode($this->response);
+    public function __toString(): string {
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'response' => $this->response,
+        ];
     }
 }

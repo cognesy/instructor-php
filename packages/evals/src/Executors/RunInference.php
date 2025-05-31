@@ -22,6 +22,16 @@ class RunInference implements CanRunExecution
         return $execution;
     }
 
+    public function withDebug(bool $debug = true) : self {
+        $this->inferenceAdapter->withDebug($debug);
+        return $this;
+    }
+
+    public function wiretap(?callable $callback) : self {
+        $this->inferenceAdapter->wiretap($callback);
+        return $this;
+    }
+
     // INTERNAL /////////////////////////////////////////////////
 
     private function makeLLMResponse(Execution $execution) : LLMResponse {

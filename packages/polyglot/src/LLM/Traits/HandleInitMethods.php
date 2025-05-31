@@ -82,8 +82,10 @@ trait HandleInitMethods
      *
      * @return self
      */
-    public function withDebug(bool $debug = true): self {
-        $this->llm->withDebug($debug);
+    public function withDebug(?bool $debug = true): self {
+        if ($debug !== null) {
+            $this->llm->withDebug($debug);
+        }
         return $this;
     }
 

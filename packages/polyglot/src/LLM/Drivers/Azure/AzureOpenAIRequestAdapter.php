@@ -4,10 +4,11 @@ namespace Cognesy\Polyglot\LLM\Drivers\Azure;
 
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
 {
-    protected function toUrl(string $model = '', bool $stream = false): string {
+    protected function toUrl(InferenceRequest $request): string {
         return str_replace(
                 search: array_map(fn($key) => "{".$key."}", array_keys($this->config->metadata)),
                 replace: array_values($this->config->metadata),
@@ -15,7 +16,7 @@ class AzureOpenAIRequestAdapter extends OpenAIRequestAdapter
             ) . $this->getUrlParams($this->config);
     }
 
-    protected function toHeaders(): array {
+    protected function toHeaders(InferenceRequest $request): array {
         return [
             'Api-Key' => $this->config->apiKey,
             'Content-Type' => 'application/json',

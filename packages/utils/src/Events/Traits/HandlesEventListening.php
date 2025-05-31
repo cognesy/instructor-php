@@ -23,8 +23,10 @@ trait HandlesEventListening
      *
      * @param callable $listener The listener callable to be invoked on any event
      */
-    public function wiretap(callable $listener) : self {
-        $this->listener->wiretap($listener);
+    public function wiretap(?callable $listener) : self {
+        if ($listener !== null) {
+            $this->listener->wiretap($listener);
+        }
         return $this;
     }
 
@@ -34,8 +36,10 @@ trait HandlesEventListening
      * @param string $class The event class
      * @param callable $listener The listener callable to be invoked on event
      */
-    public function onEvent(string $class, callable $listener) : self {
-        $this->listener->addListener($class, $listener);
+    public function onEvent(string $class, ?callable $listener) : self {
+        if ($listener !== null) {
+            $this->listener->addListener($class, $listener);
+        }
         return $this;
     }
 }

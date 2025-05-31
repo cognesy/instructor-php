@@ -3,26 +3,16 @@
 namespace Cognesy\Polyglot\LLM\Drivers\Cerebras;
 
 use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
 {
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        ?OutputMode   $mode = null,
-    ) : array {
-        $options = array_merge($this->config->options, $options);
+    public function toRequestBody(InferenceRequest $request) : array {
+        $requestData = parent::toRequestBody($request);
 
-        $body = parent::map($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode);
+        $requestData['max_completion_tokens'] = $requestData['max_tokens'] ?? -1;
+        unset($requestData['max_tokens']);
 
-        $body['max_completion_tokens'] = $body['max_tokens'] ?? -1;
-        unset($body['max_tokens']);
-
-        return $body;
+        return $requestData;
     }
 }

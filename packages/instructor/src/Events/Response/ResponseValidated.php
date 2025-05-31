@@ -18,6 +18,12 @@ class ResponseValidated extends Event
     }
 
     public function __toString(): string {
-        return Json::encode($this->validationResult);
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'validationResult' => $this->validationResult->toArray()
+        ];
     }
 }

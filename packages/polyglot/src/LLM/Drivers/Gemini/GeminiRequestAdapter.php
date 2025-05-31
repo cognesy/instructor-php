@@ -6,7 +6,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class GeminiRequestAdapter implements ProviderRequestAdapter
 {
@@ -15,35 +15,27 @@ class GeminiRequestAdapter implements ProviderRequestAdapter
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
-    public function toHttpClientRequest(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        OutputMode $mode
-    ): HttpClientRequest {
+    public function toHttpClientRequest(InferenceRequest $request): HttpClientRequest {
         return new HttpClientRequest(
-            url: $this->toUrl($model, $options['stream'] ?? false),
+            url: $this->toUrl($request),
             method: 'POST',
-            headers: $this->toHeaders(),
-            body: $this->bodyFormat->map($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode),
+            headers: $this->toHeaders($request),
+            body: $this->bodyFormat->toRequestBody($request),
             options: ['stream' => $options['stream'] ?? false],
         );
     }
 
-    protected function toHeaders(): array {
+    protected function toHeaders(InferenceRequest $request): array {
         return [
             'Content-Type' => 'application/json',
         ];
     }
 
-    protected function toUrl(string $model = '', bool $stream = false): string {
-        $model = $model ?: $this->config->model;
+    protected function toUrl(InferenceRequest $request): string {
+        $model = $request->model() ?: $this->config->model;
         $urlParams = ['key' => $this->config->apiKey];
 
-        if ($stream) {
+        if ($request->isStreamed()) {
             $this->config->endpoint = '/models/{model}:streamGenerateContent';
             $urlParams['alt'] = 'sse';
         } else {

@@ -141,7 +141,7 @@ return [
             'apiUrl' => 'https://api.groq.com/openai/v1',
             'apiKey' => Env::get('GROQ_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'llama-3.3-70b-versatile', // 'gemma2-9b-it',
+            'defaultModel' => 'meta-llama/llama-4-scout-17b-16e-instruct', //'llama-3.3-70b-versatile', // 'gemma2-9b-it',
             'defaultOutputMode' => 'json_schema',
             'defaultMaxTokens' => 1024,
             'contextLength' => 128_000,

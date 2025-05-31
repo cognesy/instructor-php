@@ -2,17 +2,9 @@
 
 namespace Cognesy\Polyglot\LLM\Contracts;
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 interface CanMapRequestBody
 {
-    public function map(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        OutputMode $mode
-    ): array;
+    public function toRequestBody(InferenceRequest $request): array;
 }

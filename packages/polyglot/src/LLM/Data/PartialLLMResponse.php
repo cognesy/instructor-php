@@ -77,4 +77,17 @@ class PartialLLMResponse
     public function usage() : Usage {
         return $this->usage ?? new Usage();
     }
+
+    public function toArray() : array {
+        return [
+            'content_delta' => $this->contentDelta,
+            'reasoning_content_delta' => $this->reasoningContentDelta,
+            'tool_id' => $this->toolId,
+            'tool_name' => $this->toolName,
+            'tool_args' => $this->toolArgs,
+            'finish_reason' => $this->finishReason,
+            'usage' => $this->usage ? $this->usage->toArray() : null,
+            'response_data' => $this->responseData,
+        ];
+    }
 }

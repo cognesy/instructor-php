@@ -4,42 +4,33 @@ namespace Cognesy\Polyglot\LLM\Drivers\Groq;
 
 use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class GroqBodyFormat extends OpenAICompatibleBodyFormat
 {
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ): array {
-        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
-
+    protected function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
             case OutputMode::Json:
-                $request['response_format'] = [
-                    'type' => 'json_object',
-                ];
+                $result = ['type' => 'json_object'];
                 break;
             case OutputMode::Text:
             case OutputMode::MdJson:
-                $request['response_format'] = ['type' => 'text'];
+                $result = ['type' => 'text'];
                 break;
             case OutputMode::JsonSchema:
-                $request['response_format'] = [
-                    'type' => 'json_object',
-                    'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
-                ];
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $result = [
+                    'type' => 'json_schema',
+                    'json_schema' => [
+                        'name' => $schemaName,
+                        'schema' => $schema,
+                        'strict' => $schemaStrict,
+                    ]];
                 break;
+            default:
+                $result = [];
         }
-
-        $request['tools'] = $tools ?? [];
-        $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
-
-        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
-        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
-
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return $result;
     }
 }

@@ -6,6 +6,8 @@ use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
+use Cognesy\Utils\Arrays;
 
 class OpenAIBodyFormat implements CanMapRequestBody
 {
@@ -14,72 +16,116 @@ class OpenAIBodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat,
     ) {}
 
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ) : array {
-        $options = array_merge($this->config->options, $options);
+    public function toRequestBody(InferenceRequest $request) : array {
+        $options = array_merge($this->config->options, $request->options());
 
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
+        $requestData = array_merge(array_filter([
+            'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->messageFormat->map($messages),
+            'messages' => $this->messageFormat->map($request->messages()),
         ]), $options);
 
         if ($options['stream'] ?? false) {
-            $request['stream_options']['include_usage'] = true;
+            $requestData['stream_options']['include_usage'] = true;
         }
 
-        $request = $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+        $requestData['response_format'] = $this->toResponseFormat($request);
+        if ($request->hasTools()) {
+            $requestData['tools'] = $this->toTools($request);
+            $requestData['tool_choice'] = $this->toToolChoice($request);
+        }
 
-        return $request;
+        return $this->filterEmptyValues($requestData);
     }
 
     // INTERNAL ///////////////////////////////////////////////
 
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
-
-        switch($mode) {
+    protected function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
+        switch ($mode) {
             case OutputMode::Json:
-                $request['response_format'] = [
-                    'type' => 'json_object'
-                ];
+                $result = ['type' => 'json_object'];
                 break;
             case OutputMode::Text:
             case OutputMode::MdJson:
-                $request['response_format'] = ['type' => 'text'];
+                $result = ['type' => 'text'];
                 break;
             case OutputMode::JsonSchema:
-                $request['response_format'] = [
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $result = [
                     'type' => 'json_schema',
                     'json_schema' => [
-                        'name' => $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema',
-                        'schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
-                        'strict' => $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true,
+                        'name' => $schemaName,
+                        'schema' => $schema,
+                        'strict' => $schemaStrict,
                     ],
                 ];
                 break;
-            case OutputMode::Unrestricted:
-                if (isset($request['response_format']['type']) && $request['response_format']['type'] === 'json_object') {
-                    unset($request['response_format']['schema']);
-                }
-                break;
+            default:
+                $result = [];
         }
 
-        $request['tools'] = $tools ?? [];
-        $request['tool_choice'] = $toolChoice ?? [];
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return $this->filterEmptyValues($result);
+    }
+
+    protected function toTools(InferenceRequest $request) : array {
+        return $this->removeDisallowedEntries(
+            $request->tools()
+        );
+    }
+
+    protected function toToolChoice(InferenceRequest $request) : array {
+        return $request->toolChoice();
+    }
+
+    protected function removeDisallowedEntries(array $jsonSchema) : array {
+        return Arrays::removeRecursively(
+            array: $jsonSchema,
+            keys: [
+               'x-title',
+               'x-php-class',
+            ],
+        );
+    }
+
+    protected function filterEmptyValues(array $data) : array {
+        return array_filter($data, fn($value) => $value !== null && $value !== [] && $value !== '');
+    }
+
+    protected function toSchemaData(InferenceRequest $request) : array {
+        $responseFormat = $request->responseFormat();
+
+        $schema = $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [];
+        $schema = $this->removeDisallowedEntries($schema);
+
+        $schemaName = $responseFormat['json_schema']['name'] ?? $responseFormat['name'] ?? 'schema';
+        $schemaStrict = $responseFormat['json_schema']['strict'] ?? $responseFormat['strict'] ?? true;
+
+        return [
+            $schema,
+            $schemaName,
+            $schemaStrict,
+        ];
+    }
+
+    protected function toResponseFormatMode(InferenceRequest $request) : ?OutputMode {
+        if (!$request->outputMode()?->is(OutputMode::Unrestricted)) {
+            return $request->outputMode();
+        }
+        if ($request->hasTextResponseFormat()) {
+            return OutputMode::Text;
+        }
+        if (!$request->hasResponseFormat()) {
+            return null;
+        }
+
+        $responseFormat = $request->responseFormat();
+        $type = $responseFormat['type'] ?? $responseFormat['json_schema']['type'] ?? '';
+        return match($type) {
+            'json' => OutputMode::Json,
+            'json_object' => OutputMode::Json,
+            'json_schema' => OutputMode::JsonSchema,
+            default => null,
+        };
     }
 }

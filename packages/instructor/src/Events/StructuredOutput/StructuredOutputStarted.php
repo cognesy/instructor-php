@@ -13,8 +13,11 @@ class StructuredOutputStarted extends Event
         parent::__construct();
     }
 
-    public function __toString(): string
-    {
+    public function __toString(): string {
         return '';
+    }
+
+    public function toArray(): array {
+        return [];
     }
 }

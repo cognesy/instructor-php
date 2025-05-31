@@ -16,8 +16,7 @@ class HttpInteractionFallback extends Event
         parent::__construct();
     }
 
-    public function toConsole(): string
-    {
+    public function toConsole(): string {
         return sprintf(
             "[FALLBACK] %s %s",
             $this->request->method(),

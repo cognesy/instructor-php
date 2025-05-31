@@ -17,6 +17,12 @@ class StructuredOutputDone extends Event
     }
 
     public function __toString(): string {
-        return Json::encode($this->data);
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'data' => $this->data,
+        ];
     }
 }

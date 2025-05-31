@@ -6,7 +6,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class AnthropicRequestAdapter implements ProviderRequestAdapter
 {
@@ -15,27 +15,19 @@ class AnthropicRequestAdapter implements ProviderRequestAdapter
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
-    public function toHttpClientRequest(
-        array $messages,
-        string $model,
-        array $tools,
-        array|string $toolChoice,
-        array $responseFormat,
-        array $options,
-        OutputMode $mode
-    ): HttpClientRequest {
+    public function toHttpClientRequest(InferenceRequest $request): HttpClientRequest {
         return new HttpClientRequest(
-            url: $this->toUrl($model, $options['stream'] ?? false),
+            url: $this->toUrl($request),
             method: 'POST',
-            headers: $this->toHeaders(),
-            body: $this->bodyFormat->map($messages, $model, $tools, $toolChoice, $responseFormat, $options, $mode),
-            options: ['stream' => $options['stream'] ?? false],
+            headers: $this->toHeaders($request),
+            body: $this->bodyFormat->toRequestBody($request),
+            options: ['stream' => $request->isStreamed()],
         );
     }
 
     // INTERNAL /////////////////////////////////////////////
 
-    protected function toHeaders(): array {
+    protected function toHeaders(InferenceRequest $request): array {
         return array_filter([
             'x-api-key' => $this->config->apiKey,
             'content-type' => 'application/json',
@@ -45,7 +37,7 @@ class AnthropicRequestAdapter implements ProviderRequestAdapter
         ]);
     }
 
-    protected function toUrl(string $model = '', bool $stream = false): string {
+    protected function toUrl(InferenceRequest $request): string {
         return "{$this->config->apiUrl}{$this->config->endpoint}";
     }
 }

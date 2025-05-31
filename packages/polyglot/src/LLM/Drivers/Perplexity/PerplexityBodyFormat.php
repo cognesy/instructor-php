@@ -4,70 +4,49 @@ namespace Cognesy\Polyglot\LLM\Drivers\Perplexity;
 
 use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Messages\Messages;
 
 class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
 {
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ) : array {
-        $options = array_merge($this->config->options, $options);
+    public function toRequestBody(InferenceRequest $request) : array {
+        $options = array_merge($this->config->options, $request->options());
 
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
+        $requestData = array_merge(array_filter([
+            'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->messageFormat->map(Messages::fromArray($messages)->toMergedPerRole()->toArray()),
+            'messages' => $this->messageFormat->map(Messages::fromArray($request->messages())->toMergedPerRole()->toArray()),
         ]), $options);
 
-        unset($request['tools']);
-        unset($request['tool_choice']);
+        // Perplexity does not support tools, so we unset them
+        unset($requestData['tools']);
+        unset($requestData['tool_choice']);
 
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+        $requestData['response_format'] = $this->toResponseFormat($request);
+
+        return array_filter($requestData, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
-
-        switch($mode) {
+    protected function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
+        switch ($mode) {
             case OutputMode::Text:
             case OutputMode::MdJson:
-                $request['response_format'] = ['type' => 'text'];
+                $result = ['type' => 'text'];
                 break;
             case OutputMode::Json:
             case OutputMode::JsonSchema:
-                $schema = $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [];
-                $request['response_format'] = [
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $result = [
                     'type' => 'json_schema',
                     'json_schema' => ['schema' => $schema],
                 ];
                 break;
-            case OutputMode::Unrestricted:
-                $schema = $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [];
-                $request['response_format'] = $request['response_format']
-                    ? ['type' => 'json_schema', 'json_schema' => ['schema' => $schema]]
-                    : ['type' => 'text'];
-                break;
+            default:
+                $result = [];
         }
 
-        $request['tools'] = $tools ?? [];
-        $request['tool_choice'] = $tools ? $this->toToolChoice($tools, $toolChoice) : [];
-
-        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
-        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
-
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return $result ?? [];
     }
 }
 

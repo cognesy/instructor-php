@@ -2,73 +2,45 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\CohereV2;
 
-use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
-use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Arrays;
 
-class CohereV2BodyFormat implements CanMapRequestBody
+class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 {
-    public function __construct(
-        protected LLMConfig $config,
-        protected CanMapMessages $messageFormat,
-    ) {}
+    public function toRequestBody(InferenceRequest $request) : array {
+        $requestData = parent::toRequestBody($request);
 
-    public function map(
-        array        $messages = [],
-        string       $model = '',
-        array        $tools = [],
-        string|array $toolChoice = '',
-        array        $responseFormat = [],
-        array        $options = [],
-        OutputMode   $mode = OutputMode::Unrestricted,
-    ) : array {
-        $options = array_merge($this->config->options, $options);
+        // Cohere V2 does not support some OpenAI params, so we unset it
+        unset($requestData['tool_choice']);
+        unset($requestData['parallel_tool_calls']);
+        unset($requestData['stream_options']);
 
-        unset($options['parallel_tool_calls']);
-
-        $request = array_merge(array_filter([
-            'model' => $model ?: $this->config->model,
-            'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->messageFormat->map($messages),
-        ]), $options);
-
-        return $this->applyMode($request, $mode, $tools, $toolChoice, $responseFormat);
+        return $requestData;
     }
 
     // INTERNAL //////////////////////////////////////////////
 
-    protected function applyMode(
-        array        $request,
-        OutputMode   $mode,
-        array        $tools,
-        string|array $toolChoice,
-        array        $responseFormat
-    ) : array {
-        $request['response_format'] = $responseFormat ?: $request['response_format'] ?? [];
-
-        switch($mode) {
+    protected function toResponseFormat(InferenceRequest $request) : array {
+        $mode = $this->toResponseFormatMode($request);
+        switch ($mode) {
             case OutputMode::Json:
             case OutputMode::JsonSchema:
-                $request['response_format'] = [
+                [$schema, $schemaName, $schemaStrict] = $this->toSchemaData($request);
+                $result = [
                     'type' => 'json_object',
-                    'json_schema' => $responseFormat['json_schema']['schema'] ?? $responseFormat['schema'] ?? [],
+                    'json_schema' => $schema,
                 ];
                 break;
             case OutputMode::Text:
             case OutputMode::MdJson:
-                $request['response_format'] = ['type' => 'text'];
+                $result = ['type' => 'text'];
                 break;
+            default:
+                $result = [];
         }
-
-        $request['tools'] = $tools ?? [];
-        unset($request['tool_choice']);
-
-        $request['tools'] = $this->removeDisallowedEntries($request['tools']);
-        $request['response_format'] = $this->removeDisallowedEntries($request['response_format']);
-
-        return array_filter($request, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return $result;
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {
