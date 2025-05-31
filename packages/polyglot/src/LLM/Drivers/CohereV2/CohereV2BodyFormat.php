@@ -10,14 +10,14 @@ use Cognesy\Utils\Arrays;
 class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
 {
     public function toRequestBody(InferenceRequest $request) : array {
-        $requestData = parent::toRequestBody($request);
+        $requestBody = parent::toRequestBody($request);
 
         // Cohere V2 does not support some OpenAI params, so we unset it
-        unset($requestData['tool_choice']);
-        unset($requestData['parallel_tool_calls']);
-        unset($requestData['stream_options']);
+        unset($requestBody['tool_choice']);
+        unset($requestBody['parallel_tool_calls']);
+        unset($requestBody['stream_options']);
 
-        return $requestData;
+        return $requestBody;
     }
 
     // INTERNAL //////////////////////////////////////////////

@@ -26,23 +26,23 @@ class OpenAICompatibleBodyFormat implements CanMapRequestBody
         };
         $messages = $this->messageFormat->map($messages);
 
-        $requestData = array_merge(array_filter([
+        $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $messages,
         ]), $options);
 
         if ($options['stream'] ?? false) {
-            $requestData['stream_options']['include_usage'] = true;
+            $requestBody['stream_options']['include_usage'] = true;
         }
 
-        $requestData['response_format'] = $this->toResponseFormat($request);
+        $requestBody['response_format'] = $this->toResponseFormat($request);
         if ($request->hasTools()) {
-            $requestData['tools'] = $this->toTools($request);
-            $requestData['tool_choice'] = $this->toToolChoice($request);
+            $requestBody['tools'] = $this->toTools($request);
+            $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return $this->filterEmptyValues($requestData);
+        return $this->filterEmptyValues($requestBody);
     }
 
     // OVERRIDES - HELPERS ///////////////////////////////////

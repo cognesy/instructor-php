@@ -8,11 +8,11 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
 {
     public function toRequestBody(InferenceRequest $request) : array {
-        $requestData = parent::toRequestBody($request);
+        $requestBody = parent::toRequestBody($request);
 
-        $requestData['max_completion_tokens'] = $requestData['max_tokens'] ?? -1;
-        unset($requestData['max_tokens']);
+        $requestBody['max_completion_tokens'] = $requestBody['max_tokens'] ?? -1;
+        unset($requestBody['max_tokens']);
 
-        return $requestData;
+        return $requestBody;
     }
 }

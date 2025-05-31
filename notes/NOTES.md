@@ -1,10 +1,9 @@
+# WORK IN PROGRESS
+
+- Polyglot: OutputMode::Unrestricted - do not force the response to be a specific type, follow provided parameters
+- Add support for 'developer' role in messages
+
 # CURRENT CONSIDERATIONS
-
-## Better control over underlying prompts
-
-- Unify TemplateUtil and Prompt + decide on how to proceed with ChatTemplate class
-- Unify template conventions - <||> vs. {{}}, update docs
-- Full control over generated prompt (access to Script object processing)
 
 ## High priority
 
@@ -12,7 +11,13 @@
 - Addon: ToolUse - apply context variables to message sequence (via ScriptParameters??)
 - Polyglot: Batch completion API
 - Polyglot: Async / parallel calls to multiple APIs
-- Polyglot: OutputMode::Unrestricted - do not force the response to be a specific type, follow provided parameters
+- More meaningful exceptions - e.g. timeout, rate limit, etc. so we can handle them in a relevant way
+
+## Better control over underlying prompts
+
+- Unify TemplateUtil and Prompt + decide on how to proceed with ChatTemplate class
+- Unify template conventions - <||> vs. {{}}, update docs
+- Full control over generated prompt (access to Script object processing)
 
 ## Low priority
 
@@ -21,10 +26,11 @@
 - Polyglot: Predicted outputs API
 - Addon: Generate unstructured, then format to structured - to improve reasoning
 - Addon: MCP support as addon
-- Add support for 'developer' role in messages
+- Polyglot: Reasoning effort, reasoning traces in Groq
 
 # SCRATCHPAD
 
+- RequestMaterializer (ex ChatTemplate) - should be pluggable / customizable
 - Make configurable per preset - merge per role, merge to string vs message sequence
 - Move script structure to text template
 - Add default template dialect to structured config file

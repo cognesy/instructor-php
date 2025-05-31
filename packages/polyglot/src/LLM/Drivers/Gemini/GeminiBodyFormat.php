@@ -18,18 +18,18 @@ class GeminiBodyFormat implements CanMapRequestBody
     ) {}
 
     public function toRequestBody(InferenceRequest $request) : array {
-        $requestData = $this->filterEmptyValues([
+        $requestBody = $this->filterEmptyValues([
             'systemInstruction' => $this->toSystem($request),
             'contents' => $this->toMessages($request),
             'generationConfig' => $this->toOptions($request),
         ]);
 
         if ($request->hasTools() && !empty($request->tools())) {
-            $requestData['tools'] = $this->toTools($request);
-            $requestData['tool_config'] = $this->toToolChoice($request);
+            $requestBody['tools'] = $this->toTools($request);
+            $requestBody['tool_config'] = $this->toToolChoice($request);
         }
 
-        return $requestData;
+        return $requestBody;
     }
 
     // INTERNAL //////////////////////////////////////////////

@@ -19,21 +19,21 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             true => $request->messages(),
         };
 
-        $requestData = array_merge(array_filter([
+        $requestBody = array_merge(array_filter([
             'model' => $model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($messages),
         ]), $options);
 
         if ($options['stream'] ?? false) {
-            $requestData['stream_options']['include_usage'] = true;
+            $requestBody['stream_options']['include_usage'] = true;
         }
 
-        $requestData['response_format'] = $this->toResponseFormat($request);
-        $requestData['tools'] = $this->toTools($request);
-        $requestData['tool_choice'] = $this->toToolChoice($request);
+        $requestBody['response_format'] = $this->toResponseFormat($request);
+        $requestBody['tools'] = $this->toTools($request);
+        $requestBody['tool_choice'] = $this->toToolChoice($request);
 
-        return $this->filterEmptyValues($requestData);
+        return $this->filterEmptyValues($requestBody);
     }
 
     // INTERNAL ///////////////////////////////////////////////

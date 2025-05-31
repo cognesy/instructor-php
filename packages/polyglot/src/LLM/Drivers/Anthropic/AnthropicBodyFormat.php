@@ -22,7 +22,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
         unset($options['parallel_tool_calls']);
 
-        $requestData = array_merge(array_filter([
+        $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
             'system' => Messages::fromArray($request->messages())
@@ -36,14 +36,14 @@ class AnthropicBodyFormat implements CanMapRequestBody
         ]), $options);
 
         // Anthropic does not support response_format or JSON/JSON Schema mode
-        unset($requestData['response_format']);
+        unset($requestBody['response_format']);
 
         if ($request->hasTools()) {
-            $requestData['tools'] = $this->toTools($request);
-            $requestData['tool_choice'] = $this->toToolChoice($request);
+            $requestBody['tools'] = $this->toTools($request);
+            $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
 
-        return array_filter($requestData, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     // INTERNAL /////////////////////////////////////////////

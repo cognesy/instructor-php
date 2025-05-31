@@ -32,7 +32,7 @@ class FirecrawlDriver implements CanGetUrlContent
         if (isset($options['render_js'])) {
             $body['waitFor'] = $options['render_js'] ? 1000 : 0;
         }
-        $requestData = [
+        $requestBody = [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -41,7 +41,7 @@ class FirecrawlDriver implements CanGetUrlContent
             'json' => $body,
         ];
         try {
-            $response = $this->client->request('POST', $this->baseUrl, $requestData);
+            $response = $this->client->request('POST', $this->baseUrl, $requestBody);
             $content = $response->getBody()->getContents();
             $json = json_decode($content, true);
             return $json['data']['html'];

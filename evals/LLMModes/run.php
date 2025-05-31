@@ -65,8 +65,8 @@ $stream = [
 $experiment = new Experiment(
     cases: InferenceCases::only($presets, $modes, $stream),
     //cases: InferenceCases::all(),
-    executor: (new RunInference($data))
-        ->withDebug(true),
+    executor: (new RunInference($data)),
+        //->withDebug(),
         //->wiretap(fn($e) => $e->printLog()),
     processors: [
         new CompanyEval(

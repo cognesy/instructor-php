@@ -26,19 +26,19 @@ class CohereV1BodyFormat implements CanMapRequestBody
         $chatHistory = [];
         $nativeMessages = Messages::asString($this->messageFormat->map($request->messages()));
 
-        $requestData = array_merge(array_filter([
+        $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'preamble' => $system,
             'chat_history' => $chatHistory,
             'message' => $nativeMessages,
         ]), $options);
 
-        $requestData['response_format'] = $this->toResponseFormat($request);
+        $requestBody['response_format'] = $this->toResponseFormat($request);
         if ($request->hasTools()) {
-            $requestData['tools'] = $this->toTools($request);
+            $requestBody['tools'] = $this->toTools($request);
         }
 
-        return $this->filterEmptyValues($requestData);
+        return $this->filterEmptyValues($requestBody);
     }
 
     // INTERNAL /////////////////////////////////////////////

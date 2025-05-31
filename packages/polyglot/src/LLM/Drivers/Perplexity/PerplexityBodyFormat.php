@@ -12,19 +12,19 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
     public function toRequestBody(InferenceRequest $request) : array {
         $options = array_merge($this->config->options, $request->options());
 
-        $requestData = array_merge(array_filter([
+        $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map(Messages::fromArray($request->messages())->toMergedPerRole()->toArray()),
         ]), $options);
 
         // Perplexity does not support tools, so we unset them
-        unset($requestData['tools']);
-        unset($requestData['tool_choice']);
+        unset($requestBody['tools']);
+        unset($requestBody['tool_choice']);
 
-        $requestData['response_format'] = $this->toResponseFormat($request);
+        $requestBody['response_format'] = $this->toResponseFormat($request);
 
-        return array_filter($requestData, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     protected function toResponseFormat(InferenceRequest $request) : array {

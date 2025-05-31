@@ -8,6 +8,16 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class GroqBodyFormat extends OpenAICompatibleBodyFormat
 {
+    public function toRequestBody(InferenceRequest $request) : array {
+        $requestBody = parent::toRequestBody($request);
+
+        // max_tokens is deprecated in Groq, use max_completion_tokens instead
+        $requestBody['max_completion_tokens'] = $requestBody['max_tokens'];
+        unset($requestBody['max_tokens']);
+
+        return $requestBody;
+    }
+
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

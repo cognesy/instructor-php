@@ -72,7 +72,7 @@ $structuredOutput = (new StructuredOutput)
 
 // Call with custom model and execution mode
 $user = $structuredOutput
-    //->wiretap(fn($e) => $e->print())
+    ->wiretap(fn($e) => $e->print())
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,

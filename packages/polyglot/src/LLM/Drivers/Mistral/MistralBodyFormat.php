@@ -21,17 +21,17 @@ class MistralBodyFormat implements CanMapRequestBody
 
         unset($options['parallel_tool_calls']);
 
-        $requestData = array_merge(array_filter([
+        $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($request->messages()),
         ]), $options);
 
-        $requestData['response_format'] = $this->toResponseFormat($request);
-        $requestData['tools'] = $this->removeDisallowedEntries($request->tools());
-        $requestData['tool_choice'] = $this->toToolChoice($request->tools(), $request->toolChoice());
+        $requestBody['response_format'] = $this->toResponseFormat($request);
+        $requestBody['tools'] = $this->removeDisallowedEntries($request->tools());
+        $requestBody['tool_choice'] = $this->toToolChoice($request->tools(), $request->toolChoice());
 
-        return array_filter($requestData, fn($value) => $value !== null && $value !== [] && $value !== '');
+        return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
     // PRIVATE //////////////////////////////////////////////
