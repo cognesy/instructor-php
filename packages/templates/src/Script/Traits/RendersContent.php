@@ -25,7 +25,7 @@ trait RendersContent
      * @param array<string,mixed>|null $parameters
      * @return string
      */
-    protected function renderMessage(array|Message $message, ?array $parameters) : array {
+    protected function renderMessage(Message $message, ?array $parameters) : Message {
         return match(true) {
             empty($parameters) => $message,
             default => Template::arrowpipe()->with($parameters)->renderMessage($message),
@@ -37,7 +37,7 @@ trait RendersContent
      * @param array<string,mixed>|null $parameters
      * @return string
      */
-    protected function renderMessages(array|Messages $messages, ?array $parameters) : array {
+    protected function renderMessages(Messages $messages, ?array $parameters) : Messages {
         return match(true) {
             //empty($context) => $messages,
             default => Template::arrowpipe()->with($parameters)->renderMessages($messages),

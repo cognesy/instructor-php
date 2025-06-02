@@ -14,6 +14,15 @@ trait HandlesCreation
         return new Message(role: $role, content: $content);
     }
 
+    public static function fromAny(string|array|Message $message) : static {
+        return match(true) {
+            is_string($message) => static::fromString($message),
+            is_array($message) => static::fromArray($message),
+            $message instanceof static => $message->clone(),
+            default => throw new Exception('Invalid message type'),
+        };
+    }
+
     public static function fromString(string $content, string $role = self::DEFAULT_ROLE) : static {
         return new static(role: $role, content: $content);
     }
@@ -22,21 +31,13 @@ trait HandlesCreation
         return new static(
             role: $message['role'] ?? 'user',
             content: $message['content'] ?? '',
+            name: $message['name'] ?? '',
             metadata: $message['_metadata'] ?? [],
         );
     }
 
     public static function fromContent(string $role, string|array $content) : static {
         return new static(role: $role, content: $content);
-    }
-
-    public static function fromAnyMessage(string|array|Message $message) : static {
-        return match(true) {
-            is_string($message) => static::fromString($message),
-            is_array($message) => static::fromArray($message),
-            $message instanceof static => $message->clone(),
-            default => throw new Exception('Invalid message type'),
-        };
     }
 
     public static function fromInput(string|array|object $input, string $role = '') : static {
@@ -48,10 +49,15 @@ trait HandlesCreation
     }
 
     public static function fromImage(Image $image, string $role = '') : static {
-        return new static(role: $role, content: $image->toArray());
+        return new static(role: $role, content: $image->toContent());
     }
 
     public function clone() : static {
-        return new static(role: $this->role, content: $this->content);
+        $cloned = new static();
+        $cloned->role = $this->role;
+        $cloned->name = $this->name;
+        $cloned->content = $this->content->clone();
+        $cloned->metadata = $this->metadata;
+        return $cloned;
     }
 }

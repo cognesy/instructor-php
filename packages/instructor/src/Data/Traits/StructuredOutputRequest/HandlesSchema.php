@@ -51,16 +51,22 @@ trait HandlesSchema
     }
 
     public function toolCallSchema() : ?array {
-        return $this->responseModel?->toolCallSchema();
+        return match($this->mode()) {
+            OutputMode::Tools => $this->responseModel?->toolCallSchema(),
+            default => [],
+        };
     }
 
     public function toolChoice() : string|array {
-        return [
-            'type' => 'function',
-            'function' => [
-                'name' => $this->toolName()
-            ]
-        ];
+        return match($this->mode()) {
+            OutputMode::Tools => [
+                'type' => 'function',
+                'function' => [
+                    'name' => $this->toolName()
+                ]
+            ],
+            default => [],
+        };
     }
 
     public function schemaName() : string {

@@ -14,7 +14,7 @@ test('creates a message with default values', function () {
     $message = new Message();
 
     expect($message->role())->toBe(MessageRole::User)
-        ->and($message->content())->toBe('')
+        ->and($message->content()->toString())->toBe('')
         ->and($message->name())->toBe('')
         ->and($message->meta())->toBe([]);
 });
@@ -28,7 +28,7 @@ test('creates a message with specified values', function () {
     );
 
     expect($message->role())->toBe(MessageRole::Assistant)
-        ->and($message->content())->toBe('Hello, world!')
+        ->and($message->content()->toString())->toBe('Hello, world!')
         ->and($message->name())->toBe('Claude')
         ->and($message->meta())->toBe(['source' => 'test']);
 });
@@ -40,7 +40,7 @@ test('creates a message with MessageRole enum', function () {
     );
 
     expect($message->role())->toBe(MessageRole::Tool)
-        ->and($message->content())->toBe('Tool message');
+        ->and($message->content()->toString())->toBe('Tool message');
 });
 
 // HandlesAccess Tests
@@ -90,11 +90,8 @@ test('accesses metadata values', function () {
 
 test('manages metadata through fluent interface', function () {
     $message = new Message();
-
-    $message->withMeta(['key1' => 'value1']);
-    expect($message->meta())->toBe(['key1' => 'value1']);
-
-    $message->withMetaValue('key2', 'value2');
+    $message->withMeta('key1', 'value1');
+    $message->withMeta('key2', 'value2');
     expect($message->meta())->toBe(['key1' => 'value1', 'key2' => 'value2']);
 });
 
@@ -104,7 +101,7 @@ test('creates a message using static make method', function () {
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::Assistant)
-        ->and($message->content())->toBe('Hello');
+        ->and($message->content()->toString())->toBe('Hello');
 });
 
 test('creates a message from string with default role', function () {
@@ -112,7 +109,7 @@ test('creates a message from string with default role', function () {
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::User)
-        ->and($message->content())->toBe('Hello');
+        ->and($message->content()->toString())->toBe('Hello');
 });
 
 test('creates a message from string with specific role', function () {
@@ -120,7 +117,7 @@ test('creates a message from string with specific role', function () {
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::System)
-        ->and($message->content())->toBe('Hello');
+        ->and($message->content()->toString())->toBe('Hello');
 });
 
 test('creates a message from array', function () {
@@ -132,7 +129,7 @@ test('creates a message from array', function () {
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::Assistant)
-        ->and($message->content())->toBe('Hello from array')
+        ->and($message->content()->toString())->toBe('Hello from array')
         ->and($message->meta())->toBe(['source' => 'test array']);
 });
 
@@ -141,7 +138,7 @@ test('creates a message from content with role', function () {
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::System)
-        ->and($message->content())->toBe('System instruction');
+        ->and($message->content()->toString())->toBe('System instruction');
 });
 
 test('creates a message from existing message through clone', function () {
@@ -150,18 +147,18 @@ test('creates a message from existing message through clone', function () {
 
     expect($cloned)->toBeInstanceOf(Message::class)
         ->and($cloned->role())->toBe(MessageRole::User)
-        ->and($cloned->content())->toBe('Original message');
+        ->and($cloned->content()->toString())->toBe('Original message');
 });
 
 test('creates a message from various source types', function () {
-    $stringMessage = Message::fromAnyMessage('String message');
-    $arrayMessage = Message::fromAnyMessage(['role' => 'assistant', 'content' => 'Array message']);
+    $stringMessage = Message::fromAny('String message');
+    $arrayMessage = Message::fromAny(['role' => 'assistant', 'content' => 'Array message']);
     $messageObject = new Message('system', 'Object message');
-    $messageFromObject = Message::fromAnyMessage($messageObject);
+    $messageFromObject = Message::fromAny($messageObject);
 
-    expect($stringMessage->content())->toBe('String message')
-        ->and($arrayMessage->content())->toBe('Array message')
-        ->and($messageFromObject->content())->toBe('Object message');
+    expect($stringMessage->content()->toString())->toBe('String message')
+        ->and($arrayMessage->content()->toString())->toBe('Array message')
+        ->and($messageFromObject->content()->toString())->toBe('Object message');
 });
 
 //test('throws exception for invalid message type in fromAnyMessage', function () {
@@ -177,20 +174,19 @@ test('creates a message from various input types', function () {
     $provider = new MockMessageProvider();
     $messageFromProvider = Message::fromInput($provider);
 
-    expect($stringInput->content())->toBe('String input')
-        ->and($arrayInput->content())->toBeString()->toContain('key')
+    expect($stringInput->content()->toString())->toBe('String input')
+        ->and($arrayInput->content()->toString())->toBeString()->toContain('key')
         ->and($messageFromMessage)->toBe($messageObject)
-        ->and($messageFromProvider->content())->toBe('From message provider');
+        ->and($messageFromProvider->content()->toString())->toBe('From message provider');
 });
 
 // Mock Image class for testing fromImage
 test('creates a message from an image', function () {
     $image = new MockImage('http://example.com/image.jpg', 'image/jpeg');
     $message = Message::fromImage($image, 'user');
-
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::User)
-        ->and($message->content())->toBe(['type' => 'image', 'url' => 'http://example.com/image.jpg']);
+        ->and($message->content()->toArray())->toBe([['type' => 'image_url', 'url' => 'http://example.com/image.jpg']]);
 });
 
 // HandlesMutation Tests
@@ -198,17 +194,15 @@ test('adds content part to a message', function () {
     $message = new Message('user', []);
     $message->addContentPart('Part 1');
 
-    expect($message->content())->toBe([
+    expect($message->content()->toArray())->toBe([[
         'type' => 'text',
-        'content' => 'Part 1'
-    ]);
+        'text' => 'Part 1'
+    ]]);
 
-    $message->addContentPart(['type' => 'image', 'url' => 'http://example.com/image.jpg']);
-    expect($message->content())->toBe([
-        'type' => 'text',
-        'content' => 'Part 1',
-        'type' => 'image',
-        'url' => 'http://example.com/image.jpg'
+    $message->addContentPart(['type' => 'image_url', 'url' => 'http://example.com/image.jpg']);
+    expect($message->content()->toArray())->toBe([
+        ['type' => 'text', 'text' => 'Part 1'],
+        ['type' => 'image_url', 'url' => 'http://example.com/image.jpg']
     ]);
 });
 
@@ -244,37 +238,17 @@ test('converts simple message to string', function () {
     expect($message->toString())->toBe('Simple text content');
 });
 
-test('throws exception when converting non-text composite message to string', function () {
-    $message = new Message('user', [
-        ['type' => 'image', 'url' => 'http://example.com/image.jpg']
-    ]);
-
-    $message->toString();
-})->throws(RuntimeException::class, 'Message contains non-text parts and cannot be flattened to text');
+//test('throws exception when converting non-text composite message to string', function () {
+//    $message = new Message('user', [
+//        ['type' => 'image', 'url' => 'http://example.com/image.jpg']
+//    ]);
+//    $message->toString();
+//})->throws(RuntimeException::class, 'Message contains non-text parts and cannot be flattened to text');
 
 test('converts message to role-prefixed string', function () {
     $message = new Message('assistant', 'Hello, I am an assistant');
 
     expect($message->toRoleString())->toBe('assistant: Hello, I am an assistant');
-});
-
-test('converts to composite message', function () {
-    $simpleMessage = new Message('user', 'Simple text');
-    $compositeMessage = $simpleMessage->toCompositeMessage();
-
-    expect($compositeMessage->isComposite())->toBeTrue()
-        ->and($compositeMessage->content())->toBe([
-            ['type' => 'text', 'text' => 'Simple text']
-        ]);
-
-    $alreadyComposite = new Message('user', [
-        ['type' => 'text', 'text' => 'Already composite']
-    ]);
-    $stillComposite = $alreadyComposite->toCompositeMessage();
-
-    expect($stillComposite->content())->toBe([
-        ['type' => 'text', 'text' => 'Already composite']
-    ]);
 });
 
 // Static Utility Tests

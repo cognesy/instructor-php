@@ -89,4 +89,14 @@ class HttpClientRequest
         $this->options['stream'] = $streaming;
         return $this;
     }
+
+    public function toArray() : array {
+        return [
+            'url' => $this->url,
+            'method' => $this->method,
+            'headers' => $this->headers,
+            'body' => $this->body->toArray(),
+            'options' => $this->options,
+        ];
+    }
 }

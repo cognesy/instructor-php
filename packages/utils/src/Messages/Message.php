@@ -6,7 +6,6 @@ use Cognesy\Utils\Messages\Traits\Message\HandlesAccess;
 use Cognesy\Utils\Messages\Traits\Message\HandlesCreation;
 use Cognesy\Utils\Messages\Traits\Message\HandlesMutation;
 use Cognesy\Utils\Messages\Traits\Message\HandlesTransformation;
-use Cognesy\Utils\Uuid;
 
 /**
  * Represents a message entity with role, content, and metadata properties.
@@ -38,7 +37,7 @@ class Message {
 
     protected string $role;
     protected string $name;
-    protected string|array $content;
+    protected Content $content;
     protected array $metadata = [];
 
     /**
@@ -47,7 +46,7 @@ class Message {
      */
     public function __construct(
         string|MessageRole $role = '',
-        string|array|null $content = '',
+        string|array|Content|null $content = null,
         string $name = '',
         array $metadata = [],
     ) {
@@ -57,7 +56,7 @@ class Message {
             default => $role,
         };
         $this->name = $name;
-        $this->content = $content ?? '';
+        $this->content = Content::fromAny($content);
         $this->metadata = $metadata;
     }
 

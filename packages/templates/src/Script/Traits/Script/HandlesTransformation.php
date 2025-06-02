@@ -2,8 +2,6 @@
 namespace Cognesy\Template\Script\Traits\Script;
 
 use Cognesy\Template\Script\Script;
-use Cognesy\Template\Script\Section;
-use Cognesy\Utils\Messages\Message;
 
 trait HandlesTransformation
 {
@@ -33,25 +31,6 @@ trait HandlesTransformation
             }
             $script->appendSection($item->toMergedPerRole());
         }
-        return $script;
-    }
-
-    public function toSingleSection(string $section) : static {
-        $script = new Script();
-        $script->withParams($this->parameters());
-        foreach ($this->sections as $sourceSection) {
-            $script->section($section)->appendMessages($sourceSection->messages());
-        }
-        return $script;
-    }
-
-    public function toSingleMessage(string $separator = "\n") : static {
-        $script = new Script();
-        $script->withParams($this->parameters());
-        $script->appendSection(new Section('messages'));
-        $script->section('messages')->appendMessage(
-            new Message('user', $this->toString($separator))
-        );
         return $script;
     }
 

@@ -55,6 +55,7 @@ print($response->content() . "\n");
 assert(!empty($response->content()));
 assert(Str::contains($response->content(), 'Instructor'));
 assert(Str::contains($response->content(), 'lead', false));
+assert($response->usage()->cacheReadTokens > 0 || $response->usage()->cacheWriteTokens > 0);
 
 $response2 = $inference->with(
     messages: [['role' => 'user', 'content' => 'CIO of insurance company']],
@@ -70,6 +71,6 @@ print($response2->content() . "\n");
 assert(!empty($response2->content()));
 assert(Str::contains($response2->content(), 'Instructor'));
 assert(Str::contains($response2->content(), 'insurance', false));
-//assert($response2->cacheReadTokens > 0);
+assert($response2->usage()->cacheReadTokens > 0);
 ?>
 ```

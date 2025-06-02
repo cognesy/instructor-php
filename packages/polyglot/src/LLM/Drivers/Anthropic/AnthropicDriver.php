@@ -37,7 +37,6 @@ class AnthropicDriver implements CanHandleInference
 
     public function handle(InferenceRequest $request): HttpClientResponse
     {
-        $request = $request->withCacheApplied();
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
         return $this->httpClient->handle($clientRequest);
     }

@@ -61,7 +61,7 @@ trait HandlesConversion
                 !is_null($renderer) => $renderer($message),
                 default => match(true) {
                     Message::becomesComposite($message) => throw new RuntimeException('Array contains composite messages, cannot be converted to string.'),
-                    default => $message['content'] . $separator,
+                    default => Message::fromAny($message)->toString() . $separator,
                 }
             };
             $result .= $rendered;

@@ -10,7 +10,7 @@ test('can create Messages from string', function () {
     expect($messages)->toBeInstanceOf(Messages::class)
         ->and($messages->all())->toHaveCount(1)
         ->and($messages->first()->role()->value)->toBe('user')
-        ->and($messages->first()->content())->toBe('Hello');
+        ->and($messages->first()->content()->toString())->toBe('Hello');
 });
 
 test('can create Messages from array', function () {
@@ -22,9 +22,9 @@ test('can create Messages from array', function () {
     expect($messages)->toBeInstanceOf(Messages::class)
         ->and($messages->all())->toHaveCount(2)
         ->and($messages->first()->role()->value)->toBe('user')
-        ->and($messages->first()->content())->toBe('Hello')
+        ->and($messages->first()->content()->toString())->toBe('Hello')
         ->and($messages->last()->role()->value)->toBe('assistant')
-        ->and($messages->last()->content())->toBe('Hi there');
+        ->and($messages->last()->content()->toString())->toBe('Hi there');
 });
 
 test('can create Messages from Message objects', function () {
@@ -48,9 +48,9 @@ test('can create Messages from mixed array', function () {
     expect($messages)->toBeInstanceOf(Messages::class)
         ->and($messages->all())->toHaveCount(2)
         ->and($messages->first()->role()->value)->toBe('user')
-        ->and($messages->first()->content())->toBe('Hello')
+        ->and($messages->first()->content()->toString())->toBe('Hello')
         ->and($messages->last()->role()->value)->toBe('user')
-        ->and($messages->last()->content())->toBe('How are you?');
+        ->and($messages->last()->content()->toString())->toBe('How are you?');
 });
 
 test('throws exception for invalid message array', function () {
@@ -65,8 +65,8 @@ test('can access first and last messages', function () {
         ['role' => 'user', 'content' => 'Last']
     ]);
     
-    expect($messages->first()->content())->toBe('First')
-        ->and($messages->last()->content())->toBe('Last');
+    expect($messages->first()->content()->toString())->toBe('First')
+        ->and($messages->last()->content()->toString())->toBe('Last');
 });
 
 test('returns empty message for first/last when collection is empty', function () {
@@ -100,7 +100,8 @@ test('can detect composite messages', function () {
     ]);
     
     $compositeMessage = new Message('user', [
-        ['type' => 'text', 'text' => 'Hello']
+        ['type' => 'text', 'text' => 'Hello 1'],
+        ['type' => 'text', 'text' => 'Hello 2'],
     ]);
     
     $withComposite = (new Messages())
@@ -121,7 +122,7 @@ test('can get middle messages', function () {
     $middle = $messages->middle();
     expect($middle)->toBeInstanceOf(Messages::class)
         ->and($middle->all())->toHaveCount(1)
-        ->and($middle->first()->content())->toBe('Middle');
+        ->and($middle->first()->content()->toString())->toBe('Middle');
 });
 
 test('can check if messages collection is empty', function () {
@@ -142,7 +143,7 @@ test('can reduce messages', function () {
     ]);
     
     $totalLength = $messages->reduce(function ($carry, $message) {
-        return $carry + strlen($message->content());
+        return $carry + strlen($message->content()->toString());
     }, 0);
     
     expect($totalLength)->toBe(strlen('Hello') + strlen('Hi') + strlen('How are you?'));
@@ -154,7 +155,7 @@ test('can map messages', function () {
         ['role' => 'assistant', 'content' => 'hi']
     ]);
     
-    $upperCaseContents = $messages->map(fn($message) => strtoupper($message->content()));
+    $upperCaseContents = $messages->map(fn($message) => strtoupper($message->content()->toString()));
     
     expect($upperCaseContents)->toBe(['HELLO', 'HI']);
 });
@@ -170,8 +171,8 @@ test('can filter messages', function () {
     
     expect($userMessages)->toBeInstanceOf(Messages::class)
         ->and($userMessages->all())->toHaveCount(2)
-        ->and($userMessages->first()->content())->toBe('Hello')
-        ->and($userMessages->last()->content())->toBe('How are you?');
+        ->and($userMessages->first()->content()->toString())->toBe('Hello')
+        ->and($userMessages->last()->content()->toString())->toBe('How are you?');
 });
 
 // Test HandlesMutation trait
@@ -180,7 +181,7 @@ test('can set message', function () {
     $messages->withMessage(new Message('user', 'Hello'));
     
     expect($messages->all())->toHaveCount(1)
-        ->and($messages->first()->content())->toBe('Hello');
+        ->and($messages->first()->content()->toString())->toBe('Hello');
 });
 
 test('can set messages', function () {
@@ -193,8 +194,8 @@ test('can set messages', function () {
     $messages->withMessages($messagesToSet);
     
     expect($messages->all())->toHaveCount(2)
-        ->and($messages->first()->content())->toBe('Hello')
-        ->and($messages->last()->content())->toBe('Hi');
+        ->and($messages->first()->content()->toString())->toBe('Hello')
+        ->and($messages->last()->content()->toString())->toBe('Hi');
 });
 
 test('can append message', function () {
@@ -202,7 +203,7 @@ test('can append message', function () {
     $messages->appendMessage(new Message('assistant', 'Hi'));
     
     expect($messages->all())->toHaveCount(2)
-        ->and($messages->last()->content())->toBe('Hi');
+        ->and($messages->last()->content()->toString())->toBe('Hi');
 });
 
 test('can append messages', function () {
@@ -215,7 +216,7 @@ test('can append messages', function () {
     $messages->appendMessages($messagesToAppend);
     
     expect($messages->all())->toHaveCount(3)
-        ->and($messages->last()->content())->toBe('How are you?');
+        ->and($messages->last()->content()->toString())->toBe('How are you?');
 });
 
 test('can prepend message', function () {
@@ -223,7 +224,7 @@ test('can prepend message', function () {
     $messages->prependMessage(new Message('assistant', 'Hi'));
     
     expect($messages->all())->toHaveCount(2)
-        ->and($messages->first()->content())->toBe('Hi');
+        ->and($messages->first()->content()->toString())->toBe('Hi');
 });
 
 test('can prepend messages', function () {
@@ -236,7 +237,7 @@ test('can prepend messages', function () {
     $messages->prependMessages($messagesToPrepend);
     
     expect($messages->all())->toHaveCount(3)
-        ->and($messages->first()->content())->toBe('Hi');
+        ->and($messages->first()->content()->toString())->toBe('Hi');
 });
 
 test('can remove head and tail', function () {
@@ -248,11 +249,11 @@ test('can remove head and tail', function () {
     
     $messages->removeHead();
     expect($messages->all())->toHaveCount(2)
-        ->and($messages->first()->content())->toBe('Middle');
+        ->and($messages->first()->content()->toString())->toBe('Middle');
     
     $messages->removeTail();
     expect($messages->all())->toHaveCount(1)
-        ->and($messages->first()->content())->toBe('Middle');
+        ->and($messages->first()->content()->toString())->toBe('Middle');
 });
 
 // Test HandlesConversion trait
@@ -283,16 +284,6 @@ test('can convert messages to string', function () {
     expect($string)->toBe("Hello\nHi\n");
 });
 
-test('converting composite messages to string throws exception', function () {
-    $compositeMessage = new Message('user', [
-        ['type' => 'text', 'text' => 'Hello']
-    ]);
-    
-    $messages = (new Messages())->appendMessage($compositeMessage);
-    
-    expect(fn() => $messages->toString())->toThrow(RuntimeException::class);
-});
-
 // Test HandlesTransformation trait
 test('can transform to merged per role', function () {
     $messages = Messages::fromArray([
@@ -306,11 +297,11 @@ test('can transform to merged per role', function () {
     
     expect($merged->all())->toHaveCount(2)
         ->and($merged->first()->role()->value)->toBe('user')
-        ->and($merged->first()->content())->toContain('Hello')
-        ->and($merged->first()->content())->toContain('How are you?')
+        ->and($merged->first()->content()->toString())->toContain('Hello')
+        ->and($merged->first()->content()->toString())->toContain('How are you?')
         ->and($merged->last()->role()->value)->toBe('assistant')
-        ->and($merged->last()->content())->toContain('I am fine')
-        ->and($merged->last()->content())->toContain('Thank you for asking');
+        ->and($merged->last()->content()->toString())->toContain('I am fine')
+        ->and($merged->last()->content()->toString())->toContain('Thank you for asking');
 });
 
 test('can filter messages by roles', function () {
@@ -367,6 +358,6 @@ test('can reverse messages', function () {
     
     $reversed = $messages->reversed();
     
-    expect($reversed->first()->content())->toBe('Second')
-        ->and($reversed->last()->content())->toBe('First');
+    expect($reversed->first()->content()->toString())->toBe('Second')
+        ->and($reversed->last()->content()->toString())->toBe('First');
 });

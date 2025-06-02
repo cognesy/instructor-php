@@ -80,10 +80,7 @@ class InferenceRequest
      * @return array An array of tools if the mode is set to Tools, otherwise an empty array.
      */
     public function tools() : array {
-        return match($this->mode) {
-            OutputMode::Tools => $this->tools,
-            default => [],
-        };
+        return $this->tools;
      }
 
     /**
@@ -92,10 +89,7 @@ class InferenceRequest
      * @return string|array The tool choice if the mode is set to 'Tools', otherwise an empty array.
      */
     public function toolChoice() : string|array {
-        return match($this->mode) {
-            OutputMode::Tools => $this->toolChoice,
-            default => [],
-        };
+        return $this->toolChoice;
     }
 
     /**
@@ -245,36 +239,36 @@ class InferenceRequest
 
     public function hasResponseFormat() : bool {
         return !empty($this->responseFormat)
-            || !empty($this->cachedContext?->responseFormat);
+            || !empty($this->cachedContext?->responseFormat());
     }
 
     public function hasTextResponseFormat() : bool {
         return $this->hasResponseFormat() && (
             ($this->responseFormat['type'] ?? '') === 'text'
-            || ($this->cachedContext?->responseFormat['type'] ?? '') === 'text'
+            || ($this->cachedContext?->responseFormat()['type'] ?? '') === 'text'
         );
     }
 
     public function hasNonTextResponseFormat() : bool {
         return $this->hasResponseFormat() && (
             ($this->responseFormat['type'] ?? '') !== 'text'
-            || ($this->cachedContext?->responseFormat['type'] ?? '') !== 'text'
+            || ($this->cachedContext?->responseFormat()['type'] ?? '') !== 'text'
         );
     }
 
     public function hasTools() : bool {
         return !empty($this->tools)
-            || !empty($this->cachedContext?->tools);
+            || !empty($this->cachedContext?->tools());
     }
 
     public function hasToolChoice() : bool {
         return !empty($this->toolChoice)
-            || !empty($this->cachedContext?->toolChoice);
+            || !empty($this->cachedContext?->toolChoice());
     }
 
     public function hasMessages() : bool {
         return !empty($this->messages)
-            || !empty($this->cachedContext?->messages);
+            || !empty($this->cachedContext?->messages());
     }
 
     public function hasModel() : bool {
@@ -316,10 +310,16 @@ class InferenceRequest
         }
 
         $cloned = clone $this;
-        $cloned->messages = array_merge($this->cachedContext->messages, $this->messages);
-        $cloned->tools = empty($this->tools) ? $this->cachedContext->tools : $this->tools;
-        $cloned->toolChoice = empty($this->toolChoice) ? $this->cachedContext->toolChoice : $this->toolChoice;
-        $cloned->responseFormat = empty($this->responseFormat) ? $this->cachedContext->responseFormat : $this->responseFormat;
+        $cloned->messages = array_merge($this->cachedContext->messages(), $this->messages);
+        $cloned->tools = empty($this->tools)
+            ? $this->cachedContext->tools()
+            : $this->tools;
+        $cloned->toolChoice = empty($this->toolChoice)
+            ? $this->cachedContext->toolChoice()
+            : $this->toolChoice;
+        $cloned->responseFormat = empty($this->responseFormat)
+            ? $this->cachedContext->responseFormat()
+            : $this->responseFormat;
 
         // other properties like model, options, and mode remain unchanged
 

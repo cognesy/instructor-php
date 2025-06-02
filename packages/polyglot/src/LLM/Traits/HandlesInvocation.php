@@ -57,10 +57,10 @@ trait HandlesInvocation
         $inferenceDriver = $this->llm->driver();
         return new InferenceResponse(
             httpResponse: $inferenceDriver->handle($this->request),
-            driver      : $inferenceDriver,
-            config      : $this->llm->config(),
-            isStreamed  : $this->request->isStreamed(),
-            events      : $this->events,
+            driver: $inferenceDriver,
+            config: $this->llm->config(),
+            isStreamed: $this->request->isStreamed(),
+            events: $this->events,
         );
     }
 }

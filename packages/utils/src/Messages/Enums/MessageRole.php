@@ -24,6 +24,10 @@ enum MessageRole : string {
         return $this === $role;
     }
 
+    public function isNot(MessageRole $role) : bool {
+        return !$this->is($role);
+    }
+
     public function oneOf(MessageRole ...$roles) : bool {
         foreach ($roles as $role) {
             if ($this->is($role)) {
@@ -35,5 +39,13 @@ enum MessageRole : string {
 
     public function isSystem() : bool {
         return $this->oneOf(self::System, self::Developer);
+    }
+
+    public static function normalizeArray(array $roles) : array {
+        return array_map(fn($role) => match(true) {
+            is_string($role) => self::fromString($role),
+            $role instanceof MessageRole => $role,
+            default => throw new \InvalidArgumentException("Invalid role type: " . gettype($role)),
+        }, $roles);
     }
 }

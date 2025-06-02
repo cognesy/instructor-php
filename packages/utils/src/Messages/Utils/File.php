@@ -2,35 +2,31 @@
 
 namespace Cognesy\Utils\Messages\Utils;
 
-use Cognesy\Utils\Messages\Content;
 use Cognesy\Utils\Messages\ContentPart;
 use Cognesy\Utils\Messages\Contracts\CanProvideMessages;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Exception;
 
-/**
- * The Image class.
- *
- * Represent an image in LLM calls.
- * Provides convenience methods to extract data from the image.
- */
-class Image implements CanProvideMessages
+class File implements CanProvideMessages
 {
     protected string $base64bytes = '';
-    protected string $url = '';
     protected string $mimeType;
+    protected string $fileId = '';
+    protected string $fileName = '';
 
     public function __construct(
-        string $imageUrl,
-        string $mimeType,
+        string $fileData = '',
+        string $fileName = '',
+        string $fileId = '',
+        string $mimeType = 'application/octet-stream',
     ) {
         $this->mimeType = $mimeType;
-        if (substr($imageUrl, 0, 4) === 'http') {
-            $this->url = $imageUrl;
-        } else {
-            $this->base64bytes = $imageUrl;
+        if (strpos($fileData, 'data:') === 0) {
+            $this->base64bytes = $fileData;
         }
+        $this->fileName = $fileName;
+        $this->fileId = $fileId;
     }
 
     /**
@@ -41,8 +37,8 @@ class Image implements CanProvideMessages
      */
     public static function fromFile(string $imagePath): static {
         $mimeType = mime_content_type($imagePath);
-        $imageBase64 = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($imagePath));
-        return new static($imageBase64, $mimeType);
+        $fileData = 'data:' . $mimeType . ';base64,' . base64_encode(file_get_contents($imagePath));
+        return new static(fileData: $fileData, mimeType: $mimeType);
     }
 
     /**
@@ -57,18 +53,7 @@ class Image implements CanProvideMessages
         if (substr($base64string, 0, 5) !== 'data:') {
             throw new Exception("Base64 encoded string has to start with: {$prefix}");
         }
-        return new static($base64string, $mimeType);
-    }
-
-    /**
-     * Create an Image object from an image URL.
-     *
-     * @param string $imageUrl The URL of the image.
-     * @param string $mimeType The MIME type of the image.
-     * @return Image
-     */
-    public static function fromUrl(string $imageUrl, string $mimeType): static {
-        return new static($imageUrl, $mimeType);
+        return new static(fileData: $base64string, mimeType: $mimeType);
     }
 
     /**
@@ -98,22 +83,10 @@ class Image implements CanProvideMessages
         $array = [
             'role' => 'user',
             'content' => [
-                [
-                    'type' => 'image_url',
-                    'image_url' => ['url' => $this->url ?: $this->base64bytes]
-                ],
+                $this->toContentPart(),
             ],
         ];
         return $array;
-    }
-
-    /**
-     * Get the image URL or base64 string.
-     *
-     * @return string
-     */
-    public function toImageUrl(): string {
-        return $this->url ?: $this->base64bytes;
     }
 
     /**
@@ -135,12 +108,10 @@ class Image implements CanProvideMessages
     }
 
     public function toContentPart() : ContentPart {
-        return new ContentPart('image_url', [
-            'url' => $this->toImageUrl(),
+        return new ContentPart('file', [
+            'file_data' => $this->base64bytes,
+            'file_name' => $this->fileName,
+            'file_id' => $this->fileId,
         ]);
-    }
-
-    public function toContent() : Content {
-        return (new Content)->addContentPart($this->toContentPart());
     }
 }

@@ -20,9 +20,9 @@ trait HandlesConversion
      */
     public function toArray(?array $parameters = null) : array {
         return $this->renderMessages(
-            messages: $this->messages()->toArray(),
+            messages: $this->messages(),
             parameters: $parameters
-        );
+        )->toArray();
     }
 
     /**

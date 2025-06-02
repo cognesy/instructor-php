@@ -32,9 +32,12 @@ class AnthropicMessageFormat implements CanMapMessages
 
     private function mapMessage(array $message) : array {
         return match(true) {
-            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? []) => $this->toNativeToolCall($message),
-            ($message['role'] ?? '') === 'tool' => $this->toNativeToolResult($message),
-            default => $this->toNativeTextMessage($message),
+            ($message['role'] ?? '') === 'assistant' && !empty($message['_metadata']['tool_calls'] ?? [])
+                => $this->toNativeToolCall($message),
+            ($message['role'] ?? '') === 'tool'
+                => $this->toNativeToolResult($message),
+            default
+                => $this->toNativeTextMessage($message),
         };
     }
 
@@ -56,7 +59,11 @@ class AnthropicMessageFormat implements CanMapMessages
         // if content is array - process each part
         $transformed = [];
         foreach ($content as $contentPart) {
-            $transformed[] = $this->contentPartToNative($contentPart);
+            $part = $this->contentPartToNative($contentPart);
+            if ($contentPart['cache_control'] ?? false) {
+                $part['cache_control'] = ['type' => 'ephemeral'];
+            }
+            $transformed[] = $part;
         }
         return $transformed;
     }
@@ -115,22 +122,22 @@ class AnthropicMessageFormat implements CanMapMessages
         ];
     }
 
-    private function setCacheMarker(array $messages): array {
-        $lastIndex = count($messages) - 1;
-        $lastMessage = $messages[$lastIndex];
-
-        if (is_array($lastMessage['content'])) {
-            $subIndex = count($lastMessage['content']) - 1;
-            $lastMessage['content'][$subIndex]['cache_control'] = ["type" => "ephemeral"];
-        } else {
-            $lastMessage['content'] = [[
-                'type' => $lastMessage['type'] ?? 'text',
-                'text' => $lastMessage['content'] ?? '',
-                'cache_control' => ["type" => "ephemeral"],
-            ]];
-        }
-
-        $messages[$lastIndex] = $lastMessage;
-        return $messages;
-    }
+//    private function setCacheMarker(array $messages): array {
+//        $lastIndex = count($messages) - 1;
+//        $lastMessage = $messages[$lastIndex];
+//
+//        if (is_array($lastMessage['content'])) {
+//            $subIndex = count($lastMessage['content']) - 1;
+//            $lastMessage['content'][$subIndex]['cache_control'] = ["type" => "ephemeral"];
+//        } else {
+//            $lastMessage['content'] = [[
+//                'type' => $lastMessage['type'] ?? 'text',
+//                'text' => $lastMessage['content'] ?? '',
+//                'cache_control' => ["type" => "ephemeral"],
+//            ]];
+//        }
+//
+//        $messages[$lastIndex] = $lastMessage;
+//        return $messages;
+//    }
 }

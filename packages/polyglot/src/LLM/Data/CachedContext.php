@@ -2,21 +2,29 @@
 
 namespace Cognesy\Polyglot\LLM\Data;
 
+use Cognesy\Utils\Messages\Messages;
+
 class CachedContext
 {
+    private Messages $messages;
+    private array $tools;
+    private string|array $toolChoice;
+    private array $responseFormat;
+
     public function __construct(
-        public string|array $messages = [],
-        public array $tools = [],
-        public string|array $toolChoice = [],
-        public array $responseFormat = [],
+        string|array $messages = [],
+        array $tools = [],
+        string|array $toolChoice = [],
+        array $responseFormat = [],
     ) {
-        if (is_string($messages)) {
-            $this->messages = ['role' => 'user', 'content' => $messages];
-        }
+        $this->messages = Messages::fromAny($messages);
+        $this->tools = $tools;
+        $this->toolChoice = $toolChoice;
+        $this->responseFormat = $responseFormat;
     }
 
     public function messages() : array {
-        return $this->messages;
+        return $this->messages->toArray();
     }
 
     public function tools() : array {
@@ -29,22 +37,5 @@ class CachedContext
 
     public function responseFormat() : array {
         return $this->responseFormat;
-    }
-
-    public function merged(
-        string|array $messages = [],
-        array $tools = [],
-        string|array $toolChoice = [],
-        array $responseFormat = [],
-    ) {
-        if (is_string($messages) && !empty($messages)) {
-            $messages = ['role' => 'user', 'content' => $messages];
-        }
-        return new CachedContext(
-            messages: array_merge($this->messages, $messages),
-            tools: empty($tools) ? $this->tools : $tools,
-            toolChoice: empty($toolChoice) ? $this->toolChoice : $toolChoice,
-            responseFormat: empty($responseFormat) ? $this->responseFormat : $responseFormat,
-        );
     }
 }

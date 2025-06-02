@@ -67,4 +67,24 @@ trait HandlesMutation
         array_pop($this->messages);
         return $this;
     }
+
+    public function appendContentFields(array $fields) : static {
+        $lastMessage = end($this->messages);
+        if (!$lastMessage) {
+            return $this;
+        }
+
+        $lastMessage->content()->appendContentFields($fields);
+        return $this;
+    }
+
+    public function appendContentField(string $key, mixed $value) : static {
+        $lastMessage = end($this->messages);
+        if (!$lastMessage) {
+            return $this;
+        }
+
+        $lastMessage->content()->appendContentField($key, $value);
+        return $this;
+    }
 }

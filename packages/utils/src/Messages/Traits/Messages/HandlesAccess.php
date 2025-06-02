@@ -120,14 +120,6 @@ trait HandlesAccess
         return $this->last()?->role();
     }
 
-    public function firstContent() : string|array {
-        return $this->first()?->content();
-    }
-
-    public function lastContent() : string|array {
-        return $this->last()?->content();
-    }
-
     /**  @return Message[] */
     public function all() : array {
         return $this->messages;

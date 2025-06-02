@@ -55,14 +55,14 @@ test('fromAny handles various input types correctly', function () {
     // String
     $fromString = Messages::fromAny('Hello');
     expect($fromString)->toBeInstanceOf(Messages::class)
-        ->and($fromString->first()->content())->toBe('Hello');
+        ->and($fromString->first()->content()->toString())->toBe('Hello');
     
     // Array
     $fromArray = Messages::fromAny([
         ['role' => 'user', 'content' => 'Hello']
     ]);
     expect($fromArray)->toBeInstanceOf(Messages::class)
-        ->and($fromArray->first()->content())->toBe('Hello');
+        ->and($fromArray->first()->content()->toString())->toBe('Hello');
     
     // Message
     $message = new Message('user', 'Hello');
@@ -85,7 +85,7 @@ test('fromInput handles objects implementing CanProvideMessage', function () {
     $messages = Messages::fromInput($provider);
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->first()->content())->toBe('From message provider');
+        ->and($messages->first()->content()->toString())->toBe('From message provider');
 });
 
 test('fromInput handles objects implementing CanProvideMessages', function () {
@@ -93,7 +93,7 @@ test('fromInput handles objects implementing CanProvideMessages', function () {
     $messages = Messages::fromInput($provider);
     
     expect($messages)->toBeInstanceOf(Messages::class)
-        ->and($messages->first()->content())->toBe('From messages provider');
+        ->and($messages->first()->content()->toString())->toBe('From messages provider');
 });
 
 test('asPerRoleArray handles empty arrays', function () {
@@ -156,8 +156,8 @@ test('toMergedPerRole handles role changes with empty content', function () {
     $merged = $messages->toMergedPerRole();
     
     expect($merged->all())->toHaveCount(2)
-        ->and($merged->first()->content())->toBe('Hello')
-        ->and($merged->last()->content())->toBe('Hi');
+        ->and($merged->first()->content()->toString())->toBe('Hello')
+        ->and($merged->last()->content()->toString())->toBe('Hi');
 });
 
 test('toMergedPerRole handles collections with less than 3 messages correctly', function () {
@@ -170,7 +170,7 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
     $single = Messages::fromString('Hello');
     $mergedSingle = $single->toMergedPerRole();
     expect($mergedSingle->all())->toHaveCount(1)
-        ->and($mergedSingle->first()->content())->toBe('Hello');
+        ->and($mergedSingle->first()->content()->toString())->toBe('Hello');
     
     // Two messages, same role
     $twoSameRole = Messages::fromArray([
@@ -179,8 +179,8 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
     ]);
     $mergedTwoSame = $twoSameRole->toMergedPerRole();
     expect($mergedTwoSame->all())->toHaveCount(1)
-        ->and($mergedTwoSame->first()->content())->toContain('Hello')
-        ->and($mergedTwoSame->first()->content())->toContain('There');
+        ->and($mergedTwoSame->first()->content()->toString())->toContain('Hello')
+        ->and($mergedTwoSame->first()->content()->toString())->toContain('There');
     
     // Two messages, different roles
     $twoDiffRole = Messages::fromArray([
@@ -189,14 +189,14 @@ test('toMergedPerRole handles collections with less than 3 messages correctly', 
     ]);
     $mergedTwoDiff = $twoDiffRole->toMergedPerRole();
     expect($mergedTwoDiff->all())->toHaveCount(2)
-        ->and($mergedTwoDiff->first()->content())->toBe('Hello')
-        ->and($mergedTwoDiff->last()->content())->toBe('Hi');
+        ->and($mergedTwoDiff->first()->content()->toString())->toBe('Hello')
+        ->and($mergedTwoDiff->last()->content()->toString())->toBe('Hi');
 });
 
 // Test map/reduce/filter edge cases
 test('map on empty collection returns empty array', function () {
     $empty = new Messages();
-    $result = $empty->map(fn($msg) => $msg->content());
+    $result = $empty->map(fn($msg) => $msg->content()->toString());
     
     expect($result)->toBeArray()
         ->and($result)->toBeEmpty();
@@ -217,7 +217,7 @@ test('filter removes empty messages', function () {
     $filtered = $messages->filter(fn($msg) => true); // Accept all, but empty should be filtered
     
     expect($filtered->all())->toHaveCount(1)
-        ->and($filtered->first()->content())->toBe('Hello');
+        ->and($filtered->first()->content()->toString())->toBe('Hello');
 });
 
 // Test static helper methods
@@ -240,7 +240,8 @@ test('becomesComposite identifies composite messages', function () {
     $compositeArray = [
         'role' => 'user',
         'content' => [
-            ['type' => 'text', 'text' => 'Composite content']
+            ['type' => 'text', 'text' => 'Composite content'],
+            ['type' => 'image_url', 'url' => 'http://example.com/image.png']
         ]
     ];
     

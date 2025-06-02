@@ -10,7 +10,7 @@ test('static fromString creates Messages with correct role and content', functio
     expect($messages)->toBeInstanceOf(Messages::class)
         ->and($messages->all())->toHaveCount(1)
         ->and($messages->first()->role()->value)->toBe('system')
-        ->and($messages->first()->content())->toBe('Test content');
+        ->and($messages->first()->content()->toString())->toBe('Test content');
     
     // With default role
     $defaultRole = Messages::fromString('Default role test');
@@ -48,7 +48,7 @@ test('static fromMessages handles various input combinations', function () {
     // Single message
     $single = Messages::fromMessages([$message1]);
     expect($single->all())->toHaveCount(1)
-        ->and($single->first()->content())->toBe('Message 1');
+        ->and($single->first()->content()->toString())->toBe('Message 1');
     
     // Multiple separate arguments
     $multiple = Messages::fromMessages([$message1, $message2]);
@@ -66,7 +66,7 @@ test('static fromAnyArray handles mixed array formats', function () {
     // Simple message array with role and content
     $simple = Messages::fromAnyArray(['role' => 'user', 'content' => 'Simple message']);
     expect($simple->all())->toHaveCount(1)
-        ->and($simple->first()->content())->toBe('Simple message');
+        ->and($simple->first()->content()->toString())->toBe('Simple message');
     
     // Array of different message formats
     $mixed = Messages::fromAnyArray([
@@ -76,9 +76,9 @@ test('static fromAnyArray handles mixed array formats', function () {
     ]);
     
     expect($mixed->all())->toHaveCount(3)
-        ->and($mixed->first()->content())->toBe('Array message')
-        ->and($mixed->all()[1]->content())->toBe('String message')
-        ->and($mixed->all()[2]->content())->toBe('Message object');
+        ->and($mixed->first()->content()->toString())->toBe('Array message')
+        ->and($mixed->all()[1]->content()->toString())->toBe('String message')
+        ->and($mixed->all()[2]->content()->toString())->toBe('Message object');
     
     // Array with invalid entries
     expect(fn() => Messages::fromAnyArray([
@@ -97,13 +97,13 @@ test('static fromAny handles all supported input types', function () {
     $fromString = Messages::fromAny('String input');
     expect($fromString->all())->toHaveCount(1)
         ->and($fromString->first()->role()->value)->toBe('user')
-        ->and($fromString->first()->content())->toBe('String input');
+        ->and($fromString->first()->content()->toString())->toBe('String input');
     
     // Message array
     $fromArray = Messages::fromAny(['role' => 'system', 'content' => 'Array input']);
     expect($fromArray->all())->toHaveCount(1)
         ->and($fromArray->first()->role()->value)->toBe('system')
-        ->and($fromArray->first()->content())->toBe('Array input');
+        ->and($fromArray->first()->content()->toString())->toBe('Array input');
     
     // Array of messages
     $fromMultiArray = Messages::fromAny([
@@ -206,14 +206,14 @@ test('static becomesComposite detects composite message structures', function ()
     
     // Array with composite message
     $compositeArray = [
-        ['role' => 'user', 'content' => [['type' => 'text', 'text' => 'Composite']]]
+        ['role' => 'user', 'content' => [['type' => 'text', 'text' => 'Composite'], ['type' => 'text', 'text' => 'Composite 2']]]
     ];
     expect(Messages::becomesComposite($compositeArray))->toBeTrue();
     
     // Mixed array
     $mixedArray = [
         ['role' => 'user', 'content' => 'Regular message'],
-        ['role' => 'assistant', 'content' => [['type' => 'text', 'text' => 'Composite']]]
+        ['role' => 'assistant', 'content' => [['type' => 'text', 'text' => 'Composite'], ['type' => 'text', 'text' => 'Composite 2']]]
     ];
     expect(Messages::becomesComposite($mixedArray))->toBeTrue();
 });

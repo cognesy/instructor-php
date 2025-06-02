@@ -2,10 +2,14 @@
 
 namespace Cognesy\Utils\Messages\Traits\Message;
 
+use Cognesy\Utils\Messages\Content;
+use Cognesy\Utils\Messages\ContentPart;
 use Cognesy\Utils\Messages\Enums\MessageRole;
 
 trait HandlesAccess
 {
+    // STATIC ///////////////////////////////////////
+
     public static function becomesComposite(array $message) : bool {
         return is_array($message['content']);
     }
@@ -16,33 +20,53 @@ trait HandlesAccess
         );
     }
 
+    // PUBLIC ///////////////////////////////////////
+
     public function role() : MessageRole {
         return MessageRole::fromString($this->role);
     }
 
     public function name() : string {
-        return $this->name;
+        return $this->name ?? '';
     }
 
-    public function content() : string|array {
+    public function content() : Content {
         return $this->content;
     }
 
+    /**
+     * @return ContentPart[]
+     */
+    public function contentParts() : array {
+        return $this->content->parts();
+    }
+
+    public function lastContentPart() : ?ContentPart {
+        return $this->content->lastContentPart();
+    }
+
+    public function firstContentPart() : ?ContentPart {
+        return $this->content->firstContentPart();
+    }
+
     public function isEmpty() : bool {
-        return empty($this->content) && !$this->hasMeta();
+        return $this->content->isEmpty()
+            && !$this->hasMeta();
     }
 
     public function isNull() : bool {
-        return ($this->role === '' && $this->content === '');
+        return $this->role === ''
+            && $this->content->isEmpty()
+            && empty($this->metadata);
     }
 
     public function isComposite() : bool {
-        return is_array($this->content);
+        return $this->content->isComposite();
     }
 
     public function hasMeta(?string $key = null) : bool {
         return match(true) {
-            $key === null => !empty($this->metadata),
+            ($key === null) => !empty($this->metadata),
             default => isset($this->metadata[$key]),
         };
     }
@@ -54,17 +78,21 @@ trait HandlesAccess
         };
     }
 
+    public function metadata(?string $key = null) : mixed {
+        return $this->meta($key);
+    }
+
     public function metaKeys() : array {
         return array_keys($this->metadata);
     }
 
-    public function withMeta(array $metadata) : self {
-        $this->metadata = $metadata;
+    public function withMeta(string $key, mixed $value) : self {
+        $this->metadata[$key] = $value;
         return $this;
     }
 
-    public function withMetaValue(string $key, mixed $value) : self {
-        $this->metadata[$key] = $value;
+    public function withMetadata(string $key, mixed $value) : self {
+        $this->withMeta($key, $value);
         return $this;
     }
 }

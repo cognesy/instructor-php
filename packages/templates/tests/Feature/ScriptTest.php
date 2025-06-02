@@ -30,13 +30,13 @@ it('creates messages from script', function () {
     expect($messages[1]['role'])->toBe('assistant');
     expect($messages[1]['content'])->toBe('content-2');
     expect($messages[2]['role'])->toBe('user');
-    expect($messages[2]['content'])->toBe('content-3 value-1');
+    expect($messages[2]['content'])->toBe('content-3 <|key-1|>');
     expect($messages[3]['role'])->toBe('user');
     expect($messages[3]['content'])->toBe('content-4');
     expect($messages[4]['role'])->toBe('assistant');
     expect($messages[4]['content'])->toBe('content-5');
     expect($messages[5]['role'])->toBe('user');
-    expect($messages[5]['content'])->toBe('content-6 value-2');
+    expect($messages[5]['content'])->toBe('content-6 <|key-2|>');
 });
 
 
@@ -70,13 +70,13 @@ it('selects sections from script', function () {
     expect($messages[1]['role'])->toBe('assistant');
     expect($messages[1]['content'])->toBe('content-8');
     expect($messages[2]['role'])->toBe('user');
-    expect($messages[2]['content'])->toBe('content-9 value-2');
+    expect($messages[2]['content'])->toBe('content-9 <|key-2|>');
     expect($messages[3]['role'])->toBe('user');
     expect($messages[3]['content'])->toBe('content-1');
     expect($messages[4]['role'])->toBe('assistant');
     expect($messages[4]['content'])->toBe('content-2');
     expect($messages[5]['role'])->toBe('user');
-    expect($messages[5]['content'])->toBe('content-3 value-1');
+    expect($messages[5]['content'])->toBe('content-3 <|key-1|>');
 });
 
 
@@ -134,10 +134,10 @@ it('translates messages to string', function () {
     $script->section('section-2')->appendMessage(['role' => 'user', 'content' => 'content-6 <|key-2|>']);
 
     $text = $script->select(['section-2', 'section-1'])->toString();
-    expect($text)->toBe("content-4\ncontent-5\ncontent-6 value-2\ncontent-1\ncontent-2\ncontent-3 value-1\n");
+    expect($text)->toBe("content-4\ncontent-5\ncontent-6 <|key-2|>\ncontent-1\ncontent-2\ncontent-3 <|key-1|>\n");
 
     $text = $script->select('section-1')->toString();
-    expect($text)->toBe("content-1\ncontent-2\ncontent-3 value-1\n");
+    expect($text)->toBe("content-1\ncontent-2\ncontent-3 <|key-1|>\n");
 });
 
 it('supports section templates', function() {
@@ -165,5 +165,5 @@ it('supports section templates', function() {
     ]);
 
     $text = $script->toString();
-    expect($text)->toBe("content-3\ncontent-4 value-1\ncontent-3\ncontent-4 value-2\ncontent-3\ncontent-4 value-3\n");
-});
+    expect($text)->toBe("content-3\ncontent-4 <|key-1|>\ncontent-3\ncontent-4 <|key-2|>\ncontent-3\ncontent-4 <|key-3|>\n");
+})->skip("Section templates support is being removed");

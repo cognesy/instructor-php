@@ -164,34 +164,26 @@ class Template
         return $this->validateVariables($infoVars, $templateVars, $valueKeys);
     }
 
-    public function renderMessage(Message|array $message) : array {
-        $array = match(true) {
-            $message instanceof Message => $message->toArray(),
-            default => $message,
-        };
-        $content = $array['content'];
-        if (is_array($content)) {
-            $subsections = [];
-            foreach ($content as $key => $item) {
-                if ($item['type'] === 'text') {
-                    $item['text'] = $this->library->renderString($item['text'], $this->variableValues);
-                }
-                $subsections[] = $item;
+    public function renderMessage(Message $message) : Message {
+        $newMessage = $message->clone();
+        $newMessage->removeContent();
+        foreach($message->contentParts() as $part) {
+            $newPart = $part->clone();
+            if ($part->isTextPart()) {
+                $renderedValue = $this->library->renderString($part->toString(), $this->variableValues);
+                $newPart->set('text', $renderedValue);
             }
-            $content = $subsections;
-        } else {
-            $content = $this->library->renderString($content, $this->variableValues);
+            $newMessage->addContentPart($newPart);
         }
-        $array['content'] = $content;
-        return $array;
+        return $newMessage;
     }
 
-    public function renderMessages(array|Messages $messages) : array {
-        $output = [];
-        foreach ($messages as $message) {
-            $output[] = $this->renderMessage($message);
+    public function renderMessages(Messages $messages) : Messages {
+        $newMessages = new Messages();
+        foreach ($messages->each() as $message) {
+            $newMessages->appendMessage($this->renderMessage($message));
         }
-        return $output;
+        return $newMessages;
     }
 
     // INTERNAL ///////////////////////////////////////////////////

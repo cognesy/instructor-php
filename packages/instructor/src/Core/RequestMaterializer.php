@@ -8,6 +8,7 @@ use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Template\Script\Script;
+use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -32,12 +33,13 @@ class RequestMaterializer implements CanMaterializeRequest
         // Add meta sections
         $output = $this
             ->withCacheMetaSections($request->cachedContext(), $this->withSections($script))
-            ->select($this->config->chatStructure())
-            ->toArray(
-                parameters: ['json_schema' => $this->makeJsonSchema($request->responseModel())],
-            );
+            ->select($this->config->chatStructure());
 
-        return $output;
+        $rendered = Template::arrowpipe()
+            ->with(['json_schema' => json_encode($this->makeJsonSchema($request->responseModel()))])
+            ->renderMessages($output->toMessages());
+
+        return $rendered->toArray();
     }
 
     protected function makeScript(StructuredOutputRequest $request) : Script {
@@ -75,20 +77,22 @@ class RequestMaterializer implements CanMaterializeRequest
         }
 
         $script = new Script();
-        $messages = $cachedContext->messages();
 
-        $script->section('system')->prependMessages(
-            $this->makeSystem($messages, $cachedContext->system())
-        );
-        $script->section('cached-messages')->appendMessages(
-            $this->makeMessages($messages)
-        );
-        $script->section('cached-prompt')->appendMessage(
-            Message::fromString($cachedContext->prompt())
-        );
-        $script->section('cached-examples')->appendMessages(
-            $this->makeExamples($cachedContext->examples())
-        );
+        $script->section('system')
+            ->prependMessages($this->makeSystem($cachedContext->messages(), $cachedContext->system()))
+            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+
+        $script->section('cached-messages')
+            ->appendMessages($this->makeMessages($cachedContext->messages()))
+            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+
+        $script->section('cached-prompt')
+            ->appendMessage(Message::fromString($cachedContext->prompt()))
+            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+
+        $script->section('cached-examples')
+            ->appendMessages($this->makeExamples($cachedContext->examples()))
+            ->appendContentField('cache_control', ['type' => 'ephemeral']);
 
         return $script->trimmed();
     }
@@ -102,14 +106,20 @@ class RequestMaterializer implements CanMaterializeRequest
             $script->removeSection('prompt');
             $script->section('pre-cached-prompt')->appendMessageIfEmpty([
                 'role' => 'user',
-                'content' => "TASK:",
+                'content' => [[
+                    'type' => 'text',
+                    'text' => "TASK:",
+                ]],
             ]);
         }
 
         if ($script->section('cached-examples')->notEmpty()) {
             $script->section('pre-cached-examples')->appendMessageIfEmpty([
                 'role' => 'user',
-                'content' => "EXAMPLES:",
+                'content' => [[
+                    'type' => 'text',
+                    'text' => "EXAMPLES:",
+                ]],
             ]);
         }
 
@@ -118,7 +128,6 @@ class RequestMaterializer implements CanMaterializeRequest
             'content' => [[
                 'type' => 'text',
                 'text' => 'INSTRUCTIONS:',
-                'cache_control' => ["type" => "ephemeral"],
             ]],
         ]);
 
@@ -189,44 +198,27 @@ class RequestMaterializer implements CanMaterializeRequest
 
     protected function makeSystem(Messages $messages, string $system) : Messages {
         $output = new Messages();
-
         if (!empty($system)) {
-            $output->appendMessage(['role' => 'system', 'content' => $system]);
+            $output->appendMessage(new Message(role: 'system', content: $system));
         }
-
-        // EXTRACT SYSTEM ROLE FROM MESSAGES - until first non-system message
-        foreach ($messages->each() as $message) {
-            if (!$message->role()->isSystem()) {
-                break;
-            }
-            $output->appendMessage($message);
-        }
-
+        $output->appendMessages(
+            $messages->headWithRoles(['system', 'developer'])
+        );
         return $output;
     }
 
     protected function makeMessages(Messages $messages) : Messages {
         $output = new Messages();
-        if ($messages->isEmpty()) {
-            return $output;
-        }
-
-        // skip system messages
-        $index = 0;
-        foreach ($messages as $message) {
-            if (!$message->role()->isSystem()) {
-                break;
-            }
-            $index++;
-        }
-        $output->appendMessages(array_slice($messages->toArray(), $index));
+        $output->appendMessages(
+            $messages->tailAfterRoles(['developer', 'system'])
+        );
         return $output;
     }
 
     protected function makeExamples(array $examples) : Messages {
-        $messages = new Messages();
+        $output = new Messages();
         if (empty($examples)) {
-            return $messages;
+            return $output;
         }
         foreach ($examples as $item) {
             $example = match(true) {
@@ -235,16 +227,13 @@ class RequestMaterializer implements CanMaterializeRequest
                 $item instanceof Example => $item,
                 default => throw new Exception('Invalid example type'),
             };
-            $messages->appendMessages($example->toMessages());
+            $output->appendMessages($example->toMessages());
         }
-        return $messages;
+        return $output;
     }
 
     protected function makePrompt(string $prompt) : Message {
-        return new Message(
-            role: 'user',
-            content: $prompt
-        );
+        return new Message(role: 'user', content: $prompt);
     }
 
     protected function makeJsonSchema(?ResponseModel $responseModel) : array {

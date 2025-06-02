@@ -42,14 +42,14 @@ class Project {
     #[Description('Technology platform and libraries used in the project')]
     public array $technologies;
     /** @var string[] */
-    #[Description('Features and capabilities of the project')]
+    #[Description('Target audience domain specific features and capabilities of the project')]
     public array $features;
     /** @var string[] */
-    #[Description('Applications and potential use cases of the project')]
+    #[Description('Target audience domain specific applications and potential use cases of the project')]
     public array $applications;
-    #[Description('Explain the purpose of the project and the domain specific problems it solves')]
+    #[Description('Explain the purpose of the project and the target audience domain specific problems it solves')]
     public string $description;
-    #[Description('Example code in Markdown demonstrating domain specific application of the library')]
+    #[Description('Target audience domain specific example code in Markdown demonstrating an application of the library')]
     public string $code;
 }
 ?>
@@ -76,15 +76,23 @@ Let's start by asking the user to describe the project for a specific audience: 
 
 ```php
 <?php
-$project = $cached->with(
+// get StructuredOutputResponse object to get access to usage and other metadata
+$response1 = $cached->with(
     messages: 'Describe the project in a way compelling to my audience: P&C insurance CIOs.',
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
     mode: OutputMode::MdJson,
-)->get();
-dump($project);
-assert($project instanceof Project);
-assert(Str::contains($project->name, 'Instructor'));
+)->create();
+
+// get processed value - instance of Project class
+$project1 = $response1->get();
+dump($project1);
+assert($project1 instanceof Project);
+assert(Str::contains($project1->name, 'Instructor'));
+
+// get usage information from response() method which returns raw LLMResponse object
+$usage1 = $response1->response()->usage();
+echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
 ```
 Now we can use the same context to ask the user to describe the project for a different
@@ -95,14 +103,23 @@ which results in faster processing and lower costs.
 
 ```php
 <?php
-$project = $cached->with(
+// get StructuredOutputResponse object to get access to usage and other metadata
+$response2 = $cached->with(
     messages: "Describe the project in a way compelling to my audience: boutique CMS consulting company owner.",
     responseModel: Project::class,
     options: ['max_tokens' => 4096],
     mode: OutputMode::Json,
-)->get();
-dump($project);
-assert($project instanceof Project);
-assert(Str::contains($project->name, 'Instructor'));
+)->create();
+
+// get the processed value - instance of Project class
+$project2 = $response2->get();
+dump($project2);
+assert($project2 instanceof Project);
+assert(Str::contains($project2->name, 'Instructor'));
+
+// get usage information from response() method which returns raw LLMResponse object
+$usage2 = $response2->response()->usage();
+echo "Usage: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
+assert($usage2->cacheReadTokens > 0, 'Expected cache read tokens');
 ?>
 ```

@@ -6,6 +6,7 @@ use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\InferenceRequest;
+use Cognesy\Utils\Messages\Enums\MessageRole;
 use Cognesy\Utils\Messages\Messages;
 
 class AnthropicBodyFormat implements CanMapRequestBody
@@ -25,14 +26,8 @@ class AnthropicBodyFormat implements CanMapRequestBody
         $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $options['max_tokens'] ?? $this->config->maxTokens,
-            'system' => Messages::fromArray($request->messages())
-                ->forRoles(['system'])
-                ->toString(),
-            'messages' => $this->messageFormat->map(
-                Messages::fromArray($request->messages())
-                    ->exceptRoles(['system'])
-                    ->toArray()
-            ),
+            'system' => $this->toSystemMessages($request),
+            'messages' => $this->toMessages($request),
         ]), $options);
 
         // Anthropic does not support response_format or JSON/JSON Schema mode
@@ -48,7 +43,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function toTools(InferenceRequest $request) : array {
+    protected function toTools(InferenceRequest $request) : array {
         $tools = $request->tools();
         $result = [];
         foreach ($tools as $tool) {
@@ -61,7 +56,7 @@ class AnthropicBodyFormat implements CanMapRequestBody
         return $result;
     }
 
-    private function toToolChoice(InferenceRequest $request) : array {
+    protected function toToolChoice(InferenceRequest $request) : array {
         $toolChoice = $request->toolChoice();
         $tools = $request->tools();
 
@@ -89,5 +84,63 @@ class AnthropicBodyFormat implements CanMapRequestBody
             'required' => 'any',
             default => 'auto',
         };
+    }
+
+    protected function toSystemMessages(InferenceRequest $request) : array {
+        $cachedMessages = $request->cachedContext()?->messages() ?? [];
+
+        $systemCached = Messages::fromArray($cachedMessages)
+            ->headWithRoles([MessageRole::System, MessageRole::Developer])
+            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+
+        $systemMessages = Messages::fromArray($request->messages())
+            ->headWithRoles([MessageRole::System, MessageRole::Developer]);
+
+        $messages = $systemCached->appendMessages($systemMessages);
+
+        return $this->toSystemEntries($messages);
+    }
+
+    protected function toSystemEntries(
+        Messages $messages,
+    ) : array {
+        $textFragments = [];
+        foreach ($messages->all() as $message) {
+            foreach ($message->content()->parts() as $contentPart) {
+                // TODO: what about non-text content - e.g. images? caching should support them too
+                if (!$contentPart->hasText() || $contentPart->isEmpty()) {
+                    continue;
+                }
+                $textFragments[] = match(true) {
+                    $contentPart->has('cache_control') => [
+                        'type' => 'text',
+                        'text' => $contentPart->toString(),
+                        'cache_control' => ["type" => "ephemeral"]
+                    ],
+                    default => [
+                        'type' => 'text',
+                        'text' => $contentPart->toString(),
+                    ],
+                };
+            }
+        }
+        return $textFragments;
+    }
+
+    protected function toMessages(InferenceRequest $request) : array {
+        $cachedMessages = $request->cachedContext()?->messages() ?? [];
+
+        $postSystemCached = Messages::fromArray($cachedMessages)
+            ->tailAfterRoles([MessageRole::System, MessageRole::Developer])
+            ->appendContentField('cache_control', ['type' => 'ephemeral']);
+
+        $postSystemMessages = Messages::fromArray($request->messages())
+            ->tailAfterRoles([MessageRole::System, MessageRole::Developer]);
+
+        $messages = $postSystemCached
+            ->appendMessages($postSystemMessages)
+            ->toArray();
+
+        return $this->messageFormat->map($messages);
     }
 }

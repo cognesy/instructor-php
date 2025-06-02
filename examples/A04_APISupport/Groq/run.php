@@ -58,7 +58,7 @@ $user = $structuredOutput
         model: 'llama-3.3-70b-versatile', //'gemma2-9b-it',
         maxRetries: 2,
         options: ['temperature' => 0.5],
-        mode: OutputMode::JsonSchema,
+        mode: OutputMode::Json,
     )->get();
 
 print("Completed response model:\n\n");

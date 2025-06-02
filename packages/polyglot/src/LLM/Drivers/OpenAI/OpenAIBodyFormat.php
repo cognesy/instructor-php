@@ -8,6 +8,7 @@ use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Arrays;
+use Cognesy\Utils\Messages\Messages;
 
 class OpenAIBodyFormat implements CanMapRequestBody
 {
@@ -19,10 +20,15 @@ class OpenAIBodyFormat implements CanMapRequestBody
     public function toRequestBody(InferenceRequest $request) : array {
         $options = array_merge($this->config->options, $request->options());
 
+        $messages = match($this->supportsAlternatingRoles($request)) {
+            false => Messages::fromArray($request->messages())->toMergedPerRole()->toArray(),
+            true => $request->messages(),
+        };
+
         $requestBody = array_merge(array_filter([
             'model' => $request->model() ?: $this->config->model,
             'max_tokens' => $this->config->maxTokens,
-            'messages' => $this->messageFormat->map($request->messages()),
+            'messages' => $this->messageFormat->map($messages),
         ]), $options);
 
         if ($options['stream'] ?? false) {
@@ -30,7 +36,12 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         $requestBody['response_format'] = $this->toResponseFormat($request);
+
         if ($request->hasTools()) {
+            if (!$this->supportsNonTextResponseForTools($request)) {
+                $requestBody['response_format'] = ['type' => 'text'];
+            }
+
             $requestBody['tools'] = $this->toTools($request);
             $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
@@ -41,6 +52,10 @@ class OpenAIBodyFormat implements CanMapRequestBody
     // INTERNAL ///////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {
+        if (!$this->supportsStructuredOutput($request)) {
+            return [];
+        }
+
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
             case OutputMode::Json:
@@ -74,8 +89,43 @@ class OpenAIBodyFormat implements CanMapRequestBody
         );
     }
 
-    protected function toToolChoice(InferenceRequest $request) : array {
-        return $request->toolChoice();
+    protected function toToolChoice(InferenceRequest $request) : array|string {
+        $tools = $request->tools();
+        $toolChoice = $request->toolChoice();
+
+        $result = match(true) {
+            empty($tools) => '',
+            empty($toolChoice) => 'auto',
+            is_array($toolChoice) => [
+                'type' => 'function',
+                'function' => [
+                    'name' => $toolChoice['function']['name'] ?? '',
+                ]
+            ],
+            default => $toolChoice,
+        };
+
+        if (!$this->supportsToolSelection($request)) {
+            $result = is_array($result) ? 'auto' : $result;
+        }
+
+        return $result;
+    }
+
+    protected function supportsToolSelection(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return true;
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {

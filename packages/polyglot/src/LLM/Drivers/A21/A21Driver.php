@@ -40,8 +40,9 @@ class A21Driver implements CanHandleInference
     }
 
     public function handle(InferenceRequest $request): HttpClientResponse {
-        $request = $request->withCacheApplied();
-        $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
+        $clientRequest = $this->requestAdapter->toHttpClientRequest(
+            $request->withCacheApplied()
+        );
         return $this->httpClient->handle($clientRequest);
     }
 

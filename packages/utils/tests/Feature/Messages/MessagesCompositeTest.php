@@ -30,7 +30,8 @@ test('can merge roles with composite messages', function () {
 test('can merge many roles with composite messages', function () {
     // Create a composite message
     $compositeMessage = new Message('system', [
-        ['type' => 'text', 'text' => 'Hello from composite']
+        ['type' => 'text', 'text' => 'Hello from composite 1'],
+        ['type' => 'text', 'text' => 'Hello from composite 2']
     ]);
 
     // Create a collection with regular and composite messages
@@ -47,7 +48,7 @@ test('can merge many roles with composite messages', function () {
     expect($merged->all())->toHaveCount(2);
     expect($merged->first()->toString())->toContain('Regular message');
     expect($merged->first()->toString())->toContain('Another regular message');
-    expect($merged->last()->toString())->toContain('Hello from composite');
+    expect($merged->last()->toString())->toContain("Hello from composite 1\nHello from composite 2");
     expect($merged->last()->isComposite())->toBeTrue();
 });
 
@@ -64,15 +65,15 @@ test('can merge multiple composite messages with the same role', function () {
     $messages = (new Messages())
         ->appendMessage($composite1)
         ->appendMessage($composite2);
-    
+
     // Merge roles
     $merged = $messages->toMergedPerRole();
 
     // Should merge composite messages with same role
     expect($merged->all())->toHaveCount(1)
         ->and($merged->first()->isComposite())->toBeTrue()
-        ->and($merged->first()->content())->toBeArray()
-        ->and(count($merged->first()->content()))->toBe(2);
+        ->and($merged->first()->contentParts())->toBeArray()
+        ->and(count($merged->contentParts()))->toBe(2);
 });
 
 test('merges roles correctly with mixed content types', function () {
@@ -117,6 +118,7 @@ test('correctly handles toAllComposites transformation', function () {
     
     // Create a composite message
     $compositeMessage = new Message('user', [
+        ['type' => 'text', 'text' => 'Composite message'],
         ['type' => 'text', 'text' => 'Composite message']
     ]);
     $messages->appendMessage($compositeMessage);
@@ -165,26 +167,26 @@ test('mergeRolesFlat correctly handles composite messages', function () {
     
     // Add a composite message
     $compositeMessage = new Message('system', [
-        ['type' => 'text', 'text' => 'Composite message']
+        ['type' => 'image_url', 'url' => 'https://example.com/image.png']
     ]);
     $messages->appendMessage($compositeMessage);
-    
+
     // Add another regular message
     $messages->appendMessage(new Message('user', 'Message 3'));
-    
+
     // Merge the roles
     $merged = $messages->toMergedPerRole();
 
     // Should have 2 messages:
     // 1. Merged "Message 1" and "Message 2"
-    // 2. Composite message (preserved)
+    // 2. Composite message (preserved, but empty)
     // 3. "Message 3" (after composite)
     expect($merged->all())->toHaveCount(3)
         ->and($merged->all()[0]->isComposite())->toBeTrue()
         ->and($merged->all()[0]->toString())->toContain('Message 1')
         ->and($merged->all()[0]->toString())->toContain('Message 2')
         ->and($merged->all()[1]->isComposite())->toBeTrue()
-        ->and($merged->all()[1]->toString())->toBe('Composite message')
+        ->and($merged->all()[1]->toString())->toBe('')
         ->and($merged->all()[2]->toString())->toBe('Message 3');
 });
 
@@ -204,18 +206,19 @@ test('handles role transitions in mergeRolesFlat correctly', function () {
     // Should have 3 messages with merged content for each role transition
     expect($merged->all())->toHaveCount(3)
         ->and($merged->all()[0]->role()->value)->toBe('user')
-        ->and($merged->all()[0]->content())->toContain('User message 1')
-        ->and($merged->all()[0]->content())->toContain('User message 2')
+        ->and($merged->all()[0]->content()->toString())->toContain('User message 1')
+        ->and($merged->all()[0]->content()->toString())->toContain('User message 2')
         ->and($merged->all()[1]->role()->value)->toBe('assistant')
-        ->and($merged->all()[1]->content())->toContain('Assistant message 1')
-        ->and($merged->all()[1]->content())->toContain('Assistant message 2')
+        ->and($merged->all()[1]->content()->toString())->toContain('Assistant message 1')
+        ->and($merged->all()[1]->content()->toString())->toContain('Assistant message 2')
         ->and($merged->all()[2]->role()->value)->toBe('user')
-        ->and($merged->all()[2]->content())->toBe('User message 3');
+        ->and($merged->all()[2]->content()->toString())->toBe('User message 3');
 });
 
 test('forRoles and exceptRoles handle composite messages properly', function () {
     // Create a composite message
     $compositeMessage = new Message('user', [
+        ['type' => 'text', 'text' => 'Composite user message'],
         ['type' => 'text', 'text' => 'Composite user message']
     ]);
     
@@ -232,7 +235,7 @@ test('forRoles and exceptRoles handle composite messages properly', function () 
     // Should include both regular and composite user messages
     expect($userMessages->all())->toHaveCount(2)
         ->and($userMessages->all()[0]->role()->value)->toBe('user')
-        ->and($userMessages->all()[0]->content())->toBe('Regular user message')
+        ->and($userMessages->all()[0]->content()->toString())->toBe('Regular user message')
         ->and($userMessages->all()[1]->role()->value)->toBe('user')
         ->and($userMessages->all()[1]->isComposite())->toBeTrue();
     
@@ -247,7 +250,8 @@ test('forRoles and exceptRoles handle composite messages properly', function () 
 test('remapRoles handles composite messages properly', function () {
     // Create a composite message
     $compositeMessage = new Message('user', [
-        ['type' => 'text', 'text' => 'Composite user message']
+        ['type' => 'text', 'text' => 'Composite user message'],
+        ['type' => 'text', 'text' => 'Another part of composite']
     ]);
     
     // Create a collection with regular and composite messages

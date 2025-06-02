@@ -1,8 +1,7 @@
 <?php
 namespace Cognesy\Utils\Messages\Traits\Message;
 
-use Cognesy\Utils\Messages\Message;
-use RuntimeException;
+use Cognesy\Template\Template;
 
 trait HandlesTransformation
 {
@@ -10,38 +9,31 @@ trait HandlesTransformation
         return array_filter([
             'role' => $this->role,
             'name' => $this->name,
-            'content' => $this->content,
+            'content' => match(true) {
+                $this->content->isEmpty() => '',
+                $this->content->isComposite() => $this->content->toArray(),
+                default => $this->content->toString(),
+            },
             '_metadata' => $this->metadata,
         ]);
     }
 
     public function toString() : string {
-        if (!$this->isComposite()) {
-            return $this->content;
-        }
-        // flatten composite message to text
-        $text = '';
-        foreach($this->content as $part) {
-            if ($part['type'] !== 'text') {
-                throw new RuntimeException('Message contains non-text parts and cannot be flattened to text');
-            }
-            $text .= $part['text'];
-        }
-        return $text;
+        return $this->content->toString();
     }
 
     public function toRoleString() : string {
-        return $this->role . ': ' . $this->toString();
-    }
-
-    public function toCompositeMessage() : Message {
-        return new Message(
-            role: $this->role,
-            content: match(true) {
-                $this->isComposite() => $this->content,
-                default => [['type' => 'text', 'text' => $this->content]]
-            },
-            metadata: $this->metadata,
-        );
+        $template = match(true) {
+            !empty($this->name) => "<|name|> (<|role|>): <|content|>",
+            default => "<|role|>: <|content|>"
+        };
+        return Template::arrowpipe()
+            ->with([
+                'role' => $this->role,
+                'name' => $this->name,
+                'content' => $this->toString(),
+            ])
+            ->withTemplateContent($template)
+            ->toText();
     }
 }

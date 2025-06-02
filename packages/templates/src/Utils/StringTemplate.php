@@ -4,7 +4,6 @@ namespace Cognesy\Template\Utils;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Cognesy\Utils\TextRepresentation;
-use InvalidArgumentException;
 
 class StringTemplate
 {
@@ -82,24 +81,27 @@ class StringTemplate
     }
 
     public function renderMessage(array|Message $message) : array {
-        $normalized = match(true) {
-            is_array($message) => Message::fromArray($message),
-            $message instanceof Message => $message,
-            default => throw new InvalidArgumentException('Invalid message type'),
-        };
+        $normalized = Message::fromAny($message);
 
         // skip rendering if content is an array - it may contain non-text data
-        if (is_array($normalized->content())) {
-            return ['role' => $normalized->role()->value, 'content' => $normalized->content()];
+        if ($normalized->isComposite()) {
+            return [
+                'role' => $normalized->role()->value,
+                'content' => $normalized->content()->toArray()
+            ];
         }
 
-        return ['role' => $normalized->role()->value, 'content' => $this->renderString($normalized->content())];
+        return [
+            'role' => $normalized->role()->value,
+            'content' => $this->renderString($normalized->content()->toString())
+        ];
     }
 
     public function renderMessages(array|Messages $messages) : array {
+        $messages = Messages::fromAny($messages);
         return array_map(
             fn($message) => $this->renderMessage($message),
-            is_array($messages) ? $messages : $messages->toArray()
+            $messages->toArray()
         );
     }
 
