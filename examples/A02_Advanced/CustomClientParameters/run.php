@@ -1,6 +1,6 @@
 ---
 title: 'Customize parameters of LLM driver'
-docname: 'custom_llm'
+docname: 'custom_config'
 ---
 
 ## Overview

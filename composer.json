@@ -121,7 +121,7 @@
     "symfony/property-info": "^6.4|^7.0",
     "symfony/serializer": "^6.4|^7.0",
     "symfony/type-info": "^6.4|^7.1",
-    "symfony/validator": "^7.2",
+    "symfony/validator": "^6.4 || ^7.0",
     "symfony/var-dumper": "^5.4|^6.0|^7.0",
     "vlucas/phpdotenv": "^5.6"
   },

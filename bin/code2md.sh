@@ -15,12 +15,13 @@ for dir in packages/*; do
   fi
 done
 
-echo "📦 Exporting polyglot sources to Markdown"
+echo "📦 Exporting sub-package sources to Markdown"
 
 code2prompt "packages/utils/src/JsonSchema" -o "tmp/util-json-schema.md"
 code2prompt "packages/utils/src/Messages" -o "tmp/util-messages.md"
 code2prompt "packages/utils/src/Events" -o "tmp/util-events.md"
 code2prompt "packages/utils/src/Config" -o "tmp/util-config.md"
+
 code2prompt "packages/polyglot/src/LLM" -o "tmp/poly-llm.md"
 code2prompt "packages/polyglot/src/Embeddings" -o "tmp/poly-embeddings.md"
 
@@ -44,6 +45,11 @@ mkdir -p ./tmp/instructor-tmp
 cp -rf "./packages/instructor/src/"* "./tmp/instructor-tmp/"
 # remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
 rm -rf "./tmp/instructor-tmp/Extras"
+rm -rf "./tmp/instructor-tmp/Events"
+rm -rf "./tmp/instructor-tmp/Deserialization"
+rm -rf "./tmp/instructor-tmp/Transformation"
+rm -rf "./tmp/instructor-tmp/Validation"
+rm -f "./tmp/instructor-tmp/SettingsStructuredOutputConfigProvider.php"
 code2prompt "./tmp/instructor-tmp" -o "./tmp/instructor-cut.md"
 rm -rf ./tmp/instructor-tmp
 
