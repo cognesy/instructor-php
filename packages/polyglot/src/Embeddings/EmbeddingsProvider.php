@@ -4,8 +4,10 @@ namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Deferred;
+use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
@@ -21,15 +23,18 @@ class EmbeddingsProvider
     protected Deferred $config;
     protected Deferred $httpClient;
 
+    protected CanProvideEmbeddingsConfig $configProvider;
     protected ?bool $debug = null;
 
     public function __construct(
-        EventDispatcherInterface  $events = null,
-        CanRegisterEventListeners $listener = null,
+        ?EventDispatcherInterface  $events = null,
+        ?CanRegisterEventListeners $listener = null,
+        ?CanProvideEmbeddingsConfig $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
+        $this->configProvider = $configProvider ?? new SettingsEmbeddingsConfigProvider();
 
         $this->httpClient = $this->deferHttpClientCreation();
         $this->driver = $this->deferDriverCreation();
@@ -109,12 +114,15 @@ class EmbeddingsProvider
         ?string $dsn = null,
         ?string $preset = null,
     ) : EmbeddingsConfig {
+        $params = DSN::fromString($dsn ?? '');
+        $preset = $preset ?? $params->param('preset') ?? '';
+        $dsnConfig = $params->toArray() ?? [];
         return match(true) {
             empty($preset) => match(true) {
-                empty($dsn) => EmbeddingsConfig::default(),
-                default => EmbeddingsConfig::fromDSN($dsn),
+                empty($dsn) => $this->configProvider->getConfig(),
+                default => $this->configProvider->getConfig($preset)->withOverrides($dsnConfig),
             },
-            default => EmbeddingsConfig::load($preset),
+            default => $this->configProvider->getConfig($preset),
         };
     }
 
@@ -128,7 +136,7 @@ class EmbeddingsProvider
     }
 
     private function makeDriver() : CanHandleVectorization {
-        return (new EmbeddingsDriverFactory($this->events, $this->listener))
+        return (new EmbeddingsDriverFactory($this->events))
             ->makeDriver($this->config(), $this->httpClient());
     }
 }

@@ -35,13 +35,13 @@ class OpenAIBodyFormat implements CanMapRequestBody
             $requestBody['stream_options']['include_usage'] = true;
         }
 
-        $requestBody['response_format'] = $this->toResponseFormat($request);
+        $requestBody['response_format'] = match(true) {
+            $request->hasTools() && !$this->supportsNonTextResponseForTools($request) => [],
+            $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
+            default => [],
+        };
 
         if ($request->hasTools()) {
-            if (!$this->supportsNonTextResponseForTools($request)) {
-                $requestBody['response_format'] = ['type' => 'text'];
-            }
-
             $requestBody['tools'] = $this->toTools($request);
             $requestBody['tool_choice'] = $this->toToolChoice($request);
         }
@@ -49,13 +49,27 @@ class OpenAIBodyFormat implements CanMapRequestBody
         return $this->filterEmptyValues($requestBody);
     }
 
+    // CAPABILITIES ///////////////////////////////////////////
+
+    protected function supportsToolSelection(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return true;
+    }
+
     // INTERNAL ///////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {
-        if (!$this->supportsStructuredOutput($request)) {
-            return [];
-        }
-
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
             case OutputMode::Json:
@@ -110,22 +124,6 @@ class OpenAIBodyFormat implements CanMapRequestBody
         }
 
         return $result;
-    }
-
-    protected function supportsToolSelection(InferenceRequest $request) : bool {
-        return true;
-    }
-
-    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
-        return true;
-    }
-
-    protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
-        return true;
-    }
-
-    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
-        return true;
     }
 
     protected function removeDisallowedEntries(array $jsonSchema) : array {

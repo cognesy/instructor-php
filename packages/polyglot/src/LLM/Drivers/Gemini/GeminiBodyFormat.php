@@ -24,12 +24,25 @@ class GeminiBodyFormat implements CanMapRequestBody
             'generationConfig' => $this->toOptions($request),
         ]);
 
+        if (!$this->supportsNonTextResponseForTools($request)) {
+            if ($request->hasTools()) {
+                unset($requestBody['generationConfig']['responseSchema']);
+                unset($requestBody['generationConfig']['responseMimeType']);
+            }
+        }
+
         if ($request->hasTools() && !empty($request->tools())) {
             $requestBody['tools'] = $this->toTools($request);
             $requestBody['tool_config'] = $this->toToolChoice($request);
         }
 
         return $requestBody;
+    }
+
+    // CAPABILITIES ///////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
     }
 
     // INTERNAL //////////////////////////////////////////////
@@ -80,6 +93,7 @@ class GeminiBodyFormat implements CanMapRequestBody
         $toolChoice = $request->toolChoice();
 
         return match(true) {
+            $request->hasResponseFormat() => ["function_calling_config" => ["mode" => "ANY"]],
             empty($toolChoice) => ["function_calling_config" => ["mode" => "ANY"]],
             is_string($toolChoice) => ["function_calling_config" => ["mode" => $this->mapToolChoice($toolChoice)]],
             is_array($toolChoice) => [

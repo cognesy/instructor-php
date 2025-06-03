@@ -34,7 +34,7 @@ it('can handle string class name', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        StructuredOutputConfig::default(),
+        new StructuredOutputConfig(),
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(User::class);
@@ -62,7 +62,7 @@ it('can handle array schema', function($user) {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        StructuredOutputConfig::default(),
+        new StructuredOutputConfig(),
         $events,
     );
     $responseModel = $responseModelFactory->fromAny($user);
@@ -90,7 +90,7 @@ it('can handle schema provider - via instance', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        StructuredOutputConfig::default(),
+        new StructuredOutputConfig(),
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new UserWithProvider());
@@ -119,7 +119,7 @@ it('can handle schema provider - via class name', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        StructuredOutputConfig::default(),
+        new StructuredOutputConfig(),
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(UserWithProvider::class);
@@ -148,7 +148,7 @@ it('can handle ObjectSchema instance', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        StructuredOutputConfig::default(),
+        new StructuredOutputConfig(),
         $events,
     );
     $schemaFactory = new SchemaFactory();
@@ -178,7 +178,7 @@ it('can handle raw object', function() {
             new ReferenceQueue(),
         ),
         new SchemaFactory(),
-        StructuredOutputConfig::default(),
+        new StructuredOutputConfig(),
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new User());

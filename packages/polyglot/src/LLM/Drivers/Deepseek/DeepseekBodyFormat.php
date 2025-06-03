@@ -29,11 +29,32 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             $requestBody['stream_options']['include_usage'] = true;
         }
 
-        $requestBody['response_format'] = $this->toResponseFormat($request);
-        $requestBody['tools'] = $this->toTools($request);
-        $requestBody['tool_choice'] = $this->toToolChoice($request);
+        $requestBody['response_format'] = match(true) {
+            $request->hasTools() && !$this->supportsNonTextResponseForTools($request) => [],
+            $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
+            default => [],
+        };
+
+        if ($request->hasTools()) {
+            $requestBody['tools'] = $this->toTools($request);
+            $requestBody['tool_choice'] = $this->toToolChoice($request);
+        }
 
         return $this->filterEmptyValues($requestBody);
+    }
+
+    // CAPABILITIES ///////////////////////////////////////////
+
+    protected function supportsToolSelection(InferenceRequest $request) : bool {
+        return !Str::contains($request->model(), 'reasoner');
+    }
+
+    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
+        return !Str::contains($request->model(), 'reasoner');
+    }
+
+    protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
+        return !Str::contains($request->model(), 'reasoner');
     }
 
     // INTERNAL ///////////////////////////////////////////////
@@ -58,17 +79,5 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
         }
 
         return $result;
-    }
-
-    protected function supportsToolSelection(InferenceRequest $request) : bool {
-        return !Str::contains($request->model(), 'reasoner');
-    }
-
-    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
-        return !Str::contains($request->model(), 'reasoner');
-    }
-
-    protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
-        return !Str::contains($request->model(), 'reasoner');
     }
 }

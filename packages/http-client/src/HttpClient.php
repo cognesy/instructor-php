@@ -2,6 +2,8 @@
 namespace Cognesy\Http;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\CanProvideDebugConfig;
+use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpClientConfig;
@@ -10,7 +12,6 @@ use Cognesy\Http\Debug\Debug;
 use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
-use Cognesy\Utils\Config\Settings;
 use Cognesy\Utils\Deferred;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
@@ -39,16 +40,23 @@ class HttpClient
     protected Deferred $config;
     protected Deferred $driver;
 
+    protected CanProvideHttpClientConfig $httpConfigProvider;
+    protected CanProvideDebugConfig $debugConfigProvider;
+
     /**
      * Constructor method for initializing the HTTP client.
      */
     public function __construct(
         ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
+        ?CanProvideHttpClientConfig $httpConfigProvider = null,
+        ?CanProvideDebugConfig $debugConfigProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
+        $this->httpConfigProvider = $httpConfigProvider ?? new SettingsHttpClientConfigProvider();
+        $this->debugConfigProvider = $debugConfigProvider ?? new SettingsDebugConfigProvider();
 
         $this->stack = $this->deferMiddlewareStackCreation();
         $this->driver = $this->deferHttpClientDriverCreation();
@@ -143,9 +151,7 @@ class HttpClient
         ?HttpClientConfig $config = null,
     ): Deferred {
         return new Deferred(
-            fn() => $config ?? HttpClientConfig::load(
-                $preset ?: Settings::get('http', 'defaultPreset')
-            )
+            fn() => $config ?? $this->httpConfigProvider->getConfig($preset)
         );
     }
 
@@ -154,7 +160,7 @@ class HttpClient
     ): Deferred {
         return new Deferred(
             function(?bool $debug) use ($debugConfig) {
-                $result = $debugConfig ?? DebugConfig::load();
+                $result = $debugConfig ?? $this->debugConfigProvider->getConfig();
                 if ($debug !== null) {
                     $result->httpEnabled = $debug;
                 }

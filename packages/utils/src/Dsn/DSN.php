@@ -49,6 +49,10 @@ class DSN
         return (float) $this->param($key, $default);
     }
 
+    public function toArray() : array {
+        return $this->params->all();
+    }
+
     // INTERNAL //////////////////////////////////////////////////////////////////
 
     private function parseString(string $dsn) : Dot {

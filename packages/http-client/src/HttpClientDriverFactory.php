@@ -53,7 +53,7 @@ class HttpClientDriverFactory
         $name = $config->driver;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
         if ($driverClosure === null) {
-            throw new InvalidArgumentException("Client not supported: {$name}");
+            throw new InvalidArgumentException("HTTP client driver supported: {$name}");
         }
         return $driverClosure(config: $config, clientInstance: $clientInstance, events: $this->events);
     }

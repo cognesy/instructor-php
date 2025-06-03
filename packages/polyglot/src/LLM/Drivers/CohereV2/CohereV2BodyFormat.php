@@ -20,6 +20,12 @@ class CohereV2BodyFormat extends OpenAICompatibleBodyFormat
         return $requestBody;
     }
 
+    // CAPABILITIES /////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
+    }
+
     // INTERNAL //////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {

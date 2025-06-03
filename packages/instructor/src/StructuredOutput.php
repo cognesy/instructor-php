@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
@@ -36,6 +37,7 @@ class StructuredOutput
     private ResponseDeserializer $responseDeserializer;
     private ResponseValidator $responseValidator;
     private ResponseTransformer $responseTransformer;
+    private CanProvideStructuredOutputConfig $configProvider;
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
@@ -48,6 +50,7 @@ class StructuredOutput
     public function __construct(
         ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
+        ?CanProvideStructuredOutputConfig $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
@@ -57,7 +60,8 @@ class StructuredOutput
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
-        $this->config = new StructuredOutputConfig();
+        $this->configProvider = $configProvider ?? new SettingsStructuredOutputConfigProvider();
+        $this->config = $this->configProvider->getConfig();
         $this->cachedContext = new Data\CachedContext();
         $this->llm = new LLMProvider(
             events: $this->events,

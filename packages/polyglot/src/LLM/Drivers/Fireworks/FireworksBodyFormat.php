@@ -8,7 +8,15 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class FireworksBodyFormat extends OpenAICompatibleBodyFormat
 {
-    public function toResponseFormat(InferenceRequest $request) : array {
+    // CAPABILITIES ///////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
+    }
+
+    // INTERNAL ///////////////////////////////////////////////
+
+    protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
             case OutputMode::Json:

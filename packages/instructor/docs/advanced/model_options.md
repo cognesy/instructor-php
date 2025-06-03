@@ -42,7 +42,7 @@ $config = new LLMConfig(
     metadata: ['organization' => ''],
     model: 'gpt-4o-mini',
     maxTokens: 128,
-    httpClient: 'guzzle',
+    httpClientPreset: 'guzzle',
     providerType: 'openai',
 ));
 

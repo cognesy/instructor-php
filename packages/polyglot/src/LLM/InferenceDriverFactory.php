@@ -22,6 +22,7 @@ use Cognesy\Polyglot\LLM\Drivers\Minimaxi\MinimaxiDriver;
 use Cognesy\Polyglot\LLM\Drivers\Mistral\MistralDriver;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleDriver;
+use Cognesy\Polyglot\LLM\Drivers\OpenRouter\OpenRouterDriver;
 use Cognesy\Polyglot\LLM\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
@@ -53,13 +54,6 @@ class InferenceDriverFactory
     }
 
     /**
-     * Returns the default driver instance.
-     */
-    public function default(): CanHandleInference {
-        return $this->makeDriver(LLMConfig::default());
-    }
-
-    /**
      * Creates and returns an appropriate driver instance based on the given configuration.
      */
     public function makeDriver(LLMConfig $config, ?HttpClient $httpClient = null): CanHandleInference {
@@ -77,7 +71,7 @@ class InferenceDriverFactory
             config: $config,
             httpClient: match(true) {
                 !is_null($httpClient) => $httpClient,
-                !empty($config->httpClient) => (new HttpClient($this->events, $this->listener))->withPreset($config->httpClient),
+                !empty($config->httpClientPreset) => (new HttpClient($this->events, $this->listener))->withPreset($config->httpClientPreset),
                 default => (new HttpClient($this->events, $this->listener)),
             },
             events: $this->events
@@ -108,6 +102,7 @@ class InferenceDriverFactory
             'minimaxi' => fn($config, $httpClient, $events) => new MinimaxiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new MistralDriver($config, $httpClient, $events),
             'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
+            'openrouter' => fn($config, $httpClient, $events) => new OpenRouterDriver($config, $httpClient, $events),
             'perplexity' => fn($config, $httpClient, $events) => new PerplexityDriver($config, $httpClient, $events),
             'sambanova' => fn($config, $httpClient, $events) => new SambaNovaDriver($config, $httpClient, $events),
             'xai' => fn($config, $httpClient, $events) => new XAiDriver($config, $httpClient, $events),
@@ -115,7 +110,6 @@ class InferenceDriverFactory
             'moonshot' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'ollama' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'openai-compatible' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
-            'openrouter' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'together' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
        ];
        return $drivers[$name] ?? null;

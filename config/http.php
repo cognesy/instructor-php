@@ -3,7 +3,7 @@
 return [
     'defaultPreset' => 'guzzle',
 
-    'clientPresets' => [
+    'presets' => [
         'guzzle' => [
             'httpClientDriver' => 'guzzle',
             'connectTimeout' => 3,

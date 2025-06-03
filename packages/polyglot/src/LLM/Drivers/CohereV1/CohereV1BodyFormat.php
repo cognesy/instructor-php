@@ -33,12 +33,28 @@ class CohereV1BodyFormat implements CanMapRequestBody
             'message' => $nativeMessages,
         ]), $options);
 
-        $requestBody['response_format'] = $this->toResponseFormat($request);
+        $requestBody['response_format'] = match(true) {
+            $request->hasTools() && !$this->supportsNonTextResponseForTools($request) => [],
+            $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
+            default => [],
+        };
+
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);
+            $requestBody['response_format'] = ['type' => 'text'];
         }
 
         return $this->filterEmptyValues($requestBody);
+    }
+
+    // CAPABILITIES /////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
+    }
+
+    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
+        return true;
     }
 
     // INTERNAL /////////////////////////////////////////////

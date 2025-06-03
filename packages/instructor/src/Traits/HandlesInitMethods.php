@@ -18,9 +18,7 @@ trait HandlesInitMethods
     }
 
     public function withDSN(string $dsn) : static {
-        $this->llm->withConfig(
-            LLMConfig::fromDSN($dsn)
-        );
+        $this->llm->withDSN($dsn);
         return $this;
     }
 

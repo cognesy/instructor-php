@@ -84,7 +84,8 @@ use Cognesy\Polyglot\LLM\Data\LLMConfig;
 
 function verifyConfig(string $preset): void {
     try {
-        $config = LLMConfig::load($preset);
+        $provider = new SettingsLLMConfigProvider();
+        $config = $provider->getConfig($preset);
 
         echo "Configuration for '$preset':\n";
         echo "API URL: {$config->apiUrl}\n";

@@ -18,8 +18,10 @@ class RequestMaterializer implements CanMaterializeRequest
 {
     private StructuredOutputConfig $config;
 
-    public function __construct(?StructuredOutputConfig $config = null) {
-        $this->config = $config ?: StructuredOutputConfig::load();
+    public function __construct(
+        StructuredOutputConfig $config,
+    ) {
+        $this->config = $config;
     }
 
     public function toMessages(StructuredOutputRequest $request) : array {

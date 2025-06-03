@@ -4,7 +4,6 @@ namespace Cognesy\Evals\Console;
 
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Experiment;
-use Cognesy\Http\Debug\Debug;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
 use Cognesy\Utils\Str;
@@ -88,9 +87,9 @@ class Display
             ], $this->terminalWidth);
             Console::println('');
             Console::println($exception->getMessage(), [Color::GRAY]);
-            if (Debug::isEnabled()) {
-                Console::println($exception->getTraceAsString(), [Color::DARK_GRAY]);
-            }
+//            if (Debug::isEnabled()) {
+//                Console::println($exception->getTraceAsString(), [Color::DARK_GRAY]);
+//            }
         }
         Console::println('');
     }

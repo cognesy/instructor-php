@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Config\Settings;
 
 class StructuredOutputConfig
 {
@@ -61,30 +60,7 @@ class StructuredOutputConfig
         $this->defaultOutputClass = $defaultOutputClass ?: $this->defaultOutputClass;
     }
 
-    public static function load() : static {
-        return new static(
-            outputMode: OutputMode::from(Settings::get('structured', 'defaultMode', '')),
-            useObjectReferences: Settings::get('structured', 'useObjectReferences', null),
-            maxRetries: Settings::get('structured', 'maxRetries', 0),
-            retryPrompt: Settings::get('structured', 'defaultRetryPrompt', ''),
-            modePrompts: [
-                OutputMode::MdJson->value => Settings::get('structured', 'defaultMdJsonPrompt', ''),
-                OutputMode::Json->value => Settings::get('structured', 'defaultJsonPrompt', ''),
-                OutputMode::JsonSchema->value => Settings::get('structured', 'defaultJsonSchemaPrompt', ''),
-                OutputMode::Tools->value => Settings::get('structured', 'defaultToolsPrompt', ''),
-            ],
-            schemaName: Settings::get('structured', 'defaultSchemaName', ''),
-            toolName: Settings::get('structured', 'defaultToolName', ''),
-            toolDescription: Settings::get('structured', 'defaultToolDescription', ''),
-            chatStructure: Settings::get('structured', 'defaultChatStructure', []),
-            defaultOutputClass: Settings::get('structured', 'defaultOutputClass', ''),
-        );
-    }
-
     // ACCESSORS ///////////////////////////////////////////////////////
-    public static function default() : self {
-        return new self();
-    }
 
     public function outputMode() : OutputMode {
         return $this->outputMode;

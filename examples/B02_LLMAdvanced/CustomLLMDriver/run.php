@@ -35,12 +35,11 @@ Inference::registerDriver('custom-driver', fn($config, $httpClient, $events) => 
 
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(
-    apiUrl: 'https://api.openai.com/v1',
-    apiKey: Env::get('OPENAI_API_KEY'),
-    endpoint: '/chat/completions',
-    model: 'gpt-4o-mini',
-    maxTokens: 128,
-    httpClient: 'guzzle',
+    apiUrl      : 'https://api.openai.com/v1',
+    apiKey      : Env::get('OPENAI_API_KEY'),
+    endpoint    : '/chat/completions',
+    model       : 'gpt-4o-mini',
+    maxTokens   : 128, httpClientPreset: 'guzzle',
     providerType: 'custom-driver',
 );
 

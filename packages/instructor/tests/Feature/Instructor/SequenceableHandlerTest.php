@@ -30,7 +30,7 @@ function createStreamingGenerator(array $chunks): Generator {
 }
 
 function makeResponseModel($sequence): ResponseModel {
-    $config = StructuredOutputConfig::default();
+    $config = new StructuredOutputConfig();
     $schemaFactory = new SchemaFactory($config->useObjectReferences());
     $events = new EventDispatcher();
     return (new ResponseModelFactory(

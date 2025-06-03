@@ -35,7 +35,7 @@ $events = new EventDispatcher();
 // Build fully customized HTTP client
 
 $httpConfig = new HttpClientConfig(
-    connectTimeout: 5,
+    connectTimeout: 30,
     requestTimeout: 60,
     idleTimeout: -1,
     maxConcurrent: 5,

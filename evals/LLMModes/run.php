@@ -48,14 +48,15 @@ $presets = array_keys(Settings::get('llm', 'presets'));
 //    'deepseek-r', // stream > text - will be solved by removing outputmode
 //    'minimaxi', // stream sync > unrestricted json_schema json
 //    'minimaxi-oai', // stream sync > unrestricted json_schema json
+//    'gemini-oai',
 //];
 $modes = [
 //    OutputMode::Text,
 //    OutputMode::MdJson,
-//    OutputMode::Json,
-//    OutputMode::JsonSchema,
-//    OutputMode::Tools,
-    OutputMode::Unrestricted
+    OutputMode::Json,
+    OutputMode::JsonSchema,
+    OutputMode::Tools,
+//    OutputMode::Unrestricted
 ];
 $stream = [
     false,

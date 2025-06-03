@@ -8,6 +8,8 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class MetaBodyFormat extends OpenAICompatibleBodyFormat
 {
+    // INTERNAL //////////////////////////////////////////////
+
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

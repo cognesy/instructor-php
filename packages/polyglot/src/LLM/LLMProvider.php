@@ -4,8 +4,10 @@ namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
+use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Utils\Deferred;
+use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -14,6 +16,7 @@ class LLMProvider
 {
     protected EventDispatcherInterface $events;
     protected CanRegisterEventListeners $listener;
+    protected CanProvideLLMConfig $configProvider;
 
     protected ?bool $debug = null;
 
@@ -23,11 +26,13 @@ class LLMProvider
 
     public function __construct(
         ?EventDispatcherInterface $events = null,
-        ?CanRegisterEventListeners $listener = null
+        ?CanRegisterEventListeners $listener = null,
+        ?CanProvideLLMConfig $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
+        $this->configProvider = $configProvider ?? new SettingsLLMConfigProvider();
 
         $this->config = $this->deferLLMConfigCreation();
         $this->httpClient = $this->deferHttpClientCreation();
@@ -46,7 +51,7 @@ class LLMProvider
         return $this;
     }
 
-    public function withDsn(string $dsn): self {
+    public function withDSN(string $dsn): self {
         $this->config = $this->deferLLMConfigCreation(dsn: $dsn);
         return $this;
     }
@@ -104,12 +109,15 @@ class LLMProvider
         ?string $dsn = null,
         ?string $preset = null,
     ) : LLMConfig {
+        $params = DSN::fromString($dsn ?? '');
+        $preset = $preset ?? $params->param('preset') ?? '';
+        $dsnConfig = $params->toArray() ?? [];
         return match(true) {
             empty($preset) => match(true) {
-                empty($dsn) => LLMConfig::default(),
-                default => LLMConfig::fromDSN($dsn),
+                empty($dsn) => $this->configProvider->getConfig(),
+                default => $this->configProvider->getConfig($preset)->withOverrides($dsnConfig),
             },
-            default => LLMConfig::load($preset),
+            default => $this->configProvider->getConfig($preset),
         };
     }
 
@@ -125,7 +133,7 @@ class LLMProvider
 
     private function makeHttpClient() : HttpClient {
         $httpClient = (new HttpClient($this->events, $this->listener))
-            ->withPreset($this->config()->httpClient);
+            ->withPreset($this->config()->httpClientPreset);
         return match(true) {
             is_null($this->debug) => $httpClient,
             default => $httpClient->withDebug($this->debug),

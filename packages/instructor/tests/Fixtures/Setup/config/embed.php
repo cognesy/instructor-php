@@ -3,11 +3,8 @@
 use Cognesy\Utils\Config\Env;
 
 return [
-    'debug' => [
-        'enabled' => false,
-    ],
-
     'defaultPreset' => 'openai',
+
     'presets' => [
         'azure' => [
             'providerType' => 'azure',
@@ -24,8 +21,17 @@ return [
             'maxInputs' => 16,
         ],
         'cohere1' => [
-            'providerType' => 'cohere1',
-            'apiUrl' => 'https://api.cohere.ai/v1',
+            'providerType' => 'cohere2',
+            'apiUrl' => 'https://api.cohere.ai/v2',
+            'apiKey' => Env::get('COHERE_API_KEY', ''),
+            'endpoint' => '/embed',
+            'defaultModel' => 'embed-multilingual-v3.0',
+            'defaultDimensions' => 1024,
+            'maxInputs' => 96,
+        ],
+        'cohere2' => [
+            'providerType' => 'cohere2',
+            'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',
             'defaultModel' => 'embed-multilingual-v3.0',

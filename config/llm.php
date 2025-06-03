@@ -224,7 +224,7 @@ return [
             'defaultModel' => 'gemma3:1b', // 'qwen2.5-coder:3b', //'gemma2:2b',
             'defaultOutputMode' => 'json',
             'defaultMaxTokens' => 1024,
-            'httpClient' => 'http-ollama',
+            'httpClientPreset' => 'http-ollama',
             'contextLength' => 128_000,
             'maxOutputLength' => 8192,
         ],

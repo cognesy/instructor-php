@@ -1,14 +1,9 @@
 <?php
+
 return [
-    'defaultClient' => 'guzzle',
+    'defaultPreset' => 'guzzle',
 
-    'cache' => [
-        'enabled' => false,
-        'expiryInSeconds' => 3600,
-        'path' => '/tmp/instructor/cache',
-    ],
-
-    'clients' => [
+    'presets' => [
         'guzzle' => [
             'httpClientDriver' => 'guzzle',
             'connectTimeout' => 3,
@@ -45,5 +40,5 @@ return [
             'poolTimeout' => 60,
             'failOnError' => true,
         ],
-    ]
+    ],
 ];

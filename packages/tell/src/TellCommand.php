@@ -2,9 +2,9 @@
 
 namespace Cognesy\Tell;
 
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
+use Cognesy\Polyglot\LLM\SettingsLLMConfigProvider;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -46,21 +46,24 @@ class TellCommand extends Command
 
     protected function inferenceUsingDSN(string $dsn, string $prompt) : InferenceResponse {
         return (new Inference)
-            ->fromDsn($dsn)
+            ->fromDSN($dsn)
             ->with(
                 messages: $prompt,
                 options: ['stream' => true],
-            );
+            )
+            ->create();
     }
 
     protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : InferenceResponse {
-        $model = $model ?: LLMConfig::load($preset)->model;
+        $config = (new SettingsLLMConfigProvider())->getConfig($preset);
+        $model = $model ?: $config->model;
         return (new Inference)
             ->using($preset)
             ->with(
                 messages: $prompt,
                 model: $model,
                 options: ['stream' => true],
-            );
+            )
+            ->create();
     }
 }

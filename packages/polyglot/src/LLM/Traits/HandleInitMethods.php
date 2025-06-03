@@ -15,7 +15,7 @@ trait HandleInitMethods
      * @param LLMProvider $llm The LLM instance to set.
      * @return self Returns the current instance.
      */
-    public function withLLMProvider(LLMProvider $llm): self {
+    public function withLLMProvider(LLMProvider $llm) : static {
         $this->llm = $llm;
         return $this;
     }
@@ -27,13 +27,14 @@ trait HandleInitMethods
      *
      * @return self
      */
-    public function withConfig(LLMConfig $config): self {
+    public function withConfig(LLMConfig $config) : static {
         $this->llm->withConfig($config);
         return $this;
     }
 
-    public function withDsn(string $dsn): self {
-        return $this->withConfig(LLMConfig::fromDSN($dsn));
+    public function fromDSN(string $dsn) : static {
+        $this->llm->withDSN($dsn);
+        return $this;
     }
 
     /**
@@ -43,7 +44,7 @@ trait HandleInitMethods
      *
      * @return self Returns the current instance with the updated connection.
      */
-    public function using(string $preset): self {
+    public function using(string $preset) : static {
         if (empty($preset)) {
             return $this;
         }
@@ -58,7 +59,7 @@ trait HandleInitMethods
      *
      * @return self Returns the current instance for method chaining.
      */
-    public function withHttpClient(HttpClient $httpClient): self {
+    public function withHttpClient(HttpClient $httpClient) : static {
         $this->llm->withHttpClient($httpClient);
         return $this;
     }
@@ -70,7 +71,7 @@ trait HandleInitMethods
      *
      * @return self
      */
-    public function withDriver(CanHandleInference $driver): self {
+    public function withDriver(CanHandleInference $driver) : static {
         $this->llm->withDriver($driver);
         return $this;
     }
@@ -82,7 +83,7 @@ trait HandleInitMethods
      *
      * @return self
      */
-    public function withDebug(?bool $debug = true): self {
+    public function withDebug(?bool $debug = true) : static {
         if ($debug !== null) {
             $this->llm->withDebug($debug);
         }

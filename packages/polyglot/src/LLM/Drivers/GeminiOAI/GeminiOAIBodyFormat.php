@@ -8,6 +8,15 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
 {
+    // CAPABILITIES /////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        // Gemini OAI does not support non-text responses for tools
+        return false;
+    }
+
+    // INTERNAL /////////////////////////////////////////////
+
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
@@ -21,6 +30,28 @@ class GeminiOAIBodyFormat extends OpenAICompatibleBodyFormat
                 break;
             default:
                 $result = [];
+        }
+        return $result;
+    }
+
+    protected function toToolChoice(InferenceRequest $request) : array|string {
+        $tools = $request->tools();
+        $toolChoice = $request->toolChoice();
+
+        $result = match(true) {
+            empty($tools) => '',
+            empty($toolChoice) => 'auto',
+            is_array($toolChoice) => [
+                'type' => 'function',
+                'function' => [
+                    'name' => $toolChoice['function']['name'] ?? '',
+                ]
+            ],
+            default => $toolChoice,
+        };
+
+        if (!$this->supportsToolSelection($request)) {
+            $result = is_array($result) ? 'auto' : $result;
         }
 
         return $result;

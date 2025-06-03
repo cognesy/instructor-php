@@ -2,12 +2,10 @@
 
 namespace Cognesy\Http\Debug;
 
-use Cognesy\Utils\Config\Settings;
-
-class DebugConfig
+final class DebugConfig
 {
     public function __construct(
-        public bool $httpEnabled = true,
+        public bool $httpEnabled = false,
         public bool $httpTrace = false,
         public bool $httpRequestUrl = true,
         public bool $httpRequestHeaders = true,
@@ -18,43 +16,7 @@ class DebugConfig
         public bool $httpResponseStreamByLine = true,
     ) {}
 
-    public static function default(): self
-    {
-        return new self();
-    }
-
-    public static function allEnabled(): self
-    {
-        return new self(
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        );
-    }
-
-    public static function load(): self
-    {
-        return new self(
-            Settings::get('debug', 'http.enabled', false),
-            Settings::get('debug', 'http.trace', false),
-            Settings::get('debug', 'http.requestUrl', true),
-            Settings::get('debug', 'http.requestHeaders', true),
-            Settings::get('debug', 'http.requestBody', true),
-            Settings::get('debug', 'http.responseHeaders', true),
-            Settings::get('debug', 'http.responseBody', true),
-            Settings::get('debug', 'http.responseStream', true),
-            Settings::get('debug', 'http.responseStreamByLine', true)
-        );
-    }
-
-    public static function fromArray(array $config): self
-    {
+    public static function fromArray(array $config): self {
         return new self(
             $config['httpEnabled'] ?? true,
             $config['httpTrace'] ?? false,

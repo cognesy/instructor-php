@@ -6,7 +6,6 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
-use Cognesy\Utils\Config\Settings;
 use DateTimeImmutable;
 
 class Debug
@@ -14,7 +13,7 @@ class Debug
     private DebugConfig $config;
 
     public function __construct(?DebugConfig $config = null) {
-        $this->config = $config ?? DebugConfig::load();
+        $this->config = $config ?? new DebugConfig();
     }
 
     public function config() : DebugConfig {
@@ -29,13 +28,13 @@ class Debug
         $this->config->httpEnabled = false;
     }
 
-    public static function setEnabled(bool $debug = true) : void {
-        Settings::set('debug', 'http.enabled', $debug);
-    }
-
-    public static function isEnabled() : bool {
-        return Settings::get('debug', 'http.enabled', false);
-    }
+//    public static function setEnabled(bool $debug = true) : void {
+//        Settings::set('debug', 'http.enabled', $debug);
+//    }
+//
+//    public static function isEnabled() : bool {
+//        return Settings::get('debug', 'http.enabled', false);
+//    }
 
     public function tryDumpStream(string $line, bool $isConsolidated = false): void {
         if (!$this->config->httpResponseStream) {

@@ -8,6 +8,14 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class SambaNovaBodyFormat extends OpenAICompatibleBodyFormat
 {
+    // CAPABILITIES ///////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
+    }
+
+    // INTERNAL ///////////////////////////////////////////////
+
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

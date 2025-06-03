@@ -8,7 +8,9 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class MinimaxiBodyFormat extends OpenAICompatibleBodyFormat
 {
-    public function toResponseFormat(InferenceRequest $request) : array {
+    // INTERNAL ///////////////////////////////////////////////
+
+    protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {
             case OutputMode::Text:

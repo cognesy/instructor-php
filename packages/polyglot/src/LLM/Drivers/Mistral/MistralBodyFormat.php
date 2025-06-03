@@ -27,14 +27,31 @@ class MistralBodyFormat implements CanMapRequestBody
             'messages' => $this->messageFormat->map($request->messages()),
         ]), $options);
 
-        $requestBody['response_format'] = $this->toResponseFormat($request);
-        $requestBody['tools'] = $this->removeDisallowedEntries($request->tools());
-        $requestBody['tool_choice'] = $this->toToolChoice($request->tools(), $request->toolChoice());
+        $requestBody['response_format'] = match(true) {
+            $request->hasTools() && !$this->supportsNonTextResponseForTools($request) => [],
+            $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
+            default => [],
+        };
+        
+        if ($request->hasTools()) {
+            $requestBody['tools'] = $this->toTools($request);
+            $requestBody['tool_choice'] = $this->toToolChoice($request->tools(), $request->toolChoice());
+        }
 
         return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
-    // PRIVATE //////////////////////////////////////////////
+    // CAPABILITIES /////////////////////////////////////////
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
+    }
+
+    protected function supportsStructuredOutput(InferenceRequest $request) : bool {
+        return true;
+    }
+
+    // INTERNAL /////////////////////////////////////////////
 
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
@@ -62,6 +79,10 @@ class MistralBodyFormat implements CanMapRequestBody
         }
 
         return array_filter($result, fn($value) => $value !== null && $value !== [] && $value !== '');
+    }
+
+    private function toTools(InferenceRequest $request) : array {
+        return $this->removeDisallowedEntries($request->tools());
     }
 
     private function toToolChoice(array $tools, array|string $toolChoice) : array|string {

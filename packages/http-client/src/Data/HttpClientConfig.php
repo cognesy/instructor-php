@@ -1,17 +1,13 @@
 <?php
 namespace Cognesy\Http\Data;
 
-use Cognesy\Utils\Config\Settings;
-use InvalidArgumentException;
-
 /**
  * Class HttpClientConfig
  *
  * Configuration class for HTTP clients.
  */
-class HttpClientConfig
+final class HttpClientConfig
 {
-
     /**
      * Constructor for HttpClientConfig.
      *
@@ -33,28 +29,6 @@ class HttpClientConfig
         public int    $poolTimeout = 120,
         public bool   $failOnError = false,
     ) {}
-
-    /**
-     * Loads the HTTP client configuration for the specified client configuration
-     *
-     * @param string $preset The client configuration name to load.
-     * @return HttpClientConfig The HTTP client configuration object.
-     * @throws InvalidArgumentException If the specified client is unknown.
-     */
-    public static function load(string $preset) : HttpClientConfig {
-        if (!Settings::has('http', "clientPresets.$preset")) {
-            throw new InvalidArgumentException("Unknown client preset: $preset");
-        }
-        return new HttpClientConfig(
-            driver: Settings::get('http', "clientPresets.$preset.httpClientDriver", 'guzzle'),
-            connectTimeout: Settings::get(group: "http", key: "clientPresets.$preset.connectTimeout", default: 30),
-            requestTimeout: Settings::get("http", "clientPresets.$preset.requestTimeout", 3),
-            idleTimeout: Settings::get(group: "http", key: "clientPresets.$preset.idleTimeout", default: 0),
-            maxConcurrent: Settings::get("http", "clientPresets.$preset.maxConcurrent", 5),
-            poolTimeout: Settings::get("http", "clientPresets.$preset.poolTimeout", 120),
-            failOnError: Settings::get("http", "clientPresets.$preset.failOnError", false),
-        );
-    }
 
     /**
      * Creates a new HttpClientConfig instance from an associative array.

@@ -27,6 +27,8 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
         return array_filter($requestBody, fn($value) => $value !== null && $value !== [] && $value !== '');
     }
 
+    // INTERNAL ///////////////////////////////////////////////
+
     protected function toResponseFormat(InferenceRequest $request) : array {
         $mode = $this->toResponseFormatMode($request);
         switch ($mode) {

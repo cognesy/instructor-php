@@ -15,4 +15,8 @@ class CerebrasBodyFormat extends OpenAICompatibleBodyFormat
 
         return $requestBody;
     }
+
+    protected function supportsNonTextResponseForTools(InferenceRequest $request) : bool {
+        return false;
+    }
 }
