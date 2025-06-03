@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
-class EmbeddingsConfig
+final class EmbeddingsConfig
 {
     public function __construct(
         public string $apiUrl = '',

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Data;
 
-class LLMConfig
+final class LLMConfig
 {
     public function __construct(
         public string $apiUrl = '',

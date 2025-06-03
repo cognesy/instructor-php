@@ -4,8 +4,11 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
-class StructuredOutputConfig
+final class StructuredOutputConfig
 {
+    use Traits\StructuredOutputConfig\HandlesAccessors;
+    use Traits\StructuredOutputConfig\HandlesMutators;
+
     private OutputMode $outputMode = OutputMode::Tools;
     private bool $useObjectReferences = false;
     private int $maxRetries = 0;
@@ -58,136 +61,6 @@ class StructuredOutputConfig
         $this->toolDescription = $toolDescription ?: $this->toolDescription;
         $this->chatStructure = $chatStructure ?: $this->chatStructure;
         $this->defaultOutputClass = $defaultOutputClass ?: $this->defaultOutputClass;
-    }
-
-    // ACCESSORS ///////////////////////////////////////////////////////
-
-    public function outputMode() : OutputMode {
-        return $this->outputMode;
-    }
-
-    public function prompt(OutputMode $mode) : string {
-        return $this->modePrompts[$mode->value] ?? '';
-    }
-
-    public function modePrompts() : array {
-        return $this->modePrompts;
-    }
-
-    public function retryPrompt() : string {
-        return $this->retryPrompt;
-    }
-
-    public function chatStructure() : array {
-        return $this->chatStructure;
-    }
-
-    public function schemaName() : string {
-        return $this->schemaName;
-    }
-
-    public function toolName() : string {
-        return $this->toolName;
-    }
-
-    public function toolDescription() : string {
-        return $this->toolDescription;
-    }
-
-    public function useObjectReferences() : bool {
-        return $this->useObjectReferences;
-    }
-
-    public function maxRetries() : int {
-        return $this->maxRetries;
-    }
-
-    public function defaultOutputClass() : string {
-        return $this->defaultOutputClass;
-    }
-
-    // MUTATORS ///////////////////////////////////////////////////////
-
-    public function withOutputMode(OutputMode $outputMode) : static
-    {
-        $this->outputMode = $outputMode;
-        return $this;
-    }
-
-    public function withMaxRetries(int $maxRetries) : static
-    {
-        $this->maxRetries = $maxRetries;
-        return $this;
-    }
-
-    public function withSchemaName(string $schemaName) : static {
-        $this->schemaName = $schemaName;
-        return $this;
-    }
-
-    public function withToolName(string $toolName) : static
-    {
-        $this->toolName = $toolName;
-        return $this;
-    }
-
-    public function withToolDescription(string $toolDescription) : static
-    {
-        $this->toolDescription = $toolDescription;
-        return $this;
-    }
-
-    public function withUseObjectReferences(bool $useObjectReferences) : static
-    {
-        $this->useObjectReferences = $useObjectReferences;
-        return $this;
-    }
-
-    public function withRetryPrompt(string $retryPrompt) : static
-    {
-        $this->retryPrompt = $retryPrompt;
-        return $this;
-    }
-
-    public function withModePrompt(OutputMode $mode, string $prompt) : static
-    {
-        $this->modePrompts[$mode->value] = $prompt;
-        return $this;
-    }
-
-    public function withModePrompts(array $modePrompts) : static
-    {
-        $this->modePrompts = $modePrompts;
-        return $this;
-    }
-
-    public function withChatStructure(array $chatStructure) : static
-    {
-        $this->chatStructure = $chatStructure;
-        return $this;
-    }
-
-    public function withDefaultOutputClass(string $defaultOutputClass) : static
-    {
-        $this->defaultOutputClass = $defaultOutputClass;
-        return $this;
-    }
-
-    public function withOverrides(
-        ?OutputMode    $outputMode = null,
-        ?bool          $useObjectReferences = null,
-        ?int           $maxRetries = null,
-        ?string        $retryPrompt = null,
-        ?string        $toolName = null,
-        ?string        $toolDescription = null,
-    ) : static {
-        $this->outputMode = $outputMode ?? $this->outputMode;
-        $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
-        $this->maxRetries = $maxRetries ?? $this->maxRetries;
-        $this->toolName = $toolName ?? $this->toolName;
-        $this->toolDescription = $toolDescription ?? $this->toolDescription;
-        $this->retryPrompt = $retryPrompt ?? $this->retryPrompt;
-        return $this;
     }
 
     public function toArray() : array {
