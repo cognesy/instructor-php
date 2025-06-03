@@ -12,13 +12,13 @@ trait HandlesInitMethods
 {
     private ?LLMProvider $llm = null;
 
-    public function using(string $preset) : static {
-        $this->llm->using($preset);
+    public function withDSN(string $dsn) : static {
+        $this->llm->withDSN($dsn);
         return $this;
     }
 
-    public function withDSN(string $dsn) : static {
-        $this->llm->withDSN($dsn);
+    public function using(string $preset) : static {
+        $this->llm->using($preset);
         return $this;
     }
 

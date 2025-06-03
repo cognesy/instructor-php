@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsConfig;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
@@ -27,14 +28,19 @@ class Embeddings
 
     public function __construct(
         ?EventDispatcherInterface $events = null,
-        ?EventDispatcherInterface $listener = null
+        ?EventDispatcherInterface $listener = null,
+        ?CanProvideEmbeddingsConfig $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
 
         $this->request = new EmbeddingsRequest();
-        $this->provider = new EmbeddingsProvider($this->events, $this->listener);
+        $this->provider = new EmbeddingsProvider(
+            $this->events,
+            $this->listener,
+            $configProvider,
+        );
     }
 
     public static function registerDriver(string $name, string|callable $driver) {

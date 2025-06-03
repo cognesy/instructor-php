@@ -51,6 +51,12 @@ class LLMProvider
         return $this;
     }
 
+    public function withConfigProvider(CanProvideLLMConfig $configProvider) : self {
+        $this->configProvider = $configProvider;
+        $this->config = $this->deferLLMConfigCreation();
+        return $this;
+    }
+
     public function withDSN(string $dsn): self {
         $this->config = $this->deferLLMConfigCreation(dsn: $dsn);
         return $this;

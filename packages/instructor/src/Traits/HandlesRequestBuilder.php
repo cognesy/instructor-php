@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
+use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
@@ -144,6 +145,17 @@ trait HandlesRequestBuilder
         return $this;
     }
 
+    public function withConfigPreset(string $preset): static {
+        $this->config = $this->configProvider->getConfig($preset);
+        return $this;
+    }
+
+    public function withConfigProvider(CanProvideStructuredOutputConfig $configProvider): static {
+        $this->configProvider = $configProvider;
+        $this->config = $this->configProvider->getConfig();
+        return $this;
+    }
+
     public function withObjectReferences(bool $useObjectReferences): static {
         $this->config->withUseObjectReferences($useObjectReferences);
         return $this;
@@ -163,7 +175,6 @@ trait HandlesRequestBuilder
                 $this->requestedSchema,
                 $this->config,
                 $this->events,
-                $this->listener,
             ),
             system: $this->system ?: null,
             prompt: $this->prompt ?: null,

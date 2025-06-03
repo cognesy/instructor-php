@@ -78,6 +78,23 @@ class HttpClient
         return $this;
     }
 
+    public function withHttpConfigProvider(CanProvideHttpClientConfig $httpConfigProvider): self {
+        $this->httpConfigProvider = $httpConfigProvider;
+        $this->config = $this->deferHttpClientConfigCreation();
+        return $this;
+    }
+
+    public function withDebugConfig(DebugConfig $debugConfig): self {
+        $this->debugConfig = $this->deferDebugConfigCreation(debugConfig: $debugConfig);
+        return $this;
+    }
+
+    public function withDebugConfigProvider(CanProvideDebugConfig $debugConfigProvider): self {
+        $this->debugConfigProvider = $debugConfigProvider;
+        $this->debugConfig = $this->deferDebugConfigCreation();
+        return $this;
+    }
+
     public function withDriver(CanHandleHttpRequest $driver): self {
         $this->driver = $this->deferHttpClientDriverCreation($driver);
         return $this;

@@ -9,6 +9,7 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
+use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
@@ -51,6 +52,7 @@ class StructuredOutput
         ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
         ?CanProvideStructuredOutputConfig $configProvider = null,
+        ?CanProvideLLMConfig $llmConfigProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
@@ -66,6 +68,7 @@ class StructuredOutput
         $this->llm = new LLMProvider(
             events: $this->events,
             listener: $this->listener,
+            configProvider: $llmConfigProvider,
         );
     }
 }

@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\LLM\Traits;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
+use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
 
@@ -32,6 +33,19 @@ trait HandleInitMethods
         return $this;
     }
 
+    public function withConfigProvider(CanProvideLLMConfig $configProvider) : static {
+        $this->llm->withConfigProvider($configProvider);
+        return $this;
+    }
+
+
+    /**
+     * Sets the connection using a DSN string and updates the configuration.
+     *
+     * @param string $dsn The DSN string to be used for the connection.
+     *
+     * @return self Returns the current instance with the updated connection.
+     */
     public function fromDSN(string $dsn) : static {
         $this->llm->withDSN($dsn);
         return $this;

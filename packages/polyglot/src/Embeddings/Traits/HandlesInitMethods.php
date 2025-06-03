@@ -4,6 +4,7 @@ namespace Cognesy\Polyglot\Embeddings\Traits;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 
@@ -26,6 +27,17 @@ trait HandlesInitMethods
      */
     public function withConfig(EmbeddingsConfig $config) : self {
         $this->provider->withConfig($config);
+        return $this;
+    }
+
+    /**
+     * Configures the Embeddings instance with the given configuration provider.
+     *
+     * @param CanProvideEmbeddingsConfig $configProvider
+     * @return $this
+     */
+    public function withConfigProvider(CanProvideEmbeddingsConfig $configProvider) : self {
+        $this->provider->withConfigProvider($configProvider);
         return $this;
     }
 

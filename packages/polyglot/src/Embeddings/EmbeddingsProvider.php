@@ -61,6 +61,12 @@ class EmbeddingsProvider
         return $this;
     }
 
+    public function withConfigProvider(CanProvideEmbeddingsConfig $configProvider) : self {
+        $this->configProvider = $configProvider;
+        $this->config = $this->deferConfigCreation();
+        return $this;
+    }
+
     public function withHttpClient(HttpClient $httpClient) : self {
         $this->httpClient = $this->deferHttpClientCreation(httpClient: $httpClient);
         return $this;
