@@ -10,7 +10,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 use Illuminate\Http\Client\Factory as HttpFactory;
@@ -32,7 +32,6 @@ class LaravelDriver implements CanHandleHttpRequest
     ) {
         $this->config = $config;
         $this->events = $events ?? new EventDispatcher();
-
         if ($clientInstance && !($clientInstance instanceof HttpFactory)) {
             throw new \InvalidArgumentException('Client instance of LaravelDriver must be of type Illuminate\Http\Client\Factory');
         }
@@ -47,7 +46,6 @@ class LaravelDriver implements CanHandleHttpRequest
         $streaming = $request->isStreamed();
 
         $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
-        //Debug::tryDumpUrl($url);
 
         // Create a fresh pending request with configuration
         $pendingRequest = $this->factory
@@ -64,7 +62,7 @@ class LaravelDriver implements CanHandleHttpRequest
             $response = $this->sendRequest($pendingRequest, $method, $url, $body);
         } catch (Exception $e) {
             $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
-            throw new RequestException($e);
+            throw new HttpRequestException($e->getMessage(), $request, $e);
         }
         $this->events->dispatch(new HttpResponseReceived($response->status()));
         return new LaravelHttpResponse(

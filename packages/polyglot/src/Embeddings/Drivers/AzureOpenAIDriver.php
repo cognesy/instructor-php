@@ -18,8 +18,8 @@ class AzureOpenAIDriver implements CanHandleVectorization
     protected EventDispatcherInterface $events;
 
     public function __construct(
-        EmbeddingsConfig         $config,
-        HttpClient      $httpClient,
+        EmbeddingsConfig $config,
+        HttpClient $httpClient,
         EventDispatcherInterface $events,
     ) {
         $this->events = $events;

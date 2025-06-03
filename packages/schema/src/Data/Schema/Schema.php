@@ -79,4 +79,12 @@ class Schema implements CanAcceptSchemaVisitor
     public function isArray(): bool {
         return $this->typeDetails->isArray();
     }
+
+    public function toArray(): array {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'typeDetails' => $this->typeDetails->toArray(),
+        ];
+    }
 }

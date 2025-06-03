@@ -13,7 +13,7 @@ use Cognesy\InstructorHub\Core\CommandProvider;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
-use Cognesy\Utils\BasePath;
+use Cognesy\Utils\Config\BasePath;
 
 class Hub extends CliApp
 {

@@ -8,7 +8,7 @@ use Cognesy\Template\Drivers\ArrowpipeDriver;
 use Cognesy\Template\Drivers\BladeDriver;
 use Cognesy\Template\Drivers\TwigDriver;
 use Cognesy\Template\Enums\TemplateEngineType;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use InvalidArgumentException;
 
 class TemplateLibrary

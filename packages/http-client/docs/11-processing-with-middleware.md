@@ -166,7 +166,7 @@ use Cognesy\Http\BaseMiddleware;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 class RetryMiddleware extends BaseMiddleware
 {
@@ -201,7 +201,7 @@ class RetryMiddleware extends BaseMiddleware
 
                 return $response;
 
-            } catch (RequestException $e) {
+            } catch (HttpRequestException $e) {
                 // If we've exceeded our retry limit, rethrow the exception
                 if ($attempts >= $this->maxRetries) {
                     throw $e;
@@ -625,7 +625,7 @@ use Cognesy\Http\BaseMiddleware;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Http\Adapters\MockHttpResponse;
 
 class CircuitBreakerMiddleware extends BaseMiddleware
@@ -689,7 +689,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
 
             return $response;
 
-        } catch (RequestException $e) {
+        } catch (HttpRequestException $e) {
             // Record the failure
             $circuit['failures']++;
             $circuit['last_failure_time'] = time();

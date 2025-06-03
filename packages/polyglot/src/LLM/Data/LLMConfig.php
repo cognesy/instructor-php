@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
+use Cognesy\Utils\Config\Settings;
 use Cognesy\Utils\Dsn\DSN;
-use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
 class LLMConfig

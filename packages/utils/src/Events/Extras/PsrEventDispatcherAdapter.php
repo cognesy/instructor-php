@@ -2,10 +2,10 @@
 
 namespace Cognesy\Utils\Events\Extras;
 
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-final class EventDispatcherAdapter implements EventDispatcherInterface, EventListenerInterface
+final class PsrEventDispatcherAdapter implements EventDispatcherInterface, CanRegisterEventListeners
 {
     public function __construct(
         private readonly EventDispatcherInterface $inner

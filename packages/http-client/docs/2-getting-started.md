@@ -83,12 +83,12 @@ echo "Body: $body\n";
 HTTP requests can fail for various reasons. You should always wrap request handling in a try-catch block:
 
 ```php
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
     $response = $client->handle($request);
     // Process the response
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
     // Handle the error
 }
@@ -181,7 +181,7 @@ Let's put everything together with a practical example of making a POST request 
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create an HTTP client using the 'guzzle' configuration
 $client = new HttpClient('guzzle');
@@ -219,7 +219,7 @@ try {
         echo "Error: Unexpected status code {$response->statusCode()}\n";
         echo "Response: {$response->body()}\n";
     }
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
 
     // You might want to log the error or retry the request
@@ -235,7 +235,7 @@ Here's an example of making a GET request to fetch data:
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create an HTTP client
 $client = new HttpClient();
@@ -270,7 +270,7 @@ try {
         echo "Error: Unexpected status code {$response->statusCode()}\n";
         echo "Response: {$response->body()}\n";
     }
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
 }
 ```

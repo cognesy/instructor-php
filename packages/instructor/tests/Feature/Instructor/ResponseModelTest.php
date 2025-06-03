@@ -36,7 +36,6 @@ it('can handle string class name', function() {
         new SchemaFactory(),
         StructuredOutputConfig::default(),
         $events,
-        $events,
     );
     $responseModel = $responseModelFactory->fromAny(User::class);
     expect($responseModel->instanceClass())->toBe(User::class);
@@ -65,7 +64,6 @@ it('can handle array schema', function($user) {
         new SchemaFactory(),
         StructuredOutputConfig::default(),
         $events,
-        $events,
     );
     $responseModel = $responseModelFactory->fromAny($user);
     expect($responseModel->instanceClass())->toBe(User::class);
@@ -93,7 +91,6 @@ it('can handle schema provider - via instance', function() {
         ),
         new SchemaFactory(),
         StructuredOutputConfig::default(),
-        $events,
         $events,
     );
     $responseModel = $responseModelFactory->fromAny(new UserWithProvider());
@@ -124,7 +121,6 @@ it('can handle schema provider - via class name', function() {
         new SchemaFactory(),
         StructuredOutputConfig::default(),
         $events,
-        $events,
     );
     $responseModel = $responseModelFactory->fromAny(UserWithProvider::class);
     expect($responseModel->instanceClass())->toBe(UserWithProvider::class);
@@ -153,7 +149,6 @@ it('can handle ObjectSchema instance', function() {
         ),
         new SchemaFactory(),
         StructuredOutputConfig::default(),
-        $events,
         $events,
     );
     $schemaFactory = new SchemaFactory();
@@ -185,7 +180,6 @@ it('can handle raw object', function() {
         new SchemaFactory(),
         StructuredOutputConfig::default(),
         $events,
-        $events,
     );
     $responseModel = $responseModelFactory->fromAny(new User());
     expect($responseModel->instanceClass())->toBe(User::class);
@@ -203,4 +197,3 @@ it('can handle raw object', function() {
     expect($responseModel->toJsonSchema()['required'][0])->toBe('name');
     expect($responseModel->toJsonSchema()['required'][1])->toBe('email');
 });
-

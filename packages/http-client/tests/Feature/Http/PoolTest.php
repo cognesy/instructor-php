@@ -10,7 +10,7 @@ use Cognesy\Utils\Result\Success;
 
 it('tests pool method for GuzzleDriver with failOnError=true', function () {
     $config = HttpClientConfig::fromArray([
-        'httpClientType' => 'guzzle',
+        'httpClientDriver' => 'guzzle',
         'maxConcurrent' => 5,
         'requestTimeout' => 1,
         'connectTimeout' => 1,
@@ -30,7 +30,7 @@ it('tests pool method for GuzzleDriver with failOnError=true', function () {
 
 it('tests pool method for GuzzleDriver with failOnError=false', function () {
     $config = HttpClientConfig::fromArray([
-        'httpClientType' => 'guzzle',
+        'httpClientDriver' => 'guzzle',
         'maxConcurrent' => 5,
         'requestTimeout' => 1,
         'connectTimeout' => 1,
@@ -54,7 +54,7 @@ it('tests pool method for GuzzleDriver with failOnError=false', function () {
 
 it('tests pool method for LaravelDriver with failOnError=true', function () {
     $config = HttpClientConfig::fromArray([
-        'httpClientType' => 'laravel',
+        'httpClientDriver' => 'laravel',
         'maxConcurrent' => 5,
         'requestTimeout' => 1,
         'connectTimeout' => 1,
@@ -74,7 +74,7 @@ it('tests pool method for LaravelDriver with failOnError=true', function () {
 
 it('tests pool method for LaravelDriver with failOnError=false', function () {
     $config = HttpClientConfig::fromArray([
-        'httpClientType' => 'laravel',
+        'httpClientDriver' => 'laravel',
         'maxConcurrent' => 5,
         'requestTimeout' => 1,
         'connectTimeout' => 1,
@@ -98,7 +98,7 @@ it('tests pool method for LaravelDriver with failOnError=false', function () {
 
 it('tests pool method for SymfonyDriver with failOnError=true', function () {
     $config = HttpClientConfig::fromArray([
-        'httpClientType' => 'symfony',
+        'httpClientDriver' => 'symfony',
         'maxConcurrent' => 5,
         'requestTimeout' => 1,
         'connectTimeout' => 1,
@@ -118,7 +118,7 @@ it('tests pool method for SymfonyDriver with failOnError=true', function () {
 
 it('tests pool method for SymfonyDriver with failOnError=false', function () {
     $config = HttpClientConfig::fromArray([
-        'httpClientType' => 'symfony',
+        'httpClientDriver' => 'symfony',
         'maxConcurrent' => 5,
         'requestTimeout' => 1,
         'connectTimeout' => 1,

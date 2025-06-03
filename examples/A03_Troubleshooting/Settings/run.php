@@ -15,7 +15,7 @@ This is useful when you want to use a custom configuration directory instead of 
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 
 class UserDetail
 {

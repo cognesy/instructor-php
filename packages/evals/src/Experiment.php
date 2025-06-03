@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Evals;
 
-use Cognesy\Evals\Observers\Aggregate\ExperimentFailureRate;
 use Cognesy\Evals\Console\Display;
 use Cognesy\Evals\Contracts\CanRunExecution;
+use Cognesy\Evals\Observers\Aggregate\ExperimentFailureRate;
 use Cognesy\Evals\Observers\Aggregate\ExperimentLatency;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;

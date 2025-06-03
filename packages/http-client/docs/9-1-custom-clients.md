@@ -35,7 +35,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 
@@ -106,7 +106,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
             ));
 
             // Wrap the exception
-            throw new RequestException($e);
+            throw new HttpRequestException($e);
         }
     }
 
@@ -204,7 +204,7 @@ use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Create a configuration for your custom driver
 $config = new HttpClientConfig(
-    httpClientType: 'custom',
+    driver: 'custom',
     connectTimeout: 3,
     requestTimeout: 30,
     idleTimeout: -1,
@@ -239,7 +239,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use YourNamespace\Http\Adapters\CurlHttpResponse;
 
@@ -439,7 +439,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
             ));
 
             // Wrap the exception
-            throw new RequestException($e);
+            throw new HttpRequestException($e);
         }
     }
 }

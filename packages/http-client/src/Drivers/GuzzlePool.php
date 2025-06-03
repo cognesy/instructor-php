@@ -9,7 +9,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use GuzzleHttp\ClientInterface;
@@ -88,7 +88,7 @@ class GuzzlePool implements CanHandleRequestPool
 
     private function handleRejectedResponse($reason): Result {
         if ($this->config->failOnError) {
-            throw new RequestException($reason);
+            throw new HttpRequestException($reason);
         }
 
         $this->events->dispatch(new HttpRequestFailed(

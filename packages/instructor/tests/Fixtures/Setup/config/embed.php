@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 
 return [
     'debug' => [

@@ -7,7 +7,7 @@ use Cognesy\Auxiliary\Mintlify\NavigationGroup;
 use Cognesy\Auxiliary\Mintlify\NavigationItem;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Views\DocGenView;
-use Cognesy\Utils\BasePath;
+use Cognesy\Utils\Config\BasePath;
 use Cognesy\Utils\Files;
 
 class MintlifyDocGenerator

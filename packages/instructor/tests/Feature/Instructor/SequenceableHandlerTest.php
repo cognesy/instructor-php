@@ -41,7 +41,6 @@ function makeResponseModel($sequence): ResponseModel {
         schemaFactory: $schemaFactory,
         config: $config,
         events: $events,
-        listener: $events,
     ))->fromAny($sequence);
 }
 

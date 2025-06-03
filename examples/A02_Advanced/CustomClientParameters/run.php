@@ -21,7 +21,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\EventDispatcher;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 

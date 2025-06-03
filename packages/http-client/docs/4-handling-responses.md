@@ -208,12 +208,12 @@ When making HTTP requests, various errors can occur. The Instructor HTTP client 
 The main exception type is `RequestException`, which is thrown when a request fails:
 
 ```php
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
     $response = $client->handle($request);
     // Process the response
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
 
     // You might want to log the error or take other actions
@@ -253,7 +253,7 @@ if ($response->statusCode() >= 400) {
 If a request fails, you might want to retry it. Here's a simple implementation of a retry mechanism:
 
 ```php
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?HttpClientResponse {
     $attempts = 0;
@@ -261,7 +261,7 @@ function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?HttpClie
     while ($attempts < $maxRetries) {
         try {
             return $client->handle($request);
-        } catch (RequestException $e) {
+        } catch (HttpRequestException $e) {
             $attempts++;
 
             if ($attempts >= $maxRetries) {
@@ -282,7 +282,7 @@ function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?HttpClie
 try {
     $response = retryRequest($client, $request);
     // Process the response
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     echo "All retry attempts failed: {$e->getMessage()}\n";
 }
 ```

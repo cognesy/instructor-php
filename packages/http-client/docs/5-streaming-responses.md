@@ -82,7 +82,7 @@ Here's an example of downloading a large file with streaming to avoid memory iss
 ```php
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create a streaming request
 $request = new HttpClientRequest(
@@ -121,7 +121,7 @@ try {
     fclose($fileHandle);
     echo "\nDownload complete!\n";
 
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     echo "Download failed: {$e->getMessage()}\n";
 
     // Clean up if file was partially downloaded

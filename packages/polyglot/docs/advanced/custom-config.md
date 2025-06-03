@@ -30,7 +30,7 @@ The `llm.php` configuration file has the following structure:
 
 ```php
 <?php
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 
 return [
     // Default connection to use when none is specified
@@ -81,7 +81,7 @@ The `embed.php` configuration file follows a similar pattern:
 
 ```php
 <?php
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 
 return [
     'defaultPreset' => 'openai',
@@ -324,7 +324,7 @@ You might want to use different providers in different environments:
 <?php
 // config/llm.php
 
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 
 $environment = Env::get('APP_ENV', 'production');
 

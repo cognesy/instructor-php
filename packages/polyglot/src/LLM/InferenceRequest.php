@@ -305,11 +305,10 @@ class InferenceRequest
      * @return self A new instance with the cached context applied, or the current instance if no cache is set.
      */
     public function withCacheApplied() : self {
-        if (!isset($this->cachedContext)) {
+        if (!isset($this->cachedContext) || $this->cachedContext->isEmpty()) {
             return $this;
         }
-
-        $cloned = clone $this;
+        $cloned = $this->clone();
         $cloned->messages = array_merge($this->cachedContext->messages(), $this->messages);
         $cloned->tools = empty($this->tools)
             ? $this->cachedContext->tools()
@@ -320,9 +319,23 @@ class InferenceRequest
         $cloned->responseFormat = empty($this->responseFormat)
             ? $this->cachedContext->responseFormat()
             : $this->responseFormat;
-
+        $cloned->cachedContext = new CachedContext();
         // other properties like model, options, and mode remain unchanged
-
         return $cloned;
+    }
+
+    // INTERNAL //////////////////////////////////////
+
+    private function clone() : static {
+        return new static(
+            messages: $this->messages,
+            model: $this->model,
+            tools: $this->tools,
+            toolChoice: $this->toolChoice,
+            responseFormat: $this->responseFormat,
+            options: $this->options,
+            mode: $this->mode,
+            cachedContext: $this->cachedContext,
+        );
     }
 }

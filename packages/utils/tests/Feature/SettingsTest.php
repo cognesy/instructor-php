@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 
 // Create temporary directory for testing
 beforeEach(function () {

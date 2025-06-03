@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Utils;
+namespace Cognesy\Utils\Config;
 
 use Composer\Autoload\ClassLoader;
 use ReflectionClass;

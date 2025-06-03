@@ -7,7 +7,7 @@ use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Illuminate\Http\Client\Factory as HttpFactory;
@@ -87,8 +87,8 @@ class LaravelPool implements CanHandleRequestPool
 
     private function handleFailedResponse(Response $response): Result {
         return match($this->config->failOnError) {
-            true => throw new RequestException($response),
-            default => Result::failure(new RequestException($response)),
+            true => throw new HttpRequestException($response),
+            default => Result::failure(new HttpRequestException($response)),
         };
     }
 

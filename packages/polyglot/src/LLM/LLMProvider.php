@@ -6,13 +6,14 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Utils\Deferred;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Utils\Events\EventHandlerFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class LLMProvider
 {
     protected EventDispatcherInterface $events;
-    protected EventDispatcherInterface $listener;
+    protected CanRegisterEventListeners $listener;
 
     protected ?bool $debug = null;
 
@@ -22,11 +23,11 @@ class LLMProvider
 
     public function __construct(
         ?EventDispatcherInterface $events = null,
-        ?EventDispatcherInterface $listener = null
+        ?CanRegisterEventListeners $listener = null
     ) {
-        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('llm-provider') : null;
-        $this->events = $events ?? $default;
-        $this->listener = $listener ?? $default;
+        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
+        $this->events = $eventHandlerFactory->dispatcher();
+        $this->listener = $eventHandlerFactory->listener();
 
         $this->config = $this->deferLLMConfigCreation();
         $this->httpClient = $this->deferHttpClientCreation();

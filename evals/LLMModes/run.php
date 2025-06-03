@@ -9,7 +9,7 @@ use Cognesy\Evals\Executors\RunInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use Evals\LLMModes\CompanyEval;
 
 $data = new InferenceData(

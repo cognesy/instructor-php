@@ -19,7 +19,7 @@ use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Str;
 
 // we will use existing, bundled driver as an example, but you can provide any class that implements

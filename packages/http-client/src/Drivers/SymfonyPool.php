@@ -9,7 +9,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use InvalidArgumentException;
@@ -76,7 +76,7 @@ class SymfonyPool implements CanHandleRequestPool
                 try {
                     if ($chunk->isTimeout()) {
                         if ($this->config->failOnError) {
-                            throw new RequestException('Request timeout in pool');
+                            throw new HttpRequestException('Request timeout in pool');
                         }
                         $this->handleTimeout($response, $httpResponses, $responses);
                         continue;
@@ -91,22 +91,22 @@ class SymfonyPool implements CanHandleRequestPool
                     }
                 } catch (TransportException $e) {
                     if ($this->config->failOnError) {
-                        throw new RequestException($e->getMessage());
+                        throw new HttpRequestException($e->getMessage());
                     }
                     $index = array_search($response, $httpResponses, true);
                     if ($index !== false) {
-                        $responses[$index] = Result::failure(new RequestException($e->getMessage()));
+                        $responses[$index] = Result::failure(new HttpRequestException($e->getMessage()));
                     }
                 }
             }
         } catch (Exception $e) {
             if ($this->config->failOnError) {
-                throw new RequestException($e->getMessage());
+                throw new HttpRequestException($e->getMessage());
             }
             // Handle any remaining unprocessed responses
             foreach ($httpResponses as $index => $response) {
                 if (!isset($responses[$index])) {
-                    $responses[$index] = Result::failure(new RequestException($e->getMessage()));
+                    $responses[$index] = Result::failure(new HttpRequestException($e->getMessage()));
                 }
             }
         } finally {
@@ -122,7 +122,7 @@ class SymfonyPool implements CanHandleRequestPool
     }
 
     private function handleTimeout($response, array $httpResponses, array &$responses): void {
-        $timeoutException = new RequestException('Request timeout in pool');
+        $timeoutException = new HttpRequestException('Request timeout in pool');
         if ($this->config->failOnError) {
             throw $timeoutException;
         }
@@ -132,12 +132,12 @@ class SymfonyPool implements CanHandleRequestPool
         }
     }
 
-    private function checkForErrors($response): ?RequestException {
+    private function checkForErrors($response): ?HttpRequestException {
         try {
             $statusCode = $response->getStatusCode();
             if ($statusCode >= 400) {
                 $responseInfo = $response->getInfo();
-                $error = new RequestException(sprintf(
+                $error = new HttpRequestException(sprintf(
                     'HTTP error %d: %s',
                     $statusCode,
                     $responseInfo['response_headers'][0] ?? 'Unknown error'
@@ -149,7 +149,7 @@ class SymfonyPool implements CanHandleRequestPool
             }
             return null;
         } catch (TransportException $e) {
-            $error = new RequestException($e->getMessage());
+            $error = new HttpRequestException($e->getMessage());
             if ($this->config->failOnError) {
                 throw $error;
             }
@@ -182,14 +182,14 @@ class SymfonyPool implements CanHandleRequestPool
 
     private function handleError(Exception $error): Result {
         return match($this->config->failOnError) {
-            true => throw new RequestException($error),
+            true => throw new HttpRequestException($error),
             default => Result::failure($error),
         };
     }
 
     private function handlePoolException(Exception $e, array $httpResponses): array {
         if ($this->config->failOnError) {
-            throw new RequestException($e);
+            throw new HttpRequestException($e);
         }
 
         $responses = [];
@@ -222,7 +222,7 @@ class SymfonyPool implements CanHandleRequestPool
         ));
 
         if ($this->config->failOnError) {
-            throw new RequestException($e);
+            throw new HttpRequestException($e);
         }
     }
 

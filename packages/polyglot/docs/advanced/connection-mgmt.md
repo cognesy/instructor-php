@@ -45,7 +45,7 @@ You can implement a fallback mechanism to try alternative providers if one fails
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 function withFallback(array $providers, callable $requestFn) {
     $lastException = null;
@@ -54,7 +54,7 @@ function withFallback(array $providers, callable $requestFn) {
         try {
             $inference = (new Inference)->using($provider);
             return $requestFn($inference);
-        } catch (RequestException $e) {
+        } catch (HttpRequestException $e) {
             $lastException = $e;
             echo "Provider '$provider' failed: {$e->getMessage()}. Trying next provider...\n";
         }

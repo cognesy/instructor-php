@@ -469,12 +469,12 @@ Proper error handling is crucial for building robust applications. Here are some
 The simplest approach is to catch the `RequestException`:
 
 ```php
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
     $response = $client->handle($request);
     // Process successful response
-} catch (RequestException $e) {
+} catch (HttpRequestException $e) {
     // Handle error
     echo "Request failed: {$e->getMessage()}\n";
 }
@@ -689,7 +689,7 @@ namespace YourNamespace;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
@@ -817,7 +817,7 @@ class ApiService {
                     // Client errors or max retries reached
                     return $this->handleErrorResponse($response, $endpoint, $params);
                 }
-            } catch (RequestException $e) {
+            } catch (HttpRequestException $e) {
                 $this->logger->error("Request exception: {$e->getMessage()}", [
                     'url' => $url,
                     'attempt' => $attempts + 1,

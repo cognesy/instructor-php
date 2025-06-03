@@ -4,7 +4,7 @@ namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Evals\Utils\Combination;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use Generator;
 
 class InferenceCases

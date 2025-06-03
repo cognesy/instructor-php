@@ -4,7 +4,7 @@ namespace Cognesy\Template\Drivers;
 
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Data\TemplateEngineConfig;
-use Cognesy\Utils\BasePath;
+use Cognesy\Utils\Config\BasePath;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\Node\Expression\NameExpression;

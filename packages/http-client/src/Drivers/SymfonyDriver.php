@@ -10,7 +10,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 use Cognesy\Utils\Events\EventDispatcher;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -45,7 +45,6 @@ class SymfonyDriver implements CanHandleHttpRequest
 
         $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
         try {
-            //Debug::tryDumpUrl($url);
             $response = $this->client->request(
                 method: $method,
                 url: $url,
@@ -59,7 +58,7 @@ class SymfonyDriver implements CanHandleHttpRequest
             );
         } catch (Exception $e) {
             $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
-            throw new RequestException($e);
+            throw new HttpRequestException($e->getMessage(), $request, $e);
         }
         $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
         return new SymfonyHttpResponse(

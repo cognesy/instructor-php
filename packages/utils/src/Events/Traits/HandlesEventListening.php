@@ -2,18 +2,18 @@
 
 namespace Cognesy\Utils\Events\Traits;
 
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 
 trait HandlesEventListening
 {
-    protected EventListenerInterface $listener;
+    protected CanRegisterEventListeners $listener;
 
     /**
      * Sets the event dispatcher
      *
-     * @param EventListenerInterface $listener The event dispatcher
+     * @param CanRegisterEventListeners $listener The event dispatcher
      */
-    public function withEventListener(EventListenerInterface $listener): static {
+    public function withEventListener(CanRegisterEventListeners $listener): static {
         $this->listener = $listener;
         return $this;
     }

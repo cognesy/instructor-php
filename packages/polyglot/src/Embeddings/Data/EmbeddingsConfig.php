@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings\Data;
 
+use Cognesy\Utils\Config\Settings;
 use Cognesy\Utils\Dsn\DSN;
-use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 
 class EmbeddingsConfig

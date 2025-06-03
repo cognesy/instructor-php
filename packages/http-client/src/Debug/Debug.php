@@ -6,7 +6,7 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use DateTimeImmutable;
 
 class Debug

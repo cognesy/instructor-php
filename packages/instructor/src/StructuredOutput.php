@@ -9,8 +9,8 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\LLM\LLMProvider;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -43,15 +43,15 @@ class StructuredOutput
      * @param LLMProvider|null $llm An optional LLM object instance for LLM connection.
      * @param StructuredOutputConfig|null $config An optional StructuredOutputConfig instance for configuration.
      * @param EventDispatcherInterface|null $events An optional EventDispatcherInterface instance for managing events.
-     * @param EventListenerInterface|null $listener An optional EventListenerInterface instance for listening to events.
+     * @param CanRegisterEventListeners|null $listener An optional EventListenerInterface instance for listening to events.
      */
     public function __construct(
-        ?EventDispatcherInterface $events = null,
-        ?EventListenerInterface $listener = null,
+        ?EventDispatcherInterface  $events = null,
+        ?CanRegisterEventListeners $listener = null,
     ) {
-        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('structured-output') : null;
-        $this->events = $events ?? $default;
-        $this->listener = $listener ?? $default;
+        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
+        $this->events = $eventHandlerFactory->dispatcher();
+        $this->listener = $eventHandlerFactory->listener();
 
         $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);

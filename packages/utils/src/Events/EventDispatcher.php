@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Utils\Events;
 
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
@@ -17,7 +17,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
  *
  * It implements PSR-14, which defines a standard for event dispatching in PHP.
  */
-class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface, EventListenerInterface
+class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface, CanRegisterEventListeners
 {
     private string $name;
     private ?EventDispatcherInterface $parent;

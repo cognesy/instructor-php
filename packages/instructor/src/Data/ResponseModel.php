@@ -39,4 +39,14 @@ class ResponseModel implements CanProvideJsonSchema
     public function returnedClass() : string {
         return $this->schema->typeDetails->class;
     }
+
+    public function toArray() : array {
+        return [
+            'class' => $this->class,
+            'instance' => get_object_vars($this->instance),
+            'schema' => $this->schema->toArray(),
+            'jsonSchema' => $this->jsonSchema,
+            'schemaName' => $this->schemaName,
+        ];
+    }
 }

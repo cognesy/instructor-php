@@ -6,8 +6,8 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Deferred;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -24,12 +24,12 @@ class EmbeddingsProvider
     protected ?bool $debug = null;
 
     public function __construct(
-        EventDispatcherInterface $events = null,
-        EventListenerInterface $listener = null,
+        EventDispatcherInterface  $events = null,
+        CanRegisterEventListeners $listener = null,
     ) {
-        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('embeddings') : null;
-        $this->events = $events ?? $default;
-        $this->listener = $listener ?? $default;
+        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
+        $this->events = $eventHandlerFactory->dispatcher();
+        $this->listener = $eventHandlerFactory->listener();
 
         $this->httpClient = $this->deferHttpClientCreation();
         $this->driver = $this->deferDriverCreation();

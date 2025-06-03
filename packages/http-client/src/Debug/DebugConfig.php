@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Debug;
 
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 
 class DebugConfig
 {

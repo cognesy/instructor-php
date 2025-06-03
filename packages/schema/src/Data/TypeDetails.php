@@ -30,4 +30,16 @@ class TypeDetails
     ) {
         $this->validate($type, $class, $nestedType, $enumType, $enumValues);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'type' => $this->type,
+            'class' => $this->class,
+            'nestedType' => $this->nestedType?->toArray(),
+            'enumType' => $this->enumType,
+            'enumValues' => $this->enumValues,
+            'docString' => $this->docString,
+        ];
+    }
 }

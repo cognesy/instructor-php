@@ -16,8 +16,6 @@ use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Schema\Visitors\SchemaToJsonSchema;
-use Cognesy\Utils\Events\Contracts\CanReceiveEvents;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Cognesy\Utils\Str;
@@ -30,7 +28,6 @@ class ResponseModelFactory
     protected SchemaFactory $schemaFactory;
     protected StructuredOutputConfig $config;
     protected EventDispatcherInterface $events;
-    protected EventListenerInterface $listener;
 
     protected TypeDetailsFactory $typeDetailsFactory;
     protected JsonSchemaToSchema $schemaConverter;
@@ -40,7 +37,6 @@ class ResponseModelFactory
         SchemaFactory $schemaFactory,
         StructuredOutputConfig $config,
         EventDispatcherInterface $events,
-        EventListenerInterface $listener,
     ) {
         $this->toolCallBuilder = $toolCallBuilder;
         $this->schemaFactory = $schemaFactory;
@@ -52,7 +48,6 @@ class ResponseModelFactory
             defaultOutputClass: $config->defaultOutputClass(),
         );
         $this->events = $events ?? new EventDispatcher();
-        $this->listener = $listener ?? $this->events;
     }
 
     public function fromAny(
@@ -64,11 +59,6 @@ class ResponseModelFactory
 
         // determine the type of the requested model and build it
         $responseModel = $this->buildFrom($requestedModel, $toolName, $toolDescription);
-
-        // connect response model to event dispatcher - if it can receive events
-        if ($responseModel instanceof CanReceiveEvents) {
-            $this->listener->wiretap(fn($event) => $responseModel->onEvent($event));
-        }
 
         $responseModel->withToolName($toolName);
         $responseModel->withToolDescription($toolDescription);

@@ -13,6 +13,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class HttpClientDriverFactory
 {
     protected static array $drivers = [];
+
     protected EventDispatcherInterface $events;
 
     public function __construct(
@@ -49,7 +50,7 @@ class HttpClientDriverFactory
         HttpClientConfig $config,
         ?object $clientInstance = null,
     ): CanHandleHttpRequest {
-        $name = $config->httpClientType;
+        $name = $config->driver;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
         if ($driverClosure === null) {
             throw new InvalidArgumentException("Client not supported: {$name}");

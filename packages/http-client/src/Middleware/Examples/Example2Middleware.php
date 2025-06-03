@@ -28,12 +28,12 @@ class Example2Middleware implements HttpMiddleware
         return new class($response, $param) implements HttpClientResponse {
             public function __construct(
                 private HttpClientResponse $wrapped,
-                private string $param
+                private string $param,
             ) {}
 
-            public function statusCode(): int   { return $this->wrapped->statusCode(); }
-            public function headers(): array    { return $this->wrapped->headers(); }
-            public function body(): string  { return $this->wrapped->body(); }
+            public function statusCode(): int { return $this->wrapped->statusCode(); }
+            public function headers(): array { return $this->wrapped->headers(); }
+            public function body(): string { return $this->wrapped->body(); }
 
             public function stream(int $chunkSize = 1): Generator
             {

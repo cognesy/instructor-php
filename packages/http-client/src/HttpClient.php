@@ -10,12 +10,12 @@ use Cognesy\Http\Debug\Debug;
 use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
+use Cognesy\Utils\Config\Settings;
 use Cognesy\Utils\Deferred;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
-use Cognesy\Utils\Settings;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -43,12 +43,12 @@ class HttpClient
      * Constructor method for initializing the HTTP client.
      */
     public function __construct(
-        ?EventDispatcherInterface $events = null,
-        ?EventListenerInterface $listener = null,
+        ?EventDispatcherInterface  $events = null,
+        ?CanRegisterEventListeners $listener = null,
     ) {
-        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('http-client') : null;
-        $this->events = $events ?? $default;
-        $this->listener = $listener ?? $default;
+        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
+        $this->events = $eventHandlerFactory->dispatcher();
+        $this->listener = $eventHandlerFactory->listener();
 
         $this->stack = $this->deferMiddlewareStackCreation();
         $this->driver = $this->deferHttpClientDriverCreation();

@@ -4,7 +4,7 @@ namespace Cognesy\Template\Data;
 
 use Cognesy\Template\Enums\FrontMatterFormat;
 use Cognesy\Template\Enums\TemplateEngineType;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use InvalidArgumentException;
 
 class TemplateEngineConfig

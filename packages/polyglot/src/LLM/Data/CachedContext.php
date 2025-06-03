@@ -38,4 +38,11 @@ class CachedContext
     public function responseFormat() : array {
         return $this->responseFormat;
     }
+
+    public function isEmpty() : bool {
+        return $this->messages->isEmpty()
+            && empty($this->tools)
+            && empty($this->toolChoice)
+            && empty($this->responseFormat);
+    }
 }

@@ -19,7 +19,7 @@ use Cognesy\Http\Drivers\SymfonyDriver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Utils\Env;
+use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Str;
@@ -30,7 +30,7 @@ $events = new EventDispatcher();
 // Build fully customized HTTP client
 
 $httpConfig = new HttpClientConfig(
-    connectTimeout: 5,
+    connectTimeout: 10,
     requestTimeout: 60,
     idleTimeout: -1,
     maxConcurrent: 5,

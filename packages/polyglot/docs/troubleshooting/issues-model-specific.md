@@ -48,7 +48,7 @@ if (!$modelSupportsVision) {
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 function withModelFallback(array $models, string $prompt): string {
     $inference = new Inference();
@@ -60,7 +60,7 @@ function withModelFallback(array $models, string $prompt): string {
                 messages: $prompt,
                 model: $model
             )->get();
-        } catch (RequestException $e) {
+        } catch (HttpRequestException $e) {
             $lastException = $e;
             echo "Model '$model' failed: " . $e->getMessage() . "\n";
             echo "Trying next model...\n";

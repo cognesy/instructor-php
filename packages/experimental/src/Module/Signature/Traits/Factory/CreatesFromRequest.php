@@ -52,7 +52,6 @@ trait CreatesFromRequest
             schemaFactory: $schemaFactory,
             config: $config,
             events: $events,
-            listener: $events,
         );
     }
 }

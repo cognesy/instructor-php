@@ -1,17 +1,13 @@
 # WORK IN PROGRESS
 
-- Polyglot: OutputMode::Unrestricted - do not force the response to be a specific type, follow provided parameters
-- Add support for 'developer' role in messages
-
 # CURRENT CONSIDERATIONS
 
 ## High priority
 
 - Polyglot/Instructor: Add (optional) automatic continuation if the finish reason is 'length' - this will allow to continue the response in the next call, if the model did not finish the response due to length limit
-- Addon: ToolUse - apply context variables to message sequence (via ScriptParameters??)
-- Polyglot: Batch completion API
-- Polyglot: Async / parallel calls to multiple APIs
+- Polyglot - more events to get better insight into the execution
 - More meaningful exceptions - e.g. timeout, rate limit, etc. so we can handle them in a relevant way
+- RequestMaterializer (ex ChatTemplate) - should be pluggable / customizable
 
 ## Better control over underlying prompts
 
@@ -19,24 +15,24 @@
 - Unify template conventions - <||> vs. {{}}, update docs
 - Full control over generated prompt (access to Script object processing)
 
-## Low priority
-
-- Polyglot: Gemini context caching
-- Polyglot: Citations API
-- Polyglot: Predicted outputs API
-- Addon: Generate unstructured, then format to structured - to improve reasoning
-- Addon: MCP support as addon
-- Polyglot: Reasoning effort, reasoning traces in Groq
 
 # SCRATCHPAD
 
-- RequestMaterializer (ex ChatTemplate) - should be pluggable / customizable
 - Make configurable per preset - merge per role, merge to string vs message sequence
 - Move script structure to text template
 - Add default template dialect to structured config file
 - Settings and config paths - make easier to configure
 - Clean up dependency on schema - make it very simple interface based API (object > json schema)
 - Simplify the code of structure class, extract it to a separate package (instructor-adhoc)
+- Polyglot: Gemini context caching
+- Polyglot: Citations API
+- Polyglot: Predicted outputs API
+- Polyglot: Batch completion API
+- Polyglot: Async / parallel calls to multiple APIs
+- Addon: Generate unstructured, then format to structured - to improve reasoning
+- Addon: MCP support as addon
+- Polyglot: Reasoning effort, reasoning traces in Groq
+- Addon: ToolUse - apply context variables to message sequence (via ScriptParameters??)
 
 
 # BACKLOG
@@ -111,7 +107,9 @@
 - Examples from last release (release notes, diff between tags)
 - Throw-away docs - just for updates or situation specific; not included in the main documentation website
 
-# PARTIALLY DONE
+
+
+# PARTIALLY DONE, MAY REQUIRE SOME REFINEMENT
 
 - Reasoning traces support in response objects (done: Deepseek, Anthropic)
 - Better API for image / audio inputs
@@ -121,6 +119,13 @@
 - Add super detailed tests of Module core functionality - esp. around input/output mappings
 - Validators / Deserializers / Transformers - chain of objects, not a single object
 - API Client: Clean up predefined models, prices, etc.
+- Polyglot: OutputMode::Unrestricted - do not force the response to be a specific type, follow provided parameters
+- Add support for 'developer' role in messages
+
+
+
+
+
 
 
 

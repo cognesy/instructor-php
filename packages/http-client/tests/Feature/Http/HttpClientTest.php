@@ -63,7 +63,7 @@ test('HTTP client with mock driver', function() {
 
     // Verify request was properly passed to the driver
     expect($mockDriver->getReceivedRequests())->toHaveCount(1);
-    expect($mockDriver->getLastRequest()->url())->toBe('https://api.example.com/test');
+    expect($mockDriver->getLastRequest()?->url())->toBe('https://api.example.com/test');
 });
 
 /**
@@ -120,7 +120,7 @@ test('HTTP client with record/replay middleware', function() {
     // For this test, we'll create a real HTTP client (not a mock)
     // but we'll include the RecordReplayMiddleware for recording/replaying
     $config = new HttpClientConfig(
-        httpClientType: 'guzzle',
+        driver: 'guzzle',
         connectTimeout: 5,
         requestTimeout: 10
     );

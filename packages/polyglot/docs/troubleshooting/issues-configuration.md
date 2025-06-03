@@ -21,7 +21,7 @@ Make sure your API keys are correct and have the necessary permissions:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 function testApiKey(string $preset): bool {
     try {
@@ -34,7 +34,7 @@ function testApiKey(string $preset): bool {
 
         echo "Connection preset '$preset' is working.\n";
         return true;
-    } catch (RequestException $e) {
+    } catch (HttpRequestException $e) {
         echo "Error with connection '$preset': " . $e->getMessage() . "\n";
         return false;
     }

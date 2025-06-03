@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Http\Data;
 
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use InvalidArgumentException;
 
 /**
@@ -15,7 +15,7 @@ class HttpClientConfig
     /**
      * Constructor for HttpClientConfig.
      *
-     * @param string $httpClientType The type of HTTP client.
+     * @param string $driver The driver name of HTTP client.
      * @param int $connectTimeout Connection timeout in seconds.
      * @param int $requestTimeout Request timeout in seconds.
      * @param int $idleTimeout Idle timeout in seconds.
@@ -24,14 +24,14 @@ class HttpClientConfig
      * @param bool $failOnError Whether to fail on error.
      */
     public function __construct(
-        public string $httpClientType = 'guzzle',
-        public int $connectTimeout = 3,
-        public int $requestTimeout = 30,
-        public int $idleTimeout = -1,
+        public string $driver = '',
+        public int    $connectTimeout = 3,
+        public int    $requestTimeout = 30,
+        public int    $idleTimeout = -1,
         // Concurrency-related properties
-        public int $maxConcurrent = 5,
-        public int $poolTimeout = 120,
-        public bool $failOnError = false,
+        public int    $maxConcurrent = 5,
+        public int    $poolTimeout = 120,
+        public bool   $failOnError = false,
     ) {}
 
     /**
@@ -46,7 +46,7 @@ class HttpClientConfig
             throw new InvalidArgumentException("Unknown client preset: $preset");
         }
         return new HttpClientConfig(
-            httpClientType: Settings::get('http', "clientPresets.$preset.httpClientType", 'guzzle'),
+            driver: Settings::get('http', "clientPresets.$preset.httpClientDriver", 'guzzle'),
             connectTimeout: Settings::get(group: "http", key: "clientPresets.$preset.connectTimeout", default: 30),
             requestTimeout: Settings::get("http", "clientPresets.$preset.requestTimeout", 3),
             idleTimeout: Settings::get(group: "http", key: "clientPresets.$preset.idleTimeout", default: 0),
@@ -64,7 +64,7 @@ class HttpClientConfig
      */
     public static function fromArray(array $config) : HttpClientConfig {
         return new HttpClientConfig(
-            httpClientType: $config['httpClientType'] ?? 'guzzle',
+            driver: $config['httpClientDriver'] ?? 'guzzle',
             connectTimeout: $config['connectTimeout'] ?? 3,
             requestTimeout: $config['requestTimeout'] ?? 30,
             idleTimeout: $config['idleTimeout'] ?? -1,

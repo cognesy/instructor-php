@@ -39,7 +39,7 @@ echo "Anthropic API key format is incorrect\n";
 <?php
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\LLMProvider;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 function testApiKey(string $preset): bool {
     try {
@@ -52,7 +52,7 @@ function testApiKey(string $preset): bool {
 
         echo "Connection using '$connection' is working correctly\n";
         return true;
-    } catch (RequestException $e) {
+    } catch (HttpRequestException $e) {
         echo "Error with connection '$connection': " . $e->getMessage() . "\n";
         return false;
     }

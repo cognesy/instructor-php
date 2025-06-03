@@ -25,7 +25,7 @@ use Cognesy\Polyglot\LLM\Drivers\OpenAICompatible\OpenAICompatibleDriver;
 use Cognesy\Polyglot\LLM\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -38,8 +38,8 @@ class InferenceDriverFactory
     private static array $drivers = [];
 
     public function __construct(
-        protected EventDispatcherInterface $events,
-        protected EventListenerInterface $listener,
+        protected EventDispatcherInterface  $events,
+        protected CanRegisterEventListeners $listener,
     ) {}
 
     /**

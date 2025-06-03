@@ -9,7 +9,7 @@ use Cognesy\Auxiliary\Web\Scrapers\FirecrawlDriver;
 use Cognesy\Auxiliary\Web\Scrapers\JinaReaderDriver;
 use Cognesy\Auxiliary\Web\Scrapers\ScrapFlyDriver;
 use Cognesy\Auxiliary\Web\Scrapers\ScrapingBeeDriver;
-use Cognesy\Utils\Settings;
+use Cognesy\Utils\Config\Settings;
 use Exception;
 
 class Scraper

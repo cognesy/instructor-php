@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Utils;
+namespace Cognesy\Utils\Config;
 
 use Dotenv\Dotenv;
 

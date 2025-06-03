@@ -162,7 +162,7 @@ use Cognesy\Http\Data\HttpClientConfig;
 
 // Create a custom configuration
 $config = new HttpClientConfig(
-    httpClientType: 'guzzle',
+    driver: 'guzzle',
     connectTimeout: 5,
     requestTimeout: 60,
     idleTimeout: 30,

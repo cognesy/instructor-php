@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Utils;
+namespace Cognesy\Utils\Config;
 
 use Exception;
 
@@ -14,17 +14,11 @@ class Settings
      * @var string The default path to the configuration files.
      */
     static private string $defaultPath = 'config/';
-//    static private string $defaultPath = __DIR__ . '/../config/';
 
     /**
      * @var array The loaded settings.
      */
     static private array $settings = [];
-
-//    /**
-//     * @var string The base directory for resolving relative paths.
-//     */
-//    static private string $baseDir = __DIR__;
 
     // STATIC ////////////////////////////////////////////////////////////////////
 
@@ -171,20 +165,6 @@ class Settings
         // if path does not end with DIRECTORY_SEPARATOR, add it
         return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
-//    private static function resolvePath(string $path) : string {
-//        if (self::isAbsolutePath($path)) {
-//            return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-//        }
-//
-//        // Resolve relative paths based on the base directory
-//        $resolvedPath = realpath(self::$baseDir . DIRECTORY_SEPARATOR . $path);
-//        if ($resolvedPath !== false) {
-//            return rtrim($resolvedPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-//        }
-//
-//        // If realpath fails (path doesn't exist), return the concatenated path
-//        return rtrim(self::$baseDir . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-//    }
 
     /**
      * Checks if a given path is absolute.

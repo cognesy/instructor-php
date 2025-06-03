@@ -14,6 +14,12 @@ class ResponseModelRequested extends Event
     }
 
     public function __toString(): string {
-        return Json::encode($this->dumpVar($this->requestedModel));
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'requestedModel' => $this->requestedModel,
+        ];
     }
 }

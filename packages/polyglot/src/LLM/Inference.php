@@ -3,6 +3,7 @@ namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -37,9 +38,9 @@ class Inference
         ?EventDispatcherInterface $events = null,
         ?EventDispatcherInterface $listener = null
     ) {
-        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('inference') : null;
-        $this->events = $events ?? $default;
-        $this->listener = $listener ?? $default;
+        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
+        $this->events = $eventHandlerFactory->dispatcher();
+        $this->listener = $eventHandlerFactory->listener();
 
         $this->llm = new LLMProvider(
             $this->events,

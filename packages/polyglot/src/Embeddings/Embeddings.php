@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -29,9 +29,10 @@ class Embeddings
         ?EventDispatcherInterface $events = null,
         ?EventDispatcherInterface $listener = null
     ) {
-        $default = (($events == null) || ($listener == null)) ? new EventDispatcher('embeddings') : null;
-        $this->events = $events ?? $default;
-        $this->listener = $listener ?? $default;
+        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
+        $this->events = $eventHandlerFactory->dispatcher();
+        $this->listener = $eventHandlerFactory->listener();
+
         $this->request = new EmbeddingsRequest();
         $this->provider = new EmbeddingsProvider($this->events, $this->listener);
     }

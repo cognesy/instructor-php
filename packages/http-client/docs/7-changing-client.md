@@ -285,7 +285,7 @@ Here's an example of selecting different client configurations based on the task
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Exceptions\RequestException;
+use Cognesy\Http\Exceptions\HttpRequestException;
 
 function fetchApiData($url, $apiKey) {
     // Use a client with short timeouts for quick API calls
@@ -304,7 +304,7 @@ function fetchApiData($url, $apiKey) {
 
     try {
         return $client->handle($request);
-    } catch (RequestException $e) {
+    } catch (HttpRequestException $e) {
         // Handle error
         throw $e;
     }
@@ -332,7 +332,7 @@ function downloadLargeFile($url, $outputPath) {
         fclose($fileHandle);
 
         return true;
-    } catch (RequestException $e) {
+    } catch (HttpRequestException $e) {
         // Handle error
         if (file_exists($outputPath)) {
             unlink($outputPath); // Remove partial file
@@ -368,7 +368,7 @@ function generateAiResponse($prompt) {
         }
 
         return json_decode($result, true);
-    } catch (RequestException $e) {
+    } catch (HttpRequestException $e) {
         // Handle error
         throw $e;
     }

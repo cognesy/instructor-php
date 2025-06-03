@@ -9,12 +9,18 @@ use Cognesy\Utils\Json\Json;
 class ResponseModelBuilt extends Event
 {
     public function __construct(
-        public ResponseModel $requestedModel
+        public ResponseModel $responseModel
     ) {
         parent::__construct();
     }
 
     public function __toString(): string {
-        return Json::encode($this->dumpVar($this->requestedModel));
+        return Json::encode($this->toArray());
+    }
+
+    public function toArray(): array {
+        return [
+            'responseModel' => $this->responseModel->toArray(),
+        ];
     }
 }

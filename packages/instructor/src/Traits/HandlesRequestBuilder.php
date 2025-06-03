@@ -12,7 +12,6 @@ use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Schema\Utils\ReferenceQueue;
-use Cognesy\Utils\Events\Contracts\EventListenerInterface;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Cognesy\Utils\TextRepresentation;
@@ -180,7 +179,6 @@ trait HandlesRequestBuilder
         string|array|object $requestedSchema,
         StructuredOutputConfig $config,
         EventDispatcherInterface $events,
-        EventListenerInterface $listener,
     ): ResponseModel {
         $schemaFactory = new SchemaFactory(
             $config->useObjectReferences(),
@@ -199,7 +197,6 @@ trait HandlesRequestBuilder
             schemaFactory: $schemaFactory,
             config: $config,
             events: $events,
-            listener: $listener,
         );
         return $responseModelFactory->fromAny(
             $requestedSchema,
