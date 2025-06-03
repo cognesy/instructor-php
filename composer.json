@@ -79,6 +79,8 @@
     "ext-xmlreader": "*",
     "cebe/markdown": "^1.2",
     "eftec/bladeone": "^4.16",
+    "guzzlehttp/guzzle": "^7.8",
+    "guzzlehttp/psr7": "^2.7",
     "icanhazstring/composer-unused": "^0.9.0",
     "illuminate/http": "^11.37",
     "jetbrains/phpstorm-attributes": "^1.2",
@@ -110,8 +112,6 @@
     "adbario/php-dot-notation": "^3.3",
     "aimeos/map": "^3.8",
     "gioni06/gpt3-tokenizer": "^1.2",
-    "guzzlehttp/guzzle": "^7.8",
-    "guzzlehttp/psr7": "^2.7",
     "psr/event-dispatcher": "^1.0",
     "psr/http-client": "^1.0",
     "psr/http-message": "^2.0",
@@ -150,6 +150,8 @@
     "symfony/http-client": "For Symfony HTTP client support",
     "symfony/http-client-contracts": "For Symfony HTTP client support",
     "webuni/front-matter": "Used by Cognesy\\Utils\\Template\\Template for front matter support",
-    "twig/twig": "For Twig template engine support"
+    "twig/twig": "For Twig template engine support",
+    "guzzlehttp/guzzle": "For Guzzle HTTP client support",
+    "guzzlehttp/psr7": "For Guzzle PSR-7 support"
   }
 }

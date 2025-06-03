@@ -53,13 +53,28 @@ rm -f "./tmp/instructor-tmp/SettingsStructuredOutputConfigProvider.php"
 code2prompt "./tmp/instructor-tmp" -o "./tmp/instructor-cut.md"
 rm -rf ./tmp/instructor-tmp
 
-# MAKE INSTRUCTOR WITH NO EXTRA MIDDLEWARE
+# MAKE HTTP-CLIENT WITH NO EXTRA MIDDLEWARE
 mkdir -p ./tmp/http-tmp
 cp -rf "./packages/http-client/src/"* "./tmp/http-tmp/"
 # remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
 rm -rf "./tmp/http-tmp/Middleware/RecordReplay"
 rm -rf "./tmp/http-tmp/Middleware/Examples"
 code2prompt "./tmp/http-tmp" -o "./tmp/http-cut.md"
+rm -rf ./tmp/http-tmp
+
+# MAKE MINIMAL VER OF HTTP-CLIENT
+mkdir -p ./tmp/http-tmp
+cp -rf "./packages/http-client/src/"* "./tmp/http-tmp/"
+# remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
+rm -rf "./tmp/http-tmp/Middleware/"
+rm -rf "./tmp/http-tmp/Debug/"
+rm -rf "./tmp/http-tmp/Adapters/Laravel"*
+rm -rf "./tmp/http-tmp/Adapters/Mock"*
+rm -rf "./tmp/http-tmp/Adapters/Symfony"*
+rm -rf "./tmp/http-tmp/Drivers/Laravel"*
+rm -rf "./tmp/http-tmp/Drivers/Mock"*
+rm -rf "./tmp/http-tmp/Drivers/Symfony"*
+code2prompt "./tmp/http-tmp" -o "./tmp/http-mini.md"
 rm -rf ./tmp/http-tmp
 
 echo "✅ Export completed successfully!"

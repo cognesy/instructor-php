@@ -5,13 +5,15 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Config\Settings;
+use Cognesy\Utils\Result\Result;
 use InvalidArgumentException;
 
 class SettingsEmbeddingsConfigProvider implements CanProvideEmbeddingsConfig
 {
     public function getConfig(?string $preset = ''): EmbeddingsConfig {
         if (empty($preset)) {
-            $preset = Settings::get('embed', "defaultPreset", '');
+            $result = Result::try(fn() => Settings::get('embed', 'defaultPreset', ''));
+            $preset = $result->isSuccess() ? $result->unwrap() : '';
             if (empty($preset)) {
                 return new EmbeddingsConfig();
             }

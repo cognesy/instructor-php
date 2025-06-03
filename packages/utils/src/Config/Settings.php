@@ -59,9 +59,9 @@ class Settings
      * @return mixed The setting value.
      * @throws Exception If the group is not provided or the key is not found and no default value is provided.
      */
-    public static function get(string $group, string $key, mixed $default = null) : mixed {
+    public static function get(string $group, string $key, mixed $default = null, bool $skipIfMissing = false) : mixed {
         if (empty($group)) {
-            throw new Exception("Settings group not provided");
+            throw new \InvalidArgumentException("Settings group not provided");
         }
 
         if (!self::isGroupLoaded($group)) {
@@ -69,7 +69,7 @@ class Settings
         }
 
         if ($default === null && !self::has($group, $key)) {
-            throw new Exception("Settings key not found: $key in group: $group and no default value provided");
+            throw new MissingSettingException("Settings key not found: $key in group: $group and no default value provided");
         }
         return self::$settings[$group]->get($key, $default);
     }
@@ -148,7 +148,7 @@ class Settings
         $path = $rootPath . $group . '.php';
 
         if (!file_exists($path)) {
-            throw new Exception("Settings file not found: $path");
+            throw new NoSettingsFileException("Settings file not found: $path");
         }
 
         return require $path;

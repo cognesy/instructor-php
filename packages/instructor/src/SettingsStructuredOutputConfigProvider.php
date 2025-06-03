@@ -6,13 +6,15 @@ use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Config\Settings;
+use Cognesy\Utils\Result\Result;
 use InvalidArgumentException;
 
 class SettingsStructuredOutputConfigProvider implements CanProvideStructuredOutputConfig
 {
     public function getConfig(?string $preset = '') : StructuredOutputConfig {
         if (empty($preset)) {
-            $preset = Settings::get('structured', 'defaultPreset', '');
+            $result = Result::try(fn() => Settings::get('structured', 'defaultPreset', ''));
+            $preset = $result->isSuccess() ? $result->unwrap() : '';
             if (empty($preset)) {
                 return new StructuredOutputConfig();
             }

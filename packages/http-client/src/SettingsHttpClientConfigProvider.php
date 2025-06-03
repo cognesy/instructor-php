@@ -5,13 +5,15 @@ namespace Cognesy\Http;
 use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
 use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Utils\Config\Settings;
+use Cognesy\Utils\Result\Result;
 use InvalidArgumentException;
 
 class SettingsHttpClientConfigProvider implements CanProvideHttpClientConfig
 {
     public function getConfig(?string $preset = ''): HttpClientConfig {
         if (empty($preset)) {
-            $preset = Settings::get('http', 'defaultPreset', '');
+            $result = Result::try(fn() => Settings::get('http', 'defaultPreset', ''));
+            $preset = $result->isSuccess() ? $result->unwrap() : '';
             if (empty($preset)) {
                 return new HttpClientConfig();
             }

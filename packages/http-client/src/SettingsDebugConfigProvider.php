@@ -5,13 +5,15 @@ namespace Cognesy\Http;
 use Cognesy\Http\Contracts\CanProvideDebugConfig;
 use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Utils\Config\Settings;
+use Cognesy\Utils\Result\Result;
 use InvalidArgumentException;
 
 class SettingsDebugConfigProvider implements CanProvideDebugConfig
 {
     public function getConfig(?string $preset = ''): DebugConfig {
         if (empty($preset)) {
-            $preset = Settings::get('debug', 'defaultPreset', '');
+            $result = Result::try(fn() => Settings::get('debug', 'defaultPreset', ''));
+            $preset = $result->isSuccess() ? $result->unwrap() : '';
             if (empty($preset)) {
                 return new DebugConfig();
             }

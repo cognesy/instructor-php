@@ -16,9 +16,7 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^0.17",
-    "cognesy/setup": "^0.17",
-    "guzzlehttp/guzzle": "^7.4",
-    "guzzlehttp/psr7": "^2.7"
+    "cognesy/setup": "^0.17"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -26,6 +24,8 @@
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",
     "maglnet/composer-require-checker": "^4.16",
+    "guzzlehttp/guzzle": "^7.4",
+    "guzzlehttp/psr7": "^2.7",
     "pestphp/pest": "^2.34",
     "phpstan/phpstan": "^1.11",
     "vimeo/psalm": "^6.0"

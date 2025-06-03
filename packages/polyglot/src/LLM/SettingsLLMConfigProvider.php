@@ -5,6 +5,7 @@ namespace Cognesy\Polyglot\LLM;
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Utils\Config\Settings;
+use Cognesy\Utils\Result\Result;
 use InvalidArgumentException;
 
 class SettingsLLMConfigProvider implements CanProvideLLMConfig
@@ -12,7 +13,8 @@ class SettingsLLMConfigProvider implements CanProvideLLMConfig
     public function getConfig(?string $preset = '') : LLMConfig
     {
         if (empty($preset)) {
-            $preset = Settings::get('llm', 'defaultPreset', '');
+            $result = Result::try(fn() => Settings::get('llm', 'defaultPreset', ''));
+            $preset = $result->isSuccess() ? $result->unwrap() : '';
             if (empty($preset)) {
                 return new LLMConfig();
             }
