@@ -25,20 +25,8 @@ trait HandlesInvocation
      * for generating the request.
      */
     public function withRequest(StructuredOutputRequest $request) : static {
-        return $this->with(
-            messages: $request->messages() ?? [],
-            responseModel: $request->responseModel() ?? [],
-            system: $request->system() ?? '',
-            prompt: $request->prompt() ?? '',
-            examples: $request->examples() ?? [],
-            model: $request->model() ?? '',
-            maxRetries: $request->config()?->maxRetries() ?? -1,
-            options: $request->options() ?? [],
-            toolName: $request->config()?->toolName() ?? '',
-            toolDescription: $request->config()?->toolDescription() ?? '',
-            retryPrompt: $request->config()?->retryPrompt() ?? '',
-            mode: $request->config()?->outputMode() ?? OutputMode::Tools,
-        );
+        $this->requestBuilder->withRequest($request);
+        return $this;
     }
 
     /**
@@ -72,24 +60,38 @@ trait HandlesInvocation
         string                        $retryPrompt = '',
         ?OutputMode                   $mode = null,
     ) : static {
-        $this->config->withOverrides(
-            outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
-            maxRetries: ($maxRetries >= 0) ? $maxRetries : $this->config->maxRetries(),
-            retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
-            toolName: $toolName ?: $this->config->toolName(),
-            toolDescription: $toolDescription ?: $this->config->toolDescription(),
-        );
+//        $this->config->withOverrides(
+//            outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
+//            maxRetries: ($maxRetries >= 0) ? $maxRetries : $this->config->maxRetries(),
+//            retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
+//            toolName: $toolName ?: $this->config->toolName(),
+//            toolDescription: $toolDescription ?: $this->config->toolDescription(),
+//        );
+//
+//        $this->messages = match (true) {
+//            empty($messages) => $this->messages,
+//            default => Messages::fromAny($messages),
+//        };
+//        $this->requestedSchema = $responseModel ?: $this->requestedSchema;
+//        $this->system = $system ?: $this->system;
+//        $this->prompt = $prompt ?: $this->prompt;
+//        $this->examples = $examples ?: $this->examples;
+//        $this->model = $model ?: $this->model;
+//        $this->options = array_merge($this->options, $options);
 
-        $this->messages = match (true) {
-            empty($messages) => $this->messages,
-            default => Messages::fromAny($messages),
-        };
-        $this->requestedSchema = $responseModel ?: $this->requestedSchema;
-        $this->system = $system ?: $this->system;
-        $this->prompt = $prompt ?: $this->prompt;
-        $this->examples = $examples ?: $this->examples;
-        $this->model = $model ?: $this->model;
-        $this->options = array_merge($this->options, $options);
+        $this->requestBuilder
+            ->withMessages($messages)
+            ->withResponseModel($responseModel)
+            ->withSystem($system)
+            ->withPrompt($prompt)
+            ->withExamples($examples)
+            ->withModel($model)
+            ->withMaxRetries($maxRetries)
+            ->withOptions($options)
+            ->withToolName($toolName)
+            ->withToolDescription($toolDescription)
+            ->withRetryPrompt($retryPrompt)
+            ->withOutputMode($mode);
 
         return $this;
     }

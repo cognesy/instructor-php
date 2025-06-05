@@ -84,7 +84,7 @@ class InferenceRequestBuilder
     }
 
 
-    public function withOutputMode(OutputMode $mode): static {
+    public function withOutputMode(?OutputMode $mode): static {
         $this->mode = $mode;
         return $this;
     }
@@ -111,10 +111,25 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    public function withRequest(InferenceRequest $request) : self {
+        $this->messages = $request->messages();
+        $this->model = $request->model();
+        $this->tools = $request->tools();
+        $this->toolChoice = $request->toolChoice();
+        $this->responseFormat = $request->responseFormat();
+        $this->options = array_merge($this->options, $request->options());
+        $this->streaming = $request->isStreamed();
+        $this->mode = $request->outputMode();
+        $this->cachedContext = $request->cachedContext();
+
+        return $this;
+    }
+
     public function create(): InferenceRequest {
         $options = ($this->streaming === true)
             ? array_merge($this->options, ['stream' => true])
             : $this->options;
+
         return new InferenceRequest(
             messages: $this->messages,
             model: $this->model,

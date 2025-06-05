@@ -31,6 +31,7 @@ class StructuredOutput
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
     use Traits\HandlesRequestBuilder;
+    use Traits\HandlesConfigBuilder;
 
     use Traits\HandlesOverrides;
     use Traits\HandlesPartialUpdates;

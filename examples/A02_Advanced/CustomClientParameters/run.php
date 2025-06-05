@@ -16,7 +16,7 @@ other LLMs which support OpenAI API.
 require 'examples/boot.php';
 
 use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Drivers\SymfonyDriver;
+use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;

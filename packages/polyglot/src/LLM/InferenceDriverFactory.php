@@ -27,6 +27,7 @@ use Cognesy\Polyglot\LLM\Drivers\OpenRouter\OpenRouterDriver;
 use Cognesy\Polyglot\LLM\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
+use Cognesy\Polyglot\LLM\Events\InferenceDriverBuilt;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -71,15 +72,25 @@ class InferenceDriverFactory
             throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$driver}");
         }
 
-        return $driverFactory(
+        $httpClient = match(true) {
+            !is_null($httpClient) => $httpClient,
+            !empty($config->httpClientPreset) => (new HttpClientBuilder($this->events, $this->listener))->withPreset($config->httpClientPreset)->create(),
+            default => (new HttpClientBuilder($this->events, $this->listener))->create(),
+        };
+
+        $driver = $driverFactory(
             config: $config,
-            httpClient: match(true) {
-                !is_null($httpClient) => $httpClient,
-                !empty($config->httpClientPreset) => (new HttpClientBuilder($this->events, $this->listener))->withPreset($config->httpClientPreset)->create(),
-                default => (new HttpClientBuilder($this->events, $this->listener))->create(),
-            },
+            httpClient: $httpClient,
             events: $this->events
         );
+
+        $this->events->dispatch(new InferenceDriverBuilt(
+            get_class($driver),
+            $config,
+            $httpClient
+        ));
+
+        return $driver;
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////

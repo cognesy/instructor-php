@@ -2,7 +2,7 @@
 
 use Cognesy\Http\Adapters\MockHttpResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 
 beforeEach(function() {
     $this->driver = new MockHttpDriver();

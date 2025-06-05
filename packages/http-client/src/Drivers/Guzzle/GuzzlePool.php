@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Drivers;
+namespace Cognesy\Http\Drivers\Guzzle;
 
 use Cognesy\Http\Adapters\PsrHttpResponse;
 use Cognesy\Http\Contracts\CanHandleRequestPool;

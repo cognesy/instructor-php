@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Drivers;
+namespace Cognesy\Http\Drivers\Symfony;
 
 use Cognesy\Http\Adapters\SymfonyHttpResponse;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;

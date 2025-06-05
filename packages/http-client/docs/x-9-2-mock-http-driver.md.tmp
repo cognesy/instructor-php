@@ -9,7 +9,7 @@ The library includes a `MockHttpDriver` that's useful for testing. This driver d
 
 ```php
 use Cognesy\Http\Adapters\MockHttpResponse;
-use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
 
@@ -560,7 +560,7 @@ The library includes a `MockHttpDriver` that's useful for testing. This driver d
 
 ```php
 use Cognesy\Http\Adapters\MockHttpResponse;
-use Cognesy\Http\Drivers\MockHttpDriver;
+use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpClientRequest;
 

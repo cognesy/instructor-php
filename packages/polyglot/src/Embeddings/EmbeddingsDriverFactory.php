@@ -10,6 +10,7 @@ use Cognesy\Polyglot\Embeddings\Drivers\Cohere\CohereDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\Gemini\GeminiDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\Jina\JinaDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Embeddings\Events\EmbeddingsDriverBuilt;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -41,10 +42,18 @@ class EmbeddingsDriverFactory
      */
     public function makeDriver(EmbeddingsConfig $config, HttpClient $httpClient) : CanHandleVectorization {
         $type = $config->driver ?? 'openai';
+
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
         if (!$driver) {
             throw new InvalidArgumentException("Unknown driver: {$type}");
         }
+
+        $this->events->dispatch(new EmbeddingsDriverBuilt(
+            get_class($driver),
+            $config,
+            $httpClient
+        ));
+
         return $driver($config, $httpClient, $this->events);
     }
 

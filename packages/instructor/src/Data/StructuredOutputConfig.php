@@ -9,7 +9,7 @@ final class StructuredOutputConfig
     use Traits\StructuredOutputConfig\HandlesAccessors;
     use Traits\StructuredOutputConfig\HandlesMutators;
 
-    private OutputMode $outputMode = OutputMode::Tools;
+    private ?OutputMode $outputMode = OutputMode::Tools;
     private bool $useObjectReferences = false;
     private int $maxRetries = 0;
     private string $retryPrompt = "JSON generated incorrectly, fix following errors:\n";

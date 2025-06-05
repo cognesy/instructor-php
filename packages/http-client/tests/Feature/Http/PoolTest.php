@@ -2,9 +2,9 @@
 
 use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Drivers\GuzzleDriver;
-use Cognesy\Http\Drivers\LaravelDriver;
-use Cognesy\Http\Drivers\SymfonyDriver;
+use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
+use Cognesy\Http\Drivers\Laravel\LaravelDriver;
+use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Success;
 

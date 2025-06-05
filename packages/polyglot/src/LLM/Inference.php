@@ -21,8 +21,6 @@ class Inference
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
 
-    protected ?LLMProvider $llmProvider;
-
     /**
      * Constructor for initializing dependencies and configurations.
      *

@@ -50,4 +50,12 @@ class HttpClient
     {
         return $this->middlewareStack;
     }
+
+    public function toDebugArray(): array
+    {
+        return [
+            'driver' => $this->driver::class,
+            'middleware' => $this->middlewareStack->toDebugArray(),
+        ];
+    }
 }

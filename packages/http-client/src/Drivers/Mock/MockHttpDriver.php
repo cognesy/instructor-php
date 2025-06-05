@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Drivers;
+namespace Cognesy\Http\Drivers\Mock;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;

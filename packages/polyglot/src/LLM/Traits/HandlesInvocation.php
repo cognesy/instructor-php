@@ -15,16 +15,7 @@ trait HandlesInvocation
      * @param InferenceRequest $request The inference request object.
      */
     public function withRequest(InferenceRequest $request): static {
-        $this->with(
-            messages: $request->messages(),
-            model: $request->model(),
-            tools: $request->tools(),
-            toolChoice: $request->toolChoice(),
-            responseFormat: $request->responseFormat(),
-            options: $request->options(),
-            mode: $request->outputMode()
-        );
-        $this->cachedContext = $request->cachedContext() ?? $this->cachedContext;
+        $this->requestBuilder->withRequest($request);
         return $this;
     }
 
@@ -48,31 +39,18 @@ trait HandlesInvocation
         array        $options = [],
         ?OutputMode  $mode = null,
     ) : static {
-        $this->messages = $messages;
-        $this->model = $model;
-        $this->tools = $tools;
-        $this->toolChoice = $toolChoice;
-        $this->responseFormat = $responseFormat;
-        $this->options = array_merge($this->options, $options);
-        $this->streaming = $options['stream'] ?? $this->streaming;
-        $this->mode = $mode;
+        $this->requestBuilder->withMessages($messages);
+        $this->requestBuilder->withModel($model);
+        $this->requestBuilder->withTools($tools);
+        $this->requestBuilder->withToolChoice($toolChoice);
+        $this->requestBuilder->withResponseFormat($responseFormat);
+        $this->requestBuilder->withOptions($options);
+        $this->requestBuilder->withOutputMode($mode);
         return $this;
     }
 
     public function create(): InferenceResponse {
-        $options = ($this->streaming === true)
-            ? array_merge($this->options, ['stream' => true])
-            : $this->options;
-        $request = new InferenceRequest(
-            messages: $this->messages,
-            model: $this->model,
-            tools: $this->tools,
-            toolChoice: $this->toolChoice,
-            responseFormat: $this->responseFormat,
-            options: $options,
-            mode: $this->mode ?? OutputMode::Unrestricted,
-            cachedContext: $this->cachedContext ?? null
-        );
+        $request = $this->requestBuilder->create();
         $this->events->dispatch(new InferenceRequested($request));
         $inferenceDriver = $this->llmProvider->createDriver();
         return new InferenceResponse(

@@ -52,4 +52,18 @@ final class EmbeddingsConfig
         $this->driver = $overrides['driver'] ?? $this->driver;
         return $this;
     }
+
+    public function toArray() : array {
+        return [
+            'apiUrl' => $this->apiUrl,
+            'apiKey' => $this->apiKey,
+            'endpoint' => $this->endpoint,
+            'model' => $this->model,
+            'dimensions' => $this->dimensions,
+            'maxInputs' => $this->maxInputs,
+            'metadata' => $this->metadata,
+            'httpClientPreset' => $this->httpClientPreset,
+            'driver' => $this->driver,
+        ];
+    }
 }

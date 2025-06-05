@@ -10,6 +10,8 @@ use Cognesy\Polyglot\LLM\LLMProvider;
 
 trait HandleInitMethods
 {
+    protected ?LLMProvider $llmProvider;
+
     /**
      * Sets the LLM instance to be used.
      *
@@ -38,7 +40,6 @@ trait HandleInitMethods
         return $this;
     }
 
-
     /**
      * Sets the connection using a DSN string and updates the configuration.
      *
@@ -59,9 +60,6 @@ trait HandleInitMethods
      * @return self Returns the current instance with the updated connection.
      */
     public function using(string $preset) : static {
-        if (empty($preset)) {
-            return $this;
-        }
         $this->llmProvider->withPreset($preset);
         return $this;
     }
@@ -98,9 +96,7 @@ trait HandleInitMethods
      * @return self
      */
     public function withDebug(?bool $debug = true) : static {
-        if ($debug !== null) {
-            $this->llmProvider->withDebug($debug);
-        }
+        $this->llmProvider->withDebug($debug);
         return $this;
     }
 }

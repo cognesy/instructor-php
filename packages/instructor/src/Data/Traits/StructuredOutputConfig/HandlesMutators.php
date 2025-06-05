@@ -6,9 +6,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesMutators
 {
-    // MUTATORS ///////////////////////////////////////////////////////
-
-    public function withOutputMode(OutputMode $outputMode) : static
+    public function withOutputMode(?OutputMode $outputMode) : static
     {
         $this->outputMode = $outputMode;
         return $this;
@@ -70,23 +68,6 @@ trait HandlesMutators
     public function withDefaultOutputClass(string $defaultOutputClass) : static
     {
         $this->defaultOutputClass = $defaultOutputClass;
-        return $this;
-    }
-
-    public function withOverrides(
-        ?OutputMode    $outputMode = null,
-        ?bool          $useObjectReferences = null,
-        ?int           $maxRetries = null,
-        ?string        $retryPrompt = null,
-        ?string        $toolName = null,
-        ?string        $toolDescription = null,
-    ) : static {
-        $this->outputMode = $outputMode ?? $this->outputMode;
-        $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
-        $this->maxRetries = $maxRetries ?? $this->maxRetries;
-        $this->toolName = $toolName ?? $this->toolName;
-        $this->toolDescription = $toolDescription ?? $this->toolDescription;
-        $this->retryPrompt = $retryPrompt ?? $this->retryPrompt;
         return $this;
     }
 }

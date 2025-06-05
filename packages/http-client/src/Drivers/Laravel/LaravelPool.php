@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Http\Drivers;
+namespace Cognesy\Http\Drivers\Laravel;
 
 use Cognesy\Http\Adapters\LaravelHttpResponse;
 use Cognesy\Http\Contracts\CanHandleRequestPool;

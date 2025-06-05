@@ -2,81 +2,61 @@
 
 namespace Cognesy\Polyglot\LLM\Traits;
 
-use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\LLM\InferenceRequestBuilder;
 
 trait HandlesRequestBuilder
 {
-    private string|array   $messages = [];
-    private string         $model = '';
-    private array          $tools = [];
-    private string|array   $toolChoice = [];
-    private array          $responseFormat = [];
-    private array          $options = [];
-    private ?bool          $streaming = null;
-    private ?OutputMode    $mode = null;
-    protected CachedContext $cachedContext;
+    private InferenceRequestBuilder $requestBuilder;
 
     public function withMessages(string|array $messages): static {
-        $this->messages = $messages;
+        $this->requestBuilder->withMessages($messages);
         return $this;
     }
 
     public function withModel(string $model): static {
-        $this->model = $model;
+        $this->requestBuilder->withModel($model);
         return $this;
     }
 
     public function withTools(array $tools): static {
-        $this->tools = $tools;
+        $this->requestBuilder->withTools($tools);
         return $this;
     }
 
     public function withToolChoice(string $toolChoice): static {
-        $this->toolChoice = $toolChoice;
+        $this->requestBuilder->withToolChoice($toolChoice);
         return $this;
     }
 
     public function withResponseFormat(array $responseFormat): static {
-        $this->responseFormat = $responseFormat;
+        $this->requestBuilder->withResponseFormat($responseFormat);
         return $this;
     }
 
     public function withOptions(array $options): static {
-        $this->options = $options;
+        $this->requestBuilder->withOptions($options);
         return $this;
     }
 
     public function withStreaming(bool $stream = true): static {
-        $this->streaming = $stream;
+        $this->requestBuilder->withStreaming($stream);
         return $this;
     }
 
 
-    public function withOutputMode(OutputMode $mode): static {
-        $this->mode = $mode;
+    public function withOutputMode(?OutputMode $mode): static {
+        $this->requestBuilder->withOutputMode($mode);
         return $this;
     }
 
-    /**
-     * Sets a cached context with provided messages, tools, tool choices, and response format.
-     *
-     * @param string|array $messages Messages to be cached in the context.
-     * @param array $tools Tools to be included in the cached context.
-     * @param string|array $toolChoice Tool choices for the cached context.
-     * @param array $responseFormat Format for responses in the cached context.
-     *
-     * @return self
-     */
     public function withCachedContext(
         string|array $messages = [],
         array        $tools = [],
         string|array $toolChoice = [],
         array        $responseFormat = [],
     ): self {
-        $this->cachedContext = new CachedContext(
-            $messages, $tools, $toolChoice, $responseFormat
-        );
+        $this->requestBuilder->withCachedContext($messages, $tools, $toolChoice, $responseFormat);
         return $this;
     }
 }

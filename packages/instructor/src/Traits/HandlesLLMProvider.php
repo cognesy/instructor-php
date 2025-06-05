@@ -10,35 +10,35 @@ use Cognesy\Polyglot\LLM\LLMProvider;
 
 trait HandlesLLMProvider
 {
-    private ?LLMProvider $llm = null;
+    private ?LLMProvider $llmProvider = null;
 
     public function withDSN(string $dsn) : static {
-        $this->llm->withDSN($dsn);
+        $this->llmProvider->withDSN($dsn);
         return $this;
     }
 
     public function using(string $preset) : static {
-        $this->llm->withPreset($preset);
+        $this->llmProvider->withPreset($preset);
         return $this;
     }
 
     public function withLLMProvider(LLMProvider $llm) : static {
-        $this->llm = $llm;
+        $this->llmProvider = $llm;
         return $this;
     }
 
     public function withLLMConfig(LLMConfig $config) : static {
-        $this->llm->withConfig($config);
+        $this->llmProvider->withConfig($config);
         return $this;
     }
 
     public function withDriver(CanHandleInference $driver) : static {
-        $this->llm->withDriver($driver);
+        $this->llmProvider->withDriver($driver);
         return $this;
     }
 
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->llm->withHttpClient($httpClient);
+        $this->llmProvider->withHttpClient($httpClient);
         return $this;
     }
 
@@ -49,7 +49,7 @@ trait HandlesLLMProvider
      * @return static The current instance with the updated debug state.
      */
     public function withDebug(bool $debug = true) : static {
-        $this->llm->withDebug($debug);
+        $this->llmProvider->withDebug($debug);
         return $this;
     }
 
@@ -59,7 +59,7 @@ trait HandlesLLMProvider
      * @return LLMProvider The LLM object for the current instance.
      */
     public function llm() : LLMProvider {
-        return $this->llm;
+        return $this->llmProvider;
     }
 
     /**

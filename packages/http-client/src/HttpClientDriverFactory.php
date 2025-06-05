@@ -4,9 +4,9 @@ namespace Cognesy\Http;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Drivers\GuzzleDriver;
-use Cognesy\Http\Drivers\LaravelDriver;
-use Cognesy\Http\Drivers\SymfonyDriver;
+use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
+use Cognesy\Http\Drivers\Laravel\LaravelDriver;
+use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
