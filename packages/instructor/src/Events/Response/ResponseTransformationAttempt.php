@@ -6,7 +6,7 @@ use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
-class ResponseTransformationAttempt extends Event
+final class ResponseTransformationAttempt extends Event
 {
     public function __construct(
         public CanTransformSelf $object

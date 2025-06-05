@@ -6,7 +6,7 @@ use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class StructuredOutputDone extends Event
+final class StructuredOutputDone extends Event
 {
     public $logLevel = LogLevel::INFO;
 

@@ -8,7 +8,7 @@ use Cognesy\Utils\Events\Event;
 /**
  * Event fired when a recording is not found for a request
  */
-class HttpInteractionNotFound extends Event
+final class HttpInteractionNotFound extends Event
 {
     public function __construct(
         public readonly HttpClientRequest $request

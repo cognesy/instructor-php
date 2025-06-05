@@ -62,6 +62,17 @@ class ConfigSource implements CanProvideConfig
         $exceptions = [];
         $configurationAttempts = [];
 
+        $config = $this->tryBuildConfig($preset, $exceptions, $configurationAttempts);
+        if ($config == null) {
+            $this->throwConfigurationError($preset ?? '', $exceptions, $configurationAttempts);
+        }
+
+        return $config;
+    }
+
+    // PRIVATE METHODS //////////////////////////////////////////////////////
+
+    private function tryBuildConfig(?string $preset, array &$exceptions, array &$configurationAttempts): mixed{
         // Try override first
         if ($this->override) {
             $result = $this->tryResolve($this->override, $preset, $exceptions, $configurationAttempts, 'override');
@@ -98,10 +109,8 @@ class ConfigSource implements CanProvideConfig
             }
         }
 
-        $this->throwConfigurationError($preset ?? '', $exceptions, $configurationAttempts);
+        return null;
     }
-
-    // PRIVATE METHODS //////////////////////////////////////////////////////
 
     private function createDeferred(mixed $provider, string $nullErrorMessage = 'Provider cannot be null.'): Deferred
     {

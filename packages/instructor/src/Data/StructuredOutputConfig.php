@@ -40,16 +40,16 @@ final class StructuredOutputConfig
     ];
 
     public function __construct(
-        OutputMode $outputMode = null,
-        bool       $useObjectReferences = false,
-        int        $maxRetries = -1,
-        string     $retryPrompt = '',
-        array      $modePrompts = [],
-        string     $schemaName = '',
-        string     $toolName = '',
-        string     $toolDescription = '',
-        array      $chatStructure = [],
-        string     $defaultOutputClass = '',
+        ?OutputMode $outputMode = null,
+        ?bool       $useObjectReferences = false,
+        ?int        $maxRetries = -1,
+        ?string     $retryPrompt = '',
+        ?array      $modePrompts = [],
+        ?string     $schemaName = '',
+        ?string     $toolName = '',
+        ?string     $toolDescription = '',
+        ?array      $chatStructure = [],
+        ?string     $defaultOutputClass = '',
     ) {
         $this->outputMode = $outputMode ?: $this->outputMode;
         $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;

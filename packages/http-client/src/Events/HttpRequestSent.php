@@ -5,7 +5,7 @@ use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class HttpRequestSent extends Event
+final class HttpRequestSent extends Event
 {
     public $logLevel = LogLevel::INFO;
 

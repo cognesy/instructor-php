@@ -85,9 +85,9 @@ class InferenceDriverFactory
         );
 
         $this->events->dispatch(new InferenceDriverBuilt(
-            get_class($driver),
-            $config,
-            $httpClient
+            driverClass: get_class($driver),
+            config: $config,
+            httpClientInfo: $httpClient->toDebugArray(),
         ));
 
         return $driver;

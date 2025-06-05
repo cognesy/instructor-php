@@ -6,7 +6,7 @@ use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
-class CustomResponseValidationAttempt extends Event
+final class CustomResponseValidationAttempt extends Event
 {
     public function __construct(
         public CanValidateSelf $response

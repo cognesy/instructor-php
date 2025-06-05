@@ -7,15 +7,20 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class InferenceRequestBuilder
 {
-    private string|array   $messages = [];
-    private string         $model = '';
-    private array          $tools = [];
-    private string|array   $toolChoice = [];
-    private array          $responseFormat = [];
-    private array          $options = [];
-    private ?bool          $streaming = null;
-    private ?OutputMode    $mode = null;
+    private string|array    $messages = [];
+    private string          $model = '';
+    private array           $tools = [];
+    private string|array    $toolChoice = [];
+    private array           $responseFormat = [];
+    private array           $options = [];
+    private bool            $streaming = false;
+    private ?OutputMode     $mode = null;
     protected CachedContext $cachedContext;
+
+    public function __construct()
+    {
+        $this->cachedContext = new CachedContext();
+    }
 
     /**
      * Sets the parameters for the inference request and returns the current instance.
@@ -63,7 +68,7 @@ class InferenceRequestBuilder
         return $this;
     }
 
-    public function withToolChoice(string $toolChoice): static {
+    public function withToolChoice(string|array $toolChoice): static {
         $this->toolChoice = $toolChoice;
         return $this;
     }

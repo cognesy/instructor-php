@@ -86,8 +86,10 @@ trait HandlesInvocation
             ->withPrompt($prompt)
             ->withExamples($examples)
             ->withModel($model)
+            ->withOptions($options);
+
+        $this->configBuilder
             ->withMaxRetries($maxRetries)
-            ->withOptions($options)
             ->withToolName($toolName)
             ->withToolDescription($toolDescription)
             ->withRetryPrompt($retryPrompt)
@@ -107,7 +109,11 @@ trait HandlesInvocation
     public function create() : StructuredOutputResponse {
         $this->events->dispatch(new RequestReceived());
 
-        $request = $this->build();
+        $config = $this->configBuilder->create();
+        $request = $this->requestBuilder->createWith(
+            config: $config,
+            events: $this->events,
+        );
 
         $requestHandler = new RequestHandler(
             request: $request,
@@ -122,8 +128,8 @@ trait HandlesInvocation
                 $this->responseTransformer,
                 $this->events,
             ),
-            requestMaterializer: new RequestMaterializer($this->config),
-            llm: $this->llm(),
+            requestMaterializer: new RequestMaterializer($config),
+            llm: $this->llmProvider,
             events: $this->events,
             listener: $this->listener,
         );

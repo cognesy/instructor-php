@@ -6,7 +6,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Events\Event;
 
-class EmbeddingsDriverBuilt extends Event
+final class EmbeddingsDriverBuilt extends Event
 {
     public string $driverClass;
     public EmbeddingsConfig $config;

@@ -6,7 +6,7 @@ use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
-class CustomResponseDeserializationAttempt extends Event
+final class CustomResponseDeserializationAttempt extends Event
 {
     public function __construct(
         public CanDeserializeSelf $instance,

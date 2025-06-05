@@ -2,7 +2,6 @@
 
 namespace Cognesy\Template;
 
-use Cognesy\Template\ConfigProviders\SettingsTemplateConfigProvider;
 use Cognesy\Template\ConfigProviders\TemplateConfigSource;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Contracts\CanProvideTemplateConfig;
@@ -11,7 +10,6 @@ use Cognesy\Template\Drivers\ArrowpipeDriver;
 use Cognesy\Template\Drivers\BladeDriver;
 use Cognesy\Template\Drivers\TwigDriver;
 use Cognesy\Template\Enums\TemplateEngineType;
-use Cognesy\Utils\Config\ConfigProviders\ConfigSource;
 use InvalidArgumentException;
 
 class TemplateProvider
@@ -101,15 +99,5 @@ class TemplateProvider
         }
         // return BladeDriver if Blade is installed
         return new BladeDriver($config);
-    }
-
-    private function makeTemplateConfigProvider(?CanProvideTemplateConfig $configProvider) {
-        return (new class() extends ConfigSource implements CanProvideTemplateConfig {
-                function getConfig(?string $preset = ''): TemplateEngineConfig {
-                    return parent::getConfig($preset);
-                }
-            })
-            ->tryFrom($configProvider)
-            ->fallbackTo(fn() => new SettingsTemplateConfigProvider());
     }
 }

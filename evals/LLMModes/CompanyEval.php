@@ -87,5 +87,6 @@ class CompanyEval implements CanGenerateObservations
                 return false;
             }
         }
+        return true;
     }
 }

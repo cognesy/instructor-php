@@ -2,48 +2,61 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ConfigProviders\StructuredOutputConfigSource;
-use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Schema\Utils\ReferenceQueue;
-use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
-use Cognesy\Utils\TextRepresentation;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StructuredOutputRequestBuilder
 {
-    use Traits\HandlesConfigBuilder;
-
     private Messages $messages;
     private string $system = '';
     private string $prompt = '';
+    /** @var Example[] */
     private array $examples = [];
     private string $model = '';
     private array $options = [];
     private CachedContext $cachedContext;
     private string|array|object $requestedSchema = [];
+    private ?ResponseModel $responseModel = null;
 
-    private StructuredOutputConfig $config;
-
-    public function __construct(
-        private ?CanProvideStructuredOutputConfig $configProvider = null,
-        private ?EventDispatcherInterface $events = null,
-    ) {
-        $eventHandlerFactory = new EventHandlerFactory($events);
-        $this->events = $eventHandlerFactory->dispatcher();
-        $this->configProvider = $configProvider ?? StructuredOutputConfigSource::makeWith($configProvider);
-        $this->config = $this->configProvider->getConfig();
+    public function __construct()
+    {
         $this->messages = new Messages();
         $this->cachedContext = new CachedContext();
+    }
+
+    /**
+     * Sets all parameters for the structured output request and returns the current instance.
+     */
+    public function with(
+        string|array|Message|Messages|null $messages = null,
+        string|array|object|null $requestedSchema = null,
+        ?string $system = null,
+        ?string $prompt = null,
+        ?array $examples = null,
+        ?string $model = null,
+        ?array $options = null,
+        ?CachedContext $cachedContext = null,
+    ): static {
+        $this->messages = $messages !== null ? Messages::fromAny($messages) : $this->messages;
+        $this->requestedSchema = $requestedSchema ?? $this->requestedSchema;
+        $this->system = $system ?? $this->system;
+        $this->prompt = $prompt ?? $this->prompt;
+        $this->examples = $examples ?? $this->examples;
+        $this->model = $model ?? $this->model;
+        $this->options = $options !== null ? array_merge($this->options, $options) : $this->options;
+        $this->cachedContext = $cachedContext ?? $this->cachedContext;
+        return $this;
     }
 
     public function withMessages(string|array|Message|Messages $messages): static {
@@ -52,26 +65,26 @@ class StructuredOutputRequestBuilder
     }
 
     public function withInput(mixed $input): static {
-        $this->messages = Messages::fromAny(TextRepresentation::fromAny($input));
+        $this->messages = Messages::fromAny($input);
         return $this;
     }
 
-    public function withResponseModel(string|array|object $responseModel) : static {
+    public function withResponseModel(string|array|object $responseModel): static {
         $this->requestedSchema = $responseModel;
         return $this;
     }
 
-    public function withResponseJsonSchema(array $jsonSchema) : static {
+    public function withResponseJsonSchema(array $jsonSchema): static {
         $this->requestedSchema = $jsonSchema;
         return $this;
     }
 
-    public function withResponseClass(string $class) : static {
+    public function withResponseClass(string $class): static {
         $this->requestedSchema = $class;
         return $this;
     }
 
-    public function withResponseObject(object $responseObject) : static {
+    public function withResponseObject(object $responseObject): static {
         $this->requestedSchema = $responseObject;
         return $this;
     }
@@ -97,14 +110,11 @@ class StructuredOutputRequestBuilder
     }
 
     public function withOptions(array $options): static {
-        $this->options = $options;
+        $this->options = array_merge($this->options, $options);
         return $this;
     }
 
     public function withOption(string $key, mixed $value): static {
-        if ($this->options === null) {
-            $this->options = [];
-        }
         $this->options[$key] = $value;
         return $this;
     }
@@ -119,26 +129,28 @@ class StructuredOutputRequestBuilder
         string $system = '',
         string $prompt = '',
         array $examples = [],
-    ) : ?self {
+    ): static {
         $this->cachedContext = new CachedContext($messages, $system, $prompt, $examples);
         return $this;
     }
 
-    public function withRequest(StructuredOutputRequest $request) : self {
+    public function withRequest(StructuredOutputRequest $request): static {
         $this->messages = $request->messages();
         $this->requestedSchema = $request->requestedSchema();
+        $this->responseModel = $request->responseModel();
         $this->system = $request->system();
         $this->prompt = $request->prompt();
         $this->examples = $request->examples();
         $this->model = $request->model();
-        $this->options = $request->options();
+        $this->options = array_merge($this->options, $request->options());
         $this->cachedContext = $request->cachedContext();
-        $this->config = $request->config();
-
         return $this;
     }
 
-    public function create(): StructuredOutputRequest {
+    public function createWith(
+        StructuredOutputConfig $config,
+        EventDispatcherInterface $events,
+    ) : StructuredOutputRequest {
         if (empty($this->requestedSchema)) {
             throw new Exception('Response model cannot be empty. Provide a class name, instance, or schema array.');
         }
@@ -146,10 +158,10 @@ class StructuredOutputRequestBuilder
         return new StructuredOutputRequest(
             messages: $this->messages,
             requestedSchema: $this->requestedSchema ?? [],
-            responseModel: $this->makeResponseModel(
+            responseModel: $this->responseModel ?? $this->makeResponseModel(
                 $this->requestedSchema,
-                $this->config,
-                $this->events,
+                $config,
+                $events,
             ),
             system: $this->system ?: null,
             prompt: $this->prompt ?: null,
@@ -157,11 +169,9 @@ class StructuredOutputRequestBuilder
             model: $this->model ?? null,
             options: $this->options ?? null,
             cachedContext: $this->cachedContext,
-            config: $this->config,
+            config: $config,
         );
     }
-
-    // INTERNAL /////////////////////////////////////////////////////////////////
 
     private function makeResponseModel(
         string|array|object $requestedSchema,

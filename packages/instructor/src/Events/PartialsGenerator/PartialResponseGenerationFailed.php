@@ -6,7 +6,7 @@ use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class PartialResponseGenerationFailed extends Event
+final class PartialResponseGenerationFailed extends Event
 {
     public $logLevel = LogLevel::WARNING;
 

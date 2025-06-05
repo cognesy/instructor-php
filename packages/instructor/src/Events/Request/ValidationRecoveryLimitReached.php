@@ -6,7 +6,7 @@ use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class ValidationRecoveryLimitReached extends Event
+final class ValidationRecoveryLimitReached extends Event
 {
     public $logLevel = LogLevel::ERROR;
 

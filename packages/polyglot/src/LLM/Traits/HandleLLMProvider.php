@@ -8,7 +8,7 @@ use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
 
-trait HandleInitMethods
+trait HandleLLMProvider
 {
     protected ?LLMProvider $llmProvider;
 

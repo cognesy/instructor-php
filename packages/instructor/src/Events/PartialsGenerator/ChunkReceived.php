@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Utils\Events\Event;
 
-class ChunkReceived extends Event
+final class ChunkReceived extends Event
 {
     public function __construct(
         public string $chunk = '',

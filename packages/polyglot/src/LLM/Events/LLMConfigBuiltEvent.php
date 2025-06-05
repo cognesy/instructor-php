@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\LLM\Events;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Utils\Events\Event;
 
-class LLMConfigBuiltEvent extends Event
+final class LLMConfigBuiltEvent extends Event
 {
     public function __construct(
         public LLMConfig $config

@@ -3,61 +3,61 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
+use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesConfigBuilder
 {
-    private StructuredOutputConfig $config;
+    private StructuredOutputConfigBuilder $configBuilder;
 
-    public function withOutputMode(OutputMode $outputMode): static {
-        $this->config->withOutputMode($outputMode);
+    public function withMaxRetries(int $maxRetries) : self {
+        $this->configBuilder->withMaxRetries($maxRetries);
         return $this;
     }
 
-    public function withMaxRetries(int $maxRetries): static {
-        $this->config->withMaxRetries($maxRetries);
+    public function withOutputMode(OutputMode $outputMode): static {
+        $this->configBuilder->withOutputMode($outputMode);
         return $this;
     }
 
     public function withSchemaName(string $schemaName): static {
-        $this->config->withSchemaName($schemaName);
+        $this->configBuilder->withSchemaName($schemaName);
         return $this;
     }
 
     public function withToolName(string $toolName): static {
-        $this->config->withToolName($toolName);
+        $this->configBuilder->withToolName($toolName);
         return $this;
     }
 
     public function withToolDescription(string $toolDescription): static {
-        $this->config->withToolDescription($toolDescription);
+        $this->configBuilder->withToolDescription($toolDescription);
         return $this;
     }
 
     public function withRetryPrompt(string $retryPrompt): static {
-        $this->config->withRetryPrompt($retryPrompt);
+        $this->configBuilder->withRetryPrompt($retryPrompt);
         return $this;
     }
 
     public function withConfig(StructuredOutputConfig $config): static {
-        $this->config = $config;
+        $this->configBuilder->withConfig($config);
         return $this;
     }
 
     public function withConfigPreset(string $preset): static {
-        $this->config = $this->configProvider->getConfig($preset);
+        $this->configBuilder->withPreset($preset);
         return $this;
     }
 
     public function withConfigProvider(CanProvideStructuredOutputConfig $configProvider): static {
-        $this->configProvider = $configProvider;
-        $this->config = $this->configProvider->getConfig();
+        $this->configBuilder->withConfigProvider($configProvider);
         return $this;
     }
 
     public function withObjectReferences(bool $useObjectReferences): static {
-        $this->config->withUseObjectReferences($useObjectReferences);
+        $this->configBuilder->withUseObjectReferences($useObjectReferences);
         return $this;
     }
 }

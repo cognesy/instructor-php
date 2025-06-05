@@ -2,10 +2,9 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\ConfigProviders\StructuredOutputConfigSource;
 use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
-use Cognesy\Instructor\Data\CachedContext;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
+use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
+use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
@@ -40,16 +39,9 @@ class StructuredOutput
     private ResponseDeserializer $responseDeserializer;
     private ResponseValidator $responseValidator;
     private ResponseTransformer $responseTransformer;
-    private CanProvideStructuredOutputConfig $configProvider;
 
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
-    /**
-     * @param LLMProvider|null $llm An optional LLM object instance for LLM connection.
-     * @param StructuredOutputConfig|null $config An optional StructuredOutputConfig instance for configuration.
-     * @param EventDispatcherInterface|null $events An optional EventDispatcherInterface instance for managing events.
-     * @param CanRegisterEventListeners|null $listener An optional EventListenerInterface instance for listening to events.
-     */
     public function __construct(
         ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
@@ -64,10 +56,12 @@ class StructuredOutput
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
-        $this->configProvider = StructuredOutputConfigSource::makeWith($configProvider);
-        $this->config = $this->configProvider->getConfig();
-        $this->cachedContext = new CachedContext();
-        $this->llm = LLMProvider::new(
+        $this->configBuilder = new StructuredOutputConfigBuilder(
+            configProvider: $configProvider,
+        );
+        $this->requestBuilder = new StructuredOutputRequestBuilder();
+
+        $this->llmProvider = LLMProvider::new(
             events: $this->events,
             listener: $this->listener,
             configProvider: $llmConfigProvider,

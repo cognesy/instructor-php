@@ -3,7 +3,7 @@ namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Utils\Events\Event;
 
-class PartialJsonReceived extends Event
+final class PartialJsonReceived extends Event
 {
     public function __construct(
         public string $partialJson = '',

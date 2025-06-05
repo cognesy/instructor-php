@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Events\StructuredOutput;
 
 use Cognesy\Utils\Events\Event;
 
-class StructuredOutputReady extends Event
+final class StructuredOutputReady extends Event
 {
     public function __construct() {
         parent::__construct();

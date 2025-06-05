@@ -7,6 +7,7 @@ use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
+use Cognesy\Http\Events\HttpDriverBuilt;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -52,9 +53,14 @@ class HttpClientDriverFactory
     ): CanHandleHttpRequest {
         $name = $config->driver;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
+
         if ($driverClosure === null) {
             throw new InvalidArgumentException("HTTP client driver supported: {$name}");
         }
+
+        $clientClass = is_null($clientInstance) ? '(auto-instance)' : get_class($clientInstance);
+        $this->events->dispatch(new HttpDriverBuilt($clientClass, $config));
+
         return $driverClosure(config: $config, clientInstance: $clientInstance, events: $this->events);
     }
 

@@ -7,7 +7,7 @@ use Cognesy\Utils\Events\Event;
 use JetBrains\PhpStorm\Deprecated;
 
 #[Deprecated]
-class HttpClientConfigBuilt extends Event
+final class HttpClientConfigBuilt extends Event
 {
     public function __construct(
         public HttpClientConfig $httpClientConfig,

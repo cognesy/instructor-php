@@ -6,7 +6,7 @@ use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
-class StreamedToolCallCompleted extends Event
+final class StreamedToolCallCompleted extends Event
 {
     public function __construct(
         public ToolCall $toolCall

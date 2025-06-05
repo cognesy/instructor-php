@@ -7,7 +7,7 @@ use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class ResponseValidated extends Event
+final class ResponseValidated extends Event
 {
     public $logLevel = LogLevel::INFO;
 

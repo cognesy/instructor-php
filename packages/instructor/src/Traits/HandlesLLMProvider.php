@@ -54,15 +54,6 @@ trait HandlesLLMProvider
     }
 
     /**
-     * Returns LLM configuration object for the current instance.
-     *
-     * @return LLMProvider The LLM object for the current instance.
-     */
-    public function llm() : LLMProvider {
-        return $this->llmProvider;
-    }
-
-    /**
      * Returns the config object for the current instance.
      *
      * @return StructuredOutputConfig The config object for the current instance.

@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Events\Request;
 
 use Cognesy\Utils\Events\Event;
 
-class ResponseModelBuildModeSelected extends Event
+final class ResponseModelBuildModeSelected extends Event
 {
     public function __construct(
         public string $mode

@@ -5,7 +5,7 @@ use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
-class StreamedResponseReceived extends Event
+final class StreamedResponseReceived extends Event
 {
     public function __construct(
         public PartialLLMResponse $response,

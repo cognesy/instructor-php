@@ -9,7 +9,7 @@ use Cognesy\Utils\Events\Event;
 /**
  * Event fired when a recorded HTTP interaction is replayed
  */
-class HttpInteractionReplayed extends Event
+final class HttpInteractionReplayed extends Event
 {
     public function __construct(
         public readonly HttpClientRequest $request,

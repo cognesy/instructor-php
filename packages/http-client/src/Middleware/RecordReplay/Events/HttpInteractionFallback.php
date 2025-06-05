@@ -8,7 +8,7 @@ use Cognesy\Utils\Events\Event;
 /**
  * Event fired when falling back to a real request because no recording was found
  */
-class HttpInteractionFallback extends Event
+final class HttpInteractionFallback extends Event
 {
     public function __construct(
         public readonly HttpClientRequest $request

@@ -7,7 +7,7 @@ use Cognesy\Utils\Events\Event;
 use JetBrains\PhpStorm\Deprecated;
 
 #[Deprecated]
-class DebugConfigBuilt extends Event
+final class DebugConfigBuilt extends Event
 {
     public function __construct(
         public DebugConfig $debugConfig,

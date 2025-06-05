@@ -7,7 +7,7 @@ use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-class ResponseTransformationFailed extends Event
+final class ResponseTransformationFailed extends Event
 {
     public $logLevel = LogLevel::WARNING;
 

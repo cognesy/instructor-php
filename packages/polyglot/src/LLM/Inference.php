@@ -1,4 +1,5 @@
 <?php
+
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
@@ -16,7 +17,7 @@ class Inference
     use HandlesEventDispatching;
     use HandlesEventListening;
 
-    use Traits\HandleInitMethods;
+    use Traits\HandleLLMProvider;
     use Traits\HandlesRequestBuilder;
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
@@ -38,6 +39,7 @@ class Inference
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
 
+        $this->requestBuilder = new InferenceRequestBuilder();
         $this->llmProvider = LLMProvider::new(
             $this->events,
             $this->listener,

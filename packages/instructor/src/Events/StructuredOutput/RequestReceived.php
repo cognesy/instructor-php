@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Events\StructuredOutput;
 use Cognesy\Utils\Events\Event;
 use Psr\Log\LogLevel;
 
-class RequestReceived extends Event
+final class RequestReceived extends Event
 {
     public $logLevel = LogLevel::INFO;
 

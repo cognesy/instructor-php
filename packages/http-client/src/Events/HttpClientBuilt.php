@@ -6,7 +6,7 @@ use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Utils\Events\Event;
 
-class HttpClientBuilt extends Event
+final class HttpClientBuilt extends Event
 {
     public function __construct(
         public string $driverClass,

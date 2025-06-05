@@ -32,8 +32,8 @@ class MiddlewareHandler implements CanHandleHttpRequest
      */
     public function __construct(
         protected CanHandleHttpRequest $driver,
-        protected array                $middleware = [],
-        protected ?EventDispatcherInterface      $events = null,
+        protected array $middleware = [],
+        protected ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
     }

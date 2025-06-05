@@ -107,6 +107,7 @@ final class EmbeddingsProvider
      */
     public function withConfigProvider(CanProvideEmbeddingsConfig $configProvider): self {
         $this->configProvider = $configProvider;
+        return $this;
     }
 
     /**
