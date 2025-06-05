@@ -73,6 +73,8 @@ final class StructuredOutputConfig
             'toolName' => $this->toolName,
             'toolDescription' => $this->toolDescription,
             'chatStructure' => $this->chatStructure,
+            'schemaName' => $this->schemaName,
+            'defaultOutputClass' => $this->defaultOutputClass,
         ];
     }
 }

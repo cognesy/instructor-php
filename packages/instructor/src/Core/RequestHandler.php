@@ -15,6 +15,7 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
 use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Generator;
@@ -28,6 +29,7 @@ class RequestHandler
     protected CanMaterializeRequest    $requestMaterializer;
     protected LLMProvider              $llm;
     protected EventDispatcherInterface $events;
+    protected CanRegisterEventListeners $listener;
 
     protected int $retries = 0;
     protected array $errors = [];
@@ -39,6 +41,7 @@ class RequestHandler
         CanMaterializeRequest    $requestMaterializer,
         LLMProvider              $llm,
         EventDispatcherInterface $events,
+        CanRegisterEventListeners $listener,
     ) {
         $this->request = $request;
         $this->responseGenerator = $responseGenerator;
@@ -46,6 +49,7 @@ class RequestHandler
         $this->requestMaterializer = $requestMaterializer;
         $this->llm = $llm;
         $this->events = $events;
+        $this->listener = $listener;
         $this->retries = 0;
         $this->errors = [];
     }
@@ -100,9 +104,8 @@ class RequestHandler
     // INTERNAL ///////////////////////////////////////////////////////////
 
     protected function getInference(StructuredOutputRequest $request) : InferenceResponse {
-        return (new Inference)
+        return (new Inference(events: $this->events))
             ->withLLMProvider($this->llm)
-            ->withEventDispatcher($this->events)
             ->with(
                 messages: $this->requestMaterializer->toMessages($request),
                 model: $request->model(),

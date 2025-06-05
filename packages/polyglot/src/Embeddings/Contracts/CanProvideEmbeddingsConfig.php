@@ -3,8 +3,12 @@
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
-interface CanProvideEmbeddingsConfig
+/**
+ * @extends CanProvideConfig<EmbeddingsConfig>
+ */
+interface CanProvideEmbeddingsConfig extends CanProvideConfig
 {
     public function getConfig(?string $preset = ''): EmbeddingsConfig;
 }

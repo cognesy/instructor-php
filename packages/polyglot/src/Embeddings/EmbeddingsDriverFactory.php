@@ -5,11 +5,11 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
-use Cognesy\Polyglot\Embeddings\Drivers\AzureOpenAIDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\CohereDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\GeminiDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\JinaDriver;
-use Cognesy\Polyglot\Embeddings\Drivers\OpenAIDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Azure\AzureOpenAIDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Cohere\CohereDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Gemini\GeminiDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\Jina\JinaDriver;
+use Cognesy\Polyglot\Embeddings\Drivers\OpenAI\OpenAIDriver;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -40,7 +40,7 @@ class EmbeddingsDriverFactory
      * @return CanHandleVectorization
      */
     public function makeDriver(EmbeddingsConfig $config, HttpClient $httpClient) : CanHandleVectorization {
-        $type = $config->providerType ?? 'openai';
+        $type = $config->driver ?? 'openai';
         $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
         if (!$driver) {
             throw new InvalidArgumentException("Unknown driver: {$type}");

@@ -20,22 +20,6 @@ class Debug
         return $this->config;
     }
 
-    public function enable() : void {
-        $this->config->httpEnabled = true;
-    }
-
-    public function disable() : void {
-        $this->config->httpEnabled = false;
-    }
-
-//    public static function setEnabled(bool $debug = true) : void {
-//        Settings::set('debug', 'http.enabled', $debug);
-//    }
-//
-//    public static function isEnabled() : bool {
-//        return Settings::get('debug', 'http.enabled', false);
-//    }
-
     public function tryDumpStream(string $line, bool $isConsolidated = false): void {
         if (!$this->config->httpResponseStream) {
             return;

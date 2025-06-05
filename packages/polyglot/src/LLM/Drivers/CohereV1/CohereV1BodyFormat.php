@@ -17,7 +17,9 @@ class CohereV1BodyFormat implements CanMapRequestBody
         protected CanMapMessages $messageFormat,
     ) {}
 
-    public function toRequestBody(InferenceRequest $request): array {
+    public function toRequestBody(InferenceRequest $request) : array {
+        $request = $request->withCacheApplied();
+
         $options = array_merge($this->config->options, $request->options());
 
         unset($options['parallel_tool_calls']);
@@ -27,7 +29,7 @@ class CohereV1BodyFormat implements CanMapRequestBody
         $nativeMessages = Messages::asString($this->messageFormat->map($request->messages()));
 
         $requestBody = array_merge(array_filter([
-            'model' => $request->model() ?: $this->config->model,
+            'model' => $request->model() ?: $this->config->defaultModel,
             'preamble' => $system,
             'chat_history' => $chatHistory,
             'message' => $nativeMessages,

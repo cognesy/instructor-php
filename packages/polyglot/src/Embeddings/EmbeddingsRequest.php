@@ -2,6 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
+use InvalidArgumentException;
+
 class EmbeddingsRequest
 {
     protected array $inputs = [];
@@ -11,7 +13,7 @@ class EmbeddingsRequest
     public function __construct(
         string|array $input = [],
         array $options = [],
-        string $model = ''
+        string $model = '',
     ) {
         $this->inputs = match(true) {
             is_string($input) => [$input],
@@ -20,37 +22,10 @@ class EmbeddingsRequest
         };
         $this->model = $model;
         $this->options = $options;
-    }
 
-    // MUTATORS
-
-    public function withAnyInput(array|string $input) : static {
-        $this->inputs = match(true) {
-            is_string($input) => [$input],
-            is_array($input) => $input,
-            default => []
-        };
-        return $this;
-    }
-
-    public function withInput(string $input) : static {
-        $this->inputs = [$input];
-        return $this;
-    }
-
-    public function withInputs(array $inputs) : static {
-        $this->inputs = $inputs;
-        return $this;
-    }
-
-    public function withOptions(array $options) : static {
-        $this->options = $options;
-        return $this;
-    }
-
-    public function withModel(string $model) : static {
-        $this->model = $model;
-        return $this;
+        if (empty($this->inputs)) {
+            throw new InvalidArgumentException("Input data is required");
+        }
     }
 
     // ACCESSORS

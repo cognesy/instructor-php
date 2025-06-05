@@ -1,6 +1,6 @@
 ---
-title: 'Custom Embeddings Driver'
-docname: 'custom_embeddings_driver'
+title: 'Custom Embeddings Config'
+docname: 'custom_embeddings_config'
 ---
 
 ## Overview
@@ -12,7 +12,8 @@ docname: 'custom_embeddings_driver'
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
-use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbedUtils;
 use Cognesy\Utils\Config\Env;
 
 $documents = [
@@ -28,19 +29,21 @@ $documents = [
 $query = "technology news";
 
 $config = new EmbeddingsConfig(
-    apiUrl: 'https://api.cohere.ai/v1',
-    apiKey: Env::get('COHERE_API_KEY', ''),
-    endpoint: '/embed',
-    model: 'embed-multilingual-v3.0',
+    apiUrl    : 'https://api.cohere.ai/v1',
+    apiKey    : Env::get('COHERE_API_KEY', ''),
+    endpoint  : '/embed',
+    model     : 'embed-multilingual-v3.0',
     dimensions: 1024,
-    maxInputs: 96,
-    httpClient: 'guzzle',
-    providerType: 'cohere2',
+    maxInputs : 96,
+    httpClientPreset: 'guzzle',
+    driver: 'cohere2',
 );
 
-$embeddings = (new Embeddings)->withConfig($config);
+$provider = EmbeddingsProvider::new()
+    ->withConfig($config);
 
-$bestMatches = $embeddings->findSimilar(
+$bestMatches = EmbedUtils::findSimilar(
+    provider: $provider,
     query: $query,
     documents: $documents,
     topK: 3

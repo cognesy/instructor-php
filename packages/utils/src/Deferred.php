@@ -3,6 +3,7 @@
 namespace Cognesy\Utils;
 
 use Closure;
+use ReflectionObject;
 use RuntimeException;
 
 class Deferred
@@ -14,6 +15,10 @@ class Deferred
         if ($deferred !== null) {
             $this->defer($deferred);
         }
+    }
+
+    public function isSet() : bool {
+        return !isset($this->deferred);
     }
 
     public function defer(callable|Closure $deferred) : void {
@@ -51,5 +56,11 @@ class Deferred
         $this->instance = ($this->deferred)(...$args);
 
         return $this->instance;
+    }
+
+    public function __toString() : string {
+        return $this->instance
+            ? (new ReflectionObject($this->instance))->getShortName()
+            : '(unresolved)';
     }
 }

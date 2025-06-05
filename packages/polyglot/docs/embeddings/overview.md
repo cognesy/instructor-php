@@ -128,7 +128,7 @@ $embeddingsConfig = new EmbeddingsConfig(
     model: 'text-embedding-3-large',
     dimensions: 3072,
     maxInputs: 100,
-    providerType: 'openai'
+    driver: 'openai'
 );
 
 // Use the custom configuration

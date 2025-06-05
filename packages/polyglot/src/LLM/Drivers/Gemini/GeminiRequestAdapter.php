@@ -32,7 +32,7 @@ class GeminiRequestAdapter implements ProviderRequestAdapter
     }
 
     protected function toUrl(InferenceRequest $request): string {
-        $model = $request->model() ?: $this->config->model;
+        $model = $request->model() ?: $this->config->defaultModel;
         $urlParams = ['key' => $this->config->apiKey];
 
         if ($request->isStreamed()) {

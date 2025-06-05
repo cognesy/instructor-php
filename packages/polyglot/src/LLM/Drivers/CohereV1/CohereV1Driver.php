@@ -2,18 +2,14 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\CohereV1;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
-use Cognesy\Polyglot\LLM\InferenceRequest;
+use Cognesy\Polyglot\LLM\Drivers\BaseInferenceDriver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class CohereV1Driver implements CanHandleInference
+class CohereV1Driver extends BaseInferenceDriver
 {
     protected ProviderRequestAdapter $requestAdapter;
     protected ProviderResponseAdapter $responseAdapter;
@@ -34,28 +30,5 @@ class CohereV1Driver implements CanHandleInference
         $this->responseAdapter = new CohereV1ResponseAdapter(
             new CohereV1UsageFormat()
         );
-    }
-
-    public function handle(InferenceRequest $request): HttpClientResponse
-    {
-        $clientRequest = $this->requestAdapter->toHttpClientRequest(
-            $request->withCacheApplied()
-        );
-        return $this->httpClient->handle($clientRequest);
-    }
-
-    public function fromResponse(array $data): ?LLMResponse
-    {
-        return $this->responseAdapter->fromResponse($data);
-    }
-
-    public function fromStreamResponse(array $data): ?PartialLLMResponse
-    {
-        return $this->responseAdapter->fromStreamResponse($data);
-    }
-
-    public function fromStreamData(string $data): string|bool
-    {
-        return $this->responseAdapter->fromStreamData($data);
     }
 }

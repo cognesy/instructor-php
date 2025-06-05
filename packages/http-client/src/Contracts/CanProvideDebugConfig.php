@@ -3,8 +3,12 @@
 namespace Cognesy\Http\Contracts;
 
 use Cognesy\Http\Debug\DebugConfig;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
-interface CanProvideDebugConfig
+/**
+ * @extends CanProvideConfig<DebugConfig>
+ */
+interface CanProvideDebugConfig extends CanProvideConfig
 {
-    public function getConfig(string $preset = '') : DebugConfig;
+    public function getConfig(?string $preset = '') : DebugConfig;
 }

@@ -18,7 +18,7 @@ class SummarizeMessages implements CanSummarizeMessages
 
     public function __construct(string $prompt = '', ?LLMProvider $llm = null, string $model = '', int $tokenLimit = 1024) {
         $this->prompt = $prompt ?: $this->prompt;
-        $this->llm = $llm ?? new LLMProvider();
+        $this->llm = $llm ?? LLMProvider::new();
         $this->model = $model;
         $this->tokenLimit = $tokenLimit;
     }

@@ -53,7 +53,6 @@ $user = (new StructuredOutput)
     ->with(
         messages: $text,
         responseModel: User::class,
-        model: 'gpt-3.5-turbo',
     )
     ->get();
 

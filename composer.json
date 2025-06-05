@@ -112,6 +112,7 @@
     "adbario/php-dot-notation": "^3.3",
     "aimeos/map": "^3.8",
     "gioni06/gpt3-tokenizer": "^1.2",
+    "phpdocumentor/reflection-docblock": "^5.6",
     "psr/event-dispatcher": "^1.0",
     "psr/http-client": "^1.0",
     "psr/http-message": "^2.0",

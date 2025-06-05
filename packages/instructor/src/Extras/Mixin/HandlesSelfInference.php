@@ -33,7 +33,7 @@ trait HandlesSelfInference {
      * @throws \Exception
      */
     public static function infer(
-        string|array        $messages = '',
+        string|array $messages = '',
         string       $system = '',
         string       $prompt = '',
         array        $examples = [],
@@ -47,7 +47,8 @@ trait HandlesSelfInference {
         ?LLMProvider $llm = null,
     ) : static {
         return (new StructuredOutput)
-            ->withLLMProvider($llm ?? new LLMProvider())
+            ->withLLMProvider($llm ?? LLMProvider::new())
+            //->wiretap(fn($e) => $e->print())
             ->with(
                 messages: $messages,
                 responseModel: self::class,

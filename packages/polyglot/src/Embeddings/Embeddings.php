@@ -21,9 +21,7 @@ class Embeddings
     use Traits\HandlesShortcuts;
     use Traits\HandlesInvocation;
 
-    use Traits\HasFinders;
-
-    protected EmbeddingsProvider $provider;
+    protected EmbeddingsProvider $embeddingsProvider;
     protected EmbeddingsRequest $request;
 
     public function __construct(
@@ -35,8 +33,7 @@ class Embeddings
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
 
-        $this->request = new EmbeddingsRequest();
-        $this->provider = new EmbeddingsProvider(
+        $this->embeddingsProvider = EmbeddingsProvider::new(
             $this->events,
             $this->listener,
             $configProvider,

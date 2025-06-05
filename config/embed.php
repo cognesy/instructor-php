@@ -7,7 +7,7 @@ return [
 
     'presets' => [
         'azure' => [
-            'providerType' => 'azure',
+            'driver' => 'azure',
             'apiUrl' => 'https://{resourceName}.openai.azure.com/openai/deployments/{deploymentId}',
             'apiKey' => Env::get('AZURE_OPENAI_EMBED_API_KEY', ''),
             'endpoint' => '/embeddings',
@@ -21,7 +21,7 @@ return [
             'maxInputs' => 16,
         ],
         'cohere1' => [
-            'providerType' => 'cohere2',
+            'driver' => 'cohere2',
             'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',
@@ -30,7 +30,7 @@ return [
             'maxInputs' => 96,
         ],
         'cohere2' => [
-            'providerType' => 'cohere2',
+            'driver' => 'cohere2',
             'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',
@@ -39,7 +39,7 @@ return [
             'maxInputs' => 96,
         ],
         'gemini' => [
-            'providerType' => 'gemini',
+            'driver' => 'gemini',
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/{model}:batchEmbedContents',
@@ -48,7 +48,7 @@ return [
             'maxInputs' => 100, // max 2048 tokens
         ],
         'jina' => [
-            'providerType' => 'jina',
+            'driver' => 'jina',
             'apiUrl' => 'https://api.jina.ai/v1',
             'apiKey' => Env::get('JINA_API_KEY', ''),
             'endpoint' => '/embeddings',
@@ -60,7 +60,7 @@ return [
             'maxInputs' => 500, // max 8192 tokens
         ],
         'mistral' => [
-            'providerType' => 'mistral',
+            'driver' => 'mistral',
             'apiUrl' => 'https://api.mistral.ai/v1',
             'apiKey' => Env::get('MISTRAL_API_KEY', ''),
             'endpoint' => '/embeddings',
@@ -69,17 +69,17 @@ return [
             'maxInputs' => 512, // max 512 tokens
         ],
         'ollama' => [
-            'providerType' => 'ollama',
+            'driver' => 'ollama',
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/embeddings',
             'defaultModel' => 'nomic-embed-text',
             'defaultDimensions' => 1024,
             'maxInputs' => 512,
-            'httpClient' => 'http-ollama',
+            'httpClientPreset' => 'http-ollama',
         ],
         'openai' => [
-            'providerType' => 'openai',
+            'driver' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/embeddings',

@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'defaultLibrary' => 'demo-twig',
+    'defaultPreset' => 'demo-twig',
 
-    'libraries' => [
+    'presets' => [
         'system' => [
             'templateEngine' => 'arrowpipe',
             'resourcePath' => 'prompts/system',

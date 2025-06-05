@@ -16,7 +16,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function using(string $preset) : self {
-        $this->provider->withPreset($preset);
+        $this->embeddingsProvider->withPreset($preset);
         return $this;
     }
 
@@ -26,7 +26,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withConfig(EmbeddingsConfig $config) : self {
-        $this->provider->withConfig($config);
+        $this->embeddingsProvider->withConfig($config);
         return $this;
     }
 
@@ -37,7 +37,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withConfigProvider(CanProvideEmbeddingsConfig $configProvider) : self {
-        $this->provider->withConfigProvider($configProvider);
+        $this->embeddingsProvider->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -48,12 +48,12 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withDriver(CanHandleVectorization $driver) : self {
-        $this->provider->withDriver($driver);
+        $this->embeddingsProvider->withDriver($driver);
         return $this;
     }
 
     public function withProvider(EmbeddingsProvider $provider) : self {
-        $this->provider = $provider;
+        $this->embeddingsProvider = $provider;
         return $this;
     }
 
@@ -64,7 +64,7 @@ trait HandlesInitMethods
      * @return $this
      */
     public function withHttpClient(HttpClient $httpClient) : self {
-        $this->provider->withHttpClient($httpClient);
+        $this->embeddingsProvider->withHttpClient($httpClient);
         return $this;
     }
 
@@ -76,25 +76,7 @@ trait HandlesInitMethods
      * @return self
      */
     public function withDebug(bool $debug = true) : self {
-        $this->provider->withDebug($debug);
+        $this->embeddingsProvider->withDebug($debug);
         return $this;
-    }
-
-    /**
-     * Returns the config object for the current instance.
-     *
-     * @return EmbeddingsConfig The config object for the current instance.
-     */
-    public function config() : EmbeddingsConfig {
-        return $this->provider->config();
-    }
-
-    /**
-     * Returns the driver object for the current instance.
-     *
-     * @return CanHandleVectorization The driver object for the current instance.
-     */
-    public function driver(): CanHandleVectorization {
-        return $this->provider->driver();
     }
 }

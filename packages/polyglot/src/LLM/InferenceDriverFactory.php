@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\A21\A21Driver;
@@ -37,11 +38,14 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceDriverFactory
 {
     private static array $drivers = [];
+    private array $bundledDrivers;
 
     public function __construct(
         protected EventDispatcherInterface  $events,
         protected CanRegisterEventListeners $listener,
-    ) {}
+    ) {
+        $this->bundledDrivers = $this->bundledDrivers();
+    }
 
     /**
      * Registers driver under given name
@@ -57,22 +61,22 @@ class InferenceDriverFactory
      * Creates and returns an appropriate driver instance based on the given configuration.
      */
     public function makeDriver(LLMConfig $config, ?HttpClient $httpClient = null): CanHandleInference {
-        $type = $config->providerType;
-        if (empty($type)) {
+        $driver = $config->driver;
+        if (empty($driver)) {
             throw new InvalidArgumentException("Provider type not specified in the configuration.");
         }
 
-        $driver = self::$drivers[$type] ?? $this->getBundledDriver($type);
-        if ($driver === null) {
-            throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$type}");
+        $driverFactory = self::$drivers[$driver] ?? $this->getBundledDriver($driver);
+        if ($driverFactory === null) {
+            throw new InvalidArgumentException("Provider type not supported - missing built-in or custom driver: {$driver}");
         }
 
-        return $driver(
+        return $driverFactory(
             config: $config,
             httpClient: match(true) {
                 !is_null($httpClient) => $httpClient,
-                !empty($config->httpClientPreset) => (new HttpClient($this->events, $this->listener))->withPreset($config->httpClientPreset),
-                default => (new HttpClient($this->events, $this->listener)),
+                !empty($config->httpClientPreset) => (new HttpClientBuilder($this->events, $this->listener))->withPreset($config->httpClientPreset)->create(),
+                default => (new HttpClientBuilder($this->events, $this->listener))->create(),
             },
             events: $this->events
         );
@@ -84,7 +88,11 @@ class InferenceDriverFactory
      * Returns factory to create LLM driver instance
      */
     protected function getBundledDriver(string $name) : ?callable {
-        $drivers = [
+       return $this->bundledDrivers[$name] ?? null;
+    }
+
+    protected function bundledDrivers() : array {
+        return [
             // Tailored drivers
             'a21' => fn($config, $httpClient, $events) => new A21Driver($config, $httpClient, $events),
             'anthropic' => fn($config, $httpClient, $events) => new AnthropicDriver($config, $httpClient, $events),
@@ -112,6 +120,5 @@ class InferenceDriverFactory
             'openai-compatible' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
             'together' => fn($config, $httpClient, $events) => new OpenAICompatibleDriver($config, $httpClient, $events),
        ];
-       return $drivers[$name] ?? null;
     }
 }

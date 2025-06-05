@@ -103,8 +103,7 @@ trait HandlesInvocation
      * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
      */
     public function create() : StructuredOutputResponse {
-        $this->queueEvent(new RequestReceived());
-        $this->dispatchQueuedEvents();
+        $this->events->dispatch(new RequestReceived());
 
         $request = $this->build();
 
@@ -124,6 +123,7 @@ trait HandlesInvocation
             requestMaterializer: new RequestMaterializer($this->config),
             llm: $this->llm(),
             events: $this->events,
+            listener: $this->listener,
         );
 
         return new StructuredOutputResponse(

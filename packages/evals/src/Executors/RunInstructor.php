@@ -26,7 +26,7 @@ class RunInstructor implements CanRunExecution
     private function makeInstructorResponse(Execution $execution) : StructuredOutputResponse {
         return (new StructuredOutput)
             ->using($execution->get('case.preset'))
-            ->request(
+            ->with(
                 messages: $this->structuredOutputData->messages,
                 responseModel: $this->structuredOutputData->responseModel,
                 system: $this->structuredOutputData->system,
@@ -43,6 +43,7 @@ class RunInstructor implements CanRunExecution
                 toolDescription: $this->structuredOutputData->toolDescription,
                 retryPrompt: $this->structuredOutputData->retryPrompt,
                 mode: $execution->get('case.mode'),
-            );
+            )
+            ->create();
     }
 }

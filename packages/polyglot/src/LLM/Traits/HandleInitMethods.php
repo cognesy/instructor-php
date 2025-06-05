@@ -17,7 +17,7 @@ trait HandleInitMethods
      * @return self Returns the current instance.
      */
     public function withLLMProvider(LLMProvider $llm) : static {
-        $this->llm = $llm;
+        $this->llmProvider = $llm;
         return $this;
     }
 
@@ -29,12 +29,12 @@ trait HandleInitMethods
      * @return self
      */
     public function withConfig(LLMConfig $config) : static {
-        $this->llm->withConfig($config);
+        $this->llmProvider->withConfig($config);
         return $this;
     }
 
     public function withConfigProvider(CanProvideLLMConfig $configProvider) : static {
-        $this->llm->withConfigProvider($configProvider);
+        $this->llmProvider->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -47,7 +47,7 @@ trait HandleInitMethods
      * @return self Returns the current instance with the updated connection.
      */
     public function fromDSN(string $dsn) : static {
-        $this->llm->withDSN($dsn);
+        $this->llmProvider->withDSN($dsn);
         return $this;
     }
 
@@ -62,7 +62,7 @@ trait HandleInitMethods
         if (empty($preset)) {
             return $this;
         }
-        $this->llm->using($preset);
+        $this->llmProvider->withPreset($preset);
         return $this;
     }
 
@@ -74,7 +74,7 @@ trait HandleInitMethods
      * @return self Returns the current instance for method chaining.
      */
     public function withHttpClient(HttpClient $httpClient) : static {
-        $this->llm->withHttpClient($httpClient);
+        $this->llmProvider->withHttpClient($httpClient);
         return $this;
     }
 
@@ -86,7 +86,7 @@ trait HandleInitMethods
      * @return self
      */
     public function withDriver(CanHandleInference $driver) : static {
-        $this->llm->withDriver($driver);
+        $this->llmProvider->withDriver($driver);
         return $this;
     }
 
@@ -99,26 +99,8 @@ trait HandleInitMethods
      */
     public function withDebug(?bool $debug = true) : static {
         if ($debug !== null) {
-            $this->llm->withDebug($debug);
+            $this->llmProvider->withDebug($debug);
         }
         return $this;
-    }
-
-    /**
-     * Retrieves the LLM instance.
-     *
-     * @return LLMProvider The LLM instance.
-     */
-    public function llm() : LLMProvider {
-        return $this->llm;
-    }
-
-    /**
-     * Retrieves the LLM configuration instance.
-     *
-     * @return LLMConfig The LLM configuration instance.
-     */
-    public function config() : LLMConfig {
-        return $this->llm->config();
     }
 }

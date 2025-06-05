@@ -292,10 +292,10 @@ $customConfig = new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    model: 'gpt-4-turbo',
-    maxTokens: 2048,
+    defaultModel: 'gpt-4-turbo',
+    defaultMaxTokens: 2048,
     contextLength: 128000,
-    providerType: 'openai'
+    driver: 'openai'
 );
 
 // Use the custom configuration

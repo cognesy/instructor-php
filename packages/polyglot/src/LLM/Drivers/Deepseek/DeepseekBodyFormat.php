@@ -11,17 +11,19 @@ use Cognesy\Utils\Str;
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 {
     public function toRequestBody(InferenceRequest $request) : array {
+        $request = $request->withCacheApplied();
+
         $options = array_merge($this->config->options, $request->options());
 
-        $model = $request->model() ?: $this->config->model;
+        $model = $request->model() ?: $this->config->defaultModel;
         $messages = match($this->supportsAlternatingRoles($request)) {
             false => Messages::fromArray($request->messages())->toMergedPerRole()->toArray(),
             true => $request->messages(),
         };
 
         $requestBody = array_merge(array_filter([
-            'model' => $model,
-            'max_tokens' => $this->config->maxTokens,
+            'model' => $model ?: $this->config->defaultModel,
+            'max_tokens' => $this->config->defaultMaxTokens,
             'messages' => $this->messageFormat->map($messages),
         ]), $options);
 

@@ -21,8 +21,8 @@ trait HandlesShortcuts
         return $this->create()->get();
     }
 
-    public function toJson(): string {
-        return $this->create()->toJson();
+    public function asJson(): string {
+        return $this->create()->asJson();
     }
 
     public function asJsonData(): array {

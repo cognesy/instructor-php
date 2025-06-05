@@ -5,7 +5,7 @@ return [
 
     'presets' => [
         'guzzle' => [
-            'httpClientDriver' => 'guzzle',
+            'driver' => 'guzzle',
             'connectTimeout' => 3,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -14,7 +14,7 @@ return [
             'failOnError' => true,
         ],
         'symfony' => [
-            'httpClientDriver' => 'symfony',
+            'driver' => 'symfony',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -23,7 +23,7 @@ return [
             'failOnError' => true,
         ],
         'laravel' => [
-            'httpClientDriver' => 'laravel',
+            'driver' => 'laravel',
             'connectTimeout' => 1,
             'requestTimeout' => 30,
             'idleTimeout' => -1,
@@ -32,7 +32,7 @@ return [
             'failOnError' => true,
         ],
         'http-ollama' => [
-            'httpClientDriver' => 'guzzle',
+            'driver' => 'guzzle',
             'connectTimeout' => 1,
             'requestTimeout' => 90,
             'idleTimeout' => -1,

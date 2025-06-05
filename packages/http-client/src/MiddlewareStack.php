@@ -23,7 +23,7 @@ class MiddlewareStack
     /**
      * Adds middleware to the stack
      *
-     * @param \Cognesy\Http\Contracts\HttpMiddleware $middleware The middleware to add
+     * @param HttpMiddleware $middleware The middleware to add
      * @param string|null $name Optional name for the middleware
      * @return self
      */
@@ -40,7 +40,7 @@ class MiddlewareStack
     /**
      * Adds multiple middleware to the stack
      *
-     * @param \Cognesy\Http\Contracts\HttpMiddleware[] $middlewares Array of middleware to add
+     * @param HttpMiddleware[] $middlewares Array of middleware to add
      * @return self
      */
     public function appendMany(array $middlewares): self
@@ -175,8 +175,8 @@ class MiddlewareStack
     /**
      * Decorate a driver with the middleware stack
      *
-     * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $driver The HTTP driver to decorate
-     * @return \Cognesy\Http\Contracts\CanHandleHttpRequest The decorated driver
+     * @param CanHandleHttpRequest $driver The HTTP driver to decorate
+     * @return CanHandleHttpRequest The decorated driver
      */
     public function decorate(CanHandleHttpRequest $driver): CanHandleHttpRequest
     {
@@ -185,5 +185,18 @@ class MiddlewareStack
         }
 
         return new MiddlewareHandler($driver, array_values($this->stack), $this->events);
+    }
+
+    public function toDebugArray(): array {
+        return array_map(
+            function ($middleware, $key) {
+                return [
+                    'name' => $key,
+                    'class' => get_class($middleware),
+                ];
+            },
+            $this->stack,
+            array_keys($this->stack)
+        );
     }
 }

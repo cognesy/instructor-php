@@ -21,21 +21,22 @@ trait HandlesInference {
         string       $retryPrompt = '',
         ?LLMProvider $llm = null,
     ) : mixed {
-        return (new StructuredOutput(
-            llm: $llm ?? new LLMProvider()
-        ))->with(
-            messages: $messages,
-            responseModel: $responseModel,
-            system: $system,
-            prompt: $prompt,
-            examples: $examples,
-            model: $model,
-            maxRetries: $maxRetries,
-            options: $options,
-            toolName: $toolName,
-            toolDescription: $toolDescription,
-            retryPrompt: $retryPrompt,
-            mode: $mode,
-        )->get();
+        return (new StructuredOutput())
+            ->withLLMProvider($llm ?? LLMProvider::new())
+            ->with(
+                messages: $messages,
+                responseModel: $responseModel,
+                system: $system,
+                prompt: $prompt,
+                examples: $examples,
+                model: $model,
+                maxRetries: $maxRetries,
+                options: $options,
+                toolName: $toolName,
+                toolDescription: $toolDescription,
+                retryPrompt: $retryPrompt,
+                mode: $mode,
+            )
+            ->get();
     }
 }

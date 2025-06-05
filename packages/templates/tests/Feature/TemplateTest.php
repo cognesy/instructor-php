@@ -105,7 +105,7 @@ it('can load a template by name - Twig', function () {
 });
 
 it('can render string template - Twig', function () {
-    $prompt = (new Template(library: 'demo-twig'))
+    $prompt = (new Template(preset: 'demo-twig'))
         ->withTemplateContent('Hello, {{ name }}!')
         ->withValues(['name' => 'World']);
     expect($prompt->toText())->toBe('Hello, World!');

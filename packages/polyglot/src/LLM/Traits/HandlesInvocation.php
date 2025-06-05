@@ -15,7 +15,16 @@ trait HandlesInvocation
      * @param InferenceRequest $request The inference request object.
      */
     public function withRequest(InferenceRequest $request): static {
-        $this->request = $request;
+        $this->with(
+            messages: $request->messages(),
+            model: $request->model(),
+            tools: $request->tools(),
+            toolChoice: $request->toolChoice(),
+            responseFormat: $request->responseFormat(),
+            options: $request->options(),
+            mode: $request->outputMode()
+        );
+        $this->cachedContext = $request->cachedContext() ?? $this->cachedContext;
         return $this;
     }
 
@@ -39,27 +48,37 @@ trait HandlesInvocation
         array        $options = [],
         ?OutputMode  $mode = null,
     ) : static {
-        $this->request = new InferenceRequest(
-            messages: $messages,
-            model: $model ?: $this->config()->model,
-            tools: $tools,
-            toolChoice: $toolChoice,
-            responseFormat: $responseFormat,
-            options: array_merge($this->request->options(), $options),
-            mode: $mode ?? OutputMode::Unrestricted,
-            cachedContext: $this->cachedContext ?? null
-        );
+        $this->messages = $messages;
+        $this->model = $model;
+        $this->tools = $tools;
+        $this->toolChoice = $toolChoice;
+        $this->responseFormat = $responseFormat;
+        $this->options = array_merge($this->options, $options);
+        $this->streaming = $options['stream'] ?? $this->streaming;
+        $this->mode = $mode;
         return $this;
     }
 
     public function create(): InferenceResponse {
-        $this->events->dispatch(new InferenceRequested($this->request));
-        $inferenceDriver = $this->llm->driver();
+        $options = ($this->streaming === true)
+            ? array_merge($this->options, ['stream' => true])
+            : $this->options;
+        $request = new InferenceRequest(
+            messages: $this->messages,
+            model: $this->model,
+            tools: $this->tools,
+            toolChoice: $this->toolChoice,
+            responseFormat: $this->responseFormat,
+            options: $options,
+            mode: $this->mode ?? OutputMode::Unrestricted,
+            cachedContext: $this->cachedContext ?? null
+        );
+        $this->events->dispatch(new InferenceRequested($request));
+        $inferenceDriver = $this->llmProvider->createDriver();
         return new InferenceResponse(
-            httpResponse: $inferenceDriver->handle($this->request),
+            httpResponse: $inferenceDriver->handle($request),
             driver: $inferenceDriver,
-            config: $this->llm->config(),
-            isStreamed: $this->request->isStreamed(),
+            isStreamed: $request->isStreamed(),
             events: $this->events,
         );
     }

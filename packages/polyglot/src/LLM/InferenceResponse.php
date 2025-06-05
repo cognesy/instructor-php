@@ -28,13 +28,11 @@ class InferenceResponse
     public function __construct(
         HttpClientResponse $httpResponse,
         CanHandleInference $driver,
-        LLMConfig $config,
         bool $isStreamed,
         EventDispatcherInterface $events,
     ) {
         $this->events = $events;
         $this->driver = $driver;
-        $this->config = $config;
         $this->isStreamed = $isStreamed;
         $this->httpResponse = $httpResponse;
     }
@@ -73,12 +71,20 @@ class InferenceResponse
         return new InferenceStream(
             httpResponse: $this->httpResponse,
             driver: $this->driver,
-            config: $this->config,
             events: $this->events
         );
     }
 
     // AS API RESPONSE OBJECT ///////////////////////////////////
+
+    /**
+     * Converts the response content to a JSON representation.
+     *
+     * @return array The JSON representation of the content as an associative array.
+     */
+    public function asJson() : string {
+        return Json::fromString($this->get())->toString();
+    }
 
     /**
      * Converts the response content to a JSON representation.

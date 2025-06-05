@@ -1,6 +1,8 @@
 <?php
 namespace Cognesy\Utils\Config;
 
+use Cognesy\Utils\Config\Exceptions\MissingSettingException;
+use Cognesy\Utils\Config\Exceptions\NoSettingsFileException;
 use Exception;
 
 class Settings
@@ -92,6 +94,25 @@ class Settings
         }
 
         return self::$settings[$group]->has($key);
+    }
+
+    /**
+     * Checks if a settings group exists.
+     *
+     * @param string $group The settings group.
+     * @return bool True if the group exists, false otherwise.
+     * @throws Exception If the group is not provided.
+     */
+    public function hasGroup(string $group) : bool {
+        if (empty($group)) {
+            throw new Exception("Settings group not provided");
+        }
+
+        if (!self::isGroupLoaded($group)) {
+            self::$settings[$group] = dot(self::loadGroup($group));
+        }
+
+        return !empty(self::$settings[$group]);
     }
 
     /**

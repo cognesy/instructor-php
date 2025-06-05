@@ -3,146 +3,232 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\LLM\ConfigProviders\LLMConfigSource;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
-use Cognesy\Utils\Deferred;
+use Cognesy\Polyglot\LLM\Events\LLMConfigBuiltEvent;
 use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class LLMProvider
+final class LLMProvider
 {
-    protected EventDispatcherInterface $events;
-    protected CanRegisterEventListeners $listener;
-    protected CanProvideLLMConfig $configProvider;
+    private readonly EventDispatcherInterface $events;
+    private readonly CanRegisterEventListeners $listener;
+    private readonly CanProvideLLMConfig $configProvider;
 
-    protected ?bool $debug = null;
+    // Configuration - all immutable after construction
+    private ?bool $debug;
+    private ?string $dsn;
+    private ?string $preset;
+    private ?LLMConfig $explicitConfig;
+    private ?HttpClient $explicitHttpClient;
+    private ?CanHandleInference $explicitDriver;
 
-    protected Deferred $httpClient;
-    protected Deferred $config;
-    protected Deferred $driver;
-
-    public function __construct(
+    private function __construct(
         ?EventDispatcherInterface $events = null,
         ?CanRegisterEventListeners $listener = null,
         ?CanProvideLLMConfig $configProvider = null,
+        ?bool $debug = null,
+        ?string $dsn = null,
+        ?string $preset = null,
+        ?LLMConfig $explicitConfig = null,
+        ?HttpClient $explicitHttpClient = null,
+        ?CanHandleInference $explicitDriver = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = $configProvider ?? new SettingsLLMConfigProvider();
+        $this->configProvider = LLMConfigSource::makeWith($configProvider);
 
-        $this->config = $this->deferLLMConfigCreation();
-        $this->httpClient = $this->deferHttpClientCreation();
-        $this->driver = $this->deferInferenceDriverCreation();
+        $this->debug = $debug;
+        $this->dsn = $dsn;
+        $this->preset = $preset;
+        $this->explicitConfig = $explicitConfig;
+        $this->explicitHttpClient = $explicitHttpClient;
+        $this->explicitDriver = $explicitDriver;
     }
 
-    // PUBLIC //////////////////////////////////////////////////////////////////
+    /**
+     * Quick creation with preset
+     */
+    public static function using(string $preset): LLMProvider {
+        return self::new()->using($preset);
+    }
 
-    public function using(string $preset): self {
-        $this->config = $this->deferLLMConfigCreation(preset: $preset);
+    /**
+     * Quick creation with DSN
+     */
+    public static function dsn(string $dsn): LLMProvider {
+        return self::new()->withDSN($dsn);
+    }
+
+    /**
+     * Create a new builder instance
+     */
+    public static function new(
+        ?EventDispatcherInterface $events = null,
+        ?CanRegisterEventListeners $listener = null,
+        ?CanProvideLLMConfig $configProvider = null,
+    ): self {
+        return new self($events, $listener, $configProvider);
+    }
+
+    /**
+     * Configure with a preset name
+     */
+    public function withPreset(string $preset): self {
+        $this->preset = $preset;
         return $this;
     }
 
+    /**
+     * Configure with explicit LLM configuration
+     */
     public function withConfig(LLMConfig $config): self {
-        $this->config = $this->deferLLMConfigCreation(config: $config);
+        $this->explicitConfig = $config;
         return $this;
     }
 
-    public function withConfigProvider(CanProvideLLMConfig $configProvider) : self {
-        $this->configProvider = $configProvider;
-        $this->config = $this->deferLLMConfigCreation();
-        return $this;
+    /**
+     * Configure with a custom config provider
+     */
+    public function withConfigProvider(CanProvideLLMConfig $configProvider): self {
+        return new self(
+            events: $this->events,
+            listener: $this->listener,
+            configProvider: $configProvider,
+            debug: $this->debug,
+            dsn: $this->dsn,
+            preset: $this->preset,
+            explicitConfig: $this->explicitConfig,
+            explicitHttpClient: $this->explicitHttpClient,
+            explicitDriver: $this->explicitDriver,
+        );
     }
 
+    /**
+     * Configure with DSN string
+     */
     public function withDSN(string $dsn): self {
-        $this->config = $this->deferLLMConfigCreation(dsn: $dsn);
+        $this->dsn = $dsn;
         return $this;
     }
 
-    public function withHttpClient(?HttpClient $httpClient): self {
-        $this->httpClient = $this->deferHttpClientCreation($httpClient);
+    /**
+     * Configure with explicit HTTP client
+     */
+    public function withHttpClient(HttpClient $httpClient): self {
+        $this->explicitHttpClient = $httpClient;
         return $this;
     }
 
+    /**
+     * Configure with explicit inference driver
+     */
     public function withDriver(CanHandleInference $driver): self {
-        $this->driver = $this->deferInferenceDriverCreation($driver);
+        $this->explicitDriver = $driver;
         return $this;
     }
 
-    public function withDebug(bool $debug = true) : self {
+    /**
+     * Configure debug mode
+     */
+    public function withDebug(bool $debug = true): self {
         $this->debug = $debug;
         return $this;
     }
 
-    public function config() : LLMConfig {
-        return $this->config->resolve();
-    }
+    /**
+     * Create the fully configured inference driver
+     * This is the terminal operation that builds and returns the final instance
+     */
+    public function createDriver(): CanHandleInference {
+        // If explicit driver provided, return it directly
+        if ($this->explicitDriver !== null) {
+            return $this->explicitDriver;
+        }
 
-    public function driver() : CanHandleInference {
-        return $this->driver->resolve();
-    }
+        // Build all required components
+        $config = $this->buildConfig();
+        $httpClient = $this->buildHttpClient($config);
 
-    public function httpClient(): HttpClient {
-        return $this->httpClient->resolve();
-    }
-
-    // INTERNAL /////////////////////////////////////////////////////////////////
-
-    private function deferInferenceDriverCreation(
-        ?CanHandleInference $driver = null,
-    ): Deferred {
-        return new Deferred(fn() => $driver ?? $this->makeInferenceDriver());
-    }
-
-    private function deferHttpClientCreation(
-        ?HttpClient $httpClient = null,
-    ): Deferred {
-        return new Deferred(fn() => $httpClient ?? $this->makeHttpClient());
-    }
-
-    private function deferLLMConfigCreation(
-        ?string $dsn = null,
-        ?string $preset = null,
-        ?LLMConfig $config = null,
-    ): Deferred {
-        return new Deferred(fn() => $config ?? $this->makeLLMConfig($dsn, $preset));
-    }
-
-    private function makeLLMConfig(
-        ?string $dsn = null,
-        ?string $preset = null,
-    ) : LLMConfig {
-        $params = DSN::fromString($dsn ?? '');
-        $preset = $preset ?? $params->param('preset') ?? '';
-        $dsnConfig = $params->toArray() ?? [];
-        return match(true) {
-            empty($preset) => match(true) {
-                empty($dsn) => $this->configProvider->getConfig(),
-                default => $this->configProvider->getConfig($preset)->withOverrides($dsnConfig),
-            },
-            default => $this->configProvider->getConfig($preset),
-        };
-    }
-
-    private function makeInferenceDriver() : CanHandleInference {
+        // Create and return the inference driver
         return (new InferenceDriverFactory(
-            events: $this->events,
-            listener: $this->listener
-        ))->makeDriver(
-            $this->config(),
-            $this->httpClient(),
-        );
+                events: $this->events,
+                listener: $this->listener
+            ))
+            ->makeDriver($config, $httpClient);
     }
 
-    private function makeHttpClient() : HttpClient {
-        $httpClient = (new HttpClient($this->events, $this->listener))
-            ->withPreset($this->config()->httpClientPreset);
-        return match(true) {
-            is_null($this->debug) => $httpClient,
-            default => $httpClient->withDebug($this->debug),
+    // INTERNAL ///////////////////////////////////////////////////////////
+
+    /**
+     * Build the LLM configuration
+     */
+    private function buildConfig(): LLMConfig {
+        // If explicit config provided, use it
+        if ($this->explicitConfig !== null) {
+            return $this->explicitConfig;
+        }
+
+        // Determine effective preset
+        $effectivePreset = $this->determinePreset();
+
+        // Get DSN overrides if any
+        $dsnOverrides = $this->dsn !== null ? DSN::fromString($this->dsn)->toArray() : [];
+
+        // Build config based on preset
+        $config = empty($effectivePreset)
+            ? $this->configProvider->getConfig()
+            : $this->configProvider->getConfig($effectivePreset);
+
+        // Apply DSN overrides if present
+        $final = !empty($dsnOverrides) ? $config->withOverrides($dsnOverrides) : $config;
+
+        // Dispatch event
+        $this->events->dispatch(new LLMConfigBuiltEvent($final));
+
+        return $final;
+    }
+
+    /**
+     * Build the HTTP client
+     */
+    private function buildHttpClient(LLMConfig $config): HttpClient {
+        // If explicit client provided, use it
+        if ($this->explicitHttpClient !== null) {
+            return $this->explicitHttpClient;
+        }
+
+        // Build new client
+        $builder = (new HttpClientBuilder(
+            $this->events,
+            $this->listener,
+            //$this->httpConfigProvider,
+            //$this->debugConfigProvider,
+        ))
+            ->withPreset($config->httpClientPreset);
+
+        // Apply debug setting if specified
+        if ($this->debug !== null) {
+            $builder = $builder->withDebug($this->debug);
+        }
+
+        return $builder->create();
+    }
+
+    /**
+     * Determine the effective preset from various sources
+     */
+    private function determinePreset(): ?string {
+        return match (true) {
+            $this->dsn !== null => DSN::fromString($this->dsn)->param('preset'),
+            $this->preset !== null => $this->preset,
+            default => null,
         };
     }
 }

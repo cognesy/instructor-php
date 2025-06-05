@@ -4,8 +4,6 @@ namespace Cognesy\Template\Data;
 
 use Cognesy\Template\Enums\FrontMatterFormat;
 use Cognesy\Template\Enums\TemplateEngineType;
-use Cognesy\Utils\Config\Settings;
-use InvalidArgumentException;
 
 class TemplateEngineConfig
 {
@@ -18,19 +16,6 @@ class TemplateEngineConfig
         public FrontMatterFormat  $frontMatterFormat = FrontMatterFormat::Yaml,
         public array              $metadata = [],
     ) {}
-
-    public static function load(string $library) : TemplateEngineConfig {
-        if (!Settings::has('prompt', "libraries.$library")) {
-            throw new InvalidArgumentException("Unknown prompt library: $library");
-        }
-        return new TemplateEngineConfig(
-            templateEngine: TemplateEngineType::from(Settings::get('prompt', "libraries.$library.templateEngine")),
-            resourcePath: Settings::get('prompt', "libraries.$library.resourcePath"),
-            cachePath: Settings::get('prompt', "libraries.$library.cachePath"),
-            extension: Settings::get('prompt', "libraries.$library.extension"),
-            metadata: Settings::get('prompt', "libraries.$library.metadata", []),
-        );
-    }
 
     public static function twig(string $resourcePath = '', string $cachePath = '') : TemplateEngineConfig {
         $cachePath = $cachePath ?: '/tmp/instructor/twig';

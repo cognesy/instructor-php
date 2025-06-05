@@ -308,6 +308,7 @@ class InferenceRequest
         if (!isset($this->cachedContext) || $this->cachedContext->isEmpty()) {
             return $this;
         }
+
         $cloned = $this->clone();
         $cloned->messages = array_merge($this->cachedContext->messages(), $this->messages);
         $cloned->tools = empty($this->tools)

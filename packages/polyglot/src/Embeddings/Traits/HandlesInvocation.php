@@ -4,12 +4,16 @@ namespace Cognesy\Polyglot\Embeddings\Traits;
 
 use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
-use InvalidArgumentException;
+use Cognesy\Utils\Json\Json;
 
 trait HandlesInvocation
 {
     public function withRequest(EmbeddingsRequest $request) : static {
-        $this->request = $request;
+        $this->with(
+            input: $request->inputs(),
+            options: $request->options(),
+            model: $request->model()
+        );
         return $this;
     }
 
@@ -24,11 +28,9 @@ trait HandlesInvocation
         array $options = [],
         string $model = '',
     ) : static {
-        $this->request = new EmbeddingsRequest(
-            input: $input ?: $this->request->inputs(),
-            options: array_merge($this->request->options(), $options),
-            model: $model ?: $this->request->model(),
-        );
+        $this->inputs = $input;
+        $this->options = $options;
+        $this->model = $model;
         return $this;
     }
 
@@ -37,18 +39,22 @@ trait HandlesInvocation
      * @return EmbeddingsResponse
      */
     public function create() : EmbeddingsResponse {
-        if (empty($this->request->inputs())) {
-            throw new InvalidArgumentException("Input data is required");
-        }
+        $request = new EmbeddingsRequest(
+            input: $this->inputs,
+            options: $this->options,
+            model: $this->model
+        );
 
-        if (count($this->request->inputs()) > $this->config()->maxInputs) {
-            throw new InvalidArgumentException("Number of inputs exceeds the limit of {$this->config()->maxInputs}");
-        }
+        $response = $this->makeResponse($request);
+        $this->events->dispatch(new EmbeddingsResponseReceived($response));
 
-        if (empty($this->request->model())) {
-            $this->request->withModel($this->config()->model);
-        }
+        return $response;
+    }
 
-        return $this->driver()->handle($this->request);
+    private function makeResponse(EmbeddingsRequest $request): EmbeddingsResponse {
+        $driver = $this->embeddingsProvider->createDriver();
+        $httpResponse = $driver->handle($request);
+        $data = Json::decode($httpResponse->body()) ?? [];
+        return $driver->fromData($data);
     }
 }

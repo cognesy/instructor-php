@@ -7,7 +7,7 @@ use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Drivers\MockHttpDriver;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Http\Middleware\RecordReplay\RecordReplayMiddleware;
 
 beforeEach(function() {
@@ -44,7 +44,7 @@ test('HTTP client with mock driver', function() {
         '{"key":"value"}'
     );
 
-    $httpClient = (new HttpClient)->withDriver($mockDriver);
+    $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
 
     $request = new HttpClientRequest(
         'https://api.example.com/test',
@@ -80,7 +80,7 @@ test('HTTP client with middleware', function() {
         'GET'
     );
 
-    $httpClient = (new HttpClient)->withDriver($mockDriver);
+    $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
 
     // Add a simple test middleware that modifies the request
     $httpClient->middleware()->append(new class implements HttpMiddleware {
@@ -125,7 +125,7 @@ test('HTTP client with record/replay middleware', function() {
         requestTimeout: 10
     );
 
-    $httpClient = (new HttpClient)->withConfig($config);
+    $httpClient = (new HttpClientBuilder)->withConfig($config)->create();
 
     // Add record/replay middleware
     $recordReplayMiddleware = new RecordReplayMiddleware(
@@ -174,7 +174,7 @@ test('mixed testing approach', function() {
     );
 
     // Create the client with middleware
-    $httpClient = (new HttpClient)->withDriver($mockDriver);
+    $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
     $httpClient->middleware()->append($recordReplayMiddleware, 'record-replay');
 
     // Request 1: Should be handled by replay if recording exists, or mock if not

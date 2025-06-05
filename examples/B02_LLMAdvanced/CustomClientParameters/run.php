@@ -16,7 +16,7 @@ require 'examples/boot.php';
 
 use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Drivers\SymfonyDriver;
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Config\Env;
@@ -41,24 +41,22 @@ $httpConfig = new HttpClientConfig(
 
 $yourClientInstance = SymfonyHttpClient::create(['http_version' => '2.0']);
 
-$customClient = (new HttpClient)
+$customClient = (new HttpClientBuilder)
     ->withEventDispatcher($events)
     ->withEventListener($events) // optional - if you want to register custom event listeners
     ->withDriver(new SymfonyDriver(
         config: $httpConfig,
         clientInstance: $yourClientInstance,
         events: $events,
-    ));
+    ))
+    ->create();
 
 // Create instance of LLM client initialized with custom parameters
 
 $config = new LLMConfig(
-    apiUrl: 'https://api.deepseek.com',
-    apiKey: Env::get('DEEPSEEK_API_KEY'),
-    endpoint: '/chat/completions',
-    model: 'deepseek-chat',
-    maxTokens: 128,
-    providerType: 'deepseek',
+    apiUrl  : 'https://api.deepseek.com',
+    apiKey  : Env::get('DEEPSEEK_API_KEY'),
+    endpoint: '/chat/completions', defaultModel: 'deepseek-chat', defaultMaxTokens: 128, driver: 'deepseek',
 );
 
 // Call inference API with custom client and configuration

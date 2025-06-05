@@ -2,7 +2,9 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\ConfigProviders\StructuredOutputConfigSource;
 use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
+use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
@@ -24,9 +26,8 @@ class StructuredOutput
 {
     use HandlesEventDispatching;
     use HandlesEventListening;
-    use Traits\HandlesQueuedEvents;
 
-    use Traits\HandlesInitMethods;
+    use Traits\HandlesLLMProvider;
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
     use Traits\HandlesRequestBuilder;
@@ -62,10 +63,10 @@ class StructuredOutput
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
-        $this->configProvider = $configProvider ?? new SettingsStructuredOutputConfigProvider();
+        $this->configProvider = StructuredOutputConfigSource::makeWith($configProvider);
         $this->config = $this->configProvider->getConfig();
-        $this->cachedContext = new Data\CachedContext();
-        $this->llm = new LLMProvider(
+        $this->cachedContext = new CachedContext();
+        $this->llm = LLMProvider::new(
             events: $this->events,
             listener: $this->listener,
             configProvider: $llmConfigProvider,

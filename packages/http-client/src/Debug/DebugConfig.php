@@ -29,4 +29,18 @@ final class DebugConfig
             $config['httpResponseStreamByLine'] ?? true
         );
     }
+
+    public function toArray() : array {
+        return [
+            'httpEnabled' => $this->httpEnabled,
+            'httpTrace' => $this->httpTrace,
+            'httpRequestUrl' => $this->httpRequestUrl,
+            'httpRequestHeaders' => $this->httpRequestHeaders,
+            'httpRequestBody' => $this->httpRequestBody,
+            'httpResponseHeaders' => $this->httpResponseHeaders,
+            'httpResponseBody' => $this->httpResponseBody,
+            'httpResponseStream' => $this->httpResponseStream,
+            'httpResponseStreamByLine' => $this->httpResponseStreamByLine,
+        ];
+    }
 }

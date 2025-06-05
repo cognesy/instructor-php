@@ -5,7 +5,6 @@ namespace Cognesy\Polyglot\LLM;
 use Closure;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
@@ -30,7 +29,6 @@ class InferenceStream
     protected CanHandleInference $driver;
     protected bool $streamReceived = false;
     protected array $streamEvents = [];
-    protected LLMConfig $config;
 
     protected array $llmResponses = [];
     protected ?LLMResponse $finalLLMResponse = null;
@@ -40,12 +38,10 @@ class InferenceStream
     public function __construct(
         HttpClientResponse        $httpResponse,
         CanHandleInference        $driver,
-        LLMConfig                 $config,
         ?EventDispatcherInterface $events = null,
     ) {
         $this->events = $events ?? new EventDispatcher();
         $this->driver = $driver;
-        $this->config = $config;
         $this->httpResponse = $httpResponse;
 
         $this->stream = $this->httpResponse->stream();

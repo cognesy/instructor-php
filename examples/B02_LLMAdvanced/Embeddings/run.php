@@ -26,7 +26,8 @@ Embeddings providers access details can be found and modified via
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
+use Cognesy\Polyglot\Embeddings\EmbedUtils;
 
 $documents = [
     'Computer vision models are used to analyze images and videos.',
@@ -51,7 +52,8 @@ $presets = [
 ];
 
 foreach($presets as $preset) {
-    $bestMatches = (new Embeddings)->using($preset)->findSimilar(
+    $bestMatches = EmbedUtils::findSimilar(
+        provider: EmbeddingsProvider::using($preset),
         query: $query,
         documents: $documents,
         topK: 3

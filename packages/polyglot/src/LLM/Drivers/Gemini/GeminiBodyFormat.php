@@ -18,6 +18,8 @@ class GeminiBodyFormat implements CanMapRequestBody
     ) {}
 
     public function toRequestBody(InferenceRequest $request) : array {
+        $request = $request->withCacheApplied();
+
         $requestBody = $this->filterEmptyValues([
             'systemInstruction' => $this->toSystem($request),
             'contents' => $this->toMessages($request),
@@ -75,7 +77,7 @@ class GeminiBodyFormat implements CanMapRequestBody
             "responseMimeType" => $this->toResponseMimeType($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
             "candidateCount" => 1,
-            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
+            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->defaultMaxTokens,
             "temperature" => $options['temperature'] ?? 1.0,
         ]);
     }

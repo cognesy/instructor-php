@@ -1,0 +1,27 @@
+<?php
+
+namespace Cognesy\Polyglot\Embeddings\Drivers\Cohere;
+
+use Cognesy\Polyglot\Embeddings\Contracts\CanMapUsage;
+use Cognesy\Polyglot\Embeddings\Contracts\EmbedResponseAdapter;
+use Cognesy\Polyglot\Embeddings\Data\Vector;
+use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
+
+class CohereResponseAdapter implements EmbedResponseAdapter
+{
+    public function __construct(
+        private readonly CanMapUsage $usageFormat,
+    ) {}
+
+    public function fromResponse(array $data): EmbeddingsResponse {
+        $vectors = [];
+        foreach ($data['embeddings']['float'] as $key => $item) {
+            $vectors[] = new Vector(values: $item, id: $key);
+        }
+
+        return new EmbeddingsResponse(
+            vectors: $vectors,
+            usage: $this->usageFormat->fromData($data),
+        );
+    }
+}

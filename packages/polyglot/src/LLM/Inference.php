@@ -2,7 +2,6 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
-use Cognesy\Polyglot\LLM\Data\CachedContext;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
@@ -18,14 +17,11 @@ class Inference
     use HandlesEventListening;
 
     use Traits\HandleInitMethods;
-    use Traits\HandlesFluentMethods;
+    use Traits\HandlesRequestBuilder;
     use Traits\HandlesInvocation;
     use Traits\HandlesShortcuts;
 
-    protected ?LLMProvider $llm;
-
-    protected CachedContext $cachedContext;
-    protected InferenceRequest $request;
+    protected ?LLMProvider $llmProvider;
 
     /**
      * Constructor for initializing dependencies and configurations.
@@ -44,12 +40,11 @@ class Inference
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
 
-        $this->llm = new LLMProvider(
+        $this->llmProvider = LLMProvider::new(
             $this->events,
             $this->listener,
             $configProvider,
         );
-        $this->request = new InferenceRequest();
     }
 
     public static function registerDriver(string $name, string|callable $driver): void {

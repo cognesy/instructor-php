@@ -17,13 +17,13 @@ done
 
 echo "📦 Exporting sub-package sources to Markdown"
 
-code2prompt "packages/utils/src/JsonSchema" -o "tmp/util-json-schema.md"
-code2prompt "packages/utils/src/Messages" -o "tmp/util-messages.md"
-code2prompt "packages/utils/src/Events" -o "tmp/util-events.md"
-code2prompt "packages/utils/src/Config" -o "tmp/util-config.md"
+code2prompt "packages/utils/src/JsonSchema" -o "tmp/cut-util-json-schema.md"
+code2prompt "packages/utils/src/Messages" -o "tmp/cut-util-messages.md"
+code2prompt "packages/utils/src/Events" -o "tmp/cut-util-events.md"
+code2prompt "packages/utils/src/Config" -o "tmp/cut-util-config.md"
 
-code2prompt "packages/polyglot/src/LLM" -o "tmp/poly-llm.md"
-code2prompt "packages/polyglot/src/Embeddings" -o "tmp/poly-embeddings.md"
+code2prompt "packages/polyglot/src/LLM" -o "tmp/cut-poly-llm.md"
+code2prompt "packages/polyglot/src/Embeddings" -o "tmp/cut-poly-embeddings.md"
 
 echo "📦 Making cut-down Markdown versions of selected packages"
 
@@ -37,7 +37,7 @@ mv "./tmp/polyglot-tmp/LLM/Drivers/Gemini" "./tmp/tmp1"
 rm -rf ./tmp/polyglot-tmp/LLM/Drivers/*
 mv "./tmp/tmp1/"* "./tmp/polyglot-tmp/LLM/Drivers"
 rm -rf ./tmp/tmp1
-code2prompt "./tmp/polyglot-tmp" -o "./tmp/poly-cut.md"
+code2prompt "./tmp/polyglot-tmp" -o "./tmp/cut-poly.md"
 rm -rf ./tmp/polyglot-tmp
 
 # MAKE INSTRUCTOR WITH LIMITED NUMBER OF DRIVERS
@@ -50,7 +50,7 @@ rm -rf "./tmp/instructor-tmp/Deserialization"
 rm -rf "./tmp/instructor-tmp/Transformation"
 rm -rf "./tmp/instructor-tmp/Validation"
 rm -f "./tmp/instructor-tmp/SettingsStructuredOutputConfigProvider.php"
-code2prompt "./tmp/instructor-tmp" -o "./tmp/instructor-cut.md"
+code2prompt "./tmp/instructor-tmp" -o "./tmp/cut-instructor.md"
 rm -rf ./tmp/instructor-tmp
 
 # MAKE HTTP-CLIENT WITH NO EXTRA MIDDLEWARE
@@ -59,7 +59,7 @@ cp -rf "./packages/http-client/src/"* "./tmp/http-tmp/"
 # remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
 rm -rf "./tmp/http-tmp/Middleware/RecordReplay"
 rm -rf "./tmp/http-tmp/Middleware/Examples"
-code2prompt "./tmp/http-tmp" -o "./tmp/http-cut.md"
+code2prompt "./tmp/http-tmp" -o "./tmp/cut-http-normal.md"
 rm -rf ./tmp/http-tmp
 
 # MAKE MINIMAL VER OF HTTP-CLIENT
@@ -74,7 +74,23 @@ rm -rf "./tmp/http-tmp/Adapters/Symfony"*
 rm -rf "./tmp/http-tmp/Drivers/Laravel"*
 rm -rf "./tmp/http-tmp/Drivers/Mock"*
 rm -rf "./tmp/http-tmp/Drivers/Symfony"*
-code2prompt "./tmp/http-tmp" -o "./tmp/http-mini.md"
+code2prompt "./tmp/http-tmp" -o "./tmp/cut-http-mini.md"
 rm -rf ./tmp/http-tmp
+
+# MAKE MINIMAL VER OF HTTP-CLIENT
+mkdir -p ./tmp/config-tmp
+cp -rf "./packages/utils/src/Config"* "./tmp/config-tmp/"
+cp -rf "./packages/http-client/src/ConfigProviders/"* "./tmp/config-tmp/"
+cp -rf "./packages/http-client/src/Contracts/CanProvide"* "./tmp/config-tmp/"
+cp -rf "./packages/instructor/src/ConfigProviders/"* "./tmp/config-tmp/"
+cp -rf "./packages/instructor/src/Contracts/CanProvide"* "./tmp/config-tmp/"
+cp -rf "./packages/polyglot/src/Embeddings/ConfigProviders/"* "./tmp/config-tmp/"
+cp -rf "./packages/polyglot/src/Embeddings/Contracts/CanProvide"* "./tmp/config-tmp/"
+cp -rf "./packages/polyglot/src/LLM/ConfigProviders/"* "./tmp/config-tmp/"
+cp -rf "./packages/polyglot/src/LLM/Contracts/CanProvide"* "./tmp/config-tmp/"
+cp -rf "./packages/templates/src/ConfigProviders/"* "./tmp/config-tmp/"
+cp -rf "./packages/templates/src/Contracts/CanProvide"* "./tmp/config-tmp/"
+code2prompt "./tmp/config-tmp" -o "./tmp/x-config.md"
+rm -rf ./tmp/config-tmp
 
 echo "✅ Export completed successfully!"

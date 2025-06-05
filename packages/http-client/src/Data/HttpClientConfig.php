@@ -20,7 +20,7 @@ final class HttpClientConfig
      * @param bool $failOnError Whether to fail on error.
      */
     public function __construct(
-        public string $driver = '',
+        public string $driver = 'guzzle',
         public int    $connectTimeout = 3,
         public int    $requestTimeout = 30,
         public int    $idleTimeout = -1,
@@ -46,5 +46,17 @@ final class HttpClientConfig
             poolTimeout: $config['poolTimeout'] ?? 120,
             failOnError: $config['failOnError'] ?? false,
         );
+    }
+
+    public function toArray() : array {
+        return [
+            'httpClientDriver' => $this->driver,
+            'connectTimeout' => $this->connectTimeout,
+            'requestTimeout' => $this->requestTimeout,
+            'idleTimeout' => $this->idleTimeout,
+            'maxConcurrent' => $this->maxConcurrent,
+            'poolTimeout' => $this->poolTimeout,
+            'failOnError' => $this->failOnError,
+        ];
     }
 }

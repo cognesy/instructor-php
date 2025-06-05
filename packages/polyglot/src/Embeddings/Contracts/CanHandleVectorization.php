@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
+use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 
@@ -18,5 +19,6 @@ interface CanHandleVectorization
      * @param array $options
      * @return EmbeddingsResponse
      */
-    public function handle(EmbeddingsRequest $request) : EmbeddingsResponse;
+    public function handle(EmbeddingsRequest $request) : HttpClientResponse;
+    public function fromData(array $data): ?EmbeddingsResponse;
 }

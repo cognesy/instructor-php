@@ -6,5 +6,5 @@ use Cognesy\Polyglot\LLM\InferenceRequest;
 
 interface CanMapRequestBody
 {
-    public function toRequestBody(InferenceRequest $request): array;
+    public function toRequestBody(InferenceRequest $request) : array;
 }

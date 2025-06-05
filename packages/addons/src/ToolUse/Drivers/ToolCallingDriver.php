@@ -42,7 +42,7 @@ class ToolCallingDriver implements CanUseTools
         array        $options = [],
         OutputMode   $mode = OutputMode::Tools,
     ) {
-        $this->llm = $llm ?? new LLMProvider();
+        $this->llm = $llm ?? LLMProvider::new();
 
         $this->toolChoice = $toolChoice;
         $this->model = $model;

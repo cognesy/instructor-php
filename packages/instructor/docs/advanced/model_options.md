@@ -40,10 +40,10 @@ $config = new LLMConfig(
     apiKey: $yourApiKey,
     endpoint: '/chat/completions',
     metadata: ['organization' => ''],
-    model: 'gpt-4o-mini',
-    maxTokens: 128,
+    defaultModel: 'gpt-4o-mini',
+    defaultMaxTokens: 128,
     httpClientPreset: 'guzzle',
-    providerType: 'openai',
+    driver: 'openai',
 ));
 
 /// Get Instructor with the default configuration overridden with your own

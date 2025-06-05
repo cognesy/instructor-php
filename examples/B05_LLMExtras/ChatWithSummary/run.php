@@ -33,7 +33,7 @@ $context = "# CONTEXT\n\n" . file_get_contents(__DIR__ . '/summary.md');
 
 $summarizer = new SummarizeMessages(
     //prompt: 'Summarize the messages.',
-    llm: (new LLMProvider)->using('deepseek'),
+    llm: LLMProvider::using('deepseek'),
     //model: 'gpt-4o-mini',
     tokenLimit: 1024,
 );
