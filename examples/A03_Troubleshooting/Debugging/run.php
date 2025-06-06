@@ -5,7 +5,7 @@ docname: 'debugging'
 
 ## Overview
 
-The `Instructor` class has a `withDebug()` method that can be used to debug the request and response.
+The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.
 
 It displays detailed information about the request being sent to LLM API and response received from it,
 including:
@@ -31,17 +31,21 @@ class User {
 
 // CASE 1.1 - normal flow, sync request
 
-$structuredOutput = (new StructuredOutput)->using('openai');
+$structuredOutput = (new StructuredOutput)
+    ->using('openai')
+    ->withDebugPreset('on');
+    //->wiretap(fn($e) => $e->print());
 
 echo "\n### CASE 1.1 - Debugging sync request\n\n";
-$user = $structuredOutput->withDebug()->with(
-    messages: "Jason is 25 years old.",
-    responseModel: User::class,
-    options: [ 'stream' => false ]
-)->get();
+$user = $structuredOutput
+    ->with(
+        messages: "Jason is 25 years old.",
+        responseModel: User::class,
+        options: [ 'stream' => false ]
+    )
+    ->get();
 
 echo "\nResult:\n";
-
 assert(isset($user->name));
 assert(isset($user->age));
 assert($user->name === 'Jason');
@@ -50,11 +54,13 @@ assert($user->age === 25);
 // CASE 1.2 - normal flow, streaming request
 
 echo "\n### CASE 1.2 - Debugging streaming request\n\n";
-$user2 = $structuredOutput->withDebug(true)->with(
-    messages: "Anna is 21 years old.",
-    responseModel: User::class,
-    options: [ 'stream' => true ]
-)->get();
+$user2 = $structuredOutput
+    ->with(
+        messages: "Anna is 21 years old.",
+        responseModel: User::class,
+        options: [ 'stream' => true ]
+    )
+    ->get();
 
 echo "\nResult:\n";
 dump($user2);
@@ -73,11 +79,14 @@ $structuredOutput = (new StructuredOutput)
 
 echo "\n### CASE 2 - Debugging with HTTP exception\n\n";
 try {
-    $user = $structuredOutput->withDebug(true)->with(
-        messages: "Jason is 25 years old.",
-        responseModel: User::class,
-        options: [ 'stream' => true ]
-    )->get();
+    $user = $structuredOutput
+        ->withDebugPreset('on')
+        ->with(
+            messages: "Jason is 25 years old.",
+            responseModel: User::class,
+            options: [ 'stream' => true ]
+        )
+        ->get();
 } catch (Exception $e) {
     $msg = Str::limit($e->getMessage(), 250);
     echo "EXCEPTION WE EXPECTED:\n";

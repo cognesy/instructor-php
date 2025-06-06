@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Utils\Result;
 
+use Exception;
 use Throwable;
 
 /**
@@ -32,6 +33,13 @@ class Failure extends Result {
             $this->error instanceof Throwable => $this->error->getMessage(),
             default => (string) $this->error,
         };
+    }
+
+    public function exception() : Throwable {
+        if ($this->error instanceof Throwable) {
+            return $this->error;
+        }
+        throw new Exception($this->errorMessage());
     }
 
     public function isSuccess(): bool {

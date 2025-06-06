@@ -28,7 +28,7 @@ $response = (new Inference)
         options: ['max_tokens' => 128]
     )
     ->response();
-dd($response);
+
 echo "\nCASE #1: Sync response\n";
 echo "USER: What is capital of France\n";
 echo "ASSISTANT: {$response->content()}\n";

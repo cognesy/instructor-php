@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http;
+namespace Cognesy\Http\Middleware\Base;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
@@ -71,5 +71,9 @@ class BaseResponseDecorator implements HttpClientResponse
      */
     protected function toChunk(string $chunk): string {
         return $chunk;
+    }
+
+    public function isStreamed(): bool {
+        return $this->response->isStreamed();
     }
 }

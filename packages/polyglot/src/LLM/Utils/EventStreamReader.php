@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\LLM\Utils;
 
 use Closure;
-use Cognesy\Polyglot\LLM\Events\StreamDataParsed;
-use Cognesy\Polyglot\LLM\Events\StreamDataReceived;
+use Cognesy\Polyglot\LLM\Events\StreamEventParsed;
+use Cognesy\Polyglot\LLM\Events\StreamEventReceived;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -38,10 +38,10 @@ class EventStreamReader
      */
     public function eventsFrom(Generator $stream): Generator {
         foreach ($this->readLines($stream) as $line) {
-            $this->events->dispatch(new StreamDataReceived($line));
+            $this->events->dispatch(new StreamEventReceived($line));
             $processedData = $this->processLine($line);
             if ($processedData !== null) {
-                $this->events->dispatch(new StreamDataParsed($processedData));
+                $this->events->dispatch(new StreamEventParsed($processedData));
                 yield $processedData;
             }
         }

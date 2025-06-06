@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsConfig;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
 use Cognesy\Utils\Events\Traits\HandlesEventListening;
@@ -27,7 +27,7 @@ class Embeddings
     public function __construct(
         ?EventDispatcherInterface $events = null,
         ?EventDispatcherInterface $listener = null,
-        ?CanProvideEmbeddingsConfig $configProvider = null,
+        ?CanProvideConfig         $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();

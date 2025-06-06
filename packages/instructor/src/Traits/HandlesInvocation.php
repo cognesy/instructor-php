@@ -47,54 +47,35 @@ trait HandlesInvocation
      * @throws Exception If the response model is empty or invalid.
      */
     public function with(
-        string|array|Message|Messages $messages = '',
-        string|array|object           $responseModel = [],
-        string                        $system = '',
-        string                        $prompt = '',
-        array                         $examples = [],
-        string                        $model = '',
-        int                           $maxRetries = -1,
-        array                         $options = [],
-        string                        $toolName = '',
-        string                        $toolDescription = '',
-        string                        $retryPrompt = '',
-        ?OutputMode                   $mode = null,
+        string|array|Message|Messages|null $messages = null,
+        string|array|object|null           $responseModel = null,
+        ?string                        $system = null,
+        ?string                        $prompt = null,
+        ?array                         $examples = null,
+        ?string                        $model = null,
+        ?int                           $maxRetries = null,
+        ?array                         $options = null,
+        ?string                        $toolName = null,
+        ?string                        $toolDescription = null,
+        ?string                        $retryPrompt = null,
+        ?OutputMode                    $mode = null,
     ) : static {
-//        $this->config->withOverrides(
-//            outputMode: $mode ?: $this->config->outputMode() ?: OutputMode::Tools,
-//            maxRetries: ($maxRetries >= 0) ? $maxRetries : $this->config->maxRetries(),
-//            retryPrompt: $retryPrompt ?: $this->config->retryPrompt(),
-//            toolName: $toolName ?: $this->config->toolName(),
-//            toolDescription: $toolDescription ?: $this->config->toolDescription(),
-//        );
-//
-//        $this->messages = match (true) {
-//            empty($messages) => $this->messages,
-//            default => Messages::fromAny($messages),
-//        };
-//        $this->requestedSchema = $responseModel ?: $this->requestedSchema;
-//        $this->system = $system ?: $this->system;
-//        $this->prompt = $prompt ?: $this->prompt;
-//        $this->examples = $examples ?: $this->examples;
-//        $this->model = $model ?: $this->model;
-//        $this->options = array_merge($this->options, $options);
-
-        $this->requestBuilder
-            ->withMessages($messages)
-            ->withResponseModel($responseModel)
-            ->withSystem($system)
-            ->withPrompt($prompt)
-            ->withExamples($examples)
-            ->withModel($model)
-            ->withOptions($options);
-
-        $this->configBuilder
-            ->withMaxRetries($maxRetries)
-            ->withToolName($toolName)
-            ->withToolDescription($toolDescription)
-            ->withRetryPrompt($retryPrompt)
-            ->withOutputMode($mode);
-
+        $this->requestBuilder->with(
+            messages: $messages,
+            requestedSchema: $responseModel,
+            system: $system,
+            prompt: $prompt,
+            examples: $examples,
+            model: $model,
+            options: $options,
+        );
+        $this->configBuilder->with(
+            outputMode: $mode,
+            maxRetries: $maxRetries,
+            retryPrompt: $retryPrompt,
+            toolName: $toolName,
+            toolDescription: $toolDescription,
+        );
         return $this;
     }
 
@@ -110,6 +91,7 @@ trait HandlesInvocation
         $this->events->dispatch(new RequestReceived());
 
         $config = $this->configBuilder->create();
+
         $request = $this->requestBuilder->createWith(
             config: $config,
             events: $this->events,

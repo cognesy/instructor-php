@@ -7,7 +7,8 @@ use Cognesy\Http\Data\HttpClientRequest;
 
 interface CanHandleDebug
 {
-    public function handleStream(string $line, bool $isConsolidated = false): void;
-    public function handleRequest(HttpClientRequest $request): void;
-    public function handleResponse(HttpClientResponse $response, array $options);
+    public function handleRequest(HttpClientRequest $request) : void;
+    public function handleResponse(HttpClientResponse $response) : void;
+    public function handleStreamChunk(string $chunk) : void;
+    public function handleStreamEvent(string $line) : void;
 }

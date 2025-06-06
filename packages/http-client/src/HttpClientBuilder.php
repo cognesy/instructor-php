@@ -2,18 +2,22 @@
 namespace Cognesy\Http;
 
 use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Config\DebugConfigResolver;
 use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Config\HttpClientConfigResolver;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\CanProvideDebugConfig;
-use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
+use Cognesy\Http\Middleware\Debug\ConsoleDebug;
+use Cognesy\Http\Middleware\Debug\Debug;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
+use Cognesy\Http\Middleware\Debug\EventsDebug;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
+use Cognesy\Utils\Config\Events\ConfigResolutionFailed;
+use Cognesy\Utils\Config\Events\ConfigResolved;
+use Cognesy\Utils\Config\Providers\ConfigResolver;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
+use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -29,147 +33,87 @@ final class HttpClientBuilder
     private ?object $clientInstance = null;
     private array $middleware = [];
 
-    private CanProvideHttpClientConfig $httpConfigProvider;
-    private CanProvideDebugConfig $debugConfigProvider;
+    private CanProvideConfig $configProvider;
     private EventDispatcherInterface $events;
     private CanRegisterEventListeners $listener;
 
     public function __construct(
-        ?EventDispatcherInterface $events = null,
+        ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
-        ?CanProvideHttpClientConfig $httpConfigProvider = null,
-        ?CanProvideDebugConfig $debugConfigProvider = null,
+        ?CanProvideConfig          $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->debugConfigProvider = DebugConfigResolver::makeWith($debugConfigProvider);
-        $this->httpConfigProvider = HttpClientConfigResolver::makeWith($httpConfigProvider);
+        $this->configProvider = ConfigResolver::makeWith($configProvider);
     }
 
-    /**
-     * Set configuration preset.
-     */
-    public function using(string $preset): self
-    {
+    public function using(string $preset): self {
         return $this->withPreset($preset);
     }
 
-    /**
-     * Set configuration preset.
-     */
-    public function withPreset(string $preset): self
-    {
+    public function withPreset(string $preset): self {
         $this->preset = $preset;
         return $this;
     }
 
-    public function withDebugPreset(string $preset): self
-    {
+    public function withDebugPreset(string $preset): self {
         $this->debugPreset = $preset;
         return $this;
     }
 
-    /**
-     * Set explicit HTTP client configuration.
-     */
-    public function withConfig(HttpClientConfig $config): self
-    {
+    public function withConfig(HttpClientConfig $config): self {
         $this->config = $config;
         return $this;
     }
 
-    /**
-     * Set HTTP configuration provider.
-     */
-    public function withHttpConfigProvider(CanProvideHttpClientConfig $httpConfigProvider): self
-    {
-        $this->httpConfigProvider = $httpConfigProvider;
-        return $this;
-    }
-
-    /**
-     * Set explicit debug configuration.
-     */
-    public function withDebugConfig(DebugConfig $debugConfig): self
-    {
+    public function withDebugConfig(DebugConfig $debugConfig): self {
         $this->debugConfig = $debugConfig;
         return $this;
     }
 
-    /**
-     * Set debug configuration provider.
-     */
-    public function withDebugConfigProvider(CanProvideDebugConfig $debugConfigProvider): self
-    {
-        $this->debugConfigProvider = $debugConfigProvider;
+    public function withConfigProvider(CanProvideConfig $configProvider): self {
+        $this->configProvider = $configProvider;
         return $this;
     }
 
-    /**
-     * Set explicit HTTP driver.
-     */
-    public function withDriver(CanHandleHttpRequest $driver): self
-    {
+    public function withDriver(CanHandleHttpRequest $driver): self {
         $this->driver = $driver;
         return $this;
     }
 
-    /**
-     * Set explicit client instance.
-     */
-    public function withClientInstance(object $clientInstance): self
-    {
+    public function withClientInstance(object $clientInstance): self {
         $this->clientInstance = $clientInstance;
         return $this;
     }
 
-    /**
-     * Enable or disable debug mode.
-     */
-    public function withDebug(?string $preset = ''): self
-    {
-        $this->debugPreset = $preset;
-        return $this;
-    }
-
-    /**
-     * Add middleware to the stack.
-     */
-    public function withMiddleware(HttpMiddleware ...$middleware): self
-    {
+    public function withMiddleware(HttpMiddleware ...$middleware): self {
         $this->middleware = [...$this->middleware, ...$middleware];
         return $this;
     }
 
-    public function withEventDispatcher(EventDispatcherInterface $events): self
-    {
+    public function withEventDispatcher(EventDispatcherInterface $events): self {
         $this->events = $events;
         return $this;
     }
 
-    public function withEventListener(CanRegisterEventListeners $listener): self
-    {
+    public function withEventListener(CanRegisterEventListeners $listener): self {
         $this->listener = $listener;
         return $this;
     }
 
-    /**
-     * Build the HttpClient instance.
-     */
-    public function create(): HttpClient
-    {
+    public function create(): HttpClient {
         $config = $this->buildHttpClientConfig();
         $debugConfig = $this->buildDebugConfig();
         $driver = $this->buildDriver($config);
         $middlewareStack = $this->buildMiddlewareStack($debugConfig);
 
-        $this->events->dispatch(new HttpClientBuilt(
-            get_class($driver),
-            $config,
-            $debugConfig,
-            $middlewareStack->toDebugArray(),
-        ));
+        $this->events->dispatch(new HttpClientBuilt([
+            'driver' => get_class($driver),
+            'httpConfig' => $config->toArray(),
+            'debugConfig' => $debugConfig->toArray(),
+            'middlewareStack' => $middlewareStack->toDebugArray(),
+        ]));
 
         return new HttpClient(
             driver: $driver,
@@ -179,36 +123,62 @@ final class HttpClientBuilder
         );
     }
 
-    private function buildHttpClientConfig(): HttpClientConfig
-    {
+    private function buildHttpClientConfig(): HttpClientConfig {
         if ($this->config !== null) {
+            $this->events->dispatch(new ConfigResolved([
+                'group' => 'http',
+                'config' => $this->config,
+            ]));
             return $this->config;
         }
 
-        return $this->httpConfigProvider->getConfig($this->preset);
-    }
-
-    private function buildDebugConfig(): DebugConfig
-    {
-        if ($this->debugConfig !== null) {
-            $config = $this->debugConfig;
-        } elseif ($this->debugPreset !== null) {
-            $config = $this->debugConfigProvider->getConfig($this->debugPreset);
-        } else {
-            $config = $this->debugConfigProvider->getConfig();
+        $result = Result::try(fn() => $this->configProvider->getConfig('http', $this->preset));
+        if ($result->isFailure()) {
+            $this->events->dispatch(new ConfigResolutionFailed([
+                'group' => 'http',
+                'preset' => $this->preset,
+                'exception' => $result->exception(),
+            ]));
+            throw $result->exception();
         }
 
-        // Apply explicit debug setting if provided
-        if ($this->debugPreset !== null && $config !== null) {
-            $config = clone $config;
-            $config->httpEnabled = $this->debugPreset;
-        }
+        $this->events->dispatch(new ConfigResolved([
+            'group' => 'http',
+            'config' => $result->unwrap(),
+            'preset' => $this->preset,
+        ]));
 
-        return $config;
+        return HttpClientConfig::fromArray($result->unwrap());
     }
 
-    private function buildDriver(HttpClientConfig $config): CanHandleHttpRequest
-    {
+    private function buildDebugConfig(): DebugConfig {
+        $result = Result::try(fn() => match(true) {
+            $this->debugConfig !== null => $this->debugConfig,
+            !empty($this->debugPreset) => $this->configProvider->getConfig('debug', $this->debugPreset),
+            default => $this->configProvider->getConfig('debug'),
+        });
+
+        if ($result->isFailure()) {
+            $this->events->dispatch(new ConfigResolutionFailed([
+                'group' => 'debug',
+                'preset' => $this->debugPreset,
+                'exception' => $result->exception(),
+            ]));
+            throw $result->exception();
+        }
+
+        $config = $result->unwrap();
+
+        $this->events->dispatch(new ConfigResolved([
+            'group' => 'debug',
+            'config' => $config,
+            'preset' => $this->debugPreset,
+        ]));
+
+        return DebugConfig::fromArray($config);
+    }
+
+    private function buildDriver(HttpClientConfig $config): CanHandleHttpRequest {
         if ($this->driver !== null) {
             return $this->driver;
         }
@@ -219,14 +189,17 @@ final class HttpClientBuilder
         );
     }
 
-    private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack
-    {
+    private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack {
         $stack = new MiddlewareStack($this->events);
 
         // Add debug middleware if enabled
-        if ($this->shouldEnableDebug($debugConfig)) {
+        if ($debugConfig->httpEnabled) {
+            $debugHandler = $this->makeDebugHandler($debugConfig);
             $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-            $stack->prepend(new DebugMiddleware($debugConfig, $this->events), 'internal:debug');
+            $stack->prepend(new DebugMiddleware($debugHandler), 'internal:debug');
+        } else {
+            $stack->remove('internal:debug');
+            $stack->remove('internal:buffering');
         }
 
         // Add custom middleware
@@ -235,14 +208,11 @@ final class HttpClientBuilder
         return $stack;
     }
 
-    private function shouldEnableDebug(DebugConfig $debugConfig): bool
-    {
-        // Explicit debug setting takes precedence
-        if ($this->debugPreset !== null) {
-            return $this->debugPreset;
-        }
-
-        // Fall back to config setting
-        return $debugConfig->httpEnabled;
+    private function makeDebugHandler(DebugConfig $debugConfig) : Debug {
+        return (new Debug($debugConfig))
+            ->withHandlers(
+                new ConsoleDebug($debugConfig),
+                new EventsDebug($debugConfig, $this->events),
+            );
     }
 }

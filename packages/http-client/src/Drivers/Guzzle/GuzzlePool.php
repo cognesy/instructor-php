@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Http\Adapters\PsrHttpResponse;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpClientRequest;
@@ -82,7 +81,8 @@ class GuzzlePool implements CanHandleRequestPool
         $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
         return Result::success(new PsrHttpResponse(
             response: $response,
-            stream: $response->getBody()
+            stream: $response->getBody(),
+            isStreamed: $response->isStreamed,
         ));
     }
 
@@ -91,24 +91,24 @@ class GuzzlePool implements CanHandleRequestPool
             throw new HttpRequestException($reason);
         }
 
-        $this->events->dispatch(new HttpRequestFailed(
-            'Pool request',
-            'POOL',
-            [],
-            [],
-            $reason->getMessage()
-        ));
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+            'errors' => $e->getMessage(),
+        ]));
 
         return Result::failure($reason);
     }
 
     private function dispatchRequestEvent(HttpClientRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent(
-            $request->url(),
-            $request->method(),
-            $request->headers(),
-            $request->body()->toArray()
-        ));
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'body' => $body,
+        ]));
     }
 
     private function normalizeResponses(array $responses): array {

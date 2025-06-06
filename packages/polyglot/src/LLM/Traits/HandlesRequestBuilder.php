@@ -44,7 +44,6 @@ trait HandlesRequestBuilder
         return $this;
     }
 
-
     public function withOutputMode(?OutputMode $mode): static {
         $this->requestBuilder->withOutputMode($mode);
         return $this;

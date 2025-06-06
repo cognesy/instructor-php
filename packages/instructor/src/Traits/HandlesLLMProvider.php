@@ -3,7 +3,6 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\LLMProvider;
@@ -45,20 +44,11 @@ trait HandlesLLMProvider
     /**
      * Enables or disables debug mode for the current instance.
      *
-     * @param bool $debug Optional. If true, enables debug mode; otherwise, disables it. Defaults to true.
+     * @param string $preset Optional. If empty, the default debug preset will be used.
      * @return static The current instance with the updated debug state.
      */
-    public function withDebug(bool $debug = true) : static {
-        $this->llmProvider->withDebug($debug);
+    public function withDebugPreset(?string $preset) : static {
+        $this->llmProvider->withDebugPreset($preset);
         return $this;
-    }
-
-    /**
-     * Returns the config object for the current instance.
-     *
-     * @return StructuredOutputConfig The config object for the current instance.
-     */
-    public function config() : StructuredOutputConfig {
-        return $this->config;
     }
 }

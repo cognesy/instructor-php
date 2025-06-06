@@ -5,7 +5,7 @@ docname: 'custom_llm_with_dsn'
 
 ## Overview
 
-You can provide your own LLM configuration data to `Instructor` object with DSN string.
+You can provide your own LLM configuration data to `StructuredOutput` object with DSN string.
 This is useful for inline configuration or for building configuration from admin UI,
 CLI arguments or environment variables.
 
@@ -23,11 +23,10 @@ class User {
 }
 
 $user = (new StructuredOutput)
+    //->wiretap(fn($e) => $e->print())
     ->withDSN('preset=xai,model=grok-2')
-    ->with(
-        messages: "Our user Jason is 25 years old.",
-        responseModel: User::class,
-    )
+    ->withMessages("Our user Jason is 25 years old.")
+    ->withresponseClass(User::class)
     ->get();
 
 dump($user);

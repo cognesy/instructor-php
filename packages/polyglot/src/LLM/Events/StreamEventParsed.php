@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Events;
 
-class StreamDataReceived extends \Cognesy\Utils\Events\Event
+class StreamEventParsed extends InferenceEvent
 {
     public function __construct(
         public string $content,

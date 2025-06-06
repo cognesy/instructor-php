@@ -12,7 +12,7 @@ Instructor supports multiple output modes to allow working with various models d
 
 Additionally, you can use `Text` and `Unrestricted` modes to get LLM to generate text output without any structured data extraction.
 
-Those modes are not useful for `Instructor` class (as it is focused on structured output generation) but can be used with `Inference` class.
+Those modes are not useful for `StructuredOutput` class (as it is focused on structured output generation) but can be used with `Inference` class.
 
 - `OutputMode::Text` - generate text output
 - `OutputMode::Unrestricted` - generate unrestricted output based on inputs provided by the user (with no enforcement of specific output format)

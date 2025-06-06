@@ -2,16 +2,23 @@
 
 namespace Cognesy\Http\Middleware\Debug;
 
+use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 
 class Debug
 {
+    private DebugConfig $config;
     /** @var CanHandleDebug[] */
     private array $handlers = [];
 
-    public function __construct(CanHandleDebug ...$handlers) {
-        $this->withHandlers(...$handlers);
+    public function __construct(DebugConfig $config) {
+        $this->config = $config;
+    }
+
+    public function withConfig(DebugConfig $config): self {
+        $this->config = $config;
+        return $this;
     }
 
     public function withHandlers(CanHandleDebug ...$handlers): self {
@@ -24,21 +31,35 @@ class Debug
         return $this;
     }
 
-    public function handleStream(string $line, bool $isConsolidated = false): void {
-        foreach ($this->handlers as $handler) {
-            $handler->handleStream($line, $isConsolidated);
-        }
-    }
-
     public function handleRequest(HttpClientRequest $request): void {
         foreach ($this->handlers as $handler) {
             $handler->handleRequest($request);
         }
     }
 
-    public function handleResponse(HttpClientResponse $response, array $options) {
+    public function handleResponse(HttpClientResponse $response) : void {
         foreach ($this->handlers as $handler) {
-            $handler->handleResponse($response, $options);
+            $handler->handleResponse($response);
         }
+    }
+
+    public function handleStreamEvent(string $line) : void {
+        foreach ($this->handlers as $handler) {
+            $handler->handleStreamEvent($line);
+        }
+    }
+
+    public function handleStreamChunk(string $chunk) : void {
+        foreach ($this->handlers as $handler) {
+            $handler->handleStreamChunk($chunk);
+        }
+    }
+
+    public function isEnabled(): bool {
+        return $this->config->httpEnabled;
+    }
+
+    public function config(): DebugConfig {
+        return $this->config;
     }
 }

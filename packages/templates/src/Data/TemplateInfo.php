@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Template;
+namespace Cognesy\Template\Data;
 
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Enums\FrontMatterFormat;

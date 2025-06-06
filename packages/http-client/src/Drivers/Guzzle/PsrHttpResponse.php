@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Adapters;
+namespace Cognesy\Http\Drivers\Guzzle;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Generator;
@@ -16,13 +16,16 @@ class PsrHttpResponse implements HttpClientResponse
 {
     private ResponseInterface $response;
     private StreamInterface $stream;
+    private bool $isStreamed;
 
     public function __construct(
         ResponseInterface $response,
         StreamInterface $stream,
+        bool $isStreamed,
     ) {
         $this->response = $response;
         $this->stream = $stream;
+        $this->isStreamed = $isStreamed;
     }
 
     /**
@@ -62,5 +65,9 @@ class PsrHttpResponse implements HttpClientResponse
         while (!$this->stream->eof()) {
             yield $this->stream->read($chunkSize);
         }
+    }
+
+    public function isStreamed(): bool {
+        return $this->isStreamed;
     }
 }

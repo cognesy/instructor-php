@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM;
 
-use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
@@ -33,7 +33,7 @@ class Inference
     public function __construct(
         ?EventDispatcherInterface $events = null,
         ?EventDispatcherInterface $listener = null,
-        ?CanProvideLLMConfig $configProvider = null,
+        ?CanProvideConfig         $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();

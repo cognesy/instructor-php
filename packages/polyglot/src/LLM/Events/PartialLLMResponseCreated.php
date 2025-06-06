@@ -2,10 +2,9 @@
 namespace Cognesy\Polyglot\LLM\Events;
 
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
-use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Json\Json;
 
-final class PartialLLMResponseReceived extends Event
+final class PartialLLMResponseCreated extends InferenceEvent
 {
     public function __construct(
         public PartialLLMResponse $partialLLMResponse

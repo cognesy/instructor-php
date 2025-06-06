@@ -5,42 +5,42 @@ namespace Cognesy\Http\Config;
 final class DebugConfig
 {
     public function __construct(
-        public bool $httpEnabled = false,
-        public bool $httpTrace = false,
-        public bool $httpRequestUrl = true,
-        public bool $httpRequestHeaders = true,
-        public bool $httpRequestBody = true,
-        public bool $httpResponseHeaders = true,
-        public bool $httpResponseBody = true,
-        public bool $httpResponseStream = true,
-        public bool $httpResponseStreamByLine = true,
+        public readonly bool $httpEnabled = false,
+        public readonly bool $httpTrace = false,
+        public readonly bool $httpRequestUrl = true,
+        public readonly bool $httpRequestHeaders = true,
+        public readonly bool $httpRequestBody = true,
+        public readonly bool $httpResponseHeaders = true,
+        public readonly bool $httpResponseBody = true,
+        public readonly bool $httpResponseStream = true,
+        public readonly bool $httpResponseStreamByLine = true,
     ) {}
 
     public static function fromArray(array $config): self {
         return new self(
-            $config['httpEnabled'] ?? true,
-            $config['httpTrace'] ?? false,
-            $config['httpRequestUrl'] ?? true,
-            $config['httpRequestHeaders'] ?? true,
-            $config['httpRequestBody'] ?? true,
-            $config['httpResponseHeaders'] ?? true,
-            $config['httpResponseBody'] ?? true,
-            $config['httpResponseStream'] ?? true,
-            $config['httpResponseStreamByLine'] ?? true
+            httpEnabled: $config['http_enabled'] ?? false,
+            httpTrace: $config['http_trace'] ?? false,
+            httpRequestUrl: $config['http_requestUrl'] ?? true,
+            httpRequestHeaders: $config['http_requestHeaders'] ?? true,
+            httpRequestBody: $config['http_requestBody'] ?? true,
+            httpResponseHeaders: $config['http_responseHeaders'] ?? true,
+            httpResponseBody: $config['http_responseBody'] ?? true,
+            httpResponseStream: $config['http_responseStream'] ?? true,
+            httpResponseStreamByLine: $config['http_responseStreamByLine'] ?? true
         );
     }
 
     public function toArray() : array {
         return [
-            'httpEnabled' => $this->httpEnabled,
-            'httpTrace' => $this->httpTrace,
-            'httpRequestUrl' => $this->httpRequestUrl,
-            'httpRequestHeaders' => $this->httpRequestHeaders,
-            'httpRequestBody' => $this->httpRequestBody,
-            'httpResponseHeaders' => $this->httpResponseHeaders,
-            'httpResponseBody' => $this->httpResponseBody,
-            'httpResponseStream' => $this->httpResponseStream,
-            'httpResponseStreamByLine' => $this->httpResponseStreamByLine,
+            'http_enabled' => $this->httpEnabled,
+            'http_trace' => $this->httpTrace,
+            'http_requestUrl' => $this->httpRequestUrl,
+            'http_requestHeaders' => $this->httpRequestHeaders,
+            'http_requestBody' => $this->httpRequestBody,
+            'http_responseHeaders' => $this->httpResponseHeaders,
+            'http_responseBody' => $this->httpResponseBody,
+            'http_responseStream' => $this->httpResponseStream,
+            'http_responseStreamByLine' => $this->httpResponseStreamByLine,
         ];
     }
 }

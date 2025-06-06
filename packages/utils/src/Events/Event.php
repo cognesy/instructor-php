@@ -89,7 +89,7 @@ class Event implements JsonSerializable
      * @return string The event data as a JSON string
      */
     public function __toString(): string {
-        return Json::encode($this->data, JSON_PRETTY_PRINT);
+        return Json::encode($this->data);
     }
 
     /**

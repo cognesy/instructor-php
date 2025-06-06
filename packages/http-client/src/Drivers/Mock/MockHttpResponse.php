@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Adapters;
+namespace Cognesy\Http\Drivers\Mock;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Generator;
@@ -23,6 +23,7 @@ class MockHttpResponse implements HttpClientResponse
     
     /** @var string[] Optional chunks for streaming responses */
     private array $chunks;
+    private bool $streaming;
 
     /**
      * Constructor
@@ -41,30 +42,28 @@ class MockHttpResponse implements HttpClientResponse
         $this->statusCode = $statusCode;
         $this->headers = $headers;
         $this->body = $body;
+        $this->streaming = !empty($chunks);
         $this->chunks = !empty($chunks) ? $chunks : [$body];
     }
 
     /**
      * Static factory to create a successful response
      */
-    public static function success(int $statusCode = 200, array $headers = [], string $body = '', array $chunks = []): self
-    {
+    public static function success(int $statusCode = 200, array $headers = [], string $body = '', array $chunks = []): self {
         return new self($statusCode, $headers, $body, $chunks);
     }
 
     /**
      * Static factory to create an error response
      */
-    public static function error(int $statusCode = 500, array $headers = [], string $body = '', array $chunks = []): self
-    {
+    public static function error(int $statusCode = 500, array $headers = [], string $body = '', array $chunks = []): self {
         return new self($statusCode, $headers, $body, $chunks);
     }
 
     /**
      * Static factory to create a streaming response
      */
-    public static function streaming(int $statusCode = 200, array $headers = [], array $chunks = []): self
-    {
+    public static function streaming(int $statusCode = 200, array $headers = [], array $chunks = []): self {
         return new self($statusCode, $headers, implode('', $chunks), $chunks);
     }
 
@@ -73,8 +72,7 @@ class MockHttpResponse implements HttpClientResponse
      * 
      * @return int
      */
-    public function statusCode(): int
-    {
+    public function statusCode(): int {
         return $this->statusCode;
     }
 
@@ -83,8 +81,7 @@ class MockHttpResponse implements HttpClientResponse
      * 
      * @return array
      */
-    public function headers(): array
-    {
+    public function headers(): array {
         return $this->headers;
     }
 
@@ -93,9 +90,12 @@ class MockHttpResponse implements HttpClientResponse
      * 
      * @return string
      */
-    public function body(): string
-    {
+    public function body(): string {
         return $this->body;
+    }
+
+    public function isStreamed(): bool {
+        return $this->streaming;
     }
 
     /**
@@ -104,8 +104,7 @@ class MockHttpResponse implements HttpClientResponse
      * @param int $chunkSize Not used in mock implementation, included for interface compatibility
      * @return Generator<string>
      */
-    public function stream(int $chunkSize = 1): Generator
-    {
+    public function stream(int $chunkSize = 1): Generator {
         foreach ($this->chunks as $chunk) {
             yield $chunk;
         }

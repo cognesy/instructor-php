@@ -78,4 +78,19 @@ final class StructuredOutputConfig
             'defaultOutputClass' => $this->defaultOutputClass,
         ];
     }
+
+    public static function fromArray(array $config): self {
+        return new self(
+            outputMode: $config['outputMode'] ?? null,
+            useObjectReferences: $config['useObjectReferences'] ?? false,
+            maxRetries: $config['maxRetries'] ?? -1,
+            retryPrompt: $config['retryPrompt'] ?? '',
+            modePrompts: $config['modePrompts'] ?? [],
+            schemaName: $config['schemaName'] ?? '',
+            toolName: $config['toolName'] ?? '',
+            toolDescription: $config['toolDescription'] ?? '',
+            chatStructure: $config['chatStructure'] ?? [],
+            defaultOutputClass: $config['defaultOutputClass'] ?? ''
+        );
+    }
 }

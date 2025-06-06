@@ -25,7 +25,7 @@ use Cognesy\Http\Exceptions\HttpRequestException;
 
 function testApiKey(string $preset): bool {
     try {
-        $llm = LLM::preset($preset);
+        $llm = LLMProvider::using($preset);
         $inference = new Inference($preset);
         $response = $inference->with(
             messages: 'Test message',
@@ -57,8 +57,9 @@ Use debug mode to see the actual requests and responses:
 use Cognesy\Polyglot\LLM\Inference;
 
 // Enable debug mode
-$inference = new Inference('openai');
-$inference->withDebug(true);
+$inference = new Inference()
+    ->using('openai')
+    ->withDebugPreset('on');
 
 // Make a request
 $response = $inference->with(
@@ -83,8 +84,8 @@ Ensure all required configuration parameters are present and correctly formatted
 
 function verifyConfig(string $preset): void {
     try {
-        $provider = new SettingsLLMConfigProvider();
-        $config = $provider->getConfig($preset);
+        $provider = new ConfigProvider();
+        $config = LLMConfig::fromArray($provider->getConfig($preset));
 
         echo "Configuration for '$preset':\n";
         echo "API URL: {$config->apiUrl}\n";

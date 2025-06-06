@@ -169,7 +169,7 @@ $client = new HttpClient('guzzle');
 $client->withClient('symfony');
 
 // Enable debug mode
-$client->withDebug(true);
+$client->withDebugPreset('on');
 ```
 
 ## Simple Request Example

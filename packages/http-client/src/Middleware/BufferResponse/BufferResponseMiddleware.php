@@ -2,9 +2,9 @@
 
 namespace Cognesy\Http\Middleware\BufferResponse;
 
-use Cognesy\Http\BaseMiddleware;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 /**
  * Middleware that buffers HTTP responses for reuse

@@ -5,20 +5,22 @@ namespace Cognesy\Polyglot\LLM;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Config\LLMConfigResolver;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
-use Cognesy\Polyglot\LLM\Events\LLMConfigBuiltEvent;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
+use Cognesy\Utils\Config\Events\ConfigResolutionFailed;
+use Cognesy\Utils\Config\Events\ConfigResolved;
+use Cognesy\Utils\Config\Providers\ConfigResolver;
 use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
+use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class LLMProvider
 {
     private readonly EventDispatcherInterface $events;
     private readonly CanRegisterEventListeners $listener;
-    private readonly CanProvideLLMConfig $configProvider;
+    private CanProvideConfig $configProvider;
 
     // Configuration - all immutable after construction
     private ?string $debugPreset;
@@ -29,20 +31,20 @@ final class LLMProvider
     private ?CanHandleInference $explicitDriver;
 
     private function __construct(
-        ?EventDispatcherInterface $events = null,
+        ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
-        ?CanProvideLLMConfig $configProvider = null,
-        ?bool $debug = null,
-        ?string $dsn = null,
-        ?string $preset = null,
-        ?LLMConfig $explicitConfig = null,
-        ?HttpClient $explicitHttpClient = null,
-        ?CanHandleInference $explicitDriver = null,
+        ?CanProvideConfig          $configProvider = null,
+        ?bool                      $debug = null,
+        ?string                    $dsn = null,
+        ?string                    $preset = null,
+        ?LLMConfig                 $explicitConfig = null,
+        ?HttpClient                $explicitHttpClient = null,
+        ?CanHandleInference        $explicitDriver = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = LLMConfigResolver::makeWith($configProvider);
+        $this->configProvider = ConfigResolver::makeWith($configProvider);
 
         $this->debugPreset = $debug;
         $this->dsn = $dsn;
@@ -70,9 +72,9 @@ final class LLMProvider
      * Create a new builder instance
      */
     public static function new(
-        ?EventDispatcherInterface $events = null,
+        ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
-        ?CanProvideLLMConfig $configProvider = null,
+        ?CanProvideConfig          $configProvider = null,
     ): self {
         return new self($events, $listener, $configProvider);
     }
@@ -96,18 +98,9 @@ final class LLMProvider
     /**
      * Configure with a custom config provider
      */
-    public function withConfigProvider(CanProvideLLMConfig $configProvider): self {
-        return new self(
-            events: $this->events,
-            listener: $this->listener,
-            configProvider: $configProvider,
-            debug: $this->debugPreset,
-            dsn: $this->dsn,
-            preset: $this->llmPreset,
-            explicitConfig: $this->explicitConfig,
-            explicitHttpClient: $this->explicitHttpClient,
-            explicitDriver: $this->explicitDriver,
-        );
+    public function withConfigProvider(CanProvideConfig $configProvider): self {
+        $this->configProvider = ConfigResolver::makeWith($configProvider);
+        return $this;
     }
 
     /**
@@ -137,7 +130,7 @@ final class LLMProvider
     /**
      * Configure debug mode
      */
-    public function withDebug(?string $preset = ''): self {
+    public function withDebugPreset(?string $preset): self {
         $this->debugPreset = $preset;
         return $this;
     }
@@ -172,6 +165,10 @@ final class LLMProvider
     private function buildConfig(): LLMConfig {
         // If explicit config provided, use it
         if ($this->explicitConfig !== null) {
+            $this->events->dispatch(new ConfigResolved([
+                'group' => 'llm',
+                'config' => $this->explicitConfig->toArray()
+            ]));
             return $this->explicitConfig;
         }
 
@@ -182,15 +179,38 @@ final class LLMProvider
         $dsnOverrides = $this->dsn !== null ? DSN::fromString($this->dsn)->toArray() : [];
 
         // Build config based on preset
-        $config = empty($effectivePreset)
-            ? $this->configProvider->getConfig()
-            : $this->configProvider->getConfig($effectivePreset);
+        $result = Result::try(
+            fn() => empty($effectivePreset)
+                ? $this->configProvider->getConfig('llm')
+                : $this->configProvider->getConfig('llm', $effectivePreset)
+        );
+
+        if ($result->isFailure()) {
+            $this->events->dispatch(new ConfigResolutionFailed([
+                'group' => 'llm',
+                'effectivePreset' => $effectivePreset,
+                'preset' => $this->llmPreset,
+                'dsn' => $this->dsn,
+                'error' => $result->errorMessage(),
+            ]));
+            throw $result->exception();
+        }
+
+        $config = LLMConfig::fromArray($result->unwrap());
 
         // Apply DSN overrides if present
-        $final = !empty($dsnOverrides) ? $config->withOverrides($dsnOverrides) : $config;
+        $final = !empty($dsnOverrides)
+            ? $config->withOverrides($dsnOverrides)
+            : $config;
 
         // Dispatch event
-        $this->events->dispatch(new LLMConfigBuiltEvent($final));
+        $this->events->dispatch(new ConfigResolved([
+            'group' => 'llm',
+            'effectivePreset' => $effectivePreset,
+            'preset' => $this->llmPreset,
+            'dsn' => $this->dsn,
+            'config' => $final->toArray(),
+        ]));
 
         return $final;
     }
@@ -215,7 +235,7 @@ final class LLMProvider
 
         // Apply debug setting if specified
         if ($this->debugPreset !== null) {
-            $builder = $builder->withDebug($this->debugPreset);
+            $builder = $builder->withDebugPreset($this->debugPreset);
         }
 
         return $builder->create();

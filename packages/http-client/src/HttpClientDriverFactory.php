@@ -58,8 +58,11 @@ class HttpClientDriverFactory
             throw new InvalidArgumentException("HTTP client driver supported: {$name}");
         }
 
-        $clientClass = is_null($clientInstance) ? '(auto-instance)' : get_class($clientInstance);
-        $this->events->dispatch(new HttpDriverBuilt($clientClass, $config));
+        $clientClass = is_null($clientInstance) ? '(auto)' : get_class($clientInstance);
+        $this->events->dispatch(new HttpDriverBuilt([
+            'clientClass' => $clientClass,
+            'config' => $config->toArray(),
+        ]));
 
         return $driverClosure(config: $config, clientInstance: $clientInstance, events: $this->events);
     }

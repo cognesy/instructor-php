@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http\Drivers\Laravel;
 
-use Cognesy\Http\Adapters\LaravelHttpResponse;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
@@ -45,7 +44,12 @@ class LaravelDriver implements CanHandleHttpRequest
         $method = $request->method();
         $streaming = $request->isStreamed();
 
-        $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'body' => $body,
+        ]));
 
         // Create a fresh pending request with configuration
         $pendingRequest = $this->factory
@@ -61,13 +65,22 @@ class LaravelDriver implements CanHandleHttpRequest
             // Send the request based on the method
             $response = $this->sendRequest($pendingRequest, $method, $url, $body);
         } catch (Exception $e) {
-            $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'body' => $body,
+                'errors' => $e->getMessage(),
+            ]));
             throw new HttpRequestException($e->getMessage(), $request, $e);
         }
-        $this->events->dispatch(new HttpResponseReceived($response->status()));
+
+        $this->events->dispatch(new HttpResponseReceived([
+            'statusCode' => $response->status()
+        ]));
         return new LaravelHttpResponse(
-            $response,
-            $streaming
+            response: $response,
+            streaming: $streaming,
         );
     }
 

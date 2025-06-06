@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
@@ -10,8 +9,8 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
-use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
@@ -45,8 +44,7 @@ class StructuredOutput
     public function __construct(
         ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
-        ?CanProvideStructuredOutputConfig $configProvider = null,
-        ?CanProvideLLMConfig $llmConfigProvider = null,
+        ?CanProvideConfig          $configProvider = null,
     ) {
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
@@ -64,7 +62,7 @@ class StructuredOutput
         $this->llmProvider = LLMProvider::new(
             events: $this->events,
             listener: $this->listener,
-            configProvider: $llmConfigProvider,
+            configProvider: $configProvider,
         );
     }
 }

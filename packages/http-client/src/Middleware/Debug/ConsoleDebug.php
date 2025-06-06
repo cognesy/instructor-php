@@ -15,30 +15,15 @@ class ConsoleDebug implements CanHandleDebug
         protected readonly DebugConfig $config,
     ) {}
 
-    public function handleStream(string $line, bool $isConsolidated = false): void {
-        if (!$this->config->httpResponseStream) {
-            return;
-        }
-        $now = (new DateTimeImmutable)->format('H:i:s v') . 'ms';
-        if ($isConsolidated) {
-            Console::print("\n[STREAM DATA (full line)]", [Color::DARK_YELLOW]);
-        } else {
-            Console::print("\n[STREAM DATA]", [Color::DARK_YELLOW]);
-        }
-        Console::print(" at ", [Color::DARK_GRAY]);
-        Console::println("$now", [Color::GRAY]);
-        Console::println($line, [Color::DARK_GRAY]);
-    }
-
     public function handleRequest(HttpClientRequest $request): void {
+        $highlight = [Color::YELLOW];
         if ($this->config->httpRequestUrl) {
             Console::println("");
-            Console::println("[REQUEST URL]", [Color::YELLOW]);
+            Console::println("[REQUEST URL]", $highlight);
             Console::println($request->url(), [Color::GRAY]);
-            Console::println("[REQUEST /URL]", [Color::YELLOW]);
+            Console::println("[REQUEST /URL]", $highlight);
             Console::println("");
         }
-        $highlight = [Color::YELLOW];
         if ($this->config->httpRequestHeaders) {
             Console::println("[REQUEST HEADERS]", $highlight);
             $this->printHeaders($request->headers());
@@ -57,7 +42,7 @@ class ConsoleDebug implements CanHandleDebug
         }
     }
 
-    public function handleResponse(HttpClientResponse $response, array $options) {
+    public function handleResponse(HttpClientResponse $response) : void {
         $highlight = [Color::WHITE];
         if ($this->config->httpTrace) {
             Console::println("[/HTTP DEBUG]", $highlight);
@@ -69,12 +54,34 @@ class ConsoleDebug implements CanHandleDebug
             Console::println("[/RESPONSE HEADERS]", $highlight);
             Console::println("");
         }
-        if ($this->config->httpResponseBody && $options['stream'] === false) {
+        if ($this->config->httpResponseBody && !$response->isStreamed()) {
             Console::println("[RESPONSE BODY]", $highlight);
             $this->printBody($response->body());
             Console::println("[/RESPONSE BODY]", $highlight);
             Console::println("");
         }
+    }
+
+    public function handleStreamEvent(string $line): void {
+        if (!$this->config->httpResponseStream) {
+            return;
+        }
+        $now = (new DateTimeImmutable)->format('H:i:s v') . 'ms';
+        Console::print("\n[STREAM DATA (full line)]", [Color::DARK_YELLOW]);
+        Console::print(" at ", [Color::DARK_GRAY]);
+        Console::println("$now", [Color::GRAY]);
+        Console::println($line, [Color::DARK_GRAY]);
+    }
+
+    public function handleStreamChunk(string $chunk): void {
+        if (!$this->config->httpResponseStream) {
+            return;
+        }
+        $now = (new DateTimeImmutable)->format('H:i:s v') . 'ms';
+        Console::print("\n[STREAM DATA]", [Color::DARK_YELLOW]);
+        Console::print(" at ", [Color::DARK_GRAY]);
+        Console::println("$now", [Color::GRAY]);
+        Console::println($chunk, [Color::DARK_GRAY]);
     }
 
     // INTERNAL /////////////////////////////////////////////////////////

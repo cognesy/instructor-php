@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Middleware\Examples;
 
-use Cognesy\Http\BaseMiddleware;
+use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class Example3Middleware extends BaseMiddleware
 {

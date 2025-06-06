@@ -5,6 +5,7 @@ namespace Cognesy\Utils\Config\Providers;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Config\Exceptions\ConfigurationException;
 use Cognesy\Utils\Deferred;
+use InvalidArgumentException;
 
 class ConfigResolver implements CanProvideConfig
 {
@@ -14,16 +15,21 @@ class ConfigResolver implements CanProvideConfig
     private ?Deferred $override = null;
     private bool $allowEmptyFallback = false;
 
-    public function override(mixed $override): static
-    {
-        $this->override = $this->createDeferred($override, 'Override cannot be null.');
-        return $this;
+    public static function default(): static {
+        return (new static())->tryFrom(fn() => new SettingsConfigProvider());
     }
 
-    public function fallbackTo(callable|Deferred|CanProvideConfig $provider): static
-    {
-        $this->fallback = $this->createDeferred($provider, 'Fallback provider cannot be null.');
-        return $this;
+    public static function makeWith(?CanProvideConfig $provider): static {
+        return (new static())
+            ->tryFrom($provider)
+            ->thenFrom(fn() => new SettingsConfigProvider());
+    }
+
+    public static function makeWithEmptyFallback(): static {
+        return (new static())
+            ->tryFrom(fn() => new SettingsConfigProvider())
+            ->fallbackTo(fn() => [])
+            ->allowEmptyFallback(true);
     }
 
     /**
@@ -31,143 +37,80 @@ class ConfigResolver implements CanProvideConfig
      * This should only be used when you have explicit withXxx() methods
      * to populate required values later.
      */
-    public function allowEmptyFallback(bool $allow = true): static
-    {
+    public function allowEmptyFallback(bool $allow = true): static {
         $this->allowEmptyFallback = $allow;
         return $this;
     }
 
-    public function tryFrom(callable|Deferred|CanProvideConfig|null $provider): static
-    {
+    public function tryFrom(callable|Deferred|CanProvideConfig|null $provider): static {
         if ($provider !== null) {
             array_unshift($this->providers, $this->createDeferred($provider));
         }
         return $this;
     }
 
-    public function thenFrom(callable|Deferred|CanProvideConfig|null $provider): static
-    {
+    public function thenFrom(callable|Deferred|CanProvideConfig|null $provider): static {
         if ($provider !== null) {
             $this->providers[] = $this->createDeferred($provider);
         }
         return $this;
     }
 
-    public function getConfig(?string $preset = ''): mixed
-    {
-        $exceptions = [];
-        $configurationAttempts = [];
-
-        $config = $this->tryBuildConfig($preset, $exceptions, $configurationAttempts);
-        if ($config == null) {
-            $this->throwConfigurationError($preset ?? '', $exceptions, $configurationAttempts);
-        }
-
-        return $config;
+    public function override(mixed $override): static {
+        $this->override = $this->createDeferred($override, 'Override cannot be null.');
+        return $this;
     }
 
-    // PRIVATE METHODS //////////////////////////////////////////////////////
-
-    private function tryBuildConfig(?string $preset, array &$exceptions, array &$configurationAttempts): mixed{
-        // Try override first
-        if ($this->override) {
-            $result = $this->tryResolve($this->override, $preset, $exceptions, $configurationAttempts, 'override');
-            if ($result !== null) {
-                return $result;
-            }
-        }
-
-        // Try providers in order
-        foreach ($this->providers as $index => $provider) {
-            $result = $this->tryResolve($provider, $preset, $exceptions, $configurationAttempts, "provider[$index]");
-            if ($result !== null) {
-                return $result;
-            }
-        }
-
-        // Try fallback
-        if ($this->fallback) {
-            $result = $this->tryResolve($this->fallback, $preset, $exceptions, $configurationAttempts, 'fallback');
-            if ($result !== null) {
-                return $result;
-            }
-        }
-
-        // If empty fallback is allowed and we have a fallback that creates empty objects
-        if ($this->allowEmptyFallback && $this->fallback) {
-            try {
-                $resolved = $this->resolveDeferredSafely($this->fallback, $preset);
-                if ($resolved !== null) {
-                    return $resolved;
-                }
-            } catch (\Throwable $e) {
-                $exceptions[] = $e;
-            }
-        }
-
-        return null;
+    public function fallbackTo(callable|Deferred|CanProvideConfig $provider): static {
+        $this->fallback = $this->createDeferred($provider, 'Fallback provider cannot be null.');
+        return $this;
     }
 
-    private function createDeferred(mixed $provider, string $nullErrorMessage = 'Provider cannot be null.'): Deferred
-    {
+    public function getConfig(string $group, ?string $preset = ''): array {
+        foreach ($this->makePipeline() as $provider) {
+            $result = $this->tryResolve($provider, $group, $preset);
+            if (!is_null($result)) {
+                return $result;
+            }
+        }
+
+        if (!$this->allowEmptyFallback) {
+            // If empty fallback is allowed and we have a fallback that creates empty objects
+            throw new ConfigurationException("No valid configuration found for group '{$group}' with preset '$preset'. ");
+        }
+
+        return [];
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////
+
+    private function makePipeline() : array {
+        $pipeline = [];
+        if ($this->override) { $pipeline[] = $this->override; }
+        foreach ($this->providers as $provider) {
+            $pipeline[] = $provider;
+        }
+        if ($this->fallback) { $pipeline[] = $this->fallback; }
+        return $pipeline;
+    }
+
+    private function createDeferred(mixed $provider) : Deferred {
         return match (true) {
-            is_null($provider) => throw new \InvalidArgumentException($nullErrorMessage),
+            is_null($provider) => throw new InvalidArgumentException('Provider cannot be null.'),
             is_callable($provider) => new Deferred($provider),
             $provider instanceof Deferred => $provider,
             $provider instanceof CanProvideConfig => new Deferred(fn() => $provider),
             is_object($provider) => new Deferred(fn() => $provider),
-            default => throw new \InvalidArgumentException('Provider must be a callable, Deferred, or object.'),
+            default => throw new InvalidArgumentException('Provider must be a callable, Deferred, or object.'),
         };
     }
 
-    private function tryResolve(
-        Deferred $deferred,
-        ?string $preset,
-        array &$exceptions,
-        array &$attempts,
-        string $source
-    ): mixed {
-        try {
-            $resolved = $this->resolveDeferredSafely($deferred, $preset);
-
-            if ($resolved !== null) {
-                $attempts[] = "$source: succeeded";
-                return $resolved;
-            }
-
-            $attempts[] = "$source: returned null";
-            return null;
-        } catch (\Throwable $e) {
-            $exceptions[] = $e;
-            $attempts[] = "$source: failed - " . $e->getMessage();
-            return null;
-        }
-    }
-
-    private function resolveDeferredSafely(Deferred $deferred, ?string $preset): mixed
-    {
-        $resolved = method_exists($deferred, 'resolveUsing')
-            ? $deferred->resolveUsing($preset)
-            : $deferred->resolve();
-
+    private function tryResolve(Deferred $deferred, string $group, ?string $preset) : ?array {
+        $resolved = $deferred->resolve();
         return match (true) {
-            $resolved instanceof CanProvideConfig => $resolved->getConfig($preset),
+            $resolved instanceof CanProvideConfig => $resolved->getConfig($group, $preset),
             $resolved !== null => $resolved,
             default => null,
         };
-    }
-
-    private function throwConfigurationError(string $preset, array $exceptions, array $attempts): never
-    {
-        $exceptionMessages = array_map(fn(\Throwable $e) => $e->getMessage(), $exceptions);
-
-        $message = sprintf(
-            "Configuration resolution failed for preset '%s'.\n\nAttempts made:\n%s\n\nExceptions encountered:\n%s\n\nTo allow empty fallback configs (not recommended), call allowEmptyFallback() on the ConfigResolver.",
-            $preset,
-            '  - ' . implode("\n  - ", $attempts),
-            '  - ' . implode("\n  - ", $exceptionMessages)
-        );
-
-        throw new ConfigurationException($message);
     }
 }

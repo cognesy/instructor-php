@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Http;
+namespace Cognesy\Http\Middleware\Base;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
@@ -32,6 +32,12 @@ abstract class BaseMiddleware implements HttpMiddleware
      * 5) Return the final response
      */
     public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse {
+        if ($this->shouldExecute($request) === false) {
+            // If the middleware decides not to execute, just pass the request
+            // to the next handler without any modifications.
+            return $next->handle($request);
+        }
+
         // 1) Pre-request logic
         $this->beforeRequest($request);
 
@@ -62,10 +68,7 @@ abstract class BaseMiddleware implements HttpMiddleware
      * afterRequest() is called once we have the raw response from the next handler.
      * Override to transform or log the response before returning it.
      */
-    protected function afterRequest(
-        HttpClientRequest  $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+    protected function afterRequest(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse {
         // Default: just return the response as-is
         return $response;
     }
@@ -75,10 +78,7 @@ abstract class BaseMiddleware implements HttpMiddleware
      * additional transformations? By default, returns false. Subclasses
      * can override this to conditionally enable decoration.
      */
-    protected function shouldDecorateResponse(
-        HttpClientRequest  $request,
-        HttpClientResponse $response,
-    ): bool {
+    protected function shouldDecorateResponse(HttpClientRequest $request, HttpClientResponse $response): bool {
         return false;
     }
 
@@ -87,11 +87,14 @@ abstract class BaseMiddleware implements HttpMiddleware
      * Default implementation wraps the response in a basic chunk-decorating class
      * that calls processChunk() on every chunk. Override if you need custom logic.
      */
-    protected function toResponse(
-        HttpClientRequest  $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+    protected function toResponse(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse {
         // Here you can wrap the response in a class that intercepts streaming
         return $response;
+    }
+
+    protected function shouldExecute(HttpClientRequest $request) : bool {
+        // Default implementation always executes the middleware.
+        // Subclasses can override this to conditionally skip execution.
+        return true;
     }
 }

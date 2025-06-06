@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Adapters;
+namespace Cognesy\Http\Drivers\Laravel;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Generator;
@@ -18,34 +18,20 @@ class LaravelHttpResponse implements HttpClientResponse
         private bool $streaming = false
     ) {}
 
-    /**
-     * Get the response status code
-     *
-     * @return int
-     */
-    public function statusCode(): int
-    {
+    public function statusCode(): int {
         return $this->response->status();
     }
 
-    /**
-     * Get the response headers
-     *
-     * @return array
-     */
-    public function headers(): array
-    {
+    public function headers(): array {
         return $this->response->headers();
     }
 
-    /**
-     * Get the response content
-     *
-     * @return string
-     */
-    public function body(): string
-    {
+    public function body(): string {
         return $this->response->body();
+    }
+
+    public function isStreamed(): bool {
+        return $this->streaming;
     }
 
     /**
@@ -54,8 +40,7 @@ class LaravelHttpResponse implements HttpClientResponse
      * @param int $chunkSize
      * @return Generator<string>
      */
-    public function stream(int $chunkSize = 1): Generator
-    {
+    public function stream(int $chunkSize = 1): Generator {
         if (!$this->streaming) {
             yield $this->body();
             return;

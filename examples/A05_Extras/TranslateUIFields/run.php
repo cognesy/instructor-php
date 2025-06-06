@@ -41,7 +41,7 @@ $sourceModel = new TextElementModel(
 $validator = new class implements CanValidateObject {
     public function validate(object $dataObject): ValidationResult {
         $isInGerman = (new StructuredOutput)
-            //->withDebug()
+            //->withDebugPreset('on')
             ->withInput($dataObject)
             ->withResponseObject(Scalar::boolean())
             ->withPrompt('Are all content fields translated to German? Return result in JSON format: <|json_schema|>')
@@ -55,7 +55,7 @@ $validator = new class implements CanValidateObject {
 };
 
 $transformedModel = (new StructuredOutput)
-    //->withDebug()
+    //->withDebugPreset('on')
     //->wiretap(fn($e)=>$e->print())
     ->withInput($sourceModel)
     ->withResponseClass(get_class($sourceModel))

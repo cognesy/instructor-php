@@ -15,21 +15,13 @@ Laravel).
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\CanProvideDebugConfig;
-use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
 use Cognesy\Http\HttpClientBuilder;
-use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\EventDispatcher;
-use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
 class User {
     public int $age;
@@ -41,123 +33,108 @@ $events = new EventDispatcher();
 // Let's build a set of custom configuration providers.
 // You can use those examples to build your framework-specific providers.
 
-class CustomHttpConfigProvider implements CanProvideHttpClientConfig
+class CustomConfigProvider implements CanProvideConfig
 {
-    public function getConfig(?string $preset = ''): HttpClientConfig {
-        return new HttpClientConfig(
-            driver: 'symfony',
-            connectTimeout: 10,
-            requestTimeout: 30,
-            idleTimeout: -1,
-            maxConcurrent: 5,
-            poolTimeout: 60,
-            failOnError: true,
-        );
-    }
-}
-
-class CustomLLMConfigProvider implements CanProvideLLMConfig {
-    public function getConfig(?string $preset = null): LLMConfig {
-        return $this->presets()[$preset] ?? new LLMConfig();
+    public function getConfig(string $group, ?string $preset = ''): array {
+        return match($group) {
+            'http' => $this->http() ?? [],
+            'debug' => $this->debug()[$preset] ?? [],
+            'llm' => $this->llm() ?? [],
+            'structured' => $this->struct() ?? [],
+            default => [],
+        };
     }
 
-    private function presets(): array {
+    private function llm() : array {
         return [
-            'deepseek' => new LLMConfig(
-                apiUrl  : 'https://api.deepseek.com',
-                apiKey  : Env::get('DEEPSEEK_API_KEY'),
-                endpoint: '/chat/completions', defaultModel: 'deepseek-chat', defaultMaxTokens: 128,
-                driver  : 'deepseek',
-            ),
+            'apiUrl' => 'https://api.deepseek.com',
+            'apiKey' => Env::get('DEEPSEEK_API_KEY'),
+            'endpoint' => '/chat/completions',
+            'defaultModel' => 'deepseek-chat',
+            'defaultMaxTokens' => 128,
+            'driver' => 'deepseek',
             // ...
         ];
     }
-};
 
-class CustomDebugConfigProvider implements CanProvideDebugConfig
-{
-    public function getConfig(?string $preset = ''): DebugConfig {
-        return $this->presets()[$preset] ?? new DebugConfig();
+    private function http() : array {
+        return [
+            'driver' => 'symfony',
+            'connectTimeout' => 10,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
+        ];
     }
 
-    private function presets(): array {
+    private function debug(): array {
         return [
-            'off' => new DebugConfig(
-                httpEnabled: true,
-            ),
-            'on' => new DebugConfig(
-                httpEnabled: true,
-                httpTrace: true,
-                httpRequestUrl: true,
-                httpRequestHeaders: true,
-                httpRequestBody: true,
-                httpResponseHeaders: true,
-                httpResponseBody: true,
-                httpResponseStream: true,
-                httpResponseStreamByLine: true,
-            )
+            'off' => [
+                'httpEnabled' => true,
+            ],
+            'on' => [
+                'httpEnabled' => true,
+                'httpTrace' => true,
+                'httpRequestUrl' => true,
+                'httpRequestHeaders' => true,
+                'httpRequestBody' => true,
+                'httpResponseHeaders' => true,
+                'httpResponseBody' => true,
+                'httpResponseStream' => true,
+                'httpResponseStreamByLine' => true,
+            ]
+        ];
+    }
+
+    private function struct(): array {
+        return [
+            'outputMode' => OutputMode::Tools,
+            'useObjectReferences' => true,
+            'maxRetries' => 3,
+            'retryPrompt' => 'Please try again ...',
+            'modePrompts' => [
+                OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
+                OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
+                OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
+                OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
+            ],
+            'schemaName' => 'user_schema',
+            'toolName' => 'user_tool',
+            'toolDescription' => 'Tool to extract user information ...',
+            'chatStructure' => [
+                'system',
+                'pre-cached',
+                    'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+                    'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+                    'cached-messages',
+                'post-cached',
+                'pre-prompt', 'prompt', 'post-prompt',
+                'pre-examples', 'examples', 'post-examples',
+                'pre-messages', 'messages', 'post-messages',
+                'pre-retries', 'retries', 'post-retries'
+            ],
+            // defaultOutputClass is not used in this example
+            'defaultOutputClass' => Structure::class,
         ];
     }
 }
-
-// check SettingsStructuredOutputConfigProvider for a reference implementation
-class CustomStructuredOutputConfigProvider implements CanProvideStructuredOutputConfig
-{
-    public function getConfig(?string $preset = null): StructuredOutputConfig {
-        return $this->presets()[$preset] ?? new StructuredOutputConfig();
-    }
-
-    private function presets(): array {
-        return [
-            'default' => new StructuredOutputConfig(
-                outputMode: OutputMode::Tools,
-                useObjectReferences: true,
-                maxRetries: 3,
-                retryPrompt: 'Please try again ...',
-                modePrompts: [
-                    OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
-                    OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
-                    OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
-                    OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
-                ],
-                schemaName: 'user_schema',
-                toolName: 'user_tool',
-                toolDescription: 'Tool to extract user information ...',
-                chatStructure: [
-                    'system',
-                    'pre-cached',
-                        'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-                        'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-                        'cached-messages',
-                    'post-cached',
-                    'pre-prompt', 'prompt', 'post-prompt',
-                    'pre-examples', 'examples', 'post-examples',
-                    'pre-messages', 'messages', 'post-messages',
-                    'pre-retries', 'retries', 'post-retries'
-                ],
-                defaultOutputClass: Structure::class,
-            ),
-        ];
-    }
-};
+$configProvider = new CustomConfigProvider();
 
 $customClient = (new HttpClientBuilder(
         events: $events,
         listener: $events,
-        httpConfigProvider: new CustomHttpConfigProvider(),
-        debugConfigProvider: new CustomDebugConfigProvider(),
+        configProvider: $configProvider,
     ))
-    ->withClientInstance(SymfonyHttpClient::create(['http_version' => '2.0']))
-    ->withDebugPreset('on')
+    ->withConfigProvider($configProvider)
+    ->withPreset('http')
     ->create();
-
-// Get Instructor with the default client component overridden with your own
 
 $structuredOutput = (new StructuredOutput(
         events: $events,
         listener: $events,
-        configProvider: new CustomStructuredOutputConfigProvider(),
-        llmConfigProvider: new CustomLLMConfigProvider(),
+        configProvider: $configProvider,
     ))
     ->withHttpClient($customClient);
 

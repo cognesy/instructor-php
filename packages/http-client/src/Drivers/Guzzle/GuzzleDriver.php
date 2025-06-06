@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Http\Adapters\PsrHttpResponse;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
@@ -44,7 +43,12 @@ class GuzzleDriver implements CanHandleHttpRequest
         $method = $request->method();
         $streaming = $request->isStreamed();
         
-        $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'body' => $body,
+        ]));
         
         try {
             $response = $this->client->request($method, $url, [
@@ -62,25 +66,33 @@ class GuzzleDriver implements CanHandleHttpRequest
             };
 
             // Dispatch event with full error details
-            $this->events->dispatch(new HttpRequestFailed(
-                $url,
-                $method,
-                $headers,
-                $body,
-                $message,
-            ));
-
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'body' => $body,
+                'errors' => $message,
+            ]));
             // Optionally, include response content in the thrown exception
             throw new HttpRequestException(message: $message, request: $request, previous: $e);
         } catch (Exception $e) {
-            $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'body' => $body,
+                'errors' => $e->getMessage(),
+            ]));
             throw new HttpRequestException($e->getMessage(), $request, $e);
         }
         
-        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+        $this->events->dispatch(new HttpResponseReceived([
+            'statusCode' => $response->getStatusCode()
+        ]));
         return new PsrHttpResponse(
             response: $response,
-            stream: $response->getBody()
+            stream: $response->getBody(),
+            isStreamed: $streaming,
         );
     }
 }

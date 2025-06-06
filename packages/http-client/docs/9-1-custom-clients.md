@@ -62,12 +62,12 @@ class CustomHttpDriver implements CanHandleHttpRequest
         $streaming = $request->isStreamed();
 
         // Dispatch event before sending request
-        $this->events->dispatch(new HttpRequestSent(
-            $url,
-            $method,
-            $headers,
-            $request->body()->toArray()
-        ));
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'body' => $request->body()->toArray(),
+        ]));
 
         try {
             // Use your HTTP client to make the request
@@ -81,20 +81,22 @@ class CustomHttpDriver implements CanHandleHttpRequest
             ]);
 
             // Dispatch event for successful response
-            $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+            $this->events->dispatch(new HttpResponseReceived([
+                'statusCode' => $response->statusCode()
+            ]));
 
             // Return the response wrapped in your adapter
             return new YourHttpClientResponse($response, $streaming);
 
         } catch (Exception $e) {
             // Dispatch event for failed request
-            $this->events->dispatch(new HttpRequestFailed(
-                $url,
-                $method,
-                $headers,
-                $request->body()->toArray(),
-                $e->getMessage()
-            ));
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'body' => $request->body()->toArray(),
+                'errors' => $e->getMessage(),
+            ]));
 
             // Wrap the exception
             throw new HttpRequestException($e);
@@ -399,7 +401,9 @@ class CurlHttpDriver implements CanHandleHttpRequest
             curl_close($ch);
 
             // Dispatch event for successful response
-            $this->events->dispatch(new HttpResponseReceived($response->statusCode()));
+            $this->events->dispatch(new HttpResponseReceived([
+                'statusCode' => $response->statusCode()
+            ]));
 
             return $response;
 
@@ -410,13 +414,13 @@ class CurlHttpDriver implements CanHandleHttpRequest
             }
 
             // Dispatch event for failed request
-            $this->events->dispatch(new HttpRequestFailed(
-                $url,
-                $method,
-                $headers,
-                $request->body()->toArray(),
-                $e->getMessage()
-            ));
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'methods' => $method,
+                'headers' => $headers,
+                'body' => $request->body()->toArray(),
+                'errors' => $e->getMessage()
+            ]));
 
             // Wrap the exception
             throw new HttpRequestException($e);

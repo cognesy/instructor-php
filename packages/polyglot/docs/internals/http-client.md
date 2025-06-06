@@ -33,7 +33,7 @@ class HttpClient implements CanHandleHttpRequest {
     public function withClient(string $client): self { ... }
     public function withConfig(HttpClientConfig $config): self { ... }
     public function withMiddleware(...$middleware): self { ... }
-    public function withDebug(bool $debug = true): self { ... }
+    public function withDebugPreset(?string $preset): self { ... }
 
     public function handle(HttpClientRequest $request): HttpClientResponse { ... }
     public function middleware(): MiddlewareStack { ... }

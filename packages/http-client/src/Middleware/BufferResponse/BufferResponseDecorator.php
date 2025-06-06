@@ -2,9 +2,9 @@
 
 namespace Cognesy\Http\Middleware\BufferResponse;
 
-use Cognesy\Http\BaseResponseDecorator;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
 use Generator;
 
 /**

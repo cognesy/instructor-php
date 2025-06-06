@@ -5,98 +5,50 @@ namespace Cognesy\Polyglot\LLM\Traits;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 trait HandleLLMProvider
 {
     protected ?LLMProvider $llmProvider;
 
-    /**
-     * Sets the LLM instance to be used.
-     *
-     * @param LLMProvider $llm The LLM instance to set.
-     * @return self Returns the current instance.
-     */
     public function withLLMProvider(LLMProvider $llm) : static {
         $this->llmProvider = $llm;
         return $this;
     }
 
-    /**
-     * Updates the configuration and re-initializes the driver.
-     *
-     * @param LLMConfig $config The configuration object to set.
-     *
-     * @return self
-     */
     public function withConfig(LLMConfig $config) : static {
         $this->llmProvider->withConfig($config);
         return $this;
     }
 
-    public function withConfigProvider(CanProvideLLMConfig $configProvider) : static {
+    public function withConfigProvider(CanProvideConfig $configProvider) : static {
         $this->llmProvider->withConfigProvider($configProvider);
         return $this;
     }
 
-    /**
-     * Sets the connection using a DSN string and updates the configuration.
-     *
-     * @param string $dsn The DSN string to be used for the connection.
-     *
-     * @return self Returns the current instance with the updated connection.
-     */
     public function fromDSN(string $dsn) : static {
         $this->llmProvider->withDSN($dsn);
         return $this;
     }
 
-    /**
-     * Sets the connection and updates the configuration and driver.
-     *
-     * @param string $preset The connection string to be used.
-     *
-     * @return self Returns the current instance with the updated connection.
-     */
     public function using(string $preset) : static {
         $this->llmProvider->withLLMPreset($preset);
         return $this;
     }
 
-    /**
-     * Sets a custom HTTP client and updates the inference driver accordingly.
-     *
-     * @param HttpClient $httpClient The custom HTTP client handler.
-     *
-     * @return self Returns the current instance for method chaining.
-     */
     public function withHttpClient(HttpClient $httpClient) : static {
         $this->llmProvider->withHttpClient($httpClient);
         return $this;
     }
 
-    /**
-     * Sets the driver for inference handling and returns the current instance.
-     *
-     * @param CanHandleInference $driver The inference handler to be set.
-     *
-     * @return self
-     */
     public function withDriver(CanHandleInference $driver) : static {
         $this->llmProvider->withDriver($driver);
         return $this;
     }
 
-    /**
-     * Enable or disable debugging for the current instance.
-     *
-     * @param bool $debug Whether to enable debug mode. Default is true.
-     *
-     * @return self
-     */
-    public function withDebug(?string $preset = '') : static {
-        $this->llmProvider->withDebug($preset);
+    public function withDebugPreset(?string $preset) : static {
+        $this->llmProvider->withDebugPreset($preset);
         return $this;
     }
 }

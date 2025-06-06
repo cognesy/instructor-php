@@ -3,37 +3,39 @@
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Config\StructuredOutputConfigResolver;
-use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
+use Cognesy\Utils\Config\Providers\ConfigResolver;
 
 class StructuredOutputConfigBuilder
 {
-    private ?OutputMode $outputMode = null;
-    private ?bool $useObjectReferences = null;
-    private ?int $maxRetries = null;
-    private ?string $retryPrompt = null;
-    private ?array $modePrompts = null;
-    private ?string $schemaName = null;
-    private ?string $toolName = null;
-    private ?string $toolDescription = null;
-    private ?string $defaultOutputClass = null;
-    private ?array $chatStructure = null;
+    private ?OutputMode $outputMode;
+    private ?bool $useObjectReferences;
+    private ?int $maxRetries;
+    private ?string $retryPrompt;
+    private ?array $modePrompts;
+    private ?string $schemaName;
+    private ?string $toolName;
+    private ?string $toolDescription;
+    private ?string $defaultOutputClass;
+    private ?array $chatStructure;
 
-    private ?CanProvideStructuredOutputConfig $configProvider = null;
+    private ?string $configPreset = null;
+    private ?StructuredOutputConfig $explicitConfig = null;
+    private ?CanProvideConfig $configProvider;
 
     public function __construct(
-        ?OutputMode $outputMode = null,
-        ?bool $useObjectReferences = null,
-        ?int $maxRetries = null,
-        ?string $retryPrompt = null,
-        ?array $modePrompts = null,
-        ?string $schemaName = null,
-        ?string $toolName = null,
-        ?string $toolDescription = null,
-        ?array $chatStructure = null,
-        ?string $defaultOutputClass = null,
-        ?CanProvideStructuredOutputConfig $configProvider = null,
+        ?OutputMode       $outputMode = null,
+        ?bool             $useObjectReferences = null,
+        ?int              $maxRetries = null,
+        ?string           $retryPrompt = null,
+        ?array            $modePrompts = null,
+        ?string           $schemaName = null,
+        ?string           $toolName = null,
+        ?string           $toolDescription = null,
+        ?array            $chatStructure = null,
+        ?string           $defaultOutputClass = null,
+        ?CanProvideConfig $configProvider = null,
     ) {
         $this->outputMode = $outputMode;
         $this->useObjectReferences = $useObjectReferences;
@@ -45,11 +47,11 @@ class StructuredOutputConfigBuilder
         $this->toolDescription = $toolDescription;
         $this->chatStructure = $chatStructure ?? [];
         $this->defaultOutputClass = $defaultOutputClass;
-        $this->configProvider = StructuredOutputConfigResolver::makeWith($configProvider);
+        $this->configProvider = ConfigResolver::makeWith($configProvider);
     }
 
-    public function withConfigProvider(CanProvideStructuredOutputConfig $configProvider) : self {
-        $this->configProvider = StructuredOutputConfigResolver::makeWith($configProvider);
+    public function withConfigProvider(CanProvideConfig $configProvider) : self {
+        $this->configProvider = ConfigResolver::makeWith($configProvider);
         return $this;
     }
 
@@ -108,41 +110,61 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    public function withConfigPreset(string $preset) : self {
+        $this->configPreset = $preset;
+        return $this;
+    }
+
+    public function with(
+        ?OutputMode $outputMode = null,
+        ?bool $useObjectReferences = null,
+        ?int $maxRetries = null,
+        ?string $retryPrompt = null,
+        ?array $modePrompts = null,
+        ?string $schemaName = null,
+        ?string $toolName = null,
+        ?string $toolDescription = null,
+        ?array $chatStructure = null,
+        ?string $defaultOutputClass = null
+    ) : self {
+        $this->outputMode = $outputMode ?? $this->outputMode;
+        $this->useObjectReferences = $useObjectReferences ?? $this->useObjectReferences;
+        $this->maxRetries = $maxRetries ?? $this->maxRetries;
+        $this->retryPrompt = $retryPrompt ?? $this->retryPrompt;
+        $this->modePrompts = $modePrompts ?? $this->modePrompts;
+        $this->schemaName = $schemaName ?? $this->schemaName;
+        $this->toolName = $toolName ?? $this->toolName;
+        $this->toolDescription = $toolDescription ?? $this->toolDescription;
+        $this->chatStructure = $chatStructure ?? $this->chatStructure;
+        $this->defaultOutputClass = $defaultOutputClass ?? $this->defaultOutputClass;
+        return $this;
+    }
+
     public function withPreset(string $preset) : self {
-        $config = $this->configProvider->getConfig($preset);
-        if ($config) {
-            $this->outputMode = $config->outputMode();
-            $this->useObjectReferences = $config->useObjectReferences();
-            $this->maxRetries = $config->maxRetries();
-            $this->retryPrompt = $config->retryPrompt();
-            $this->modePrompts = $config->modePrompts();
-            $this->schemaName = $config->schemaName();
-            $this->toolName = $config->toolName();
-            $this->toolDescription = $config->toolDescription();
-            $this->chatStructure = $config->chatStructure();
-            $this->defaultOutputClass = $config->defaultOutputClass();
-        }
+        $this->configPreset = $preset;
         return $this;
     }
 
     public function withConfig(StructuredOutputConfig $config) : self {
-        $this->outputMode = $config->outputMode();
-        $this->useObjectReferences = $config->useObjectReferences();
-        $this->maxRetries = $config->maxRetries();
-        $this->retryPrompt = $config->retryPrompt();
-        $this->modePrompts = $config->modePrompts();
-        $this->schemaName = $config->schemaName();
-        $this->toolName = $config->toolName();
-        $this->toolDescription = $config->toolDescription();
-        $this->chatStructure = $config->chatStructure();
-        $this->defaultOutputClass = $config->defaultOutputClass();
+        $this->explicitConfig = $config;
         return $this;
     }
 
     public function create() : StructuredOutputConfig {
-        return new StructuredOutputConfig(
-            outputMode: $this->outputMode,
-            useObjectReferences: $this->useObjectReferences,
+        if ($this->configPreset) {
+            $data = $this->configProvider->getConfig('structured', $this->configPreset);
+            if (!empty($data)) {
+                $this->applyConfig(StructuredOutputConfig::fromArray($data));
+            }
+        }
+
+        if ($this->explicitConfig) {
+            $this->applyConfig($this->explicitConfig);
+        }
+
+        $config = new StructuredOutputConfig(
+            outputMode: $this->outputMode ?: OutputMode::Tools,
+            useObjectReferences: $this->useObjectReferences ?? false,
             maxRetries: $this->maxRetries ?? -1,
             retryPrompt: $this->retryPrompt ?: '',
             modePrompts: $this->modePrompts ?: [],
@@ -152,5 +174,22 @@ class StructuredOutputConfigBuilder
             chatStructure: $this->chatStructure ?: [],
             defaultOutputClass: $this->defaultOutputClass ?: '',
         );
+
+        return $config;
+    }
+
+    private function applyConfig(StructuredOutputConfig $config) : self {
+        $this->outputMode = $config->outputMode() ?: $this->outputMode;
+        $this->useObjectReferences = $config->useObjectReferences() ?: $this->useObjectReferences;
+        $this->maxRetries = ($config->maxRetries() > 0) ?: $this->maxRetries;
+        $this->retryPrompt = $config->retryPrompt() ?: $this->retryPrompt;
+        $this->modePrompts = $config->modePrompts() ?: $this->modePrompts;
+        $this->schemaName = $config->schemaName() ?: $this->schemaName;
+        $this->toolName = $config->toolName() ?: $this->toolName;
+        $this->toolDescription = $config->toolDescription() ?: $this->toolDescription;
+        $this->chatStructure = $config->chatStructure() ?: $this->chatStructure;
+        $this->defaultOutputClass = $config->defaultOutputClass() ?: $this->defaultOutputClass;
+
+        return $this;
     }
 }

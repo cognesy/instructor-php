@@ -26,7 +26,7 @@ class Inference {
     public function withConfig(LLMConfig $config): self { ... }
     public function withHttpClient(CanHandleHttpRequest $httpClient): self { ... }
     public function withDriver(CanHandleInference $driver): self { ... }
-    public function withDebug(bool $debug = true): self { ... }
+    public function withDebugPreset(?string $preset): self { ... }
     public function withCachedContext(...): self { ... }
 
     // Main method for creating inference requests

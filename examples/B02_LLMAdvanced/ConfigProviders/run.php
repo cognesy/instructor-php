@@ -14,14 +14,10 @@ when you want to initialize LLM client with custom values.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Config\DebugConfig;
-use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Contracts\CanProvideDebugConfig;
-use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Events\EventDispatcher;
@@ -30,61 +26,47 @@ use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
 $events = new EventDispatcher();
 
-class CustomHttpConfigProvider implements CanProvideHttpClientConfig
+class CustomConfigProvider implements CanProvideConfig
 {
-    public function getConfig(?string $preset = ''): HttpClientConfig {
-        return new HttpClientConfig(
-            driver: 'symfony',
-            connectTimeout: 10,
-            requestTimeout: 30,
-            idleTimeout: -1,
-            maxConcurrent: 5,
-            poolTimeout: 60,
-            failOnError: true,
-        );
-    }
-}
-
-class CustomDebugConfigProvider implements CanProvideDebugConfig
-{
-    public function getConfig(?string $preset = ''): DebugConfig {
-        return $this->presets()[$preset] ?? new DebugConfig();
+    public function getConfig(string $group, ?string $preset = ''): array {
+        return match($group) {
+            'http' => $this->httpPresets(),
+            'debug' => $this->debugPresets()[$preset] ?? [],
+            default => [],
+        };
     }
 
-    private function presets(): array {
+    private function httpPresets() : array {
         return [
-            'off' => new DebugConfig(
-                httpEnabled: true,
-            ),
-            'on' => new DebugConfig(
-                httpEnabled: true,
-                httpTrace: true,
-                httpRequestUrl: true,
-                httpRequestHeaders: true,
-                httpRequestBody: true,
-                httpResponseHeaders: true,
-                httpResponseBody: true,
-                httpResponseStream: true,
-                httpResponseStreamByLine: true,
-            )
+            'driver' => 'symfony',
+            'connectTimeout' => 10,
+            'requestTimeout' => 30,
+            'idleTimeout' => -1,
+            'maxConcurrent' => 5,
+            'poolTimeout' => 60,
+            'failOnError' => true,
         ];
     }
-}
 
-$customClient = (new HttpClientBuilder(
-        events: $events,
-        listener: $events,
-        httpConfigProvider: new CustomHttpConfigProvider(),
-        debugConfigProvider: new CustomDebugConfigProvider(),
-    ))
-    ->withClientInstance(SymfonyHttpClient::create(['http_version' => '2.0']))
-    ->withDebugPreset('on')
-    ->create();
-
-class CustomLLMConfigProvider implements CanProvideLLMConfig {
-    public function getConfig(?string $preset = null): LLMConfig {
-        return $this->presets()[$preset] ?? new LLMConfig();
+    private function debugPresets(): array {
+        return [
+            'off' => [
+                'httpEnabled' => true,
+            ],
+            'on' => [
+                'httpEnabled' => true,
+                'httpTrace' => true,
+                'httpRequestUrl' => true,
+                'httpRequestHeaders' => true,
+                'httpRequestBody' => true,
+                'httpResponseHeaders' => true,
+                'httpResponseBody' => true,
+                'httpResponseStream' => true,
+                'httpResponseStreamByLine' => true,
+            ]
+        ];
     }
+
     private function presets(): array {
         return [
             'deepseek' => new LLMConfig(
@@ -96,12 +78,21 @@ class CustomLLMConfigProvider implements CanProvideLLMConfig {
             // ...
         ];
     }
-};
+}
+
+$customClient = (new HttpClientBuilder(
+        events: $events,
+        listener: $events,
+        configProvider: new CustomConfigProvider(),
+    ))
+    ->withClientInstance(SymfonyHttpClient::create(['http_version' => '2.0']))
+    ->withDebugPreset('on')
+    ->create();
 
 $inference = (new Inference(
         events: $events,
         listener: $events,
-        configProvider: new CustomLLMConfigProvider()
+        configProvider: new CustomConfigProvider()
     ))
     ->withHttpClient($customClient);
 

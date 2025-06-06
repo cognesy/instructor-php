@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Http\Adapters;
+namespace Cognesy\Http\Drivers\Symfony;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Generator;
@@ -16,14 +16,17 @@ class SymfonyHttpResponse implements HttpClientResponse
 {
     private ResponseInterface $response;
     private HttpClientInterface $client;
+    private bool $isStreamed;
 
     public function __construct(
         HttpClientInterface $client,
         ResponseInterface $response,
+        bool $isStreamed,
         private float $connectTimeout = 1,
     ) {
         $this->client = $client;
         $this->response = $response;
+        $this->isStreamed = $isStreamed;
     }
 
     /**
@@ -71,5 +74,9 @@ class SymfonyHttpResponse implements HttpClientResponse
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             yield $chunk->getContent();
         }
+    }
+
+    public function isStreamed(): bool {
+        return $this->isStreamed;
     }
 }

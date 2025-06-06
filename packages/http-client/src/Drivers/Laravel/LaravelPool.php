@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Http\Drivers\Laravel;
 
-use Cognesy\Http\Adapters\LaravelHttpResponse;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpClientRequest;
@@ -96,13 +95,14 @@ class LaravelPool implements CanHandleRequestPool
         if ($this->config->failOnError) {
             throw $response;
         }
-        $this->events->dispatch(new HttpRequestFailed(
-            'Pool request',
-            'POOL',
-            [],
-            [],
-            $response->getMessage()
-        ));
+
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+            'errors' => $e->getMessage(),
+        ]));
         return Result::failure($response);
     }
 }

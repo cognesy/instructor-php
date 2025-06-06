@@ -2,9 +2,9 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Http\Adapters\MockHttpResponse;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 
 /**
  * RequestRecord

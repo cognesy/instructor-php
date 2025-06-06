@@ -11,13 +11,16 @@ For more details see the [Events](events.mdx) section.
 
 ## HTTP Debugging
 
-The `Instructor` class has a `withDebug()` method that can be used to debug the request and response.
+The `StructuredOutput` class has a `withDebug()` method that can be used to debug the request and response.
 
 ```php
-$result = (new StructuredOutput)->withDebug()->with(
-    messages: "Jason is 25 years old",
-    responseModel: User:class,
-)->get();
+$result = (new StructuredOutput)
+    ->withDebugPreset('on')
+    ->with(
+        messages: "Jason is 25 years old",
+        responseModel: User:class,
+    )
+    ->get();
 ```
 
 It displays detailed information about the request being sent to LLM API and response received from it,

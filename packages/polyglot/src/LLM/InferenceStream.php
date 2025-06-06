@@ -7,8 +7,9 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
-use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
-use Cognesy\Polyglot\LLM\Events\PartialLLMResponseReceived;
+use Cognesy\Polyglot\LLM\Events\InferenceFailed;
+use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
+use Cognesy\Polyglot\LLM\Events\PartialLLMResponseCreated;
 use Cognesy\Polyglot\LLM\Utils\EventStreamReader;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
@@ -57,7 +58,7 @@ class InferenceStream
      * @return Generator<PartialLLMResponse> A generator yielding partial LLM responses.
      */
     public function responses() : Generator {
-        foreach ($this->makePartialLLMResponses($this->stream) as $partialLLMResponse) {
+        foreach ($this->tryMakePartialLLMResponses($this->stream) as $partialLLMResponse) {
             yield $partialLLMResponse;
         }
     }
@@ -101,7 +102,7 @@ class InferenceStream
      */
     protected function getFinalResponse(Generator $stream) : ?LLMResponse {
         if ($this->finalLLMResponse === null) {
-            foreach ($this->makePartialLLMResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
+            foreach ($this->tryMakePartialLLMResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
         }
         return $this->finalLLMResponse;
     }
@@ -114,9 +115,23 @@ class InferenceStream
      */
     protected function getAllPartialLLMResponses(Generator $stream) : array {
         if ($this->finalLLMResponse === null) {
-            foreach ($this->makePartialLLMResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
+            foreach ($this->tryMakePartialLLMResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
         }
         return $this->llmResponses;
+    }
+
+    private function tryMakePartialLLMResponses(Generator $stream) : Generator {
+        try {
+            yield from $this->makePartialLLMResponses($stream);
+        } catch (\Throwable $e) {
+            $this->events->dispatch(new InferenceFailed([
+                'exception' => $e,
+                'statusCode' => $this->httpResponse->statusCode(),
+                'headers' => $this->httpResponse->headers(),
+                'body' => $this->httpResponse->body(),
+            ]));
+            throw $e;
+        }
     }
 
     /**
@@ -153,7 +168,7 @@ class InferenceStream
                 ->withContent($content)
                 ->withReasoningContent($reasoningContent)
                 ->withFinishReason($finishReason);
-            $this->events->dispatch(new PartialLLMResponseReceived($enrichedResponse));
+            $this->events->dispatch(new PartialLLMResponseCreated($enrichedResponse));
 
             $this->lastPartialLLMResponse = $enrichedResponse;
             if ($this->onPartialResponse !== null) {
@@ -162,7 +177,7 @@ class InferenceStream
             yield $enrichedResponse;
         }
         $this->finalLLMResponse = LLMResponse::fromPartialResponses($this->llmResponses);
-        $this->events->dispatch(new LLMResponseReceived($this->finalLLMResponse));
+        $this->events->dispatch(new LLMResponseCreated($this->finalLLMResponse));
     }
 
     /**

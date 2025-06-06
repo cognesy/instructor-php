@@ -3,9 +3,9 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 trait HandlesConfigBuilder
 {
@@ -47,11 +47,11 @@ trait HandlesConfigBuilder
     }
 
     public function withConfigPreset(string $preset): static {
-        $this->configBuilder->withPreset($preset);
+        $this->configBuilder->withConfigPreset($preset);
         return $this;
     }
 
-    public function withConfigProvider(CanProvideStructuredOutputConfig $configProvider): static {
+    public function withConfigProvider(CanProvideConfig $configProvider): static {
         $this->configBuilder->withConfigProvider($configProvider);
         return $this;
     }

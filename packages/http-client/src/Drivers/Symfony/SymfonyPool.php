@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
-use Cognesy\Http\Adapters\SymfonyHttpResponse;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpClientRequest;
@@ -204,22 +203,22 @@ class SymfonyPool implements CanHandleRequestPool
     }
 
     private function dispatchRequestEvent(HttpClientRequest $request): void {
-        $this->events->dispatch(new HttpRequestSent(
-            $request->url(),
-            $request->method(),
-            $request->headers(),
-            $request->body()->toArray()
-        ));
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'body' => $body,
+        ]));
     }
 
     private function handleRequestError(Exception $e, HttpClientRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed(
-            $request->url(),
-            $request->method(),
-            $request->headers(),
-            $request->body()->toArray(),
-            $e->getMessage()
-        ));
+        $this->events->dispatch(new HttpRequestFailed([
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toArray(),
+            'errors' => $e->getMessage(),
+        ]));
 
         if ($this->config->failOnError) {
             throw new HttpRequestException($e);

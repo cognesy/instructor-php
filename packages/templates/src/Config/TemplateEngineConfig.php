@@ -46,4 +46,28 @@ class TemplateEngineConfig
             extension: '.tpl',
         );
     }
+
+    public function toArray() : array {
+        return [
+            'templateEngine' => $this->templateEngine->value,
+            'resourcePath' => $this->resourcePath,
+            'cachePath' => $this->cachePath,
+            'extension' => $this->extension,
+            'frontMatterTags' => $this->frontMatterTags,
+            'frontMatterFormat' => $this->frontMatterFormat->value,
+            'metadata' => $this->metadata,
+        ];
+    }
+
+    public static function fromArray(array $data) : TemplateEngineConfig {
+        return new TemplateEngineConfig(
+            templateEngine: TemplateEngineType::from($data['templateEngine']),
+            resourcePath: $data['resourcePath'] ?? '',
+            cachePath: $data['cachePath'] ?? '',
+            extension: $data['extension'] ?? 'twig',
+            frontMatterTags: $data['frontMatterTags'] ?? [],
+            frontMatterFormat: FrontMatterFormat::from($data['frontMatterFormat'] ?? FrontMatterFormat::Yaml->value),
+            metadata: $data['metadata'] ?? [],
+        );
+    }
 }

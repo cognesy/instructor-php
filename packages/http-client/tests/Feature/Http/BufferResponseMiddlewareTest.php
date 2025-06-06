@@ -121,6 +121,10 @@ class MockResponse implements HttpClientResponse
         $this->handler->incrementStreamReadCount();
         yield $this->body;
     }
+
+    public function isStreamed(): bool {
+        // TODO: Implement isStreamed() method.
+    }
 }
 
 class MockStreamResponse implements HttpClientResponse
@@ -156,5 +160,9 @@ class MockStreamResponse implements HttpClientResponse
         foreach ($this->chunks as $chunk) {
             yield $chunk;
         }
+    }
+
+    public function isStreamed(): bool {
+        return true;
     }
 }

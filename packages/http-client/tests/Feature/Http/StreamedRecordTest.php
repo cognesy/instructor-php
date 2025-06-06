@@ -1,7 +1,7 @@
 <?php
 
-use Cognesy\Http\Adapters\MockHttpResponse;
 use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
 
 test('creates from streamed HTTP interaction', function() {

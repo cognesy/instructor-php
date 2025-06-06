@@ -6,8 +6,10 @@ use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
+use Cognesy\Polyglot\LLM\Events\InferenceFailed;
+use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
 use Cognesy\Utils\Json\Json;
+use Exception;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -53,7 +55,7 @@ class InferenceResponse
      */
     public function get() : string {
         return match($this->isStreamed) {
-            false => $this->makeLLMResponse()->content(),
+            false => $this->tryMakeLLMResponse()->content(),
             true => $this->stream()->final()?->content() ?? '',
         };
     }
@@ -68,6 +70,7 @@ class InferenceResponse
         if (!$this->isStreamed) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
+
         return new InferenceStream(
             httpResponse: $this->httpResponse,
             driver: $this->driver,
@@ -102,13 +105,27 @@ class InferenceResponse
      */
     public function response() : LLMResponse {
         $response = match($this->isStreamed) {
-            false => $this->makeLLMResponse(),
+            false => $this->tryMakeLLMResponse(),
             true => LLMResponse::fromPartialResponses($this->stream()->all()),
         };
         return $response;
     }
 
     // INTERNAL /////////////////////////////////////////////////
+
+    private function tryMakeLLMResponse() : LLMResponse {
+        try {
+            return $this->makeLLMResponse();
+        } catch (Exception $e) {
+            $this->events->dispatch(new InferenceFailed([
+                'exception' => $e->getMessage(),
+                'statusCode' => $this->httpResponse->statusCode(),
+                'headers' => $this->httpResponse->headers(),
+                'body' => $this->httpResponse->body(),
+            ]));
+            throw $e;
+        }
+    }
 
     /**
      * Processes and generates a response from the Language Learning Model (LLM) driver.
@@ -119,7 +136,7 @@ class InferenceResponse
         $content = $this->getResponseContent();
         $data = Json::decode($content) ?? [];
         $response = $this->driver->fromResponse($data);
-        $this->events->dispatch(new LLMResponseReceived($response));
+        $this->events->dispatch(new LLMResponseCreated($response));
         return $response;
     }
 

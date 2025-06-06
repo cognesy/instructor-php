@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
-use Cognesy\Http\Adapters\SymfonyHttpResponse;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
@@ -43,7 +42,13 @@ class SymfonyDriver implements CanHandleHttpRequest
         $method = $request->method();
         $streaming = $request->isStreamed();
 
-        $this->events->dispatch(new HttpRequestSent($url, $method, $headers, $body));
+        $this->events->dispatch(new HttpRequestSent([
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'body' => $body,
+        ]));
+
         try {
             $response = $this->client->request(
                 method: $method,
@@ -57,13 +62,24 @@ class SymfonyDriver implements CanHandleHttpRequest
                 ]
             );
         } catch (Exception $e) {
-            $this->events->dispatch(new HttpRequestFailed($url, $method, $headers, $body, $e->getMessage()));
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $url,
+                'method' => $method,
+                'headers' => $headers,
+                'body' => $body,
+                'errors' => $e->getMessage(),
+            ]));
             throw new HttpRequestException($e->getMessage(), $request, $e);
         }
-        $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+
+        $this->events->dispatch(new HttpResponseReceived([
+            'statusCode' => $response->getStatusCode()
+        ]));
+
         return new SymfonyHttpResponse(
             client: $this->client,
             response: $response,
+            isStreamed: $streaming,
             connectTimeout: $this->config->connectTimeout ?? 3,
         );
     }

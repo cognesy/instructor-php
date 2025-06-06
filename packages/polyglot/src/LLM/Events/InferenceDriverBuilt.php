@@ -3,9 +3,8 @@
 namespace Cognesy\Polyglot\LLM\Events;
 
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Utils\Events\Event;
 
-final class InferenceDriverBuilt extends Event
+final class InferenceDriverBuilt extends InferenceEvent
 {
     public function __construct(
         public string $driverClass,

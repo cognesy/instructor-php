@@ -184,7 +184,7 @@ use Cognesy\Http\HttpClient;
 
 // Method 1: Using the withDebug convenience method
 $client = new HttpClient();
-$client->withDebug(true);
+$client->withDebugPreset('on');
 
 // Method 2: Enable debug in configuration
 $config = [
@@ -305,10 +305,7 @@ Create a custom logging middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\BaseMiddleware;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
-use Psr\Log\LoggerInterface;
+use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\Log\LoggerInterface;
 
 class DetailedLoggingMiddleware extends BaseMiddleware
 {
@@ -397,11 +394,7 @@ For production environments, consider implementing distributed tracing with syst
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\BaseMiddleware;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
-use OpenTelemetry\API\Trace\TracerInterface;
-use OpenTelemetry\API\Trace\SpanKind;
+use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use OpenTelemetry\API\Trace\SpanKind;use OpenTelemetry\API\Trace\TracerInterface;
 
 class OpenTelemetryMiddleware extends BaseMiddleware
 {
@@ -1123,7 +1116,7 @@ use Cognesy\Http\HttpClient;
 
 // Method 1: Using the withDebug convenience method
 $client = new HttpClient();
-$client->withDebug(true);
+$client->withDebugPreset('on');
 
 // Method 2: Enable debug in configuration
 $config = [
@@ -1244,10 +1237,7 @@ Create a custom logging middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\BaseMiddleware;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
-use Psr\Log\LoggerInterface;
+use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\Log\LoggerInterface;
 
 class DetailedLoggingMiddleware extends BaseMiddleware
 {

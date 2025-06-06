@@ -11,11 +11,11 @@ use Cognesy\Polyglot\LLM\InferenceResponse;
 
 class InferenceAdapter
 {
-    private ?bool $debug = null;
+    private ?string $debugPreset = null;
     private ?Closure $wiretap = null;
 
-    public function withDebug(bool $debug = true) : self {
-        $this->debug = $debug;
+    public function withDebugPreset(?string $preset) : self {
+        $this->debugPreset = $preset;
         return $this;
     }
 
@@ -53,7 +53,7 @@ class InferenceAdapter
     public function forModeTools(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->withDebug($this->debug)
+            ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
                 messages: $messages,
@@ -68,7 +68,7 @@ class InferenceAdapter
     public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->withDebug($this->debug)
+            ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
                 messages: array_merge($messages, [
@@ -85,7 +85,7 @@ class InferenceAdapter
     public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->withDebug($this->debug)
+            ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
                 messages: array_merge($messages, [
@@ -102,7 +102,7 @@ class InferenceAdapter
     public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->withDebug($this->debug)
+            ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
                 messages: array_merge($messages, [
@@ -119,7 +119,7 @@ class InferenceAdapter
     public function forModeText(string $preset, string|array $messages, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->withDebug($this->debug)
+            ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
                 messages: $messages,
@@ -132,7 +132,7 @@ class InferenceAdapter
     public function forModeUnrestricted(string $preset, array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
         return (new Inference)
             ->using($preset)
-            ->withDebug($this->debug)
+            ->withDebugPreset($this->debugPreset)
             ->wiretap($this->wiretap)
             ->with(
                 messages: array_merge($messages, [

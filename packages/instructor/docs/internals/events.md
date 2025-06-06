@@ -46,7 +46,7 @@ $structuredOutput->with(
 
 ## Convenience methods for get streamed model updates
 
-`Instructor` class provides convenience methods allowing client code to receive
+`StructuredOutput` class provides convenience methods allowing client code to receive
 model updates  when streaming is enabled:
 
  * `onPartialUpdate(callable $callback)` - to handle partial model updates of the response

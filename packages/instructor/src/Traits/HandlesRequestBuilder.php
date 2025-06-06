@@ -81,7 +81,7 @@ trait HandlesRequestBuilder
         string $prompt = '',
         array $examples = [],
     ) : ?self {
-        $this->withCachedContext($messages, $system, $prompt, $examples);
+        $this->requestBuilder->withCachedContext($messages, $system, $prompt, $examples);
         return $this;
     }
 }

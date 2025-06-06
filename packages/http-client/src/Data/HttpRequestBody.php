@@ -39,11 +39,13 @@ class HttpRequestBody
         if (empty($this->body)) {
             return [];
         }
+
         // check if the body is a valid JSON string
         $data =  json_decode($this->body, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             return [];
         }
+
         return $data;
     }
 }

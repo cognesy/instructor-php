@@ -20,14 +20,14 @@ final class HttpClientConfig
      * @param bool $failOnError Whether to fail on error.
      */
     public function __construct(
-        public string $driver = 'guzzle',
-        public int    $connectTimeout = 3,
-        public int    $requestTimeout = 30,
-        public int    $idleTimeout = -1,
+        public readonly string $driver = 'guzzle',
+        public readonly int    $connectTimeout = 3,
+        public readonly int    $requestTimeout = 30,
+        public readonly int    $idleTimeout = -1,
         // Concurrency-related properties
-        public int    $maxConcurrent = 5,
-        public int    $poolTimeout = 120,
-        public bool   $failOnError = false,
+        public readonly int    $maxConcurrent = 5,
+        public readonly int    $poolTimeout = 120,
+        public readonly bool   $failOnError = false,
     ) {}
 
     /**

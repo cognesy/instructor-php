@@ -11,26 +11,10 @@ use Generator;
  */
 interface HttpClientResponse
 {
-    /**
-     * Get the response status code
-     *
-     * @return int
-     */
     public function statusCode(): int;
-
-    /**
-     * Get the response headers
-     *
-     * @return array
-     */
     public function headers(): array;
-
-    /**
-     * Get the response
-     *
-     * @return string
-     */
     public function body(): string;
+    public function isStreamed(): bool;
 
     /**
      * Read chunks of the stream

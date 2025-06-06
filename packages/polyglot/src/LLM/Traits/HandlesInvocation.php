@@ -9,27 +9,11 @@ use Cognesy\Polyglot\LLM\InferenceResponse;
 
 trait HandlesInvocation
 {
-    /**
-     * Sets the inference request object for the current instance.
-     *
-     * @param InferenceRequest $request The inference request object.
-     */
     public function withRequest(InferenceRequest $request): static {
         $this->requestBuilder->withRequest($request);
         return $this;
     }
 
-    /**
-     * Sets the parameters for the inference request and returns the current instance.
-     *
-     * @param string|array $messages The input messages for the inference.
-     * @param string $model The model to be used for the inference.
-     * @param array $tools The tools to be used for the inference.
-     * @param string|array $toolChoice The choice of tools for the inference.
-     * @param array $responseFormat The format of the response.
-     * @param array $options Additional options for the inference.
-     * @param OutputMode $mode The mode of operation for the inference.
-     */
     public function with(
         string|array $messages = [],
         string       $model = '',

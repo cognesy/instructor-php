@@ -16,10 +16,8 @@ Polyglot provides a simple way to enable debug mode:
 use Cognesy\Polyglot\LLM\Inference;
 
 // Enable debug mode when creating the inference object
-$inference = new Inference()->withDebug();
-
-// Or enable it on an existing instance
-$inference->withDebug(true);
+$inference = (new Inference())
+    ->withDebugPreset('on');
 
 // Make a request - debug output will show the request and response details
 $response = $inference->with(
@@ -76,7 +74,7 @@ Use event listeners to trace the flow of requests and responses:
 <?php
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\Events\InferenceRequested;
-use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
+use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
 use Cognesy\Utils\Events\EventDispatcher;
 
 // Create an event dispatcher
@@ -87,7 +85,7 @@ $events->listen(InferenceRequested::class, function (InferenceRequested $event) 
     echo "Request sent: " . json_encode($event->request->toArray()) . "\n";
 });
 
-$events->listen(LLMResponseReceived::class, function (LLMResponseReceived $event) {
+$events->listen(LLMResponseCreated::class, function (LLMResponseCreated $event) {
     echo "Response received: " . substr($event->llmResponse->content(), 0, 50) . "...\n";
     echo "Token usage: " . $event->llmResponse->usage()->total() . "\n";
 });
@@ -113,7 +111,7 @@ For more persistent debugging, you can log to files:
 ```php
 <?php
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
+use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
 use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Utils\Events\EventDispatcher;
 
@@ -137,7 +135,7 @@ $events->listen(InferenceRequested::class, function (InferenceRequested $event) 
 });
 
 // Listen for response events
-$events->listen(LLMResponseReceived::class, function (LLMResponseReceived $event) {
+$events->listen(LLMResponseCreated::class, function (LLMResponseCreated $event) {
     $response = $event->llmResponse;
     logToFile("RESPONSE: " . json_encode($response->toArray()));
 });

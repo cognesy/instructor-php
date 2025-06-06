@@ -25,7 +25,7 @@ require 'examples/boot.php';
 $answer = (new Inference)
     ->using('gemini') // see /config/llm.php
     ->wiretap(fn($e) => $e->print()) // optional, for debugging
-    ->withDebug('detailed')
+    ->withDebugPreset('detailed')
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]

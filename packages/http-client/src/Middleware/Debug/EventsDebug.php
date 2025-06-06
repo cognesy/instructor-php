@@ -21,25 +21,29 @@ class EventsDebug implements CanHandleDebug
         protected readonly EventDispatcherInterface $events,
     ) {}
 
-    public function handleStream(string $line, bool $isConsolidated = false): void {
+    public function handleStreamEvent(string $line): void {
         if (!$this->config->httpResponseStream) {
             return;
         }
-        $this->events->dispatch(match($isConsolidated) {
-            true => new DebugStreamLineReceived($line),
-            false => new DebugStreamChunkReceived($line),
-        });
+        $this->events->dispatch(new DebugStreamLineReceived(['line' => $line]));
+    }
+
+    public function handleStreamChunk(string $chunk): void {
+        if (!$this->config->httpResponseStream) {
+            return;
+        }
+        $this->events->dispatch(new DebugStreamChunkReceived(['chunk' => $chunk]));
     }
 
     public function handleRequest(HttpClientRequest $request): void {
         if ($this->config->httpRequestUrl) {
-            $this->events->dispatch(new DebugRequestUrlUsed($request->url()));
+            $this->events->dispatch(new DebugRequestUrlUsed(['url' => $request->url()]));
         }
         if ($this->config->httpRequestHeaders) {
-            $this->events->dispatch(new DebugRequestHeadersUsed($request->headers()));
+            $this->events->dispatch(new DebugRequestHeadersUsed(['headers' => $request->headers()]));
         }
         if ($this->config->httpRequestBody) {
-            $this->events->dispatch(new DebugRequestBodyUsed($request->body()->toString()));
+            $this->events->dispatch(new DebugRequestBodyUsed(['body' => $request->body()->toString()]));
         }
     }
 
@@ -49,12 +53,12 @@ class EventsDebug implements CanHandleDebug
         }
     }
 
-    public function handleResponse(HttpClientResponse $response, array $options) {
+    public function handleResponse(HttpClientResponse $response) : void {
         if ($this->config->httpResponseHeaders) {
-            $this->events->dispatch(new DebugResponseHeadersReceived($response->headers()));
+            $this->events->dispatch(new DebugResponseHeadersReceived(['headers' => $response->headers()]));
         }
-        if ($this->config->httpResponseBody && $options['stream'] === false) {
-            $this->events->dispatch(new DebugResponseBodyReceived($response->body()));
+        if ($this->config->httpResponseBody && !$response->isStreamed()) {
+            $this->events->dispatch(new DebugResponseBodyReceived(['body' => $response->body()]));
         }
     }
 }
