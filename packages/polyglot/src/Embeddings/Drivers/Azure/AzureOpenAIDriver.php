@@ -2,9 +2,9 @@
 namespace Cognesy\Polyglot\Embeddings\Drivers\Azure;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedResponseAdapter;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Drivers\BaseEmbedDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAI\OpenAIBodyFormat;
 use Cognesy\Polyglot\Embeddings\Drivers\OpenAI\OpenAIResponseAdapter;

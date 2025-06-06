@@ -2,9 +2,9 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\CohereV1;
 
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanMapMessages;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 use Cognesy\Utils\Arrays;

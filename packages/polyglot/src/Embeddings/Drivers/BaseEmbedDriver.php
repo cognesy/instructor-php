@@ -4,10 +4,10 @@ namespace Cognesy\Polyglot\Embeddings\Drivers;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedResponseAdapter;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 use Psr\EventDispatcher\EventDispatcherInterface;

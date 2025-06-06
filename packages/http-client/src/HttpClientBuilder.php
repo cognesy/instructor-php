@@ -1,15 +1,14 @@
 <?php
 namespace Cognesy\Http;
 
-use Cognesy\Http\ConfigProviders\DebugConfigSource;
-use Cognesy\Http\ConfigProviders\HttpClientConfigSource;
+use Cognesy\Http\Config\DebugConfig;
+use Cognesy\Http\Config\DebugConfigResolver;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfigResolver;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\CanProvideDebugConfig;
 use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Debug\Debug;
-use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
@@ -24,7 +23,6 @@ final class HttpClientBuilder
 {
     private ?string $preset = null;
     private ?string $debugPreset = null;
-    private ?bool $debug = null;
     private ?HttpClientConfig $config = null;
     private ?DebugConfig $debugConfig = null;
     private ?CanHandleHttpRequest $driver = null;
@@ -45,8 +43,8 @@ final class HttpClientBuilder
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->debugConfigProvider = DebugConfigSource::makeWith($debugConfigProvider);
-        $this->httpConfigProvider = HttpClientConfigSource::makeWith($httpConfigProvider);
+        $this->debugConfigProvider = DebugConfigResolver::makeWith($debugConfigProvider);
+        $this->httpConfigProvider = HttpClientConfigResolver::makeWith($httpConfigProvider);
     }
 
     /**
@@ -129,9 +127,9 @@ final class HttpClientBuilder
     /**
      * Enable or disable debug mode.
      */
-    public function withDebug(?bool $debug = true): self
+    public function withDebug(?string $preset = ''): self
     {
-        $this->debug = $debug;
+        $this->debugPreset = $preset;
         return $this;
     }
 
@@ -201,9 +199,9 @@ final class HttpClientBuilder
         }
 
         // Apply explicit debug setting if provided
-        if ($this->debug !== null && $config !== null) {
+        if ($this->debugPreset !== null && $config !== null) {
             $config = clone $config;
-            $config->httpEnabled = $this->debug;
+            $config->httpEnabled = $this->debugPreset;
         }
 
         return $config;
@@ -228,7 +226,7 @@ final class HttpClientBuilder
         // Add debug middleware if enabled
         if ($this->shouldEnableDebug($debugConfig)) {
             $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-            $stack->prepend(new DebugMiddleware(new Debug($debugConfig), $this->events), 'internal:debug');
+            $stack->prepend(new DebugMiddleware($debugConfig, $this->events), 'internal:debug');
         }
 
         // Add custom middleware
@@ -240,8 +238,8 @@ final class HttpClientBuilder
     private function shouldEnableDebug(DebugConfig $debugConfig): bool
     {
         // Explicit debug setting takes precedence
-        if ($this->debug !== null) {
-            return $this->debug;
+        if ($this->debugPreset !== null) {
+            return $this->debugPreset;
         }
 
         // Fall back to config setting

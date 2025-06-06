@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Events;
 
-use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Debug\DebugConfig;
+use Cognesy\Http\Config\DebugConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Utils\Events\Event;
 
 final class HttpClientBuilt extends Event
@@ -27,6 +27,6 @@ final class HttpClientBuilt extends Event
     }
 
     public function __toString(): string {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+        return json_encode($this->toArray());
     }
 }

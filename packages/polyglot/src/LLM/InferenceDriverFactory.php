@@ -4,8 +4,8 @@ namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\A21\A21Driver;
 use Cognesy\Polyglot\LLM\Drivers\Anthropic\AnthropicDriver;
 use Cognesy\Polyglot\LLM\Drivers\Azure\AzureDriver;

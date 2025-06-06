@@ -80,7 +80,6 @@ Ensure all required configuration parameters are present and correctly formatted
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 
 function verifyConfig(string $preset): void {
     try {

@@ -3,9 +3,9 @@
 namespace Cognesy\Polyglot\LLM\Drivers\Gemini;
 
 use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 
 class GeminiRequestAdapter implements ProviderRequestAdapter

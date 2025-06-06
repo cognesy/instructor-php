@@ -2,9 +2,9 @@
 
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Instructor\ConfigProviders\StructuredOutputConfigSource;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Config\StructuredOutputConfigResolver;
 use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 class StructuredOutputConfigBuilder
@@ -45,11 +45,11 @@ class StructuredOutputConfigBuilder
         $this->toolDescription = $toolDescription;
         $this->chatStructure = $chatStructure ?? [];
         $this->defaultOutputClass = $defaultOutputClass;
-        $this->configProvider = StructuredOutputConfigSource::makeWith($configProvider);
+        $this->configProvider = StructuredOutputConfigResolver::makeWith($configProvider);
     }
 
     public function withConfigProvider(CanProvideStructuredOutputConfig $configProvider) : self {
-        $this->configProvider = StructuredOutputConfigSource::makeWith($configProvider);
+        $this->configProvider = StructuredOutputConfigResolver::makeWith($configProvider);
         return $this;
     }
 

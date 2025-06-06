@@ -2,7 +2,7 @@
 
 namespace Cognesy\Tell;
 
-use Cognesy\Polyglot\LLM\ConfigProviders\SettingsLLMConfigProvider;
+use Cognesy\Polyglot\LLM\Config\SettingsLLMConfigProvider;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceResponse;
 use Symfony\Component\Console\Command\Command;

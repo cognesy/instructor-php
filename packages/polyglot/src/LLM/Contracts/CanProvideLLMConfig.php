@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Contracts;
 
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 /**

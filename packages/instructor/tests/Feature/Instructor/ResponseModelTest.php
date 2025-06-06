@@ -1,7 +1,7 @@
 <?php
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
 use Cognesy\Schema\Factories\SchemaFactory;

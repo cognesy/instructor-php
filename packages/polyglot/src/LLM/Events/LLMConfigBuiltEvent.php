@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Events;
 
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Utils\Events\Event;
 
 final class LLMConfigBuiltEvent extends Event

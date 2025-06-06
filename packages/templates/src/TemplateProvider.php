@@ -2,10 +2,10 @@
 
 namespace Cognesy\Template;
 
-use Cognesy\Template\ConfigProviders\TemplateConfigSource;
+use Cognesy\Template\Config\TemplateConfigResolver;
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Contracts\CanProvideTemplateConfig;
-use Cognesy\Template\Data\TemplateEngineConfig;
 use Cognesy\Template\Drivers\ArrowpipeDriver;
 use Cognesy\Template\Drivers\BladeDriver;
 use Cognesy\Template\Drivers\TwigDriver;
@@ -24,7 +24,7 @@ class TemplateProvider
         ?CanHandleTemplate    $driver = null,
         ?CanProvideTemplateConfig $configProvider = null
     ) {
-        $this->configProvider = TemplateConfigSource::makeWith($configProvider);
+        $this->configProvider = TemplateConfigResolver::makeWith($configProvider);
         $this->config = $config ?? $this->configProvider->getConfig($preset);
         $this->driver = $driver ?? $this->makeDriver($this->config);
     }

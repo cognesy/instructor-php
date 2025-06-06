@@ -21,10 +21,10 @@ Network connectivity problems can prevent successful API requests.
 ```
 
 3. **Proxy Settings**: If you're behind a proxy, configure it properly
+
 ```php
 // Using custom HTTP client with proxy settings
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
 
 $config = new HttpClientConfig(
     requestTimeout: 30,

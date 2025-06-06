@@ -1,9 +1,9 @@
 <?php
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;

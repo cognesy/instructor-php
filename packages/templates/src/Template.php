@@ -2,8 +2,8 @@
 
 namespace Cognesy\Template;
 
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
-use Cognesy\Template\Data\TemplateEngineConfig;
 use Cognesy\Template\Script\Script;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;

@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;

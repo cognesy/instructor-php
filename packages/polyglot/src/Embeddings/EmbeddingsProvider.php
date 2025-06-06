@@ -3,10 +3,10 @@ namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
-use Cognesy\Polyglot\Embeddings\ConfigProviders\EmbeddingsConfigSource;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfigResolver;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\CanProvideEmbeddingsConfig;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Events\EventHandlerFactory;
@@ -43,7 +43,7 @@ final class EmbeddingsProvider
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = EmbeddingsConfigSource::makeWith($configProvider);
+        $this->configProvider = EmbeddingsConfigResolver::makeWith($configProvider);
 
         $this->preset = $preset;
         $this->dsn = $dsn;

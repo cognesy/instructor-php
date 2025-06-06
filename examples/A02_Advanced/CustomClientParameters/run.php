@@ -15,11 +15,11 @@ other LLMs which support OpenAI API.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\EventDispatcher;

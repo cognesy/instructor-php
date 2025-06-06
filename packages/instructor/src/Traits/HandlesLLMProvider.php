@@ -3,9 +3,9 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
 
 trait HandlesLLMProvider
@@ -18,7 +18,7 @@ trait HandlesLLMProvider
     }
 
     public function using(string $preset) : static {
-        $this->llmProvider->withPreset($preset);
+        $this->llmProvider->withLLMPreset($preset);
         return $this;
     }
 

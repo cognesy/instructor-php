@@ -156,7 +156,7 @@ If you need to customize the configuration or set the template content directly,
 
 ```php
 <?php
-use Cognesy\Template\Data\TemplateEngineConfig;use Cognesy\Template\Enums\TemplateEngineType;
+use Cognesy\Template\Config\TemplateEngineConfig;use Cognesy\Template\Enums\TemplateEngineType;
 
 // Setting custom configuration
 $config = new TemplateEngineConfig(

@@ -4,10 +4,10 @@ namespace Cognesy\Polyglot\LLM\Drivers;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;

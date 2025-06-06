@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Contracts;
 
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 /**

@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\CachedContext;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Messages;
 

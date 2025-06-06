@@ -3,9 +3,9 @@
 namespace Cognesy\Polyglot\Embeddings\Drivers\Gemini;
 
 use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 
 class GeminiRequestAdapter implements EmbedRequestAdapter

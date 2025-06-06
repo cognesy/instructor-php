@@ -21,7 +21,7 @@ This is useful for debugging the request and response when you are not getting t
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Utils\Str;
 
 class User {

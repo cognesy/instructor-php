@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers\OpenAI;
 
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
 use InvalidArgumentException;
 

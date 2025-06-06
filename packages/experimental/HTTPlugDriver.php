@@ -1,8 +1,8 @@
 <?php
 
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;

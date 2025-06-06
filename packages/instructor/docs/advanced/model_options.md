@@ -31,8 +31,7 @@ which might be helpful in the case you are using OpenAI - organization.
 
 ```php
 <?php
-use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Instructor\StructuredOutput;use Cognesy\Polyglot\LLM\Config\LLMConfig;
 
 // Create instance of OpenAI client initialized with custom parameters
 $config = new LLMConfig(

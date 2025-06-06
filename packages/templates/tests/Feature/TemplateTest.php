@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Template\Data\TemplateEngineConfig;
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Enums\TemplateEngineType;
 use Cognesy\Template\Script\Script;
 use Cognesy\Template\Template;

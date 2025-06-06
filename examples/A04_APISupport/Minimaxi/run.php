@@ -19,7 +19,6 @@ Mode compatibility:
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Debug\Debug;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 

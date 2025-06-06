@@ -3,9 +3,9 @@
 namespace Cognesy\Polyglot\LLM\Traits;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\LLMProvider;
 
 trait HandleLLMProvider
@@ -60,7 +60,7 @@ trait HandleLLMProvider
      * @return self Returns the current instance with the updated connection.
      */
     public function using(string $preset) : static {
-        $this->llmProvider->withPreset($preset);
+        $this->llmProvider->withLLMPreset($preset);
         return $this;
     }
 
@@ -95,8 +95,8 @@ trait HandleLLMProvider
      *
      * @return self
      */
-    public function withDebug(?bool $debug = true) : static {
-        $this->llmProvider->withDebug($debug);
+    public function withDebug(?string $preset = '') : static {
+        $this->llmProvider->withDebug($preset);
         return $this;
     }
 }

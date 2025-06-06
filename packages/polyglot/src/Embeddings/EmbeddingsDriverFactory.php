@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Drivers\Azure\AzureOpenAIDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\Cohere\CohereDriver;
 use Cognesy\Polyglot\Embeddings\Drivers\Gemini\GeminiDriver;
@@ -36,7 +36,7 @@ class EmbeddingsDriverFactory
     /**
      * Returns the driver for the specified configuration.
      *
-     * @param EmbeddingsConfig $config
+     * @param \Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig $config
      * @param HttpClient $httpClient
      * @return CanHandleVectorization
      */

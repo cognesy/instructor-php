@@ -15,17 +15,17 @@ Laravel).
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Config\DebugConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanProvideDebugConfig;
 use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
-use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\EventDispatcher;

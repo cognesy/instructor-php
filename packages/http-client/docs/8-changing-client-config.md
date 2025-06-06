@@ -158,7 +158,7 @@ $client->withClient('guzzle-streaming');
 For more dynamic configuration, you can create a custom `HttpClientConfig` object and apply it using the `withConfig` method:
 
 ```php
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 
 // Create a custom configuration
 $config = new HttpClientConfig(

@@ -202,8 +202,7 @@ Different embedding models produce vectors of different dimensions:
 
 ```php
 <?php
-use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;use Cognesy\Polyglot\Embeddings\Embeddings;
 
 // Create custom configuration with a specific model
 $config = new EmbeddingsConfig(

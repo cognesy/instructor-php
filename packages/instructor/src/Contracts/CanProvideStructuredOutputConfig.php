@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Contracts;
 
-use Cognesy\Instructor\Data\StructuredOutputConfig;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 /**

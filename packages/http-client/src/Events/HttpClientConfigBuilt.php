@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Events;
 
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Utils\Events\Event;
 use JetBrains\PhpStorm\Deprecated;
 

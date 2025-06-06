@@ -4,10 +4,10 @@ namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
-use Cognesy\Polyglot\LLM\ConfigProviders\LLMConfigSource;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfigResolver;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Events\LLMConfigBuiltEvent;
 use Cognesy\Utils\Dsn\DSN;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
@@ -21,9 +21,9 @@ final class LLMProvider
     private readonly CanProvideLLMConfig $configProvider;
 
     // Configuration - all immutable after construction
-    private ?bool $debug;
+    private ?string $debugPreset;
     private ?string $dsn;
-    private ?string $preset;
+    private ?string $llmPreset;
     private ?LLMConfig $explicitConfig;
     private ?HttpClient $explicitHttpClient;
     private ?CanHandleInference $explicitDriver;
@@ -42,11 +42,11 @@ final class LLMProvider
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = LLMConfigSource::makeWith($configProvider);
+        $this->configProvider = LLMConfigResolver::makeWith($configProvider);
 
-        $this->debug = $debug;
+        $this->debugPreset = $debug;
         $this->dsn = $dsn;
-        $this->preset = $preset;
+        $this->llmPreset = $preset;
         $this->explicitConfig = $explicitConfig;
         $this->explicitHttpClient = $explicitHttpClient;
         $this->explicitDriver = $explicitDriver;
@@ -80,8 +80,8 @@ final class LLMProvider
     /**
      * Configure with a preset name
      */
-    public function withPreset(string $preset): self {
-        $this->preset = $preset;
+    public function withLLMPreset(string $preset): self {
+        $this->llmPreset = $preset;
         return $this;
     }
 
@@ -101,9 +101,9 @@ final class LLMProvider
             events: $this->events,
             listener: $this->listener,
             configProvider: $configProvider,
-            debug: $this->debug,
+            debug: $this->debugPreset,
             dsn: $this->dsn,
-            preset: $this->preset,
+            preset: $this->llmPreset,
             explicitConfig: $this->explicitConfig,
             explicitHttpClient: $this->explicitHttpClient,
             explicitDriver: $this->explicitDriver,
@@ -137,8 +137,8 @@ final class LLMProvider
     /**
      * Configure debug mode
      */
-    public function withDebug(bool $debug = true): self {
-        $this->debug = $debug;
+    public function withDebug(?string $preset = ''): self {
+        $this->debugPreset = $preset;
         return $this;
     }
 
@@ -214,8 +214,8 @@ final class LLMProvider
             ->withPreset($config->httpClientPreset);
 
         // Apply debug setting if specified
-        if ($this->debug !== null) {
-            $builder = $builder->withDebug($this->debug);
+        if ($this->debugPreset !== null) {
+            $builder = $builder->withDebug($this->debugPreset);
         }
 
         return $builder->create();
@@ -226,8 +226,8 @@ final class LLMProvider
      */
     private function determinePreset(): ?string {
         return match (true) {
+            $this->llmPreset !== null => $this->llmPreset,
             $this->dsn !== null => DSN::fromString($this->dsn)->param('preset'),
-            $this->preset !== null => $this->preset,
             default => null,
         };
     }

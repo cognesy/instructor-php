@@ -2,8 +2,8 @@
 
 namespace Cognesy\Template\Drivers;
 
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
-use Cognesy\Template\Data\TemplateEngineConfig;
 use Cognesy\Utils\Config\BasePath;
 use eftec\bladeone\BladeOne;
 use Exception;
@@ -20,7 +20,7 @@ class BladeDriver implements CanHandleTemplate
     /**
      * BladeDriver constructor.
      *
-     * @param \Cognesy\Template\Data\TemplateEngineConfig $config The configuration for the prompt engine
+     * @param \Cognesy\Template\Config\TemplateEngineConfig $config The configuration for the prompt engine
      */
     public function __construct(
         private TemplateEngineConfig $config,

@@ -2,11 +2,11 @@
 
 namespace Cognesy\Template\Contracts;
 
-use Cognesy\Template\Data\TemplateEngineConfig;
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 /**
- * @extends CanProvideConfig<TemplateEngineConfig>
+ * @extends CanProvideConfig<\Cognesy\Template\Config\TemplateEngineConfig>
  */
 interface CanProvideTemplateConfig extends CanProvideConfig
 {

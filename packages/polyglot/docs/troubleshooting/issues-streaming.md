@@ -14,10 +14,10 @@ Streaming responses can encounter specific problems.
 ## Solutions
 
 1. **Connection Timeouts**: Increase timeout settings for streaming responses
+
 ```php
 <?php
-use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;
 
 // Create a custom HTTP client with longer timeouts
 $config = new HttpClientConfig(

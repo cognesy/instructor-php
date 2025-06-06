@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\Azure;
 
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 

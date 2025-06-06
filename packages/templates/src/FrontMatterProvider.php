@@ -4,11 +4,13 @@ namespace Cognesy\Template;
 
 use Cognesy\Template\Enums\FrontMatterFormat;
 use InvalidArgumentException;
+use JetBrains\PhpStorm\Deprecated;
 use Webuni\FrontMatter\FrontMatter;
 use Webuni\FrontMatter\Processor\JsonProcessor;
 use Webuni\FrontMatter\Processor\TomlProcessor;
 use Webuni\FrontMatter\Processor\YamlProcessor;
 
+#[Deprecated]
 class FrontMatterProvider
 {
     public function get(

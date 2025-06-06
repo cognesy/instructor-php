@@ -1,10 +1,10 @@
 <?php
 
 use Cognesy\Http\Adapters\MockHttpResponse;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\HttpClientBuilder;

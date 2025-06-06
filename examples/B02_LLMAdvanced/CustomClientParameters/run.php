@@ -14,10 +14,10 @@ when you want to initialize LLM client with custom values.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\HttpClientBuilder;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\Event;

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Template\Drivers;
 
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
-use Cognesy\Template\Data\TemplateEngineConfig;
 use Cognesy\Template\Utils\StringTemplate;
 use Cognesy\Utils\Config\BasePath;
 

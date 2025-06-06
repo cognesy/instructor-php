@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Events\LLMResponseReceived;
 use Cognesy\Utils\Json\Json;

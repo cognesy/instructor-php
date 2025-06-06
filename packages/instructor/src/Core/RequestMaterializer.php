@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Template\Script\Script;

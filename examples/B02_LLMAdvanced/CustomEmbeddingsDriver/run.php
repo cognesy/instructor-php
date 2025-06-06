@@ -11,7 +11,7 @@ docname: 'custom_embeddings_config'
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\Embeddings\Data\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
 use Cognesy\Polyglot\Embeddings\EmbedUtils;
 use Cognesy\Utils\Config\Env;

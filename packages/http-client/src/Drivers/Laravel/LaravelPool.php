@@ -2,8 +2,8 @@
 namespace Cognesy\Http\Drivers\Laravel;
 
 use Cognesy\Http\Adapters\LaravelHttpResponse;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Data\HttpClientConfig;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpResponseReceived;

@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;

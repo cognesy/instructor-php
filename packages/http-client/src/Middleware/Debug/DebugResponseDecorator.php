@@ -5,22 +5,22 @@ namespace Cognesy\Http\Middleware\Debug;
 use Cognesy\Http\BaseResponseDecorator;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Http\Debug\Debug;
 use Generator;
 
 class DebugResponseDecorator extends BaseResponseDecorator
 {
     private Debug $debug;
-    private bool $streamByLine;
+    private bool $debugEachChunk;
 
     public function __construct(
         HttpClientRequest  $request,
         HttpClientResponse $response,
-        ?Debug             $debug = null
+        Debug              $debug,
+        bool               $debugEachChunk = false
     ) {
         parent::__construct($request, $response);
-        $this->debug = $debug ?? new Debug();
-        $this->streamByLine = $this->debug->config()->httpResponseStreamByLine;
+        $this->debug = $debug;
+        $this->debugEachChunk = $debugEachChunk;
     }
 
     public function stream(int $chunkSize = 1): Generator
@@ -32,11 +32,13 @@ class DebugResponseDecorator extends BaseResponseDecorator
         }
     }
 
+    // INTERNAL ///////////////////////////////////////////////////
+
     private function handleChunk(string $buffer, string $chunk): string
     {
         $buffer .= $chunk;
-        if (!$this->streamByLine) {
-            $this->debug->tryDumpStream($chunk, false);
+        if ($this->debugEachChunk) {
+            $this->debug->handleStream($chunk, false);
         } else {
             $buffer = $this->processBuffer($buffer);
         }
@@ -48,7 +50,7 @@ class DebugResponseDecorator extends BaseResponseDecorator
         if (strpos($buffer, "\n") !== false) {
             $buffer = trim($buffer);
             if ($buffer !== '') {
-                $this->debug->tryDumpStream($buffer, true);
+                $this->debug->handleStream($buffer, true);
             }
             return '';
         }

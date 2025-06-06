@@ -14,13 +14,13 @@ when you want to initialize LLM client with custom values.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Http\Config\DebugConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanProvideDebugConfig;
 use Cognesy\Http\Contracts\CanProvideHttpClientConfig;
-use Cognesy\Http\Data\HttpClientConfig;
-use Cognesy\Http\Debug\DebugConfig;
 use Cognesy\Http\HttpClientBuilder;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanProvideLLMConfig;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Events\Event;

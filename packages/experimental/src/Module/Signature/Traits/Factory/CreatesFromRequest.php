@@ -3,9 +3,9 @@
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Experimental\Module\Signature\Signature;
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\SchemaFactory;

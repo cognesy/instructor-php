@@ -14,7 +14,6 @@ the provided text.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Http\Debug\Debug;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Instructor\Core\Traits;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanProvideStructuredOutputConfig;
-use Cognesy\Instructor\Data\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
 trait HandlesConfigBuilder

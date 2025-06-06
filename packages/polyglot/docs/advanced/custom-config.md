@@ -284,8 +284,7 @@ You can also create custom configurations at runtime using the `LLMConfig` class
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;use Cognesy\Polyglot\LLM\Inference;
 
 // Create a custom configuration
 $customConfig = new LLMConfig(

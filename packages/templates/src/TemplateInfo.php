@@ -2,7 +2,7 @@
 
 namespace Cognesy\Template;
 
-use Cognesy\Template\Data\TemplateEngineConfig;
+use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Enums\FrontMatterFormat;
 use InvalidArgumentException;
 use Webuni\FrontMatter\FrontMatter;

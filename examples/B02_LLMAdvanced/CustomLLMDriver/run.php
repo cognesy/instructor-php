@@ -15,7 +15,7 @@ or overriding an existing driver bundled with Polyglot.
 require 'examples/boot.php';
 
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceRequest;

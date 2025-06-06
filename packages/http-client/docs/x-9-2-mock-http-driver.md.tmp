@@ -526,7 +526,7 @@ Once you've implemented your custom driver, you can use it with the `HttpClient`
 
 ```php
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientConfig;
+use Cognesy\Http\Config\HttpClientConfig;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Create a configuration for your custom driver

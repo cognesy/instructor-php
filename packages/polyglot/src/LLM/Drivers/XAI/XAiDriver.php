@@ -3,9 +3,9 @@
 namespace Cognesy\Polyglot\LLM\Drivers\XAI;
 
 use Cognesy\Http\HttpClient;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
-use Cognesy\Polyglot\LLM\Data\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\BaseInferenceDriver;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIRequestAdapter;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
