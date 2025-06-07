@@ -38,7 +38,7 @@ final class HttpClientConfig
      */
     public static function fromArray(array $config) : HttpClientConfig {
         return new HttpClientConfig(
-            driver: $config['httpClientDriver'] ?? 'guzzle',
+            driver: $config['driver'] ?? 'guzzle',
             connectTimeout: $config['connectTimeout'] ?? 3,
             requestTimeout: $config['requestTimeout'] ?? 30,
             idleTimeout: $config['idleTimeout'] ?? -1,
@@ -50,7 +50,7 @@ final class HttpClientConfig
 
     public function toArray() : array {
         return [
-            'httpClientDriver' => $this->driver,
+            'driver' => $this->driver,
             'connectTimeout' => $this->connectTimeout,
             'requestTimeout' => $this->requestTimeout,
             'idleTimeout' => $this->idleTimeout,

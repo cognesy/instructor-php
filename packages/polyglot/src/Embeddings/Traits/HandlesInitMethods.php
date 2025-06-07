@@ -15,6 +15,16 @@ trait HandlesInitMethods
         return $this;
     }
 
+    public function withPreset(string $preset) : self {
+        $this->embeddingsProvider->withPreset($preset);
+        return $this;
+    }
+
+    public function withDSN(string $dsn) : self {
+        $this->embeddingsProvider->withDSN($dsn);
+        return $this;
+    }
+
     public function withConfig(EmbeddingsConfig $config) : self {
         $this->embeddingsProvider->withConfig($config);
         return $this;

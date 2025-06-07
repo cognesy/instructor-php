@@ -16,7 +16,8 @@ trait HandlesRequestBuilder
     }
 
     public function withInput(mixed $input): static {
-        $this->requestBuilder->withMessages($input);
+        $messages = Messages::fromInput($input);
+        $this->requestBuilder->withMessages($messages);
         return $this;
     }
 

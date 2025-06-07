@@ -95,7 +95,6 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-//Debug::setEnabled();
 $structuredOutput = (new StructuredOutput)->using('gemini');
 
 echo "PROJECT EVENTS:\n\n";

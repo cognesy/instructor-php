@@ -18,8 +18,6 @@ class AnthropicBodyFormat implements CanMapRequestBody
     ) {}
 
     public function toRequestBody(InferenceRequest $request) : array {
-        $request = $request->withCacheApplied();
-
         $options = array_merge($this->config->options, $request->options());
 
         $this->parallelToolCalls = $options['parallel_tool_calls'] ?? false;
@@ -46,20 +44,39 @@ class AnthropicBodyFormat implements CanMapRequestBody
     // INTERNAL /////////////////////////////////////////////
 
     protected function toTools(InferenceRequest $request) : array {
+        $cachedTools = $request->cachedContext()?->tools() ?? [];
         $tools = $request->tools();
+
         $result = [];
-        foreach ($tools as $tool) {
-            $result[] = [
-                'name' => $tool['function']['name'],
-                'description' => $tool['function']['description'] ?? '',
-                'input_schema' => $tool['function']['parameters'],
-            ];
+        foreach ($cachedTools as $tool) {
+            $result[] = $this->toAnthropicTool($tool);
         }
+
+        $count = count($result);
+        if ($count > 0) {
+            // set cache marker on last tool entry
+            $result[$count-1]['cache_control'] = ['type' => 'ephemeral'];
+        }
+
+        foreach ($tools as $tool) {
+            $result[] = $this->toAnthropicTool($tool);
+        }
+
         return $result;
     }
 
+    private function toAnthropicTool(array $tool) : array {
+        $anthropicTool = [
+            'name' => $tool['function']['name'] ?? '',
+            'description' => $tool['function']['description'] ?? '',
+            'input_schema' => $tool['function']['parameters'] ?? [],
+        ];
+        return $anthropicTool;
+    }
+
     protected function toToolChoice(InferenceRequest $request) : array {
-        $toolChoice = $request->toolChoice();
+        $cachedToolChoice = $request->cachedContext()?->toolChoice();
+        $toolChoice = $request->toolChoice() ?: $cachedToolChoice;
         $tools = $request->tools();
 
         return match(true) {

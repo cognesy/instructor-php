@@ -13,12 +13,13 @@ class InferenceRequestBuilder
     private string|array    $toolChoice = [];
     private array           $responseFormat = [];
     private array           $options = [];
-    private bool            $streaming = false;
     private ?OutputMode     $mode = null;
     protected CachedContext $cachedContext;
 
-    public function __construct()
-    {
+    private ?bool            $streaming = null;
+    private ?int             $maxTokens = null;
+
+    public function __construct() {
         $this->cachedContext = new CachedContext();
     }
 
@@ -88,6 +89,10 @@ class InferenceRequestBuilder
         return $this;
     }
 
+    public function withMaxTokens(int $maxTokens): static {
+        $this->maxTokens = $maxTokens;
+        return $this;
+    }
 
     public function withOutputMode(?OutputMode $mode): static {
         $this->mode = $mode;
@@ -131,9 +136,9 @@ class InferenceRequestBuilder
     }
 
     public function create(): InferenceRequest {
-        $options = ($this->streaming === true)
-            ? array_merge($this->options, ['stream' => true])
-            : $this->options;
+        $options = $this->options;
+        $options = $this->override($options, 'stream', $this->streaming);
+        $options = $this->override($options, 'max_tokens', $this->maxTokens);
 
         return new InferenceRequest(
             messages: $this->messages,
@@ -145,5 +150,13 @@ class InferenceRequestBuilder
             mode: $this->mode,
             cachedContext: $this->cachedContext
         );
+    }
+
+    private function override(array $source, string $key, mixed $value): array {
+        if ($value === null) {
+            return $source;
+        }
+        $source[$key] = $value;
+        return $source;
     }
 }

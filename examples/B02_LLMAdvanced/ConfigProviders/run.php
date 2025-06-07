@@ -15,7 +15,6 @@ when you want to initialize LLM client with custom values.
 require 'examples/boot.php';
 
 use Cognesy\Http\HttpClientBuilder;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Config\Env;
@@ -30,26 +29,36 @@ class CustomConfigProvider implements CanProvideConfig
 {
     public function getConfig(string $group, ?string $preset = ''): array {
         return match($group) {
-            'http' => $this->httpPresets(),
-            'debug' => $this->debugPresets()[$preset] ?? [],
+            'http' => $this->http($preset),
+            'debug' => $this->debug($preset),
+            'llm' => $this->llm($preset),
             default => [],
         };
     }
 
-    private function httpPresets() : array {
-        return [
-            'driver' => 'symfony',
-            'connectTimeout' => 10,
-            'requestTimeout' => 30,
-            'idleTimeout' => -1,
-            'maxConcurrent' => 5,
-            'poolTimeout' => 60,
-            'failOnError' => true,
+    private function http(?string $preset) : array {
+        $config = [
+            'default' => 'symfony',
+            'presets' => [
+                'symfony' => [
+                    'driver' => 'symfony',
+                    'connectTimeout' => 10,
+                    'requestTimeout' => 30,
+                    'idleTimeout' => -1,
+                    'maxConcurrent' => 5,
+                    'poolTimeout' => 60,
+                    'failOnError' => true,
+                ]
+                //
+            ],
         ];
+        $default = $config['default'];
+        $preset = $preset ?: $default;
+        return $config['presets'][$preset] ?? $config['presets'][$default] ?? [];
     }
 
-    private function debugPresets(): array {
-        return [
+    private function debug(?string $preset): array {
+        $data = [
             'off' => [
                 'httpEnabled' => true,
             ],
@@ -63,20 +72,28 @@ class CustomConfigProvider implements CanProvideConfig
                 'httpResponseBody' => true,
                 'httpResponseStream' => true,
                 'httpResponseStreamByLine' => true,
-            ]
-        ];
-    }
-
-    private function presets(): array {
-        return [
-            'deepseek' => new LLMConfig(
-                apiUrl  : 'https://api.deepseek.com',
-                apiKey  : Env::get('DEEPSEEK_API_KEY'),
-                endpoint: '/chat/completions', defaultModel: 'deepseek-chat', defaultMaxTokens: 128,
-                driver  : 'deepseek',
-            ),
+            ],
             // ...
         ];
+        $preset = $preset ?: 'off';
+        return $data[$preset] ?? $data['off'];
+    }
+
+    private function llm(?string $preset): array {
+        $data = [
+            'deepseek' => [
+                'apiUrl' => 'https://api.deepseek.com',
+                'apiKey' => Env::get('DEEPSEEK_API_KEY'),
+                'endpoint' => '/chat/completions',
+                'defaultModel' => 'deepseek-chat',
+                'defaultMaxTokens' => 128,
+                'driver' => 'deepseek',
+                'httpClientPreset' => 'symfony',
+            ],
+            // ...
+        ];
+        $preset = $preset ?: 'deepseek';
+        return $data[$preset] ?? $data['deepseek'];
     }
 }
 

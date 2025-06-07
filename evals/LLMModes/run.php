@@ -42,7 +42,6 @@ $data = new InferenceData(
     ),
 );
 
-//Debug::setEnabled();
 $presets = array_keys(Settings::get('llm', 'presets'));
 //$presets = [
 //    'deepseek-r', // stream > text - will be solved by removing outputmode

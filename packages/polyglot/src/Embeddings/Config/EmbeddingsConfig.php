@@ -21,36 +21,17 @@ final class EmbeddingsConfig
             apiUrl    : $value['apiUrl'] ?? $value['api_url'] ?? '',
             apiKey    : $value['apiKey'] ?? $value['api_key'] ?? '',
             endpoint  : $value['endpoint'] ?? '',
-            model     : $value['model'] ?? '',
-            dimensions: $value['dimensions'] ?? 0,
+            model     : $value['defaultModel'] ?? '',
+            dimensions: $value['defaultDimensions'] ?? 0,
             maxInputs : $value['maxInputs'] ?? $value['max_inputs'] ?? 1,
             metadata  : $value['metadata'] ?? [],
-            httpClientPreset: $value['httpClient']
-                ?? $value['http_client']
-                ?? $value['httpClientPreset']
+            httpClientPreset: $value['httpClientPreset']
                 ?? $value['http_client_preset']
+                ?? $value['http_client']
+                ?? $value['httpClient']
                 ?? '',
             driver    : $value['driver'] ?? 'openai',
         );
-    }
-
-    public function withOverrides(array $overrides) : EmbeddingsConfig {
-        $this->apiUrl = $overrides['apiUrl'] ?? $overrides['api_url'] ?? $this->apiUrl;
-        $this->apiKey = $overrides['apiKey'] ?? $overrides['api_key'] ?? $this->apiKey;
-        $this->endpoint = $overrides['endpoint'] ?? $this->endpoint;
-        $this->model = $overrides['model'] ?? $this->model;
-        $this->dimensions = $overrides['dimensions'] ?? $this->dimensions;
-        $this->maxInputs = $overrides['maxInputs']
-            ?? $overrides['max_inputs']
-            ?? $this->maxInputs;
-        $this->metadata = $overrides['metadata'] ?? $this->metadata;
-        $this->httpClientPreset = $overrides['httpClient']
-            ?? $overrides['http_client']
-            ?? $overrides['httpClientPreset']
-            ?? $overrides['http_client_preset']
-            ?? $this->httpClientPreset;
-        $this->driver = $overrides['driver'] ?? $this->driver;
-        return $this;
     }
 
     public function toArray() : array {
@@ -58,8 +39,8 @@ final class EmbeddingsConfig
             'apiUrl' => $this->apiUrl,
             'apiKey' => $this->apiKey,
             'endpoint' => $this->endpoint,
-            'model' => $this->model,
-            'dimensions' => $this->dimensions,
+            'defaultModel' => $this->model,
+            'defaultDimensions' => $this->dimensions,
             'maxInputs' => $this->maxInputs,
             'metadata' => $this->metadata,
             'httpClientPreset' => $this->httpClientPreset,

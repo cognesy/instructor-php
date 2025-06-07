@@ -33,6 +33,8 @@ use Cognesy\Utils\Str;
 $data = file_get_contents(__DIR__ . '/../../../README.md');
 
 $inference = (new Inference)
+    //->wiretap(fn($e) => $e->print()) // wiretap to print all events
+    //->withDebugPreset('on') // debug HTTP traffic
     ->using('anthropic')
     ->withCachedContext(
         messages: [

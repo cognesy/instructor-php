@@ -21,8 +21,6 @@ $data = new StructuredOutputData(
     responseModel: Company::class,
 );
 
-//Debug::setEnabled();
-
 $experiment = new Experiment(
     cases: InferenceCases::except(
         presets: ['ollama'],

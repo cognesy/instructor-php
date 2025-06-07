@@ -33,44 +33,41 @@ $events = new EventDispatcher();
 // Let's build a set of custom configuration providers.
 // You can use those examples to build your framework-specific providers.
 
+
 class CustomConfigProvider implements CanProvideConfig
 {
     public function getConfig(string $group, ?string $preset = ''): array {
         return match($group) {
-            'http' => $this->http() ?? [],
-            'debug' => $this->debug()[$preset] ?? [],
-            'llm' => $this->llm() ?? [],
-            'structured' => $this->struct() ?? [],
+            'http' => $this->http($preset),
+            'debug' => $this->debug($preset),
+            'llm' => $this->llm($preset),
             default => [],
         };
     }
 
-    private function llm() : array {
-        return [
-            'apiUrl' => 'https://api.deepseek.com',
-            'apiKey' => Env::get('DEEPSEEK_API_KEY'),
-            'endpoint' => '/chat/completions',
-            'defaultModel' => 'deepseek-chat',
-            'defaultMaxTokens' => 128,
-            'driver' => 'deepseek',
-            // ...
+    private function http(?string $preset) : array {
+        $config = [
+            'default' => 'symfony',
+            'presets' => [
+                'symfony' => [
+                    'driver' => 'symfony',
+                    'connectTimeout' => 10,
+                    'requestTimeout' => 30,
+                    'idleTimeout' => -1,
+                    'maxConcurrent' => 5,
+                    'poolTimeout' => 60,
+                    'failOnError' => true,
+                ]
+                //
+            ],
         ];
+        $default = $config['default'];
+        $preset = $preset ?: $default;
+        return $config['presets'][$preset] ?? $config['presets'][$default] ?? [];
     }
 
-    private function http() : array {
-        return [
-            'driver' => 'symfony',
-            'connectTimeout' => 10,
-            'requestTimeout' => 30,
-            'idleTimeout' => -1,
-            'maxConcurrent' => 5,
-            'poolTimeout' => 60,
-            'failOnError' => true,
-        ];
-    }
-
-    private function debug(): array {
-        return [
+    private function debug(?string $preset): array {
+        $data = [
             'off' => [
                 'httpEnabled' => true,
             ],
@@ -84,11 +81,31 @@ class CustomConfigProvider implements CanProvideConfig
                 'httpResponseBody' => true,
                 'httpResponseStream' => true,
                 'httpResponseStreamByLine' => true,
-            ]
+            ],
+            // ...
         ];
+        $preset = $preset ?: 'off';
+        return $data[$preset] ?? $data['off'];
     }
 
-    private function struct(): array {
+    private function llm(?string $preset): array {
+        $data = [
+            'deepseek' => [
+                'apiUrl' => 'https://api.deepseek.com',
+                'apiKey' => Env::get('DEEPSEEK_API_KEY'),
+                'endpoint' => '/chat/completions',
+                'defaultModel' => 'deepseek-chat',
+                'defaultMaxTokens' => 128,
+                'driver' => 'deepseek',
+                'httpClientPreset' => 'symfony',
+            ],
+            // ...
+        ];
+        $preset = $preset ?: 'deepseek';
+        return $data[$preset] ?? $data['deepseek'];
+    }
+
+    private function struct(?string $preset): array {
         return [
             'outputMode' => OutputMode::Tools,
             'useObjectReferences' => true,
@@ -120,6 +137,7 @@ class CustomConfigProvider implements CanProvideConfig
         ];
     }
 }
+
 $configProvider = new CustomConfigProvider();
 
 $customClient = (new HttpClientBuilder(

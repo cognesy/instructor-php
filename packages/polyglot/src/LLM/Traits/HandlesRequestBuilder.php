@@ -19,6 +19,11 @@ trait HandlesRequestBuilder
         return $this;
     }
 
+    public function withMaxTokens(int $maxTokens): static {
+        $this->requestBuilder->withMaxTokens($maxTokens);
+        return $this;
+    }
+
     public function withTools(array $tools): static {
         $this->requestBuilder->withTools($tools);
         return $this;
