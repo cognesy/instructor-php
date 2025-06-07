@@ -68,7 +68,9 @@ class RequestHandler
                 OutputMode::Tools => $llmResponse->toolCalls()->first()?->argsAsJson()
                     ?? $llmResponse->content() // fallback if no tool calls - some LLMs return just a string
                     ?? '',
-                default => Json::fromString($llmResponse->content())->toString(), // OutputMode::MdJson, OutputMode::Json, OutputMode::JsonSchema
+                // for OutputMode::MdJson, OutputMode::Json, OutputMode::JsonSchema try extracting JSON from content
+                // and replacing original content with it
+                default => Json::fromString($llmResponse->content())->toString(),
             });
             $partialResponses = [];
             $processingResult = $this->processResponse($request, $llmResponse, $partialResponses);

@@ -16,27 +16,30 @@ This feature is useful for debugging and understanding the reasoning behind the 
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Utils\Str;
 
 // EXAMPLE 1: regular API, allows to customize inference options
-//$response = (new Inference)
-////    ->wiretap(fn($e) => $e->print())
-//    ->using('deepseek-r')
-//    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France. Answer with just a name.']])
-//    ->withMaxTokens(256)
-//    ->response();
-//
-//echo "\nCASE #1: Sync response\n";
-//echo "USER: What is capital of France\n";
-//echo "ASSISTANT: {$response->content()}\n";
-//echo "REASONING: {$response->reasoningContent()}\n";
-//assert($response->content() !== '');
-//assert(Str::contains($response->content(), 'Paris'));
-//assert($response->reasoningContent() !== '');
+$response = (new Inference)
+    //->withDebugPreset('on')
+    //->wiretap(fn($e) => $e->print())
+    ->using('deepseek-r')
+    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France. Answer with just a name.']])
+    ->withMaxTokens(256)
+    ->response();
+
+echo "\nCASE #1: Sync response\n";
+echo "USER: What is capital of France\n";
+echo "ASSISTANT: {$response->content()}\n";
+echo "REASONING: {$response->reasoningContent()}\n";
+assert($response->content() !== '');
+assert(Str::contains($response->content(), 'Paris'));
+assert($response->reasoningContent() !== '');
 
 
 // EXAMPLE 2: streaming response
 $stream = (new Inference)
-    ->withDebugPreset('on')
+    //->withDebugPreset('on')
+    //->wiretap(fn($e) => $e->print())
     ->using('deepseek-r') // optional, default is set in /config/llm.php
     ->with(
         messages: [['role' => 'user', 'content' => 'What is capital of Brasil. Answer with just a name.']],
@@ -53,8 +56,8 @@ foreach ($stream->responses() as $partial) {
 }
 echo "\n";
 echo "REASONING: {$stream->final()->reasoningContent()}\n";
-//assert($stream->final()->reasoningContent() !== '');
-//assert($stream->final()->content() !== '');
-//assert(Str::contains($stream->final()->content(), 'Brasília'));
+assert($stream->final()->reasoningContent() !== '');
+assert($stream->final()->content() !== '');
+assert(Str::contains($stream->final()->content(), 'Brasília'));
 ?>
 ```

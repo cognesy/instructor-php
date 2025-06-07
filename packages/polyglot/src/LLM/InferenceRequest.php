@@ -336,7 +336,7 @@ class InferenceRequest
             responseFormat: $this->responseFormat,
             options: $this->options,
             mode: $this->mode,
-            cachedContext: $this->cachedContext,
+            cachedContext: $this->cachedContext->clone(),
         );
     }
 }

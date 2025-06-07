@@ -45,4 +45,13 @@ class CachedContext
             && empty($this->toolChoice)
             && empty($this->responseFormat);
     }
+
+    public function clone() : self {
+        return new self(
+            messages: $this->messages->toArray(),
+            tools: $this->tools,
+            toolChoice: $this->toolChoice,
+            responseFormat: $this->responseFormat,
+        );
+    }
 }

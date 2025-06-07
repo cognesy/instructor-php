@@ -44,4 +44,13 @@ enum LLMFinishReason : string
             default => self::Other,
         };
     }
+
+    public function isOneOf(LLMFinishReason ...$reasons): bool {
+        foreach ($reasons as $reason) {
+            if ($this->equals($reason)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

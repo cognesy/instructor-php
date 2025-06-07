@@ -25,19 +25,26 @@ use Cognesy\Utils\Str;
 // we will use existing, bundled driver as an example, but you can provide any class that implements
 // a required interface (CanHandleInference)
 
-Inference::registerDriver('custom-driver', fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
-    public function handle(InferenceRequest $request): HttpClientResponse {
-        // some extra functionality to demonstrate our driver is being used
-        echo ">>> Handling request...\n";
-        return parent::handle($request);
+Inference::registerDriver(
+    name: 'custom-driver',
+    driver: fn($config, $httpClient, $events) => new class($config, $httpClient, $events) extends OpenAIDriver {
+        public function handle(InferenceRequest $request): HttpClientResponse {
+            // some extra functionality to demonstrate our driver is being used
+            echo ">>> Handling request...\n";
+            return parent::handle($request);
+        }
     }
-});
+);
 
 // Create instance of LLM client initialized with custom parameters
 $config = new LLMConfig(
-    apiUrl  : 'https://api.openai.com/v1',
-    apiKey  : Env::get('OPENAI_API_KEY'),
-    endpoint: '/chat/completions', defaultModel: 'gpt-4o-mini', defaultMaxTokens: 128, httpClientPreset: 'guzzle', driver: 'custom-driver',
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: Env::get('OPENAI_API_KEY'),
+    endpoint: '/chat/completions',
+    defaultModel: 'gpt-4o-mini',
+    defaultMaxTokens: 128,
+    httpClientPreset: 'guzzle',
+    driver: 'custom-driver',
 );
 
 $answer = (new Inference)

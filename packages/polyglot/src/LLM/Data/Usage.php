@@ -79,4 +79,14 @@ class Usage
             'reasoning' => $this->reasoningTokens,
         ];
     }
+
+    public function clone() : static {
+        return new static(
+            inputTokens: $this->inputTokens,
+            outputTokens: $this->outputTokens,
+            cacheWriteTokens: $this->cacheWriteTokens,
+            cacheReadTokens: $this->cacheReadTokens,
+            reasoningTokens: $this->reasoningTokens,
+        );
+    }
 }

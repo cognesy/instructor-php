@@ -20,11 +20,7 @@ class ToolCall
     ) {
         $this->id = $id;
         $this->name = $name;
-        $this->arguments = match(true) {
-            is_array($args) => $args,
-            is_string($args) => Json::fromString($args)->toArray(),
-            default => []
-        };
+        $this->withArgs($args);
     }
 
     public static function fromArray(array $toolCall) : ?ToolCall {
@@ -131,5 +127,13 @@ class ToolCall
                 'arguments' => Json::encode($this->arguments),
             ]
         ];
+    }
+
+    public function clone() : self {
+        return new self(
+            name: $this->name,
+            args: $this->arguments,
+            id: $this->id
+        );
     }
 }

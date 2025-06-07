@@ -50,24 +50,25 @@ $presets = array_keys(Settings::get('llm', 'presets'));
 //    'gemini-oai',
 //];
 $modes = [
-//    OutputMode::Text,
-//    OutputMode::MdJson,
+    OutputMode::Text,
+    OutputMode::MdJson,
     OutputMode::Json,
     OutputMode::JsonSchema,
     OutputMode::Tools,
-//    OutputMode::Unrestricted
+    OutputMode::Unrestricted,
 ];
 $stream = [
     false,
-//    true,
+    true,
 ];
+
+$executor = (new RunInference($data));
+//    ->withDebugPreset('on')
+//    ->wiretap(fn($e) => $e->printLog());
 
 $experiment = new Experiment(
     cases: InferenceCases::only($presets, $modes, $stream),
-    //cases: InferenceCases::all(),
-    executor: (new RunInference($data))
-        ->withDebugPreset('on'),
-        //->wiretap(fn($e) => $e->printLog()),
+    executor: $executor,
     processors: [
         new CompanyEval(
             key: 'execution.is_correct',

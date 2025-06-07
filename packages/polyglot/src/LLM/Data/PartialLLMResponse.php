@@ -78,6 +78,15 @@ class PartialLLMResponse
         return $this->usage ?? new Usage();
     }
 
+    public function hasToolArgs() : bool {
+        // do not change to not empty, as it will return true for '0'
+        return '' !== ($this->toolArgs ?? '');
+    }
+
+    public function hasToolName() : string {
+        return '' !== ($this->toolName ?? '');
+    }
+
     public function toArray() : array {
         return [
             'content_delta' => $this->contentDelta,
@@ -89,5 +98,13 @@ class PartialLLMResponse
             'usage' => $this->usage ? $this->usage->toArray() : null,
             'response_data' => $this->responseData,
         ];
+    }
+
+    public function toolName() : string {
+        return $this->toolName ?? '';
+    }
+
+    public function toolArgs() : string {
+        return $this->toolArgs ?? '';
     }
 }

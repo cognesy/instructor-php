@@ -1,7 +1,6 @@
 <?php
 namespace Cognesy\Polyglot\LLM\Data;
 
-use Cognesy\Utils\Json\Json;
 use InvalidArgumentException;
 
 class ToolCalls
@@ -117,5 +116,13 @@ class ToolCalls
             $list[] = $toolCall->toArray();
         }
         return $list;
+    }
+
+    public function clone() : ToolCalls {
+        $clonedToolCalls = [];
+        foreach ($this->toolCalls as $toolCall) {
+            $clonedToolCalls[] = $toolCall->clone();
+        }
+        return new ToolCalls($clonedToolCalls);
     }
 }

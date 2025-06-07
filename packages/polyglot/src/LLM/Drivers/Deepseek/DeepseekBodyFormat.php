@@ -48,15 +48,18 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
     // CAPABILITIES ///////////////////////////////////////////
 
     protected function supportsToolSelection(InferenceRequest $request) : bool {
-        return !Str::contains($request->model(), 'reasoner');
+        $model = $request->model() ?: $this->config->defaultModel;
+        return !Str::contains($model, 'reasoner');
     }
 
     protected function supportsStructuredOutput(InferenceRequest $request) : bool {
-        return !Str::contains($request->model(), 'reasoner');
+        $model = $request->model() ?: $this->config->defaultModel;
+        return !Str::contains($model, 'reasoner');
     }
 
     protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
-        return !Str::contains($request->model(), 'reasoner');
+        $model = $request->model() ?: $this->config->defaultModel;
+        return !Str::contains($model, 'reasoner');
     }
 
     // INTERNAL ///////////////////////////////////////////////

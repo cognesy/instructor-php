@@ -12,6 +12,8 @@ use Cognesy\Utils\Json\Json;
 class LLMResponse
 {
     private mixed $value = null;
+    private array $partialResponses = [];
+    private bool $isPartial = false;
 
     public function __construct(
         private string     $content = '',
@@ -32,8 +34,16 @@ class LLMResponse
      * @param PartialLLMResponse[] $partialResponses
      * @return LLMResponse
      */
-    public static function fromPartialResponses(array $partialResponses) : LLMResponse {
-        return (new self)->makeFromPartialResponses($partialResponses);
+    public static function fromPartialResponses(array $partialResponses = []) : self {
+        $newResponse = new self();
+        foreach ($partialResponses as $partialResponse) {
+            if ($partialResponse === null) {
+                continue;
+            }
+            $newResponse->applyPartialResponse($partialResponse);
+        }
+        $newResponse->toolCalls = ToolCalls::fromArray(self::makeTools($partialResponses));
+        return $newResponse;
     }
 
     // PUBLIC ////////////////////////////////////////////////
@@ -150,6 +160,10 @@ class LLMResponse
         return LLMFinishReason::fromText($this->finishReason);
     }
 
+    public function hasFinishReason() : bool {
+        return $this->finishReason !== '';
+    }
+
     public function responseData() : array {
         return $this->responseData;
     }
@@ -161,61 +175,98 @@ class LLMResponse
             'finishReason' => $this->finishReason,
             'toolCalls' => $this->toolCalls?->toArray() ?? [],
             'usage' => $this->usage->toArray(),
+            // raw response data
             'responseData' => $this->responseData,
         ];
+    }
+
+    public function clone() : self {
+        return new self(
+            content: $this->content,
+            finishReason: $this->finishReason,
+            toolCalls: $this->toolCalls?->clone(),
+            reasoningContent: $this->reasoningContent,
+            usage: $this->usage?->clone(),
+            responseData: $this->responseData,
+        );
     }
 
     // INTERNAL //////////////////////////////////////////////
 
     /**
-     * @param PartialLLMResponse[] $partialResponses
-     * @return LLMResponse
+     * Apply a partial response to the current response.
+     * This will accumulate content, reasoning content, usage,
+     * and response data.
+     *
+     * @param PartialLLMResponse $partialResponse
      */
-    private function makeFromPartialResponses(array $partialResponses = []) : self {
-        if (empty($partialResponses)) {
-            return $this;
-        }
-
-        $content = '';
-        $reasoningContent = '';
-        foreach($partialResponses as $partialResponse) {
-            if ($partialResponse === null) {
-                continue;
-            }
-            $content .= $partialResponse->contentDelta;
-            $reasoningContent .= $partialResponse->reasoningContentDelta;
+    private function applyPartialResponse(PartialLLMResponse $partialResponse) : void {
+        $this->content .= $partialResponse->contentDelta ?? '';
+        $this->reasoningContent .= $partialResponse->reasoningContentDelta ?? '';
+        $this->finishReason = $partialResponse->finishReason ?? $this->finishReason;
+        $this->usage()->accumulate($partialResponse->usage);
+        if (!empty($partialResponse->responseData)) {
             $this->responseData[] = $partialResponse->responseData;
-            $this->usage()->accumulate($partialResponse->usage);
-            $this->finishReason = $partialResponse->finishReason;
         }
-        $this->content = $content;
-        $this->reasoningContent = $reasoningContent;
-
-        $tools = $this->makeTools($partialResponses);
-        if (!empty($tools)) {
-            $this->toolCalls = ToolCalls::fromArray($tools);
-        }
-        return $this;
     }
 
-    private function makeTools(array $partialResponses): array {
+    /**
+     * Make a list of tool calls from the partial responses.
+     *
+     * @param PartialLLMResponse[] $partialResponses
+     * @return array
+     */
+    private static function makeTools(array $partialResponses): array {
         $tools = [];
         $currentTool = '';
         foreach ($partialResponses as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
-            if (('' !== ($partialResponse->toolName ?? ''))
-                && ($currentTool !== ($partialResponse->toolName ?? ''))) {
-                $currentTool = $partialResponse->toolName ?? '';
+            // if the tool name changes, start a new tool call
+            if ($partialResponse->hasToolName()
+                && ($currentTool !== ($partialResponse->toolName()))) {
+                $currentTool = $partialResponse->toolName();
                 $tools[$currentTool] = '';
             }
+            // append the tool arguments to it
             if ('' !== $currentTool) {
-                if (('' !== ($partialResponse->toolArgs ?? ''))) {
-                    $tools[$currentTool] .= $partialResponse->toolArgs ?? '';
+                if ($partialResponse->hasToolArgs()) {
+                    $tools[$currentTool] .= $partialResponse->toolArgs();
                 }
             }
         }
         return $tools;
     }
 }
+
+//    /**
+//     * @param PartialLLMResponse[] $partialResponses
+//     * @return LLMResponse
+//     */
+//    private function makeFromPartialResponses(array $partialResponses = []) : self {
+//        if (empty($partialResponses)) {
+//            return $this;
+//        }
+//
+//        $content = '';
+//        $reasoningContent = '';
+//        foreach($partialResponses as $partialResponse) {
+//            if ($partialResponse === null) {
+//                continue;
+//            }
+//            $content .= $partialResponse->contentDelta;
+//            $reasoningContent .= $partialResponse->reasoningContentDelta;
+//            $this->responseData[] = $partialResponse->responseData;
+//            $this->usage()->accumulate($partialResponse->usage);
+//            $this->finishReason = $partialResponse->finishReason;
+//        }
+//        $this->content = $content;
+//        $this->reasoningContent = $reasoningContent;
+//
+//        $tools = self::makeTools($partialResponses);
+//        if (!empty($tools)) {
+//            $this->toolCalls = ToolCalls::fromArray($tools);
+//        }
+//        return $this;
+//    }
