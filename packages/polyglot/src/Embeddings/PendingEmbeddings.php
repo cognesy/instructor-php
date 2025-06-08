@@ -2,10 +2,10 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsResponseReceived;
-use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Json\Json;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

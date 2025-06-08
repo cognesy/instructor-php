@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 
 final class ResponseModelBuildModeSelected extends Event
 {

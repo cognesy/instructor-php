@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers;
 
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
@@ -28,7 +29,6 @@ use Cognesy\Polyglot\LLM\Drivers\Perplexity\PerplexityDriver;
 use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
 use Cognesy\Polyglot\LLM\Events\InferenceDriverBuilt;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

@@ -6,6 +6,17 @@ TARGET_DIR="./tmp/test2"
 
 echo "Copying resource files to:"
 
+########################
+### CONFIG RESOURCES ###
+########################
+echo " ... ./packages/config"
+# config
+rm -rf "$TARGET_DIR/packages/config/config"
+mkdir -p "$TARGET_DIR/packages/config/config"
+cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/config/config"
+# .env-dist
+cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/config/.env-dist"
+
 ###########################
 ### TEMPLATES RESOURCES ###
 ###########################

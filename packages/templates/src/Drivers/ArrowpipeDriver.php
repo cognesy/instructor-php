@@ -2,10 +2,10 @@
 
 namespace Cognesy\Template\Drivers;
 
+use Cognesy\Config\BasePath;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Utils\StringTemplate;
-use Cognesy\Utils\Config\BasePath;
 
 class ArrowpipeDriver implements CanHandleTemplate
 {

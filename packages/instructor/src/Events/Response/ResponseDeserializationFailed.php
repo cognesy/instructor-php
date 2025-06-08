@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\Response;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 use Psr\Log\LogLevel;
 
 final class ResponseDeserializationFailed extends Event

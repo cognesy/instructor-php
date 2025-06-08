@@ -2,10 +2,9 @@
 
 namespace Cognesy\Http\Events;
 
-use Cognesy\Utils\Events\Event;
 use Psr\Log\LogLevel;
 
-class DebugEvent extends Event
+class DebugEvent extends \Cognesy\Events\Event
 {
     public $logLevel = LogLevel::DEBUG;
 }

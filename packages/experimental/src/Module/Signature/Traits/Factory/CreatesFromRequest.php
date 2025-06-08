@@ -2,6 +2,7 @@
 
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
@@ -10,7 +11,6 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Utils\Events\EventDispatcher;
 
 trait CreatesFromRequest
 {

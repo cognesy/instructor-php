@@ -80,7 +80,7 @@ The `llm.php` configuration file contains settings for LLM providers:
 <?php
 // Example of a simplified config/llm.php
 
-use Cognesy\Utils\Config\Env;
+use Cognesy\Config\Env;
 
 return [
     'defaultPreset' => 'openai',  // Default connection to use
@@ -120,7 +120,7 @@ The `embed.php` configuration file contains settings for embeddings providers:
 <?php
 // Example of a simplified config/embed.php
 
-use Cognesy\Utils\Config\Env;
+use Cognesy\Config\Env;
 
 return [
     'defaultPreset' => 'openai',
@@ -152,7 +152,7 @@ INSTRUCTOR_CONFIG_PATH=/path/to/your/config
 You can use `Settings` class static `setPath()` method to override the value of config path set in environment variable with your own value.
 
 ```php
-use Cognesy\Utils\Config\Settings;
+use Cognesy\Config\Settings;
 
 Settings::setPath('/your/path/to/config');
 ```

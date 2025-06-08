@@ -5,7 +5,7 @@ namespace Cognesy\Utils\Web\Scrapers;
 namespace Cognesy\Auxiliary\Web\Scrapers;
 
 use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
-use Cognesy\Utils\Config\Env;
+use Cognesy\Config\Env;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;

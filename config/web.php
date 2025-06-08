@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Utils\Config\Env;
+use Cognesy\Config\Env;
 
 return [
     'defaultScraper' => 'none', // 'none' uses file_get_contents($url)

@@ -350,7 +350,7 @@ namespace YourNamespace\Http\EventSubscribers;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Events\HttpRequestFailed;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Events\EventDispatcher;
 use Psr\Log\LoggerInterface;
 
 class ApiMonitoringSubscriber

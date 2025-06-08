@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 
 final class ChunkReceived extends Event
 {

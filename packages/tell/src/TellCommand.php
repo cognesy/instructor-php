@@ -2,10 +2,10 @@
 
 namespace Cognesy\Tell;
 
+use Cognesy\Config\Providers\ConfigResolver;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\PendingInference;
-use Cognesy\Utils\Config\Providers\ConfigResolver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

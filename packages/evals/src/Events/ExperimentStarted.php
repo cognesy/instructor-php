@@ -2,8 +2,6 @@
 
 namespace Cognesy\Evals\Events;
 
-use Cognesy\Utils\Events\Event;
-
-final class ExperimentStarted extends Event
+final class ExperimentStarted extends \Cognesy\Events\Event
 {
 }

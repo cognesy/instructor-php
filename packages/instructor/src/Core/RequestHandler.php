@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
@@ -15,7 +16,6 @@ use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Polyglot\LLM\PendingInference;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Generator;

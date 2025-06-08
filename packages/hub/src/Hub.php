@@ -2,6 +2,7 @@
 
 namespace Cognesy\InstructorHub;
 
+use Cognesy\Config\BasePath;
 use Cognesy\InstructorHub\Commands\ClearDocs;
 use Cognesy\InstructorHub\Commands\GenerateDocs;
 use Cognesy\InstructorHub\Commands\ListAllExamples;
@@ -13,7 +14,6 @@ use Cognesy\InstructorHub\Core\CommandProvider;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
-use Cognesy\Utils\Config\BasePath;
 
 class Hub extends CliApp
 {

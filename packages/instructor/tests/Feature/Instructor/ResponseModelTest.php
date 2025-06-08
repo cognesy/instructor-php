@@ -1,12 +1,12 @@
 <?php
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Utils\Events\EventDispatcher;
 
 dataset('user_response_model', [[[
     'x-php-class' => 'Cognesy\Instructor\Tests\Examples\ResponseModel\User',

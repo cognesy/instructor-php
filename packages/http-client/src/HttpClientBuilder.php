@@ -1,6 +1,12 @@
 <?php
 namespace Cognesy\Http;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Events\ConfigResolutionFailed;
+use Cognesy\Config\Events\ConfigResolved;
+use Cognesy\Config\Providers\ConfigResolver;
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
@@ -11,12 +17,6 @@ use Cognesy\Http\Middleware\Debug\ConsoleDebug;
 use Cognesy\Http\Middleware\Debug\Debug;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 use Cognesy\Http\Middleware\Debug\EventsDebug;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Config\Events\ConfigResolutionFailed;
-use Cognesy\Utils\Config\Events\ConfigResolved;
-use Cognesy\Utils\Config\Providers\ConfigResolver;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

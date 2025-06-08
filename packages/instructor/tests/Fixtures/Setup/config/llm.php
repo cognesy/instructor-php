@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Utils\Config\Env;
+use Cognesy\Config\Env;
 
 return [
     'defaultPreset' => 'openai',

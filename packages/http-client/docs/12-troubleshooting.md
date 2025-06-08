@@ -218,10 +218,7 @@ return [
 The HTTP client dispatches events at key points in the request lifecycle:
 
 ```php
-use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Events\HttpRequestFailed;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Events\EventDispatcher;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;
 
 // Create an event dispatcher with custom listeners
 $events = new EventDispatcher();
@@ -1150,10 +1147,7 @@ return [
 The HTTP client dispatches events at key points in the request lifecycle:
 
 ```php
-use Cognesy\Http\Events\HttpRequestSent;
-use Cognesy\Http\Events\HttpResponseReceived;
-use Cognesy\Http\Events\HttpRequestFailed;
-use Cognesy\Utils\Events\EventDispatcher;
+use Cognesy\Events\EventDispatcher;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;
 
 // Create an event dispatcher with custom listeners
 $events = new EventDispatcher();

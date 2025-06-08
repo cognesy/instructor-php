@@ -14,12 +14,12 @@ or overriding an existing driver bundled with Polyglot.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Config\Env;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Utils\Config\Env;
 use Cognesy\Utils\Str;
 
 // we will use existing, bundled driver as an example, but you can provide any class that implements

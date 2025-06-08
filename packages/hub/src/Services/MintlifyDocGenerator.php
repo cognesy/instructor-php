@@ -5,9 +5,9 @@ namespace Cognesy\InstructorHub\Services;
 use Cognesy\Auxiliary\Mintlify\MintlifyIndex;
 use Cognesy\Auxiliary\Mintlify\NavigationGroup;
 use Cognesy\Auxiliary\Mintlify\NavigationItem;
+use Cognesy\Config\BasePath;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Views\DocGenView;
-use Cognesy\Utils\Config\BasePath;
 use Cognesy\Utils\Files;
 
 class MintlifyDocGenerator

@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\Http;
 
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\Traits\HandlesEventDispatching;
+use Cognesy\Events\Traits\HandlesEventListening;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
-use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

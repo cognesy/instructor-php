@@ -21,6 +21,8 @@ echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 # Define packages and their sections based on composer.json
 declare -A PACKAGES
 PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/events"]="cognesy/instructor-events"
+PACKAGES["packages/config"]="cognesy/instructor-config"
 PACKAGES["packages/schema"]="cognesy/instructor-schema"
 PACKAGES["packages/templates"]="cognesy/instructor-templates"
 #PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
@@ -44,6 +46,8 @@ MAIN_REQUIRE_PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
 MAIN_REQUIRE_PACKAGES["packages/setup"]="cognesy/instructor-setup"
 MAIN_REQUIRE_PACKAGES["packages/templates"]="cognesy/instructor-templates"
 MAIN_REQUIRE_PACKAGES["packages/utils"]="cognesy/instructor-utils"
+MAIN_REQUIRE_PACKAGES["packages/events"]="cognesy/instructor-events"
+MAIN_REQUIRE_PACKAGES["packages/config"]="cognesy/instructor-config"
 
 declare -A MAIN_REQUIRE_DEV_PACKAGES
 MAIN_REQUIRE_DEV_PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"

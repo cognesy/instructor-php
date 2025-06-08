@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\InstructorHub\Services;
 
+use Cognesy\Config\BasePath;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Data\ExampleGroup;
-use Cognesy\Utils\Config\BasePath;
 
 class ExampleRepository {
     public string $baseDir = '';

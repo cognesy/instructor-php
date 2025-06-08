@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Traits;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 trait HandlesConfigBuilder
 {

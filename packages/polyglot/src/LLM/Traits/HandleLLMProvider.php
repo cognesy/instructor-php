@@ -2,11 +2,11 @@
 
 namespace Cognesy\Polyglot\LLM\Traits;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\LLMProvider;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 trait HandleLLMProvider
 {

@@ -15,12 +15,12 @@ to achieve using traditional, code-based validation.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Events\Event;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Traits\ValidationMixin;
 use Cognesy\Instructor\Validation\ValidationResult;
 use Cognesy\Schema\Attributes\Description;
-use Cognesy\Utils\Events\Event;
 use Cognesy\Utils\Str;
 
 class UserDetails

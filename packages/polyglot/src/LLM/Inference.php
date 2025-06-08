@@ -2,12 +2,12 @@
 
 namespace Cognesy\Polyglot\LLM;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\EventHandlerFactory;
+use Cognesy\Events\Traits\HandlesEventDispatching;
+use Cognesy\Events\Traits\HandlesEventListening;
 use Cognesy\Polyglot\LLM\Drivers\InferenceDriverFactory;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Events\EventDispatcher;
-use Cognesy\Utils\Events\EventHandlerFactory;
-use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
-use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

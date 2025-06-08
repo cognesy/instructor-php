@@ -10,7 +10,7 @@ It has been built primarily to ensure observability of the internal components o
 ```php
 namespace Cognesy\Utils\Events;
 
-class EventDispatcher {
+use Cognesy\Events\Event;class EventDispatcher {
     public function dispatch(Event $event): void { ... }
     public function listen(string $eventClass, callable $listener): self { ... }
     public function remove(string $eventClass, callable $listener): self { ... }

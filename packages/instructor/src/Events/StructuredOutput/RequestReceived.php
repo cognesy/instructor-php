@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\StructuredOutput;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 use Psr\Log\LogLevel;
 
 final class RequestReceived extends Event

@@ -2,11 +2,11 @@
 
 namespace Cognesy\Http;
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Events\EventDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

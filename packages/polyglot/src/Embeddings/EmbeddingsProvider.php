@@ -1,15 +1,15 @@
 <?php
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Dsn\DSN;
+use Cognesy\Config\Providers\ConfigResolver;
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Config\Dsn\DSN;
-use Cognesy\Utils\Config\Providers\ConfigResolver;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Utils\Events\EventHandlerFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

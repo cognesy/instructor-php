@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Events\StructuredOutput;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 

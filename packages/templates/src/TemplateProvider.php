@@ -2,14 +2,14 @@
 
 namespace Cognesy\Template;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Providers\ConfigResolver;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Drivers\ArrowpipeDriver;
 use Cognesy\Template\Drivers\BladeDriver;
 use Cognesy\Template\Drivers\TwigDriver;
 use Cognesy\Template\Enums\TemplateEngineType;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Config\Providers\ConfigResolver;
 use InvalidArgumentException;
 
 class TemplateProvider

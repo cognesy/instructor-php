@@ -2,11 +2,11 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;

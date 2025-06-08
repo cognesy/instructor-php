@@ -24,10 +24,10 @@ and their properties.
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Events\Event;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Utils\Events\Event;
 
 class User
 {

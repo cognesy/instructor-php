@@ -2,6 +2,6 @@
 
 namespace Cognesy\Polyglot\LLM\Events;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 
 class InferenceEvent extends Event {}

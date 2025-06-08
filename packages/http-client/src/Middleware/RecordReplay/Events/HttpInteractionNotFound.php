@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay\Events;
 
+use Cognesy\Events\Event;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Events\Event;
 
 /**
  * Event fired when a recording is not found for a request

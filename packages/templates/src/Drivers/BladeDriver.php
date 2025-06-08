@@ -2,9 +2,9 @@
 
 namespace Cognesy\Template\Drivers;
 
+use Cognesy\Config\BasePath;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
-use Cognesy\Utils\Config\BasePath;
 use eftec\bladeone\BladeOne;
 use Exception;
 

@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Data\ResponseModel;
@@ -16,7 +17,6 @@ use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Schema\Visitors\SchemaToJsonSchema;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Cognesy\Utils\Str;
 use InvalidArgumentException;

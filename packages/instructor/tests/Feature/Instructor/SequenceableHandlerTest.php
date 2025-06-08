@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\ResponseModelFactory;
@@ -12,7 +13,6 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Utils\Events\EventDispatcher;
 
 class SimpleItem
 {

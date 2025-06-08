@@ -2,18 +2,18 @@
 
 namespace Cognesy\Polyglot\LLM;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Dsn\DSN;
+use Cognesy\Config\Events\ConfigResolutionFailed;
+use Cognesy\Config\Events\ConfigResolved;
+use Cognesy\Config\Providers\ConfigResolver;
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Drivers\InferenceDriverFactory;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Config\Dsn\DSN;
-use Cognesy\Utils\Config\Events\ConfigResolutionFailed;
-use Cognesy\Utils\Config\Events\ConfigResolved;
-use Cognesy\Utils\Config\Providers\ConfigResolver;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Utils\Events\EventHandlerFactory;
 use Cognesy\Utils\Result\Result;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

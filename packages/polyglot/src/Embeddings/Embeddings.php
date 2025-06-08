@@ -2,10 +2,10 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Events\EventHandlerFactory;
-use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
-use Cognesy\Utils\Events\Traits\HandlesEventListening;
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\EventHandlerFactory;
+use Cognesy\Events\Traits\HandlesEventDispatching;
+use Cognesy\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

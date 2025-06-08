@@ -27,6 +27,8 @@ echo "Using release notes from: $NOTES_FILE"
 # Define packages - must match those in sync-ver.sh
 declare -A PACKAGES
 PACKAGES["packages/utils"]="cognesy/instructor-utils"
+PACKAGES["packages/events"]="cognesy/instructor-events"
+PACKAGES["packages/config"]="cognesy/instructor-config"
 PACKAGES["packages/schema"]="cognesy/instructor-schema"
 PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
 PACKAGES["packages/templates"]="cognesy/instructor-templates"

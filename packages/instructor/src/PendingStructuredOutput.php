@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
@@ -15,7 +16,6 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\LLMProvider;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Json\Json;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;

@@ -2,10 +2,10 @@
 
 namespace Cognesy\Instructor\Core;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Providers\ConfigResolver;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Config\Providers\ConfigResolver;
 
 class StructuredOutputConfigBuilder
 {

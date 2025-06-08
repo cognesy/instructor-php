@@ -15,13 +15,13 @@ Laravel).
 <?php
 require 'examples/boot.php';
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Config\Env;
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Config\Env;
-use Cognesy\Utils\Events\EventDispatcher;
 
 class User {
     public int $age;

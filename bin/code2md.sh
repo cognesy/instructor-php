@@ -77,15 +77,15 @@ rm -rf "./tmp/http-tmp/Drivers/Symfony"*
 code2prompt "./tmp/http-tmp" -o "./tmp/cut-http-mini.md"
 rm -rf ./tmp/http-tmp
 
-# MAKE MINIMAL VER OF HTTP-CLIENT
-mkdir -p ./tmp/config-tmp
-cp -rf "./packages/utils/src/Config"* "./tmp/config-tmp/"
-cp -rf "./packages/http-client/src/Config/"* "./tmp/config-tmp/"
-cp -rf "./packages/instructor/src/Config/"* "./tmp/config-tmp/"
-cp -rf "./packages/polyglot/src/Embeddings/Config/"* "./tmp/config-tmp/"
-cp -rf "./packages/polyglot/src/LLM/Config/"* "./tmp/config-tmp/"
-cp -rf "./packages/templates/src/Config/"* "./tmp/config-tmp/"
-code2prompt "./tmp/config-tmp" -o "./tmp/x-config.md"
-rm -rf ./tmp/config-tmp
+## MAKE MINIMAL VER OF CONFIG RELATED CODE
+#mkdir -p ./tmp/config-tmp
+#cp -rf "./packages/utils/src/Config"* "./tmp/config-tmp/"
+#cp -rf "./packages/http-client/src/Config/"* "./tmp/config-tmp/"
+#cp -rf "./packages/instructor/src/Config/"* "./tmp/config-tmp/"
+#cp -rf "./packages/polyglot/src/Embeddings/Config/"* "./tmp/config-tmp/"
+#cp -rf "./packages/polyglot/src/LLM/Config/"* "./tmp/config-tmp/"
+#cp -rf "./packages/templates/src/Config/"* "./tmp/config-tmp/"
+#code2prompt "./tmp/config-tmp" -o "./tmp/x-config.md"
+#rm -rf ./tmp/config-tmp
 
 echo "✅ Export completed successfully!"

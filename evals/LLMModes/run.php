@@ -1,6 +1,7 @@
 <?php
 require 'evals/boot.php';
 
+use Cognesy\Config\Settings;
 use Cognesy\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\InferenceData;
@@ -9,7 +10,6 @@ use Cognesy\Evals\Executors\RunInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Utils\Config\Settings;
 use Evals\LLMModes\CompanyEval;
 
 $data = new InferenceData(

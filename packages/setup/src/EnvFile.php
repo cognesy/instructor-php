@@ -2,7 +2,7 @@
 
 namespace Cognesy\Setup;
 
-use Cognesy\Utils\Config\Settings;
+use Cognesy\Config\Settings;
 use ReflectionClass;
 use RuntimeException;
 

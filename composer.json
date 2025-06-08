@@ -25,10 +25,12 @@
   "autoload": {
     "psr-4": {
       "Cognesy\\Addons\\": "packages/addons/src/",
-      "Cognesy\\Schema\\": "packages/schema/src/",
+      "Cognesy\\Config\\": "packages/config/src/",
+      "Cognesy\\Events\\": "packages/events/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
       "Cognesy\\Instructor\\": "packages/instructor/src/",
       "Cognesy\\Polyglot\\": "packages/polyglot/src/",
+      "Cognesy\\Schema\\": "packages/schema/src/",
       "Cognesy\\Setup\\": "packages/setup/src/",
       "Cognesy\\Template\\": "packages/templates/src/",
       "Cognesy\\Utils\\": "packages/utils/src/"
@@ -43,9 +45,11 @@
       "Cognesy\\InstructorHub\\": "packages/hub/src/",
       "Cognesy\\Tell\\": "packages/tell/src/",
       "Cognesy\\Addons\\Tests\\": "packages/addons/tests/",
+      "Cognesy\\Config\\Tests\\": "packages/config/tests/",
       "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",
       "Cognesy\\Experimental\\Tests\\": "packages/experimental/tests/",
       "Cognesy\\Evals\\Tests\\": "packages/evals/tests/",
+      "Cognesy\\Events\\Tests\\": "packages/events/tests/",
       "Cognesy\\Http\\Tests\\": "packages/http-client/tests/",
       "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
       "Cognesy\\Instructor\\Tests\\": "packages/instructor/tests/",

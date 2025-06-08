@@ -26,6 +26,7 @@
   "version": "0.17.11",
   "require": {
     "php": "^8.2",
+    "cognesy/instructor-config": "^0.17",
     "cognesy/instructor-polyglot": "^0.17"
   },
   "require-dev": {

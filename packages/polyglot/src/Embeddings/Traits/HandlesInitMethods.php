@@ -2,11 +2,11 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 
 trait HandlesInitMethods
 {

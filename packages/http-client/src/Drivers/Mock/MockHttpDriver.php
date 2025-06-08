@@ -2,10 +2,10 @@
 
 namespace Cognesy\Http\Drivers\Mock;
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Cognesy\Utils\Events\EventDispatcher;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

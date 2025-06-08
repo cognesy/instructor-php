@@ -6,6 +6,10 @@ TARGET_DIR="."
 
 echo "Removing resource files from:"
 
+echo " ... ./packages/config"
+rm -rf "$TARGET_DIR/packages/config/config/"*
+rm -f "$TARGET_DIR/packages/config/.env-dist"
+
 echo " ... ./packages/templates"
 rm -rf "$TARGET_DIR/packages/templates/config/"*
 rm -rf "$TARGET_DIR/packages/templates/prompts/"*

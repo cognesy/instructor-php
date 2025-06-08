@@ -20,7 +20,7 @@ You can set Instructor configuration path using the `Settings::setPath()` method
 
 ```php
 <?php
-use Cognesy\Utils\Config\Settings;
+use Cognesy\Config\Settings;
 
 Settings::setPath('/path/to/config');
 ?>

@@ -3,7 +3,7 @@
 namespace Cognesy\Auxiliary\Web\Scrapers;
 
 use Cognesy\Auxiliary\Web\Contracts\CanGetUrlContent;
-use Cognesy\Utils\Config\Env;
+use Cognesy\Config\Env;
 
 class JinaReaderDriver implements CanGetUrlContent {
     private string $baseUrl;

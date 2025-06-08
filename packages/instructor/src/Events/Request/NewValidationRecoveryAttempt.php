@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Events\Request;
 
-use Cognesy\Utils\Events\Event;
+use Cognesy\Events\Event;
 use Cognesy\Utils\Json\Json;
 
 final class NewValidationRecoveryAttempt extends Event

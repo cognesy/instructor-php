@@ -2,6 +2,11 @@
 
 namespace Cognesy\Instructor;
 
+use Cognesy\Config\Contracts\CanProvideConfig;
+use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\EventHandlerFactory;
+use Cognesy\Events\Traits\HandlesEventDispatching;
+use Cognesy\Events\Traits\HandlesEventListening;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
@@ -10,11 +15,6 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\LLM\LLMProvider;
-use Cognesy\Utils\Config\Contracts\CanProvideConfig;
-use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Utils\Events\EventHandlerFactory;
-use Cognesy\Utils\Events\Traits\HandlesEventDispatching;
-use Cognesy\Utils\Events\Traits\HandlesEventListening;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
+use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpClientRequest;
@@ -9,7 +10,6 @@ use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Result\Result;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Pool;
