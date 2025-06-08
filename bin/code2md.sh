@@ -80,16 +80,11 @@ rm -rf ./tmp/http-tmp
 # MAKE MINIMAL VER OF HTTP-CLIENT
 mkdir -p ./tmp/config-tmp
 cp -rf "./packages/utils/src/Config"* "./tmp/config-tmp/"
-cp -rf "./packages/http-client/src/ConfigProviders/"* "./tmp/config-tmp/"
-cp -rf "./packages/http-client/src/Contracts/CanProvide"* "./tmp/config-tmp/"
-cp -rf "./packages/instructor/src/ConfigProviders/"* "./tmp/config-tmp/"
-cp -rf "./packages/instructor/src/Contracts/CanProvide"* "./tmp/config-tmp/"
-cp -rf "./packages/polyglot/src/Embeddings/ConfigProviders/"* "./tmp/config-tmp/"
-cp -rf "./packages/polyglot/src/Embeddings/Contracts/CanProvide"* "./tmp/config-tmp/"
-cp -rf "./packages/polyglot/src/LLM/ConfigProviders/"* "./tmp/config-tmp/"
-cp -rf "./packages/polyglot/src/LLM/Contracts/CanProvide"* "./tmp/config-tmp/"
-cp -rf "./packages/templates/src/ConfigProviders/"* "./tmp/config-tmp/"
-cp -rf "./packages/templates/src/Contracts/CanProvide"* "./tmp/config-tmp/"
+cp -rf "./packages/http-client/src/Config/"* "./tmp/config-tmp/"
+cp -rf "./packages/instructor/src/Config/"* "./tmp/config-tmp/"
+cp -rf "./packages/polyglot/src/Embeddings/Config/"* "./tmp/config-tmp/"
+cp -rf "./packages/polyglot/src/LLM/Config/"* "./tmp/config-tmp/"
+cp -rf "./packages/templates/src/Config/"* "./tmp/config-tmp/"
 code2prompt "./tmp/config-tmp" -o "./tmp/x-config.md"
 rm -rf ./tmp/config-tmp
 

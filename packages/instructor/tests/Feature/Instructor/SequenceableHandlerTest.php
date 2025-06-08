@@ -12,7 +12,6 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Utils\ReferenceQueue;
 use Cognesy\Utils\Events\EventDispatcher;
 
 class SimpleItem
@@ -34,10 +33,7 @@ function makeResponseModel($sequence): ResponseModel {
     $schemaFactory = new SchemaFactory($config->useObjectReferences());
     $events = new EventDispatcher();
     return (new ResponseModelFactory(
-        toolCallBuilder: new ToolCallBuilder(
-            $schemaFactory,
-            new ReferenceQueue(),
-        ),
+        toolCallBuilder: new ToolCallBuilder($schemaFactory),
         schemaFactory: $schemaFactory,
         config: $config,
         events: $events,

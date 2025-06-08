@@ -16,7 +16,10 @@ class FirecrawlDriver implements CanGetUrlContent
     private string $apiKey;
     private ClientInterface $client;
 
-    public function __construct(string $baseUrl = '', string $apiKey = '') {
+    public function __construct(
+        string $baseUrl = '',
+        string $apiKey = '',
+    ) {
         $this->baseUrl = $baseUrl ?: Env::get('FIRECRAWL_BASE_URI', '');
         $this->apiKey = $apiKey ?: Env::get('FIRECRAWL_API_KEY', '');
         $this->client = new Client();

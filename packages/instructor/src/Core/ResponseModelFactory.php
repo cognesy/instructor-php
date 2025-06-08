@@ -192,11 +192,12 @@ class ResponseModelFactory
             is_object($requestedSchema) => get_class($requestedSchema),
             default => 'default_schema',
         };
+        $name = $name ?: $this->config->schemaName() ?: 'default_schema';
         if (Str::startsWith($name, '\\')) {
             $name = substr($name, 1);
         }
         $name = str_replace('\\', '_', $name);
-        return $name ?: $this->config->schemaName() ?: 'default_schema';
+        return $name;
     }
 
     private function schemaDescription(string|array|object $requestedSchema) : string {
