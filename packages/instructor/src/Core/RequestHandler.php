@@ -13,8 +13,8 @@ use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\InferenceResponse;
 use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Polyglot\LLM\PendingInference;
 use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
@@ -105,7 +105,7 @@ class RequestHandler
 
     // INTERNAL ///////////////////////////////////////////////////////////
 
-    protected function getInference(StructuredOutputRequest $request) : InferenceResponse {
+    protected function getInference(StructuredOutputRequest $request) : PendingInference {
         return (new Inference(events: $this->events))
             ->withLLMProvider($this->llm)
             ->with(

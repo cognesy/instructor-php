@@ -5,12 +5,15 @@ description: A detailed look at Polyglot's internal architecture
 
 This section provides a detailed look at Polyglot's internal architecture.
 
-Understanding the core components, interfaces, and design patterns will help you extend the library, contribute to its development, or build your own integrations with new LLM providers.
+Understanding the core components, interfaces, and design patterns will help
+you extend the library, contribute to its development, or build your own
+integrations with new LLM providers.
 
 
 ## Core Architecture
 
-Polyglot is built on a modular, layered architecture that separates concerns and promotes extensibility. The high-level architecture consists of:
+Polyglot is built on a modular, layered architecture that separates concerns
+and promotes extensibility. The high-level architecture consists of:
 
 1. **Public API Layer**: Classes like `Inference` and `Embeddings` that provide a unified interface for applications
 2. **Provider Abstraction Layer**: Adapters, drivers, and formatters that translate between the unified API and provider-specific formats
@@ -24,22 +27,22 @@ Polyglot is built on a modular, layered architecture that separates concerns and
 +---------------------+    +---------------------+
             |                        |
 +---------------------+    +---------------------+
-|  InferenceResponse  |    | EmbeddingsResponse  |
+|  InferenceRequest   |    | EmbeddingsRequest   |
 +---------------------+    +---------------------+
             |                        |
 +---------------------+    +---------------------+
-|  InferenceRequest   |    |    CanVectorize     |
+|   PendingInference  |    |  PendingEmbeddings  |
 +---------------------+    +---------------------+
             |                        |
 +---------------------+    +---------------------+
-| ModularLLMDriver    |    |  EmbeddingsDriver   |
+|  InferenceDrivers   |    |  EmbeddingsDrivers  |
 +---------------------+    +---------------------+
             |                        |
-+-------------------------------------------------------+
-|                  HTTP Client Layer                    |
-+-------------------------------------------------------+
-            |
-+-------------------------------------------------------+
-|              Provider-specific API Calls              |
-+-------------------------------------------------------+
++------------------------------------------------+
+|               HTTP Client Layer                |
++------------------------------------------------+
+                         |
++------------------------------------------------+
+|           Provider-specific API Calls          |
++------------------------------------------------+
 ```

@@ -38,7 +38,6 @@
             {{ attempt.llmResponse.content }}
         </message>
         <message role="user">
-            Settings::get('llm', 'defaultRetryPrompt')
             {{ attempt.errors }}
         </message>
     {% endfor %}

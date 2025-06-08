@@ -3,10 +3,10 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Events\InferenceFailed;
+use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
 use Cognesy\Utils\Json\Json;
 use Exception;
@@ -16,27 +16,26 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * Represents an inference response handling object that processes responses
  * based on the configuration and streaming state. Provides methods to
- * retrieve the response in different formats.
+ * retrieve the response in different formats. PendingInference does not
+ * execute any request to the underlying LLM API until the data is accessed
+ * via its methods (`get()`, `response()`).
  */
-class InferenceResponse
+class PendingInference
 {
+    protected InferenceRequest $request;
     protected EventDispatcherInterface $events;
     protected HttpClientResponse $httpResponse;
     protected CanHandleInference $driver;
     protected string $responseContent = '';
-    protected LLMConfig $config;
-    protected bool $isStreamed = false;
 
     public function __construct(
-        HttpClientResponse $httpResponse,
+        InferenceRequest $request,
         CanHandleInference $driver,
-        bool $isStreamed,
         EventDispatcherInterface $events,
     ) {
+        $this->request = $request;
         $this->events = $events;
         $this->driver = $driver;
-        $this->isStreamed = $isStreamed;
-        $this->httpResponse = $httpResponse;
     }
 
     /**
@@ -45,7 +44,7 @@ class InferenceResponse
      * @return bool True if the content is being streamed, false otherwise.
      */
     public function isStreamed() : bool {
-        return $this->isStreamed;
+        return $this->request->isStreamed();
     }
 
     /**
@@ -54,7 +53,7 @@ class InferenceResponse
      * @return string The textual representation of the response. If streaming, retrieves the final content; otherwise, retrieves the standard content.
      */
     public function get() : string {
-        return match($this->isStreamed) {
+        return match($this->isStreamed()) {
             false => $this->tryMakeLLMResponse()->content(),
             true => $this->stream()->final()?->content() ?? '',
         };
@@ -67,14 +66,14 @@ class InferenceResponse
      * @throws InvalidArgumentException If the response is not configured for streaming.
      */
     public function stream() : InferenceStream {
-        if (!$this->isStreamed) {
+        if (!$this->isStreamed()) {
             throw new InvalidArgumentException('Trying to read response stream for request with no streaming');
         }
 
         return new InferenceStream(
-            httpResponse: $this->httpResponse,
+            httpResponse: $this->httpResponse(),
             driver: $this->driver,
-            events: $this->events
+            events: $this->events,
         );
     }
 
@@ -104,7 +103,7 @@ class InferenceResponse
      * @return LLMResponse The constructed LLMResponse object, either fully or from partial responses if streaming is enabled.
      */
     public function response() : LLMResponse {
-        $response = match($this->isStreamed) {
+        $response = match($this->isStreamed()) {
             false => $this->tryMakeLLMResponse(),
             true => LLMResponse::fromPartialResponses($this->stream()->all()),
         };
@@ -119,12 +118,20 @@ class InferenceResponse
         } catch (Exception $e) {
             $this->events->dispatch(new InferenceFailed([
                 'exception' => $e->getMessage(),
-                'statusCode' => $this->httpResponse->statusCode(),
-                'headers' => $this->httpResponse->headers(),
-                'body' => $this->httpResponse->body(),
+                'statusCode' => $this->httpResponse()->statusCode(),
+                'headers' => $this->httpResponse()->headers(),
+                'body' => $this->httpResponse()->body(),
             ]));
             throw $e;
         }
+    }
+
+    private function httpResponse() : HttpClientResponse {
+        if (!isset($this->httpResponse)) {
+            $this->events->dispatch(new InferenceRequested(['request' => $this->request->toArray()]));
+            $this->httpResponse = $this->driver->handle($this->request);
+        }
+        return $this->httpResponse;
     }
 
     /**
@@ -159,6 +166,6 @@ class InferenceResponse
      * @return string The contents of the response.
      */
     private function readFromResponse() : string {
-        return $this->httpResponse->body();
+        return $this->httpResponse()->body();
     }
 }

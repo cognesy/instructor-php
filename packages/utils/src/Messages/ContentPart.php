@@ -127,7 +127,7 @@ class ContentPart
         return $this->fields['text'] ?? "";
     }
 
-    public function clone(): static {
+    public function clone() : self {
         $clone = new self($this->type);
         $clone->fields = $this->fields;
         return $clone;

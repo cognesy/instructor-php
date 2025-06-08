@@ -10,11 +10,17 @@ use Cognesy\Polyglot\LLM\Data\Usage;
  */
 class EmbeddingsResponse
 {
+    /** @var Vector[] */
+    private array $vectors;
+    private ?Usage $usage;
+
     public function __construct(
-        /** @var Vector[] */
-        public array $vectors,
-        public ?Usage $usage,
-    ) {}
+        array $vectors = [],
+        ?Usage $usage = null
+    ) {
+        $this->vectors = $vectors ?? [];
+        $this->usage = $usage ?? new Usage();
+    }
 
     /**
      * Get the first vector
@@ -39,10 +45,22 @@ class EmbeddingsResponse
     }
 
     /**
+     * Split the response vectors into two parts at the given index
+     * @param int $index
+     * @return array<Vector[], Vector[]>
+     */
+    public function split(int $index) : array {
+        return [
+            array_slice($this->vectors, 0, $index),
+            array_slice($this->vectors, $index),
+        ];
+    }
+
+    /**
      * Get result vectors
      * @return Vector[]
      */
-    public function get() : array {
+    public function vectors() : array {
         return $this->vectors;
     }
 
@@ -51,7 +69,7 @@ class EmbeddingsResponse
      * @return Vector[]
      */
     public function all() : array {
-        return $this->get();
+        return $this->vectors();
     }
 
     /**
@@ -60,24 +78,6 @@ class EmbeddingsResponse
      */
     public function usage() : Usage {
         return $this->usage;
-    }
-
-    /**
-     * Split the vectors into two EmbeddingsResponse objects
-     * @param int $index
-     * @return EmbeddingsResponse[]
-     */
-    public function split(int $index) : array {
-        return [
-            new EmbeddingsResponse(
-                vectors: array_slice($this->vectors, 0, $index),
-                usage: Usage::copy($this->usage()), // TODO: token split is arbitrary
-            ),
-            new EmbeddingsResponse(
-                vectors: array_slice($this->vectors, $index),
-                usage: new Usage(), // TODO: token split is arbitrary
-            ),
-        ];
     }
 
     /**
@@ -91,11 +91,10 @@ class EmbeddingsResponse
         );
     }
 
-    /**
-     * Get the total number of tokens
-     * @return int
-     */
-    public function totalTokens() : int {
-        return $this->usage()->total();
+    public function toArray() : array {
+        return [
+            'vectors' => array_map(fn(Vector $vector) => $vector->toArray(), $this->vectors),
+            'usage' => $this->usage?->toArray() ?? [],
+        ];
     }
 }

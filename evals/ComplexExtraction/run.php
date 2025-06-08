@@ -4,7 +4,7 @@ require 'evals/boot.php';
 use Cognesy\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\StructuredOutputData;
-use Cognesy\Evals\Executors\RunInstructor;
+use Cognesy\Evals\Executors\RunStructuredOutputInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
@@ -25,7 +25,7 @@ $experiment = new Experiment(
         modes: [OutputMode::Tools],
         stream: [false]
     ),
-    executor: new RunInstructor($data),
+    executor: new RunStructuredOutputInference($data),
     processors: [
         new ProjectsEval(
             key: 'execution.fractionFound',

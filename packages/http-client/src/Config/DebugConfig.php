@@ -4,6 +4,8 @@ namespace Cognesy\Http\Config;
 
 final class DebugConfig
 {
+    public const CONFIG_GROUP = 'debug';
+
     public function __construct(
         public readonly bool $httpEnabled = false,
         public readonly bool $httpTrace = false,
@@ -16,31 +18,35 @@ final class DebugConfig
         public readonly bool $httpResponseStreamByLine = true,
     ) {}
 
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
+
     public static function fromArray(array $config): self {
         return new self(
-            httpEnabled: $config['http_enabled'] ?? false,
-            httpTrace: $config['http_trace'] ?? false,
-            httpRequestUrl: $config['http_requestUrl'] ?? true,
-            httpRequestHeaders: $config['http_requestHeaders'] ?? true,
-            httpRequestBody: $config['http_requestBody'] ?? true,
-            httpResponseHeaders: $config['http_responseHeaders'] ?? true,
-            httpResponseBody: $config['http_responseBody'] ?? true,
-            httpResponseStream: $config['http_responseStream'] ?? true,
-            httpResponseStreamByLine: $config['http_responseStreamByLine'] ?? true
+            httpEnabled: $config['httpEnabled'] ?? false,
+            httpTrace: $config['httpTrace'] ?? false,
+            httpRequestUrl: $config['httpRequestUrl'] ?? true,
+            httpRequestHeaders: $config['httpRequestHeaders'] ?? true,
+            httpRequestBody: $config['httpRequestBody'] ?? true,
+            httpResponseHeaders: $config['httpResponseHeaders'] ?? true,
+            httpResponseBody: $config['httpResponseBody'] ?? true,
+            httpResponseStream: $config['httpResponseStream'] ?? true,
+            httpResponseStreamByLine: $config['httpResponseStreamByLine'] ?? true
         );
     }
 
     public function toArray() : array {
         return [
-            'http_enabled' => $this->httpEnabled,
-            'http_trace' => $this->httpTrace,
-            'http_requestUrl' => $this->httpRequestUrl,
-            'http_requestHeaders' => $this->httpRequestHeaders,
-            'http_requestBody' => $this->httpRequestBody,
-            'http_responseHeaders' => $this->httpResponseHeaders,
-            'http_responseBody' => $this->httpResponseBody,
-            'http_responseStream' => $this->httpResponseStream,
-            'http_responseStreamByLine' => $this->httpResponseStreamByLine,
+            'httpEnabled' => $this->httpEnabled,
+            'httpTrace' => $this->httpTrace,
+            'httpRequestUrl' => $this->httpRequestUrl,
+            'httpRequestHeaders' => $this->httpRequestHeaders,
+            'httpRequestBody' => $this->httpRequestBody,
+            'httpResponseHeaders' => $this->httpResponseHeaders,
+            'httpResponseBody' => $this->httpResponseBody,
+            'httpResponseStream' => $this->httpResponseStream,
+            'httpResponseStreamByLine' => $this->httpResponseStreamByLine,
         ];
     }
 }

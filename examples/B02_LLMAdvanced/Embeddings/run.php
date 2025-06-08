@@ -52,12 +52,12 @@ $topK = 3;
 $response = (new Embeddings)
     ->using('openai')
     ->withInputs($inputs)
-    ->create();
+    ->get();
 
 // get query and doc vectors from the response
 [$queryVectors, $docVectors] = $response->split(1);
-$docVectors = $docVectors->toValuesArray();
-$queryVector = $queryVectors->first()?->values()
+
+$queryVector = $queryVectors[0]
     ?? throw new \InvalidArgumentException('Query vector not found');
 
 // calculate cosine similarities

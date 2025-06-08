@@ -80,7 +80,7 @@ class Usage
         ];
     }
 
-    public function clone() : static {
+    public function clone() : self {
         return new static(
             inputTokens: $this->inputTokens,
             outputTokens: $this->outputTokens,

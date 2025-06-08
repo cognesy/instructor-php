@@ -2,7 +2,4 @@
 
 namespace Cognesy\Polyglot\Embeddings\Events;
 
-class EmbeddingsRequested
-{
-
-}
+class EmbeddingsRequested extends EmbeddingsEvent {}

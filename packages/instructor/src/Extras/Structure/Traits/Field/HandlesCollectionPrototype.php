@@ -2,7 +2,6 @@
 
 namespace Cognesy\Instructor\Extras\Structure\Traits\Field;
 
-use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 
 trait HandlesCollectionPrototype
@@ -17,7 +16,7 @@ trait HandlesCollectionPrototype
         return $this->prototype;
     }
 
-    public function clone() : Field {
+    public function clone() : self {
         $clone = clone $this;
         $clone->defaultValue = $this->defaultValue;
         $clone->value = null;

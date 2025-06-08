@@ -7,6 +7,8 @@ use Cognesy\Template\Enums\TemplateEngineType;
 
 class TemplateEngineConfig
 {
+    public const CONFIG_GROUP = 'prompt';
+
     public function __construct(
         public TemplateEngineType $templateEngine = TemplateEngineType::Twig,
         public string             $resourcePath = '',
@@ -45,6 +47,10 @@ class TemplateEngineConfig
             cachePath: $cachePath,
             extension: '.tpl',
         );
+    }
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
     }
 
     public function toArray() : array {

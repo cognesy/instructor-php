@@ -10,7 +10,7 @@ trait HandlesTransformation
         return $this;
     }
 
-    public function clone() : Structure {
+    public function clone() : self {
         $new = new Structure();
         $new->name = $this->name;
         $new->description = $this->description;

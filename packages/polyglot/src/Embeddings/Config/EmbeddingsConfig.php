@@ -4,6 +4,8 @@ namespace Cognesy\Polyglot\Embeddings\Config;
 
 final class EmbeddingsConfig
 {
+    public const CONFIG_GROUP = 'embed';
+
     public function __construct(
         public string $apiUrl = '',
         public string $apiKey = '',
@@ -15,6 +17,10 @@ final class EmbeddingsConfig
         public string $httpClientPreset = '',
         public string $driver = 'openai',
     ) {}
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     public static function fromArray(array $value) : EmbeddingsConfig {
         return new static(

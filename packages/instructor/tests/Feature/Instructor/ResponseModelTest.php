@@ -6,7 +6,6 @@ use Cognesy\Instructor\Tests\Examples\ResponseModel\User;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\UserWithProvider;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Utils\ReferenceQueue;
 use Cognesy\Utils\Events\EventDispatcher;
 
 dataset('user_response_model', [[[
@@ -29,10 +28,7 @@ dataset('user_response_model', [[[
 it('can handle string class name', function() {
     $events = new EventDispatcher('test');
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(
-            new SchemaFactory(),
-            new ReferenceQueue(),
-        ),
+        new ToolCallBuilder(new SchemaFactory()),
         new SchemaFactory(),
         new StructuredOutputConfig(),
         $events,
@@ -57,10 +53,7 @@ it('can handle string class name', function() {
 it('can handle array schema', function($user) {
     $events = new EventDispatcher('test');
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(
-            new SchemaFactory(),
-            new ReferenceQueue(),
-        ),
+        new ToolCallBuilder(new SchemaFactory()),
         new SchemaFactory(),
         new StructuredOutputConfig(),
         $events,
@@ -85,10 +78,7 @@ it('can handle array schema', function($user) {
 it('can handle schema provider - via instance', function() {
     $events = new EventDispatcher('test');
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(
-            new SchemaFactory(),
-            new ReferenceQueue(),
-        ),
+        new ToolCallBuilder(new SchemaFactory()),
         new SchemaFactory(),
         new StructuredOutputConfig(),
         $events,
@@ -114,10 +104,7 @@ it('can handle schema provider - via instance', function() {
 it('can handle schema provider - via class name', function() {
     $events = new EventDispatcher('test');
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(
-            new SchemaFactory(),
-            new ReferenceQueue(),
-        ),
+        new ToolCallBuilder(new SchemaFactory()),
         new SchemaFactory(),
         new StructuredOutputConfig(),
         $events,
@@ -143,10 +130,7 @@ it('can handle schema provider - via class name', function() {
 it('can handle ObjectSchema instance', function() {
     $events = new EventDispatcher('test');
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(
-            new SchemaFactory(),
-            new ReferenceQueue(),
-        ),
+        new ToolCallBuilder(new SchemaFactory()),
         new SchemaFactory(),
         new StructuredOutputConfig(),
         $events,
@@ -173,10 +157,7 @@ it('can handle ObjectSchema instance', function() {
 it('can handle raw object', function() {
     $events = new EventDispatcher('test');
     $responseModelFactory = new ResponseModelFactory(
-        new ToolCallBuilder(
-            new SchemaFactory(),
-            new ReferenceQueue(),
-        ),
+        new ToolCallBuilder(new SchemaFactory()),
         new SchemaFactory(),
         new StructuredOutputConfig(),
         $events,

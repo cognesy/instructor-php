@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Data;
 
+use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Utils\Messages\Messages;
 
 class CachedContext
@@ -9,6 +10,7 @@ class CachedContext
     private Messages $messages;
     private string $system;
     private string $prompt;
+    /** @var Example[] */
     private array $examples;
 
     public function __construct(
@@ -68,6 +70,15 @@ class CachedContext
             system: $data['system'] ?? '',
             prompt: $data['prompt'] ?? '',
             examples: $data['examples'] ?? [],
+        );
+    }
+
+    public function clone() : self {
+        return new self(
+            messages: $this->messages->toArray(),
+            system: $this->system,
+            prompt: $this->prompt,
+            examples: array_map(fn(Example $example) => $example->toArray(), $this->examples),
         );
     }
 }

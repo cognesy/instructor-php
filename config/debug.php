@@ -5,51 +5,51 @@ return [
 
     'presets' => [
         'on' => [
-            'http_enabled' => true, // enable/disable debug
-            'http_trace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
-            'http_requestUrl' => true, // dump request URL to console
-            'http_requestHeaders' => false, // dump request headers to console
-            'http_requestBody' => true, // dump request body to console
-            'http_responseHeaders' => false, // dump response headers to console
-            'http_responseBody' => true, // dump response body to console
-            'http_responseStream' => true, // dump stream data to console
-            'http_responseStreamByLine' => true, // dump stream data as full lines (true) or as raw received chunks (false)
+            'httpEnabled' => true, // enable/disable debug
+            'httpTrace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
+            'httpRequestUrl' => true, // dump request URL to console
+            'httpRequestHeaders' => false, // dump request headers to console
+            'httpRequestBody' => true, // dump request body to console
+            'httpResponseHeaders' => false, // dump response headers to console
+            'httpResponseBody' => true, // dump response body to console
+            'httpResponseStream' => true, // dump stream data to console
+            'httpResponseStreamByLine' => true, // dump stream data as full lines (true) or as raw received chunks (false)
         ],
 
         'detailed' => [
-            'http_enabled' => true, // enable/disable debug
-            'http_trace' => true, // dump HTTP trace information (available for some clients - e.g. Guzzle)
-            'http_requestUrl' => true, // dump request URL to console
-            'http_requestHeaders' => true, // dump request headers to console
-            'http_requestBody' => true, // dump request body to console
-            'http_responseHeaders' => true, // dump response headers to console
-            'http_responseBody' => true, // dump response body to console
-            'http_responseStream' => true, // dump stream data to console
-            'http_responseStreamByLine' => false, // dump stream data as full lines (true) or as raw received chunks (false)
+            'httpEnabled' => true, // enable/disable debug
+            'httpTrace' => true, // dump HTTP trace information (available for some clients - e.g. Guzzle)
+            'httpRequestUrl' => true, // dump request URL to console
+            'httpRequestHeaders' => true, // dump request headers to console
+            'httpRequestBody' => true, // dump request body to console
+            'httpResponseHeaders' => true, // dump response headers to console
+            'httpResponseBody' => true, // dump response body to console
+            'httpResponseStream' => true, // dump stream data to console
+            'httpResponseStreamByLine' => false, // dump stream data as full lines (true) or as raw received chunks (false)
         ],
 
         'url-only' => [
-            'http_enabled' => true, // enable/disable debug
-            'http_trace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
-            'http_requestUrl' => true, // dump request URL to console
-            'http_requestHeaders' => false, // dump request headers to console
-            'http_requestBody' => false, // dump request body to console
-            'http_responseHeaders' => false, // dump response headers to console
-            'http_responseBody' => false, // dump response body to console
-            'http_responseStream' => false, // dump stream data to console
-            'http_responseStreamByLine' => false, // dump stream data as full lines (true) or as raw received chunks (false)
+            'httpEnabled' => true, // enable/disable debug
+            'httpTrace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
+            'httpRequestUrl' => true, // dump request URL to console
+            'httpRequestHeaders' => false, // dump request headers to console
+            'httpRequestBody' => false, // dump request body to console
+            'httpResponseHeaders' => false, // dump response headers to console
+            'httpResponseBody' => false, // dump response body to console
+            'httpResponseStream' => false, // dump stream data to console
+            'httpResponseStreamByLine' => false, // dump stream data as full lines (true) or as raw received chunks (false)
         ],
 
         'off' => [
-            'http_enabled' => false, // enable/disable debug
-            'http_trace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
-            'http_requestUrl' => false, // dump request URL to console
-            'http_requestHeaders' => false, // dump request headers to console
-            'http_requestBody' => false, // dump request body to console
-            'http_responseHeaders' => false, // dump response headers to console
-            'http_responseBody' => false, // dump response body to console
-            'http_responseStream' => false, // dump stream data to console
-            'http_responseStreamByLine' => false, // dump stream data as full lines (true) or as raw received chunks (false)
+            'httpEnabled' => false, // enable/disable debug
+            'httpTrace' => false, // dump HTTP trace information (available for some clients - e.g. Guzzle)
+            'httpRequestUrl' => false, // dump request URL to console
+            'httpRequestHeaders' => false, // dump request headers to console
+            'httpRequestBody' => false, // dump request body to console
+            'httpResponseHeaders' => false, // dump response headers to console
+            'httpResponseBody' => false, // dump response body to console
+            'httpResponseStream' => false, // dump stream data to console
+            'httpResponseStreamByLine' => false, // dump stream data as full lines (true) or as raw received chunks (false)
         ],
     ],
 ];

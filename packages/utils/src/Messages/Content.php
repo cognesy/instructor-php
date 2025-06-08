@@ -97,7 +97,7 @@ class Content
         };
     }
 
-    public function clone(): self {
+    public function clone() : self {
         $cloned = new self();
         foreach ($this->parts as $part) {
             $cloned->parts[] = $part->clone();

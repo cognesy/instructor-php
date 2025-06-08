@@ -7,14 +7,14 @@ use Cognesy\Evals\Executors\Data\InferenceSchema;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\InferenceResponse;
+use Cognesy\Polyglot\LLM\PendingInference;
 
 class InferenceAdapter
 {
-    private ?string $debugPreset = null;
+    private string $debugPreset;
     private ?Closure $wiretap = null;
 
-    public function withDebugPreset(?string $preset) : self {
+    public function withDebugPreset(string $preset) : self {
         $this->debugPreset = $preset;
         return $this;
     }
@@ -39,7 +39,7 @@ class InferenceAdapter
             'max_tokens' => $maxTokens,
             'stream' => $isStreamed
         ];
-        $inferenceResponse = match($mode) {
+        $inference = match($mode) {
             OutputMode::Tools => $this->forModeTools($preset, $messages, $evalSchema, $options),
             OutputMode::JsonSchema => $this->forModeJsonSchema($preset, $messages, $evalSchema, $options),
             OutputMode::Json => $this->forModeJson($preset, $messages, $evalSchema, $options),
@@ -47,10 +47,10 @@ class InferenceAdapter
             OutputMode::Text => $this->forModeText($preset, $messages, $options),
             OutputMode::Unrestricted => $this->forModeUnrestricted($preset, $messages, $evalSchema, $options),
         };
-        return $inferenceResponse->response();
+        return $inference->response();
     }
 
-    public function forModeTools(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeTools(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
@@ -65,7 +65,7 @@ class InferenceAdapter
             ->create();
     }
 
-    public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeJsonSchema(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
@@ -82,7 +82,7 @@ class InferenceAdapter
             ->create();
     }
 
-    public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
@@ -99,7 +99,7 @@ class InferenceAdapter
             ->create();
     }
 
-    public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeMdJson(string $preset, string|array $messages, InferenceSchema $schema, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
@@ -116,7 +116,7 @@ class InferenceAdapter
             ->create();
     }
 
-    public function forModeText(string $preset, string|array $messages, array $options) : InferenceResponse {
+    public function forModeText(string $preset, string|array $messages, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)
@@ -129,7 +129,7 @@ class InferenceAdapter
             ->create();
     }
 
-    public function forModeUnrestricted(string $preset, array $messages, InferenceSchema $schema, array $options) : InferenceResponse {
+    public function forModeUnrestricted(string $preset, array $messages, InferenceSchema $schema, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)

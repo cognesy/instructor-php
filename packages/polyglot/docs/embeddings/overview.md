@@ -59,7 +59,7 @@ use Cognesy\Polyglot\Embeddings\Embeddings;
 
 // Generate embeddings for a document
 $embeddings = new Embeddings();
-$result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->create();
+$result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get();
 
 // Get the vector values from the first (and only) result
 $vector = $result->first()->values();
@@ -84,7 +84,7 @@ $docs = ['Computer vision models are used to analyze images and videos.'];
 $embedding = (new Embeddings)
     ->using('openai')
     ->with(input: $docs)
-    ->get();
+    ->vectors();
 ?>
 ```
 

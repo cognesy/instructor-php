@@ -36,7 +36,6 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
             $this->supportsStructuredOutput($request) => $this->toResponseFormat($request),
             default => [],
         };
-
         if ($request->hasTools()) {
             $requestBody['tools'] = $this->toTools($request);
             $requestBody['tool_choice'] = $this->toToolChoice($request);

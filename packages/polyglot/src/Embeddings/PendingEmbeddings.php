@@ -1,0 +1,49 @@
+<?php
+
+namespace Cognesy\Polyglot\Embeddings;
+
+use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Events\EmbeddingsResponseReceived;
+use Cognesy\Utils\Events\EventHandlerFactory;
+use Cognesy\Utils\Json\Json;
+use Psr\EventDispatcher\EventDispatcherInterface;
+
+class PendingEmbeddings
+{
+    private EmbeddingsRequest $request;
+    private HttpClientResponse $httpResponse;
+    private CanHandleVectorization $driver;
+    private EventDispatcherInterface $events;
+    private ?EmbeddingsResponse $response = null;
+
+    public function __construct(
+        EmbeddingsRequest $request,
+        CanHandleVectorization $driver,
+        ?EventDispatcherInterface $events = null
+    ) {
+        $this->request = $request;
+        $this->events = $events ?? (new EventHandlerFactory(events: $events))->dispatcher();
+        $this->driver = $driver;
+    }
+
+    public function request() : EmbeddingsRequest {
+        return $this->request;
+    }
+
+    public function get() : EmbeddingsResponse {
+        if ($this->response === null) {
+            $this->response = $this->makeResponse();
+        }
+        return $this->response;
+    }
+
+    public function makeResponse() : EmbeddingsResponse {
+        $this->httpResponse = $this->driver->handle($this->request);
+        $responseBody = $this->httpResponse->body();
+        $data = Json::decode($responseBody) ?? [];
+        $response = $this->driver->fromData($data);
+        $this->events->dispatch(new EmbeddingsResponseReceived($response));
+        return $response;
+    }
+}

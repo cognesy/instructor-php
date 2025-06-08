@@ -32,4 +32,13 @@ class Example implements CanProvideMessages, JsonSerializable
         $this->isStructured = $isStructured;
         $this->template = $template;
     }
+
+    public function clone() : self {
+        return new static(
+            input: clone $this->input,
+            output: clone $this->output,
+            isStructured: $this->isStructured,
+            template: $this->template
+        );
+    }
 }

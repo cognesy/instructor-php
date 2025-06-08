@@ -20,15 +20,20 @@ class EmbedUtils
         int $topK = 5
     ) : array {
         // generate embeddings for query and documents (in a single request)
-        [$queryVector, $docVectors] = (new Embeddings)
+        $embeddings = (new Embeddings)
             ->withProvider($provider)
             ->withInputs(array_merge([$query], $documents))
-            ->create()
-            ->split(1);
+            ->get();
 
-        $docVectors = $docVectors->toValuesArray();
-        $queryVector = $queryVector->first()?->values()
-            ?? throw new \InvalidArgumentException('Query vector not found');
+        [$queryVector, $docVectors] = $embeddings->split(1);
+        $queryVector = $queryVector[0] ?? throw new \RuntimeException(
+            'The query vector is empty. Please check the embeddings provider.'
+        );
+        if (count($docVectors) !== count($documents)) {
+            throw new \RuntimeException(
+                'The number of document vectors does not match the number of documents.'
+            );
+        }
 
         $matches = self::findTopK($queryVector, $docVectors, $topK);
         return array_map(fn($i) => [
@@ -45,7 +50,7 @@ class EmbedUtils
      * @return array
      */
     public static function findTopK(
-        array $queryVector,
+        Vector $queryVector,
         array $documentVectors,
         int $n = 5
     ) : array {

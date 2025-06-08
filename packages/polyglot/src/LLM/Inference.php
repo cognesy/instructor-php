@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM;
 
+use Cognesy\Polyglot\LLM\Drivers\InferenceDriverFactory;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Events\EventHandlerFactory;

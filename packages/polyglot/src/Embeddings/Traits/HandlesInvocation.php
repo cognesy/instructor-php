@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
 use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
-use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
-use Cognesy\Utils\Json\Json;
+use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
+use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 
 trait HandlesInvocation
 {
@@ -36,25 +36,22 @@ trait HandlesInvocation
 
     /**
      * Generates embeddings for the provided input data.
-     * @return EmbeddingsResponse
+     * @return PendingEmbeddings
      */
-    public function create() : EmbeddingsResponse {
+    public function create() : PendingEmbeddings {
         $request = new EmbeddingsRequest(
             input: $this->inputs,
             options: $this->options,
             model: $this->model
         );
 
-        $response = $this->makeResponse($request);
-        $this->events->dispatch(new EmbeddingsResponseReceived($response));
-
-        return $response;
-    }
-
-    private function makeResponse(EmbeddingsRequest $request): EmbeddingsResponse {
+        $this->events->dispatch(new EmbeddingsRequested([$request->toArray()]));
         $driver = $this->embeddingsProvider->createDriver();
-        $httpResponse = $driver->handle($request);
-        $data = Json::decode($httpResponse->body()) ?? [];
-        return $driver->fromData($data);
+
+        return new PendingEmbeddings(
+            request: $this->request,
+            driver: $driver,
+            events: $this->events,
+        );
     }
 }

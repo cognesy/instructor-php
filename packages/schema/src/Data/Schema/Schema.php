@@ -87,4 +87,12 @@ class Schema implements CanAcceptSchemaVisitor
             'typeDetails' => $this->typeDetails->toArray(),
         ];
     }
+
+    public function clone() : self {
+        return new self(
+            type: $this->typeDetails->clone(),
+            name: $this->name,
+            description: $this->description,
+        );
+    }
 }

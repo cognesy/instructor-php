@@ -69,4 +69,25 @@ class StructuredOutputRequest
     public function isStreamed() : bool {
         return $this->options['stream'] ?? false;
     }
+
+    public function withStreamed(bool $streamed = true) : static {
+        $new = $this->clone();
+        $new->options['stream'] = $streamed;
+        return $new;
+    }
+
+    public function clone() : self {
+        return new self(
+            messages: $this->messages->clone(),
+            requestedSchema: is_object($this->requestedSchema) ? clone $this->requestedSchema : $this->requestedSchema,
+            responseModel: $this->responseModel->clone(),
+            system: $this->system,
+            prompt: $this->prompt,
+            examples: array_map(fn(Example $example) => $example->clone(), $this->examples),
+            model: $this->model,
+            options: $this->options,
+            cachedContext: $this->cachedContext->clone(),
+            config: $this->config->clone(),
+        );
+    }
 }

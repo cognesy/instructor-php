@@ -10,6 +10,8 @@ final class StructuredOutputConfig
     use Traits\StructuredOutputConfig\HandlesAccessors;
     use Traits\StructuredOutputConfig\HandlesMutators;
 
+    public const CONFIG_GROUP = 'structured';
+
     private ?OutputMode $outputMode = OutputMode::Tools;
     private bool $useObjectReferences = false;
     private int $maxRetries = 0;
@@ -21,6 +23,7 @@ final class StructuredOutputConfig
         OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
     ];
     private string $schemaName = 'default_schema';
+    private string $schemaDescription = '';
     private string $toolName = 'extracted_data';
     private string $toolDescription = 'Function call based on user instructions.';
     private string $defaultOutputClass = 'Cognesy\Instructor\Extras\Structure\Structure';
@@ -47,6 +50,7 @@ final class StructuredOutputConfig
         ?string     $retryPrompt = '',
         ?array      $modePrompts = [],
         ?string     $schemaName = '',
+        ?string     $schemaDescription = '',
         ?string     $toolName = '',
         ?string     $toolDescription = '',
         ?array      $chatStructure = [],
@@ -58,10 +62,15 @@ final class StructuredOutputConfig
         $this->retryPrompt = $retryPrompt ?: $this->retryPrompt;
         $this->modePrompts = $modePrompts ?: $this->modePrompts;
         $this->schemaName = $schemaName ?: $this->schemaName;
+        $this->schemaDescription = $schemaDescription ?: $this->schemaDescription;
         $this->toolName = $toolName ?: $this->toolName;
         $this->toolDescription = $toolDescription ?: $this->toolDescription;
         $this->chatStructure = $chatStructure ?: $this->chatStructure;
         $this->defaultOutputClass = $defaultOutputClass ?: $this->defaultOutputClass;
+    }
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
     }
 
     public function toArray() : array {
@@ -75,6 +84,7 @@ final class StructuredOutputConfig
             'toolDescription' => $this->toolDescription,
             'chatStructure' => $this->chatStructure,
             'schemaName' => $this->schemaName,
+            'schemaDescription' => $this->schemaDescription,
             'defaultOutputClass' => $this->defaultOutputClass,
         ];
     }
@@ -87,10 +97,27 @@ final class StructuredOutputConfig
             retryPrompt: $config['retryPrompt'] ?? '',
             modePrompts: $config['modePrompts'] ?? [],
             schemaName: $config['schemaName'] ?? '',
+            schemaDescription: $config['schemaDescription'] ?? '',
             toolName: $config['toolName'] ?? '',
             toolDescription: $config['toolDescription'] ?? '',
             chatStructure: $config['chatStructure'] ?? [],
             defaultOutputClass: $config['defaultOutputClass'] ?? ''
+        );
+    }
+
+    public function clone() : self {
+        return new self(
+            outputMode: $this->outputMode,
+            useObjectReferences: $this->useObjectReferences,
+            maxRetries: $this->maxRetries,
+            retryPrompt: $this->retryPrompt,
+            modePrompts: $this->modePrompts,
+            schemaName: $this->schemaName,
+            schemaDescription: $this->schemaDescription,
+            toolName: $this->toolName,
+            toolDescription: $this->toolDescription,
+            chatStructure: $this->chatStructure,
+            defaultOutputClass: $this->defaultOutputClass
         );
     }
 }

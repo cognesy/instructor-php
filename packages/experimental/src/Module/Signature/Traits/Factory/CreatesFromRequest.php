@@ -10,7 +10,6 @@ use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Utils\ReferenceQueue;
 use Cognesy\Utils\Events\EventDispatcher;
 
 trait CreatesFromRequest
@@ -28,7 +27,7 @@ trait CreatesFromRequest
     }
 
     private static function inputSchema(StructuredOutputRequest $request) : Schema {
-        // TODO: needs to be implmeneted
+        // TODO: needs to be implemented
         return Schema::string(name: 'input', description: 'Input data');
     }
 
@@ -45,10 +44,7 @@ trait CreatesFromRequest
         $events = new EventDispatcher();
         $schemaFactory = new SchemaFactory($config->useObjectReferences());
         return new ResponseModelFactory(
-            toolCallBuilder: new ToolCallBuilder(
-                $schemaFactory,
-                new ReferenceQueue(),
-            ),
+            toolCallBuilder: new ToolCallBuilder($schemaFactory),
             schemaFactory: $schemaFactory,
             config: $config,
             events: $events,

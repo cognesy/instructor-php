@@ -4,7 +4,7 @@ namespace Cognesy\Tell;
 
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\InferenceResponse;
+use Cognesy\Polyglot\LLM\PendingInference;
 use Cognesy\Utils\Config\Providers\ConfigResolver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -45,7 +45,7 @@ class TellCommand extends Command
         return Command::SUCCESS;
     }
 
-    protected function inferenceUsingDSN(string $dsn, string $prompt) : InferenceResponse {
+    protected function inferenceUsingDSN(string $dsn, string $prompt) : PendingInference {
         return (new Inference)
             ->fromDSN($dsn)
             ->with(
@@ -55,8 +55,9 @@ class TellCommand extends Command
             ->create();
     }
 
-    protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : InferenceResponse {
-        $config = LLMConfig::fromArray(ConfigResolver::default()->getConfig('llm', $preset));
+    protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : PendingInference {
+        $configData = ConfigResolver::default()->getConfig(LLMConfig::group(), $preset);
+        $config = LLMConfig::fromArray($configData);
         $model = $model ?: $config->defaultModel;
         return (new Inference)
             ->using($preset)

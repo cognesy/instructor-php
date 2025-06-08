@@ -109,4 +109,11 @@ class Vector
         }
         return $sum;
     }
+
+    public function toArray() : array {
+        return [
+            'id' => $this->id,
+            'values' => $this->values,
+        ];
+    }
 }

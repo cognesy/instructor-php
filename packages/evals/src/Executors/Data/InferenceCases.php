@@ -3,6 +3,7 @@
 namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Evals\Utils\Combination;
+use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Config\Settings;
 use Generator;
@@ -94,7 +95,7 @@ class InferenceCases
     }
 
     private function presets() : array {
-        $presets = Settings::get('llm', 'presets', []);
+        $presets = Settings::get(LLMConfig::group(), 'presets', []);
         return array_keys($presets);
 //        return [
 //            'azure',

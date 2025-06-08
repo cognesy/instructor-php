@@ -1,13 +1,9 @@
 <?php
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Core\PartialsGenerator;
-use Cognesy\Instructor\Core\RequestHandler;
-use Cognesy\Instructor\Core\RequestMaterializer;
-use Cognesy\Instructor\Core\ResponseGenerator;
-use Cognesy\Instructor\Core\StructuredOutputResponse;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
+use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -85,41 +81,26 @@ trait HandlesInvocation
      * This method initializes the request factory, request handler, and response generator,
      * and returns a StructuredOutputResponse object that can be used to handle the request.
      *
-     * @return StructuredOutputResponse A response object providing access to various results retrieval methods.
+     * @return PendingStructuredOutput A response object providing access to various results retrieval methods.
      */
-    public function create() : StructuredOutputResponse {
+    public function create() : PendingStructuredOutput {
         $this->events->dispatch(new RequestReceived());
 
         $config = $this->configBuilder->create();
-
         $request = $this->requestBuilder->createWith(
             config: $config,
             events: $this->events,
         );
 
-        $requestHandler = new RequestHandler(
+        return new PendingStructuredOutput(
             request: $request,
-            responseGenerator: new ResponseGenerator(
-                $this->responseDeserializer,
-                $this->responseValidator,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            partialsGenerator: new PartialsGenerator(
-                $this->responseDeserializer,
-                $this->responseTransformer,
-                $this->events,
-            ),
-            requestMaterializer: new RequestMaterializer($config),
-            llm: $this->llmProvider,
+            responseDeserializer: $this->responseDeserializer,
+            responseValidator: $this->responseValidator,
+            responseTransformer: $this->responseTransformer,
+            llmProvider: $this->llmProvider,
+            config: $config,
             events: $this->events,
             listener: $this->listener,
-        );
-
-        return new StructuredOutputResponse(
-            request: $request,
-            requestHandler: $requestHandler,
-            events: $this->events,
         );
     }
 }

@@ -108,17 +108,18 @@ class OpenAIBodyFormat implements CanMapRequestBody
     protected function toToolChoice(InferenceRequest $request) : array|string {
         $tools = $request->tools();
         $toolChoice = $request->toolChoice();
+        $toolName = $toolChoice['function']['name'] ?? null;
 
         $result = match(true) {
             empty($tools) => '',
             empty($toolChoice) => 'auto',
-            is_array($toolChoice) => [
+            !empty($toolName) => [
                 'type' => 'function',
                 'function' => [
-                    'name' => $toolChoice['function']['name'] ?? '',
+                    'name' => $toolName,
                 ]
             ],
-            default => $toolChoice,
+            default => '',
         };
 
         if (!$this->supportsToolSelection($request)) {

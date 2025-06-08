@@ -8,6 +8,8 @@ namespace Cognesy\Http\Config;
  */
 final class HttpClientConfig
 {
+    public const CONFIG_GROUP = 'http';
+
     /**
      * Constructor for HttpClientConfig.
      *
@@ -29,6 +31,10 @@ final class HttpClientConfig
         public readonly int    $poolTimeout = 120,
         public readonly bool   $failOnError = false,
     ) {}
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     /**
      * Creates a new HttpClientConfig instance from an associative array.

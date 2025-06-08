@@ -327,7 +327,7 @@ class InferenceRequest
 
     // INTERNAL //////////////////////////////////////
 
-    private function clone() : static {
+    public function clone() : self {
         return new static(
             messages: $this->messages,
             model: $this->model,

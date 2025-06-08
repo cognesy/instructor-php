@@ -5,10 +5,10 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\StructuredOutputData;
-use Cognesy\Instructor\Core\StructuredOutputResponse;
+use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Instructor\StructuredOutput;
 
-class RunInstructor implements CanRunExecution
+class RunStructuredOutputInference implements CanRunExecution
 {
     private StructuredOutputData $structuredOutputData;
 
@@ -23,7 +23,7 @@ class RunInstructor implements CanRunExecution
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function makeInstructorResponse(Execution $execution) : StructuredOutputResponse {
+    private function makeInstructorResponse(Execution $execution) : PendingStructuredOutput {
         return (new StructuredOutput)
             ->using($execution->get('case.preset'))
             ->with(

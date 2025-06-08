@@ -25,12 +25,12 @@ class TemplateProvider
         ?CanProvideConfig $configProvider = null
     ) {
         $this->configProvider = ConfigResolver::makeWith($configProvider);
-        $this->config = $config ?? TemplateEngineConfig::fromArray($this->configProvider->getConfig('prompt', $preset));
+        $this->config = $config ?? TemplateEngineConfig::fromArray($this->configProvider->getConfig(TemplateEngineConfig::group(), $preset));
         $this->driver = $driver ?? $this->makeDriver($this->config);
     }
 
     public function get(string $preset): self {
-        $data = $this->configProvider->getConfig('prompt', $preset);
+        $data = $this->configProvider->getConfig(TemplateEngineConfig::group(), $preset);
         $this->config = TemplateEngineConfig::fromArray($data);
         $this->driver = $this->makeDriver($this->config);
         return $this;

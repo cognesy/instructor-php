@@ -11,7 +11,6 @@ use Cognesy\Polyglot\LLM\Events\InferenceFailed;
 use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
 use Cognesy\Polyglot\LLM\Events\PartialLLMResponseCreated;
 use Cognesy\Polyglot\LLM\Utils\EventStreamReader;
-use Cognesy\Utils\Events\EventDispatcher;
 use Cognesy\Utils\Json\Json;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -39,9 +38,9 @@ class InferenceStream
     public function __construct(
         HttpClientResponse        $httpResponse,
         CanHandleInference        $driver,
-        ?EventDispatcherInterface $events = null,
+        EventDispatcherInterface  $events,
     ) {
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
         $this->driver = $driver;
         $this->httpResponse = $httpResponse;
 

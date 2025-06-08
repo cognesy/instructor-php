@@ -29,7 +29,7 @@ trait HandlesCreation
         return new self((new Section($section))->appendMessages($messages));
     }
 
-    public function clone() : Script {
+    public function clone() : self {
         return (new Script(...$this->sections))
             ->withParams($this->parameters());
     }

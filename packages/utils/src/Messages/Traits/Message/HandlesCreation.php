@@ -52,7 +52,7 @@ trait HandlesCreation
         return new static(role: $role, content: $image->toContent());
     }
 
-    public function clone() : static {
+    public function clone() : self {
         $cloned = new static();
         $cloned->role = $this->role;
         $cloned->name = $this->name;

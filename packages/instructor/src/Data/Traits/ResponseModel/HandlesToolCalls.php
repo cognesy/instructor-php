@@ -2,15 +2,11 @@
 namespace Cognesy\Instructor\Data\Traits\ResponseModel;
 
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
+use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
 
 trait HandlesToolCalls
 {
-    private ToolCallBuilder $toolCallBuilder;
-
-    private string $toolName = '';
-    private string $toolDescription = '';
-
     public function toolName() : string {
         return $this->toolName;
     }
@@ -30,9 +26,12 @@ trait HandlesToolCalls
     }
 
     public function toolCallSchema() : array {
+        $schemaFactory = new SchemaFactory(useObjectReferences: $this->useObjectReferences);
+        $toolCallBuilder = new ToolCallBuilder($schemaFactory);
+
         return match(true) {
             $this->instance() instanceof CanHandleToolSelection => $this->instance()->toToolCallsJson(),
-            default => $this->toolCallBuilder->renderToolCall(
+            default => $toolCallBuilder->renderToolCall(
                 $this->toJsonSchema(),
                 $this->toolName,
                 $this->toolDescription

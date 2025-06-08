@@ -88,4 +88,10 @@ trait HandlesCreation
             default => (new Messages)->appendMessage(new Message('user', TextRepresentation::fromAny($input))),
         };
     }
+
+    public function clone() : self {
+        $cloned = new self();
+        $cloned->messages = array_map(fn($message) => $message->clone(), $this->messages);
+        return $cloned;
+    }
 }

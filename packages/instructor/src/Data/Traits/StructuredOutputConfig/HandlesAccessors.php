@@ -32,6 +32,10 @@ trait HandlesAccessors
         return $this->schemaName;
     }
 
+    public function schemaDescription() : string {
+        return $this->schemaDescription;
+    }
+
     public function toolName() : string {
         return $this->toolName;
     }

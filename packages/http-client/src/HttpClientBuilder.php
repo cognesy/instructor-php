@@ -57,7 +57,7 @@ final class HttpClientBuilder
         return $this;
     }
 
-    public function withDebugPreset(string $preset): self {
+    public function withDebugPreset(?string $preset): self {
         $this->debugPreset = $preset;
         return $this;
     }
@@ -126,13 +126,13 @@ final class HttpClientBuilder
     private function buildHttpClientConfig(): HttpClientConfig {
         if ($this->config !== null) {
             $this->events->dispatch(new ConfigResolved([
-                'group' => 'http',
+                'group' => HttpClientConfig::group(),
                 'config' => $this->config,
             ]));
             return $this->config;
         }
 
-        $result = Result::try(fn() => $this->configProvider->getConfig('http', $this->preset));
+        $result = Result::try(fn() => $this->configProvider->getConfig(HttpClientConfig::group(), $this->preset));
         if ($result->isFailure()) {
             $this->events->dispatch(new ConfigResolutionFailed([
                 'group' => 'http',
@@ -154,8 +154,8 @@ final class HttpClientBuilder
     private function buildDebugConfig(): DebugConfig {
         $result = Result::try(fn() => match(true) {
             $this->debugConfig !== null => $this->debugConfig,
-            !empty($this->debugPreset) => $this->configProvider->getConfig('debug', $this->debugPreset),
-            default => $this->configProvider->getConfig('debug'),
+            !empty($this->debugPreset) => $this->configProvider->getConfig(DebugConfig::group(), $this->debugPreset),
+            default => $this->configProvider->getConfig(DebugConfig::group()),
         });
 
         if ($result->isFailure()) {

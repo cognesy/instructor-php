@@ -10,17 +10,20 @@ Let's follow the complete flow of a request through Polyglot:
 1. Application creates an `Inference` object
 2. Application calls `create()` with parameters
 3. `Inference` creates an `InferenceRequest`.
-4. `Inference` dispatches the `InferenceRequested` event
-5. `Inference` passes the request to the driver
-6. Driver uses request adapter to create HTTP request
-7. Request adapter uses body formatter and message formatter
-8. Driver sends the HTTP request
-4. `Inference` returns an `InferenceResponse` object.
+4. `Inference` creates a `PendingInference` object with the instances of request, driver and event dispatcher.
+5. `Inference` returns a `PendingInference` object to the application.
 
 ## Response Processing
 
-1. Application accesses the `InferenceResponse` object content, e.g. via `response()` method.
-2. `InferenceResponse` calls the driver to read and parse the response.
+1. Application accesses the `PendingInference` object content, e.g. via `response()` method.
+2. `PendingInference` checks if HTTP request has been already executed.
+   - If already sent, it returns the cached response.
+3. `PendingInference` dispatches the `InferenceRequested` event
+3. `PendingInference` passes the request to the driver.
+4. Driver uses request adapter to create HTTP request
+5. Request adapter uses request body formatter and message formatter.
+8. Driver sends the HTTP request and returns it to `PendingInference`.
+5. `PendingInference` calls the driver to read and parse the response.
 3. Driver uses a response adapter to extract content into appropriate fields of `LLMResponse` object
-4. `InferenceResponse` dispatches the `LLMResponseReceived` event
+4. `PendingInference` dispatches the `LLMResponseReceived` event
 5. Result `LLMResponse` object is returned to the application

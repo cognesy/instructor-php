@@ -1,17 +1,26 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
+use Cognesy\Instructor\Core\PartialsGenerator;
+use Cognesy\Instructor\Core\RequestHandler;
+use Cognesy\Instructor\Core\RequestMaterializer;
+use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Utils\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Utils\Json\Json;
-use Exception;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
-class StructuredOutputResponse
+class PendingStructuredOutput
 {
     use HandlesResultTypecasting;
 
@@ -24,14 +33,32 @@ class StructuredOutputResponse
     private LLMResponse $cachedResponse;
     private array $cachedResponseStream;
 
+    private ResponseDeserializer $responseDeserializer;
+    private ResponseValidator $responseValidator;
+    private ResponseTransformer $responseTransformer;
+    private CanRegisterEventListeners $listener;
+    private LLMProvider $llmProvider;
+    private StructuredOutputConfig $config;
+
     public function __construct(
         StructuredOutputRequest $request,
-        RequestHandler          $requestHandler,
+        ResponseDeserializer $responseDeserializer,
+        ResponseValidator $responseValidator,
+        ResponseTransformer $responseTransformer,
+        LLMProvider $llmProvider,
+        StructuredOutputConfig $config,
         EventDispatcherInterface $events,
+        CanRegisterEventListeners $listener,
     ) {
-        $this->events = $events;
-        $this->requestHandler = $requestHandler;
         $this->request = $request;
+        $this->events = $events;
+        $this->listener = $listener;
+        $this->responseDeserializer = $responseDeserializer;
+        $this->responseValidator = $responseValidator;
+        $this->responseTransformer = $responseTransformer;
+        $this->llmProvider = $llmProvider;
+        $this->config = $config;
+        $this->requestHandler = $this->makeRequestHandler();
     }
 
     /**
@@ -75,11 +102,7 @@ class StructuredOutputResponse
      * Executes the request and returns the response stream
      */
     public function stream() : StructuredOutputStream {
-        // TODO: do we need this? can't we just turn streaming on?
-        if (!$this->request->isStreamed()) {
-            throw new Exception('StructuredOutput::create()->stream() method requires response streaming: set "stream" = true in the request options.');
-        }
-        $stream = $this->getStream();
+        $stream = $this->getStream($this->request->withStreamed());
         return new StructuredOutputStream($stream, $this->events);
     }
 
@@ -97,21 +120,44 @@ class StructuredOutputResponse
         return $this->cachedResponse;
     }
 
-    private function getStream() : Generator {
+    private function getStream(StructuredOutputRequest $request) : Generator {
         // RESPONSE CACHING IS DISABLED
         if (!$this->cacheProcessedResponse) {
-            yield $this->requestHandler->streamResponseFor($this->request);
+            yield $this->requestHandler->streamResponseFor($request);
             return;
         }
+
         // RESPONSE CACHING IS ENABLED
         if (!isset($this->cachedResponseStream)) {
             $this->cachedResponseStream = [];
-            foreach ($this->requestHandler->streamResponseFor($this->request) as $chunk) {
+            foreach ($this->requestHandler->streamResponseFor($request) as $chunk) {
                 $this->cachedResponseStream[] = $chunk;
                 yield $chunk;
             }
             return;
         }
+
         yield from $this->cachedResponseStream;
+    }
+
+    private function makeRequestHandler() : RequestHandler {
+        return new RequestHandler(
+            request: $this->request,
+            responseGenerator: new ResponseGenerator(
+                $this->responseDeserializer,
+                $this->responseValidator,
+                $this->responseTransformer,
+                $this->events,
+            ),
+            partialsGenerator: new PartialsGenerator(
+                $this->responseDeserializer,
+                $this->responseTransformer,
+                $this->events,
+            ),
+            requestMaterializer: new RequestMaterializer($this->config),
+            llm: $this->llmProvider,
+            events: $this->events,
+            listener: $this->listener,
+        );
     }
 }

@@ -2,7 +2,6 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Factories\ToolCallBuilder;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 
 class ResponseModel implements CanProvideJsonSchema
@@ -14,7 +13,11 @@ class ResponseModel implements CanProvideJsonSchema
     private string $class;
     private Schema $schema;
     private array $jsonSchema;
+    private string $toolName;
+    private string $toolDescription;
     private string $schemaName;
+    private string $schemaDescription;
+    private bool $useObjectReferences = false;
 
     public function __construct(
         string $class,
@@ -22,14 +25,20 @@ class ResponseModel implements CanProvideJsonSchema
         Schema $schema,
         array  $jsonSchema,
         string $schemaName,
-        ?ToolCallBuilder $toolCallBuilder = null,
+        string $schemaDescription,
+        string $toolName,
+        string $toolDescription,
+        bool   $useObjectReferences = false,
     ) {
         $this->class = $class;
         $this->instance = $instance;
         $this->schema = $schema;
         $this->jsonSchema = $jsonSchema;
-        $this->toolCallBuilder = $toolCallBuilder;
         $this->schemaName = $schemaName;
+        $this->schemaDescription = $schemaDescription;
+        $this->toolName = $toolName;
+        $this->toolDescription = $toolDescription;
+        $this->useObjectReferences = $useObjectReferences;
     }
 
     public function instanceClass() : string {
@@ -47,6 +56,21 @@ class ResponseModel implements CanProvideJsonSchema
             'schema' => $this->schema->toArray(),
             'jsonSchema' => $this->jsonSchema,
             'schemaName' => $this->schemaName,
+            'schemaDescription' => $this->schemaDescription,
         ];
+    }
+
+    public function clone() : self {
+        return new self(
+            class: $this->class,
+            instance: clone $this->instance,
+            schema: $this->schema->clone(),
+            jsonSchema: $this->jsonSchema,
+            schemaName: $this->schemaName,
+            schemaDescription: $this->schemaDescription,
+            toolName: $this->toolName,
+            toolDescription: $this->toolDescription,
+            useObjectReferences: $this->useObjectReferences,
+        );
     }
 }

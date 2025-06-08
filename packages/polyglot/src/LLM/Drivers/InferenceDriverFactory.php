@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Polyglot\LLM;
+namespace Cognesy\Polyglot\LLM\Drivers;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;

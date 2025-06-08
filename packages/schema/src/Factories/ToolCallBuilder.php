@@ -10,10 +10,9 @@ class ToolCallBuilder {
 
     public function __construct(
         SchemaFactory $schemaFactory,
-        ReferenceQueue $referenceQueue,
     ) {
         $this->schemaFactory = $schemaFactory;
-        $this->references = $referenceQueue;
+        $this->references = new ReferenceQueue($schemaFactory);
     }
 
     /**
@@ -22,7 +21,7 @@ class ToolCallBuilder {
     public function renderToolCall(
         array $jsonSchema,
         string $name,
-        string $description
+        string $description,
     ) : array {
         $toolCall = [
             'type' => 'function',
@@ -32,7 +31,7 @@ class ToolCallBuilder {
             ]
         ];
         if ($this->references->hasQueued()) {
-            $toolCall['function']['parameters']['$defs'] = $this->definitions();
+            $toolCall['function']['parameters']['$defs'] = $this->references->definitions();
         }
         foreach ($jsonSchema as $key => $value) {
             $toolCall['function']['parameters'][$key] = $value;

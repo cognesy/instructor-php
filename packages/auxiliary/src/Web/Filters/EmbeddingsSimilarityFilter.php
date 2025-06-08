@@ -29,6 +29,6 @@ class EmbeddingsSimilarityFilter implements CanFilterContent
 
     public function filter(string $content): bool {
         $vector = $this->embeddings->with($content)->first();
-        return Vector::cosineSimilarity($vector, $this->compareTo) >= $this->threshold;
+        return Vector::cosineSimilarity($vector->values(), $this->compareTo->values()) >= $this->threshold;
     }
 }

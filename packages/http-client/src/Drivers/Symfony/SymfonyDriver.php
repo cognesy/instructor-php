@@ -61,6 +61,16 @@ class SymfonyDriver implements CanHandleHttpRequest
                     'buffer' => !$streaming,
                 ]
             );
+
+            // throw exception if HTTP status code => error
+            if ($response->getStatusCode() >= 400) {
+                $errorMessage = sprintf(
+                    'HTTP request failed with status code %d: %s',
+                    $response->getStatusCode(),
+                    $response->getContent(false)
+                );
+                throw new HttpRequestException($errorMessage, $request);
+            }
         } catch (Exception $e) {
             $this->events->dispatch(new HttpRequestFailed([
                 'url' => $url,

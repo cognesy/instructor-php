@@ -33,7 +33,6 @@ $events = new EventDispatcher();
 // Let's build a set of custom configuration providers.
 // You can use those examples to build your framework-specific providers.
 
-
 class CustomConfigProvider implements CanProvideConfig
 {
     public function getConfig(string $group, ?string $preset = ''): array {
@@ -41,6 +40,7 @@ class CustomConfigProvider implements CanProvideConfig
             'http' => $this->http($preset),
             'debug' => $this->debug($preset),
             'llm' => $this->llm($preset),
+            'structured' => $this->struct($preset),
             default => [],
         };
     }
@@ -70,6 +70,13 @@ class CustomConfigProvider implements CanProvideConfig
         $data = [
             'off' => [
                 'httpEnabled' => true,
+                'httpRequestUrl' => true,
+                'httpRequestHeaders' => true,
+                'httpRequestBody' => true,
+                'httpResponseHeaders' => true,
+                'httpResponseBody' => true,
+                'httpResponseStream' => true,
+                'httpResponseStreamByLine' => true,
             ],
             'on' => [
                 'httpEnabled' => true,
@@ -97,7 +104,7 @@ class CustomConfigProvider implements CanProvideConfig
                 'defaultModel' => 'deepseek-chat',
                 'defaultMaxTokens' => 128,
                 'driver' => 'deepseek',
-                'httpClientPreset' => 'symfony',
+                'httpClientPreset' => 'laravel',
             ],
             // ...
         ];
@@ -146,7 +153,7 @@ $customClient = (new HttpClientBuilder(
         configProvider: $configProvider,
     ))
     ->withConfigProvider($configProvider)
-    ->withPreset('http')
+    ->withPreset('symfony')
     ->create();
 
 $structuredOutput = (new StructuredOutput(
@@ -158,8 +165,11 @@ $structuredOutput = (new StructuredOutput(
 
 // Call with custom model and execution mode
 
-$user = $structuredOutput->using('deepseek') // Use 'deepseek' preset defined in CustomLLMConfigProvider
-    ->wiretap(fn($e) => $e->print())
+$user = $structuredOutput
+     // Use 'deepseek' preset defined in CustomLLMConfigProvider
+    ->using('deepseek')
+    //->withDebugPreset('on') // Enable debug preset
+    //->wiretap(fn($e) => $e->printDebug())
     ->with(
         messages: "Our user Jason is 25 years old.",
         responseModel: User::class,

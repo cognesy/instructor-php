@@ -3,8 +3,12 @@ title: Response Handling
 description: 'Learn how to handle responses from Polyglot.'
 ---
 
-Polyglot's `InferenceResponse` class provides methods to access the response in different formats.
+Polyglot's `PendingInference` class represents pending inference execution.
+It provides methods to access the response in different formats, but also
+provides access to streaming responses. It does not execute the request to
+underlying LLM until you actually access the response data.
 
+It is returned by the `Inference` class when you call the `create()` method.
 
 ## Basic Response Handling
 
@@ -13,9 +17,9 @@ Polyglot's `InferenceResponse` class provides methods to access the response in 
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->with(
-    messages: 'What is the capital of France?'
-);
+$response = $inference
+    ->withMessages('What is the capital of France?')
+    ->create();
 
 // Get the response as plain text
 $text = $response->get();
@@ -47,10 +51,10 @@ For streaming responses, use the `stream()` method:
 use Cognesy\Polyglot\LLM\Inference;
 
 $inference = new Inference();
-$response = $inference->with(
-    messages: 'Write a short story about a robot.',
-    options: ['stream' => true]
-);
+$response = $inference
+    ->withMessages('Write a short story about a robot.')
+    ->withStreaming()
+    ->create();
 
 // Get a generator that yields partial responses
 $stream = $response->stream()->responses();

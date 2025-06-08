@@ -3,9 +3,8 @@
 namespace Cognesy\Polyglot\LLM\Traits;
 
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Polyglot\LLM\InferenceRequest;
-use Cognesy\Polyglot\LLM\InferenceResponse;
+use Cognesy\Polyglot\LLM\PendingInference;
 
 trait HandlesInvocation
 {
@@ -33,14 +32,12 @@ trait HandlesInvocation
         return $this;
     }
 
-    public function create(): InferenceResponse {
+    public function create(): PendingInference {
         $request = $this->requestBuilder->create();
-        $this->events->dispatch(new InferenceRequested($request));
         $inferenceDriver = $this->llmProvider->createDriver();
-        return new InferenceResponse(
-            httpResponse: $inferenceDriver->handle($request),
+        return new PendingInference(
+            request: $request,
             driver: $inferenceDriver,
-            isStreamed: $request->isStreamed(),
             events: $this->events,
         );
     }

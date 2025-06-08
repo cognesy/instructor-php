@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Traits;
 
-use Cognesy\Instructor\Core\StructuredOutputStream;
+use Cognesy\Instructor\StructuredOutputStream;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 
 trait HandlesShortcuts
@@ -15,7 +15,7 @@ trait HandlesShortcuts
      * Processes a request using provided input, system configurations,
      * and response specifications and returns a streamed result object.
      *
-     * @return StructuredOutputStream A streamed version of the response
+     * @return \Cognesy\Instructor\StructuredOutputStream A streamed version of the response
      */
     public function stream() : StructuredOutputStream {
         $this->withStreaming();

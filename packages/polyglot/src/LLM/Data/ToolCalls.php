@@ -118,7 +118,7 @@ class ToolCalls
         return $list;
     }
 
-    public function clone() : ToolCalls {
+    public function clone() : self {
         $clonedToolCalls = [];
         foreach ($this->toolCalls as $toolCall) {
             $clonedToolCalls[] = $toolCall->clone();

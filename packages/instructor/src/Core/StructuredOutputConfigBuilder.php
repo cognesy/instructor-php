@@ -15,6 +15,7 @@ class StructuredOutputConfigBuilder
     private ?string $retryPrompt;
     private ?array $modePrompts;
     private ?string $schemaName;
+    private ?string $schemaDescription;
     private ?string $toolName;
     private ?string $toolDescription;
     private ?string $defaultOutputClass;
@@ -31,6 +32,7 @@ class StructuredOutputConfigBuilder
         ?string           $retryPrompt = null,
         ?array            $modePrompts = null,
         ?string           $schemaName = null,
+        ?string           $schemaDescription = null,
         ?string           $toolName = null,
         ?string           $toolDescription = null,
         ?array            $chatStructure = null,
@@ -43,6 +45,7 @@ class StructuredOutputConfigBuilder
         $this->retryPrompt = $retryPrompt;
         $this->modePrompts = $modePrompts ?? [];
         $this->schemaName = $schemaName;
+        $this->schemaDescription = $schemaDescription;
         $this->toolName = $toolName;
         $this->toolDescription = $toolDescription;
         $this->chatStructure = $chatStructure ?? [];
@@ -67,6 +70,11 @@ class StructuredOutputConfigBuilder
 
     public function withSchemaName(string $schemaName) : static {
         $this->schemaName = $schemaName;
+        return $this;
+    }
+
+    public function withSchemaDescription(string $schemaDescription) : static {
+        $this->schemaDescription = $schemaDescription;
         return $this;
     }
 
@@ -152,7 +160,7 @@ class StructuredOutputConfigBuilder
 
     public function create() : StructuredOutputConfig {
         if ($this->configPreset) {
-            $data = $this->configProvider->getConfig('structured', $this->configPreset);
+            $data = $this->configProvider->getConfig(StructuredOutputConfig::group(), $this->configPreset);
             if (!empty($data)) {
                 $this->applyConfig(StructuredOutputConfig::fromArray($data));
             }
@@ -169,6 +177,7 @@ class StructuredOutputConfigBuilder
             retryPrompt: $this->retryPrompt ?: '',
             modePrompts: $this->modePrompts ?: [],
             schemaName: $this->schemaName ?: '',
+            schemaDescription: $this->schemaDescription ?: '',
             toolName: $this->toolName ?: '',
             toolDescription: $this->toolDescription ?: '',
             chatStructure: $this->chatStructure ?: [],
@@ -185,6 +194,7 @@ class StructuredOutputConfigBuilder
         $this->retryPrompt = $config->retryPrompt() ?: $this->retryPrompt;
         $this->modePrompts = $config->modePrompts() ?: $this->modePrompts;
         $this->schemaName = $config->schemaName() ?: $this->schemaName;
+        $this->schemaDescription = $config->schemaDescription() ?: $this->schemaDescription;
         $this->toolName = $config->toolName() ?: $this->toolName;
         $this->toolDescription = $config->toolDescription() ?: $this->toolDescription;
         $this->chatStructure = $config->chatStructure() ?: $this->chatStructure;

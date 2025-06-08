@@ -54,9 +54,7 @@ class StructuredOutput
         $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
         $this->responseTransformer = new ResponseTransformer($this->events, []);
 
-        $this->configBuilder = new StructuredOutputConfigBuilder(
-            configProvider: $configProvider,
-        );
+        $this->configBuilder = new StructuredOutputConfigBuilder(configProvider: $configProvider);
         $this->requestBuilder = new StructuredOutputRequestBuilder();
 
         $this->llmProvider = LLMProvider::new(

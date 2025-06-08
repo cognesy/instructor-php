@@ -6,6 +6,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
+use Cognesy\Polyglot\LLM\Drivers\InferenceDriverFactory;
 use Cognesy\Utils\Config\Contracts\CanProvideConfig;
 use Cognesy\Utils\Config\Events\ConfigResolutionFailed;
 use Cognesy\Utils\Config\Events\ConfigResolved;
@@ -34,7 +35,7 @@ final class LLMProvider
         ?EventDispatcherInterface  $events = null,
         ?CanRegisterEventListeners $listener = null,
         ?CanProvideConfig          $configProvider = null,
-        ?bool                      $debug = null,
+        ?string                    $debugPreset = null,
         ?string                    $dsn = null,
         ?string                    $preset = null,
         ?LLMConfig                 $explicitConfig = null,
@@ -46,7 +47,7 @@ final class LLMProvider
         $this->listener = $eventHandlerFactory->listener();
         $this->configProvider = ConfigResolver::makeWith($configProvider);
 
-        $this->debugPreset = $debug;
+        $this->debugPreset = $debugPreset;
         $this->dsn = $dsn;
         $this->llmPreset = $preset;
         $this->explicitConfig = $explicitConfig;
@@ -181,8 +182,8 @@ final class LLMProvider
         // Build config based on preset
         $result = Result::try(
             fn() => empty($effectivePreset)
-                ? $this->configProvider->getConfig('llm')
-                : $this->configProvider->getConfig('llm', $effectivePreset)
+                ? $this->configProvider->getConfig(LLMConfig::group())
+                : $this->configProvider->getConfig(LLMConfig::group(), $effectivePreset)
         );
 
         if ($result->isFailure()) {
@@ -234,9 +235,7 @@ final class LLMProvider
             ->withPreset($config->httpClientPreset);
 
         // Apply debug setting if specified
-        if ($this->debugPreset !== null) {
-            $builder = $builder->withDebugPreset($this->debugPreset);
-        }
+        $builder = $builder->withDebugPreset($this->debugPreset);
 
         return $builder->create();
     }

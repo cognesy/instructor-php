@@ -9,11 +9,18 @@ trait HandlesShortcuts
 {
     /**
      * Returns all embeddings for the provided input data.
+     */
+    public function get() : EmbeddingsResponse {
+        return $this->create()->get();
+    }
+
+    /**
+     * Returns all embeddings for the provided input data.
      *
      * @return Vector[] Array of embedding vectors
      */
-    public function get() : array {
-        return $this->create()->all();
+    public function vectors() : array {
+        return $this->create()->get()->vectors();
     }
 
     /**
@@ -21,7 +28,7 @@ trait HandlesShortcuts
      *
      * @return Vector The first embedding vector
      */
-    public function first() : EmbeddingsResponse {
-        return $this->create()->first();
+    public function first() : Vector {
+        return $this->create()->get()->first();
     }
 }

@@ -62,7 +62,7 @@ trait HandlesSchema
             OutputMode::Tools => [
                 'type' => 'function',
                 'function' => [
-                    'name' => $this->toolName()
+                    'name' => ($this->toolName() ?: 'extract_data'),
                 ]
             ],
             default => [],

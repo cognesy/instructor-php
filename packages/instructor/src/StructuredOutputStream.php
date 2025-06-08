@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Instructor\Core;
+namespace Cognesy\Instructor;
 
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
 use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Polyglot\LLM\Data\LLMResponse;
 use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;

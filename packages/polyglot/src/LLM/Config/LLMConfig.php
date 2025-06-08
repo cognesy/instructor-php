@@ -4,6 +4,8 @@ namespace Cognesy\Polyglot\LLM\Config;
 
 final class LLMConfig
 {
+    public const CONFIG_GROUP = 'llm';
+
     public function __construct(
         public string $apiUrl = '',
         public string $apiKey = '',
@@ -18,6 +20,10 @@ final class LLMConfig
         public string $driver = 'openai-compatible',
         public array  $options = [],
     ) {}
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     public static function fromArray(array $config) : LLMConfig {
         return new LLMConfig(

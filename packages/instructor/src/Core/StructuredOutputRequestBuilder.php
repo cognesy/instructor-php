@@ -10,7 +10,6 @@ use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Utils\ReferenceQueue;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Exception;
@@ -186,20 +185,13 @@ class StructuredOutputRequestBuilder
                 defaultOutputClass: $config->defaultOutputClass(),
             )
         );
-        $toolCallBuilder = new ToolCallBuilder(
-            $schemaFactory,
-            new ReferenceQueue()
-        );
+        $toolCallBuilder = new ToolCallBuilder($schemaFactory);
         $responseModelFactory = new ResponseModelFactory(
             toolCallBuilder: $toolCallBuilder,
             schemaFactory: $schemaFactory,
             config: $config,
             events: $events,
         );
-        return $responseModelFactory->fromAny(
-            $requestedSchema,
-            $config->toolName(),
-            $config->toolDescription()
-        );
+        return $responseModelFactory->fromAny($requestedSchema);
     }
 }

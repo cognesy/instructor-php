@@ -1,6 +1,6 @@
 ---
 title: 'Working directly with LLMs'
-docname: 'llm'
+docname: 'inference'
 ---
 
 ## Overview

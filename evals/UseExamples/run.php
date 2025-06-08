@@ -4,7 +4,7 @@ require 'evals/boot.php';
 use Cognesy\Evals\Enums\NumberAggregationMethod;
 use Cognesy\Evals\Executors\Data\InferenceCases;
 use Cognesy\Evals\Executors\Data\StructuredOutputData;
-use Cognesy\Evals\Executors\RunInstructor;
+use Cognesy\Evals\Executors\RunStructuredOutputInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\Observers\Evaluate\ArrayMatchEval;
@@ -27,7 +27,7 @@ $experiment = new Experiment(
         modes: [OutputMode::JsonSchema, OutputMode::Text],
         stream: [true]
     ),
-    executor: new RunInstructor($data),
+    executor: new RunStructuredOutputInference($data),
     processors: [
         new CompanyEval(
             key: 'execution.is_correct',

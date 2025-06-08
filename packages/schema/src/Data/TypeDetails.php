@@ -42,4 +42,15 @@ class TypeDetails
             'docString' => $this->docString,
         ];
     }
+
+    public function clone() : self {
+        return new self(
+            type: $this->type,
+            class: $this->class,
+            nestedType: $this->nestedType?->clone(),
+            enumType: $this->enumType,
+            enumValues: $this->enumValues,
+            docString: $this->docString,
+        );
+    }
 }
