@@ -203,8 +203,8 @@ class ResponseModelFactory
         $resolved = match(true) {
             is_string($requestedSchema) => '',
             is_array($requestedSchema) => $requestedSchema['description'],
-            is_object($requestedSchema) && method_exists($requestedSchema, 'description') => $requestedSchema->description(),
-            is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->description,
+            is_object($requestedSchema) && ($requestedSchema instanceof Schema) => $requestedSchema->description(),
+            //is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->description(),
             default => '',
         };
         return $resolved ?: $this->config->schemaDescription() ?: '';

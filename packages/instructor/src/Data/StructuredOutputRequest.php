@@ -83,11 +83,19 @@ class StructuredOutputRequest
             responseModel: $this->responseModel->clone(),
             system: $this->system,
             prompt: $this->prompt,
-            examples: array_map(fn(Example $example) => $example->clone(), $this->examples),
+            examples: $this->cloneExamples(),
             model: $this->model,
             options: $this->options,
             cachedContext: $this->cachedContext->clone(),
             config: $this->config->clone(),
         );
+    }
+
+    private function cloneExamples() {
+        return is_array($this->examples)
+            ? array_map(fn($e) => $e instanceof Example
+                ? $e->clone()
+                : $e, $this->examples)
+            : $this->examples;
     }
 }

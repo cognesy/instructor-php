@@ -11,7 +11,7 @@ use Cognesy\Polyglot\LLM\PendingInference;
 
 class InferenceAdapter
 {
-    private string $debugPreset;
+    private ?string $debugPreset = null;
     private ?Closure $wiretap = null;
 
     public function withDebugPreset(string $preset) : self {
@@ -116,7 +116,7 @@ class InferenceAdapter
             ->create();
     }
 
-    public function forModeText(string $preset, string|array $messages, array $options) : PendingInference {
+    public function forModeText(?string $preset, string|array $messages, array $options) : PendingInference {
         return (new Inference)
             ->using($preset)
             ->withDebugPreset($this->debugPreset)

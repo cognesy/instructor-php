@@ -44,8 +44,8 @@ class EmbedUtils
 
     /**
      * Find the top K most similar documents to the query vector
-     * @param array $queryVector
-     * @param array $documentVectors
+     * @param Vector $queryVector
+     * @param Vector[] $documentVectors
      * @param int $n
      * @return array
      */
@@ -56,7 +56,7 @@ class EmbedUtils
     ) : array {
         $similarity = [];
         foreach ($documentVectors as $i => $vector) {
-            $similarity[$i] = Vector::cosineSimilarity($queryVector, $vector);
+            $similarity[$i] = Vector::cosineSimilarity($queryVector->values(), $vector->values());
         }
         arsort($similarity);
         return array_slice($similarity, 0, $n, true);

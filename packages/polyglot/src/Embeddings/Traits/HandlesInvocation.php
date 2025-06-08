@@ -44,13 +44,11 @@ trait HandlesInvocation
             options: $this->options,
             model: $this->model
         );
-
         $this->events->dispatch(new EmbeddingsRequested([$request->toArray()]));
-        $driver = $this->embeddingsProvider->createDriver();
 
         return new PendingEmbeddings(
-            request: $this->request,
-            driver: $driver,
+            request: $request,
+            driver: $this->embeddingsProvider->createDriver(),
             events: $this->events,
         );
     }
