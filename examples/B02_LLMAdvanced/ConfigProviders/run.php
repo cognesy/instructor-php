@@ -17,29 +17,11 @@ require 'examples/boot.php';
 use Adbar\Dot;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Env;
-use Cognesy\Events\Event;
 use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
-
-class CustomConfigProvider implements CanProvideConfig
-{
-    private Dot $dot;
-
-    public function __construct(array $config = []) {
-        $this->dot = new Dot($config);
-    }
-
-    public function get(string $path, mixed $default = null): mixed {
-        return $this->dot->get($path, $default);
-    }
-
-    public function has(string $path): bool {
-        return $this->dot->has($path);
-    }
-}
 
 $configData = [
     'http' => [
@@ -101,33 +83,48 @@ $configData = [
     ],
 ];
 
-$events = new EventDispatcher();
+class CustomConfigProvider implements CanProvideConfig
+{
+    private Dot $dot;
+
+    public function __construct(array $data = []) {
+        $this->dot = new Dot($data);
+    }
+
+    public function get(string $path, mixed $default = null): mixed {
+        return $this->dot->get($path, $default);
+    }
+
+    public function has(string $path): bool {
+        return $this->dot->has($path);
+    }
+}
+
 $configProvider = new CustomConfigProvider($configData);
 
+$events = new EventDispatcher();
 $customClient = (new HttpClientBuilder(
         events: $events,
         listener: $events,
-        configProvider: new CustomConfigProvider(),
+        configProvider: $configProvider,
     ))
     ->withClientInstance(SymfonyHttpClient::create(['http_version' => '2.0']))
-    ->withDebugPreset('on')
     ->create();
 
 $inference = (new Inference(
         events: $events,
         listener: $events,
-        configProvider: new CustomConfigProvider()
+        configProvider: $configProvider,
     ))
     ->withHttpClient($customClient);
 
 $answer = $inference
     ->using('deepseek') // Use 'deepseek' preset from CustomLLMConfigProvider
-    ->wiretap(fn(Event $e) => $e->print())
-    ->with(
-        messages: [['role' => 'user', 'content' => 'What is the capital of France']],
-        options: ['max_tokens' => 64]
-    )
-    ->withStreaming()
+    //->withDebugPreset('on')
+    //->wiretap(fn(Event $e) => $e->print())
+    ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
+    ->withMaxTokens(256)
+    //->withStreaming()
     ->get();
 
 echo "USER: What is capital of France\n";

@@ -7,60 +7,59 @@ use Cognesy\Config\Exceptions\ConfigPresetNotFoundException;
 
 class ConfigPresets
 {
+    private string            $group;
+    private string            $defaultPresetKey;
+    private string            $presetGroupKey;
+    private ?CanProvideConfig $configProvider;
+
     public function __construct(
-        private string $group,
-        private string $defaultPresetKey = 'defaultPreset',
-        private string $presetGroupKey = 'presets',
-        private ?CanProvideConfig $config = null,
+        string            $group,
+        string            $defaultPresetKey = 'defaultPreset',
+        string            $presetGroupKey = 'presets',
+        ?CanProvideConfig $configProvider = null,
     ) {
-        if ($this->config === null) {
-            $this->config = ConfigResolver::default();
-        }
+        $this->group = $group;
+        $this->defaultPresetKey = $defaultPresetKey;
+        $this->presetGroupKey = $presetGroupKey;
+        $this->configProvider = ConfigResolver::makeWith($configProvider);
     }
 
     // FLUENT CREATION API ///////////////////////////////////////////////////
 
-    public static function using(
-        ?CanProvideConfig $config,
-    ): self {
+    public static function using(?CanProvideConfig $config): self {
         return new self(
             group: '',
-            config: $config ?? ConfigResolver::default(),
+            configProvider: $config,
         );
     }
 
     public function for(string $group): self {
         return new self(
             group: $group,
-            config: $this->config,
+            defaultPresetKey: $this->defaultPresetKey,
+            presetGroupKey: $this->presetGroupKey,
+            configProvider: $this->configProvider,
         );
     }
 
     public function withConfigProvider(CanProvideConfig $config): self {
         return new self(
-            group: $this->group,
+            group           : $this->group,
             defaultPresetKey: $this->defaultPresetKey,
-            presetGroupKey: $this->presetGroupKey,
-            config: $config,
+            presetGroupKey  : $this->presetGroupKey,
+            configProvider  : ConfigResolver::makeWith($config),
         );
     }
 
     // PUBLIC INTERFACE //////////////////////////////////////////////////////
 
     public function get(?string $preset = null): array {
-        // If no preset specified, get the default preset name
         $presetName = $preset ?? $this->defaultPresetName();
-
-        // Build path to the actual preset configuration
         $presetPath = $this->presetPath($presetName);
-
-        // Get the preset configuration
-        $presetConfig = $this->config->get($presetPath);
-
+        $presetConfig = $this->configProvider->get($presetPath);
         if (!is_array($presetConfig)) {
             throw new ConfigPresetNotFoundException("Preset '{$presetName}' not found at path: {$presetPath}");
         }
-
         return $presetConfig;
     }
 
@@ -72,17 +71,17 @@ class ConfigPresets
             return $this->default();
         }
         $presetPath = $this->presetPath($preset);
-        return $this->config->get($presetPath);
+        return $this->configProvider->get($presetPath);
     }
 
     public function hasPreset(string $preset): bool {
         $presetPath = $this->presetPath($preset);
-        return $this->config->has($presetPath);
+        return $this->configProvider->has($presetPath);
     }
 
     public function default(): array {
         if (!$this->hasDefault()) {
-            throw new ConfigPresetNotFoundException("No default preset configured at path: {$this->defaultPresetKey}");
+            throw new ConfigPresetNotFoundException("No default preset configured for group: {$this->group}");
         }
         $defaultPresetName = $this->defaultPresetName();
         return $this->get($defaultPresetName);
@@ -90,7 +89,7 @@ class ConfigPresets
 
     public function presets(): array {
         $presetsPath = $this->path($this->presetGroupKey);
-        $presets = $this->config->get($presetsPath, []);
+        $presets = $this->configProvider->get($presetsPath, []);
         return is_array($presets) ? array_keys($presets) : [];
     }
 
@@ -98,14 +97,14 @@ class ConfigPresets
 
     private function hasDefault(): bool {
         $defaultPath = $this->path($this->defaultPresetKey);
-        return $this->config->has($defaultPath);
+        return $this->configProvider->has($defaultPath);
     }
 
     private function defaultPresetName(): string {
-        $defaultPath = $this->path($this->defaultPresetKey);
-        $defaultPreset = $this->config->get($defaultPath);
+        $defaultPresetPath = $this->path($this->defaultPresetKey);
+        $defaultPreset = $this->configProvider->get($defaultPresetPath);
         if (empty($defaultPreset)) {
-            throw new ConfigPresetNotFoundException("No default preset configured at path: {$defaultPath}");
+            throw new ConfigPresetNotFoundException("No default preset configured at path: {$defaultPresetPath} for group: {$this->group}");
         }
         return $defaultPreset;
     }

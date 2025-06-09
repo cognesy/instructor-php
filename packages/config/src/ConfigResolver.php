@@ -19,20 +19,16 @@ class ConfigResolver implements CanProvideConfig
     private array $cacheHas = [];
 
     public static function default(): static {
-        return (new static())->tryFrom(fn() => new SettingsConfigProvider());
+        return (new static)->tryFrom(fn() => new SettingsConfigProvider);
     }
 
     public static function makeWith(?CanProvideConfig $provider): static {
-        return (new static())
-            ->tryFrom($provider)
-            ->thenFrom(fn() => new SettingsConfigProvider());
-    }
-
-    public static function makeWithEmptyFallback(): static {
-        return (new static())
-            ->tryFrom(fn() => new SettingsConfigProvider())
-            ->fallbackTo(fn() => [])
-            ->allowEmptyFallback(true);
+        return match(true) {
+            is_null($provider) => self::default(),
+            $provider instanceof ConfigResolver => $provider, // prevent double wrapping
+            $provider instanceof CanProvideConfig => (new static)->tryFrom($provider)->thenFrom(fn() => new SettingsConfigProvider),
+            default => throw new InvalidArgumentException('Provider must be a CanProvideConfig instance or null.'),
+        };
     }
 
     /**

@@ -24,11 +24,6 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 
-class User {
-    public int $age;
-    public string $name;
-}
-
 class CustomConfigProvider implements CanProvideConfig
 {
     private Dot $dot;
@@ -160,6 +155,11 @@ $structuredOutput = (new StructuredOutput(
     ->withHttpClient($customClient);
 
 // Call with custom model and execution mode
+
+class User {
+    public int $age;
+    public string $name;
+}
 
 $user = $structuredOutput
      // Use 'deepseek' preset defined in CustomLLMConfigProvider
