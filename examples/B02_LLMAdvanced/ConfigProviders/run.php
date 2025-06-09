@@ -43,7 +43,7 @@ class CustomConfigProvider implements CanProvideConfig
 
 $configData = [
     'http' => [
-        'default' => 'symfony',
+        'defaultPreset' => 'symfony',
         'presets' => [
             'symfony' => [
                 'driver' => 'symfony',
@@ -58,10 +58,10 @@ $configData = [
         ],
     ],
     'debug' => [
-        'default' => 'off',
+        'defaultPreset' => 'off',
         'presets' => [
             'off' => [
-                'httpEnabled' => true,
+                'httpEnabled' => false,
             ],
             'on' => [
                 'httpEnabled' => true,
@@ -77,7 +77,7 @@ $configData = [
         ],
     ],
     'llm' => [
-        'default' => 'deepseek',
+        'defaultPreset' => 'deepseek',
         'presets' => [
             'deepseek' => [
                 'apiUrl' => 'https://api.deepseek.com',
@@ -101,9 +101,8 @@ $configData = [
     ],
 ];
 
-// Create ArrayConfigProvider
-$configProvider = new CustomConfigProvider($configData);
 $events = new EventDispatcher();
+$configProvider = new CustomConfigProvider($configData);
 
 $customClient = (new HttpClientBuilder(
         events: $events,
@@ -121,7 +120,8 @@ $inference = (new Inference(
     ))
     ->withHttpClient($customClient);
 
-$answer = $inference->using('deepseek') // Use 'deepseek' preset from CustomLLMConfigProvider
+$answer = $inference
+    ->using('deepseek') // Use 'deepseek' preset from CustomLLMConfigProvider
     ->wiretap(fn(Event $e) => $e->print())
     ->with(
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],

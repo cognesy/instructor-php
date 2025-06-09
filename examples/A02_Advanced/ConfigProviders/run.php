@@ -66,7 +66,7 @@ $configData = [
         'defaultPreset' => 'off',
         'presets' => [
             'off' => [
-                'httpEnabled' => true,
+                'httpEnabled' => false,
             ],
             'on' => [
                 'httpEnabled' => true,
@@ -141,7 +141,7 @@ $configData = [
 ];
 
 $events = new EventDispatcher();
-$configProvider = new CustomConfigProvider();
+$configProvider = new CustomConfigProvider($configData);
 
 $customClient = (new HttpClientBuilder(
         events: $events,
@@ -164,7 +164,7 @@ $structuredOutput = (new StructuredOutput(
 $user = $structuredOutput
      // Use 'deepseek' preset defined in CustomLLMConfigProvider
     ->using('deepseek')
-    //->withDebugPreset('on') // Enable debug preset
+    ->withDebugPreset('on') // Enable debug preset
     //->wiretap(fn($e) => $e->printDebug())
     ->with(
         messages: "Our user Jason is 25 years old.",

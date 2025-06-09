@@ -111,10 +111,14 @@ class ConfigPresets
     }
 
     private function presetPath(string $presetName): string {
-        return $this->path("{$this->presetGroupKey}.{$presetName}");
+        return empty($this->group)
+            ? "{$this->presetGroupKey}.{$presetName}"
+            : "{$this->group}.{$this->presetGroupKey}.{$presetName}";
     }
 
     private function path(string $key) : string {
-        return empty($this->group) ? $key : "{$this->group}.{$key}";
+        return empty($this->group)
+            ? $key
+            : "{$this->group}.{$key}";
     }
 }
