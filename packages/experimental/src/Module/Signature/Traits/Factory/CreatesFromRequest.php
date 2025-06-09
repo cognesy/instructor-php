@@ -32,11 +32,7 @@ trait CreatesFromRequest
     }
 
     private static function responseModel(StructuredOutputRequest $request) : ResponseModel {
-        return self::responseModelFactory()->fromAny(
-            requestedModel: $request->responseModel(),
-            toolName: $request->config()?->toolName(),
-            toolDescription: $request->config()?->toolDescription(),
-        );
+        return self::responseModelFactory()->fromAny($request->responseModel());
     }
 
     private static function responseModelFactory() : ResponseModelFactory {

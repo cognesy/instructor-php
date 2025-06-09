@@ -61,7 +61,7 @@ class Settings
      * @return mixed The setting value.
      * @throws Exception If the group is not provided or the key is not found and no default value is provided.
      */
-    public static function get(string $group, string $key, mixed $default = null, bool $skipIfMissing = false) : mixed {
+    public static function get(string $group, string $key, mixed $default = null) : mixed {
         if (empty($group)) {
             throw new \InvalidArgumentException("Settings group not provided");
         }
@@ -78,15 +78,20 @@ class Settings
 
     /**
      * Checks if a setting exists by group and key.
+     * If key is not provided, it checks if the group exists.
      *
      * @param string $group The settings group.
      * @param string $key The settings key.
      * @return bool True if the setting exists, false otherwise.
      * @throws Exception If the group is not provided.
      */
-    public static function has(string $group, string $key) : bool {
+    public static function has(string $group, ?string $key = null) : bool {
         if (empty($group)) {
             throw new Exception("Settings group not provided");
+        }
+
+        if (empty($key)) {
+            return self::hasGroup($group);
         }
 
         if (!self::isGroupLoaded($group)) {
@@ -103,7 +108,7 @@ class Settings
      * @return bool True if the group exists, false otherwise.
      * @throws Exception If the group is not provided.
      */
-    public function hasGroup(string $group) : bool {
+    public static function hasGroup(string $group) : bool {
         if (empty($group)) {
             throw new Exception("Settings group not provided");
         }
@@ -113,6 +118,25 @@ class Settings
         }
 
         return !empty(self::$settings[$group]);
+    }
+
+    /**
+     * Gets a settings group.
+     *
+     * @param string $group The settings group.
+     * @return mixed The settings group.
+     * @throws Exception If the group is not provided or the settings file is not found.
+     */
+    public static function getGroup(string $group) : mixed {
+        if (empty($group)) {
+            throw new Exception("Settings group not provided");
+        }
+
+        if (!self::isGroupLoaded($group)) {
+            self::$settings[$group] = dot(self::loadGroup($group));
+        }
+
+        return self::$settings[$group];
     }
 
     /**

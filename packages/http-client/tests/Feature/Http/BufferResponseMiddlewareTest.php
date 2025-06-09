@@ -123,7 +123,7 @@ class MockResponse implements HttpClientResponse
     }
 
     public function isStreamed(): bool {
-        // TODO: Implement isStreamed() method.
+        return true;
     }
 }
 

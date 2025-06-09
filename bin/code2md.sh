@@ -19,9 +19,6 @@ echo "📦 Exporting sub-package sources to Markdown"
 
 code2prompt "packages/utils/src/JsonSchema" -o "tmp/cut-util-json-schema.md"
 code2prompt "packages/utils/src/Messages" -o "tmp/cut-util-messages.md"
-code2prompt "packages/utils/src/Events" -o "tmp/cut-util-events.md"
-code2prompt "packages/utils/src/Config" -o "tmp/cut-util-config.md"
-
 code2prompt "packages/polyglot/src/LLM" -o "tmp/cut-poly-llm.md"
 code2prompt "packages/polyglot/src/Embeddings" -o "tmp/cut-poly-embeddings.md"
 

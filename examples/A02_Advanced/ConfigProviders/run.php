@@ -15,6 +15,7 @@ Laravel).
 <?php
 require 'examples/boot.php';
 
+use Adbar\Dot;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Env;
 use Cognesy\Events\EventDispatcher;
@@ -28,55 +29,44 @@ class User {
     public string $name;
 }
 
-$events = new EventDispatcher();
-
-// Let's build a set of custom configuration providers.
-// You can use those examples to build your framework-specific providers.
-
 class CustomConfigProvider implements CanProvideConfig
 {
-    public function getConfig(string $group, ?string $preset = ''): array {
-        return match($group) {
-            'http' => $this->http($preset),
-            'debug' => $this->debug($preset),
-            'llm' => $this->llm($preset),
-            'structured' => $this->struct($preset),
-            default => [],
-        };
+    private Dot $dot;
+
+    public function __construct(array $config = []) {
+        $this->dot = new Dot($config);
     }
 
-    private function http(?string $preset) : array {
-        $config = [
-            'default' => 'symfony',
-            'presets' => [
-                'symfony' => [
-                    'driver' => 'symfony',
-                    'connectTimeout' => 10,
-                    'requestTimeout' => 30,
-                    'idleTimeout' => -1,
-                    'maxConcurrent' => 5,
-                    'poolTimeout' => 60,
-                    'failOnError' => true,
-                ]
-                //
+    public function get(string $path, mixed $default = null): mixed {
+        return $this->dot->get($path, $default);
+    }
+
+    public function has(string $path): bool {
+        return $this->dot->has($path);
+    }
+}
+
+$configData = [
+    'http' => [
+        'defaultPreset' => 'symfony',
+        'presets' => [
+            'symfony' => [
+                'driver' => 'symfony',
+                'connectTimeout' => 10,
+                'requestTimeout' => 30,
+                'idleTimeout' => -1,
+                'maxConcurrent' => 5,
+                'poolTimeout' => 60,
+                'failOnError' => true,
             ],
-        ];
-        $default = $config['default'];
-        $preset = $preset ?: $default;
-        return $config['presets'][$preset] ?? $config['presets'][$default] ?? [];
-    }
-
-    private function debug(?string $preset): array {
-        $data = [
+            // Add more HTTP presets as needed
+        ],
+    ],
+    'debug' => [
+        'defaultPreset' => 'off',
+        'presets' => [
             'off' => [
                 'httpEnabled' => true,
-                'httpRequestUrl' => true,
-                'httpRequestHeaders' => true,
-                'httpRequestBody' => true,
-                'httpResponseHeaders' => true,
-                'httpResponseBody' => true,
-                'httpResponseStream' => true,
-                'httpResponseStreamByLine' => true,
             ],
             'on' => [
                 'httpEnabled' => true,
@@ -89,14 +79,11 @@ class CustomConfigProvider implements CanProvideConfig
                 'httpResponseStream' => true,
                 'httpResponseStreamByLine' => true,
             ],
-            // ...
-        ];
-        $preset = $preset ?: 'off';
-        return $data[$preset] ?? $data['off'];
-    }
-
-    private function llm(?string $preset): array {
-        $data = [
+        ],
+    ],
+    'llm' => [
+        'defaultPreset' => 'deepseek',
+        'presets' => [
             'deepseek' => [
                 'apiUrl' => 'https://api.deepseek.com',
                 'apiKey' => Env::get('DEEPSEEK_API_KEY'),
@@ -104,47 +91,56 @@ class CustomConfigProvider implements CanProvideConfig
                 'defaultModel' => 'deepseek-chat',
                 'defaultMaxTokens' => 128,
                 'driver' => 'deepseek',
-                'httpClientPreset' => 'laravel',
+                'httpClientPreset' => 'symfony',
             ],
-            // ...
-        ];
-        $preset = $preset ?: 'deepseek';
-        return $data[$preset] ?? $data['deepseek'];
-    }
+            'openai' => [
+                'apiUrl' => 'https://api.openai.com',
+                'apiKey' => Env::get('OPENAI_API_KEY'),
+                'endpoint' => '/v1/chat/completions',
+                'defaultModel' => 'gpt-4',
+                'defaultMaxTokens' => 256,
+                'driver' => 'openai',
+                'httpClientPreset' => 'symfony',
+            ],
+        ],
+    ],
+    'structured' => [
+        'defaultPreset' => 'tools',
+        'presets' => [
+            'tools' => [
+                'outputMode' => OutputMode::Tools,
+                'useObjectReferences' => true,
+                'maxRetries' => 3,
+                'retryPrompt' => 'Please try again ...',
+                'modePrompts' => [
+                    OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
+                    OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
+                    OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
+                    OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
+                ],
+                'schemaName' => 'user_schema',
+                'toolName' => 'user_tool',
+                'toolDescription' => 'Tool to extract user information ...',
+                'chatStructure' => [
+                    'system',
+                    'pre-cached',
+                        'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
+                        'pre-cached-examples', 'cached-examples', 'post-cached-examples',
+                        'cached-messages',
+                    'post-cached',
+                    'pre-prompt', 'prompt', 'post-prompt',
+                    'pre-examples', 'examples', 'post-examples',
+                    'pre-messages', 'messages', 'post-messages',
+                    'pre-retries', 'retries', 'post-retries'
+                ],
+                // defaultOutputClass is not used in this example
+                'defaultOutputClass' => Structure::class,
+            ]
+        ]
+    ]
+];
 
-    private function struct(?string $preset): array {
-        return [
-            'outputMode' => OutputMode::Tools,
-            'useObjectReferences' => true,
-            'maxRetries' => 3,
-            'retryPrompt' => 'Please try again ...',
-            'modePrompts' => [
-                OutputMode::MdJson->value => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
-                OutputMode::Json->value => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
-                OutputMode::JsonSchema->value => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
-                OutputMode::Tools->value => "Extract correct and accurate data from the input using provided tools.\n",
-            ],
-            'schemaName' => 'user_schema',
-            'toolName' => 'user_tool',
-            'toolDescription' => 'Tool to extract user information ...',
-            'chatStructure' => [
-                'system',
-                'pre-cached',
-                    'pre-cached-prompt', 'cached-prompt', 'post-cached-prompt',
-                    'pre-cached-examples', 'cached-examples', 'post-cached-examples',
-                    'cached-messages',
-                'post-cached',
-                'pre-prompt', 'prompt', 'post-prompt',
-                'pre-examples', 'examples', 'post-examples',
-                'pre-messages', 'messages', 'post-messages',
-                'pre-retries', 'retries', 'post-retries'
-            ],
-            // defaultOutputClass is not used in this example
-            'defaultOutputClass' => Structure::class,
-        ];
-    }
-}
-
+$events = new EventDispatcher();
 $configProvider = new CustomConfigProvider();
 
 $customClient = (new HttpClientBuilder(

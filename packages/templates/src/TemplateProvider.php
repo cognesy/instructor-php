@@ -2,8 +2,8 @@
 
 namespace Cognesy\Template;
 
+use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\Providers\ConfigResolver;
 use Cognesy\Template\Config\TemplateEngineConfig;
 use Cognesy\Template\Contracts\CanHandleTemplate;
 use Cognesy\Template\Drivers\ArrowpipeDriver;
@@ -16,7 +16,7 @@ class TemplateProvider
 {
     private CanHandleTemplate $driver;
     private TemplateEngineConfig $config;
-    private ?CanProvideConfig $configProvider;
+    private ConfigPresets $presets;
 
     public function __construct(
         string                $preset = '',
@@ -24,13 +24,14 @@ class TemplateProvider
         ?CanHandleTemplate    $driver = null,
         ?CanProvideConfig $configProvider = null
     ) {
-        $this->configProvider = ConfigResolver::makeWith($configProvider);
-        $this->config = $config ?? TemplateEngineConfig::fromArray($this->configProvider->getConfig(TemplateEngineConfig::group(), $preset));
+        $this->presets = ConfigPresets::using($configProvider)->for(TemplateEngineConfig::group());
+        $data = $this->presets->getOrDefault($preset);
+        $this->config = $config ?? TemplateEngineConfig::fromArray($data);
         $this->driver = $driver ?? $this->makeDriver($this->config);
     }
 
     public function get(string $preset): self {
-        $data = $this->configProvider->getConfig(TemplateEngineConfig::group(), $preset);
+        $data = $this->presets->getOrDefault($preset);
         $this->config = TemplateEngineConfig::fromArray($data);
         $this->driver = $this->makeDriver($this->config);
         return $this;

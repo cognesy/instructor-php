@@ -3,37 +3,61 @@
 namespace Cognesy\Config\Providers;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\Exceptions\ConfigurationException;
+use Cognesy\Config\Exceptions\MissingSettingException;
+use Cognesy\Config\Exceptions\NoSettingsFileException;
 use Cognesy\Config\Settings;
-use Cognesy\Utils\Result\Result;
 
 class SettingsConfigProvider implements CanProvideConfig
 {
-    public function getConfig(string $group, ?string $preset = '') : array {
-        $preset = $preset ?: $this->getDefaultPreset($group);
-        $this->validatePreset($group, $preset);
-        return $this->getPreset($group, $preset);
-    }
-
-    private function getDefaultPreset(string $group): string {
-        $result = Result::try(fn() => Settings::get($group, 'defaultPreset', ''));
-
-        if ($result->isFailure() || empty($result->unwrap())) {
-            throw new ConfigurationException(
-                "No default preset found for {$group}.defaultPreset: " . ($result->isFailure() ? $result->errorMessage() : 'empty value')
-            );
-        }
-
-        return $result->unwrap();
-    }
-
-    private function validatePreset(string $group, string $preset): void {
-        if (!Settings::has($group, "presets.$preset")) {
-            throw new ConfigurationException("Unknown {$$group} preset: $preset");
+    public function __construct(?string $configPath = null) {
+        if ($configPath !== null) {
+            Settings::setPath($configPath);
         }
     }
 
-    protected function getPreset(string $group, string $key): array {
-        return Settings::get($group, "presets.$key", []);
+    public function get(string $path, mixed $default = null): mixed {
+        [$group, $key] = $this->parsePath($path);
+
+        try {
+            // If no key specified, get the entire group
+            if (empty($key)) {
+                $groupData = Settings::getGroup($group);
+                // Convert dot object back to array if needed
+                return is_object($groupData) && method_exists($groupData, 'all')
+                    ? $groupData->all()
+                    : $groupData;
+            }
+
+            // Get specific key from group
+            return Settings::get($group, $key, $default);
+
+        } catch (NoSettingsFileException | MissingSettingException $e) {
+            return $default;
+        }
+    }
+
+    public function has(string $path): bool {
+        [$group, $key] = $this->parsePath($path);
+
+        try {
+            // If no key specified, check if group exists
+            if (empty($key)) {
+                return Settings::hasGroup($group);
+            }
+
+            // Check if specific key exists in group
+            return Settings::has($group, $key);
+
+        } catch (NoSettingsFileException $e) {
+            return false;
+        }
+    }
+
+    private function parsePath(string $path): array {
+        $parts = explode('.', $path, 2);
+        $group = $parts[0];
+        $key = $parts[1] ?? '';
+
+        return [$group, $key];
     }
 }

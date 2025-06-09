@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Polyglot\Embeddings;
 
+use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\Dsn\DSN;
-use Cognesy\Config\Providers\ConfigResolver;
+use Cognesy\Config\DSN;
 use Cognesy\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\HttpClient;
@@ -20,7 +20,7 @@ final class EmbeddingsProvider
 {
     private readonly EventDispatcherInterface $events;
     private readonly CanRegisterEventListeners $listener;
-    private CanProvideConfig $configProvider;
+    private ConfigPresets $presets;
 
     private ?string $preset;
     private ?string $dsn;
@@ -43,7 +43,7 @@ final class EmbeddingsProvider
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = ConfigResolver::makeWith($configProvider);
+        $this->presets = ConfigPresets::using($configProvider)->for(EmbeddingsConfig::group());
 
         $this->preset = $preset;
         $this->dsn = $dsn;
@@ -85,7 +85,7 @@ final class EmbeddingsProvider
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->configProvider = $configProvider;
+        $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -138,9 +138,7 @@ final class EmbeddingsProvider
         $dsnOverrides = $this->getDsnOverrides();
 
         // Build config based on preset
-        $config = empty($effectivePreset)
-            ? $this->configProvider->getConfig('embed')
-            : $this->configProvider->getConfig('embed', $effectivePreset);
+        $config = $this->presets->getOrDefault($effectivePreset);
 
         // Apply DSN overrides if present
         $data = !empty($dsnOverrides) ? array_merge($config, $dsnOverrides) : $config;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Config\Dsn;
+namespace Cognesy\Config;
 
 use Adbar\Dot;
 

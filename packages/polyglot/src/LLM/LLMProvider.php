@@ -2,11 +2,11 @@
 
 namespace Cognesy\Polyglot\LLM;
 
+use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\Dsn\DSN;
+use Cognesy\Config\DSN;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
-use Cognesy\Config\Providers\ConfigResolver;
 use Cognesy\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\HttpClient;
@@ -21,7 +21,7 @@ final class LLMProvider
 {
     private readonly EventDispatcherInterface $events;
     private readonly CanRegisterEventListeners $listener;
-    private CanProvideConfig $configProvider;
+    private ConfigPresets $presets;
 
     // Configuration - all immutable after construction
     private ?string $debugPreset;
@@ -45,7 +45,7 @@ final class LLMProvider
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = ConfigResolver::makeWith($configProvider);
+        $this->presets = ConfigPresets::using($configProvider)->for(LLMConfig::group());
 
         $this->debugPreset = $debugPreset;
         $this->dsn = $dsn;
@@ -100,7 +100,7 @@ final class LLMProvider
      * Configure with a custom config provider
      */
     public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->configProvider = ConfigResolver::makeWith($configProvider);
+        $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -180,11 +180,7 @@ final class LLMProvider
         $dsnOverrides = $this->dsn !== null ? DSN::fromString($this->dsn)->toArray() : [];
 
         // Build config based on preset
-        $result = Result::try(
-            fn() => empty($effectivePreset)
-                ? $this->configProvider->getConfig(LLMConfig::group())
-                : $this->configProvider->getConfig(LLMConfig::group(), $effectivePreset)
-        );
+        $result = Result::try(fn() => $this->presets->getOrDefault($effectivePreset));
 
         if ($result->isFailure()) {
             $this->events->dispatch(new ConfigResolutionFailed([

@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Config\Dsn\DSN;
+use Cognesy\Config\DSN;
 
 it('can be created from constructor', function () {
     $dsn = new DSN('provider=openai, model=gpt-4');

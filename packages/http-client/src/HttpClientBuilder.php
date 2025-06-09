@@ -1,10 +1,10 @@
 <?php
 namespace Cognesy\Http;
 
+use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
-use Cognesy\Config\Providers\ConfigResolver;
 use Cognesy\Events\Contracts\CanRegisterEventListeners;
 use Cognesy\Events\EventHandlerFactory;
 use Cognesy\Http\Config\DebugConfig;
@@ -33,7 +33,7 @@ final class HttpClientBuilder
     private ?object $clientInstance = null;
     private array $middleware = [];
 
-    private CanProvideConfig $configProvider;
+    private ConfigPresets $presets;
     private EventDispatcherInterface $events;
     private CanRegisterEventListeners $listener;
 
@@ -45,7 +45,7 @@ final class HttpClientBuilder
         $eventHandlerFactory = new EventHandlerFactory($events, $listener);
         $this->events = $eventHandlerFactory->dispatcher();
         $this->listener = $eventHandlerFactory->listener();
-        $this->configProvider = ConfigResolver::makeWith($configProvider);
+        $this->presets = ConfigPresets::using($configProvider);
     }
 
     public function using(string $preset): self {
@@ -73,7 +73,7 @@ final class HttpClientBuilder
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->configProvider = $configProvider;
+        $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -132,7 +132,9 @@ final class HttpClientBuilder
             return $this->config;
         }
 
-        $result = Result::try(fn() => $this->configProvider->getConfig(HttpClientConfig::group(), $this->preset));
+        $result = Result::try(fn() => $this->presets
+            ->for(HttpClientConfig::group())
+            ->getOrDefault($this->preset));
         if ($result->isFailure()) {
             $this->events->dispatch(new ConfigResolutionFailed([
                 'group' => 'http',
@@ -154,8 +156,9 @@ final class HttpClientBuilder
     private function buildDebugConfig(): DebugConfig {
         $result = Result::try(fn() => match(true) {
             $this->debugConfig !== null => $this->debugConfig,
-            !empty($this->debugPreset) => $this->configProvider->getConfig(DebugConfig::group(), $this->debugPreset),
-            default => $this->configProvider->getConfig(DebugConfig::group()),
+            default => $this->presets
+                ->for(DebugConfig::group())
+                ->getOrDefault($this->debugPreset),
         });
 
         if ($result->isFailure()) {

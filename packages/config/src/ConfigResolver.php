@@ -1,9 +1,10 @@
 <?php
 
-namespace Cognesy\Config\Providers;
+namespace Cognesy\Config;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Exceptions\ConfigurationException;
+use Cognesy\Config\Providers\SettingsConfigProvider;
 use Cognesy\Utils\Deferred;
 use InvalidArgumentException;
 
@@ -14,6 +15,8 @@ class ConfigResolver implements CanProvideConfig
     private ?Deferred $fallback = null;
     private ?Deferred $override = null;
     private bool $allowEmptyFallback = false;
+    private array $cacheGet = [];
+    private array $cacheHas = [];
 
     public static function default(): static {
         return (new static())->tryFrom(fn() => new SettingsConfigProvider());
@@ -66,23 +69,47 @@ class ConfigResolver implements CanProvideConfig
         return $this;
     }
 
-    public function getConfig(string $group, ?string $preset = ''): array {
+    // MAIN API ///////////////////////////////////////////////////////////
+
+    public function get(string $path, mixed $default = null): mixed {
+        if (!isset($this->cacheGet[$path])) {
+            $this->cacheGet[$path] = $this->resolveGet($path, $default);
+        }
+        return $this->cacheGet[$path];
+    }
+
+    public function has(string $path): bool {
+        if (!isset($this->cacheHas[$path])) {
+            $this->cacheHas[$path] = $this->resolveHas($path);
+        }
+        return $this->cacheHas[$path];
+    }
+
+    // INTERNAL ///////////////////////////////////////////////////////////
+
+    private function resolveGet(string $path, mixed $default) : mixed {
         foreach ($this->makePipeline() as $provider) {
-            $result = $this->tryResolve($provider, $group, $preset);
+            $result = $this->tryResolveGet($provider, $path);
             if (!is_null($result)) {
                 return $result;
             }
         }
-
-        if (!$this->allowEmptyFallback) {
-            // If empty fallback is allowed and we have a fallback that creates empty objects
-            throw new ConfigurationException("No valid configuration found for group '{$group}' with preset '$preset'. ");
+        if (!$this->allowEmptyFallback && is_null($default)) {
+            // if empty fallback is allowed and we have a fallback that creates empty objects
+            throw new ConfigurationException("No valid configuration found for path '{$path}'");
         }
-
-        return [];
+        return $default;
     }
 
-    // INTERNAL ///////////////////////////////////////////////////////////
+    private function resolveHas(string $path) : bool {
+        foreach ($this->makePipeline() as $provider) {
+            $result = $this->tryResolveHas($provider, $path);
+            if (!is_null($result) && $result === true) {
+                return $result;
+            }
+        }
+        return false;
+    }
 
     private function makePipeline() : array {
         $pipeline = [];
@@ -105,10 +132,19 @@ class ConfigResolver implements CanProvideConfig
         };
     }
 
-    private function tryResolve(Deferred $deferred, string $group, ?string $preset) : ?array {
+    private function tryResolveGet(Deferred $deferred, string $path) : mixed {
         $resolved = $deferred->resolve();
         return match (true) {
-            $resolved instanceof CanProvideConfig => $resolved->getConfig($group, $preset),
+            $resolved instanceof CanProvideConfig => $resolved->get($path),
+            $resolved !== null => $resolved,
+            default => null,
+        };
+    }
+
+    private function tryResolveHas(Deferred $deferred, string $path) : ?bool {
+        $resolved = $deferred->resolve();
+        return match (true) {
+            $resolved instanceof CanProvideConfig => $resolved->has($path),
             $resolved !== null => $resolved,
             default => null,
         };

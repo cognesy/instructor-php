@@ -2,8 +2,6 @@
 
 namespace Cognesy\Tell;
 
-use Cognesy\Config\Providers\ConfigResolver;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\PendingInference;
 use Symfony\Component\Console\Command\Command;
@@ -56,9 +54,6 @@ class TellCommand extends Command
     }
 
     protected function inferenceUsingPreset(string $preset, string $prompt, string $model = '') : PendingInference {
-        $configData = ConfigResolver::default()->getConfig(LLMConfig::group(), $preset);
-        $config = LLMConfig::fromArray($configData);
-        $model = $model ?: $config->defaultModel;
         return (new Inference)
             ->using($preset)
             ->with(

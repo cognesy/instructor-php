@@ -14,6 +14,7 @@ when you want to initialize LLM client with custom values.
 <?php
 require 'examples/boot.php';
 
+use Adbar\Dot;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Env;
 use Cognesy\Events\Event;
@@ -23,42 +24,42 @@ use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Utils\Str;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
-$events = new EventDispatcher();
-
 class CustomConfigProvider implements CanProvideConfig
 {
-    public function getConfig(string $group, ?string $preset = ''): array {
-        return match($group) {
-            'http' => $this->http($preset),
-            'debug' => $this->debug($preset),
-            'llm' => $this->llm($preset),
-            default => [],
-        };
+    private Dot $dot;
+
+    public function __construct(array $config = []) {
+        $this->dot = new Dot($config);
     }
 
-    private function http(?string $preset) : array {
-        $config = [
-            'default' => 'symfony',
-            'presets' => [
-                'symfony' => [
-                    'driver' => 'symfony',
-                    'connectTimeout' => 10,
-                    'requestTimeout' => 30,
-                    'idleTimeout' => -1,
-                    'maxConcurrent' => 5,
-                    'poolTimeout' => 60,
-                    'failOnError' => true,
-                ]
-                //
+    public function get(string $path, mixed $default = null): mixed {
+        return $this->dot->get($path, $default);
+    }
+
+    public function has(string $path): bool {
+        return $this->dot->has($path);
+    }
+}
+
+$configData = [
+    'http' => [
+        'default' => 'symfony',
+        'presets' => [
+            'symfony' => [
+                'driver' => 'symfony',
+                'connectTimeout' => 10,
+                'requestTimeout' => 30,
+                'idleTimeout' => -1,
+                'maxConcurrent' => 5,
+                'poolTimeout' => 60,
+                'failOnError' => true,
             ],
-        ];
-        $default = $config['default'];
-        $preset = $preset ?: $default;
-        return $config['presets'][$preset] ?? $config['presets'][$default] ?? [];
-    }
-
-    private function debug(?string $preset): array {
-        $data = [
+            // Add more HTTP presets as needed
+        ],
+    ],
+    'debug' => [
+        'default' => 'off',
+        'presets' => [
             'off' => [
                 'httpEnabled' => true,
             ],
@@ -73,14 +74,11 @@ class CustomConfigProvider implements CanProvideConfig
                 'httpResponseStream' => true,
                 'httpResponseStreamByLine' => true,
             ],
-            // ...
-        ];
-        $preset = $preset ?: 'off';
-        return $data[$preset] ?? $data['off'];
-    }
-
-    private function llm(?string $preset): array {
-        $data = [
+        ],
+    ],
+    'llm' => [
+        'default' => 'deepseek',
+        'presets' => [
             'deepseek' => [
                 'apiUrl' => 'https://api.deepseek.com',
                 'apiKey' => Env::get('DEEPSEEK_API_KEY'),
@@ -90,12 +88,22 @@ class CustomConfigProvider implements CanProvideConfig
                 'driver' => 'deepseek',
                 'httpClientPreset' => 'symfony',
             ],
-            // ...
-        ];
-        $preset = $preset ?: 'deepseek';
-        return $data[$preset] ?? $data['deepseek'];
-    }
-}
+            'openai' => [
+                'apiUrl' => 'https://api.openai.com',
+                'apiKey' => Env::get('OPENAI_API_KEY'),
+                'endpoint' => '/v1/chat/completions',
+                'defaultModel' => 'gpt-4',
+                'defaultMaxTokens' => 256,
+                'driver' => 'openai',
+                'httpClientPreset' => 'symfony',
+            ],
+        ],
+    ],
+];
+
+// Create ArrayConfigProvider
+$configProvider = new CustomConfigProvider($configData);
+$events = new EventDispatcher();
 
 $customClient = (new HttpClientBuilder(
         events: $events,

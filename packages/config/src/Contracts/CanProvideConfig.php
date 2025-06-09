@@ -4,5 +4,6 @@ namespace Cognesy\Config\Contracts;
 
 interface CanProvideConfig
 {
-    public function getConfig(string $group, ?string $preset = null) : array;
+    public function get(string $path, mixed $default = null): mixed;
+    public function has(string $path): bool;
 }
