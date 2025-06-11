@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpClientRequest;

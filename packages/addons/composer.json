@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-addons",
-  "version": "0.17.11",
+  "version": "1.0-rc1",
   "description": "Optional addons for Instructor library, should be used with Instructor or Polyglot",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -31,8 +31,8 @@
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-utils": "^0.17",
-    "cognesy/instructor-struct": "^0.17"
+    "cognesy/instructor-utils": "^1.0",
+    "cognesy/instructor-struct": "^1.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

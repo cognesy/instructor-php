@@ -27,7 +27,7 @@ it('aligns single column text to the right', function () {
 it('truncates and appends ellipsis to long text based on maxWidth', function () {
     $longText = str_repeat('A', 100);
     $output = Console::columns([[-1, $longText]], 80);
-    $expected = str_pad(substr($longText, 0, 77) . '…' . Color::RESET . ' ', 80);
+    $expected = str_pad(substr($longText, 0, 77) . '...' . Color::RESET . ' ', 80);
     expect($output)->toBe($expected);
 });
 

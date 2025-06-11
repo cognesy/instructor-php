@@ -24,7 +24,7 @@ abstract class BaseInferenceDriver implements CanHandleInference
 
     public function handle(InferenceRequest $request): HttpClientResponse {
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
-        return $this->httpClient->handle($clientRequest);
+        return $this->httpClient->withRequest($clientRequest)->get();
     }
 
     public function fromResponse(array $data): ?InferenceResponse {

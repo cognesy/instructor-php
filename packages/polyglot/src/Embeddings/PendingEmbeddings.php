@@ -13,10 +13,11 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class PendingEmbeddings
 {
-    private EmbeddingsRequest $request;
+    private readonly CanHandleVectorization $driver;
+    private readonly EventDispatcherInterface $events;
+    private readonly EmbeddingsRequest $request;
+
     private HttpClientResponse $httpResponse;
-    private CanHandleVectorization $driver;
-    private EventDispatcherInterface $events;
     private ?EmbeddingsResponse $response = null;
 
     public function __construct(

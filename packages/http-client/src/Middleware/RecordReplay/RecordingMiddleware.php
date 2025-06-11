@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;

@@ -5,7 +5,6 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 
 /**
@@ -32,23 +31,21 @@ class HttpClient
     /**
      * Handles the HTTP request using the configured driver and middleware stack.
      */
-    public function handle(HttpClientRequest $request): HttpClientResponse
-    {
-        return $this->middlewareStack
-            ->decorate($this->driver)
-            ->handle($request);
+    public function withRequest(HttpClientRequest $request): PendingHttpResponse {
+        return new PendingHttpResponse(
+            request: $request,
+            handler: $this->middlewareStack->decorate($this->driver),
+        );
     }
 
     /**
      * Returns the middleware stack (read-only access).
      */
-    public function middleware(): MiddlewareStack
-    {
+    public function middleware(): MiddlewareStack {
         return $this->middlewareStack;
     }
 
-    public function toDebugArray(): array
-    {
+    public function toDebugArray(): array {
         return [
             'driver' => $this->driver::class,
             'middleware' => $this->middlewareStack->toDebugArray(),

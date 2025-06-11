@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-config",
-  "version": "0.17.11",
+  "version": "1.0-rc1",
   "description": "Configuration functionality for Instructor PHP library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -26,7 +26,7 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.17"
+    "cognesy/instructor-utils": "^1.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

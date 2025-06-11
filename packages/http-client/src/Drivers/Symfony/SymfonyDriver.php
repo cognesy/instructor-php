@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;

@@ -23,7 +23,7 @@ class BaseEmbedDriver implements CanHandleVectorization
 
     public function handle(EmbeddingsRequest $request): HttpClientResponse {
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
-        return $this->httpClient->handle($clientRequest);
+        return $this->httpClient->withRequest($clientRequest)->get();
     }
 
     public function fromData(array $data): ?EmbeddingsResponse {

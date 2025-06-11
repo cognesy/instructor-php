@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Drivers\Mock;
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
@@ -29,7 +29,7 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * Constructor
      * 
-     * @param \Cognesy\Events\Providers\EventDispatcher|null $events Optional event dispatcher
+     * @param \Cognesy\Events\Dispatchers\EventDispatcher|null $events Optional event dispatcher
      */
     public function __construct(?EventDispatcherInterface $events = null)
     {

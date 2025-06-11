@@ -13,6 +13,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StructuredOutputStream
 {
+    private Generator $stream;
+    private EventDispatcherInterface $events;
     private PartialInferenceResponse|InferenceResponse|null $lastResponse = null;
     private Usage $usage;
 
@@ -21,10 +23,12 @@ class StructuredOutputStream
      * @param EventDispatcherInterface $events
      */
     public function __construct(
-        private Generator $stream,
-        private EventDispatcherInterface $events,
+        Generator $stream,
+        EventDispatcherInterface $events,
     ) {
         $this->usage = new Usage();
+        $this->stream = $stream;
+        $this->events = $events;
     }
 
     /**
@@ -54,7 +58,6 @@ class StructuredOutputStream
      * Returns a stream of partial updates.
      */
     public function partials() : Iterable {
-        $result = null;
         foreach ($this->streamResponses() as $partialResponse) {
             $result = $partialResponse->value();
             yield $result;

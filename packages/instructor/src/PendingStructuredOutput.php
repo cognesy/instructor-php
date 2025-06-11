@@ -26,10 +26,11 @@ class PendingStructuredOutput
 
     private readonly CanHandleEvents $events;
     private readonly RequestHandler $requestHandler;
-    private readonly StructuredOutputRequest $request;
     private readonly ResponseDeserializer $responseDeserializer;
     private readonly ResponseValidator $responseValidator;
     private readonly ResponseTransformer $responseTransformer;
+
+    private readonly StructuredOutputRequest $request;
     private readonly StructuredOutputConfig $config;
     private readonly LLMProvider $llmProvider;
     private readonly bool $cacheProcessedResponse;

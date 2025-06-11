@@ -2,7 +2,7 @@
 namespace Cognesy\Http\Middleware\StreamByLine;
 
 use Closure;
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;

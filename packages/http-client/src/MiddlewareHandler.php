@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http;
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
@@ -28,7 +28,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
     /**
      * @param CanHandleHttpRequest $driver The actual underlying driver (e.g. GuzzleDriver)
      * @param \Cognesy\Http\Contracts\HttpMiddleware[] $middleware The list of middlewares
-     * @param \Cognesy\Events\Providers\EventDispatcher|null $events Event dispatcher for middleware events
+     * @param \Cognesy\Events\Dispatchers\EventDispatcher|null $events Event dispatcher for middleware events
      */
     public function __construct(
         protected CanHandleHttpRequest $driver,

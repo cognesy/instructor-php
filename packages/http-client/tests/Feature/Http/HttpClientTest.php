@@ -55,7 +55,7 @@ test('HTTP client with mock driver', function() {
     );
 
     // Act
-    $response = $httpClient->handle($request);
+    $response = $httpClient->withRequest($request)->get();
 
     // Assert
     expect($response->statusCode())->toBe(200);
@@ -101,7 +101,7 @@ test('HTTP client with middleware', function() {
     );
 
     // Act
-    $httpClient->handle($request);
+    $httpClient->withRequest($request)->get();
 
     // Assert - Verify the middleware modified the request
     expect($mockDriver->getLastRequest()->headers())->toHaveKey('X-Test');
@@ -145,7 +145,7 @@ test('HTTP client with record/replay middleware', function() {
     );
 
     // Act
-    $response = $httpClient->handle($request);
+    $response = $httpClient->withRequest($request)->get();
 
     // Assert - We should get a valid response whether it's live or replayed
     expect($response->statusCode())->toBe(200);
@@ -196,11 +196,11 @@ test('mixed testing approach', function() {
     );
 
     // Act
-    $response1 = $httpClient->handle($request1);
+    $response1 = $httpClient->withRequest($request1)->get();
 
     // For request 2, temporarily disable record/replay middleware
     $httpClient->middleware()->remove('record-replay');
-    $response2 = $httpClient->handle($request2);
+    $response2 = $httpClient->withRequest($request2)->get();
 
     // Assert - Both approaches should work in the same test
     expect($response1)->not()->toBeNull();

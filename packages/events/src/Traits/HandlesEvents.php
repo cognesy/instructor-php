@@ -9,7 +9,7 @@ trait HandlesEvents
 {
     protected CanHandleEvents $events;
 
-    public function withEventBus(CanHandleEvents $events) : static {
+    public function withEventHandler(CanHandleEvents $events) : static {
         $this->events = EventBusResolver::using($events);
         return $this;
     }
@@ -30,7 +30,7 @@ trait HandlesEvents
      */
     public function wiretap(?callable $listener) : self {
         if ($listener !== null) {
-            $this->events->addListener('*', $listener);
+            $this->events->wiretap($listener);
         }
         return $this;
     }

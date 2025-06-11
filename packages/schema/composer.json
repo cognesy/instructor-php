@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-schema",
-  "version": "0.17.11",
+  "version": "1.0-rc1",
   "description": "Object to schema conversion for Instructor library, should be used with Instructor",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -29,7 +29,7 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.17"
+    "cognesy/instructor-utils": "^1.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -45,8 +45,7 @@
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },
-  "suggest": {
-  },
+  "suggest": {},
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true

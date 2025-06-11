@@ -3,7 +3,7 @@
 namespace Cognesy\Events;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EventBusResolver implements CanHandleEvents
@@ -16,11 +16,13 @@ class EventBusResolver implements CanHandleEvents
         $this->eventHandler = match(true) {
             is_null($eventHandler) => new EventDispatcher(),
             $eventHandler instanceof EventBusResolver => $eventHandler->eventHandler, // avoid double wrapping
-            $eventHandler instanceof CanHandleEvents => $eventHandler, // already a CanHandleEvents implementation
+            $eventHandler instanceof CanHandleEvents => $eventHandler, // CanHandleEvents implementation
             $eventHandler instanceof EventDispatcherInterface =>  new EventDispatcher(parent: $eventHandler), // wrap with EventDispatcher
             default => $eventHandler,
         };
     }
+
+    // FACTORY METHODS ////////////////////////////////////////////
 
     public static function default(): self {
         return new self(new EventDispatcher());
@@ -30,8 +32,10 @@ class EventBusResolver implements CanHandleEvents
         return new self($events);
     }
 
+    // PUBLIC ////////////////////////////////////////////////////
+
     public function wiretap(callable $listener): void {
-        $this->eventHandler->addListener('*', $listener);
+        $this->eventHandler->wiretap($listener);
     }
 
     public function addListener(string $name, callable $listener, int $priority = 0): void {

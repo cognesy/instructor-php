@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;
 use Cognesy\Instructor\Tests\Examples\ResponseModel\User;

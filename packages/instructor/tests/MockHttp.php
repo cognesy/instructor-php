@@ -17,7 +17,11 @@ class MockHttp
             $list[] = self::makeFunc($arg);
         }
 
-        $mockHttp->shouldReceive('handle')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('withRequest')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('create')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('with')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('withRequest')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('get')->andReturn($mockResponse);
         $mockHttp->shouldReceive('withDebug')->andReturn($mockHttp);
         $mockHttp->shouldReceive('toDebugArray')->andReturn([]);
 

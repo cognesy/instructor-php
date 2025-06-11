@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-hub",
-  "version": "0.17.11",
+  "version": "1.0-rc1",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -26,8 +26,8 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-struct": "^0.17",
-    "cognesy/instructor-auxiliary": "^0.17",
+    "cognesy/instructor-struct": "^1.0",
+    "cognesy/instructor-auxiliary": "^1.0",
     "toolkit/cli-utils": "^2.0",
     "cebe/markdown": "^1.2"
   },

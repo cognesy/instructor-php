@@ -250,7 +250,7 @@ class Str
     public static function limit(
         string $text,
         int    $limit,
-        string $cutMarker = '…',
+        string $cutMarker = '...',
         int    $align = STR_PAD_RIGHT,
         bool   $fit = true
     ) : string {

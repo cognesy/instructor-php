@@ -23,10 +23,11 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class PendingInference
 {
-    protected InferenceRequest $request;
-    protected EventDispatcherInterface $events;
+    protected readonly CanHandleInference $driver;
+    protected readonly EventDispatcherInterface $events;
+    protected readonly InferenceRequest $request;
+
     protected HttpClientResponse $httpResponse;
-    protected CanHandleInference $driver;
     protected string $responseContent = '';
 
     public function __construct(
@@ -119,20 +120,12 @@ class PendingInference
         } catch (Exception $e) {
             $this->events->dispatch(new InferenceFailed([
                 'exception' => $e->getMessage(),
-                'statusCode' => $this->httpResponse()->statusCode(),
-                'headers' => $this->httpResponse()->headers(),
-                'body' => $this->httpResponse()->body(),
+                'statusCode' => $this->httpResponse()->statusCode() ?? 500,
+                'headers' => $this->httpResponse()->headers() ?? [],
+                'body' => $this->httpResponseBody() ?? '',
             ]));
             throw $e;
         }
-    }
-
-    private function httpResponse() : HttpClientResponse {
-        if (!isset($this->httpResponse)) {
-            $this->events->dispatch(new InferenceRequested(['request' => $this->request->toArray()]));
-            $this->httpResponse = $this->driver->handle($this->request);
-        }
-        return $this->httpResponse;
     }
 
     /**
@@ -141,11 +134,11 @@ class PendingInference
      * @return InferenceResponse The generated response from the LLM driver.
      */
     private function makeInferenceResponse() : InferenceResponse {
-        $content = $this->getResponseContent();
+        $content = $this->httpResponseBody();
         $data = Json::decode($content) ?? [];
-        $response = $this->driver->fromResponse($data);
-        $this->events->dispatch(new InferenceResponseCreated($response));
-        return $response;
+        $inferenceResponse = $this->driver->fromResponse($data);
+        $this->events->dispatch(new InferenceResponseCreated(['response' => $inferenceResponse?->toArray() ?? []]));
+        return $inferenceResponse;
     }
 
     /**
@@ -154,19 +147,18 @@ class PendingInference
      *
      * @return string The content of the response.
      */
-    private function getResponseContent() : string {
+    private function httpResponseBody() : string {
         if (empty($this->responseContent)) {
-            $this->responseContent = $this->readFromResponse();
+            $this->responseContent = $this->httpResponse()->body();
         }
         return $this->responseContent;
     }
 
-    /**
-     * Reads and retrieves the contents from the response.
-     *
-     * @return string The contents of the response.
-     */
-    private function readFromResponse() : string {
-        return $this->httpResponse()->body();
+    private function httpResponse() : HttpClientResponse {
+        if (!isset($this->httpResponse)) {
+            $this->events->dispatch(new InferenceRequested(['request' => $this->request->toArray()]));
+            $this->httpResponse = $this->driver->handle($this->request);
+        }
+        return $this->httpResponse;
     }
 }

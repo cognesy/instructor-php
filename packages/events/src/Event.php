@@ -1,6 +1,7 @@
 <?php
 namespace Cognesy\Events;
 
+use Cognesy\Events\Utils\EventFormatter;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Uuid;
 use DateTimeImmutable;

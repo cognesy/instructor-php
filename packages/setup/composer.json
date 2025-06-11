@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-setup",
-  "version": "0.17.11",
+  "version": "1.0-rc1",
   "description": "Setup tool for Instructor PHP library",
   "license": "MIT",
   "homepage": "https://polyglotphp.com",
@@ -26,7 +26,7 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^0.17",
+    "cognesy/instructor-utils": "^1.0",
     "symfony/console": "^7.1",
     "symfony/filesystem": "^7.1"
   },

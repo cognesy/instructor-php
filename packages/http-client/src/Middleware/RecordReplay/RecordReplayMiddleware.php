@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Events\Providers\EventDispatcher;
+use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
@@ -62,7 +62,7 @@ class RecordReplayMiddleware implements HttpMiddleware
      * @param string $mode The operation mode (pass, record, replay)
      * @param string|null $storageDir Directory to store recordings
      * @param bool $fallbackToRealRequests Whether to fallback to real requests in replay mode
-     * @param \Cognesy\Events\Providers\EventDispatcher|null $events Optional event dispatcher
+     * @param \Cognesy\Events\Dispatchers\EventDispatcher|null $events Optional event dispatcher
      */
     public function __construct(
         string $mode = self::MODE_PASS,
