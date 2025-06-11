@@ -36,15 +36,15 @@ $response = $structuredOutput->with(
     mode: OutputMode::Json
 )->get();
 ```
-Mode can be also set via `request()` method.
+Mode, like other parameters can also be set via fluent API methods.
 
 ```php
 <?php
-$response = $structuredOutput->request(
-    messages: "...",
-    responseModel: ...,
-    ...,
-    mode: OutputMode::Json
+$response = $structuredOutput
+    ->withMessages("...")
+    ->withResponseModel(...)
+    //...
+    ->withOutputMode(OutputMode::Json)
 )->get();
 ```
 
