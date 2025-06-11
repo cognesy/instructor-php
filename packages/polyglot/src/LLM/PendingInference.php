@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Polyglot\LLM\Events\InferenceFailed;
 use Cognesy\Polyglot\LLM\Events\InferenceRequested;
 use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;
@@ -29,12 +29,12 @@ class PendingInference
     protected string $responseContent = '';
 
     public function __construct(
-        InferenceRequest $request,
-        CanHandleInference $driver,
-        EventDispatcherInterface $events,
+        InferenceRequest         $request,
+        CanHandleInference       $driver,
+        EventDispatcherInterface $eventDispatcher,
     ) {
         $this->request = $request;
-        $this->events = $events;
+        $this->events = $eventDispatcher;
         $this->driver = $driver;
     }
 
@@ -73,7 +73,7 @@ class PendingInference
         return new InferenceStream(
             httpResponse: $this->httpResponse(),
             driver: $this->driver,
-            events: $this->events,
+            eventDispatcher: $this->events->dispatcher(),
         );
     }
 
@@ -100,19 +100,19 @@ class PendingInference
     /**
      * Generates and returns an LLMResponse based on the streaming status.
      *
-     * @return LLMResponse The constructed LLMResponse object, either fully or from partial responses if streaming is enabled.
+     * @return InferenceResponse The constructed LLMResponse object, either fully or from partial responses if streaming is enabled.
      */
-    public function response() : LLMResponse {
+    public function response() : InferenceResponse {
         $response = match($this->isStreamed()) {
             false => $this->tryMakeLLMResponse(),
-            true => LLMResponse::fromPartialResponses($this->stream()->all()),
+            true => InferenceResponse::fromPartialResponses($this->stream()->all()),
         };
         return $response;
     }
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function tryMakeLLMResponse() : LLMResponse {
+    private function tryMakeLLMResponse() : InferenceResponse {
         try {
             return $this->makeLLMResponse();
         } catch (Exception $e) {
@@ -137,9 +137,9 @@ class PendingInference
     /**
      * Processes and generates a response from the Language Learning Model (LLM) driver.
      *
-     * @return LLMResponse The generated response from the LLM driver.
+     * @return InferenceResponse The generated response from the LLM driver.
      */
-    private function makeLLMResponse() : LLMResponse {
+    private function makeLLMResponse() : InferenceResponse {
         $content = $this->getResponseContent();
         $data = Json::decode($content) ?? [];
         $response = $this->driver->fromResponse($data);

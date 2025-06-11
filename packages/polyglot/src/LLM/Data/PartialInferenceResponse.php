@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\LLM\Data;
 
 use Cognesy\Utils\Json\Json;
 
-class PartialLLMResponse
+class PartialInferenceResponse
 {
     private mixed $value = null; // data extracted from response or tool calls
     private string $content = '';

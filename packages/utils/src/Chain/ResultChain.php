@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Utils;
+namespace Cognesy\Utils\Chain;
 
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;

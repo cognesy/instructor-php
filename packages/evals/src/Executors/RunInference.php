@@ -5,7 +5,7 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\InferenceData;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 
 class RunInference implements CanRunExecution
 {
@@ -34,7 +34,7 @@ class RunInference implements CanRunExecution
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function makeLLMResponse(Execution $execution) : LLMResponse {
+    private function makeLLMResponse(Execution $execution) : InferenceResponse {
         return $this->inferenceAdapter->callInferenceFor(
             preset: $execution->get('case.preset'),
             mode: $execution->get('case.mode'),

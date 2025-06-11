@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor;
 
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\RequestHandler;
@@ -14,45 +14,40 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Polyglot\LLM\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use Generator;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 class PendingStructuredOutput
 {
     use HandlesResultTypecasting;
 
-    private bool $cacheProcessedResponse = true;
+    private readonly CanHandleEvents $events;
+    private readonly RequestHandler $requestHandler;
+    private readonly StructuredOutputRequest $request;
+    private readonly ResponseDeserializer $responseDeserializer;
+    private readonly ResponseValidator $responseValidator;
+    private readonly ResponseTransformer $responseTransformer;
+    private readonly StructuredOutputConfig $config;
+    private readonly LLMProvider $llmProvider;
+    private readonly bool $cacheProcessedResponse;
 
-    private RequestHandler $requestHandler;
-    private EventDispatcherInterface $events;
-    private StructuredOutputRequest $request;
-
-    private LLMResponse $cachedResponse;
+    private InferenceResponse $cachedResponse;
     private array $cachedResponseStream;
 
-    private ResponseDeserializer $responseDeserializer;
-    private ResponseValidator $responseValidator;
-    private ResponseTransformer $responseTransformer;
-    private CanRegisterEventListeners $listener;
-    private LLMProvider $llmProvider;
-    private StructuredOutputConfig $config;
-
     public function __construct(
-        StructuredOutputRequest $request,
-        ResponseDeserializer $responseDeserializer,
-        ResponseValidator $responseValidator,
-        ResponseTransformer $responseTransformer,
-        LLMProvider $llmProvider,
-        StructuredOutputConfig $config,
-        EventDispatcherInterface $events,
-        CanRegisterEventListeners $listener,
+        StructuredOutputRequest  $request,
+        ResponseDeserializer     $responseDeserializer,
+        ResponseValidator        $responseValidator,
+        ResponseTransformer      $responseTransformer,
+        LLMProvider              $llmProvider,
+        StructuredOutputConfig   $config,
+        CanHandleEvents          $events,
     ) {
+        $this->cacheProcessedResponse = true;
         $this->request = $request;
         $this->events = $events;
-        $this->listener = $listener;
         $this->responseDeserializer = $responseDeserializer;
         $this->responseValidator = $responseValidator;
         $this->responseTransformer = $responseTransformer;
@@ -92,7 +87,7 @@ class PendingStructuredOutput
     /**
      * Executes the request and returns LLM response object
      */
-    public function response() : LLMResponse {
+    public function response() : InferenceResponse {
         $response = $this->getResponse();
         $this->events->dispatch(new StructuredOutputDone(['result' => $response->value()]));
         return $response;
@@ -108,7 +103,7 @@ class PendingStructuredOutput
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function getResponse() : LLMResponse {
+    private function getResponse() : InferenceResponse {
         // RESPONSE CACHING IS DISABLED
         if (!$this->cacheProcessedResponse) {
             return $this->requestHandler->responseFor($this->request);
@@ -142,7 +137,6 @@ class PendingStructuredOutput
 
     private function makeRequestHandler() : RequestHandler {
         return new RequestHandler(
-            request: $this->request,
             responseGenerator: new ResponseGenerator(
                 $this->responseDeserializer,
                 $this->responseValidator,
@@ -155,9 +149,8 @@ class PendingStructuredOutput
                 $this->events,
             ),
             requestMaterializer: new RequestMaterializer($this->config),
-            llm: $this->llmProvider,
+            llmProvider: $this->llmProvider,
             events: $this->events,
-            listener: $this->listener,
         );
     }
 }

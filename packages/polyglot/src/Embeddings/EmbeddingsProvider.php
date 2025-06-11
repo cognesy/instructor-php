@@ -2,15 +2,15 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Config\ConfigPresets;
+use Cognesy\Config\ConfigResolver;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\DSN;
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Events\EventHandlerFactory;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Builder for creating fully configured embeddings vectorization drivers.
@@ -18,8 +18,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 final class EmbeddingsProvider
 {
-    private readonly EventDispatcherInterface $events;
-    private readonly CanRegisterEventListeners $listener;
+    private readonly CanHandleEvents $events;
+    private CanProvideConfig $configProvider;
     private ConfigPresets $presets;
 
     private ?string $preset;
@@ -30,19 +30,17 @@ final class EmbeddingsProvider
     private ?CanHandleVectorization $explicitDriver;
 
     private function __construct(
-        ?EventDispatcherInterface  $events = null,
-        ?CanRegisterEventListeners $listener = null,
-        ?CanProvideConfig          $configProvider = null,
-        ?string                    $preset = null,
-        ?string                    $dsn = null,
-        ?string                    $debugPreset = null,
-        ?EmbeddingsConfig          $explicitConfig = null,
-        ?HttpClient                $explicitHttpClient = null,
-        ?CanHandleVectorization    $explicitDriver = null,
+        ?CanHandleEvents          $events = null,
+        ?CanProvideConfig         $configProvider = null,
+        ?string                   $preset = null,
+        ?string                   $dsn = null,
+        ?string                   $debugPreset = null,
+        ?EmbeddingsConfig         $explicitConfig = null,
+        ?HttpClient               $explicitHttpClient = null,
+        ?CanHandleVectorization   $explicitDriver = null,
     ) {
-        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
-        $this->events = $eventHandlerFactory->dispatcher();
-        $this->listener = $eventHandlerFactory->listener();
+        $this->events = EventBusResolver::using($events)->get();
+        $this->configProvider = ConfigResolver::using($configProvider);
         $this->presets = ConfigPresets::using($configProvider)->for(EmbeddingsConfig::group());
 
         $this->preset = $preset;
@@ -54,11 +52,10 @@ final class EmbeddingsProvider
     }
 
     public static function new(
-        ?EventDispatcherInterface  $events = null,
-        ?CanRegisterEventListeners $listener = null,
-        ?CanProvideConfig          $configProvider = null,
+        ?CanHandleEvents          $events = null,
+        ?CanProvideConfig         $configProvider = null,
     ): self {
-        return new self($events, $listener, $configProvider);
+        return new self($events, $configProvider);
     }
 
     public static function using(string $preset): self {
@@ -85,7 +82,8 @@ final class EmbeddingsProvider
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->presets->withConfigProvider($configProvider);
+        $this->presets = $this->presets->withConfigProvider($configProvider);
+        $this->configProvider = ConfigResolver::using($configProvider);
         return $this;
     }
 
@@ -153,7 +151,10 @@ final class EmbeddingsProvider
         }
 
         // Build new client
-        $builder = (new HttpClientBuilder($this->events, $this->listener))
+        $builder = (new HttpClientBuilder(
+            events: $this->events,
+            configProvider: $this->configProvider
+        ))
             ->withPreset($config->httpClientPreset);
 
         // Apply debug setting if specified

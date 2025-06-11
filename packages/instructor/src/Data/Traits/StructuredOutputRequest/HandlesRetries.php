@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 
 trait HandlesRetries
 {
@@ -51,19 +51,19 @@ trait HandlesRetries
     }
 
     public function setResponse(
-        array       $messages,
-        LLMResponse $llmResponse,
-        array       $partialLLMResponses = [],
-        mixed       $returnedValue = null
+        array             $messages,
+        InferenceResponse $llmResponse,
+        array             $partialLLMResponses = [],
+        mixed             $returnedValue = null
     ) {
         $this->response = new StructuredOutputAttempt($messages, $llmResponse, $partialLLMResponses, [], $returnedValue);
     }
 
     public function addFailedResponse(
-        array       $messages,
-        LLMResponse $llmResponse,
-        array       $partialLLMResponses = [],
-        array       $errors = [],
+        array             $messages,
+        InferenceResponse $llmResponse,
+        array             $partialLLMResponses = [],
+        array             $errors = [],
     ) {
         $this->failedResponses[] = new StructuredOutputAttempt($messages, $llmResponse, $partialLLMResponses, $errors, null);
     }

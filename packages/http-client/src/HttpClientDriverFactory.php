@@ -2,6 +2,7 @@
 
 namespace Cognesy\Http;
 
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
@@ -9,16 +10,15 @@ use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Events\HttpDriverBuilt;
 use InvalidArgumentException;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 class HttpClientDriverFactory
 {
     protected static array $drivers = [];
 
-    protected EventDispatcherInterface $events;
+    protected CanHandleEvents $events;
 
     public function __construct(
-        EventDispatcherInterface $events = null,
+        CanHandleEvents $events,
     ) {
         $this->events = $events;
     }
@@ -28,8 +28,8 @@ class HttpClientDriverFactory
      *
      * @param string $name The name of the driver to register.
      * @param class-string|callable $driver The closure that creates the driver instance, accepting following closure arguments:
-     *   - \Cognesy\Http\Config\HttpClientConfig $config: The configuration object for the HTTP client.
-     *   - \Cognesy\Utils\Events\EventDispatcherInterface $events: The event dispatcher instance.
+     *   - HttpClientConfig $config: The configuration object for the HTTP client.
+     *   - EventDispatcherInterface $events: The event dispatcher instance.
      * @return void
      */
     public static function registerDriver(string $name, string|callable $driver): void {
@@ -43,7 +43,7 @@ class HttpClientDriverFactory
     /**
      * Creates an HTTP driver instance based on the specified configuration.
      *
-     * @param \Cognesy\Http\Config\HttpClientConfig $config The configuration object defining the type of HTTP client and its settings.
+     * @param HttpClientConfig $config The configuration object defining the type of HTTP client and its settings.
      * @return CanHandleHttpRequest The instantiated HTTP driver corresponding to the specified client type.
      * @throws InvalidArgumentException If the specified client type is not supported.
      */

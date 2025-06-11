@@ -3,13 +3,13 @@
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Generator;
 
 interface CanGeneratePartials
 {
     /**
-     * @param Generator<PartialLLMResponse> $stream
+     * @param Generator<PartialInferenceResponse> $stream
      * @param ResponseModel $responseModel
      * @return Generator<mixed>
      */

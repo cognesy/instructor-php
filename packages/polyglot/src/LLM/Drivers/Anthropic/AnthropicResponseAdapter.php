@@ -4,8 +4,8 @@ namespace Cognesy\Polyglot\LLM\Drivers\Anthropic;
 
 use Cognesy\Polyglot\LLM\Contracts\CanMapUsage;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Data\ToolCalls;
 use Cognesy\Utils\Json\Json;
@@ -16,8 +16,8 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
         protected CanMapUsage $usageFormat,
     ) {}
 
-    public function fromResponse(array $data): ?LLMResponse {
-        return new LLMResponse(
+    public function fromResponse(array $data): ?InferenceResponse {
+        return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['stop_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -27,11 +27,11 @@ class AnthropicResponseAdapter implements ProviderResponseAdapter
         );
     }
 
-    public function fromStreamResponse(array $data): ?PartialLLMResponse {
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
         if (empty($data)) {
             return null;
         }
-        return new PartialLLMResponse(
+        return new PartialInferenceResponse(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $data['delta']['thinking_delta'] ?? '',
             toolId: $data['content_block']['id'] ?? '',

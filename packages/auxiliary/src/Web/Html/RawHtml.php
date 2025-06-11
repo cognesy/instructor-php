@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cognesy\Auxiliary\Web\Html;
 
-use Cognesy\Utils\RawChain;
+use Cognesy\Utils\Chain\RawChain;
 use DOMDocument;
 use DOMXPath;
 use League\HTMLToMarkdown\HtmlConverter;

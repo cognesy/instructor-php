@@ -2,13 +2,13 @@
 namespace Cognesy\Instructor\Events\PartialsGenerator;
 
 use Cognesy\Events\Event;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Utils\Json\Json;
 
 final class StreamedResponseReceived extends Event
 {
     public function __construct(
-        public PartialLLMResponse $response,
+        public PartialInferenceResponse $response,
     ) {
         parent::__construct();
     }

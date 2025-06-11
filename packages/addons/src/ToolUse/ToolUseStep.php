@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Polyglot\LLM\Data\ToolCalls;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Cognesy\Polyglot\LLM\Enums\LLMFinishReason;
@@ -16,15 +16,15 @@ class ToolUseStep
     private ?ToolExecutions $toolExecutions;
     private ?Messages $messages;
     private ?Usage $usage;
-    private ?LLMResponse $llmResponse;
+    private ?InferenceResponse $llmResponse;
 
     public function __construct(
-        string         $response = '',
-        ?ToolCalls      $toolCalls = null,
-        ?ToolExecutions $toolExecutions = null,
-        ?Messages       $messages = null,
-        ?Usage          $usage = null,
-        ?LLMResponse    $llmResponse = null,
+        string             $response = '',
+        ?ToolCalls         $toolCalls = null,
+        ?ToolExecutions    $toolExecutions = null,
+        ?Messages          $messages = null,
+        ?Usage             $usage = null,
+        ?InferenceResponse $llmResponse = null,
     ) {
         $this->response = $response;
         $this->toolCalls = $toolCalls;
@@ -54,7 +54,7 @@ class ToolUseStep
         return $this->llmResponse?->finishReason();
     }
 
-    public function llmResponse() : ?LLMResponse {
+    public function llmResponse() : ?InferenceResponse {
         return $this->llmResponse;
     }
 

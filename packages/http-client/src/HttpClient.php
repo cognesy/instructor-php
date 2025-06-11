@@ -1,13 +1,12 @@
 <?php
 namespace Cognesy\Http;
 
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Events\Traits\HandlesEventDispatching;
-use Cognesy\Events\Traits\HandlesEventListening;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * HTTP client adapter that provides unified access to underlying
@@ -15,8 +14,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 class HttpClient
 {
-    use HandlesEventDispatching;
-    use HandlesEventListening;
+    use HandlesEvents;
 
     private readonly CanHandleHttpRequest $driver;
     private readonly MiddlewareStack $middlewareStack;
@@ -24,13 +22,11 @@ class HttpClient
     public function __construct(
         CanHandleHttpRequest $driver,
         MiddlewareStack $middlewareStack,
-        EventDispatcherInterface $events,
-        ?CanRegisterEventListeners $listener = null
+        CanHandleEvents $events,
     ) {
         $this->driver = $driver;
         $this->middlewareStack = $middlewareStack;
-        $this->events = $events;
-        $this->listener = $listener;
+        $this->events = EventBusResolver::using($events);
     }
 
     /**

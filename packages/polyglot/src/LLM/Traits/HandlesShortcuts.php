@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Traits;
 
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Polyglot\LLM\InferenceStream;
 
 trait HandlesShortcuts
@@ -11,7 +11,7 @@ trait HandlesShortcuts
         return $this->create()->stream();
     }
 
-    public function response(): LLMResponse {
+    public function response(): InferenceResponse {
         return $this->create()->response();
     }
 

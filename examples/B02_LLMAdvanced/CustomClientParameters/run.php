@@ -30,7 +30,6 @@ $events = new EventDispatcher();
 // Build fully customized HTTP client
 
 $httpConfig = new HttpClientConfig(
-    driver:  '',
     connectTimeout: 30,
     requestTimeout: 60,
     idleTimeout: -1,
@@ -42,8 +41,7 @@ $httpConfig = new HttpClientConfig(
 $yourClientInstance = SymfonyHttpClient::create(['http_version' => '2.0']);
 
 $customClient = (new HttpClientBuilder)
-    ->withEventDispatcher($events)
-    ->withEventListener($events) // optional - if you want to register custom event listeners
+    ->withEventBus($events)
     ->withDriver(new SymfonyDriver(
         config: $httpConfig,
         clientInstance: $yourClientInstance,
@@ -62,8 +60,7 @@ $config = new LLMConfig(
 // Call inference API with custom client and configuration
 
 $answer = (new Inference)
-    ->withEventDispatcher($events)
-    ->withEventListener($events) // optional - if you want to register custom event listeners
+    ->withEventBus($events)
     ->withConfig($config)
     ->withHttpClient($customClient)
     ->wiretap(fn(Event $e) => $e->print())

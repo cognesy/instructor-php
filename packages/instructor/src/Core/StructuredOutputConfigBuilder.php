@@ -54,7 +54,7 @@ class StructuredOutputConfigBuilder
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider) : self {
-        $this->presets->withConfigProvider($configProvider);
+        $this->presets = $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 

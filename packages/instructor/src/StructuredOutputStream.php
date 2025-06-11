@@ -5,8 +5,8 @@ namespace Cognesy\Instructor;
 use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Data\Usage;
 use Exception;
 use Generator;
@@ -14,11 +14,11 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StructuredOutputStream
 {
-    private PartialLLMResponse|LLMResponse|null $lastResponse = null;
+    private PartialInferenceResponse|InferenceResponse|null $lastResponse = null;
     private Usage $usage;
 
     /**
-     * @param Generator<PartialLLMResponse> $stream
+     * @param Generator<PartialInferenceResponse> $stream
      * @param EventDispatcherInterface $events
      */
     public function __construct(
@@ -47,7 +47,7 @@ class StructuredOutputStream
      * Returns last received LLM response object, which contains
      * detailed information from LLM API response
      */
-    public function getLastResponse() : LLMResponse|PartialLLMResponse {
+    public function getLastResponse() : InferenceResponse|PartialInferenceResponse {
         return $this->lastResponse;
     }
 
@@ -78,7 +78,7 @@ class StructuredOutputStream
     /**
      * Processes response stream and returns only the final response.
      */
-    public function finalResponse() : LLMResponse {
+    public function finalResponse() : InferenceResponse {
         foreach ($this->stream as $partialResponse) {
             $this->lastResponse = $partialResponse;
             $this->usage->accumulate($partialResponse->usage());
@@ -118,7 +118,7 @@ class StructuredOutputStream
      * Returns a generator of partial LLM responses, which contain more detailed
      * information about the response, including usage data.
      *
-     * @return Generator<PartialLLMResponse>
+     * @return Generator<PartialInferenceResponse>
      */
     public function responses() : Generator {
         foreach ($this->stream as $partialResponse) {

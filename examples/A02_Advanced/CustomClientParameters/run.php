@@ -46,8 +46,7 @@ $httpConfig = new HttpClientConfig(
 $yourClientInstance = SymfonyHttpClient::create(['http_version' => '2.0']);
 
 $customClient = (new HttpClientBuilder)
-    ->withEventDispatcher($events)
-    ->withEventListener($events) // optional - if you want to register custom event listeners
+    ->withEventBus($events)
     ->withDriver(new SymfonyDriver(
         config: $httpConfig,
         clientInstance: $yourClientInstance,
@@ -66,8 +65,7 @@ $llmConfig = new LLMConfig(
 // Get Instructor with the default client component overridden with your own
 
 $structuredOutput = (new StructuredOutput)
-    ->withEventDispatcher($events)
-    ->withEventListener($events) // optional - if you want to register custom event listeners
+    ->withEventBus($events)
     ->withLLMConfig($llmConfig)
     ->withHttpClient($customClient);
 
@@ -75,11 +73,9 @@ $structuredOutput = (new StructuredOutput)
 
 $user = $structuredOutput
     ->wiretap(fn($e) => $e->print())
-    ->with(
-        messages: "Our user Jason is 25 years old.",
-        responseModel: User::class,
-        mode: OutputMode::Tools,
-    )
+    ->with("Our user Jason is 25 years old.")
+    ->withResponseClass(User::class)
+    ->withOutputMode(OutputMode::Tools)
     ->withStreaming()
     ->get();
 

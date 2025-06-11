@@ -10,7 +10,7 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\Request\SequenceUpdated;
 use Cognesy\Instructor\Extras\Sequence\Sequence;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
 
@@ -24,7 +24,7 @@ class SimpleItem
 
 function createStreamingGenerator(array $chunks): Generator {
     foreach ($chunks as $chunk) {
-        yield new PartialLLMResponse(contentDelta: $chunk);
+        yield new PartialInferenceResponse(contentDelta: $chunk);
     }
 }
 

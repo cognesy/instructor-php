@@ -38,7 +38,7 @@ trait HandlesInvocation
         return new PendingInference(
             request: $request,
             driver: $inferenceDriver,
-            events: $this->events,
+            eventDispatcher: $this->events->dispatcher(),
         );
     }
 }

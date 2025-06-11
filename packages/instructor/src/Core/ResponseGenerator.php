@@ -9,12 +9,12 @@ use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Utils\Chain\ResultChain;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;
-use Cognesy\Utils\ResultChain;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -27,7 +27,7 @@ class ResponseGenerator implements CanGenerateResponse
         private EventDispatcherInterface $events,
     ) {}
 
-    public function makeResponse(LLMResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
+    public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
         $result = ResultChain::from(fn() => $response->findJsonData($mode)->toString())
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),

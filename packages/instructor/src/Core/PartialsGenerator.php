@@ -17,14 +17,14 @@ use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallCompleted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallStarted;
 use Cognesy\Instructor\Events\PartialsGenerator\StreamedToolCallUpdated;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Data\ToolCalls;
 use Cognesy\Utils\Arrays;
+use Cognesy\Utils\Chain\ResultChain;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
-use Cognesy\Utils\ResultChain;
 use Exception;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -69,16 +69,16 @@ class PartialsGenerator implements CanGeneratePartials
     /**
      * Get generator of partial responses for the given stream and response model.
      *
-     * @param Generator<PartialLLMResponse> $stream
+     * @param Generator<PartialInferenceResponse> $stream
      * @param ResponseModel $responseModel
-     * @return Generator<PartialLLMResponse>
+     * @return Generator<PartialInferenceResponse>
      */
     public function getPartialResponses(Generator $stream, ResponseModel $responseModel) : Generator {
         // reset state
         $this->resetPartialResponse();
 
         // receive data
-        /** @var PartialLLMResponse $partialResponse */
+        /** @var PartialInferenceResponse $partialResponse */
         foreach($stream as $partialResponse) {
             $this->events->dispatch(new StreamedResponseReceived($partialResponse));
             // store partial response
@@ -136,11 +136,11 @@ class PartialsGenerator implements CanGeneratePartials
         $this->sequenceableHandler->finalize();
     }
 
-    public function getCompleteResponse() : LLMResponse {
-        return LLMResponse::fromPartialResponses($this->partialResponses);
+    public function getCompleteResponse() : InferenceResponse {
+        return InferenceResponse::fromPartialResponses($this->partialResponses);
     }
 
-    public function lastPartialResponse() : PartialLLMResponse {
+    public function lastPartialResponse() : PartialInferenceResponse {
         if (empty($this->partialResponses)) {
             throw new Exception('No partial responses found');
         }

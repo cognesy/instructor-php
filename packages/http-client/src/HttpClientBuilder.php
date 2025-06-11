@@ -5,8 +5,8 @@ use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Events\EventHandlerFactory;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\Config\DebugConfig;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
@@ -18,13 +18,15 @@ use Cognesy\Http\Middleware\Debug\Debug;
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 use Cognesy\Http\Middleware\Debug\EventsDebug;
 use Cognesy\Utils\Result\Result;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Fluent builder for creating HttpClient instances in a type-safe way.
  */
 final class HttpClientBuilder
 {
+    private ConfigPresets $presets;
+    private CanHandleEvents $events;
+
     private ?string $preset = null;
     private ?string $debugPreset = null;
     private ?HttpClientConfig $config = null;
@@ -33,18 +35,11 @@ final class HttpClientBuilder
     private ?object $clientInstance = null;
     private array $middleware = [];
 
-    private ConfigPresets $presets;
-    private EventDispatcherInterface $events;
-    private CanRegisterEventListeners $listener;
-
     public function __construct(
-        ?EventDispatcherInterface  $events = null,
-        ?CanRegisterEventListeners $listener = null,
-        ?CanProvideConfig          $configProvider = null,
+        ?CanHandleEvents          $events = null,
+        ?CanProvideConfig         $configProvider = null,
     ) {
-        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
-        $this->events = $eventHandlerFactory->dispatcher();
-        $this->listener = $eventHandlerFactory->listener();
+        $this->events = EventBusResolver::using($events);
         $this->presets = ConfigPresets::using($configProvider);
     }
 
@@ -73,7 +68,7 @@ final class HttpClientBuilder
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->presets->withConfigProvider($configProvider);
+        $this->presets = $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -92,13 +87,8 @@ final class HttpClientBuilder
         return $this;
     }
 
-    public function withEventDispatcher(EventDispatcherInterface $events): self {
+    public function withEventBus(CanHandleEvents $events): self {
         $this->events = $events;
-        return $this;
-    }
-
-    public function withEventListener(CanRegisterEventListeners $listener): self {
-        $this->listener = $listener;
         return $this;
     }
 
@@ -119,7 +109,6 @@ final class HttpClientBuilder
             driver: $driver,
             middlewareStack: $middlewareStack,
             events: $this->events,
-            listener: $this->listener
         );
     }
 
@@ -186,10 +175,11 @@ final class HttpClientBuilder
             return $this->driver;
         }
 
-        return (new HttpClientDriverFactory($this->events))->makeDriver(
-            config: $config,
-            clientInstance: $this->clientInstance,
-        );
+        return (new HttpClientDriverFactory($this->events))
+            ->makeDriver(
+                config: $config,
+                clientInstance: $this->clientInstance,
+            );
     }
 
     private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack {

@@ -2,6 +2,8 @@
 
 namespace Cognesy\Utils;
 
+use Cognesy\Utils\Chain\RawChain;
+
 /**
  * String manipulation utilities.
  */

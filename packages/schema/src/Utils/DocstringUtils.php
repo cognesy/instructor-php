@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Schema\Utils;
 
-use Cognesy\Utils\RawChain;
+use Cognesy\Utils\Chain\RawChain;
 
 class DocstringUtils
 {

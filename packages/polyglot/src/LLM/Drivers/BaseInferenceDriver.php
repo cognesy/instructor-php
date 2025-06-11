@@ -8,8 +8,8 @@ use Cognesy\Polyglot\LLM\Config\LLMConfig;
 use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
 use Cognesy\Polyglot\LLM\Contracts\ProviderRequestAdapter;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -27,11 +27,11 @@ abstract class BaseInferenceDriver implements CanHandleInference
         return $this->httpClient->handle($clientRequest);
     }
 
-    public function fromResponse(array $data): ?LLMResponse {
+    public function fromResponse(array $data): ?InferenceResponse {
         return $this->responseAdapter->fromResponse($data);
     }
 
-    public function fromStreamResponse(array $data): ?PartialLLMResponse {
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
         return $this->responseAdapter->fromStreamResponse($data);
     }
 

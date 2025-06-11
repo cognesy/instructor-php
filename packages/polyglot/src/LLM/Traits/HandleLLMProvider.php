@@ -23,7 +23,7 @@ trait HandleLLMProvider
     }
 
     public function withConfigProvider(CanProvideConfig $configProvider) : static {
-        $this->llmProvider->withConfigProvider($configProvider);
+        $this->llmProvider = $this->llmProvider->withConfigProvider($configProvider);
         return $this;
     }
 

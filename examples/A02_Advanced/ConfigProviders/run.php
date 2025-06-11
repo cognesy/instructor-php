@@ -140,7 +140,6 @@ $configProvider = new CustomConfigProvider($configData);
 
 $customClient = (new HttpClientBuilder(
         events: $events,
-        listener: $events,
         configProvider: $configProvider,
     ))
     ->withConfigProvider($configProvider)
@@ -149,7 +148,6 @@ $customClient = (new HttpClientBuilder(
 
 $structuredOutput = (new StructuredOutput(
         events: $events,
-        listener: $events,
         configProvider: $configProvider,
     ))
     ->withHttpClient($customClient);
@@ -162,15 +160,11 @@ class User {
 }
 
 $user = $structuredOutput
-     // Use 'deepseek' preset defined in CustomLLMConfigProvider
-    ->using('deepseek')
-    ->withDebugPreset('on') // Enable debug preset
-    //->wiretap(fn($e) => $e->printDebug())
-    ->with(
-        messages: "Our user Jason is 25 years old.",
-        responseModel: User::class,
-        mode: OutputMode::Tools,
-    )
+    ->using('deepseek') // Use 'deepseek' preset defined in our config provider
+    ->wiretap(fn($e) => $e->print())
+    ->withMessages("Our user Jason is 25 years old.")
+    ->withResponseClass(User::class)
+    ->withOutputMode(OutputMode::Tools)
     ->withStreaming()
     ->get();
 

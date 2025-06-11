@@ -21,7 +21,7 @@ class ConfigPresets
         $this->group = $group;
         $this->defaultPresetKey = $defaultPresetKey;
         $this->presetGroupKey = $presetGroupKey;
-        $this->configProvider = ConfigResolver::makeWith($configProvider);
+        $this->configProvider = ConfigResolver::using($configProvider);
     }
 
     // FLUENT CREATION API ///////////////////////////////////////////////////
@@ -47,7 +47,7 @@ class ConfigPresets
             group           : $this->group,
             defaultPresetKey: $this->defaultPresetKey,
             presetGroupKey  : $this->presetGroupKey,
-            configProvider  : ConfigResolver::makeWith($config),
+            configProvider  : ConfigResolver::using($config),
         );
     }
 

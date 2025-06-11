@@ -17,6 +17,7 @@ require 'examples/boot.php';
 use Adbar\Dot;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Env;
+use Cognesy\Events\Event;
 use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Inference;
@@ -105,7 +106,6 @@ $configProvider = new CustomConfigProvider($configData);
 $events = new EventDispatcher();
 $customClient = (new HttpClientBuilder(
         events: $events,
-        listener: $events,
         configProvider: $configProvider,
     ))
     ->withClientInstance(SymfonyHttpClient::create(['http_version' => '2.0']))
@@ -113,7 +113,6 @@ $customClient = (new HttpClientBuilder(
 
 $inference = (new Inference(
         events: $events,
-        listener: $events,
         configProvider: $configProvider,
     ))
     ->withHttpClient($customClient);
@@ -121,10 +120,10 @@ $inference = (new Inference(
 $answer = $inference
     ->using('deepseek') // Use 'deepseek' preset from CustomLLMConfigProvider
     //->withDebugPreset('on')
-    //->wiretap(fn(Event $e) => $e->print())
+    ->wiretap(fn(Event $e) => $e->print())
     ->withMessages([['role' => 'user', 'content' => 'What is the capital of France']])
     ->withMaxTokens(256)
-    //->withStreaming()
+    ->withStreaming()
     ->get();
 
 echo "USER: What is capital of France\n";

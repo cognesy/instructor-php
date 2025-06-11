@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Events;
 
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\EventDispatcher\StoppableEventInterface;
@@ -17,7 +17,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
  *
  * It implements PSR-14, which defines a standard for event dispatching in PHP.
  */
-class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface, CanRegisterEventListeners
+class EventDispatcher implements EventDispatcherInterface, ListenerProviderInterface, CanHandleEvents
 {
     private string $name;
     private ?EventDispatcherInterface $parent;
@@ -42,6 +42,10 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
         return $this->name;
     }
 
+    public function dispatcher() : EventDispatcherInterface {
+        return $this->parent ?? $this;
+    }
+
     /**
      * Registers a listener for a specific event class.
      *
@@ -49,9 +53,8 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
      * @param callable $listener A callable function or method that will handle the event.
      * @return self Returns the current instance for method chaining.
      */
-    public function addListener(string $name, callable $listener): static {
+    public function addListener(string $name, callable $listener): void {
         $this->listeners[$name][] = $listener;
-        return $this;
     }
 
     /**
@@ -60,9 +63,8 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
      * @param callable $listener A callable function or method to handle the events.
      * @return self Returns the current instance for method chaining.
      */
-    public function wiretap(callable $listener): static {
+    public function wiretap(callable $listener): void {
         $this->wiretaps[] = $listener;
-        return $this;
     }
 
     /**
@@ -95,12 +97,13 @@ class EventDispatcher implements EventDispatcherInterface, ListenerProviderInter
      * @param object $event The event object to be dispatched.
      * @return void
      */
-    public function dispatch(object $event): void {
+    public function dispatch(object $event): object {
         $this->notifyListeners($event);
         // forward event to parent dispatcher
         if (isset($this->parent)) {
             $this->parent->dispatch($event);
         }
+        return $event;
     }
 
     /**

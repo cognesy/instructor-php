@@ -4,8 +4,8 @@ namespace Cognesy\Polyglot\LLM\Drivers\OpenAI;
 
 use Cognesy\Polyglot\LLM\Contracts\CanMapUsage;
 use Cognesy\Polyglot\LLM\Contracts\ProviderResponseAdapter;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Data\ToolCalls;
 
@@ -15,8 +15,8 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter
         protected CanMapUsage $usageFormat,
     ) {}
 
-    public function fromResponse(array $data): ?LLMResponse {
-        return new LLMResponse(
+    public function fromResponse(array $data): ?InferenceResponse {
+        return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -25,11 +25,11 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter
         );
     }
 
-    public function fromStreamResponse(array $data): ?PartialLLMResponse {
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
         if ($data === null || empty($data)) {
             return null;
         }
-        return new PartialLLMResponse(
+        return new PartialInferenceResponse(
             contentDelta: $this->makeContentDelta($data),
             toolId: $this->makeToolId($data),
             toolName: $this->makeToolNameDelta($data),

@@ -2,14 +2,14 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\Deepseek;
 
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class DeepseekResponseAdapter extends OpenAIResponseAdapter
 {
-    public function fromResponse(array $data): ?LLMResponse {
-        return new LLMResponse(
+    public function fromResponse(array $data): ?InferenceResponse {
+        return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -19,11 +19,11 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
-    public function fromStreamResponse(array $data): ?PartialLLMResponse {
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
         if ($data === null || empty($data)) {
             return null;
         }
-        return new PartialLLMResponse(
+        return new PartialInferenceResponse(
             contentDelta: $this->makeContentDelta($data),
             reasoningContentDelta: $data['choices'][0]['delta']['reasoning_content'] ?? '',
             toolId: $this->makeToolId($data),

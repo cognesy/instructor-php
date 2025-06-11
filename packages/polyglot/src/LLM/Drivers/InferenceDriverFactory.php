@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers;
 
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
@@ -30,7 +30,6 @@ use Cognesy\Polyglot\LLM\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\LLM\Drivers\XAI\XAiDriver;
 use Cognesy\Polyglot\LLM\Events\InferenceDriverBuilt;
 use InvalidArgumentException;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Factory class for creating inference driver instances based
@@ -39,12 +38,14 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceDriverFactory
 {
     private static array $drivers = [];
+
     private array $bundledDrivers;
+    private CanHandleEvents $events;
 
     public function __construct(
-        protected EventDispatcherInterface  $events,
-        protected CanRegisterEventListeners $listener,
+        CanHandleEvents $events,
     ) {
+        $this->events = $events;
         $this->bundledDrivers = $this->bundledDrivers();
     }
 
@@ -74,8 +75,8 @@ class InferenceDriverFactory
 
         $httpClient = match(true) {
             !is_null($httpClient) => $httpClient,
-            !empty($config->httpClientPreset) => (new HttpClientBuilder($this->events, $this->listener))->withPreset($config->httpClientPreset)->create(),
-            default => (new HttpClientBuilder($this->events, $this->listener))->create(),
+            !empty($config->httpClientPreset) => (new HttpClientBuilder($this->events))->withPreset($config->httpClientPreset)->create(),
+            default => (new HttpClientBuilder($this->events))->create(),
         };
 
         $driver = $driverFactory(

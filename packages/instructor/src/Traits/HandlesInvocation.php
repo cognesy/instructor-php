@@ -100,7 +100,6 @@ trait HandlesInvocation
             llmProvider: $this->llmProvider,
             config: $config,
             events: $this->events,
-            listener: $this->listener,
         );
     }
 }

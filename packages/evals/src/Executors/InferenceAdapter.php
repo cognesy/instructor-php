@@ -4,7 +4,7 @@ namespace Cognesy\Evals\Executors;
 
 use Closure;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\PendingInference;
@@ -33,7 +33,7 @@ class InferenceAdapter
         string|array    $messages,
         InferenceSchema $evalSchema,
         int             $maxTokens,
-    ) : LLMResponse {
+    ) : InferenceResponse {
         $messages = is_array($messages) ? $messages : [['role' => 'user', 'content' => $messages]];
         $options = [
             'max_tokens' => $maxTokens,

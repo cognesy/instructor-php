@@ -3,18 +3,16 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Events\EventHandlerFactory;
-use Cognesy\Events\Traits\HandlesEventDispatching;
-use Cognesy\Events\Traits\HandlesEventListening;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
+use Cognesy\Events\Traits\HandlesEvents;
 
 /**
  * Embeddings is a facade responsible for generating embeddings for provided input data
  */
 class Embeddings
 {
-    use HandlesEventDispatching;
-    use HandlesEventListening;
+    use HandlesEvents;
 
     use Traits\HandlesInitMethods;
     use Traits\HandlesFluentMethods;
@@ -25,17 +23,12 @@ class Embeddings
     protected EmbeddingsRequest $request;
 
     public function __construct(
-        ?EventDispatcherInterface $events = null,
-        ?EventDispatcherInterface $listener = null,
-        ?CanProvideConfig         $configProvider = null,
+        ?CanHandleEvents $events = null,
+        ?CanProvideConfig $configProvider = null,
     ) {
-        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
-        $this->events = $eventHandlerFactory->dispatcher();
-        $this->listener = $eventHandlerFactory->listener();
-
+        $this->events = EventBusResolver::using($events);
         $this->embeddingsProvider = EmbeddingsProvider::new(
             $this->events,
-            $this->listener,
             $configProvider,
         );
     }

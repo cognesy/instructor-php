@@ -3,12 +3,13 @@
 namespace Cognesy\Polyglot\LLM;
 
 use Cognesy\Config\ConfigPresets;
+use Cognesy\Config\ConfigResolver;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\DSN;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
-use Cognesy\Events\EventHandlerFactory;
+use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\LLM\Config\LLMConfig;
@@ -19,8 +20,9 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class LLMProvider
 {
-    private readonly EventDispatcherInterface $events;
-    private readonly CanRegisterEventListeners $listener;
+    private readonly CanHandleEvents $events;
+    private readonly CanProvideConfig $configProvider;
+
     private ConfigPresets $presets;
 
     // Configuration - all immutable after construction
@@ -32,19 +34,17 @@ final class LLMProvider
     private ?CanHandleInference $explicitDriver;
 
     private function __construct(
-        ?EventDispatcherInterface  $events = null,
-        ?CanRegisterEventListeners $listener = null,
-        ?CanProvideConfig          $configProvider = null,
-        ?string                    $debugPreset = null,
-        ?string                    $dsn = null,
-        ?string                    $preset = null,
-        ?LLMConfig                 $explicitConfig = null,
-        ?HttpClient                $explicitHttpClient = null,
-        ?CanHandleInference        $explicitDriver = null,
+        ?CanHandleEvents          $events = null,
+        ?CanProvideConfig         $configProvider = null,
+        ?string                   $debugPreset = null,
+        ?string                   $dsn = null,
+        ?string                   $preset = null,
+        ?LLMConfig                $explicitConfig = null,
+        ?HttpClient               $explicitHttpClient = null,
+        ?CanHandleInference       $explicitDriver = null,
     ) {
-        $eventHandlerFactory = new EventHandlerFactory($events, $listener);
-        $this->events = $eventHandlerFactory->dispatcher();
-        $this->listener = $eventHandlerFactory->listener();
+        $this->events = EventBusResolver::using($events);
+        $this->configProvider = $configProvider ?? ConfigResolver::using($configProvider);
         $this->presets = ConfigPresets::using($configProvider)->for(LLMConfig::group());
 
         $this->debugPreset = $debugPreset;
@@ -73,11 +73,10 @@ final class LLMProvider
      * Create a new builder instance
      */
     public static function new(
-        ?EventDispatcherInterface  $events = null,
-        ?CanRegisterEventListeners $listener = null,
-        ?CanProvideConfig          $configProvider = null,
+        ?EventDispatcherInterface $events = null,
+        ?CanProvideConfig         $configProvider = null,
     ): self {
-        return new self($events, $listener, $configProvider);
+        return new self($events, $configProvider);
     }
 
     /**
@@ -100,7 +99,7 @@ final class LLMProvider
      * Configure with a custom config provider
      */
     public function withConfigProvider(CanProvideConfig $configProvider): self {
-        $this->presets->withConfigProvider($configProvider);
+        $this->presets = $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
@@ -151,10 +150,7 @@ final class LLMProvider
         $httpClient = $this->buildHttpClient($config);
 
         // Create and return the inference driver
-        return (new InferenceDriverFactory(
-                events: $this->events,
-                listener: $this->listener
-            ))
+        return (new InferenceDriverFactory(events: $this->events))
             ->makeDriver($config, $httpClient);
     }
 
@@ -224,11 +220,8 @@ final class LLMProvider
         // Build new client
         $builder = (new HttpClientBuilder(
             $this->events,
-            $this->listener,
-            //$this->httpConfigProvider,
-            //$this->debugConfigProvider,
-        ))
-            ->withPreset($config->httpClientPreset);
+            $this->configProvider,
+        ))->withPreset($config->httpClientPreset);
 
         // Apply debug setting if specified
         $builder = $builder->withDebugPreset($this->debugPreset);

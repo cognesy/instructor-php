@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Events\Contracts\CanRegisterEventListeners;
+use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Instructor\Contracts\CanGeneratePartials;
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
 use Cognesy\Instructor\Contracts\CanMaterializeRequest;
@@ -10,8 +10,8 @@ use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
 use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Validation\Exceptions\ValidationException;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Polyglot\LLM\Inference;
 use Cognesy\Polyglot\LLM\LLMProvider;
@@ -19,37 +19,31 @@ use Cognesy\Polyglot\LLM\PendingInference;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Generator;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 class RequestHandler
 {
-    protected StructuredOutputRequest  $request;
-    protected CanGenerateResponse      $responseGenerator;
-    protected CanGeneratePartials      $partialsGenerator;
-    protected CanMaterializeRequest    $requestMaterializer;
-    protected LLMProvider              $llm;
-    protected EventDispatcherInterface $events;
-    protected CanRegisterEventListeners $listener;
+    protected readonly CanGenerateResponse $responseGenerator;
+    protected readonly CanGeneratePartials $partialsGenerator;
+    protected readonly CanMaterializeRequest $requestMaterializer;
+    protected readonly LLMProvider $llmProvider;
+    protected readonly CanHandleEvents $events;
 
     protected int $retries = 0;
     protected array $errors = [];
 
     public function __construct(
-        StructuredOutputRequest  $request,
-        CanGenerateResponse      $responseGenerator,
-        CanGeneratePartials      $partialsGenerator,
-        CanMaterializeRequest    $requestMaterializer,
-        LLMProvider              $llm,
-        EventDispatcherInterface $events,
-        CanRegisterEventListeners $listener,
+        CanGenerateResponse   $responseGenerator,
+        CanGeneratePartials   $partialsGenerator,
+        CanMaterializeRequest $requestMaterializer,
+        LLMProvider           $llmProvider,
+        CanHandleEvents       $events,
     ) {
-        $this->request = $request;
         $this->responseGenerator = $responseGenerator;
         $this->partialsGenerator = $partialsGenerator;
         $this->requestMaterializer = $requestMaterializer;
-        $this->llm = $llm;
+        $this->llmProvider = $llmProvider;
         $this->events = $events;
-        $this->listener = $listener;
+
         $this->retries = 0;
         $this->errors = [];
     }
@@ -59,7 +53,7 @@ class RequestHandler
     /**
      * Generates response value
      */
-    public function responseFor(StructuredOutputRequest $request) : LLMResponse {
+    public function responseFor(StructuredOutputRequest $request) : InferenceResponse {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
             $llmResponse = $this->getInference($request)->response();
@@ -85,7 +79,7 @@ class RequestHandler
      * Yields response value versions based on streamed responses
      *
      * @param StructuredOutputRequest $request
-     * @return Generator<PartialLLMResponse>
+     * @return Generator<PartialInferenceResponse>
      */
     public function streamResponseFor(StructuredOutputRequest $request) : Generator {
         $processingResult = Result::failure("No response generated");
@@ -107,7 +101,7 @@ class RequestHandler
 
     protected function getInference(StructuredOutputRequest $request) : PendingInference {
         return (new Inference(events: $this->events))
-            ->withLLMProvider($this->llm)
+            ->withLLMProvider($this->llmProvider)
             ->with(
                 messages: $this->requestMaterializer->toMessages($request),
                 model: $request->model(),
@@ -120,7 +114,7 @@ class RequestHandler
             ->create();
     }
 
-    protected function processResponse(StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : Result {
+    protected function processResponse(StructuredOutputRequest $request, InferenceResponse $llmResponse, array $partialResponses) : Result {
         // we have LLMResponse here - let's process it: deserialize, validate, transform
         $processingResult = $this->responseGenerator->makeResponse(
             response: $llmResponse,
@@ -136,7 +130,7 @@ class RequestHandler
         return $processingResult;
     }
 
-    protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : mixed {
+    protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $llmResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
             throw new ValidationException(
@@ -155,7 +149,7 @@ class RequestHandler
         return $value;
     }
 
-    protected function handleError(Result $processingResult, StructuredOutputRequest $request, LLMResponse $llmResponse, array $partialResponses) : void {
+    protected function handleError(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $llmResponse, array $partialResponses) : void {
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
 

@@ -3,11 +3,11 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\StructuredOutputStream;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 
 trait HandlesShortcuts
 {
-    public function response() : LLMResponse {
+    public function response() : InferenceResponse {
         return $this->create()->response();
     }
 

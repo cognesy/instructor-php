@@ -9,7 +9,7 @@ use Cognesy\Utils\Json\Json;
 /**
  * Represents a response from the LLM.
  */
-class LLMResponse
+class InferenceResponse
 {
     private mixed $value = null;
 
@@ -47,8 +47,8 @@ class LLMResponse
     /**
      * Create an LLMResponse from an array of PartialLLMResponses.
      *
-     * @param PartialLLMResponse[] $partialResponses
-     * @return LLMResponse
+     * @param PartialInferenceResponse[] $partialResponses
+     * @return InferenceResponse
      */
     public static function fromPartialResponses(array $partialResponses = []) : self {
         $response = new self(isPartial: true);
@@ -68,7 +68,7 @@ class LLMResponse
      * Checks if the response has a processed / transformed value.
      *
      * @param mixed $value
-     * @return LLMResponse
+     * @return InferenceResponse
      */
     public function hasValue() : bool {
         return $this->value !== null;
@@ -163,7 +163,7 @@ class LLMResponse
         return $this->partialResponses;
     }
 
-    public function lastPartialResponse() : ?PartialLLMResponse {
+    public function lastPartialResponse() : ?PartialInferenceResponse {
         return end($this->partialResponses) ?: null;
     }
 
@@ -197,9 +197,9 @@ class LLMResponse
      * This will accumulate content, reasoning content, usage,
      * and response data.
      *
-     * @param PartialLLMResponse $partialResponse
+     * @param PartialInferenceResponse $partialResponse
      */
-    private function applyPartialResponse(PartialLLMResponse $partialResponse) : void {
+    private function applyPartialResponse(PartialInferenceResponse $partialResponse) : void {
         $this->content .= $partialResponse->contentDelta ?? '';
         $this->reasoningContent .= $partialResponse->reasoningContentDelta ?? '';
         $this->usage()->accumulate($partialResponse->usage);
@@ -218,7 +218,7 @@ class LLMResponse
     /**
      * Make a list of tool calls from the partial responses.
      *
-     * @param PartialLLMResponse[] $partialResponses
+     * @param PartialInferenceResponse[] $partialResponses
      * @return array
      */
     private static function makeTools(array $partialResponses): array {

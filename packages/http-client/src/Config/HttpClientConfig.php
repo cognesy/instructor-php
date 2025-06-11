@@ -22,7 +22,7 @@ final class HttpClientConfig
      * @param bool $failOnError Whether to fail on error.
      */
     public function __construct(
-        public readonly string $driver = 'guzzle',
+        public readonly string $driver = '',
         public readonly int    $connectTimeout = 3,
         public readonly int    $requestTimeout = 30,
         public readonly int    $idleTimeout = -1,

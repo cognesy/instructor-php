@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\LLM\Contracts;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\InferenceRequest;
 
 interface CanHandleInference
@@ -21,17 +21,17 @@ interface CanHandleInference
      * Converts the response data into an LLMResponse object.
      *
      * @param array $data The response data to convert.
-     * @return LLMResponse|null The converted LLMResponse object or null if conversion fails.
+     * @return InferenceResponse|null The converted LLMResponse object or null if conversion fails.
      */
-    public function fromResponse(array $data): ?LLMResponse;
+    public function fromResponse(array $data): ?InferenceResponse;
 
     /**
      * Converts a stream response into a PartialLLMResponse object.
      *
      * @param array $data The stream response data to convert.
-     * @return PartialLLMResponse|null The converted PartialLLMResponse object or null if conversion fails.
+     * @return PartialInferenceResponse|null The converted PartialLLMResponse object or null if conversion fails.
      */
-    public function fromStreamResponse(array $data) : ?PartialLLMResponse;
+    public function fromStreamResponse(array $data) : ?PartialInferenceResponse;
 
     /**
      * Converts a string of stream data into a string or false if there's no more data.

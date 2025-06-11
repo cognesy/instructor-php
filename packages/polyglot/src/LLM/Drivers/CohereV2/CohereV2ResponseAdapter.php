@@ -2,16 +2,16 @@
 
 namespace Cognesy\Polyglot\LLM\Drivers\CohereV2;
 
-use Cognesy\Polyglot\LLM\Data\LLMResponse;
-use Cognesy\Polyglot\LLM\Data\PartialLLMResponse;
+use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\LLM\Data\ToolCall;
 use Cognesy\Polyglot\LLM\Data\ToolCalls;
 use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class CohereV2ResponseAdapter extends OpenAIResponseAdapter
 {
-    public function fromResponse(array $data): LLMResponse {
-        return new LLMResponse(
+    public function fromResponse(array $data): InferenceResponse {
+        return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['finish_reason'] ?? '',
             toolCalls: $this->makeToolCalls($data),
@@ -20,11 +20,11 @@ class CohereV2ResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
-    public function fromStreamResponse(array|null $data) : ?PartialLLMResponse {
+    public function fromStreamResponse(array|null $data) : ?PartialInferenceResponse {
         if (empty($data)) {
             return null;
         }
-        return new PartialLLMResponse(
+        return new PartialInferenceResponse(
             contentDelta: $this->makeContentDelta($data),
             toolId: $data['delta']['message']['tool_calls']['function']['id'] ?? '',
             toolName: $data['delta']['message']['tool_calls']['function']['name'] ?? '',
