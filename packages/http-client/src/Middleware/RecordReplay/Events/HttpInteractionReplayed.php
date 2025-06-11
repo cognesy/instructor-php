@@ -7,6 +7,4 @@ use Cognesy\Events\Event;
 /**
  * Event fired when a recorded HTTP interaction is replayed
  */
-final class HttpInteractionReplayed extends Event
-{
-}
+final class HttpInteractionReplayed extends Event {}

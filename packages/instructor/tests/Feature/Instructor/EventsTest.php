@@ -1,8 +1,6 @@
 <?php
 
 //use Cognesy\Instructor\Events\Instructor\ErrorRaised;
-use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
-use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
@@ -14,6 +12,8 @@ use Cognesy\Instructor\Events\Response\ResponseTransformed;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidationFailed;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
 use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Extraction\Person;
@@ -46,8 +46,8 @@ it('handles events for simple case w/reattempt on validation - success', functio
     // Instructor
     //[InstructorStarted::class],
     //[InstructorReady::class],
-    [RequestReceived::class],
-    [ResponseGenerated::class],
+    [StructuredOutputRequestReceived::class],
+    [StructuredOutputResponseGenerated::class],
     // RequestHandler
     [NewValidationRecoveryAttempt::class],
     //[ResponseGenerationFailed::class],
@@ -100,7 +100,7 @@ it('handles events for simple case - validation failure', function ($event) use 
     // Instructor
     //[InstructorStarted::class],
     //[InstructorReady::class],
-    [RequestReceived::class],
+    [StructuredOutputRequestReceived::class],
     //[ResponseReturned::class],
     // RequestHandler
     //[NewValidationRecoveryAttempt::class],
@@ -148,8 +148,8 @@ it('handles events for custom case', function ($event) use ($text) {
     // ==== Instructor
     //    [InstructorStarted::class],
     //    [InstructorReady::class],
-    [RequestReceived::class],
-    [ResponseGenerated::class],
+    [StructuredOutputRequestReceived::class],
+    [StructuredOutputResponseGenerated::class],
     // ==== RequestHandler
     //[NewValidationRecoveryAttempt::class],
     //[ResponseGenerationFailed::class],

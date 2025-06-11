@@ -18,7 +18,7 @@ require 'examples/boot.php';
 use Adbar\Dot;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Env;
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\StructuredOutput;

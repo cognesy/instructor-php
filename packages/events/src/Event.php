@@ -39,7 +39,7 @@ class Event implements JsonSerializable
      * @return string The event data as a log message
      */
     public function asLog(): string {
-        return EventHelper::logFormat($this, (string) $this);
+        return EventFormatter::logFormat($this, (string) $this);
     }
 
     /**
@@ -51,7 +51,7 @@ class Event implements JsonSerializable
     public function asConsole(bool $quote = false): string {
         $message = (string) $this;
         $message = str_replace("\n", ' ', $message);
-        return EventHelper::consoleFormat($this, $message, $quote);
+        return EventFormatter::consoleFormat($this, $message, $quote);
     }
 
     /**
@@ -61,7 +61,7 @@ class Event implements JsonSerializable
      * @param string $threshold The log level threshold
      */
     public function print(bool $quote = false, string $threshold = LogLevel::DEBUG): void {
-        if (!EventHelper::logFilter($threshold, $this->logLevel)) {
+        if (!EventFormatter::logFilter($threshold, $this->logLevel)) {
             return;
         }
         echo $this->asConsole($quote)."\n";

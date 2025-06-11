@@ -6,7 +6,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Illuminate\Contracts\Events\Dispatcher;
 use SplPriorityQueue;
 
-final class LaravelEventHandler implements CanHandleEvents
+final class LaravelEventDispatcher implements CanHandleEvents
 {
     /** Laravel’s own dispatcher (sync or queued) */
     private Dispatcher $dispatcher;

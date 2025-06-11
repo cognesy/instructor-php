@@ -2,7 +2,7 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Data\StructuredOutputRequest;
-use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\PendingStructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
@@ -84,7 +84,7 @@ trait HandlesInvocation
      * @return PendingStructuredOutput A response object providing access to various results retrieval methods.
      */
     public function create() : PendingStructuredOutput {
-        $this->events->dispatch(new RequestReceived());
+        $this->events->dispatch(new StructuredOutputRequestReceived());
 
         $config = $this->configBuilder->create();
         $request = $this->requestBuilder->createWith(

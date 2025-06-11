@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Instructor\EventSink;
 use Cognesy\Instructor\Tests\Examples\Instructor\Person;
@@ -25,7 +25,7 @@ it('handles direct call', function () use ($mockHttp, $text) {
 it('handles onEvent()', function () use ($mockHttp, $text) {
     $events = new EventSink();
     $structuredOutput = (new StructuredOutput)->withHttpClient($mockHttp);
-    $person = $structuredOutput->onEvent(RequestReceived::class, fn($e) => $events->onEvent($e))->with(
+    $person = $structuredOutput->onEvent(StructuredOutputRequestReceived::class, fn($e) => $events->onEvent($e))->with(
         messages: [['role' => 'user', 'content' => $text]],
         responseModel: Person::class,
     )->get();

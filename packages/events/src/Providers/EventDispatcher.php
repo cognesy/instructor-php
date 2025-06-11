@@ -1,5 +1,5 @@
 <?php
-namespace Cognesy\Events;
+namespace Cognesy\Events\Providers;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Psr\EventDispatcher\EventDispatcherInterface;

@@ -6,7 +6,7 @@ use Cognesy\Utils\Cli\Color;
 use Cognesy\Utils\Cli\Console;
 use Psr\Log\LogLevel;
 
-class EventHelper
+class EventFormatter
 {
     public static function toShortName(Event $event) : string {
         $segments = explode('\\', (new \ReflectionClass($event))->getName());
@@ -80,31 +80,5 @@ class EventHelper
             LogLevel::DEBUG => 7,
             default => 8,
         };
-    }
-
-    /**
-     * Dumps a variable to an array
-     *
-     * @param mixed $var The variable to dump
-     * @return array The variable as an array
-     */
-    public static function dumpVar(mixed $var) : array {
-        if (is_scalar($var)) {
-            return [$var];
-        }
-        if (is_array($var)) {
-            return $var;
-        }
-        $reflection = new \ReflectionObject($var);
-        $properties = array();
-        foreach($reflection->getProperties() as $property) {
-            $property->setAccessible(true);
-            if (!$property->isInitialized($var)) {
-                $properties[$property->getName()] = null;
-            } else {
-                $properties[$property->getName()] = $property->getValue($var);
-            }
-        }
-        return $properties;
     }
 }

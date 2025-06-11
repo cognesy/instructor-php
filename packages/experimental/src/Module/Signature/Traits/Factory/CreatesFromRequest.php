@@ -2,7 +2,7 @@
 
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\ResponseModelFactory;

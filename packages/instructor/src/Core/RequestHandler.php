@@ -8,7 +8,6 @@ use Cognesy\Instructor\Contracts\CanMaterializeRequest;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\Request\NewValidationRecoveryAttempt;
 use Cognesy\Instructor\Events\Request\ValidationRecoveryLimitReached;
-use Cognesy\Instructor\Events\StructuredOutput\ResponseGenerated;
 use Cognesy\Instructor\Validation\Exceptions\ValidationException;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -71,8 +70,9 @@ class RequestHandler
         }
 
         $value = $this->finalizeResult($processingResult, $request, $inferenceResponse, $partialResponses);
+        $inferenceResponse->withValue($value);
 
-        return $inferenceResponse->withValue($value);
+        return $inferenceResponse;
     }
 
     /**
@@ -143,8 +143,6 @@ class RequestHandler
         $value = $processingResult->unwrap();
         // store response
         $request->setResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $value); // TODO: tx messages to Scripts
-        // notify on response generation
-        $this->events->dispatch(new ResponseGenerated($value));
 
         return $value;
     }

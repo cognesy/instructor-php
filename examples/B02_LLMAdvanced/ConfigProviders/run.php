@@ -18,7 +18,7 @@ use Adbar\Dot;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Env;
 use Cognesy\Events\Event;
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;

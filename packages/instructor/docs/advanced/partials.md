@@ -79,7 +79,7 @@ foreach ($stream->partials() as $update) {
 }
 
 // now you can get final, fully processed person object
-$person = $stream->getLastUpdate();
+$person = $stream->lastUpdate();
 // ...and for example save it to the database
 $db->savePerson($person);
 ```
@@ -105,7 +105,7 @@ foreach ($stream->sequence() as $update) {
 }
 
 // now you can get final, fully processed sequence of participants
-$participants = $stream->getLastUpdate();
+$participants = $stream->lastUpdate();
 // ...and for example save it to the database
 $db->saveParticipants($participants->toArray());
 ```

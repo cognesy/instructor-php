@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Core\PartialsGenerator;
 use Cognesy\Instructor\Core\ResponseModelFactory;

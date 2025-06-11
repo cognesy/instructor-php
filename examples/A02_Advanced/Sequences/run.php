@@ -38,6 +38,7 @@ print("INPUT:\n$text\n\n");
 print("OUTPUT:\n");
 $list = (new StructuredOutput)
     ->onSequenceUpdate(fn($sequence) => dump($sequence->last()))
+    //->wiretap(fn($e) => $e->print())
     ->with(
         messages: $text,
         responseModel: Sequence::of(Person::class),

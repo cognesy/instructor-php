@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
@@ -31,7 +31,7 @@ class ReplayMiddleware implements HttpMiddleware
     private bool $fallbackToRealRequests;
     
     /**
-     * @var EventDispatcher|null Event dispatcher
+     * @var \Cognesy\Events\Providers\EventDispatcher|null Event dispatcher
      */
     private ?EventDispatcherInterface $events;
     
@@ -40,7 +40,7 @@ class ReplayMiddleware implements HttpMiddleware
      * 
      * @param string $storageDir Directory with recordings
      * @param bool $fallbackToRealRequests Whether to fallback to real requests if no recording is found
-     * @param EventDispatcher|null $events Optional event dispatcher
+     * @param \Cognesy\Events\Providers\EventDispatcher|null $events Optional event dispatcher
      */
     public function __construct(
         string $storageDir,

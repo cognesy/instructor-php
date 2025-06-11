@@ -146,7 +146,7 @@ This allows you to adapt to different requirements within the same application.
 The `HttpClient` class provides a static `make` method as an alternative to the constructor:
 
 ```php
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 
 // Create with specific client
 $client = (new HttpClientFactory)->make('guzzle');

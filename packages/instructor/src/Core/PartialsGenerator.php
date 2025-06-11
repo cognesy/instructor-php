@@ -80,7 +80,7 @@ class PartialsGenerator implements CanGeneratePartials
         // receive data
         /** @var PartialInferenceResponse $partialResponse */
         foreach($stream as $partialResponse) {
-            $this->events->dispatch(new StreamedResponseReceived($partialResponse));
+            $this->events->dispatch(new StreamedResponseReceived(['partial' => $partialResponse->toArray()]));
             // store partial response
             $this->partialResponses[] = $partialResponse;
 
@@ -102,7 +102,7 @@ class PartialsGenerator implements CanGeneratePartials
                 continue;
             }
 
-            $this->events->dispatch(new ChunkReceived($maybeArgumentChunk));
+            $this->events->dispatch(new ChunkReceived(['chunk' => $maybeArgumentChunk]));
             $this->responseText .= $maybeArgumentChunk;
             $this->responseJson = Json::fromPartial($this->responseText)->toString();
             if (empty($this->responseJson)) {
@@ -115,13 +115,13 @@ class PartialsGenerator implements CanGeneratePartials
             if ($result->isFailure()) {
                 continue;
             }
-            $this->events->dispatch(new PartialJsonReceived($this->responseJson));
+            $this->events->dispatch(new PartialJsonReceived(['partialJson' => $this->responseJson]));
 
             yield $partialResponse
                 ->withValue($result->unwrap())
                 ->withContent($this->responseText);
         }
-        $this->events->dispatch(new StreamedResponseFinished($this->lastPartialResponse()));
+        $this->events->dispatch(new StreamedResponseFinished(['partial' => $this->lastPartialResponse()->toArray()]));
 
         // finalize last function call
         // check if there are any toolCalls
@@ -160,7 +160,7 @@ class PartialsGenerator implements CanGeneratePartials
     ) : Result {
         return ResultChain::make()
             ->through(fn() => $this->validatePartialResponse($partialJson, $responseModel, $this->preventJsonSchema, $this->matchToExpectedFields))
-            ->tap(fn() => $this->events->dispatch(new PartialJsonReceived($partialJson)))
+            ->tap(fn() => $this->events->dispatch(new PartialJsonReceived(['partialJson' => $partialJson])))
             ->tap(fn() => $this->updateToolCall($partialJson, $responseModel->toolName()))
             ->through(fn() => $this->tryGetPartialObject($partialJson, $responseModel))
             ->onFailure(fn($result) => $this->events->dispatch(
@@ -217,7 +217,7 @@ class PartialsGenerator implements CanGeneratePartials
 
     protected function finalizeToolCall(string $responseJson, string $defaultName) : ToolCall {
         $finalizedToolCall = $this->toolCalls->finalizeLast($responseJson, $defaultName);
-        $this->events->dispatch(new StreamedToolCallCompleted($finalizedToolCall));
+        $this->events->dispatch(new StreamedToolCallCompleted(['toolCall' => $finalizedToolCall->toArray()]));
         return $finalizedToolCall;
     }
 }

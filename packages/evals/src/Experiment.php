@@ -7,7 +7,7 @@ use Cognesy\Evals\Observers\Aggregate\ExperimentFailureRate;
 use Cognesy\Evals\Observers\Aggregate\ExperimentLatency;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\DataMap;
 use Cognesy\Utils\Uuid;

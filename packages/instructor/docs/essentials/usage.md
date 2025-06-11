@@ -132,7 +132,7 @@ foreach ($stream->partials() as $partialPerson) {
 }
 
 // after streaming is done you can get the final, fully processed person object...
-$person = $stream->getLastUpdate()
+$person = $stream->lastUpdate()
 // ...to, for example, save it to the database
 $db->save($person);
 ?>

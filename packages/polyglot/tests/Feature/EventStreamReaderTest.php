@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
 use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
 use Cognesy\Polyglot\Inference\Utils\EventStreamReader;

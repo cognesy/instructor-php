@@ -3,26 +3,22 @@
 namespace Cognesy\Instructor\Events\StructuredOutput;
 
 use Cognesy\Events\Event;
-use Cognesy\Utils\Json\Json;
 use Psr\Log\LogLevel;
 
-final class StructuredOutputDone extends Event
+final class StructuredOutputRequestReceived extends Event
 {
     public $logLevel = LogLevel::INFO;
 
     public function __construct(
-        mixed $data
     ) {
-        parent::__construct($data);
+        parent::__construct();
     }
 
     public function __toString(): string {
-        return Json::encode($this->toArray());
+        return 'OK';
     }
 
     public function toArray(): array {
-        return [
-            'data' => $this->data,
-        ];
+        return [];
     }
 }

@@ -74,7 +74,7 @@ foreach ($stream->partials() as $partial) {
     partialUpdate($partial);
 }
 
-$user = $stream->getLastUpdate();
+$user = $stream->lastUpdate();
 
 assert($user->name === 'Jason');
 assert($user->age === 25);

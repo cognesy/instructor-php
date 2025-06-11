@@ -16,7 +16,7 @@ require 'examples/boot.php';
 
 use Cognesy\Config\Env;
 use Cognesy\Events\Event;
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\HttpClientBuilder;

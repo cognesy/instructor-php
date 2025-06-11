@@ -20,12 +20,9 @@ class EventDispatcher {
 
 namespace Cognesy\Polyglot\Inference\Events;
 
-class InferenceResponseReceived extends Event {
-}
+class InferenceResponseReceived extends Event {}
 
-class InferenceRequested extends Event {
-}
+class InferenceRequested extends Event {}
 
-class PartialInferenceResponseReceived extends Event {
-}
+class PartialInferenceResponseReceived extends Event {}
 ```

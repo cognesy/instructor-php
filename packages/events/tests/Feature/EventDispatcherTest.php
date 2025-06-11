@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Events\Event;
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Psr\EventDispatcher\StoppableEventInterface;
 
 // Basic Dispatcher Tests

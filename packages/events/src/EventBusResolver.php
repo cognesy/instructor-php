@@ -3,6 +3,7 @@
 namespace Cognesy\Events;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\Providers\EventDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EventBusResolver implements CanHandleEvents

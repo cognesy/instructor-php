@@ -11,7 +11,8 @@ use Cognesy\Instructor\Core\ResponseGenerator;
 use Cognesy\Instructor\Core\Traits\HandlesResultTypecasting;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputResponseGenerated;
+use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputStarted;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -60,20 +61,17 @@ class PendingStructuredOutput
      * Executes the request and returns the response
      */
     public function get() : mixed {
-        if ($this->request->isStreamed()) {
-            return $this->stream()->finalValue();
-        }
-        $response = $this->getResponse();
-        $this->events->dispatch(new StructuredOutputDone(['result' => $response]));
-        return $response->value();
+        return match(true) {
+            $this->request->isStreamed() => $this->stream()->finalValue(),
+            default => $this->getResponse()->value(),
+        };
     }
 
     public function toJsonObject() : Json {
-        $response = match(true) {
-            $this->request->isStreamed() => $this->stream()->finalResponse(),
-            default => $this->getResponse()
+        return match(true) {
+            $this->request->isStreamed() => $this->stream()->finalResponse()->findJsonData($this->request->mode()),
+            default => $this->getResponse()->findJsonData($this->request->mode())
         };
-        return $response->findJsonData($this->request->mode());
     }
 
     public function toJson() : string {
@@ -88,9 +86,7 @@ class PendingStructuredOutput
      * Executes the request and returns LLM response object
      */
     public function response() : InferenceResponse {
-        $response = $this->getResponse();
-        $this->events->dispatch(new StructuredOutputDone(['result' => $response->value()]));
-        return $response;
+        return $this->getResponse();
     }
 
     /**
@@ -104,18 +100,27 @@ class PendingStructuredOutput
     // INTERNAL /////////////////////////////////////////////////
 
     private function getResponse() : InferenceResponse {
+        $this->events->dispatch(new StructuredOutputStarted(['request' => $this->request->toArray()]));
+
         // RESPONSE CACHING IS DISABLED
         if (!$this->cacheProcessedResponse) {
-            return $this->requestHandler->responseFor($this->request);
+            $response = $this->requestHandler->responseFor($this->request);
+            $this->events->dispatch(new StructuredOutputResponseGenerated(['value' => json_encode($response->value())]));
+            return $response;
         }
+
         // RESPONSE CACHING IS ENABLED
         if (!isset($this->cachedResponse)) {
             $this->cachedResponse = $this->requestHandler->responseFor($this->request);
         }
+
+        $this->events->dispatch(new StructuredOutputResponseGenerated(['result' => json_encode($this->cachedResponse), 'cached' => true]));
         return $this->cachedResponse;
     }
 
     private function getStream(StructuredOutputRequest $request) : Generator {
+        $this->events->dispatch(new StructuredOutputStarted(['request' => $this->request->toArray()]));
+
         // RESPONSE CACHING IS DISABLED
         if (!$this->cacheProcessedResponse) {
             yield $this->requestHandler->streamResponseFor($request);

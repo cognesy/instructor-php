@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Instructor\Core;
 
-use Cognesy\Events\EventDispatcher;
+use Cognesy\Events\Providers\EventDispatcher;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Contracts\CanHandleToolSelection;
 use Cognesy\Instructor\Data\ResponseModel;

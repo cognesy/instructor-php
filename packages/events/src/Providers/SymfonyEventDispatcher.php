@@ -6,7 +6,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use SplPriorityQueue;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-final class SymfonyEventHandler implements CanHandleEvents
+final class SymfonyEventDispatcher implements CanHandleEvents
 {
     public function __construct(
         private EventDispatcherInterface $dispatcher
