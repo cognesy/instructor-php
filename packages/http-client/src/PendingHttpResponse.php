@@ -9,9 +9,10 @@ use Generator;
 
 class PendingHttpResponse
 {
+    private readonly CanHandleHttpRequest $handler;
+    private readonly HttpClientRequest $request;
+
     private ?HttpClientResponse $response = null;
-    private HttpClientRequest $request;
-    private CanHandleHttpRequest $handler;
 
     public function __construct(
         HttpClientRequest $request,
