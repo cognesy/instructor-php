@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
-use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 
 interface CanMapRequestBody
 {

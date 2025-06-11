@@ -15,7 +15,7 @@ prompt templates using Twig, Blade or custom 'arrowpipe' template syntax.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Str;
 

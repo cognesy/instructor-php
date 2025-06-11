@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 
 use Cognesy\Instructor\Data\StructuredOutputAttempt;
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 trait HandlesRetries
 {

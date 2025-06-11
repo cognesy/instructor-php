@@ -91,6 +91,7 @@
     "league/html-to-markdown": "^5.1",
     "maglnet/composer-require-checker": "^4.16",
     "mockery/mockery": "^1.6",
+    "monolog/monolog": "^3.9",
     "pestphp/pest": "^2.0",
     "phpstan/phpstan": "^1.11",
     "psr/http-factory-implementation": "*",

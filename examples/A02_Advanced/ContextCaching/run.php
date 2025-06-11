@@ -31,7 +31,7 @@ that we want to extract or generate based on README file.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Utils\Str;
 

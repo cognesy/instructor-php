@@ -8,7 +8,7 @@ Polyglot's configuration layer manages settings for different providers.
 ## LLM Configuration
 
 ```php
-namespace Cognesy\Polyglot\LLM\Data;
+namespace Cognesy\Polyglot\Inference\Data;
 
 class LLMConfig {
     public function __construct(
@@ -25,7 +25,7 @@ class LLMConfig {
         public string $providerType = 'openai-compatible'
     ) { ... }
 
-    public static function load(string $connection): \Cognesy\Polyglot\LLM\Config\LLMConfig { ... }
+    public static function load(string $connection): \Cognesy\Polyglot\Inference\Config\LLMConfig { ... }
 }
 ```
 

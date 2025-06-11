@@ -14,7 +14,7 @@ require 'examples/boot.php';
 use Cognesy\Config\Env;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
-use Cognesy\Polyglot\Embeddings\EmbedUtils;
+use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
 $documents = [
     'Computer vision models are used to analyze images and videos.',

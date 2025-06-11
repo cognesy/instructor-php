@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\Image;
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Messages\Utils\Image as ImageUtil;
 
 /**

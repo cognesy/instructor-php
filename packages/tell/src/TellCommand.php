@@ -2,8 +2,8 @@
 
 namespace Cognesy\Tell;
 
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\PendingInference;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\PendingInference;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

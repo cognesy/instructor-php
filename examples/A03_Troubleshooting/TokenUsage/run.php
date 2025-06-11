@@ -19,7 +19,7 @@ streamed requests.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
 class User {
     public int $age;

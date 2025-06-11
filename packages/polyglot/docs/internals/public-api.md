@@ -62,7 +62,7 @@ Similarly, the `Embeddings` class provides a unified interface for generating em
 ```php
 namespace Cognesy\Polyglot\Embeddings;
 
-class Embeddings {
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;class Embeddings {
     public function __construct(
         string $connection = '',
         ?EmbeddingsConfig $config = null,

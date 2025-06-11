@@ -47,7 +47,7 @@ if (!$modelSupportsVision) {
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 function withModelFallback(array $models, string $prompt): string {

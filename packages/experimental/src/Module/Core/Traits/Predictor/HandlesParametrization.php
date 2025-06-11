@@ -5,7 +5,7 @@ namespace Cognesy\Experimental\Module\Core\Traits\Predictor;
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 trait HandlesParametrization
 {

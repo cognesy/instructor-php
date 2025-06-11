@@ -4,8 +4,8 @@ namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Config\Settings;
 use Cognesy\Evals\Utils\Combination;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Generator;
 
 class InferenceCases

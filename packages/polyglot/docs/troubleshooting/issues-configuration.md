@@ -20,7 +20,7 @@ Make sure your API keys are correct and have the necessary permissions:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 function testApiKey(string $preset): bool {
@@ -54,7 +54,7 @@ Use debug mode to see the actual requests and responses:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Enable debug mode
 $inference = new Inference()

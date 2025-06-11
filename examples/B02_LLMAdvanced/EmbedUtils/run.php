@@ -23,7 +23,7 @@ Embeddings providers access details can be found and modified via
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Embeddings\EmbeddingsProvider;
-use Cognesy\Polyglot\Embeddings\EmbedUtils;
+use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
 $documents = [
     'Computer vision models are used to analyze images and videos.',

@@ -6,7 +6,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
-use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 
 class OpenAIRequestAdapter implements EmbedRequestAdapter
 {

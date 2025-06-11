@@ -16,10 +16,10 @@ require 'examples/boot.php';
 
 use Cognesy\Config\Env;
 use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Drivers\OpenAI\OpenAIDriver;
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\InferenceRequest;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
+use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIDriver;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 // we will use existing, bundled driver as an example, but you can provide any class that implements

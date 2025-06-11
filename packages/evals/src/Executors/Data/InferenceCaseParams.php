@@ -3,7 +3,7 @@
 namespace Cognesy\Evals\Executors\Data;
 
 use Cognesy\Evals\Contracts\CanMapValues;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class InferenceCaseParams implements CanMapValues {
     public string $preset;

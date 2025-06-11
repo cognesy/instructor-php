@@ -19,7 +19,7 @@ echo "📦 Exporting sub-package sources to Markdown"
 
 code2prompt "packages/utils/src/JsonSchema" -o "tmp/cut-util-json-schema.md"
 code2prompt "packages/utils/src/Messages" -o "tmp/cut-util-messages.md"
-code2prompt "packages/polyglot/src/LLM" -o "tmp/cut-poly-llm.md"
+code2prompt "packages/polyglot/src/Inference" -o "tmp/cut-poly-inference.md"
 code2prompt "packages/polyglot/src/Embeddings" -o "tmp/cut-poly-embeddings.md"
 
 echo "📦 Making cut-down Markdown versions of selected packages"
@@ -28,11 +28,11 @@ echo "📦 Making cut-down Markdown versions of selected packages"
 mkdir -p ./tmp/polyglot-tmp
 mkdir -p ./tmp/tmp1
 cp -rf "./packages/polyglot/src/"* "./tmp/polyglot-tmp/"
-# remove everything under tmp/polyglot-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
-mv "./tmp/polyglot-tmp/LLM/Drivers/OpenAI" "./tmp/tmp1"
-mv "./tmp/polyglot-tmp/LLM/Drivers/Gemini" "./tmp/tmp1"
-rm -rf ./tmp/polyglot-tmp/LLM/Drivers/*
-mv "./tmp/tmp1/"* "./tmp/polyglot-tmp/LLM/Drivers"
+# remove everything under tmp/polyglot-tmp/Inference/Drivers/* except ./OpenAI and ./Gemini
+mv "./tmp/polyglot-tmp/Inference/Drivers/OpenAI" "./tmp/tmp1"
+mv "./tmp/polyglot-tmp/Inference/Drivers/Gemini" "./tmp/tmp1"
+rm -rf ./tmp/polyglot-tmp/Inference/Drivers/*
+mv "./tmp/tmp1/"* "./tmp/polyglot-tmp/Inference/Drivers"
 rm -rf ./tmp/tmp1
 code2prompt "./tmp/polyglot-tmp" -o "./tmp/cut-poly.md"
 rm -rf ./tmp/polyglot-tmp
@@ -40,7 +40,6 @@ rm -rf ./tmp/polyglot-tmp
 # MAKE INSTRUCTOR WITH LIMITED NUMBER OF DRIVERS
 mkdir -p ./tmp/instructor-tmp
 cp -rf "./packages/instructor/src/"* "./tmp/instructor-tmp/"
-# remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
 rm -rf "./tmp/instructor-tmp/Extras"
 rm -rf "./tmp/instructor-tmp/Events"
 rm -rf "./tmp/instructor-tmp/Deserialization"

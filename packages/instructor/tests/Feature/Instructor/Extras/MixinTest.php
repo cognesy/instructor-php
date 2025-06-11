@@ -2,7 +2,7 @@
 
 use Cognesy\Instructor\Tests\Examples\Mixin\PersonWithMixin;
 use Cognesy\Instructor\Tests\MockHttp;
-use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 it('supports HandlesExtraction mixin', function () {
     $mockHttp = MockHttp::get([

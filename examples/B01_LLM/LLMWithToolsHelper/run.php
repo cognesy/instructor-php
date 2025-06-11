@@ -14,8 +14,8 @@ Polyglot has a built-in support for dynamically constructing tool calling schema
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 $schema = JsonSchema::object(

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
-use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsRequested;
 use Cognesy\Polyglot\Embeddings\PendingEmbeddings;
 

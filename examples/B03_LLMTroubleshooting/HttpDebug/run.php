@@ -16,7 +16,7 @@ When debug mode is turned on all HTTP requests and responses are dumped to the c
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $response = (new Inference)
     ->withDebugPreset('on') // Enable debug mode

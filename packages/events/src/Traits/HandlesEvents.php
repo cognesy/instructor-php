@@ -30,7 +30,7 @@ trait HandlesEvents
      */
     public function wiretap(?callable $listener) : self {
         if ($listener !== null) {
-            $this->events->wiretap($listener);
+            $this->events->addListener('*', $listener);
         }
         return $this;
     }

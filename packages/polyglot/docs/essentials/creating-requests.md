@@ -31,7 +31,7 @@ Here's a simple example of creating a request:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 $response = $inference
@@ -51,7 +51,7 @@ For chat-based interactions, you can pass an array of messages:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 $response = $inference
@@ -79,7 +79,7 @@ Example with image (for providers that support it):
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $imageData = base64_encode(file_get_contents('image.jpg'));
 $messages = [

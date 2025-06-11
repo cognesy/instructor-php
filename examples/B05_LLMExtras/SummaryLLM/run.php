@@ -13,7 +13,7 @@ This is an example of a simple summarization.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $report = <<<EOT
     [2021-09-01]

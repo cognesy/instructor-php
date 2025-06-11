@@ -32,7 +32,7 @@ require 'examples/boot.php';
 
 use Cognesy\Auxiliary\Web\Webpage;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Attributes\Instructions;
 
 class Company {

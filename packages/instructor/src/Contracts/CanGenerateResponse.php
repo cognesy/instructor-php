@@ -3,8 +3,8 @@
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Result\Result;
 
 interface CanGenerateResponse

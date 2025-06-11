@@ -60,7 +60,7 @@ The `PendingInference` class handles the response from an LLM API:
 ```php
 namespace Cognesy\Polyglot\LLM;
 
-class PendingInference {
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;class PendingInference {
     public function __construct(
         InferenceRequest $request,
         CanHandleInference $driver,

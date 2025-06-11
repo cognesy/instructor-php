@@ -6,6 +6,8 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 
 /**
  * Embeddings is a facade responsible for generating embeddings for provided input data

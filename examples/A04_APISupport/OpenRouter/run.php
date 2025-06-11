@@ -22,7 +22,7 @@ in case of extraction issues.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';

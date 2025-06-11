@@ -12,7 +12,7 @@ Instructor supports Meta LLM inference API. You can find the details on how to c
 ```php
 <?php
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 require 'examples/boot.php';

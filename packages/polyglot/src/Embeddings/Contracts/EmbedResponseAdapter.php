@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
-use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 
 interface EmbedResponseAdapter
 {

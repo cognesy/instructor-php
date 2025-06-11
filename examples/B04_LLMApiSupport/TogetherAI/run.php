@@ -23,7 +23,7 @@ Mode compatibility:
 ```php
 <?php
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 require 'examples/boot.php';

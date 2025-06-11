@@ -2,12 +2,12 @@
 
 namespace Cognesy\Instructor\Data;
 
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 class StructuredOutputAttempt {
     private array $messages;
     private InferenceResponse $inferenceResponse;
-    /** @var \Cognesy\Polyglot\LLM\Data\PartialInferenceResponse[] */
+    /** @var \Cognesy\Polyglot\Inference\Data\PartialInferenceResponse[] */
     private array $partialInferenceResponses;
     private array $errors;
     private mixed $output;

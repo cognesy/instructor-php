@@ -12,7 +12,7 @@ Polyglot supports context caching through the `withCachedContext()` method:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object
 $inference = new Inference()->using('anthropic');
@@ -59,7 +59,7 @@ Context caching is particularly valuable when working with large documents:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Load a large document
 $documentContent = file_get_contents('large_document.txt');

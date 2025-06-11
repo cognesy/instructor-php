@@ -19,7 +19,7 @@ require 'examples/boot.php';
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Contracts\CanValidateSelf;
 use Cognesy\Instructor\Validation\ValidationResult;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Schema\Attributes\Instructions;
 
 class ReflectiveResponse implements CanValidateSelf {

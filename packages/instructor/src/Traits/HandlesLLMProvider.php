@@ -3,9 +3,9 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Contracts\CanHandleInference;
-use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 trait HandlesLLMProvider
 {

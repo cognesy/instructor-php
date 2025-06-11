@@ -22,7 +22,7 @@ use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class CustomConfigProvider implements CanProvideConfig
 {

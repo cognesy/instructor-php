@@ -13,7 +13,7 @@ Polyglot provides a simple way to enable debug mode:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Enable debug mode when creating the inference object
 $inference = (new Inference())
@@ -38,7 +38,7 @@ In this example we're using built-in middleware, but you can also create your ow
 <?php
 use Cognesy\Http\Middleware\Debug\DebugMiddleware;
 use Cognesy\Http\HttpClient;
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create a custom debug middleware with specific options
 $debugMiddleware = new DebugMiddleware([
@@ -72,7 +72,7 @@ Use event listeners to trace the flow of requests and responses:
 
 ```php
 <?php
-use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\LLM\Events\InferenceRequested;use Cognesy\Polyglot\LLM\Events\InferenceResponseCreated;use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\Inference\Events\InferenceRequested;use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;use Cognesy\Polyglot\Inference\Inference;
 
 // Create an event dispatcher
 $events = new EventDispatcher();
@@ -107,7 +107,7 @@ For more persistent debugging, you can log to files:
 
 ```php
 <?php
-use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\LLM\Events\InferenceRequested;use Cognesy\Polyglot\LLM\Events\InferenceResponseCreated;use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\Inference\Events\InferenceRequested;use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;use Cognesy\Polyglot\Inference\Inference;
 
 // Create a function to log to file
 function logToFile(string $message, string $filename = 'llm_debug.log'): void {

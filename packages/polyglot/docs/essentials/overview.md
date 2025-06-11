@@ -18,7 +18,7 @@ Simplified inference API uses the default connection for convenient ad-hoc calls
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Generate text using the default connection
 $answer = (new Inference)->with(messages: 'What is the capital of France?')->get();
@@ -38,7 +38,7 @@ For more control, you can create an instance of the `Inference` class:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object
 $inference = new Inference();
@@ -58,7 +58,7 @@ You can specify which connection preset to use:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object with a specific connection
 $inference = new Inference();
@@ -77,7 +77,7 @@ For multi-turn conversations, provide an array of messages:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create a chat conversation
 $messages = [
@@ -101,7 +101,7 @@ You can customize various parameters for your requests:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference with custom options
 $inference = new Inference();
@@ -130,7 +130,7 @@ The `toText()` method returns text completion from the LLM response.
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $answer = (new Inference)
     ->using('openai') // optional, default is set in /config/llm.php
@@ -152,7 +152,7 @@ the whole response is ready.
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $stream = (new Inference)
     ->withMessages([['role' => 'user', 'content' => 'Describe capital of Brasil']])
@@ -244,7 +244,7 @@ Polyglot makes it easy to switch between different LLM providers at runtime.
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create an inference object
 $inference = new Inference();
@@ -298,7 +298,7 @@ Each provider offers multiple models with different capabilities, context length
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference('openai');
 

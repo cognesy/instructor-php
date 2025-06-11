@@ -17,8 +17,8 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 

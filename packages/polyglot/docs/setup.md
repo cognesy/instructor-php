@@ -174,7 +174,7 @@ A simple way to test if everything is working correctly is to run a small script
 <?php
 require 'vendor/autoload.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 try {
     $result = (new Inference)->with(messages: 'Say hello.')->get();

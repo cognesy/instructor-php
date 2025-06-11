@@ -4,10 +4,10 @@ namespace Cognesy\Evals\Executors;
 
 use Closure;
 use Cognesy\Evals\Executors\Data\InferenceSchema;
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\PendingInference;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\PendingInference;
 
 class InferenceAdapter
 {

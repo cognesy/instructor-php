@@ -16,7 +16,7 @@ generated.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Cli\Console;
 
 class UserRole

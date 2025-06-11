@@ -18,7 +18,7 @@ class EventDispatcher {
     public function addListener(string $eventClass, callable $listener): self { ... }
 }
 
-namespace Cognesy\Polyglot\LLM\Events;
+namespace Cognesy\Polyglot\Inference\Events;
 
 class InferenceResponseReceived extends Event {
 }

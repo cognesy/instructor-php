@@ -8,7 +8,7 @@ use Cognesy\Evals\Feedback\Feedback;
 use Cognesy\Evals\Observation;
 use Cognesy\Evals\Observers\Evaluate\Data\BooleanCorrectnessAnalysis;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class LLMBooleanCorrectnessEval implements CanGenerateObservations
 {

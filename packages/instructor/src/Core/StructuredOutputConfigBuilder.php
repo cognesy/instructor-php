@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Core;
 use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class StructuredOutputConfigBuilder
 {

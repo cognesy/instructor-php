@@ -32,7 +32,7 @@ Pinecone, Weaviate, Milvus, etc.
 require 'examples/boot.php';
 
 use Cognesy\Polyglot\Embeddings\Embeddings;
-use Cognesy\Polyglot\Embeddings\EmbedUtils;
+use Cognesy\Polyglot\Embeddings\Utils\EmbedUtils;
 
 $query = "technology news";
 $documents = [

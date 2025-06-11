@@ -19,7 +19,7 @@ Here's how you can use Instructor with Gemini API.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 enum UserType : string {
     case Guest = 'guest';

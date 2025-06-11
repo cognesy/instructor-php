@@ -2,8 +2,8 @@
 namespace Cognesy\Instructor\Extras\Mixin;
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
-use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\LLMProvider;
 
 trait HandlesInference {
     public function infer(

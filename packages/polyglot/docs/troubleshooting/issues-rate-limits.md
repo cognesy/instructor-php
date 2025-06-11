@@ -16,7 +16,7 @@ Provider rate limits can cause request failures during high traffic periods.
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 function withRetry(callable $fn, int $maxRetries = 3): mixed {

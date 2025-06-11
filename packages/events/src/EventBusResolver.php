@@ -30,11 +30,11 @@ class EventBusResolver implements CanHandleEvents
     }
 
     public function wiretap(callable $listener): void {
-        $this->eventHandler->wiretap($listener);
+        $this->eventHandler->addListener('*', $listener);
     }
 
-    public function addListener(string $name, callable $listener): void {
-        $this->eventHandler->addListener($name, $listener);
+    public function addListener(string $name, callable $listener, int $priority = 0): void {
+        $this->eventHandler->addListener($name, $listener, $priority);
     }
 
     public function dispatch(object $event) : object{

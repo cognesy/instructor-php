@@ -8,8 +8,8 @@ use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedResponseAdapter;
-use Cognesy\Polyglot\Embeddings\EmbeddingsRequest;
-use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class BaseEmbedDriver implements CanHandleVectorization

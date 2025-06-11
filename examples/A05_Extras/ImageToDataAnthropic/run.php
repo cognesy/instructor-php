@@ -28,7 +28,7 @@ require 'examples/boot.php';
 
 use Cognesy\Addons\Image\Image;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class Vendor {
     public ?string $name = '';

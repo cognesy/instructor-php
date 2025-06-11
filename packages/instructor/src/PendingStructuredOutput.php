@@ -14,8 +14,8 @@ use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputDone;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
-use Cognesy\Polyglot\LLM\LLMProvider;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\LLMProvider;
 use Cognesy\Utils\Json\Json;
 use Generator;
 

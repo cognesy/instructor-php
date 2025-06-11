@@ -14,7 +14,7 @@ It is returned by the `Inference` class when you call the `create()` method.
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 $response = $inference
@@ -48,7 +48,7 @@ For streaming responses, use the `stream()` method:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 $response = $inference
@@ -83,8 +83,8 @@ For models that support function calling or tools:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 $tools = [
     [

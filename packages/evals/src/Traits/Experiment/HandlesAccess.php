@@ -4,7 +4,7 @@ namespace Cognesy\Evals\Traits\Experiment;
 
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Observation\SelectObservations;
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\DataMap;
 use DateTime;
 

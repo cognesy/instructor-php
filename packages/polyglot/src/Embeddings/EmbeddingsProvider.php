@@ -11,6 +11,7 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
 
 /**
  * Builder for creating fully configured embeddings vectorization drivers.

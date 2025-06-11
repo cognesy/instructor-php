@@ -6,7 +6,7 @@ use Cognesy\Evals\Contracts\CanObserveExecution;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\DataMap;
 use Cognesy\Utils\Uuid;
 use DateTime;

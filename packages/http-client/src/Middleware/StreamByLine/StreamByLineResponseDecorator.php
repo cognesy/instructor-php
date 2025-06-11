@@ -5,7 +5,7 @@ namespace Cognesy\Http\Middleware\StreamByLine;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Data\HttpClientRequest;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
-use Cognesy\Polyglot\LLM\Utils\EventStreamReader;
+use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

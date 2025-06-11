@@ -14,7 +14,7 @@ This example demonstrates how you can create task assignments based on a transcr
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 // Step 1: Define a class that represents the structure and semantics
 // of the data you want to extract

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Polyglot\Embeddings\Traits;
 
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
-use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 
 trait HandlesShortcuts
 {

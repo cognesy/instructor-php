@@ -27,7 +27,7 @@ generating its summary for 2 target audiences.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 $data = file_get_contents(__DIR__ . '/../../../README.md');

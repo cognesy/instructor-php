@@ -25,7 +25,7 @@ Enabling streaming in Polyglot is straightforward - you need to set the `stream`
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 $response = $inference->with(
@@ -48,7 +48,7 @@ The most common way to process a stream is to iterate through the partial respon
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 $response = $inference->with(

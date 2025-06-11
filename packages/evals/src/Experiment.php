@@ -8,7 +8,7 @@ use Cognesy\Evals\Observers\Aggregate\ExperimentLatency;
 use Cognesy\Evals\Observers\Measure\DurationObserver;
 use Cognesy\Evals\Observers\Measure\TokenUsageObserver;
 use Cognesy\Events\EventDispatcher;
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Utils\DataMap;
 use Cognesy\Utils\Uuid;
 use DateTime;

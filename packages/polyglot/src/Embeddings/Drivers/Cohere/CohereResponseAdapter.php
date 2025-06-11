@@ -4,8 +4,8 @@ namespace Cognesy\Polyglot\Embeddings\Drivers\Cohere;
 
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedResponseAdapter;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Data\Vector;
-use Cognesy\Polyglot\Embeddings\EmbeddingsResponse;
 
 class CohereResponseAdapter implements EmbedResponseAdapter
 {

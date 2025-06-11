@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\StructuredOutputStream;
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 trait HandlesShortcuts
 {

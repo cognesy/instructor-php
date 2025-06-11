@@ -11,8 +11,8 @@ Here's a simple example of how to use JsonSchema with Polyglot's Inference API:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 // Define your schema
@@ -353,8 +353,8 @@ $userSchema = JsonSchema::object(
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 // Define address schema
@@ -439,7 +439,7 @@ JsonSchema can be used to define function/tool parameters for LLMs:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\JsonSchema\JsonSchema;
 
 // Define the schema for the function parameters

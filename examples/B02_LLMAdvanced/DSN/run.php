@@ -15,7 +15,7 @@ CLI arguments or environment variables.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 $answer = (new Inference)

@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Embeddings\Drivers\Cohere;
 
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapUsage;
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
 class CohereUsageFormat implements CanMapUsage
 {

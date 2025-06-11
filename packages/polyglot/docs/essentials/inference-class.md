@@ -12,7 +12,7 @@ responses.
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create a basic inference instance with default settings
 $inference = new Inference()->withMessages('What is the capital of France?')->get();

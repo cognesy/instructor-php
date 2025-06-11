@@ -15,7 +15,7 @@ When you need to extract undefined attributes, use a list of key-value pairs.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class Property
 {

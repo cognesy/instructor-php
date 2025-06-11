@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Config;
 
 use Cognesy\Instructor\Data\Traits;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 final class StructuredOutputConfig
 {

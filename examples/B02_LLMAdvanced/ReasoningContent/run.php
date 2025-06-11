@@ -15,7 +15,7 @@ This feature is useful for debugging and understanding the reasoning behind the 
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 // EXAMPLE 1: regular API, allows to customize inference options

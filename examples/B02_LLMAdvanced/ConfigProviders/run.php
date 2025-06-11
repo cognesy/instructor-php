@@ -20,7 +20,7 @@ use Cognesy\Config\Env;
 use Cognesy\Events\Event;
 use Cognesy\Events\EventDispatcher;
 use Cognesy\Http\HttpClientBuilder;
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 

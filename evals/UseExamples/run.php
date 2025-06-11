@@ -8,7 +8,7 @@ use Cognesy\Evals\Executors\RunStructuredOutputInference;
 use Cognesy\Evals\Experiment;
 use Cognesy\Evals\Observers\Aggregate\AggregateExperimentObserver;
 use Cognesy\Evals\Observers\Evaluate\ArrayMatchEval;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Evals\UseExamples\Company;
 use Evals\UseExamples\CompanyEval;
 

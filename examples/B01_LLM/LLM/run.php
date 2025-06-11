@@ -19,7 +19,7 @@ LLM providers access details can be found and modified via
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Utils\Str;
 
 // EXAMPLE 1: use default LLM connection preset for convenient ad-hoc calls

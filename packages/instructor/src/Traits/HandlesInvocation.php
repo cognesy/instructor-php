@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Traits;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Events\StructuredOutput\RequestReceived;
 use Cognesy\Instructor\PendingStructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 use Exception;

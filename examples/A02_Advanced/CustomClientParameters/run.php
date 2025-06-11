@@ -21,8 +21,8 @@ use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Config\LLMConfig;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 
 class User {

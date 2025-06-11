@@ -1,9 +1,9 @@
 <?php
 
 use Cognesy\Events\EventDispatcher;
-use Cognesy\Polyglot\LLM\Events\StreamEventParsed;
-use Cognesy\Polyglot\LLM\Events\StreamEventReceived;
-use Cognesy\Polyglot\LLM\Utils\EventStreamReader;
+use Cognesy\Polyglot\Inference\Events\StreamEventParsed;
+use Cognesy\Polyglot\Inference\Events\StreamEventReceived;
+use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
 use Mockery as Mock;
 
 beforeEach(function () {

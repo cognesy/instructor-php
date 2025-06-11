@@ -15,7 +15,7 @@ implement fallback strategies or leverage the strengths of different models and 
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference();
 
@@ -44,7 +44,7 @@ You can implement a fallback mechanism to try alternative providers if one fails
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 function withFallback(array $providers, callable $requestFn) {
@@ -89,7 +89,7 @@ You might want to select providers based on cost considerations:
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 class CostAwareLLM {
     private $inference;
@@ -151,7 +151,7 @@ You can implement a strategy to select the most appropriate provider for each re
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 class GroupOfExperts {
     private $inference;

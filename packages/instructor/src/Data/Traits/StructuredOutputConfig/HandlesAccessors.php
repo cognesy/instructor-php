@@ -2,7 +2,7 @@
 
 namespace Cognesy\Instructor\Data\Traits\StructuredOutputConfig;
 
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 trait HandlesAccessors
 {

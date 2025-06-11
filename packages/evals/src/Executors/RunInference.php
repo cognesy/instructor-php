@@ -5,7 +5,7 @@ namespace Cognesy\Evals\Executors;
 use Cognesy\Evals\Contracts\CanRunExecution;
 use Cognesy\Evals\Execution;
 use Cognesy\Evals\Executors\Data\InferenceData;
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 
 class RunInference implements CanRunExecution
 {

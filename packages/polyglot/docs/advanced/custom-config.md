@@ -201,7 +201,7 @@ Different providers may support unique parameters and features. You can pass the
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference('openai');
 
@@ -225,7 +225,7 @@ $response = $inference->with(
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Inference;
 
 $inference = new Inference('anthropic');
 
@@ -284,7 +284,7 @@ You can also create custom configurations at runtime using the `LLMConfig` class
 
 ```php
 <?php
-use Cognesy\Polyglot\LLM\Config\LLMConfig;use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Polyglot\Inference\Config\LLMConfig;use Cognesy\Polyglot\Inference\Inference;
 
 // Create a custom configuration
 $customConfig = new LLMConfig(

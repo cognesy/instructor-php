@@ -26,7 +26,7 @@ Mode can be set via parameter of `StructuredOutput::create()` method.
 require 'examples/boot.php';
 
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class User {
     public int $age;

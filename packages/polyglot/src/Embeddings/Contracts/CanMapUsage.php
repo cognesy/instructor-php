@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Contracts;
 
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 
 interface CanMapUsage
 {

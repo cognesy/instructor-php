@@ -21,7 +21,7 @@ require 'examples/boot.php';
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Instructor\StructuredOutput;
-use Cognesy\Polyglot\LLM\Enums\OutputMode;
+use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class User {
     public int $age;

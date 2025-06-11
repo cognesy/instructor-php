@@ -5,6 +5,8 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
+use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
 use Cognesy\Polyglot\Embeddings\Events\EmbeddingsResponseReceived;
 use Cognesy\Utils\Json\Json;
 use Psr\EventDispatcher\EventDispatcherInterface;

@@ -149,7 +149,7 @@ test('wiretap receives all dispatched events', function () {
     $event2 = new ChildTestEvent(['id' => 2]);
 
     $wiretapEvents = [];
-    $dispatcher->wiretap(function ($event) use (&$wiretapEvents) {
+    $dispatcher->addListener('*', function ($event) use (&$wiretapEvents) {
         $wiretapEvents[] = $event;
     });
 
@@ -168,12 +168,12 @@ test('multiple wiretaps all receive the same events', function () {
     $firstWiretapCalled = false;
     $secondWiretapCalled = false;
 
-    $dispatcher->wiretap(function ($e) use (&$firstWiretapCalled, $event) {
+    $dispatcher->addListener('*', function ($e) use (&$firstWiretapCalled, $event) {
         $firstWiretapCalled = true;
         expect($e)->toBe($event);
     });
 
-    $dispatcher->wiretap(function ($e) use (&$secondWiretapCalled, $event) {
+    $dispatcher->addListener('*', function ($e) use (&$secondWiretapCalled, $event) {
         $secondWiretapCalled = true;
         expect($e)->toBe($event);
     });
@@ -189,7 +189,7 @@ test('wiretap gets events even if there are no regular listeners', function () {
     $event = new TestEvent();
 
     $wiretapCalled = false;
-    $dispatcher->wiretap(function () use (&$wiretapCalled) {
+    $dispatcher->addListener('*', function () use (&$wiretapCalled) {
         $wiretapCalled = true;
     });
 

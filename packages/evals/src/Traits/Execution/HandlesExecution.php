@@ -8,7 +8,7 @@ use Cognesy\Evals\Events\ExecutionDone;
 use Cognesy\Evals\Events\ExecutionFailed;
 use Cognesy\Evals\Events\ExecutionProcessed;
 use Cognesy\Evals\Observation\MakeObservations;
-use Cognesy\Polyglot\LLM\Data\Usage;
+use Cognesy\Polyglot\Inference\Data\Usage;
 use DateTime;
 use Exception;
 

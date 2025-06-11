@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Contracts;
 
 use Cognesy\Instructor\Data\ResponseModel;
-use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
+use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Generator;
 
 interface CanGeneratePartials

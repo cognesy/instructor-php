@@ -2,10 +2,10 @@
 
 namespace Cognesy\Addons\ToolUse;
 
-use Cognesy\Polyglot\LLM\Data\InferenceResponse;
-use Cognesy\Polyglot\LLM\Data\ToolCalls;
-use Cognesy\Polyglot\LLM\Data\Usage;
-use Cognesy\Polyglot\LLM\Enums\InferenceFinishReason;
+use Cognesy\Polyglot\Inference\Data\InferenceResponse;
+use Cognesy\Polyglot\Inference\Data\ToolCalls;
+use Cognesy\Polyglot\Inference\Data\Usage;
+use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
 use Cognesy\Utils\Messages\Messages;
 use Throwable;
 
