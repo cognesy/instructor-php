@@ -4,6 +4,7 @@ namespace Cognesy\Instructor\Tests;
 
 use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\HttpClient;
+use Cognesy\Http\PendingHttpResponse;
 use Mockery;
 
 class MockHttp
@@ -11,19 +12,21 @@ class MockHttp
     static public function get(array $args) : HttpClient {
         $mockHttp = Mockery::mock(HttpClient::class);
         $mockResponse = Mockery::mock(HttpClientResponse::class);
+        $mockPending = Mockery::mock(PendingHttpResponse::class);
 
         $list = [];
         foreach ($args as $arg) {
             $list[] = self::makeFunc($arg);
         }
 
-        $mockHttp->shouldReceive('withRequest')->andReturn($mockResponse);
-        $mockHttp->shouldReceive('create')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('create')->andReturn($mockPending);
         $mockHttp->shouldReceive('with')->andReturn($mockResponse);
-        $mockHttp->shouldReceive('withRequest')->andReturn($mockResponse);
+        $mockHttp->shouldReceive('withRequest')->andReturn($mockPending);
         $mockHttp->shouldReceive('get')->andReturn($mockResponse);
         $mockHttp->shouldReceive('withDebug')->andReturn($mockHttp);
         $mockHttp->shouldReceive('toDebugArray')->andReturn([]);
+
+        $mockPending->shouldReceive('get')->andReturn($mockResponse);
 
         $mockResponse->shouldReceive('statusCode')->andReturn(200);
         $mockResponse->shouldReceive('headers')->andReturn([]);
