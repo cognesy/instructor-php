@@ -132,7 +132,7 @@ class RequestHandler
 
     protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
-            $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
+            $this->events->dispatch(new ValidationRecoveryLimitReached(['retries' => $this->retries, 'errors' => $this->errors]));
             throw new ValidationException(
                 message: "Validation recovery attempts limit reached after {$this->retries} attempt(s) due to: ".implode(", ", $this->errors),
                 errors: $this->errors,
@@ -155,7 +155,7 @@ class RequestHandler
         $request->addFailedResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
         $this->retries++;
         if (!$this->maxRetriesReached($request)) {
-            $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $this->errors));
+            $this->events->dispatch(new NewValidationRecoveryAttempt(['retries' => $this->retries, 'errors' => $this->errors]));
         }
     }
 

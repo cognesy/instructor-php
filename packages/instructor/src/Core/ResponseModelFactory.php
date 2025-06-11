@@ -51,10 +51,10 @@ class ResponseModelFactory
     }
 
     public function fromAny(string|array|object $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelRequested($requestedModel));
+        $this->events->dispatch(new ResponseModelRequested(['responseModel' => $requestedModel]));
         // determine the type of the requested model and build it
         $responseModel = $this->buildFrom($requestedModel);
-        $this->events->dispatch(new ResponseModelBuilt($responseModel));
+        $this->events->dispatch(new ResponseModelBuilt(['responseModel' => $responseModel]));
         return $responseModel;
     }
 
@@ -81,7 +81,7 @@ class ResponseModelFactory
     }
 
     private function fromClassString(string $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromClassString'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromClassString']));
         $class = $requestedModel;
         $instance = new $class;
         $schema = $this->schemaFactory->schema($class);
@@ -92,7 +92,7 @@ class ResponseModelFactory
     }
 
     private function fromJsonSchema(array $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromJsonSchema'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
         $class = $requestedModel['x-php-class'] ?? Structure::class;
         $instance = new $class;
         $schema = $this->schemaConverter->fromJsonSchema($requestedModel);
@@ -103,7 +103,7 @@ class ResponseModelFactory
     }
 
     private function fromInstance(mixed $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromInstance'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromInstance']));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
         $schema = $this->schemaFactory->schema($class);
@@ -114,7 +114,7 @@ class ResponseModelFactory
     }
 
     private function fromJsonSchemaProvider(mixed $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromJsonSchemaProvider'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchemaProvider']));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;
@@ -130,7 +130,7 @@ class ResponseModelFactory
     }
 
     private function fromSchemaProvider(mixed $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromSchemaProvider'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchemaProvider']));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;
@@ -146,7 +146,7 @@ class ResponseModelFactory
     }
 
     private function fromSchema(Schema $requestedModel) : ResponseModel {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromSchema'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchema']));
         $schema = $requestedModel;
         $class = $schema->typeDetails->class;
         $instance = new $class;
@@ -157,7 +157,7 @@ class ResponseModelFactory
     }
 
     private function fromToolSelectionProvider(CanHandleToolSelection $requestedModel) {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromToolSelectionProvider'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromToolSelectionProvider']));
         $class = get_class($requestedModel);
         $instance = $requestedModel;
         $jsonSchema = $instance->toJsonSchema();
@@ -168,7 +168,7 @@ class ResponseModelFactory
     }
 
     private function fromOutputSchemaProvider(mixed $requestedModel) {
-        $this->events->dispatch(new ResponseModelBuildModeSelected(mode: 'fromOutputSchemaProvider'));
+        $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromOutputSchemaProvider']));
         if (is_object($requestedModel)) {
             $class = get_class($requestedModel);
             $instance = $requestedModel;

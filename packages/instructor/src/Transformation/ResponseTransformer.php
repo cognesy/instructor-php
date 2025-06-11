@@ -30,14 +30,14 @@ class ResponseTransformer
     // INTERNAL ////////////////////////////////////////////////////////
 
     protected function transformSelf(CanTransformSelf $object) : Result {
-        $this->events->dispatch(new ResponseTransformationAttempt($object));
+        $this->events->dispatch(new ResponseTransformationAttempt(['object' => $object]));
         try {
             $transformed = $object->transform();
         } catch (Exception $e) {
-            $this->events->dispatch(new ResponseTransformationFailed($object, $e->getMessage()));
+            $this->events->dispatch(new ResponseTransformationFailed(['object' => $object, 'error' => $e->getMessage()]));
             return Result::failure($e->getMessage());
         }
-        $this->events->dispatch(new ResponseTransformed($transformed));
+        $this->events->dispatch(new ResponseTransformed(['response' => json_encode($transformed)]));
         return Result::success($transformed);
     }
 
@@ -53,7 +53,7 @@ class ResponseTransformer
                 $transformer instanceof CanTransformObject => $transformer,
                 default => throw new Exception('Transformer must implement CanTransformObject interface'),
             };
-            $this->events->dispatch(new ResponseTransformationAttempt($data));
+            $this->events->dispatch(new ResponseTransformationAttempt(['object' => $data]));
             // TODO: should we catch exceptions here?
             $result = $transformer->transform($data);
             if (!empty($result)) {

@@ -30,8 +30,8 @@ class ResponseDeserializer
             default => $this->deserializeAny($json, $responseModel)
         };
         $this->events->dispatch(match(true) {
-            $result->isFailure() => new ResponseDeserializationFailed($result->errorMessage()),
-            default => new ResponseDeserialized($result->unwrap())
+            $result->isFailure() => new ResponseDeserializationFailed(['error' => $result->errorMessage()]),
+            default => new ResponseDeserialized(['response' => json_encode($result->unwrap())])
         });
         return $result;
     }
@@ -43,12 +43,12 @@ class ResponseDeserializer
     }
 
     protected function deserializeSelf(string $json, CanDeserializeSelf $response, ?string $toolName = null) : Result {
-        $this->events->dispatch(new CustomResponseDeserializationAttempt($response, $json));
+        $this->events->dispatch(new CustomResponseDeserializationAttempt(['response' => $response, 'json' => $json]));
         return Result::try(fn() => $response->fromJson($json, $toolName));
     }
 
     protected function deserializeAny(string $json, ResponseModel $responseModel) : Result {
-        $this->events->dispatch(new ResponseDeserializationAttempt($responseModel, $json));
+        $this->events->dispatch(new ResponseDeserializationAttempt(['responseModel' => $responseModel->toArray(), 'json' => $json]));
         foreach ($this->deserializers as $deserializer) {
             $deserializer = match(true) {
                 is_string($deserializer) && is_subclass_of($deserializer, CanDeserializeClass::class) => new $deserializer(),

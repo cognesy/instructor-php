@@ -4,15 +4,4 @@ namespace Cognesy\Instructor\Events\Request;
 
 use Cognesy\Events\Event;
 
-final class ResponseModelBuildModeSelected extends Event
-{
-    public function __construct(
-        public string $mode
-    ) {
-        parent::__construct();
-    }
-
-    public function __toString(): string {
-        return $this->mode;
-    }
-}
+final class ResponseModelBuildModeSelected extends Event {}

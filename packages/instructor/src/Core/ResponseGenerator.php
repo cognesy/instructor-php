@@ -36,8 +36,8 @@ class ResponseGenerator implements CanGenerateResponse
             ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
             ->through(fn($object) => $this->responseValidator->validate($object))
             ->through(fn($object) => $this->responseTransformer->transform($object))
-            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject($object)))
-            ->onFailure(fn($result) => $this->events->dispatch(new ResponseGenerationFailed([$result->error()])))
+            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
+            ->onFailure(fn($result) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $result->error()])))
             ->then(fn($result) => match(true) {
                 $result->isSuccess() => $result,
                 default => Result::failure($this->extractErrors($result))

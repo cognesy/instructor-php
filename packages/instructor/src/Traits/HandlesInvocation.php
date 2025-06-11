@@ -84,13 +84,12 @@ trait HandlesInvocation
      * @return PendingStructuredOutput A response object providing access to various results retrieval methods.
      */
     public function create() : PendingStructuredOutput {
-        $this->events->dispatch(new StructuredOutputRequestReceived());
-
         $config = $this->configBuilder->create();
         $request = $this->requestBuilder->createWith(
             config: $config,
             events: $this->events,
         );
+        $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
 
         return new PendingStructuredOutput(
             request: $request,

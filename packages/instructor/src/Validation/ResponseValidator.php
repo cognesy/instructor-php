@@ -31,8 +31,8 @@ class ResponseValidator
             default => $this->validateObject($response)
         };
         $this->events->dispatch(match(true) {
-            $validation->isInvalid() => new ResponseValidationFailed($validation),
-            default => new ResponseValidated($validation)
+            $validation->isInvalid() => new ResponseValidationFailed(['validation' => $validation->toArray()]),
+            default => new ResponseValidated(['validation' => $validation->toArray()])
         });
         return match(true) {
             $validation->isInvalid() => Result::failure($validation->getErrorMessage()),
@@ -43,12 +43,12 @@ class ResponseValidator
     // INTERNAL ////////////////////////////////////////////////////////
 
     protected function validateSelf(CanValidateSelf $response) : ValidationResult {
-        $this->events->dispatch(new CustomResponseValidationAttempt($response));
+        $this->events->dispatch(new CustomResponseValidationAttempt(['response' => json_encode($response)]));
         return $response->validate();
     }
 
     protected function validateObject(object $response) : ValidationResult {
-        $this->events->dispatch(new ResponseValidationAttempt($response));
+        $this->events->dispatch(new ResponseValidationAttempt(['object' => $response]));
         $results = [];
         foreach ($this->validators as $validator) {
             $validator = match(true) {

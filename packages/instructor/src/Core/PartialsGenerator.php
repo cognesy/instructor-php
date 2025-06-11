@@ -205,13 +205,13 @@ class PartialsGenerator implements CanGeneratePartials
 
     protected function newToolCall(string $name) : ToolCall {
         $newToolCall = $this->toolCalls->add($name);
-        $this->events->dispatch(new StreamedToolCallStarted($newToolCall));
+        $this->events->dispatch(new StreamedToolCallStarted(['toolCall' => $newToolCall->toArray()]));
         return $newToolCall;
     }
 
     protected function updateToolCall(string $responseJson, string $defaultName) : ToolCall {
         $updatedToolCall = $this->toolCalls->updateLast($responseJson, $defaultName);
-        $this->events->dispatch(new StreamedToolCallUpdated($updatedToolCall));
+        $this->events->dispatch(new StreamedToolCallUpdated(['toolCall' => $updatedToolCall->toArray()]));
         return $updatedToolCall;
     }
 
