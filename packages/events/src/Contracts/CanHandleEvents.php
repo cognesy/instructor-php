@@ -9,5 +9,4 @@ interface CanHandleEvents extends EventDispatcherInterface, ListenerProviderInte
 {
     public function wiretap(callable $listener): void;
     public function addListener(string $name, callable $listener): void;
-    public function dispatcher() : EventDispatcherInterface;
 }

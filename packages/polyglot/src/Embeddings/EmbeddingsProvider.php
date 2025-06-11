@@ -39,7 +39,7 @@ final class EmbeddingsProvider
         ?HttpClient               $explicitHttpClient = null,
         ?CanHandleVectorization   $explicitDriver = null,
     ) {
-        $this->events = EventBusResolver::using($events)->get();
+        $this->events = EventBusResolver::using($events);
         $this->configProvider = ConfigResolver::using($configProvider);
         $this->presets = ConfigPresets::using($configProvider)->for(EmbeddingsConfig::group());
 

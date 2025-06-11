@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Enums;
 
-enum LLMFinishReason : string
+enum InferenceFinishReason : string
 {
     case Stop = 'stop';
     case Length = 'length';
@@ -11,15 +11,15 @@ enum LLMFinishReason : string
     case Error = 'error';
     case Other = 'other';
 
-    public function equals(string|LLMFinishReason $reason) : bool {
+    public function equals(string|InferenceFinishReason $reason) : bool {
         return match(true) {
-            $reason instanceof LLMFinishReason => ($this->value === $reason->value),
+            $reason instanceof InferenceFinishReason => ($this->value === $reason->value),
             is_string($reason) => ($this->value === $reason),
             default => false,
         };
     }
 
-    public static function fromText(string $text) : LLMFinishReason {
+    public static function fromText(string $text) : InferenceFinishReason {
         $text = strtolower($text);
         return match ($text) {
             'blocklist' => self::ContentFilter,
@@ -45,7 +45,7 @@ enum LLMFinishReason : string
         };
     }
 
-    public function isOneOf(LLMFinishReason ...$reasons): bool {
+    public function isOneOf(InferenceFinishReason ...$reasons): bool {
         foreach ($reasons as $reason) {
             if ($this->equals($reason)) {
                 return true;

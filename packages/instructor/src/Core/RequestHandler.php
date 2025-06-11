@@ -56,23 +56,23 @@ class RequestHandler
     public function responseFor(StructuredOutputRequest $request) : InferenceResponse {
         $processingResult = Result::failure("No response generated");
         while ($processingResult->isFailure() && !$this->maxRetriesReached($request)) {
-            $llmResponse = $this->getInference($request)->response();
-            $llmResponse->withContent(match($request->mode()) {
-                OutputMode::Text => $llmResponse->content(),
-                OutputMode::Tools => $llmResponse->toolCalls()->first()?->argsAsJson()
-                    ?? $llmResponse->content() // fallback if no tool calls - some LLMs return just a string
+            $inferenceResponse = $this->getInference($request)->response();
+            $inferenceResponse->withContent(match($request->mode()) {
+                OutputMode::Text => $inferenceResponse->content(),
+                OutputMode::Tools => $inferenceResponse->toolCalls()->first()?->argsAsJson()
+                    ?? $inferenceResponse->content() // fallback if no tool calls - some LLMs return just a string
                     ?? '',
                 // for OutputMode::MdJson, OutputMode::Json, OutputMode::JsonSchema try extracting JSON from content
                 // and replacing original content with it
-                default => Json::fromString($llmResponse->content())->toString(),
+                default => Json::fromString($inferenceResponse->content())->toString(),
             });
             $partialResponses = [];
-            $processingResult = $this->processResponse($request, $llmResponse, $partialResponses);
+            $processingResult = $this->processResponse($request, $inferenceResponse, $partialResponses);
         }
 
-        $value = $this->finalizeResult($processingResult, $request, $llmResponse, $partialResponses);
+        $value = $this->finalizeResult($processingResult, $request, $inferenceResponse, $partialResponses);
 
-        return $llmResponse->withValue($value);
+        return $inferenceResponse->withValue($value);
     }
 
     /**
@@ -87,14 +87,14 @@ class RequestHandler
             $stream = $this->getInference($request)->stream()->responses();
             yield from $this->partialsGenerator->getPartialResponses($stream, $request->responseModel());
 
-            $llmResponse = $this->partialsGenerator->getCompleteResponse();
+            $inferenceResponse = $this->partialsGenerator->getCompleteResponse();
             $partialResponses = $this->partialsGenerator->partialResponses();
-            $processingResult = $this->processResponse($request, $llmResponse, $partialResponses);
+            $processingResult = $this->processResponse($request, $inferenceResponse, $partialResponses);
         }
 
-        $value = $this->finalizeResult($processingResult, $request, $llmResponse, $partialResponses);
+        $value = $this->finalizeResult($processingResult, $request, $inferenceResponse, $partialResponses);
 
-        yield $llmResponse->withValue($value);
+        yield $inferenceResponse->withValue($value);
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////
@@ -114,23 +114,23 @@ class RequestHandler
             ->create();
     }
 
-    protected function processResponse(StructuredOutputRequest $request, InferenceResponse $llmResponse, array $partialResponses) : Result {
-        // we have LLMResponse here - let's process it: deserialize, validate, transform
+    protected function processResponse(StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : Result {
+        // we have InferenceResponse here - let's process it: deserialize, validate, transform
         $processingResult = $this->responseGenerator->makeResponse(
-            response: $llmResponse,
+            response: $inferenceResponse,
             responseModel: $request->responseModel(),
             mode: $request->mode()
         );
 
         if ($processingResult->isFailure()) {
             // retry - we have not managed to deserialize, validate or transform the response
-            $this->handleError($processingResult, $request, $llmResponse, $partialResponses);
+            $this->handleError($processingResult, $request, $inferenceResponse, $partialResponses);
         }
 
         return $processingResult;
     }
 
-    protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $llmResponse, array $partialResponses) : mixed {
+    protected function finalizeResult(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : mixed {
         if ($processingResult->isFailure()) {
             $this->events->dispatch(new ValidationRecoveryLimitReached($this->retries, $this->errors));
             throw new ValidationException(
@@ -142,19 +142,19 @@ class RequestHandler
         // get final value
         $value = $processingResult->unwrap();
         // store response
-        $request->setResponse($request->messages()->toArray(), $llmResponse, $partialResponses, $value); // TODO: tx messages to Scripts
+        $request->setResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $value); // TODO: tx messages to Scripts
         // notify on response generation
         $this->events->dispatch(new ResponseGenerated($value));
 
         return $value;
     }
 
-    protected function handleError(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $llmResponse, array $partialResponses) : void {
+    protected function handleError(Result $processingResult, StructuredOutputRequest $request, InferenceResponse $inferenceResponse, array $partialResponses) : void {
         $error = $processingResult->error();
         $this->errors = is_array($error) ? $error : [$error];
 
         // store failed response
-        $request->addFailedResponse($request->messages()->toArray(), $llmResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
+        $request->addFailedResponse($request->messages()->toArray(), $inferenceResponse, $partialResponses, $this->errors); // TODO: tx messages to Scripts
         $this->retries++;
         if (!$this->maxRetriesReached($request)) {
             $this->events->dispatch(new NewValidationRecoveryAttempt($this->retries, $this->errors));

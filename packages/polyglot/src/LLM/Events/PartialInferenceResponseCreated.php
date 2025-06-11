@@ -4,10 +4,10 @@ namespace Cognesy\Polyglot\LLM\Events;
 use Cognesy\Polyglot\LLM\Data\PartialInferenceResponse;
 use Cognesy\Utils\Json\Json;
 
-final class PartialLLMResponseCreated extends InferenceEvent
+final class PartialInferenceResponseCreated extends InferenceEvent
 {
     public function __construct(
-        public PartialInferenceResponse $partialLLMResponse
+        public PartialInferenceResponse $partialInferenceResponse
     ) {
         parent::__construct();
     }
@@ -18,7 +18,7 @@ final class PartialLLMResponseCreated extends InferenceEvent
 
     public function toArray() : array {
         return [
-            'partialLLMResponse' => $this->partialLLMResponse->toArray()
+            'partialInferenceResponse' => $this->partialInferenceResponse->toArray()
         ];
     }
 }

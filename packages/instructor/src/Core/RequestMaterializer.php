@@ -145,7 +145,7 @@ class RequestMaterializer implements CanMaterializeRequest
         $newScript = $script->clone();
         $messages = [];
         foreach($request->attempts() as $attempt) {
-            $messages[] = ['role' => 'assistant', 'content' => $attempt->llmResponse()->content()];
+            $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
             $retryFeedback = $this->config->retryPrompt()
                 . Arrays::flatten($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];

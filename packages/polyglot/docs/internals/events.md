@@ -20,21 +20,12 @@ class EventDispatcher {
 
 namespace Cognesy\Polyglot\LLM\Events;
 
-class LLMResponseReceived extends Event {
-    public function __construct(
-        public LLMResponse $llmResponse
-    ) { ... }
+class InferenceResponseReceived extends Event {
 }
 
 class InferenceRequested extends Event {
-    public function __construct(
-        public InferenceRequest $request
-    ) { ... }
 }
 
-class PartialLLMResponseReceived extends Event {
-    public function __construct(
-        public PartialLLMResponse $partialLLMResponse
-    ) { ... }
+class PartialInferenceResponseReceived extends Event {
 }
 ```

@@ -69,7 +69,11 @@ class ReplayMiddleware implements HttpMiddleware
             $response = $record->toResponse($request->isStreamed());
             
             // Dispatch event
-            $this->events->dispatch(new HttpInteractionReplayed($request, $response));
+            $this->events->dispatch(new HttpInteractionReplayed([
+                'method' => $request->method(),
+                'url' => $request->url(),
+                'statusCode' => $response->statusCode()
+            ]));
             
             return $response;
         }
@@ -77,7 +81,10 @@ class ReplayMiddleware implements HttpMiddleware
         // No recording found, decide what to do
         if (!$this->fallbackToRealRequests) {
             // Dispatch event
-            $this->events->dispatch(new HttpInteractionNotFound($request));
+            $this->events->dispatch(new HttpInteractionNotFound([
+                'method' => $request->method(),
+                'url' => $request->url(),
+            ]));
             
             // No fallback, throw exception
             throw new RecordingNotFoundException(

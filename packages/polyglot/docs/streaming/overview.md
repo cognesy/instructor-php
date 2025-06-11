@@ -75,7 +75,7 @@ echo "\n";
 
 ### Understanding Partial Responses
 
-Each iteration of the stream yields a `PartialLLMResponse` object with these key properties:
+Each iteration of the stream yields a `PartialInferenceResponse` object with these key properties:
 
 - `contentDelta`: The new content received in this chunk
 - `content`: The accumulated content up to this point

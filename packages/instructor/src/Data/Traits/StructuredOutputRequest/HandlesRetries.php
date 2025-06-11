@@ -52,19 +52,19 @@ trait HandlesRetries
 
     public function setResponse(
         array             $messages,
-        InferenceResponse $llmResponse,
-        array             $partialLLMResponses = [],
+        InferenceResponse $inferenceResponse,
+        array             $partialInferenceResponses = [],
         mixed             $returnedValue = null
     ) {
-        $this->response = new StructuredOutputAttempt($messages, $llmResponse, $partialLLMResponses, [], $returnedValue);
+        $this->response = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, [], $returnedValue);
     }
 
     public function addFailedResponse(
         array             $messages,
-        InferenceResponse $llmResponse,
-        array             $partialLLMResponses = [],
+        InferenceResponse $inferenceResponse,
+        array             $partialInferenceResponses = [],
         array             $errors = [],
     ) {
-        $this->failedResponses[] = new StructuredOutputAttempt($messages, $llmResponse, $partialLLMResponses, $errors, null);
+        $this->failedResponses[] = new StructuredOutputAttempt($messages, $inferenceResponse, $partialInferenceResponses, $errors, null);
     }
 }

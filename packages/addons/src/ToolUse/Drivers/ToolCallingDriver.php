@@ -63,7 +63,7 @@ class ToolCallingDriver implements CanUseTools
         $messages = $context->messages();
         $tools = $context->tools();
 
-        $llmResponse = (new Inference)
+        $inferenceResponse = (new Inference)
             ->withLLMProvider($this->llm)
             ->with(
                 messages: $messages->toArray(),
@@ -79,16 +79,16 @@ class ToolCallingDriver implements CanUseTools
             )
             ->response();
 
-        $toolExecutions = $tools->useTools($llmResponse->toolCalls(), $context);
+        $toolExecutions = $tools->useTools($inferenceResponse->toolCalls(), $context);
         $followUpMessages = $this->makeFollowUpMessages($toolExecutions);
 
         return new ToolUseStep(
-            response: $llmResponse->content(),
-            toolCalls: $llmResponse->toolCalls(),
+            response: $inferenceResponse->content(),
+            toolCalls: $inferenceResponse->toolCalls(),
             toolExecutions: $toolExecutions,
             messages: $followUpMessages,
-            usage: $llmResponse->usage(),
-            llmResponse: $llmResponse,
+            usage: $inferenceResponse->usage(),
+            inferenceResponse: $inferenceResponse,
         );
     }
 

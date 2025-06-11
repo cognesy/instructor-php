@@ -44,15 +44,15 @@ class StructuredOutput
     ) {
         $this->events = EventBusResolver::using($events);
 
-        $this->responseDeserializer = new ResponseDeserializer($this->events->dispatcher(), [SymfonyDeserializer::class]);
-        $this->responseValidator = new ResponseValidator($this->events->dispatcher(), [SymfonyValidator::class]);
-        $this->responseTransformer = new ResponseTransformer($this->events->dispatcher(), []);
+        $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
+        $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
+        $this->responseTransformer = new ResponseTransformer($this->events, []);
 
         $this->configBuilder = new StructuredOutputConfigBuilder(configProvider: $configProvider);
         $this->requestBuilder = new StructuredOutputRequestBuilder();
 
         $this->llmProvider = LLMProvider::new(
-            events: $this->events->dispatcher(),
+            events: $this->events,
             configProvider: $configProvider,
         );
     }

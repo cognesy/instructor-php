@@ -20,8 +20,8 @@ namespace Cognesy\Polyglot\LLM\Contracts;
 
 interface CanHandleInference {
     public function handle(InferenceRequest $request): HttpClientResponse;
-    public function fromResponse(array $data): ?LLMResponse;
-    public function fromStreamResponse(array $data): ?PartialLLMResponse;
+    public function fromResponse(array $data): ?InferenceResponse;
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse;
     public function fromStreamData(string $data): string|bool;
 }
 
@@ -38,8 +38,8 @@ interface ProviderRequestAdapter {
 }
 
 interface ProviderResponseAdapter {
-    public function fromResponse(array $data): ?LLMResponse;
-    public function fromStreamResponse(array $data): ?PartialLLMResponse;
+    public function fromResponse(array $data): ?InferenceResponse;
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse;
     public function fromStreamData(string $data): string|bool;
 }
 
@@ -97,8 +97,8 @@ class ModularLLMDriver implements CanHandleInference {
     ) { ... }
 
     public function handle(InferenceRequest $request): HttpClientResponse { ... }
-    public function fromResponse(array $data): ?LLMResponse { ... }
-    public function fromStreamResponse(array $data): ?PartialLLMResponse { ... }
+    public function fromResponse(array $data): ?InferenceResponse { ... }
+    public function fromStreamResponse(array $data): ?PartialInferenceResponse { ... }
     public function fromStreamData(string $data): string|bool { ... }
 }
 ```

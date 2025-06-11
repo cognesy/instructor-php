@@ -29,10 +29,6 @@ class EventBusResolver implements CanHandleEvents
         return new self($events);
     }
 
-    public function get(): CanHandleEvents {
-        return $this->eventHandler;
-    }
-
     public function wiretap(callable $listener): void {
         $this->eventHandler->wiretap($listener);
     }
@@ -47,9 +43,5 @@ class EventBusResolver implements CanHandleEvents
 
     public function getListenersForEvent(object $event): iterable {
         return $this->eventHandler->getListenersForEvent($event);
-    }
-
-    public function dispatcher(): EventDispatcherInterface {
-        return $this->eventHandler->dispatcher();
     }
 }

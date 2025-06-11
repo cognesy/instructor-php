@@ -72,7 +72,7 @@ Use event listeners to trace the flow of requests and responses:
 
 ```php
 <?php
-use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\LLM\Events\InferenceRequested;use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\LLM\Events\InferenceRequested;use Cognesy\Polyglot\LLM\Events\InferenceResponseCreated;use Cognesy\Polyglot\LLM\Inference;
 
 // Create an event dispatcher
 $events = new EventDispatcher();
@@ -82,9 +82,9 @@ $events->listen(InferenceRequested::class, function (InferenceRequested $event) 
     echo "Request sent: " . json_encode($event->request->toArray()) . "\n";
 });
 
-$events->listen(LLMResponseCreated::class, function (LLMResponseCreated $event) {
-    echo "Response received: " . substr($event->llmResponse->content(), 0, 50) . "...\n";
-    echo "Token usage: " . $event->llmResponse->usage()->total() . "\n";
+$events->listen(InferenceResponseCreated::class, function (InferenceResponseCreated $event) {
+    echo "Response received: " . substr($event->inferenceResponse->content(), 0, 50) . "...\n";
+    echo "Token usage: " . $event->inferenceResponse->usage()->total() . "\n";
 });
 
 // Create an inference object with the event dispatcher
@@ -107,7 +107,7 @@ For more persistent debugging, you can log to files:
 
 ```php
 <?php
-use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\LLM\Events\InferenceRequested;use Cognesy\Polyglot\LLM\Events\LLMResponseCreated;use Cognesy\Polyglot\LLM\Inference;
+use Cognesy\Events\EventDispatcher;use Cognesy\Polyglot\LLM\Events\InferenceRequested;use Cognesy\Polyglot\LLM\Events\InferenceResponseCreated;use Cognesy\Polyglot\LLM\Inference;
 
 // Create a function to log to file
 function logToFile(string $message, string $filename = 'llm_debug.log'): void {
@@ -129,8 +129,8 @@ $events->listen(InferenceRequested::class, function (InferenceRequested $event) 
 });
 
 // Listen for response events
-$events->listen(LLMResponseCreated::class, function (LLMResponseCreated $event) {
-    $response = $event->llmResponse;
+$events->listen(InferenceResponseCreated::class, function (InferenceResponseCreated $event) {
+    $response = $event->inferenceResponse;
     logToFile("RESPONSE: " . json_encode($response->toArray()));
 });
 

@@ -101,7 +101,7 @@ echo "PROJECT EVENTS:\n\n";
 
 $events = $structuredOutput
     ->onSequenceUpdate(fn($sequence) => displayEvent($sequence->last()))
-    //->onEvent(PartialLLMResponseReceived::class, fn(PartialLLMResponseReceived $e) => print "---\n".$e->partialLLMResponse->content()."---\n")
+    //->onEvent(PartialInferenceResponseReceived::class, fn(PartialInferenceResponseReceived $e) => print "---\n".$e->partialInferenceResponse->content()."---\n")
     ->with(
         messages: $report,
         responseModel: Sequence::of(ProjectEvent::class),

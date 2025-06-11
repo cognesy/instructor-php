@@ -4,21 +4,21 @@ namespace Cognesy\Polyglot\LLM\Events;
 use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 use Cognesy\Utils\Json\Json;
 
-final class LLMResponseCreated extends InferenceEvent
+final class InferenceResponseCreated extends InferenceEvent
 {
     public function __construct(
-        public InferenceResponse $llmResponse,
+        public InferenceResponse $inferenceResponse,
     ) {
         parent::__construct();
     }
 
     public function __toString() : string {
-        return Json::encode($this->llmResponse->toArray());
+        return Json::encode($this->inferenceResponse->toArray());
     }
 
     public function toArray() : array {
         return [
-            'llmResponse' => $this->llmResponse->toArray()
+            'inferenceResponse' => $this->inferenceResponse->toArray()
         ];
     }
 }

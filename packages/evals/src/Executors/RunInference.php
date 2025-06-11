@@ -18,7 +18,7 @@ class RunInference implements CanRunExecution
     }
 
     public function run(Execution $execution) : Execution {
-        $execution->data()->set('response', $this->makeLLMResponse($execution));
+        $execution->data()->set('response', $this->makeInferenceResponse($execution));
         return $execution;
     }
 
@@ -34,7 +34,7 @@ class RunInference implements CanRunExecution
 
     // INTERNAL /////////////////////////////////////////////////
 
-    private function makeLLMResponse(Execution $execution) : InferenceResponse {
+    private function makeInferenceResponse(Execution $execution) : InferenceResponse {
         return $this->inferenceAdapter->callInferenceFor(
             preset: $execution->get('case.preset'),
             mode: $execution->get('case.mode'),

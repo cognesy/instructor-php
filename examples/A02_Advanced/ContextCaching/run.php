@@ -90,7 +90,7 @@ dump($project1);
 assert($project1 instanceof Project);
 assert(Str::contains($project1->name, 'Instructor'));
 
-// get usage information from response() method which returns raw LLMResponse object
+// get usage information from response() method which returns raw InferenceResponse object
 $usage1 = $response1->response()->usage();
 echo "Usage: {$usage1->inputTokens} prompt tokens, {$usage1->cacheWriteTokens} cache write tokens\n";
 ?>
@@ -117,7 +117,7 @@ dump($project2);
 assert($project2 instanceof Project);
 assert(Str::contains($project2->name, 'Instructor'));
 
-// get usage information from response() method which returns raw LLMResponse object
+// get usage information from response() method which returns raw InferenceResponse object
 $usage2 = $response2->response()->usage();
 echo "Usage: {$usage2->inputTokens} prompt tokens, {$usage2->cacheReadTokens} cache read tokens\n";
 assert($usage2->cacheReadTokens > 0, 'Expected cache read tokens');

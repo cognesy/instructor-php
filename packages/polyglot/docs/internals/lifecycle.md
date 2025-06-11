@@ -24,6 +24,6 @@ Let's follow the complete flow of a request through Polyglot:
 5. Request adapter uses request body formatter and message formatter.
 8. Driver sends the HTTP request and returns it to `PendingInference`.
 5. `PendingInference` calls the driver to read and parse the response.
-3. Driver uses a response adapter to extract content into appropriate fields of `LLMResponse` object
-4. `PendingInference` dispatches the `LLMResponseReceived` event
-5. Result `LLMResponse` object is returned to the application
+3. Driver uses a response adapter to extract content into appropriate fields of `InferenceResponse` object
+4. `PendingInference` dispatches the `InferenceResponseReceived` event
+5. Result `InferenceResponse` object is returned to the application

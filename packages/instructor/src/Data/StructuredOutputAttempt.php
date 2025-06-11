@@ -6,22 +6,22 @@ use Cognesy\Polyglot\LLM\Data\InferenceResponse;
 
 class StructuredOutputAttempt {
     private array $messages;
-    private InferenceResponse $llmResponse;
+    private InferenceResponse $inferenceResponse;
     /** @var \Cognesy\Polyglot\LLM\Data\PartialInferenceResponse[] */
-    private array $partialLLMResponses;
+    private array $partialInferenceResponses;
     private array $errors;
     private mixed $output;
 
     public function __construct(
         array             $messages,
-        InferenceResponse $llmResponse,
-        array             $partialLLMResponses = [],
+        InferenceResponse $inferenceResponse,
+        array             $partialInferenceResponses = [],
         array             $errors = [],
         mixed             $output = null
     ) {
         $this->messages = $messages;
-        $this->llmResponse = $llmResponse;
-        $this->partialLLMResponses = $partialLLMResponses;
+        $this->inferenceResponse = $inferenceResponse;
+        $this->partialInferenceResponses = $partialInferenceResponses;
         $this->errors = $errors;
         $this->output = $output;
     }
@@ -34,12 +34,12 @@ class StructuredOutputAttempt {
         return $this->messages;
     }
 
-    public function llmResponse() : InferenceResponse {
-        return $this->llmResponse;
+    public function inferenceResponse() : InferenceResponse {
+        return $this->inferenceResponse;
     }
 
-    public function partialLLMResponses() : array {
-        return $this->partialLLMResponses;
+    public function partialInferenceResponses() : array {
+        return $this->partialInferenceResponses;
     }
 
     public function errors() : array {

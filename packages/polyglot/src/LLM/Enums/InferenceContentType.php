@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Enums;
 
-enum LLMContentType : string
+enum InferenceContentType : string
 {
     case Text = 'text';
     case Thinking = 'thinking';

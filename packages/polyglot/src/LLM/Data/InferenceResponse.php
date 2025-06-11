@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\LLM\Data;
 
-use Cognesy\Polyglot\LLM\Enums\LLMFinishReason;
+use Cognesy\Polyglot\LLM\Enums\InferenceFinishReason;
 use Cognesy\Polyglot\LLM\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
 
@@ -45,7 +45,7 @@ class InferenceResponse
     // STATIC ////////////////////////////////////////////////
 
     /**
-     * Create an LLMResponse from an array of PartialLLMResponses.
+     * Create an InferenceResponse from an array of PartialInferenceResponses.
      *
      * @param PartialInferenceResponse[] $partialResponses
      * @return InferenceResponse
@@ -143,8 +143,8 @@ class InferenceResponse
         return $this->toolCalls ?? new ToolCalls();
     }
 
-    public function finishReason() : LLMFinishReason {
-        return LLMFinishReason::fromText($this->finishReason);
+    public function finishReason() : InferenceFinishReason {
+        return InferenceFinishReason::fromText($this->finishReason);
     }
 
     public function hasFinishReason() : bool {

@@ -72,7 +72,7 @@ class PendingInference {
     public function toText(): string { ... }
     public function toArray(): array { ... }
     public function stream(): InferenceStream { ... }
-    public function response(): LLMResponse { ... }
+    public function response(): InferenceResponse { ... }
 }
 ```
 
@@ -91,7 +91,7 @@ class InferenceStream {
     // Stream processing methods
     public function responses(): Generator { ... }
     public function all(): array { ... }
-    public function final(): ?LLMResponse { ... }
+    public function final(): ?InferenceResponse { ... }
     public function onPartialResponse(callable $callback): self { ... }
 }
 ```

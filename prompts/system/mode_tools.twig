@@ -35,7 +35,7 @@
 
     {% for attempt in request.attempts %}
         <message role="assistant">
-            {{ attempt.llmResponse.content }}
+            {{ attempt.inferenceResponse.content }}
         </message>
         <message role="user">
             {{ attempt.errors }}

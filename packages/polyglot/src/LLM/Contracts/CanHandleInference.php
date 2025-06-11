@@ -18,18 +18,18 @@ interface CanHandleInference
     public function handle(InferenceRequest $request) : HttpClientResponse;
 
     /**
-     * Converts the response data into an LLMResponse object.
+     * Converts the response data into an InferenceResponse object.
      *
      * @param array $data The response data to convert.
-     * @return InferenceResponse|null The converted LLMResponse object or null if conversion fails.
+     * @return InferenceResponse|null The converted InferenceResponse object or null if conversion fails.
      */
     public function fromResponse(array $data): ?InferenceResponse;
 
     /**
-     * Converts a stream response into a PartialLLMResponse object.
+     * Converts a stream response into a PartialInferenceResponse object.
      *
      * @param array $data The stream response data to convert.
-     * @return PartialInferenceResponse|null The converted PartialLLMResponse object or null if conversion fails.
+     * @return PartialInferenceResponse|null The converted PartialInferenceResponse object or null if conversion fails.
      */
     public function fromStreamResponse(array $data) : ?PartialInferenceResponse;
 
