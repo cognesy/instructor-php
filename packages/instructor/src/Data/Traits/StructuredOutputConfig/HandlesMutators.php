@@ -67,7 +67,7 @@ trait HandlesMutators
 
     public function withDefaultOutputClass(string $defaultOutputClass) : static
     {
-        $this->defaultOutputClass = $defaultOutputClass;
+        $this->outputClass = $defaultOutputClass;
         return $this;
     }
 }

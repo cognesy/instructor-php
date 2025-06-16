@@ -4,7 +4,7 @@ namespace Cognesy\Polyglot\Embeddings;
 use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\ConfigResolver;
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\DSN;
+use Cognesy\Config\Dsn;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
@@ -169,7 +169,7 @@ final class EmbeddingsProvider
     private function determinePreset(): ?string {
         return match (true) {
             $this->preset !== null => $this->preset,
-            $this->dsn !== null => DSN::fromString($this->dsn)->param('preset'),
+            $this->dsn !== null => Dsn::fromString($this->dsn)->param('preset'),
             default => null,
         };
     }
@@ -178,6 +178,6 @@ final class EmbeddingsProvider
         if ($this->dsn === null) {
             return [];
         }
-        return DSN::fromString($this->dsn)->toArray() ?? [];
+        return Dsn::fromString($this->dsn)->toArray() ?? [];
     }
 }

@@ -129,7 +129,7 @@ $configData = [
                     'pre-retries', 'retries', 'post-retries'
                 ],
                 // defaultOutputClass is not used in this example
-                'defaultOutputClass' => Structure::class,
+                'outputClass' => Structure::class,
             ]
         ]
     ]

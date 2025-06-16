@@ -4,7 +4,7 @@ namespace Cognesy\Config;
 
 use Adbar\Dot;
 
-class DSN
+class Dsn
 {
     private Dot $params;
     private const PARAM_SEPARATOR = ',';

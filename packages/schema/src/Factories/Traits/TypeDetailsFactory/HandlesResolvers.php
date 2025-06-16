@@ -47,7 +47,8 @@ trait HandlesResolvers
             return $this->scalarType($type);
         }
         if ($this->isObject($typeInfo)) {
-            return $this->objectType($typeInfo->getClassName());
+            $className = $this->toObjectTypeString((string) $typeInfo);
+            return $this->objectType($className);
         }
         throw new \Exception('Unsupported type: '.$typeInfo);
     }
@@ -163,6 +164,23 @@ trait HandlesResolvers
         };
     }
 
+    private function toObjectTypeString(string $typeString) : string {
+        if ($typeString === TypeDetails::PHP_OBJECT) {
+            throw new \Exception('Object type must have a class name');
+        }
+        if ($typeString === TypeDetails::PHP_ENUM) {
+            throw new \Exception('Enum type must have a class name');
+        }
+        $typeString = $this->removeNullable($typeString);
+        if ($this->isUnionTypeString($typeString)) {
+            $typeString = $this->fromUnionTypeString($typeString);
+        }
+        if (!class_exists($typeString)) {
+            throw new \Exception("Object type class does not exist: `{$typeString}`");
+        }
+        return $typeString;
+    }
+
     private function toCollectionTypeString(string $typeString) : string {
         $sourceTypeString = $typeString;
         $isNullable = false;
@@ -184,18 +202,9 @@ trait HandlesResolvers
             $isNullable = true;
             $typeString = str_replace('?', '', $typeString);
         }
-        // if union and has null then remove null item: int|null or null|int) => int
-        if (strpos($typeString, 'null') !== false) {
-            $isNullable = true;
-            $parts = explode('|', $typeString);
-            // remove null from parts
-            $parts = array_filter($parts, fn($part) => trim($part) !== 'null');
-            $typeString = trim(implode('|', $parts));
-        }
-        // if contains union type (eg. int|string), take the first part (eg. int)
-        if (strpos($typeString, '|') !== false) {
-            $parts = explode('|', $typeString);
-            $typeString = trim($parts[0]);
+        $typeString = $this->removeNullable($typeString);
+        if ($this->isUnionTypeString($typeString)) {
+            $typeString = $this->fromUnionTypeString($typeString);
         }
         // extract type from array<something> so we can return something[]
         if (in_array($typeString, TypeDetails::PHP_SCALAR_TYPES)) {
@@ -219,5 +228,33 @@ trait HandlesResolvers
             throw new \Exception("Collection type class does not exist: `{$typeString}` for collection type string: `{$sourceTypeString}`");
         }
         return $isNullable ? "?{$typeString}[]" : "{$typeString}[]";
+    }
+
+    private function removeNullable(string $typeString) : string {
+        // if union and has null then remove null item: int|null or null|int) => int
+        if (strpos($typeString, 'null') !== false) {
+            $isNullable = true;
+            $parts = explode('|', $typeString);
+            // remove null from parts
+            $parts = array_filter($parts, fn($part) => trim($part) !== 'null');
+            $typeString = trim(implode('|', $parts));
+        }
+        return $typeString;
+    }
+
+    private function isNullable(string $typeString) : bool {
+        return strpos($typeString, 'null') !== false
+            || strpos($typeString, '?') !== false;
+    }
+
+    private function isUnionTypeString(string $typeString) : bool {
+        return strpos($typeString, '|') !== false;
+    }
+
+    private function fromUnionTypeString(string $typeString) : string {
+        // if contains union type (eg. int|string), take the first part (eg. int)
+        $parts = explode('|', $typeString);
+        $typeString = trim($parts[0]);
+        return $typeString;
     }
 }

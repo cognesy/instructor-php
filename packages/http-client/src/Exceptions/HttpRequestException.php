@@ -8,7 +8,6 @@ use Throwable;
 
 class HttpRequestException extends Exception {
     private HttpRequest $request;
-    private ?Throwable $originalException = null;
 
     public function __construct(
         string      $message,

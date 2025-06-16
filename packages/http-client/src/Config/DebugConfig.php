@@ -2,9 +2,16 @@
 
 namespace Cognesy\Http\Config;
 
+use Cognesy\Config\Exceptions\ConfigurationException;
+use Throwable;
+
 final class DebugConfig
 {
     public const CONFIG_GROUP = 'debug';
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     public function __construct(
         public readonly bool $httpEnabled = false,
@@ -18,22 +25,17 @@ final class DebugConfig
         public readonly bool $httpResponseStreamByLine = true,
     ) {}
 
-    public static function group() : string {
-        return self::CONFIG_GROUP;
-    }
-
     public static function fromArray(array $config): self {
-        return new self(
-            httpEnabled: $config['httpEnabled'] ?? false,
-            httpTrace: $config['httpTrace'] ?? false,
-            httpRequestUrl: $config['httpRequestUrl'] ?? true,
-            httpRequestHeaders: $config['httpRequestHeaders'] ?? true,
-            httpRequestBody: $config['httpRequestBody'] ?? true,
-            httpResponseHeaders: $config['httpResponseHeaders'] ?? true,
-            httpResponseBody: $config['httpResponseBody'] ?? true,
-            httpResponseStream: $config['httpResponseStream'] ?? true,
-            httpResponseStreamByLine: $config['httpResponseStreamByLine'] ?? true
-        );
+        try {
+            $instance = new self(...$config);
+        } catch (Throwable $e) {
+            $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            throw new ConfigurationException(
+                message: "Invalid configuration for DebugConfig: {$e->getMessage()}\nData: {$data}",
+                previous: $e,
+            );
+        }
+        return $instance;
     }
 
     public function toArray() : array {

@@ -3,14 +3,12 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Closure;
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
+use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
-use Cognesy\Polyglot\Inference\Events\InferenceFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
-use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -22,33 +20,26 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class InferenceStream
 {
     protected EventDispatcherInterface $events;
-    protected EventStreamReader $reader;
-    protected Generator $stream;
-    protected HttpResponse $httpResponse;
+    protected InferenceRequest $request;
     protected CanHandleInference $driver;
-    protected bool $streamReceived = false;
-    /** @var string[] $streamEvents */
-    protected array $streamEvents = [];
+    /** @var iterable<PartialInferenceResponse> */
+    protected iterable $stream;
 
+    protected bool $streamReceived = false;
     protected array $inferenceResponses = [];
     protected ?InferenceResponse $finalInferenceResponse = null;
     protected ?PartialInferenceResponse $lastPartialInferenceResponse = null;
     protected ?Closure $onPartialResponse = null;
 
     public function __construct(
-        HttpResponse             $httpResponse,
+        InferenceRequest         $request,
         CanHandleInference       $driver,
         EventDispatcherInterface $eventDispatcher,
     ) {
-        $this->events = $eventDispatcher;
+        $this->request = $request;
         $this->driver = $driver;
-        $this->httpResponse = $httpResponse;
-
-        $this->stream = $this->httpResponse->stream();
-        $this->reader = new EventStreamReader(
-            parser: $this->driver->toEventBody(...),
-            events: $this->events,
-        );
+        $this->events = $eventDispatcher;
+        $this->stream = $driver->makeStreamResponsesFor($request);
     }
 
     /**
@@ -57,7 +48,7 @@ class InferenceStream
      * @return Generator<PartialInferenceResponse> A generator yielding partial LLM responses.
      */
     public function responses() : Generator {
-        foreach ($this->tryMakePartialInferenceResponses($this->stream) as $partialInferenceResponse) {
+        foreach ($this->makePartialResponses($this->stream) as $partialInferenceResponse) {
             yield $partialInferenceResponse;
         }
     }
@@ -65,10 +56,13 @@ class InferenceStream
     /**
      * Retrieves all partial LLM responses from the given stream.
      *
-     * @return PartialInferenceResponse[] An array of all partial LLM responses.
+     * @return iterable<PartialInferenceResponse> An array of all partial LLM responses.
      */
     public function all() : array {
-        return $this->getAllPartialInferenceResponses($this->stream);
+        if ($this->finalInferenceResponse === null) {
+            foreach ($this->makePartialResponses($this->stream) as $partialResponse) { $tmp = $partialResponse; }
+        }
+        return $this->inferenceResponses;
     }
 
     /**
@@ -78,7 +72,10 @@ class InferenceStream
      * @return ?InferenceResponse
      */
     public function final() : ?InferenceResponse {
-        return $this->getFinalResponse($this->stream);
+        if ($this->finalInferenceResponse === null) {
+            foreach ($this->makePartialResponses($this->stream) as $partialResponse) { $tmp = $partialResponse; }
+        }
+        return $this->finalInferenceResponse;
     }
 
     /**
@@ -94,64 +91,19 @@ class InferenceStream
     // INTERNAL //////////////////////////////////////////////
 
     /**
-     * Retrieves the final LLM response from the given stream of partial responses.
-     *
-     * @param Generator<PartialInferenceResponse> $stream A generator yielding raw partial LLM response strings.
-     * @return InferenceResponse|null The final InferenceResponse object or null if not available.
-     */
-    protected function getFinalResponse(Generator $stream) : ?InferenceResponse {
-        if ($this->finalInferenceResponse === null) {
-            foreach ($this->tryMakePartialInferenceResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
-        }
-        return $this->finalInferenceResponse;
-    }
-
-    /**
-     * Retrieves all partial LLM responses from the provided generator stream.
-     *
-     * @param Generator<string> $stream The generator stream producing raw partial LLM response strings.
-     * @return PartialInferenceResponse[] An array containing all PartialInferenceResponse objects.
-     */
-    protected function getAllPartialInferenceResponses(Generator $stream) : array {
-        if ($this->finalInferenceResponse === null) {
-            foreach ($this->tryMakePartialInferenceResponses($stream) as $partialResponse) { $tmp = $partialResponse; }
-        }
-        return $this->inferenceResponses;
-    }
-
-    private function tryMakePartialInferenceResponses(Generator $stream) : Generator {
-        try {
-            yield from $this->makePartialInferenceResponses($stream);
-        } catch (\Throwable $e) {
-            $this->events->dispatch(new InferenceFailed([
-                'exception' => $e,
-                'statusCode' => $this->httpResponse->statusCode(),
-                'headers' => $this->httpResponse->headers(),
-                'body' => $this->httpResponse->body(),
-            ]));
-            throw $e;
-        }
-    }
-
-    /**
      * Processes the given stream to generate partial LLM responses and enriches them with accumulated content and finish reason.
      *
-     * @param Generator<string> $stream The stream to be processed to extract and enrich partial LLM responses.
+     * @param Generator<PartialInferenceResponse> $stream The stream to be processed to extract and enrich partial LLM responses.
      * @return Generator<PartialInferenceResponse> A generator yielding enriched PartialInferenceResponse objects.
      */
-    private function makePartialInferenceResponses(Generator $stream) : Generator {
+     private function makePartialResponses(iterable $stream) : Generator {
         $content = '';
         $reasoningContent = '';
         $finishReason = '';
         $this->inferenceResponses = [];
         $this->lastPartialInferenceResponse = null;
 
-        foreach ($this->getEventStream($stream) as $streamEvent) {
-            if ($streamEvent === null || $streamEvent === '') {
-                // do not use empty() here! it will incorrectly skip some values ('0' and '0.0')
-                continue;
-            }
-            $partialResponse = $this->driver->fromStreamResponse($streamEvent);
+        foreach ($stream as $partialResponse) {
             if ($partialResponse === null) {
                 continue;
             }
@@ -175,37 +127,8 @@ class InferenceStream
             }
             yield $enrichedResponse;
         }
+        $this->streamReceived = true;
         $this->finalInferenceResponse = InferenceResponse::fromPartialResponses($this->inferenceResponses);
         $this->events->dispatch(new InferenceResponseCreated($this->finalInferenceResponse));
-    }
-
-    /**
-     * Processes and retrieves events from the provided stream generator.
-     *
-     * @param Generator<string|null> $stream The input generator stream containing events.
-     *
-     * @return Generator<string> A generator yielding individual events from the processed stream.
-     */
-    private function getEventStream(Generator $stream) : Generator {
-        if (!$this->streamReceived) {
-            foreach($this->streamFromResponse($stream) as $event) {
-                $this->streamEvents[] = $event;
-                yield $event;
-            }
-            $this->streamReceived = true;
-            return;
-        }
-        reset($this->streamEvents);
-        yield from $this->streamEvents;
-    }
-
-    /**
-     * Processes a stream of data and returns a generator of parsed events.
-     *
-     * @param Generator<string> $stream The input data stream to be processed.
-     * @return Generator<string|null> A generator yielding parsed events from the input stream.
-     */
-    private function streamFromResponse(Generator $stream) : Generator {
-        return $this->reader->eventsFrom($stream);
     }
 }

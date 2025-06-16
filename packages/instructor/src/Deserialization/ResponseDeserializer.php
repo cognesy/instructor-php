@@ -70,7 +70,7 @@ class ResponseDeserializer
 
         // no deserializer - return an anonymous object or fail
         return match(true) {
-            $this->config->defaultToAnonymousClass() => Result::success($this->toAnonymousObject($json)),
+            $this->config->defaultToStdClass() => Result::success($this->toAnonymousObject($json)),
             default => Result::failure($this->makeFailureMessage($this->config->deserializationErrorPrompt(), [
                 'json' => $json,
                 'error' => $result->errorMessage(),

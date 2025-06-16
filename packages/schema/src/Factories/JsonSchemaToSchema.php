@@ -3,6 +3,7 @@
 namespace Cognesy\Schema\Factories;
 
 use Cognesy\Schema\Data\Schema\ObjectSchema;
+use Cognesy\Schema\Factories\Traits\JsonSchemaToSchema\HandlesMakers;
 use Exception;
 
 /**
@@ -16,7 +17,7 @@ use Exception;
  */
 class JsonSchemaToSchema
 {
-    use \Cognesy\Schema\Factories\Traits\JsonSchemaToSchema\HandlesMakers;
+    use HandlesMakers;
 
     private $defaultToolName;
     private $defaultToolDescription;

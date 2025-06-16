@@ -2,9 +2,16 @@
 
 namespace Cognesy\Polyglot\Inference\Config;
 
+use Cognesy\Config\Exceptions\ConfigurationException;
+use Throwable;
+
 final class LLMConfig
 {
     public const CONFIG_GROUP = 'llm';
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     public function __construct(
         public string $apiUrl = '',
@@ -21,29 +28,17 @@ final class LLMConfig
         public array  $options = [],
     ) {}
 
-    public static function group() : string {
-        return self::CONFIG_GROUP;
-    }
-
     public static function fromArray(array $config) : LLMConfig {
-        return new LLMConfig(
-            apiUrl         : $config['apiUrl'] ?? $config['api_url'] ?? '',
-            apiKey         : $config['apiKey'] ?? $config['api_key'] ?? '',
-            endpoint       : $config['endpoint'] ?? '',
-            queryParams    : $config['queryParams'] ?? $config['query_params'] ?? [],
-            metadata       : $config['metadata'] ?? [],
-            defaultModel   : $config['model'] ?? $config['defaultModel'] ?? '',
-            defaultMaxTokens: $config['maxTokens'] ?? $config['max_tokens'] ?? 1024,
-            contextLength  : $config['contextLength'] ?? $config['context_length'] ?? 8000,
-            maxOutputLength: $config['maxOutputLength'] ?? $config['max_output_length'] ?? 4096,
-            httpClientPreset: $config['httpClient']
-                ?? $config['http_client']
-                ?? $config['httpClientPreset']
-                ?? $config['http_client_preset']
-                ?? '',
-            driver         : $config['driverType'] ?? $config['driver'] ?? 'openai',
-            options        : $config['options'] ?? [],
-        );
+        try {
+            $instance = new self(...$config);
+        } catch (Throwable $e) {
+            $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            throw new ConfigurationException(
+                message: "Invalid configuration for LLMConfig: {$e->getMessage()}\nData: {$data}",
+                previous: $e,
+            );
+        }
+        return $instance;
     }
 
     public function withOverrides(array $overrides) : LLMConfig {

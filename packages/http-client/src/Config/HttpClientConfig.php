@@ -1,6 +1,9 @@
 <?php
 namespace Cognesy\Http\Config;
 
+use Cognesy\Config\Dsn;
+use Cognesy\Config\Exceptions\ConfigurationException;
+
 /**
  * Class HttpClientConfig
  *
@@ -9,6 +12,10 @@ namespace Cognesy\Http\Config;
 final class HttpClientConfig
 {
     public const CONFIG_GROUP = 'http';
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     /**
      * Constructor for HttpClientConfig.
@@ -33,8 +40,10 @@ final class HttpClientConfig
         public readonly bool   $failOnError = false,
     ) {}
 
-    public static function group() : string {
-        return self::CONFIG_GROUP;
+    public static function fromDsn(string $dsn) : HttpClientConfig {
+        $data = Dsn::fromString($dsn)->toArray();
+        unset($data['preset']);
+        return self::fromArray($data);
     }
 
     /**
@@ -44,16 +53,16 @@ final class HttpClientConfig
      * @return HttpClientConfig The corresponding HttpClientConfig instance based on the provided array.
      */
     public static function fromArray(array $config) : HttpClientConfig {
-        return new HttpClientConfig(
-            driver: $config['driver'] ?? 'guzzle',
-            connectTimeout: $config['connectTimeout'] ?? 3,
-            requestTimeout: $config['requestTimeout'] ?? 30,
-            idleTimeout: $config['idleTimeout'] ?? -1,
-            streamChunkSize: $config['streamChunkSize'] ?? 256,
-            maxConcurrent: $config['maxConcurrent'] ?? 5,
-            poolTimeout: $config['poolTimeout'] ?? 120,
-            failOnError: $config['failOnError'] ?? false,
-        );
+        try {
+            $instance = new self(...$config);
+        } catch (\InvalidArgumentException $e) {
+            $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            throw new ConfigurationException(
+                message: "Failed to create HttpClientConfig from array:\n$data\nError: {$e->getMessage()}",
+                previous: $e
+            );
+        }
+        return $instance;
     }
 
     public function toArray() : array {

@@ -61,6 +61,11 @@ final class HttpClientBuilder
         return $this;
     }
 
+    public function withDsn(string $dsn): self {
+        $this->config = HttpClientConfig::fromDsn($dsn);
+        return $this;
+    }
+
     public function withDebugConfig(DebugConfig $debugConfig): self {
         $this->debugConfig = $debugConfig;
         return $this;

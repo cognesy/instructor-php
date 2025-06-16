@@ -6,7 +6,7 @@ return [
     'presets' => [
         'base' => [
             // default mode
-            'defaultOutputMode' => 'tool_call',
+            'outputMode' => 'tool_call',
 
             // max retries
             'maxRetries' => 0,
@@ -15,24 +15,26 @@ return [
             'useObjectReferences' => false,
 
             // default schema name
-            'defaultSchemaName' => 'default_schema',
-            'defaultSchemaDescription' => '',
+            'schemaName' => 'default_schema',
+            'schemaDescription' => '',
 
             // default tool name and description
-            'defaultToolName' => 'extracted_data',
-            'defaultToolDescription' => 'Function call based on user instructions.',
+            'toolName' => 'extracted_data',
+            'toolDescription' => 'Function call based on user instructions.',
 
             // default output class
-            'defaultOutputClass' => 'Cognesy\Instructor\Extras\Structure\Structure',
+            'outputClass' => 'Cognesy\Instructor\Extras\Structure\Structure',
 
             // default prompts
             'retryPrompt' => "JSON generated incorrectly, fix following errors:\n",
 
             // default extraction prompts
-            'jsonPrompt' => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
-            'jsonSchemaPrompt' => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
-            'mdJsonPrompt' => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
-            'toolsPrompt' => "Extract correct and accurate data from the input using provided tools.\n",
+            'modePrompts' => [
+                'tool_call' => "Extract correct and accurate data from the input using provided tools.\n",
+                'json' => "Response must follow JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object.\n",
+                'json_schema' => "Response must follow provided JSON Schema. Respond correctly with strict JSON object.\n",
+                'md_json' => "Response must validate against this JSON Schema:\n<|json_schema|>\n. Respond correctly with strict JSON object within a ```json {} ``` codeblock.\n",
+            ],
 
             // default chat structure - order of sections in the structured output chat sequence
             'chatStructure' => [
@@ -51,7 +53,7 @@ return [
             ],
 
             // deserialization
-            'defaultToAnonymousClass' => false,
+            'defaultToStdClass' => false,
             'deserializationErrorPrompt' => "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n",
 
             // transformation

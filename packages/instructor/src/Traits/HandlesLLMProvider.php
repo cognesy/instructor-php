@@ -11,8 +11,8 @@ trait HandlesLLMProvider
 {
     private ?LLMProvider $llmProvider = null;
 
-    public function withDSN(string $dsn) : static {
-        $this->llmProvider->withDSN($dsn);
+    public function withDsn(string $dsn) : static {
+        $this->llmProvider->withDsn($dsn);
         return $this;
     }
 

@@ -20,8 +20,8 @@ trait HandlesInitMethods
         return $this;
     }
 
-    public function withDSN(string $dsn) : self {
-        $this->embeddingsProvider->withDSN($dsn);
+    public function withDsn(string $dsn) : self {
+        $this->embeddingsProvider->withDsn($dsn);
         return $this;
     }
 

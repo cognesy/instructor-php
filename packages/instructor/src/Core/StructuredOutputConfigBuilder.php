@@ -20,6 +20,9 @@ class StructuredOutputConfigBuilder
     private ?string $toolDescription;
     private ?string $defaultOutputClass;
     private ?array $chatStructure;
+    private ?bool $defaultToStdClass = null;
+    private ?string $deserializationErrorPrompt = null;
+    private ?bool $throwOnTransformationFailure = null;
 
     private ?string $configPreset = null;
     private ?StructuredOutputConfig $explicitConfig = null;
@@ -119,6 +122,21 @@ class StructuredOutputConfigBuilder
         return $this;
     }
 
+    public function withDefaultToStdClass(bool $defaultToStdClass) : self {
+        $this->defaultToStdClass = $defaultToStdClass;
+        return $this;
+    }
+
+    public function withDeserializationErrorPrompt(string $deserializationErrorPrompt) : self {
+        $this->deserializationErrorPrompt = $deserializationErrorPrompt;
+        return $this;
+    }
+
+    public function withThrowOnTransformationFailure(bool $throwOnTransformationFailure) : self {
+        $this->throwOnTransformationFailure = $throwOnTransformationFailure;
+        return $this;
+    }
+
     public function withConfigPreset(string $preset) : self {
         $this->configPreset = $preset;
         return $this;
@@ -169,19 +187,20 @@ class StructuredOutputConfigBuilder
 
         $config = new StructuredOutputConfig(
             outputMode: $this->outputMode ?? $defaults->outputMode(),
+            outputClass: $this->defaultOutputClass ?? $defaults->outputClass(),
             useObjectReferences: $this->useObjectReferences ?? $defaults->useObjectReferences(),
             maxRetries: $this->maxRetries ?? $defaults->maxRetries(),
-            retryPrompt: $this->retryPrompt ?? $defaults->retryPrompt(),
-            modePrompts: array_merge($defaults->modePrompts(), $this->modePrompts ?? []),
             schemaName: $this->schemaName ?? $defaults->schemaName(),
             schemaDescription: $this->schemaDescription ?? $defaults->schemaDescription(),
             toolName: $this->toolName ?? $defaults->toolName(),
             toolDescription: $this->toolDescription ?? $defaults->toolDescription(),
+            modePrompts: array_merge($defaults->modePrompts(), $this->modePrompts ?? []),
+            retryPrompt: $this->retryPrompt ?? $defaults->retryPrompt(),
             chatStructure: array_merge($defaults->chatStructure(), $this->chatStructure ?? []),
-            defaultOutputClass: $this->defaultOutputClass ?? $defaults->defaultOutputClass(),
+            defaultToStdClass: $this->defaultToStdClass ?? $defaults->defaultToStdClass(),
+            deserializationErrorPrompt: $this->deserializationErrorPrompt ?? $defaults->deserializationErrorPrompt(),
+            throwOnTransformationFailure: $this->throwOnTransformationFailure ?? $defaults->throwOnTransformationFailure(),
         );
         return $config;
     }
-
-    // INTERNAL ///////////////////////////////////////////////////////////////
 }

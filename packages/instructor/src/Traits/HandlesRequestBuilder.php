@@ -3,6 +3,7 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
+use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
 
@@ -26,7 +27,7 @@ trait HandlesRequestBuilder
         return $this;
     }
 
-    public function withResponseJsonSchema(array $jsonSchema) : static {
+    public function withResponseJsonSchema(array|CanProvideJsonSchema $jsonSchema) : static {
         $this->requestBuilder->withResponseModel($jsonSchema);
         return $this;
     }

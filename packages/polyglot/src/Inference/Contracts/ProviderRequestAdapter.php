@@ -7,5 +7,5 @@ use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 interface ProviderRequestAdapter
 {
-    public function toHttpClientRequest(InferenceRequest $request) : HttpRequest;
+    public function toHttpRequest(InferenceRequest $request) : HttpRequest;
 }

@@ -2,9 +2,16 @@
 
 namespace Cognesy\Polyglot\Embeddings\Config;
 
+use Cognesy\Config\Exceptions\ConfigurationException;
+use Throwable;
+
 final class EmbeddingsConfig
 {
     public const CONFIG_GROUP = 'embed';
+
+    public static function group() : string {
+        return self::CONFIG_GROUP;
+    }
 
     public function __construct(
         public string $apiUrl = '',
@@ -18,26 +25,17 @@ final class EmbeddingsConfig
         public string $driver = 'openai',
     ) {}
 
-    public static function group() : string {
-        return self::CONFIG_GROUP;
-    }
-
-    public static function fromArray(array $value) : EmbeddingsConfig {
-        return new static(
-            apiUrl    : $value['apiUrl'] ?? $value['api_url'] ?? '',
-            apiKey    : $value['apiKey'] ?? $value['api_key'] ?? '',
-            endpoint  : $value['endpoint'] ?? '',
-            model     : $value['defaultModel'] ?? '',
-            dimensions: $value['defaultDimensions'] ?? 0,
-            maxInputs : $value['maxInputs'] ?? $value['max_inputs'] ?? 1,
-            metadata  : $value['metadata'] ?? [],
-            httpClientPreset: $value['httpClientPreset']
-                ?? $value['http_client_preset']
-                ?? $value['http_client']
-                ?? $value['httpClient']
-                ?? '',
-            driver    : $value['driver'] ?? 'openai',
-        );
+    public static function fromArray(array $config) : EmbeddingsConfig {
+        try {
+            $instance = new self(...$config);
+        } catch (Throwable $e) {
+            $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            throw new ConfigurationException(
+                message: "Invalid configuration for EmbeddingsConfig: {$e->getMessage()}\nData: {$data}",
+                previous: $e,
+            );
+        }
+        return $instance;
     }
 
     public function toArray() : array {

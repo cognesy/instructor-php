@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference;
 use Cognesy\Config\ConfigPresets;
 use Cognesy\Config\ConfigResolver;
 use Cognesy\Config\Contracts\CanProvideConfig;
-use Cognesy\Config\DSN;
+use Cognesy\Config\Dsn;
 use Cognesy\Config\Events\ConfigResolutionFailed;
 use Cognesy\Config\Events\ConfigResolved;
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -68,7 +68,7 @@ final class LLMProvider
      * Quick creation with DSN
      */
     public static function dsn(string $dsn): LLMProvider {
-        return self::new()->withDSN($dsn);
+        return self::new()->withDsn($dsn);
     }
 
     /**
@@ -108,7 +108,7 @@ final class LLMProvider
     /**
      * Configure with DSN string
      */
-    public function withDSN(string $dsn): self {
+    public function withDsn(string $dsn): self {
         $this->dsn = $dsn;
         return $this;
     }
@@ -181,7 +181,7 @@ final class LLMProvider
         $effectivePreset = $this->determinePreset();
 
         // Get DSN overrides if any
-        $dsnOverrides = $this->dsn !== null ? DSN::fromString($this->dsn)->toArray() : [];
+        $dsnOverrides = $this->dsn !== null ? Dsn::fromString($this->dsn)->toArray() : [];
 
         // Build config based on preset
         $result = Result::try(fn() => $this->presets->getOrDefault($effectivePreset));
@@ -245,7 +245,7 @@ final class LLMProvider
     private function determinePreset(): ?string {
         return match (true) {
             $this->llmPreset !== null => $this->llmPreset,
-            $this->dsn !== null => DSN::fromString($this->dsn)->param('preset'),
+            $this->dsn !== null => Dsn::fromString($this->dsn)->param('preset'),
             default => null,
         };
     }

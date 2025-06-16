@@ -15,7 +15,7 @@ class OpenAIRequestAdapter implements ProviderRequestAdapter
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
-    public function toHttpClientRequest(InferenceRequest $request): HttpRequest {
+    public function toHttpRequest(InferenceRequest $request): HttpRequest {
         return new HttpRequest(
             url: $this->toUrl($request),
             method: 'POST',

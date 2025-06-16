@@ -9,6 +9,11 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 interface CanHandleInference
 {
+    public function makeResponseFor(InferenceRequest $request) : InferenceResponse;
+
+    /** iterable<PartialInferenceResponse> */
+    public function makeStreamResponsesFor(InferenceRequest $request): iterable;
+
     /**
      * Handles an inference request and returns a response.
      *

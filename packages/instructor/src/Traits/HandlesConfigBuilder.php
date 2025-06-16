@@ -60,4 +60,19 @@ trait HandlesConfigBuilder
         $this->configBuilder->withUseObjectReferences($useObjectReferences);
         return $this;
     }
+
+    public function withDefaultToStdClass(bool $defaultToStdClass = true) : self {
+        $this->configBuilder->withDefaultToStdClass($defaultToStdClass);
+        return $this;
+    }
+
+    public function withDeserializationErrorPrompt(string $deserializationErrorPrompt) : self {
+        $this->configBuilder->withDeserializationErrorPrompt($deserializationErrorPrompt);
+        return $this;
+    }
+
+    public function withThrowOnTransformationFailure(bool $throwOnTransformationFailure = true) : self {
+        $this->configBuilder->withThrowOnTransformationFailure($throwOnTransformationFailure);
+        return $this;
+    }
 }
