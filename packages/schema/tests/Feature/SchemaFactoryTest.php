@@ -16,7 +16,7 @@ it('creates a schema from a class name', function () {
 });
 
 it('creates a schema from a class name with object references', function () {
-    $factory = new SchemaFactory(true);
+    $factory = new SchemaFactory(useObjectReferences: true);
     /** @var ObjectSchema $schema */
     $schema = $factory->schema(TestClassA::class);
     $json = (new SchemaToJsonSchema)->toArray($schema);

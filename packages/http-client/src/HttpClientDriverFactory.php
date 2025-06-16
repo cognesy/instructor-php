@@ -74,20 +74,20 @@ class HttpClientDriverFactory
      */
     private function defaultDrivers() : array {
         return [
-            'guzzle' => fn($config, $clientInstance, $events) => new GuzzleDriver(
+            'guzzle' => fn($config, $events, $clientInstance) => new GuzzleDriver(
                 config: $config,
-                clientInstance: $clientInstance,
                 events: $events,
+                clientInstance: $clientInstance,
             ),
-            'symfony' => fn($config, $clientInstance, $events) => new SymfonyDriver(
+            'symfony' => fn($config, $events, $clientInstance) => new SymfonyDriver(
                 config: $config,
-                clientInstance: $clientInstance,
                 events: $events,
+                clientInstance: $clientInstance,
             ),
-            'laravel' => fn($config, $clientInstance, $events) => new LaravelDriver(
+            'laravel' => fn($config, $events, $clientInstance) => new LaravelDriver(
                 config: $config,
-                clientInstance: $clientInstance,
                 events: $events,
+                clientInstance: $clientInstance,
             ),
         ];
     }

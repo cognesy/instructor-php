@@ -2,10 +2,10 @@
 
 namespace Cognesy\Polyglot\Inference\Contracts;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
 interface ProviderRequestAdapter
 {
-    public function toHttpClientRequest(InferenceRequest $request) : HttpClientRequest;
+    public function toHttpClientRequest(InferenceRequest $request) : HttpRequest;
 }

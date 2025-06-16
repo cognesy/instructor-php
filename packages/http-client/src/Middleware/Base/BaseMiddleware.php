@@ -2,9 +2,9 @@
 namespace Cognesy\Http\Middleware\Base;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Class BaseMiddleware
@@ -31,7 +31,7 @@ abstract class BaseMiddleware implements HttpMiddleware
      * 4) If shouldDecorateResponse() is true, wrap the response
      * 5) Return the final response
      */
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse {
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse {
         if ($this->shouldExecute($request) === false) {
             // If the middleware decides not to execute, just pass the request
             // to the next handler without any modifications.
@@ -39,7 +39,7 @@ abstract class BaseMiddleware implements HttpMiddleware
         }
 
         // 1) Pre-request logic
-        $this->beforeRequest($request);
+        $request = $this->beforeRequest($request);
 
         // 2) Get the response from the next handler
         $response = $next->handle($request);
@@ -60,15 +60,16 @@ abstract class BaseMiddleware implements HttpMiddleware
      * beforeRequest() is called right before we send the request downstream.
      * Override to do logging, modify headers, measure start times, etc.
      */
-    protected function beforeRequest(HttpClientRequest $request): void {
+    protected function beforeRequest(HttpRequest $request): HttpRequest {
         // Default no-op
+        return $request;
     }
 
     /**
      * afterRequest() is called once we have the raw response from the next handler.
      * Override to transform or log the response before returning it.
      */
-    protected function afterRequest(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse {
+    protected function afterRequest(HttpRequest $request, HttpResponse $response): HttpResponse {
         // Default: just return the response as-is
         return $response;
     }
@@ -78,8 +79,8 @@ abstract class BaseMiddleware implements HttpMiddleware
      * additional transformations? By default, returns false. Subclasses
      * can override this to conditionally enable decoration.
      */
-    protected function shouldDecorateResponse(HttpClientRequest $request, HttpClientResponse $response): bool {
-        return false;
+    protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool {
+        return true;
     }
 
     /**
@@ -87,12 +88,12 @@ abstract class BaseMiddleware implements HttpMiddleware
      * Default implementation wraps the response in a basic chunk-decorating class
      * that calls processChunk() on every chunk. Override if you need custom logic.
      */
-    protected function toResponse(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse {
+    protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse {
         // Here you can wrap the response in a class that intercepts streaming
         return $response;
     }
 
-    protected function shouldExecute(HttpClientRequest $request) : bool {
+    protected function shouldExecute(HttpRequest $request) : bool {
         // Default implementation always executes the middleware.
         // Subclasses can override this to conditionally skip execution.
         return true;

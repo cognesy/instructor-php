@@ -13,10 +13,9 @@ use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Events\HttpClientBuilt;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
-use Cognesy\Http\Middleware\Debug\ConsoleDebug;
-use Cognesy\Http\Middleware\Debug\Debug;
-use Cognesy\Http\Middleware\Debug\DebugMiddleware;
-use Cognesy\Http\Middleware\Debug\EventsDebug;
+use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
+use Cognesy\Http\Middleware\EventSource\Listeners\DispatchDebugEvents;
+use Cognesy\Http\Middleware\EventSource\Listeners\PrintToConsole;
 use Cognesy\Utils\Result\Result;
 
 /**
@@ -183,29 +182,26 @@ final class HttpClientBuilder
     }
 
     private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack {
+        return match(true) {
+            $debugConfig->httpEnabled => $this->makeDebugStack($debugConfig)->appendMany($this->middleware),
+            default => $this->makeDefaultStack()->appendMany($this->middleware),
+        };
+    }
+
+    private function makeDebugStack(DebugConfig $debugConfig) : MiddlewareStack {
         $stack = new MiddlewareStack($this->events);
-
-        // Add debug middleware if enabled
-        if ($debugConfig->httpEnabled) {
-            $debugHandler = $this->makeDebugHandler($debugConfig);
-            $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
-            $stack->prepend(new DebugMiddleware($debugHandler), 'internal:debug');
-        } else {
-            $stack->remove('internal:debug');
-            $stack->remove('internal:buffering');
-        }
-
-        // Add custom middleware
-        $stack->appendMany($this->middleware);
-
+        $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
+        $eventSource = (new EventSourceMiddleware(true))->withListeners(
+            new PrintToConsole($debugConfig),
+            new DispatchDebugEvents($debugConfig, $this->events),
+        );
+        $stack->prepend($eventSource, 'internal:eventsource');
         return $stack;
     }
 
-    private function makeDebugHandler(DebugConfig $debugConfig) : Debug {
-        return (new Debug($debugConfig))
-            ->withHandlers(
-                new ConsoleDebug($debugConfig),
-                new EventsDebug($debugConfig, $this->events),
-            );
+    private function makeDefaultStack() : MiddlewareStack {
+        $stack = new MiddlewareStack($this->events);
+        $stack->prepend(new BufferResponseMiddleware(), 'internal:buffering');
+        return $stack;
     }
 }

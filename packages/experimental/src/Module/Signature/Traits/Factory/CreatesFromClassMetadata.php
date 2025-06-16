@@ -1,9 +1,9 @@
 <?php
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
-use Cognesy\Experimental\Module\Signature\Attributes\InputField;
-use Cognesy\Experimental\Module\Signature\Attributes\OutputField;
 use Cognesy\Experimental\Module\Signature\Signature;
+use Cognesy\Schema\Attributes\InputField;
+use Cognesy\Schema\Attributes\OutputField;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Utils\ClassInfo;

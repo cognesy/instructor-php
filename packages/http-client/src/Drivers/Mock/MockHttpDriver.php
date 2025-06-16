@@ -4,8 +4,9 @@ namespace Cognesy\Http\Drivers\Mock;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Events\HttpResponseReceived;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -20,7 +21,7 @@ class MockHttpDriver implements CanHandleHttpRequest
     /** @var array Array of request matchers to predefined responses */
     private array $responses = [];
     
-    /** @var HttpClientRequest[] Array of received requests for inspection */
+    /** @var HttpRequest[] Array of received requests for inspection */
     private array $receivedRequests = [];
     
     /** @var EventDispatcherInterface|null Event dispatcher instance */
@@ -39,14 +40,18 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request by returning a predefined response
      * 
-     * @param HttpClientRequest $request The request to handle
-     * @return HttpClientResponse The predefined response
+     * @param HttpRequest $request The request to handle
+     * @return HttpResponse The predefined response
      * @throws InvalidArgumentException If no response is defined for the request
      */
-    public function handle(HttpClientRequest $request): HttpClientResponse
+    public function handle(HttpRequest $request): HttpResponse
     {
         // Record the request for later inspection
         $this->receivedRequests[] = $request;
+        // If an event dispatcher is set, dispatch the request event
+        if ($this->events) {
+            $this->events->dispatch(new HttpResponseReceived($request));
+        }
         
         // Search for a matching response based on defined matchers
         foreach ($this->responses as $matcher) {
@@ -95,17 +100,17 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * Add a predefined response for a specific request pattern
      * 
-     * @param HttpClientResponse|callable $response The response to return or a callback that returns a response
+     * @param HttpResponse|callable $response The response to return or a callback that returns a response
      * @param string|callable|null $url URL to match exactly or a callable that returns true if URL matches
      * @param string|null $method HTTP method to match
      * @param string|callable|null $body Body content to match exactly or a callable that returns true if body matches
      * @return self
      */
     public function addResponse(
-        HttpClientResponse|callable $response,
-        string|callable|null $url = null,
-        ?string $method = null,
-        string|callable|null $body = null
+        HttpResponse|callable $response,
+        string|callable|null  $url = null,
+        ?string               $method = null,
+        string|callable|null  $body = null
     ): self {
         $this->responses[] = [
             'url' => $url,
@@ -120,7 +125,7 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * Get all received requests for inspection
      * 
-     * @return HttpClientRequest[]
+     * @return HttpRequest[]
      */
     public function getReceivedRequests(): array
     {
@@ -130,9 +135,9 @@ class MockHttpDriver implements CanHandleHttpRequest
     /**
      * Get the last received request
      * 
-     * @return \Cognesy\Http\Data\HttpClientRequest|null
+     * @return \Cognesy\Http\Data\HttpRequest|null
      */
-    public function getLastRequest(): ?HttpClientRequest
+    public function getLastRequest(): ?HttpRequest
     {
         if (empty($this->receivedRequests)) {
             return null;

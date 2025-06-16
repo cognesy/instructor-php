@@ -22,7 +22,11 @@ class Event implements JsonSerializable
     public function __construct(mixed $data = []) {
         $this->id = Uuid::uuid4();
         $this->createdAt = new DateTimeImmutable();
-        $this->data = $data;
+        $this->data = match(true) {
+            is_array($data) => $data,
+            is_object($data) => get_object_vars($data),
+            default => $data,
+        };
     }
 
     /**

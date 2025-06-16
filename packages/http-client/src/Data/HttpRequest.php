@@ -3,11 +3,11 @@
 namespace Cognesy\Http\Data;
 
 /**
- * Class HttpClientRequest
+ * Class HttpRequest
  *
  * Represents an HTTP request
  */
-class HttpClientRequest
+class HttpRequest
 {
     private HttpRequestBody $body;
 

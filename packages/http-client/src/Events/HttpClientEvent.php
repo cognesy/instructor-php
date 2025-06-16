@@ -2,4 +2,6 @@
 
 namespace Cognesy\Http\Events;
 
-class HttpClientEvent extends \Cognesy\Events\Event {}
+use Cognesy\Events\Event;
+
+class HttpClientEvent extends Event {}

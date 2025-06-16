@@ -218,8 +218,7 @@ the default connection to be used when calling Instructor without specifying det
     'presets' => [
         'anthropic' => [ ... ],
         'azure' => [ ... ],
-        'cohere1' => [ ... ],
-        'cohere2' => [ ... ],
+        'cohere' => [ ... ],
         'fireworks' => [ ... ],
         'gemini' => [ ... ],
         'grok' => [ ... ],

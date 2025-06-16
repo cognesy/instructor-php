@@ -55,18 +55,8 @@ return [
             'contextLength' => 128_000,
             'maxOutputLength' => 2048,
         ],
-        'cohere1' => [
-            'driver' => 'cohere1',
-            'apiUrl' => 'https://api.cohere.ai/v1',
-            'apiKey' => Env::get('COHERE_API_KEY', ''),
-            'endpoint' => '/chat',
-            'defaultModel' => 'command-r-plus-08-2024',
-            'defaultMaxTokens' => 1024,
-            'contextLength' => 128_000,
-            'maxOutputLength' => 4096,
-        ],
-        'cohere2' => [
-            'driver' => 'cohere2',
+        'cohere' => [
+            'driver' => 'cohere',
             'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/chat',

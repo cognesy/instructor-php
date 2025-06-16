@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 
 /**
@@ -38,11 +38,11 @@ class RequestRecord
     /**
      * Create a new RequestRecord from a request and response
      * 
-     * @param HttpClientRequest $request The HTTP request
-     * @param \Cognesy\Http\Contracts\HttpClientResponse $response The HTTP response
+     * @param HttpRequest $request The HTTP request
+     * @param \Cognesy\Http\Contracts\HttpResponse $response The HTTP response
      * @return self
      */
-    public static function fromInteraction(HttpClientRequest $request, HttpClientResponse $response): self
+    public static function fromInteraction(HttpRequest $request, HttpResponse $response): self
     {
         // For streamed requests, use the specialized StreamedRequestRecord
         if ($request->isStreamed()) {
@@ -107,10 +107,10 @@ class RequestRecord
     /**
      * Check if this record matches the given request
      * 
-     * @param HttpClientRequest $request Request to compare
+     * @param HttpRequest $request Request to compare
      * @return bool
      */
-    public function matches(HttpClientRequest $request): bool
+    public function matches(HttpRequest $request): bool
     {
         // Match basic request properties
         if ($this->requestData['url'] !== $request->url()) {
@@ -134,9 +134,9 @@ class RequestRecord
      * Create an HttpClientResponse from this record
      * 
      * @param bool $isStreaming Whether to return a streaming response
-     * @return \Cognesy\Http\Contracts\HttpClientResponse
+     * @return \Cognesy\Http\Contracts\HttpResponse
      */
-    public function toResponse(bool $isStreaming = false): HttpClientResponse
+    public function toResponse(bool $isStreaming = false): HttpResponse
     {
         // Non-streaming records should always return non-streaming responses
         return MockHttpResponse::success(
@@ -159,11 +159,11 @@ class RequestRecord
     /**
      * Factory method to create the appropriate record type based on the request
      * 
-     * @param HttpClientRequest $request
-     * @param \Cognesy\Http\Contracts\HttpClientResponse $response
+     * @param HttpRequest $request
+     * @param \Cognesy\Http\Contracts\HttpResponse $response
      * @return RequestRecord
      */
-    public static function createAppropriate(HttpClientRequest $request, HttpClientResponse $response): RequestRecord
+    public static function createAppropriate(HttpRequest $request, HttpResponse $response): RequestRecord
     {
         if ($request->isStreamed()) {
             return StreamedRequestRecord::fromStreamedInteraction($request, $response);

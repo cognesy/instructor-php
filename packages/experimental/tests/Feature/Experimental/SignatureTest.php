@@ -1,12 +1,12 @@
 <?php
 namespace Cognesy\Experimental\Tests\Feature\Extras;
 
-use Cognesy\Experimental\Module\Signature\Attributes\InputField;
-use Cognesy\Experimental\Module\Signature\Attributes\OutputField;
 use Cognesy\Experimental\Module\Signature\SignatureFactory;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Schema\Attributes\Description;
+use Cognesy\Schema\Attributes\InputField;
+use Cognesy\Schema\Attributes\OutputField;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 it('creates signature from string', function () {

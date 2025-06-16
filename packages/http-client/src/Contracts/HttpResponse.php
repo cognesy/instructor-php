@@ -4,12 +4,7 @@ namespace Cognesy\Http\Contracts;
 
 use Generator;
 
-/**
- * Interface HttpClientResponse
- *
- * Defines the contract for an HTTP client response implemented by various HTTP clients
- */
-interface HttpClientResponse
+interface HttpResponse
 {
     public function statusCode(): int;
     public function headers(): array;
@@ -22,5 +17,5 @@ interface HttpClientResponse
      * @param int $chunkSize
      * @return Generator<string>
      */
-    public function stream(int $chunkSize = 1): Generator;
+    public function stream(?int $chunkSize = null): iterable;
 }

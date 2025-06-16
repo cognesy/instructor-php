@@ -21,6 +21,10 @@ class Deferred
         return !isset($this->deferred);
     }
 
+    public static function from(callable|Closure $deferred) : self {
+        return new self($deferred);
+    }
+
     public function defer(callable|Closure $deferred) : void {
         $this->deferred = match (true) {
             $deferred instanceof Closure => $deferred,

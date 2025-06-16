@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -27,7 +27,7 @@ class PendingInference
     protected readonly EventDispatcherInterface $events;
     protected readonly InferenceRequest $request;
 
-    protected HttpClientResponse $httpResponse;
+    protected HttpResponse $httpResponse;
     protected string $responseContent = '';
 
     public function __construct(
@@ -128,25 +128,12 @@ class PendingInference
         }
     }
 
-    /**
-     * Processes and generates a response from the Language Learning Model (LLM) driver.
-     *
-     * @return InferenceResponse The generated response from the LLM driver.
-     */
     private function makeInferenceResponse() : InferenceResponse {
-        $content = $this->httpResponseBody();
-        $data = Json::decode($content) ?? [];
-        $inferenceResponse = $this->driver->fromResponse($data);
+        $inferenceResponse = $this->driver->fromResponse($this->httpResponse());
         $this->events->dispatch(new InferenceResponseCreated(['response' => $inferenceResponse?->toArray() ?? []]));
         return $inferenceResponse;
     }
 
-    /**
-     * Retrieves the content of the response. If the content has not been
-     * set, it reads and initializes the content from the response.
-     *
-     * @return string The content of the response.
-     */
     private function httpResponseBody() : string {
         if (empty($this->responseContent)) {
             $this->responseContent = $this->httpResponse()->body();
@@ -154,7 +141,7 @@ class PendingInference
         return $this->responseContent;
     }
 
-    private function httpResponse() : HttpClientResponse {
+    private function httpResponse() : HttpResponse {
         if (!isset($this->httpResponse)) {
             $this->events->dispatch(new InferenceRequested(['request' => $this->request->toArray()]));
             $this->httpResponse = $this->driver->handle($this->request);

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay\Events;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Event fired when falling back to a real request because no recording was found
@@ -10,7 +10,7 @@ use Cognesy\Http\Data\HttpClientRequest;
 final class HttpInteractionFallback extends \Cognesy\Events\Event
 {
     public function __construct(
-        public readonly HttpClientRequest $request
+        public readonly HttpRequest $request
     ) {
         parent::__construct();
     }

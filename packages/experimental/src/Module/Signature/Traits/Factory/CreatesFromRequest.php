@@ -38,7 +38,7 @@ trait CreatesFromRequest
     private static function responseModelFactory() : ResponseModelFactory {
         $config = new StructuredOutputConfig();
         $events = new EventDispatcher();
-        $schemaFactory = new SchemaFactory($config->useObjectReferences());
+        $schemaFactory = new SchemaFactory(useObjectReferences: $config->useObjectReferences());
         return new ResponseModelFactory(
             toolCallBuilder: new ToolCallBuilder($schemaFactory),
             schemaFactory: $schemaFactory,

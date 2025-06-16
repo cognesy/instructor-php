@@ -5,7 +5,7 @@ namespace Cognesy\Http\Drivers\Guzzle;
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
@@ -46,7 +46,7 @@ class GuzzlePool implements CanHandleRequestPool
     private function createRequestGenerator(array $requests): callable {
         return function() use ($requests) {
             foreach ($requests as $key => $request) {
-                if (!$request instanceof HttpClientRequest) {
+                if (!$request instanceof HttpRequest) {
                     throw new InvalidArgumentException('Invalid request type in pool');
                 }
 
@@ -56,7 +56,7 @@ class GuzzlePool implements CanHandleRequestPool
         };
     }
 
-    private function createPsrRequest(HttpClientRequest $request): Request {
+    private function createPsrRequest(HttpRequest $request): Request {
         return new Request(
             $request->method(),
             $request->url(),
@@ -102,7 +102,7 @@ class GuzzlePool implements CanHandleRequestPool
         return Result::failure($reason);
     }
 
-    private function dispatchRequestEvent(HttpClientRequest $request): void {
+    private function dispatchRequestEvent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
             'url' => $url,
             'method' => $method,

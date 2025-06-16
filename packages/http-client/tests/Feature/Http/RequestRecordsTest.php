@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 use Cognesy\Http\Middleware\RecordReplay\RequestRecords;
 
@@ -22,7 +22,7 @@ afterEach(function() {
 
 test('saves a recorded HTTP interaction', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users',
         'GET',
         ['Accept' => 'application/json'],
@@ -52,7 +52,7 @@ test('saves a recorded HTTP interaction', function() {
 
 test('finds a recorded HTTP interaction', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users',
         'GET',
         ['Accept' => 'application/json'],
@@ -76,7 +76,7 @@ test('finds a recorded HTTP interaction', function() {
 
 test('returns null when no recording found', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/nonexistent',
         'GET',
         [],
@@ -93,7 +93,7 @@ test('returns null when no recording found', function() {
 
 test('deletes a recorded HTTP interaction', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users',
         'GET',
         [],
@@ -118,9 +118,9 @@ test('deletes a recorded HTTP interaction', function() {
 test('clears all recordings', function() {
     // Arrange
     $requests = [
-        new HttpClientRequest('https://api.example.com/users', 'GET', [], '', []),
-        new HttpClientRequest('https://api.example.com/posts', 'GET', [], '', []),
-        new HttpClientRequest('https://api.example.com/comments', 'GET', [], '', [])
+        new HttpRequest('https://api.example.com/users', 'GET', [], '', []),
+        new HttpRequest('https://api.example.com/posts', 'GET', [], '', []),
+        new HttpRequest('https://api.example.com/comments', 'GET', [], '', [])
     ];
     
     $response = MockHttpResponse::success(body: '{"result": true}');
@@ -143,9 +143,9 @@ test('clears all recordings', function() {
 test('retrieves all recordings', function() {
     // Arrange
     $requests = [
-        new HttpClientRequest('https://api.example.com/users', 'GET', [], '', []),
-        new HttpClientRequest('https://api.example.com/posts', 'GET', [], '', []),
-        new HttpClientRequest('https://api.example.com/comments', 'GET', [], '', [])
+        new HttpRequest('https://api.example.com/users', 'GET', [], '', []),
+        new HttpRequest('https://api.example.com/posts', 'GET', [], '', []),
+        new HttpRequest('https://api.example.com/comments', 'GET', [], '', [])
     ];
     
     $response = MockHttpResponse::success(body: '{"result": true}');
@@ -169,7 +169,7 @@ test('retrieves all recordings', function() {
 
 test('changes storage directory', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users',
         'GET',
         [],

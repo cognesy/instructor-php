@@ -3,16 +3,15 @@
 namespace Cognesy\Http\Middleware\Examples;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientRequest;
-use Generator;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 
 class Example2Middleware implements HttpMiddleware
 {
     public function __construct() {}
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Execute code before the next handler in the chain
         // ...
@@ -25,10 +24,10 @@ class Example2Middleware implements HttpMiddleware
 
         // Decorate the response if we want to log streaming
         $param = 'example';
-        return new class($response, $param) implements HttpClientResponse {
+        return new class($response, $param) implements HttpResponse {
             public function __construct(
-                private HttpClientResponse $wrapped,
-                private string $param,
+                private HttpResponse $wrapped,
+                private string       $param,
             ) {}
 
             public function statusCode(): int { return $this->wrapped->statusCode(); }
@@ -36,7 +35,7 @@ class Example2Middleware implements HttpMiddleware
             public function body(): string { return $this->wrapped->body(); }
             public function isStreamed(): bool { return $this->wrapped->isStreamed(); }
 
-            public function stream(int $chunkSize = 1): Generator
+            public function stream(?int $chunkSize = null): iterable
             {
                 // do something with param
                 foreach ($this->wrapped->stream($chunkSize) as $chunk) {

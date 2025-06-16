@@ -2,15 +2,16 @@
 
 namespace Cognesy\Http\Drivers\Mock;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Generator;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * MockHttpResponse
  * 
  * A simple implementation of HttpClientResponse for testing purposes.
  */
-class MockHttpResponse implements HttpClientResponse
+class MockHttpResponse implements HttpResponse
 {
     /** @var string The response body */
     private string $body;
@@ -25,6 +26,9 @@ class MockHttpResponse implements HttpClientResponse
     private array $chunks;
     private bool $streaming;
 
+    /** @var EventDispatcherInterface|null Event dispatcher for response events */
+    private ?EventDispatcherInterface $events;
+
     /**
      * Constructor
      * 
@@ -37,13 +41,15 @@ class MockHttpResponse implements HttpClientResponse
         int $statusCode = 200,
         array $headers = [],
         string $body = '',
-        array $chunks = []
+        array $chunks = [],
+        EventDispatcherInterface $events = null
     ) {
         $this->statusCode = $statusCode;
         $this->headers = $headers;
         $this->body = $body;
         $this->streaming = !empty($chunks);
         $this->chunks = !empty($chunks) ? $chunks : [$body];
+        $this->events = $events;
     }
 
     /**
@@ -102,10 +108,11 @@ class MockHttpResponse implements HttpClientResponse
      * Read chunks of the stream
      * 
      * @param int $chunkSize Not used in mock implementation, included for interface compatibility
-     * @return Generator<string>
+     * @return iterable<string>
      */
-    public function stream(int $chunkSize = 1): Generator {
+    public function stream(?int $chunkSize = null): iterable {
         foreach ($this->chunks as $chunk) {
+            $this->events?->dispatch(new HttpResponseChunkReceived($chunk));
             yield $chunk;
         }
     }

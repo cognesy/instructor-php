@@ -3,7 +3,7 @@ namespace Cognesy\Http\Drivers\Laravel;
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -47,7 +47,7 @@ class LaravelPool implements CanHandleRequestPool
     private function createPoolRequests(Pool $pool, array $batch): array {
         $poolRequests = [];
         foreach ($batch as $request) {
-            if (!$request instanceof HttpClientRequest) {
+            if (!$request instanceof HttpRequest) {
                 throw new InvalidArgumentException('Invalid request type in pool');
             }
             $poolRequests[] = $this->createPoolRequest($pool, $request);
@@ -55,7 +55,7 @@ class LaravelPool implements CanHandleRequestPool
         return $poolRequests;
     }
 
-    private function createPoolRequest(Pool $pool, HttpClientRequest $request) {
+    private function createPoolRequest(Pool $pool, HttpRequest $request) {
         return $pool->withOptions([
             'timeout' => $this->config->requestTimeout,
             'connect_timeout' => $this->config->connectTimeout,

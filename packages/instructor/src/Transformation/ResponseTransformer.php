@@ -1,11 +1,13 @@
 <?php
 namespace Cognesy\Instructor\Transformation;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Events\Response\ResponseTransformationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseTransformationFailed;
 use Cognesy\Instructor\Events\Response\ResponseTransformed;
-use Cognesy\Instructor\Transformation\Contracts\CanTransformObject;
+use Cognesy\Instructor\Transformation\Contracts\CanTransformData;
 use Cognesy\Instructor\Transformation\Contracts\CanTransformSelf;
+use Cognesy\Instructor\Transformation\Exceptions\ResponseTransformationException;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -16,14 +18,15 @@ class ResponseTransformer
 
     public function __construct(
         private EventDispatcherInterface $events,
-        /** @var CanTransformObject[] $transformers */
-        private array $transformers = []
+        /** @var CanTransformData[] $transformers */
+        private array $transformers,
+        private StructuredOutputConfig $config,
     ) {}
 
-    public function transform(object $object) : Result {
+    public function transform(mixed $data) : Result {
         return match(true) {
-            $object instanceof CanTransformSelf => $this->transformSelf($object),
-            default => $this->transformObject($object),
+            $data instanceof CanTransformSelf => $this->transformSelf($data),
+            default => $this->transformData($data),
         };
     }
 
@@ -41,25 +44,43 @@ class ResponseTransformer
         return Result::success($transformed);
     }
 
-    protected function transformObject(object $object) : Result {
+    protected function transformData(mixed $input) : Result {
         if (empty($this->transformers)) {
-            return Result::success($object);
+            return Result::success($input);
         }
 
-        $data = $object->clone();
+        // clone the input as transformers may mutate it
+        $data = match(true) {
+            is_object($input) => clone $input,
+            default => $input,
+        };
+
         foreach ($this->transformers as $transformer) {
             $transformer = match(true) {
-                is_string($transformer) && is_subclass_of($transformer, CanTransformObject::class) => new $transformer(),
-                $transformer instanceof CanTransformObject => $transformer,
-                default => throw new Exception('Transformer must implement CanTransformObject interface'),
+                is_string($transformer) && is_subclass_of($transformer, CanTransformData::class) => new $transformer(),
+                $transformer instanceof CanTransformData => $transformer,
+                default => throw new Exception('Transformer must implement CanTransformData interface'),
             };
-            $this->events->dispatch(new ResponseTransformationAttempt(['object' => $data]));
-            // TODO: should we catch exceptions here?
-            $result = $transformer->transform($data);
-            if (!empty($result)) {
-                $data = $result;
+
+            $this->events->dispatch(new ResponseTransformationAttempt(['data' => $data]));
+            $result = Result::try(fn() => $transformer->transform($data));
+            if ($result->isNull()) {
+                // if the transformer returns null, we skip it
+                continue;
             }
+            if ($result->isFailure()) {
+                // if the transformer failed - try with the next one
+                $this->events->dispatch(new ResponseTransformationFailed(['data' => $data, 'error' => $result->errorMessage()]));
+                if ($this->config->throwOnTransformationFailure()) {
+                    throw new ResponseTransformationException($result->errorMessage());
+                }
+                continue;
+            }
+
+            // we take the transformed data and continue transforming it
+            $data = $result->unwrap();
         }
+
         return Result::success($data);
     }
 }

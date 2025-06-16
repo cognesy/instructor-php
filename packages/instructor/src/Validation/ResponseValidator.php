@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Validation;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Events\Response\CustomResponseValidationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseValidated;
 use Cognesy\Instructor\Events\Response\ResponseValidationAttempt;
@@ -20,6 +21,7 @@ class ResponseValidator
         private EventDispatcherInterface $events,
         /** @var CanValidateObject[]|class-string[] $validators */
         private array $validators,
+        private StructuredOutputConfig $config,
     ) {}
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 
@@ -18,7 +18,7 @@ test('can return predefined response', function() {
         'POST'
     );
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/test',
         'POST',
         ['Content-Type' => 'application/json'],
@@ -43,7 +43,7 @@ test('can match requests by callback', function() {
         'GET'
     );
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users?page=1',
         'GET',
         [],
@@ -67,7 +67,7 @@ test('can match requests by json body', function() {
         fn($body) => str_contains($body, '"name":"John"')
     );
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users',
         'POST',
         ['Content-Type' => 'application/json'],
@@ -87,8 +87,8 @@ test('tracks received requests', function() {
     $response = MockHttpResponse::success();
     $this->driver->addResponse($response, null, null, null); // Match any request
 
-    $request1 = new HttpClientRequest('https://api.example.com/users', 'GET', [], '', []);
-    $request2 = new HttpClientRequest('https://api.example.com/posts', 'GET', [], '', []);
+    $request1 = new HttpRequest('https://api.example.com/users', 'GET', [], '', []);
+    $request2 = new HttpRequest('https://api.example.com/posts', 'GET', [], '', []);
 
     // Act
     $this->driver->handle($request1);
@@ -105,7 +105,7 @@ test('tracks received requests', function() {
 test('generates dynamic responses', function() {
     // Arrange
     $this->driver->addResponse(
-        function(HttpClientRequest $request) {
+        function(HttpRequest $request) {
             $url = $request->url();
             $id = substr($url, strrpos($url, '/') + 1);
             return MockHttpResponse::success(
@@ -115,7 +115,7 @@ test('generates dynamic responses', function() {
         fn($url) => preg_match('/\/users\/\d+$/', $url)
     );
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/users/123',
         'GET',
         [],
@@ -139,7 +139,7 @@ test('handles streaming responses', function() {
         'https://api.example.com/stream'
     );
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/stream',
         'GET',
         [],
@@ -168,7 +168,7 @@ test('throws exception when no matching response', function() {
         'GET'
     );
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/different-endpoint',
         'GET',
         [],

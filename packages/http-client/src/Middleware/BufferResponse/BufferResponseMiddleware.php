@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\BufferResponse;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 /**
@@ -15,7 +15,7 @@ class BufferResponseMiddleware extends BaseMiddleware
     /**
      * Always decorate responses to enable buffering
      */
-    protected function shouldDecorateResponse(HttpClientRequest $request, HttpClientResponse $response): bool
+    protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool
     {
         return true;
     }
@@ -23,7 +23,7 @@ class BufferResponseMiddleware extends BaseMiddleware
     /**
      * Create a buffered response decorator
      */
-    protected function toResponse(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse
+    protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse
     {
         return new BufferResponseDecorator($request, $response);
     }

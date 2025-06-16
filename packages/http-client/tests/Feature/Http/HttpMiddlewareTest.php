@@ -1,6 +1,6 @@
 <?php
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 use Cognesy\Http\Middleware\RecordReplay\Exceptions\RecordingNotFoundException;
@@ -17,7 +17,7 @@ beforeEach(function() {
         'GET'
     );
     
-    $this->request = new HttpClientRequest(
+    $this->request = new HttpRequest(
         'https://api.example.com/test',
         'GET',
         ['Accept' => 'application/json'],

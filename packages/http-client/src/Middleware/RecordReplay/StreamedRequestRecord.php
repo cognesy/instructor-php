@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 
 /**
@@ -35,11 +35,11 @@ class StreamedRequestRecord extends RequestRecord
     /**
      * Create a new StreamedRequestRecord from a request and streamed response
      * 
-     * @param HttpClientRequest $request The HTTP request
-     * @param HttpClientResponse $response The streamed HTTP response
+     * @param HttpRequest $request The HTTP request
+     * @param HttpResponse $response The streamed HTTP response
      * @return self
      */
-    public static function fromStreamedInteraction(HttpClientRequest $request, HttpClientResponse $response): self
+    public static function fromStreamedInteraction(HttpRequest $request, HttpResponse $response): self
     {
         $requestData = [
             'url' => $request->url(),
@@ -108,9 +108,9 @@ class StreamedRequestRecord extends RequestRecord
      * Create an HttpClientResponse from this record
      * 
      * @param bool $isStreaming Whether to return a streaming response
-     * @return HttpClientResponse
+     * @return HttpResponse
      */
-    public function toResponse(bool $isStreaming = true): HttpClientResponse
+    public function toResponse(bool $isStreaming = true): HttpResponse
     {
         if ($isStreaming) {
             return MockHttpResponse::streaming(
@@ -161,13 +161,13 @@ class StreamedRequestRecord extends RequestRecord
     /**
      * Factory method to create the appropriate RequestRecord type based on request
      * 
-     * @param HttpClientRequest $request The HTTP request
-     * @param HttpClientResponse $response The HTTP response
+     * @param HttpRequest $request The HTTP request
+     * @param HttpResponse $response The HTTP response
      * @return RequestRecord Either a StreamedRequestRecord or standard RequestRecord
      */
     public static function createAppropriateRecord(
-        HttpClientRequest $request, 
-        HttpClientResponse $response
+        HttpRequest  $request,
+        HttpResponse $response
     ): RequestRecord {
         if ($request->isStreamed()) {
             return self::fromStreamedInteraction($request, $response);

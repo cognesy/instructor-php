@@ -1,7 +1,7 @@
 <?php
 
 use Cognesy\Http\Config\HttpClientConfig;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
 use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
@@ -20,8 +20,8 @@ it('tests pool method for GuzzleDriver with failOnError=true', function () {
 
     $driver = new GuzzleDriver($config);
     $requests = [
-        new HttpClientRequest('https://example.com', 'GET', [], [], []),
-        new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
+        new HttpRequest('https://example.com', 'GET', [], [], []),
+        new HttpRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
     ];
 
     expect(fn() => $driver->pool($requests))
@@ -40,8 +40,8 @@ it('tests pool method for GuzzleDriver with failOnError=false', function () {
 
     $driver = new GuzzleDriver($config);
     $requests = [
-        new HttpClientRequest('https://example.com', 'GET', [], [], []),
-        new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
+        new HttpRequest('https://example.com', 'GET', [], [], []),
+        new HttpRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
     ];
 
     $responses = $driver->pool($requests);
@@ -64,8 +64,8 @@ it('tests pool method for LaravelDriver with failOnError=true', function () {
 
     $driver = new LaravelDriver($config);
     $requests = [
-        new HttpClientRequest('https://example.com', 'GET', [], [], []),
-        new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
+        new HttpRequest('https://example.com', 'GET', [], [], []),
+        new HttpRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
     ];
 
     expect(fn() => $driver->pool($requests))
@@ -84,8 +84,8 @@ it('tests pool method for LaravelDriver with failOnError=false', function () {
 
     $driver = new LaravelDriver($config);
     $requests = [
-        new HttpClientRequest('https://example.com', 'GET', [], [], []),
-        new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
+        new HttpRequest('https://example.com', 'GET', [], [], []),
+        new HttpRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
     ];
 
     $responses = $driver->pool($requests);
@@ -108,8 +108,8 @@ it('tests pool method for SymfonyDriver with failOnError=true', function () {
 
     $driver = new SymfonyDriver(config: $config);
     $requests = [
-        new HttpClientRequest('https://example.com', 'GET', [], [], []),
-        new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
+        new HttpRequest('https://example.com', 'GET', [], [], []),
+        new HttpRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
     ];
 
     expect(fn() => $driver->pool($requests))
@@ -128,8 +128,8 @@ it('tests pool method for SymfonyDriver with failOnError=false', function () {
 
     $driver = new SymfonyDriver(config: $config);
     $requests = [
-        new HttpClientRequest('https://example.com', 'GET', [], [], []),
-        new HttpClientRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
+        new HttpRequest('https://example.com', 'GET', [], [], []),
+        new HttpRequest('https://invalid-domain-that-does-not-exist.com', 'GET', [], [], []),
     ];
 
     $responses = $driver->pool($requests);

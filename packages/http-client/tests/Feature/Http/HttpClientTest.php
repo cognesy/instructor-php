@@ -2,9 +2,9 @@
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpDriver;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 use Cognesy\Http\HttpClientBuilder;
@@ -46,7 +46,7 @@ test('HTTP client with mock driver', function() {
 
     $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/test',
         'POST',
         ['Content-Type' => 'application/json'],
@@ -84,7 +84,7 @@ test('HTTP client with middleware', function() {
 
     // Add a simple test middleware that modifies the request
     $httpClient->middleware()->append(new class implements HttpMiddleware {
-        public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+        public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
         {
             // Add a test header to the request
             $request->headers['X-Test'] = 'Modified by middleware';
@@ -92,7 +92,7 @@ test('HTTP client with middleware', function() {
         }
     });
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/resource',
         'GET',
         [],
@@ -136,7 +136,7 @@ test('HTTP client with record/replay middleware', function() {
     $httpClient->middleware()->append($recordReplayMiddleware, 'record-replay');
 
     // Create a request to a real endpoint
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://jsonplaceholder.typicode.com/posts/1',
         'GET',
         ['Accept' => 'application/json'],
@@ -178,7 +178,7 @@ test('mixed testing approach', function() {
     $httpClient->middleware()->append($recordReplayMiddleware, 'record-replay');
 
     // Request 1: Should be handled by replay if recording exists, or mock if not
-    $request1 = new HttpClientRequest(
+    $request1 = new HttpRequest(
         'https://api.example.com/recorded-endpoint',
         'GET',
         [],
@@ -187,7 +187,7 @@ test('mixed testing approach', function() {
     );
 
     // Request 2: We'll explicitly run this against the mock
-    $request2 = new HttpClientRequest(
+    $request2 = new HttpRequest(
         'https://api.example.com/mock-only-endpoint',
         'POST',
         [],

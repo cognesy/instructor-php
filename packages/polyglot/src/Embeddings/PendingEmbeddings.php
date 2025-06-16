@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Embeddings;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsResponse;
@@ -17,7 +17,7 @@ class PendingEmbeddings
     private readonly EventDispatcherInterface $events;
     private readonly EmbeddingsRequest $request;
 
-    private HttpClientResponse $httpResponse;
+    private HttpResponse $httpResponse;
     private ?EmbeddingsResponse $response = null;
 
     public function __construct(

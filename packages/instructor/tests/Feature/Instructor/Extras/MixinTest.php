@@ -15,7 +15,6 @@ it('supports HandlesExtraction mixin', function () {
         llm: $customLLM
     );
 
-    // dump($person);
     expect($person)->toBeInstanceOf(PersonWithMixin::class);
     expect($person->name)->toBe('Jason');
     expect($person->age)->toBe(28);

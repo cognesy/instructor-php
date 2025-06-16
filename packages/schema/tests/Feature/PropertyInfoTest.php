@@ -3,7 +3,7 @@
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
 use Cognesy\Schema\Utils\PropertyInfo;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type;
 
 it('can get property name', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'testProperty');
@@ -13,9 +13,8 @@ it('can get property name', function () {
 
 it('can get property types', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'testProperty');
-    $types = $propertyInfo->getTypes();
-    expect($types)->toBeArray();
-    expect($types[0])->toBeInstanceOf(Type::class);
+    $type = $propertyInfo->getType();
+    expect($type)->toBeInstanceOf(Type::class);
 });
 
 it('can get property type', function () {

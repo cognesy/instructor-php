@@ -2,18 +2,17 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpClient\HttpClient as SymfonyHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SymfonyDriver implements CanHandleHttpRequest
@@ -24,18 +23,18 @@ class SymfonyDriver implements CanHandleHttpRequest
 
     public function __construct(
         HttpClientConfig $config,
+        EventDispatcherInterface $events,
         ?object $clientInstance = null,
-        ?EventDispatcherInterface $events = null,
     ) {
         $this->config = $config;
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
         if ($clientInstance && !($clientInstance instanceof HttpClientInterface)) {
             throw new \InvalidArgumentException('Client instance of SymfonyDriver must be of type Symfony\Contracts\HttpClient\HttpClientInterface');
         }
-        $this->client = $clientInstance ?? HttpClient::create(['http_version' => '2.0']);
+        $this->client = $clientInstance ?? SymfonyHttpClient::create(['http_version' => '2.0']);
     }
 
-    public function handle(HttpClientRequest $request) : HttpClientResponse {
+    public function handle(HttpRequest $request) : HttpResponse {
         $url = $request->url();
         $headers = $request->headers();
         $body = $request->body()->toArray();
@@ -56,8 +55,8 @@ class SymfonyDriver implements CanHandleHttpRequest
                 options: [
                     'headers' => $headers,
                     'body' => is_array($body) ? json_encode($body) : $body,
-                    'timeout' => $this->config->idleTimeout ?? 0,
-                    'max_duration' => $this->config->requestTimeout ?? 30,
+                    'timeout' => $this->config->idleTimeout,
+                    'max_duration' => $this->config->requestTimeout,
                     'buffer' => !$streaming,
                 ]
             );
@@ -89,8 +88,9 @@ class SymfonyDriver implements CanHandleHttpRequest
         return new SymfonyHttpResponse(
             client: $this->client,
             response: $response,
+            events: $this->events,
             isStreamed: $streaming,
-            connectTimeout: $this->config->connectTimeout ?? 3,
+            connectTimeout: $this->config->connectTimeout,
         );
     }
 }

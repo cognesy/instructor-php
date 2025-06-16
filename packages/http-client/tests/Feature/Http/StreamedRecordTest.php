@@ -1,12 +1,12 @@
 <?php
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Drivers\Mock\MockHttpResponse;
 use Cognesy\Http\Middleware\RecordReplay\StreamedRequestRecord;
 
 test('creates from streamed HTTP interaction', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/stream',
         'GET',
         ['Accept' => 'application/json'],
@@ -32,7 +32,7 @@ test('creates from streamed HTTP interaction', function() {
 
 test('converts streamed record to and from JSON', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/stream',
         'GET',
         ['Accept' => 'application/json'],
@@ -57,7 +57,7 @@ test('converts streamed record to and from JSON', function() {
 
 test('creates streaming response from record', function() {
     // Arrange
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         'https://api.example.com/stream',
         'GET',
         [],
@@ -90,7 +90,7 @@ test('creates streaming response from record', function() {
 
 test('factory method creates correct record type', function() {
     // Arrange
-    $streamRequest = new HttpClientRequest(
+    $streamRequest = new HttpRequest(
         'https://api.example.com/stream',
         'GET',
         [],
@@ -98,7 +98,7 @@ test('factory method creates correct record type', function() {
         ['stream' => true]
     );
     
-    $normalRequest = new HttpClientRequest(
+    $normalRequest = new HttpRequest(
         'https://api.example.com/users',
         'GET',
         [],

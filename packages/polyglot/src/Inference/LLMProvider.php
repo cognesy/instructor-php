@@ -26,9 +26,11 @@ final class LLMProvider
     private ConfigPresets $presets;
 
     // Configuration - all immutable after construction
-    private ?string $debugPreset;
     private ?string $dsn;
     private ?string $llmPreset;
+    private ?string $debugPreset;
+    private ?string $httpClientPreset;
+
     private ?LLMConfig $explicitConfig;
     private ?HttpClient $explicitHttpClient;
     private ?CanHandleInference $explicitDriver;
@@ -116,6 +118,12 @@ final class LLMProvider
      */
     public function withHttpClient(HttpClient $httpClient): self {
         $this->explicitHttpClient = $httpClient;
+        return $this;
+    }
+
+    public function withHttpPreset(string $preset): self {
+        // Create a new HTTP client builder with the specified preset
+        $this->httpClientPreset = $preset;
         return $this;
     }
 
@@ -217,11 +225,13 @@ final class LLMProvider
             return $this->explicitHttpClient;
         }
 
+        $preset = $this->httpClientPreset ?? $config->httpClientPreset;
+
         // Build new client
         $builder = (new HttpClientBuilder(
             $this->events,
             $this->configProvider,
-        ))->withPreset($config->httpClientPreset);
+        ))->withPreset($preset);
 
         // Apply debug setting if specified
         $builder = $builder->withDebugPreset($this->debugPreset);

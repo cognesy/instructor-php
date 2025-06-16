@@ -18,7 +18,7 @@ class SimpleItem
 {
     public function __construct(
         public string $name,
-        public int    $value
+        public int    $value,
     ) {}
 }
 
@@ -30,7 +30,7 @@ function createStreamingGenerator(array $chunks): Generator {
 
 function makeResponseModel($sequence): ResponseModel {
     $config = new StructuredOutputConfig();
-    $schemaFactory = new SchemaFactory($config->useObjectReferences());
+    $schemaFactory = new SchemaFactory(useObjectReferences: $config->useObjectReferences());
     $events = new EventDispatcher();
     return (new ResponseModelFactory(
         toolCallBuilder: new ToolCallBuilder($schemaFactory),
@@ -44,8 +44,16 @@ beforeEach(function () {
     $this->events = Mockery::mock(EventDispatcher::class);
     $this->events->shouldReceive('dispatch')->byDefault();
 
-    $this->deserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
-    $this->transformer = new ResponseTransformer($this->events, []);
+    $this->deserializer = new ResponseDeserializer(
+        $this->events,
+        [SymfonyDeserializer::class],
+        new StructuredOutputConfig(),
+    );
+    $this->transformer = new ResponseTransformer(
+        events: $this->events,
+        transformers: [],
+        config: new StructuredOutputConfig(),
+    );
 
     $this->generator = new PartialsGenerator(
         $this->deserializer,

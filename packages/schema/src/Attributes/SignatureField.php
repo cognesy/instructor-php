@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Experimental\Module\Signature\Attributes;
+namespace Cognesy\Schema\Attributes;
 
 use Cognesy\Schema\Data\TypeDetails;
 

@@ -5,7 +5,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * HTTP client adapter that provides unified access to underlying
@@ -31,7 +31,7 @@ class HttpClient
     /**
      * Handles the HTTP request using the configured driver and middleware stack.
      */
-    public function withRequest(HttpClientRequest $request): PendingHttpResponse {
+    public function withRequest(HttpRequest $request): PendingHttpResponse {
         return new PendingHttpResponse(
             request: $request,
             handler: $this->middlewareStack->decorate($this->driver),

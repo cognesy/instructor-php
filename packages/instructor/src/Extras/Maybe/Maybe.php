@@ -24,7 +24,7 @@ class Maybe implements CanProvideJsonSchema, CanDeserializeSelf
     private SymfonyDeserializer $deserializer;
 
     public function __construct() {
-        $this->schemaFactory = new SchemaFactory(false);
+        $this->schemaFactory = new SchemaFactory(useObjectReferences: false);
         $this->deserializer = new SymfonyDeserializer();
     }
 

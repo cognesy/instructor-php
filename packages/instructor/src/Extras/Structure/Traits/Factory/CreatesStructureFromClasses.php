@@ -41,7 +41,8 @@ trait CreatesStructureFromClasses
         foreach ($classInfo->getProperties() as $propertyName => $propertyInfo) {
             switch (true) {
                 case $propertyInfo->isStatic():
-                case !$propertyInfo->isPublic():
+                // GETTERS SUPPORT
+                //case !$propertyInfo->isPublic():
                 case $propertyInfo->isReadOnly():
                 case $propertyInfo->hasAttribute(Ignore::class):
                     continue 2;

@@ -2,8 +2,9 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Generator;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -12,20 +13,26 @@ use Psr\Http\Message\StreamInterface;
  *
  * Implements HttpClientResponse contract for PSR-compatible HTTP client
  */
-class PsrHttpResponse implements HttpClientResponse
+class PsrHttpResponse implements HttpResponse
 {
     private ResponseInterface $response;
     private StreamInterface $stream;
+    private EventDispatcherInterface $events;
     private bool $isStreamed;
+    private int $streamChunkSize;
 
     public function __construct(
         ResponseInterface $response,
         StreamInterface $stream,
+        EventDispatcherInterface $events,
         bool $isStreamed,
+        int $streamChunkSize = 256,
     ) {
         $this->response = $response;
         $this->stream = $stream;
+        $this->events = $events;
         $this->isStreamed = $isStreamed;
+        $this->streamChunkSize = $streamChunkSize;
     }
 
     /**
@@ -59,11 +66,13 @@ class PsrHttpResponse implements HttpClientResponse
      * Read chunks of the stream
      *
      * @param int $chunkSize
-     * @return Generator<string>
+     * @return iterable<string>
      */
-    public function stream(int $chunkSize = 1): Generator {
+    public function stream(?int $chunkSize = null): iterable {
         while (!$this->stream->eof()) {
-            yield $this->stream->read($chunkSize);
+            $chunk = $this->stream->read($chunkSize ?? $this->streamChunkSize);
+            $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+            yield $chunk;
         }
     }
 

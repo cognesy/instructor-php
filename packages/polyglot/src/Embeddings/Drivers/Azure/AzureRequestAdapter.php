@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers\Azure;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Embeddings\Contracts\EmbedRequestAdapter;
@@ -15,8 +15,8 @@ class AzureRequestAdapter implements EmbedRequestAdapter
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
-    public function toHttpClientRequest(EmbeddingsRequest $request): HttpClientRequest {
-         return new HttpClientRequest(
+    public function toHttpClientRequest(EmbeddingsRequest $request): HttpRequest {
+         return new HttpRequest(
             url: $this->getEndpointUrl(),
             method: 'POST',
             headers: $this->getRequestHeaders(),

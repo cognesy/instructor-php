@@ -55,4 +55,16 @@ trait HandlesAccessors
     public function defaultOutputClass() : string {
         return $this->defaultOutputClass;
     }
+
+    public function deserializationErrorPrompt() : string {
+        return $this->deserializationErrorPrompt;
+    }
+
+    public function defaultToAnonymousClass() : bool {
+        return $this->defaultToAnonymousClass;
+    }
+
+    public function throwOnTransformationFailure() : bool {
+        return $this->throwOnTransformationFailure;
+    }
 }

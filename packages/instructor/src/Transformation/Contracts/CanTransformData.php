@@ -5,7 +5,7 @@ namespace Cognesy\Instructor\Transformation\Contracts;
 /**
  * Can transform an object into a different format, eg. into a scalar value.
  */
-interface CanTransformObject
+interface CanTransformData
 {
     /**
      * Transform the given data into a different format

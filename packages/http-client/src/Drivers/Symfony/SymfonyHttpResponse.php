@@ -2,8 +2,9 @@
 
 namespace Cognesy\Http\Drivers\Symfony;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Generator;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Events\HttpResponseChunkReceived;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -12,20 +13,23 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  *
  * Implements HttpClientResponse contract for Symfony HTTP client
  */
-class SymfonyHttpResponse implements HttpClientResponse
+class SymfonyHttpResponse implements HttpResponse
 {
     private ResponseInterface $response;
     private HttpClientInterface $client;
+    private EventDispatcherInterface $events;
     private bool $isStreamed;
 
     public function __construct(
         HttpClientInterface $client,
         ResponseInterface $response,
+        EventDispatcherInterface $events,
         bool $isStreamed,
         private float $connectTimeout = 1,
     ) {
         $this->client = $client;
         $this->response = $response;
+        $this->events = $events;
         $this->isStreamed = $isStreamed;
     }
 
@@ -68,11 +72,16 @@ class SymfonyHttpResponse implements HttpClientResponse
      * Read chunks of the stream
      *
      * @param int $chunkSize
-     * @return Generator<string>
+     * @return iterable<string>
      */
-    public function stream(int $chunkSize = 1): Generator {
+    public function stream(?int $chunkSize = null): iterable {
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
-            yield $chunk->getContent();
+            if ($chunk->isTimeout()) {
+                continue;
+            }
+            $chunk = $chunk->getContent();
+            $this->events->dispatch(new HttpResponseChunkReceived($chunk));
+            yield $chunk;
         }
     }
 

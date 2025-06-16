@@ -24,8 +24,8 @@ namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 
 class LoggingMiddleware implements HttpMiddleware
 {
@@ -36,7 +36,7 @@ class LoggingMiddleware implements HttpMiddleware
         $this->logger = $logger;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Pre-request logging
         $this->logger->info('Sending request', [
@@ -79,7 +79,7 @@ For most cases, extending the `BaseMiddleware` abstract class is more convenient
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class AuthenticationMiddleware extends BaseMiddleware
 {
@@ -90,7 +90,7 @@ class AuthenticationMiddleware extends BaseMiddleware
         $this->apiKey = $apiKey;
     }
 
-    protected function beforeRequest(HttpClientRequest $request): void
+    protected function beforeRequest(HttpRequest $request): void
     {
         // Add authorization header to the request
         $headers = $request->headers();
@@ -101,9 +101,9 @@ class AuthenticationMiddleware extends BaseMiddleware
     }
 
     protected function afterRequest(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         // Check if the response indicates an authentication error
         if ($response->statusCode() === 401) {
             // Log or handle authentication failures
@@ -160,7 +160,7 @@ This middleware automatically retries failed requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class RetryMiddleware extends BaseMiddleware
 {
@@ -178,7 +178,7 @@ class RetryMiddleware extends BaseMiddleware
         $this->retryStatusCodes = $retryStatusCodes;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         $attempts = 0;
 
@@ -225,7 +225,7 @@ This middleware throttles requests to respect API rate limits:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class RateLimitingMiddleware extends BaseMiddleware
 {
@@ -239,7 +239,7 @@ class RateLimitingMiddleware extends BaseMiddleware
         $this->perSeconds = $perSeconds;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Clean up old request times
         $this->removeOldRequestTimes();
@@ -289,7 +289,7 @@ This middleware caches responses for GET requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\SimpleCache\CacheInterface;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\SimpleCache\CacheInterface;
 
 class CachingMiddleware extends BaseMiddleware
 {
@@ -302,7 +302,7 @@ class CachingMiddleware extends BaseMiddleware
         $this->ttl = $ttl;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Only cache GET requests
         if ($request->method() !== 'GET') {
@@ -343,7 +343,7 @@ class CachingMiddleware extends BaseMiddleware
         return $response;
     }
 
-    private function generateCacheKey(HttpClientRequest $request): string
+    private function generateCacheKey(HttpRequest $request): string
     {
         return md5($request->method() . $request->url() . $request->body()->toString());
     }
@@ -363,15 +363,15 @@ All response decorators should implement the `HttpClientResponse` interface. The
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseResponseDecorator;use Generator;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseResponseDecorator;use Generator;
 
 class JsonStreamDecorator extends BaseResponseDecorator
 {
     private string $buffer = '';
 
     public function __construct(
-        HttpClientRequest $request,
-        HttpClientResponse $response
+        HttpRequest $request,
+        HttpResponse $response
     ) {
         parent::__construct($request, $response);
     }
@@ -434,13 +434,13 @@ To use a response decorator, you need to create a middleware that wraps the resp
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class JsonStreamMiddleware extends BaseMiddleware
 {
     protected function shouldDecorateResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
+        HttpRequest $request,
+        HttpResponse $response
     ): bool {
         // Only decorate streaming JSON responses
         return $request->isStreamed() &&
@@ -449,9 +449,9 @@ class JsonStreamMiddleware extends BaseMiddleware
     }
 
     protected function toResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         return new JsonStreamDecorator($request, $response);
     }
 }
@@ -508,13 +508,13 @@ And the corresponding middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class XmlToJsonMiddleware extends BaseMiddleware
 {
     protected function shouldDecorateResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
+        HttpRequest $request,
+        HttpResponse $response
     ): bool {
         // Only transform XML responses
         return isset($response->headers()['Content-Type']) &&
@@ -522,9 +522,9 @@ class XmlToJsonMiddleware extends BaseMiddleware
     }
 
     protected function toResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         return new XmlToJsonDecorator($request, $response);
     }
 }
@@ -543,7 +543,7 @@ This middleware collects analytics data about HTTP requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class AnalyticsMiddleware extends BaseMiddleware
 {
@@ -554,16 +554,16 @@ class AnalyticsMiddleware extends BaseMiddleware
         $this->analytics = $analyticsService;
     }
 
-    protected function beforeRequest(HttpClientRequest $request): void
+    protected function beforeRequest(HttpRequest $request): void
     {
         // Record the start time
         $this->startTime = microtime(true);
     }
 
     protected function afterRequest(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         $endTime = microtime(true);
         $duration = round(($endTime - $this->startTime) * 1000, 2);
 
@@ -596,7 +596,7 @@ This middleware implements the circuit breaker pattern to prevent repeated calls
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class CircuitBreakerMiddleware extends BaseMiddleware
 {
@@ -610,7 +610,7 @@ class CircuitBreakerMiddleware extends BaseMiddleware
         $this->resetTimeout = $resetTimeout;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         $hostname = parse_url($request->url(), PHP_URL_HOST);
 
@@ -687,7 +687,7 @@ namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 
 class ConditionalMiddleware implements HttpMiddleware
@@ -701,7 +701,7 @@ class ConditionalMiddleware implements HttpMiddleware
         $this->condition = $condition;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Check if the condition is met
         if (($this->condition)($request)) {

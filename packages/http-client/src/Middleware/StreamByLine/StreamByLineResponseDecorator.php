@@ -2,11 +2,10 @@
 
 namespace Cognesy\Http\Middleware\StreamByLine;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
 use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
-use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class StreamByLineResponseDecorator extends BaseResponseDecorator
@@ -14,16 +13,19 @@ class StreamByLineResponseDecorator extends BaseResponseDecorator
     private EventStreamReader $eventStreamReader;
 
     public function __construct(
-        HttpClientRequest $request,
-        HttpClientResponse $response,
-        ?callable $parser,
+        HttpRequest              $request,
+        HttpResponse             $response,
+        ?callable                $parser,
         EventDispatcherInterface $events,
     ) {
         parent::__construct($request, $response);
-        $this->eventStreamReader = new EventStreamReader($parser, $events);
+        $this->eventStreamReader = new EventStreamReader(
+            events: $events,
+            parser: $parser,
+        );
     }
 
-    public function stream(int $chunkSize = 1): Generator
+    public function stream(?int $chunkSize = null): iterable
     {
         $stream = $this->response->stream($chunkSize);
         yield from $this->eventStreamReader->eventsFrom($stream);

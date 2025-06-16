@@ -4,16 +4,17 @@ namespace Cognesy\Config;
 use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Config\Providers\SettingsConfigProvider;
+use Cognesy\Utils\CachedMap;
 use Cognesy\Utils\Deferred;
 use InvalidArgumentException;
 
 class ConfigResolver implements CanProvideConfig
 {
     /** @var Deferred[] */
-    private array $providers = [];
-    private array $cacheGet = [];
-    private array $cacheHas = [];
-    private bool $suppressProviderErrors = true;
+    private array $providers;
+    private CachedMap $getCache;
+    private CachedMap $hasCache;
+    private bool $suppressProviderErrors;
 
     private function __construct(
         array $providers = [],
@@ -21,6 +22,8 @@ class ConfigResolver implements CanProvideConfig
     ) {
         $this->providers = array_map(fn($provider) => $this->createDeferred($provider), $providers);
         $this->suppressProviderErrors = $suppressProviderErrors;
+        $this->getCache = new CachedMap(fn(string $path, $default) => $this->resolveGet($path, $default));
+        $this->hasCache = new CachedMap(fn(string $path) => $this->resolveHas($path));
     }
 
     public static function default(): static {
@@ -51,17 +54,11 @@ class ConfigResolver implements CanProvideConfig
     // MAIN API ///////////////////////////////////////////////////////////
 
     public function get(string $path, mixed $default = null): mixed {
-        if (!isset($this->cacheGet[$path])) {
-            $this->cacheGet[$path] = $this->resolveGet($path, $default);
-        }
-        return $this->cacheGet[$path];
+        return $this->getCache->get($path, $default);
     }
 
     public function has(string $path): bool {
-        if (!isset($this->cacheHas[$path])) {
-            $this->cacheHas[$path] = $this->resolveHas($path);
-        }
-        return $this->cacheHas[$path];
+        return $this->hasCache->get($path);
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////

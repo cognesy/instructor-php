@@ -42,6 +42,11 @@ trait HandlesLLMProvider
         return $this;
     }
 
+    public function withHttpClientPreset(string $string) : static {
+        $this->llmProvider->withHttpPreset($string);
+        return $this;
+    }
+
     public function withDriver(CanHandleInference $driver) : static {
         $this->llmProvider->withDriver($driver);
         return $this;

@@ -4,9 +4,9 @@ namespace Cognesy\Http\Middleware\RecordReplay;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
@@ -83,11 +83,11 @@ class RecordReplayMiddleware implements HttpMiddleware
     /**
      * Handle an HTTP request through the middleware
      * 
-     * @param HttpClientRequest $request The request to handle
+     * @param HttpRequest $request The request to handle
      * @param CanHandleHttpRequest $next The next handler in the chain
-     * @return \Cognesy\Http\Contracts\HttpClientResponse The response
+     * @return \Cognesy\Http\Contracts\HttpResponse The response
      */
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         switch ($this->mode) {
             case self::MODE_PASS:

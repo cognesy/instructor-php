@@ -83,7 +83,7 @@ class ResponseModelFactory
     private function fromClassString(string $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromClassString']));
         $class = $requestedModel;
-        $instance = new $class;
+        $instance = $this->makeInstance($class);
         $schema = $this->schemaFactory->schema($class);
         $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         $schemaName = $this->schemaName($requestedModel);
@@ -94,7 +94,7 @@ class ResponseModelFactory
     private function fromJsonSchema(array $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
         $class = $requestedModel['x-php-class'] ?? Structure::class;
-        $instance = new $class;
+        $instance = $this->makeInstance($class);
         $schema = $this->schemaConverter->fromJsonSchema($requestedModel);
         $jsonSchema = $requestedModel;
         $schemaName = $this->schemaName($requestedModel);
@@ -120,7 +120,7 @@ class ResponseModelFactory
             $instance = $requestedModel;
         } else {
             $class = $requestedModel;
-            $instance = new $class;
+            $instance = $this->makeInstance($class);
         }
         $jsonSchema = $instance->toJsonSchema();
         $schema = $this->schemaConverter->fromJsonSchema($jsonSchema);
@@ -136,7 +136,7 @@ class ResponseModelFactory
             $instance = $requestedModel;
         } else {
             $class = $requestedModel;
-            $instance = new $class;
+            $instance = $this->makeInstance($class);
         }
         $schema = $instance->toSchema();
         $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
@@ -149,7 +149,7 @@ class ResponseModelFactory
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromSchema']));
         $schema = $requestedModel;
         $class = $schema->typeDetails->class;
-        $instance = new $class;
+        $instance = $this->makeInstance($class);
         $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
         $schemaName = $this->schemaName($requestedModel);
         $schemaDescription = $this->schemaDescription($requestedModel);
@@ -174,7 +174,7 @@ class ResponseModelFactory
             $instance = $requestedModel;
         } else {
             $class = $requestedModel;
-            $instance = new $class;
+            $instance = $this->makeInstance($class);
         }
         $schema = $instance->toOutputSchema();
         $jsonSchema = (new SchemaToJsonSchema)->toArray($schema, $this->toolCallBuilder->onObjectRef(...));
@@ -209,6 +209,18 @@ class ResponseModelFactory
             default => '',
         };
         return $resolved ?: $this->config->schemaDescription() ?: '';
+    }
+
+    private function makeInstance(string $class) : object {
+        if (!class_exists($class)) {
+            throw new InvalidArgumentException("Class $class does not exist.");
+        }
+        $reflection = new \ReflectionClass($class);
+        $instance = $reflection->newInstanceWithoutConstructor();
+        if (!is_object($instance)) {
+            throw new InvalidArgumentException("Class $class does not instantiate an object.");
+        }
+        return $instance;
     }
 
     private function makeResponseModel(

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Embeddings\Drivers;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
@@ -21,7 +21,7 @@ class BaseEmbedDriver implements CanHandleVectorization
     protected EmbedRequestAdapter $requestAdapter;
     protected EmbedResponseAdapter $responseAdapter;
 
-    public function handle(EmbeddingsRequest $request): HttpClientResponse {
+    public function handle(EmbeddingsRequest $request): HttpResponse {
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
         return $this->httpClient->withRequest($clientRequest)->get();
     }

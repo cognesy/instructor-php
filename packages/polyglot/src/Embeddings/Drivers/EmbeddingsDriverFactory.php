@@ -62,8 +62,7 @@ class EmbeddingsDriverFactory
     protected function getBundledDriver(string $type) : ?callable {
         return match ($type) {
             'azure' => fn($config, $httpClient, $events) => new AzureOpenAIDriver($config, $httpClient, $events),
-            'cohere1' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
-            'cohere2' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
+            'cohere' => fn($config, $httpClient, $events) => new CohereDriver($config, $httpClient, $events),
             'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),
             'mistral' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),
             'openai' => fn($config, $httpClient, $events) => new OpenAIDriver($config, $httpClient, $events),

@@ -2,11 +2,10 @@
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
@@ -25,18 +24,18 @@ class GuzzleDriver implements CanHandleHttpRequest
 
     public function __construct(
         HttpClientConfig $config,
+        EventDispatcherInterface $events,
         ?object $clientInstance = null,
-        ?EventDispatcherInterface $events = null,
     ) {
         $this->config = $config;
-        $this->events = $events ?? new EventDispatcher();
+        $this->events = $events;
         if ($clientInstance && !($clientInstance instanceof ClientInterface)) {
             throw new \InvalidArgumentException('Client instance of GuzzleDriver must be of type GuzzleHttp\ClientInterface');
         }
         $this->client = $clientInstance ?? new Client();
     }
 
-    public function handle(HttpClientRequest $request) : HttpClientResponse {
+    public function handle(HttpRequest $request) : HttpResponse {
         $url = $request->url();
         $headers = $request->headers();
         $body = $request->body()->toArray();
@@ -92,7 +91,9 @@ class GuzzleDriver implements CanHandleHttpRequest
         return new PsrHttpResponse(
             response: $response,
             stream: $response->getBody(),
+            events: $this->events,
             isStreamed: $streaming,
+            streamChunkSize: $this->config->streamChunkSize,
         );
     }
 }

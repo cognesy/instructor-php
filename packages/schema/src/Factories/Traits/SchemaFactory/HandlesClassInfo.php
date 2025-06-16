@@ -6,15 +6,9 @@ use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Utils\ClassInfo;
 use Cognesy\Schema\Utils\PropertyInfo;
-use Exception;
 
 trait HandlesClassInfo
 {
-    /**
-     * @param \Cognesy\Schema\Utils\ClassInfo $classInfo
-     * @return \Cognesy\Schema\Data\Schema\ObjectSchema
-     * @throws Exception
-     */
     public function fromClassInfo(ClassInfo $classInfo) : ObjectSchema {
         return new ObjectSchema(
             $this->typeDetailsFactory->fromTypeName($classInfo->getClass()),
@@ -25,13 +19,9 @@ trait HandlesClassInfo
         );
     }
 
-    /**
-     * @param \Cognesy\Schema\Schema\Utils\\Cognesy\Schema\Utils\PropertyInfo $propertyInfo
-     * @return \Cognesy\Schema\Schema\Data\Schema\Schema
-     */
     public function fromPropertyInfo(PropertyInfo $propertyInfo) : Schema {
         return $this->makePropertySchema(
-            $this->typeDetailsFactory->fromPropertyInfo($propertyInfo->getType()),
+            $this->typeDetailsFactory->fromTypeInfo($propertyInfo->getType()),
             $propertyInfo->getName(),
             $propertyInfo->getDescription()
         );
@@ -40,14 +30,13 @@ trait HandlesClassInfo
     /**
      * Gets all the property schemas of a class
      *
-     * @param \Cognesy\Schema\Utils\ClassInfo $classInfo
      * @return \Cognesy\Schema\Data\Schema\Schema[]
      */
     protected function getPropertySchemas(ClassInfo $classInfo) : array {
         $properties = $classInfo->getProperties();
         $propertySchemas = [];
         foreach ($properties as $propertyName => $propertyInfo) {
-            if (!$propertyInfo->isPublic()) {
+            if (!$propertyInfo->isDeserializable()) {
                 continue;
             }
             $propertySchemas[$propertyName] = $this->fromPropertyMap($propertyInfo);
@@ -57,9 +46,6 @@ trait HandlesClassInfo
 
     /**
      * Finds or creates the schema for a property of a class
-     *
-     * @param string $class
-     * @param string $property
      */
     protected function fromPropertyMap(PropertyInfo $propertyInfo) : Schema {
         // if this property is not yet registered - generate it, register and return

@@ -67,7 +67,7 @@ it('throws exception for non-nullable values', function () {
 
 it('throws exception on wrong data type', function () {
     $deserializer = new SymfonyDeserializer();
-    $invalidJsonData = '{"name": "Jason", "age": "28"}';
+    $invalidJsonData = '{"name": "Jason", "age": "twenty-eight"}'; // age should be an integer
     $class = Person::class;
     $this->expectException(DeserializationException::class);
     $deserializer->fromJson($invalidJsonData, $class);

@@ -11,7 +11,6 @@ use Cognesy\Polyglot\Inference\Drivers\A21\A21Driver;
 use Cognesy\Polyglot\Inference\Drivers\Anthropic\AnthropicDriver;
 use Cognesy\Polyglot\Inference\Drivers\Azure\AzureDriver;
 use Cognesy\Polyglot\Inference\Drivers\Cerebras\CerebrasDriver;
-use Cognesy\Polyglot\Inference\Drivers\CohereV1\CohereV1Driver;
 use Cognesy\Polyglot\Inference\Drivers\CohereV2\CohereV2Driver;
 use Cognesy\Polyglot\Inference\Drivers\Deepseek\DeepseekDriver;
 use Cognesy\Polyglot\Inference\Drivers\Fireworks\FireworksDriver;
@@ -110,8 +109,7 @@ class InferenceDriverFactory
             'anthropic' => fn($config, $httpClient, $events) => new AnthropicDriver($config, $httpClient, $events),
             'azure' => fn($config, $httpClient, $events) => new AzureDriver($config, $httpClient, $events),
             'cerebras' => fn($config, $httpClient, $events) => new CerebrasDriver($config, $httpClient, $events),
-            'cohere1' => fn($config, $httpClient, $events) => new CohereV1Driver($config, $httpClient, $events),
-            'cohere2' => fn($config, $httpClient, $events) => new CohereV2Driver($config, $httpClient, $events),
+            'cohere' => fn($config, $httpClient, $events) => new CohereV2Driver($config, $httpClient, $events),
             'deepseek' => fn($config, $httpClient, $events) => new DeepseekDriver($config, $httpClient, $events),
             'fireworks' => fn($config, $httpClient, $events) => new FireworksDriver($config, $httpClient, $events),
             'gemini' => fn($config, $httpClient, $events) => new GeminiDriver($config, $httpClient, $events),

@@ -115,5 +115,12 @@ abstract class Result {
             return self::failure($e);
         }
     }
-}
 
+    /**
+     * @return bool True if the result is a success and not null.
+     */
+    public function isNull(): bool {
+        return $this->isSuccess()
+            && ($this->unwrap() === null);
+    }
+}

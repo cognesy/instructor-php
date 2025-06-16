@@ -22,6 +22,7 @@ use Cognesy\Instructor\Extras\Scalar\Scalar;
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Validation\Contracts\CanValidateObject;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class TextElementModel
@@ -60,11 +61,10 @@ $transformedModel = (new StructuredOutput)
     ->withInput($sourceModel)
     ->withResponseClass(get_class($sourceModel))
     ->withPrompt('Translate all text fields to German. Keep HTML tags unchanged. Return result in JSON format: <|json_schema|>')
-    ->withOutputMode(OutputMode::Json)
     ->withMaxRetries(2)
     ->withOptions(['temperature' => 0])
     ->withOutputMode(OutputMode::Json)
-    ->addValidator($validator)
+    ->withValidators($validator, SymfonyValidator::class)
     ->get();
 
 dump($transformedModel);

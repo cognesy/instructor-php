@@ -54,7 +54,7 @@ class ConfigPresets
     // PUBLIC INTERFACE //////////////////////////////////////////////////////
 
     public function get(?string $preset = null): array {
-        $presetName = $preset ?? $this->defaultPresetName();
+        $presetName = $preset ?: $this->defaultPresetName();
         $presetPath = $this->presetPath($presetName);
         $presetConfig = $this->configProvider->get($presetPath);
         if (!is_array($presetConfig)) {

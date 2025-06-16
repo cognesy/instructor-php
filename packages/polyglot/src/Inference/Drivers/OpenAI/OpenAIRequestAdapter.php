@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Contracts\ProviderRequestAdapter;
@@ -15,8 +15,8 @@ class OpenAIRequestAdapter implements ProviderRequestAdapter
         protected CanMapRequestBody $bodyFormat,
     ) {}
 
-    public function toHttpClientRequest(InferenceRequest $request): HttpClientRequest {
-        return new HttpClientRequest(
+    public function toHttpClientRequest(InferenceRequest $request): HttpRequest {
+        return new HttpRequest(
             url: $this->toUrl($request),
             method: 'POST',
             headers: $this->toHeaders($request),

@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use RuntimeException;
 
 /**
@@ -33,11 +33,11 @@ class RequestRecords
     /**
      * Save a recorded HTTP interaction
      * 
-     * @param HttpClientRequest $request The HTTP request
-     * @param HttpClientResponse $response The HTTP response
+     * @param HttpRequest $request The HTTP request
+     * @param HttpResponse $response The HTTP response
      * @return string Path to the saved recording file
      */
-    public function save(HttpClientRequest $request, HttpClientResponse $response): string
+    public function save(HttpRequest $request, HttpResponse $response): string
     {
         // Use the appropriate record type based on whether the request is streamed
         $record = RequestRecord::createAppropriate($request, $response);
@@ -51,10 +51,10 @@ class RequestRecords
     /**
      * Find a recording for a request
      * 
-     * @param \Cognesy\Http\Data\HttpClientRequest $request The HTTP request to find a recording for
+     * @param \Cognesy\Http\Data\HttpRequest $request The HTTP request to find a recording for
      * @return RequestRecord|null The recorded request/response or null if not found
      */
-    public function find(HttpClientRequest $request): ?RequestRecord
+    public function find(HttpRequest $request): ?RequestRecord
     {
         $filename = $this->getFilenameForRequest($request);
         
@@ -78,10 +78,10 @@ class RequestRecords
     /**
      * Delete a recording
      * 
-     * @param \Cognesy\Http\Data\HttpClientRequest $request The HTTP request to delete the recording for
+     * @param \Cognesy\Http\Data\HttpRequest $request The HTTP request to delete the recording for
      * @return bool True if recording was deleted, false otherwise
      */
-    public function delete(HttpClientRequest $request): bool
+    public function delete(HttpRequest $request): bool
     {
         $filename = $this->getFilenameForRequest($request);
         
@@ -165,10 +165,10 @@ class RequestRecords
     /**
      * Generate a unique filename for a request
      * 
-     * @param \Cognesy\Http\Data\HttpClientRequest $request The request
+     * @param \Cognesy\Http\Data\HttpRequest $request The request
      * @return string The filename
      */
-    private function getFilenameForRequest(HttpClientRequest $request): string
+    private function getFilenameForRequest(HttpRequest $request): string
     {
         // Generate a hash based on the request details
         $hash = md5(implode('|', [

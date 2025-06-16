@@ -3,7 +3,7 @@
 namespace Cognesy\Polyglot\Inference;
 
 use Closure;
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
@@ -11,7 +11,6 @@ use Cognesy\Polyglot\Inference\Events\InferenceFailed;
 use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Events\PartialInferenceResponseCreated;
 use Cognesy\Polyglot\Inference\Utils\EventStreamReader;
-use Cognesy\Utils\Json\Json;
 use Generator;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -25,9 +24,10 @@ class InferenceStream
     protected EventDispatcherInterface $events;
     protected EventStreamReader $reader;
     protected Generator $stream;
-    protected HttpClientResponse $httpResponse;
+    protected HttpResponse $httpResponse;
     protected CanHandleInference $driver;
     protected bool $streamReceived = false;
+    /** @var string[] $streamEvents */
     protected array $streamEvents = [];
 
     protected array $inferenceResponses = [];
@@ -36,9 +36,9 @@ class InferenceStream
     protected ?Closure $onPartialResponse = null;
 
     public function __construct(
-        HttpClientResponse        $httpResponse,
-        CanHandleInference        $driver,
-        EventDispatcherInterface  $eventDispatcher,
+        HttpResponse             $httpResponse,
+        CanHandleInference       $driver,
+        EventDispatcherInterface $eventDispatcher,
     ) {
         $this->events = $eventDispatcher;
         $this->driver = $driver;
@@ -46,7 +46,7 @@ class InferenceStream
 
         $this->stream = $this->httpResponse->stream();
         $this->reader = new EventStreamReader(
-            parser: $this->driver->fromStreamData(...),
+            parser: $this->driver->toEventBody(...),
             events: $this->events,
         );
     }
@@ -148,10 +148,10 @@ class InferenceStream
 
         foreach ($this->getEventStream($stream) as $streamEvent) {
             if ($streamEvent === null || $streamEvent === '') {
+                // do not use empty() here! it will incorrectly skip some values ('0' and '0.0')
                 continue;
             }
-            $data = Json::decode($streamEvent, []);
-            $partialResponse = $this->driver->fromStreamResponse($data);
+            $partialResponse = $this->driver->fromStreamResponse($streamEvent);
             if ($partialResponse === null) {
                 continue;
             }

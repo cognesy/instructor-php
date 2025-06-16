@@ -1,14 +1,14 @@
 <?php
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\BufferResponse\BufferResponseMiddleware;
 
 beforeEach(function () {
     $this->middleware = new BufferResponseMiddleware();
     $this->handler = new MockHttpHandler();
-    $this->request = new HttpClientRequest(
+    $this->request = new HttpRequest(
         url: 'http://example.com',
         method: 'GET',
         headers: [],
@@ -54,16 +54,16 @@ test('response stream can be read multiple times', function () {
 
 class MockHttpHandler implements CanHandleHttpRequest
 {
-    private HttpClientResponse $response;
+    private HttpResponse $response;
     private int $responseBodyReadCount = 0;
     private int $streamReadCount = 0;
 
-    public function setResponse(HttpClientResponse $response): void
+    public function setResponse(HttpResponse $response): void
     {
         $this->response = $response;
     }
 
-    public function handle(HttpClientRequest $request): HttpClientResponse
+    public function handle(HttpRequest $request): HttpResponse
     {
         return $this->response;
     }
@@ -89,7 +89,7 @@ class MockHttpHandler implements CanHandleHttpRequest
     }
 }
 
-class MockResponse implements HttpClientResponse
+class MockResponse implements HttpResponse
 {
     private string $body;
     private MockHttpHandler $handler;
@@ -116,7 +116,7 @@ class MockResponse implements HttpClientResponse
         return $this->body;
     }
 
-    public function stream(int $chunkSize = 1): Generator
+    public function stream(?int $chunkSize = null): iterable
     {
         $this->handler->incrementStreamReadCount();
         yield $this->body;
@@ -127,7 +127,7 @@ class MockResponse implements HttpClientResponse
     }
 }
 
-class MockStreamResponse implements HttpClientResponse
+class MockStreamResponse implements HttpResponse
 {
     private array $chunks;
     private MockHttpHandler $handler;
@@ -154,7 +154,7 @@ class MockStreamResponse implements HttpClientResponse
         return implode('', $this->chunks);
     }
 
-    public function stream(int $chunkSize = 1): Generator
+    public function stream(?int $chunkSize = null): iterable
     {
         $this->handler->incrementStreamReadCount();
         foreach ($this->chunks as $chunk) {

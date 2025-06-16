@@ -4,9 +4,9 @@ namespace Cognesy\Http;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -41,7 +41,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
     /**
      * Run all middlewares in sequence, then the final driver.
      */
-    public function handle(HttpClientRequest $request): HttpClientResponse
+    public function handle(HttpRequest $request): HttpResponse
     {
         // We'll build a chain in reverse so the first middleware is called first.
         $chainedHandler = array_reduce(
@@ -67,7 +67,7 @@ class MiddlewareHandler implements CanHandleHttpRequest
                 private CanHandleHttpRequest $next
             ) {}
 
-            public function handle(HttpClientRequest $request): HttpClientResponse {
+            public function handle(HttpRequest $request): HttpResponse {
                 return $this->middleware->handle($request, $this->next);
             }
         };

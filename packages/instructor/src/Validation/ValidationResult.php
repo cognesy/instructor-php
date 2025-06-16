@@ -23,7 +23,10 @@ class ValidationResult
         return new ValidationResult();
     }
 
-    static public function invalid(array $errors, string $message = ''): ValidationResult {
+    static public function invalid(string|array $errors, string $message = ''): ValidationResult {
+        if (is_string($errors)) {
+            $errors = [$errors];
+        }
         if (count($errors) === 0) {
             throw new \InvalidArgumentException('Errors must be provided when creating an invalid ValidationResult');
         }

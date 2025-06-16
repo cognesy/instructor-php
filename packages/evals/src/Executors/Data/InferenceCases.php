@@ -99,8 +99,7 @@ class InferenceCases
         return array_keys($presets);
 //        return [
 //            'azure',
-//            'cohere1',
-//            'cohere2',
+//            'cohere',
 //            'fireworks',
 //            'gemini',
 //            'groq',

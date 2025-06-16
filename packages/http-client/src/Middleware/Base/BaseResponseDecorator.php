@@ -2,9 +2,8 @@
 
 namespace Cognesy\Http\Middleware\Base;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
-use Generator;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Class BaseResponseDecorator
@@ -17,11 +16,11 @@ use Generator;
  * - streamContents() for streaming response chunks
  * - toChunk() to transform each chunk in a streamed response
  */
-class BaseResponseDecorator implements HttpClientResponse
+class BaseResponseDecorator implements HttpResponse
 {
     public function __construct(
-        protected HttpClientRequest $request,
-        protected HttpClientResponse $response,
+        protected HttpRequest  $request,
+        protected HttpResponse $response,
     ) {}
 
     /**
@@ -55,9 +54,9 @@ class BaseResponseDecorator implements HttpClientResponse
      * Read chunks of the stream
      *
      * @param int $chunkSize
-     * @return Generator<string>
+     * @return iterable<string>
      */
-    public function stream(int $chunkSize = 1): Generator {
+    public function stream(?int $chunkSize = null): iterable {
         foreach ($this->response->stream($chunkSize) as $chunk) {
             yield $this->toChunk($chunk);
         }

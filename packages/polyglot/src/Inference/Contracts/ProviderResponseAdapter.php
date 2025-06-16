@@ -2,12 +2,13 @@
 
 namespace Cognesy\Polyglot\Inference\Contracts;
 
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
 interface ProviderResponseAdapter
 {
-    public function fromResponse(array $data): ?InferenceResponse;
-    public function fromStreamResponse(array $data): ?PartialInferenceResponse;
-    public function fromStreamData(string $data): string|bool;
+    public function fromResponse(HttpResponse $response): ?InferenceResponse;
+    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;
+    public function toEventBody(string $data): string|bool;
 }

@@ -4,7 +4,7 @@ namespace Cognesy\Http\Drivers\Symfony;
 
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
@@ -41,7 +41,7 @@ class SymfonyPool implements CanHandleRequestPool
     private function prepareHttpResponses(array $requests): array {
         $httpResponses = [];
         foreach ($requests as $index => $request) {
-            if (!$request instanceof HttpClientRequest) {
+            if (!$request instanceof HttpRequest) {
                 throw new InvalidArgumentException('Invalid request type in pool');
             }
             $httpResponses[$index] = $this->prepareRequest($request);
@@ -49,7 +49,7 @@ class SymfonyPool implements CanHandleRequestPool
         return $httpResponses;
     }
 
-    private function prepareRequest(HttpClientRequest $request) : ResponseInterface {
+    private function prepareRequest(HttpRequest $request) : ResponseInterface {
         try {
             $clientRequest = $this->client->request(
                 method: $request->method(),
@@ -202,7 +202,7 @@ class SymfonyPool implements CanHandleRequestPool
         return count($responses) >= min($totalRequests, $maxConcurrent);
     }
 
-    private function dispatchRequestEvent(HttpClientRequest $request): void {
+    private function dispatchRequestEvent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
             'url' => $url,
             'method' => $method,
@@ -211,7 +211,7 @@ class SymfonyPool implements CanHandleRequestPool
         ]));
     }
 
-    private function handleRequestError(Exception $e, HttpClientRequest $request): void {
+    private function handleRequestError(Exception $e, HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestFailed([
             'url' => $request->url(),
             'method' => $request->method(),

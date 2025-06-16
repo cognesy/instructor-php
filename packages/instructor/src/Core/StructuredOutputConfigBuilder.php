@@ -50,6 +50,7 @@ class StructuredOutputConfigBuilder
         $this->toolDescription = $toolDescription;
         $this->chatStructure = $chatStructure ?? [];
         $this->defaultOutputClass = $defaultOutputClass;
+
         $this->presets = ConfigPresets::using($configProvider)->for(StructuredOutputConfig::group());
     }
 
@@ -159,47 +160,28 @@ class StructuredOutputConfigBuilder
     }
 
     public function create() : StructuredOutputConfig {
-        if ($this->configPreset) {
-            $data = $this->presets->get($this->configPreset);
-            if (!empty($data)) {
-                $this->applyConfig(StructuredOutputConfig::fromArray($data));
-            }
-        }
+        $data = $this->presets->getOrDefault($this->configPreset);
+        $defaults = StructuredOutputConfig::fromArray($data);
 
         if ($this->explicitConfig) {
-            $this->applyConfig($this->explicitConfig);
+            $defaults = $defaults->withOverrides($this->explicitConfig);
         }
 
         $config = new StructuredOutputConfig(
-            outputMode: $this->outputMode ?: OutputMode::Tools,
-            useObjectReferences: $this->useObjectReferences ?? false,
-            maxRetries: $this->maxRetries ?? -1,
-            retryPrompt: $this->retryPrompt ?: '',
-            modePrompts: $this->modePrompts ?: [],
-            schemaName: $this->schemaName ?: '',
-            schemaDescription: $this->schemaDescription ?: '',
-            toolName: $this->toolName ?: '',
-            toolDescription: $this->toolDescription ?: '',
-            chatStructure: $this->chatStructure ?: [],
-            defaultOutputClass: $this->defaultOutputClass ?: '',
+            outputMode: $this->outputMode ?? $defaults->outputMode(),
+            useObjectReferences: $this->useObjectReferences ?? $defaults->useObjectReferences(),
+            maxRetries: $this->maxRetries ?? $defaults->maxRetries(),
+            retryPrompt: $this->retryPrompt ?? $defaults->retryPrompt(),
+            modePrompts: array_merge($defaults->modePrompts(), $this->modePrompts ?? []),
+            schemaName: $this->schemaName ?? $defaults->schemaName(),
+            schemaDescription: $this->schemaDescription ?? $defaults->schemaDescription(),
+            toolName: $this->toolName ?? $defaults->toolName(),
+            toolDescription: $this->toolDescription ?? $defaults->toolDescription(),
+            chatStructure: array_merge($defaults->chatStructure(), $this->chatStructure ?? []),
+            defaultOutputClass: $this->defaultOutputClass ?? $defaults->defaultOutputClass(),
         );
-
         return $config;
     }
 
-    private function applyConfig(StructuredOutputConfig $config) : self {
-        $this->outputMode = $config->outputMode() ?: $this->outputMode;
-        $this->useObjectReferences = $config->useObjectReferences() ?: $this->useObjectReferences;
-        $this->maxRetries = ($config->maxRetries() > 0) ?: $this->maxRetries;
-        $this->retryPrompt = $config->retryPrompt() ?: $this->retryPrompt;
-        $this->modePrompts = $config->modePrompts() ?: $this->modePrompts;
-        $this->schemaName = $config->schemaName() ?: $this->schemaName;
-        $this->schemaDescription = $config->schemaDescription() ?: $this->schemaDescription;
-        $this->toolName = $config->toolName() ?: $this->toolName;
-        $this->toolDescription = $config->toolDescription() ?: $this->toolDescription;
-        $this->chatStructure = $config->chatStructure() ?: $this->chatStructure;
-        $this->defaultOutputClass = $config->defaultOutputClass() ?: $this->defaultOutputClass;
-
-        return $this;
-    }
+    // INTERNAL ///////////////////////////////////////////////////////////////
 }

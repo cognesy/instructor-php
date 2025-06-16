@@ -157,7 +157,7 @@ $openaiResult = $openaiEmbeddings->with($text)->get();
 echo "OpenAI embedding dimensions: " . count($openaiResult->first()?->values()) . "\n";
 
 // Cohere embeddings
-$cohereEmbeddings = new Embeddings('cohere1');
+$cohereEmbeddings = new Embeddings('cohere');
 $cohereResult = $cohereEmbeddings->with($text)->get();
 echo "Cohere embedding dimensions: " . count($cohereResult->first()?->values()) . "\n";
 
@@ -186,7 +186,7 @@ $response = $openaiEmbeddings->with(
 )->get();
 
 // Example with Cohere-specific options
-$cohereEmbeddings = new Embeddings('cohere1');
+$cohereEmbeddings = new Embeddings('cohere');
 $response = $cohereEmbeddings->with(
     input: ["Sample text for embedding"],
     options: [

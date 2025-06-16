@@ -2,18 +2,18 @@
 
 namespace Cognesy\Http\Exceptions;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Exception;
 use Throwable;
 
 class HttpRequestException extends Exception {
-    private HttpClientRequest $request;
+    private HttpRequest $request;
     private ?Throwable $originalException = null;
 
     public function __construct(
-        string $message,
-        HttpClientRequest $request,
-        Throwable $previous = null,
+        string      $message,
+        HttpRequest $request,
+        Throwable   $previous = null,
     ) {
         $this->request = $request;
         $message = sprintf(
@@ -27,7 +27,7 @@ class HttpRequestException extends Exception {
         parent::__construct($message, 0, $previous);
     }
 
-    public function getRequest() : HttpClientRequest {
+    public function getRequest() : HttpRequest {
         return $this->request;
     }
 }

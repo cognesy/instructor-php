@@ -2,6 +2,7 @@
 
 namespace Cognesy\Instructor\Deserialization;
 
+use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;
@@ -9,6 +10,7 @@ use Cognesy\Instructor\Events\Response\CustomResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationAttempt;
 use Cognesy\Instructor\Events\Response\ResponseDeserializationFailed;
 use Cognesy\Instructor\Events\Response\ResponseDeserialized;
+use Cognesy\Template\Template;
 use Cognesy\Utils\Result\Result;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -20,6 +22,7 @@ class ResponseDeserializer
     public function __construct(
         private EventDispatcherInterface $events,
         private array $deserializers,
+        private StructuredOutputConfig $config,
     ) {}
 
     public function deserialize(string $json, ResponseModel $responseModel, ?string $toolName = null) : Result {
@@ -65,12 +68,25 @@ class ResponseDeserializer
             }
         }
 
-        // no deserializer - return an anonymous object
-        return Result::success($this->toAnonymousObject($json));
-        //return Result::failure('No deserializer found for the response');
+        // no deserializer - return an anonymous object or fail
+        return match(true) {
+            $this->config->defaultToAnonymousClass() => Result::success($this->toAnonymousObject($json)),
+            default => Result::failure($this->makeFailureMessage($this->config->deserializationErrorPrompt(), [
+                'json' => $json,
+                'error' => $result->errorMessage(),
+                'jsonSchema' => json_encode($responseModel->toJsonSchema()),
+            ])),
+        };
     }
 
     private function toAnonymousObject(string $json) : object {
         return json_decode($json);
+    }
+
+    private function makeFailureMessage(string $template, array $context) : string {
+        return Template::arrowpipe()
+            ->withTemplateContent($template)
+            ->withValues($context)
+            ->toText();
     }
 }

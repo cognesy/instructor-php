@@ -2,8 +2,8 @@
 
 namespace Cognesy\Http\Middleware\RecordReplay\Events;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Event fired when an HTTP interaction is recorded
@@ -11,8 +11,8 @@ use Cognesy\Http\Data\HttpClientRequest;
 final class HttpInteractionRecorded extends \Cognesy\Events\Event
 {
     public function __construct(
-        public readonly HttpClientRequest $request,
-        public readonly HttpClientResponse $response
+        public readonly HttpRequest  $request,
+        public readonly HttpResponse $response
     ) {
         parent::__construct();
     }

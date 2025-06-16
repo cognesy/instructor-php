@@ -16,7 +16,7 @@ class InferenceRequest
     protected array $responseFormat = [];
 
     protected string $model = '';
-    protected array $options = [];
+    protected array $options = []; // options may contain additional inference parameters like temperature, max tokens, etc.
     protected ?OutputMode $mode = null;
 
     protected ?CachedContext $cachedContext = null;

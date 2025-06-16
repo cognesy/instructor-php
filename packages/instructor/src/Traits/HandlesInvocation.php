@@ -2,8 +2,13 @@
 namespace Cognesy\Instructor\Traits;
 
 use Cognesy\Instructor\Data\StructuredOutputRequest;
+use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
+use Cognesy\Instructor\Deserialization\ResponseDeserializer;
 use Cognesy\Instructor\Events\StructuredOutput\StructuredOutputRequestReceived;
 use Cognesy\Instructor\PendingStructuredOutput;
+use Cognesy\Instructor\Transformation\ResponseTransformer;
+use Cognesy\Instructor\Validation\ResponseValidator;
+use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Messages\Message;
 use Cognesy\Utils\Messages\Messages;
@@ -89,13 +94,30 @@ trait HandlesInvocation
             config: $config,
             events: $this->events,
         );
+
         $this->events->dispatch(new StructuredOutputRequestReceived(['request' => $request->toArray()]));
+
+        $responseDeserializer = new ResponseDeserializer(
+            events: $this->events,
+            deserializers: $this->deserializers ?: [SymfonyDeserializer::class],
+            config: $config,
+        );
+        $responseValidator = new ResponseValidator(
+            events: $this->events,
+            validators: $this->validators ?: [SymfonyValidator::class],
+            config: $config,
+        );
+        $responseTransformer = new ResponseTransformer(
+            events: $this->events,
+            transformers: $this->transformers ?: [],
+            config: $config,
+        );
 
         return new PendingStructuredOutput(
             request: $request,
-            responseDeserializer: $this->responseDeserializer,
-            responseValidator: $this->responseValidator,
-            responseTransformer: $this->responseTransformer,
+            responseDeserializer: $responseDeserializer,
+            responseValidator: $responseValidator,
+            responseTransformer: $responseTransformer,
             llmProvider: $this->llmProvider,
             config: $config,
             events: $this->events,

@@ -4,9 +4,9 @@ namespace Cognesy\Http\Middleware\RecordReplay;
 
 use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpClientResponse;
 use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\RecordReplay\Events\HttpInteractionFallback;
 use Cognesy\Http\Middleware\RecordReplay\Events\HttpInteractionNotFound;
 use Cognesy\Http\Middleware\RecordReplay\Events\HttpInteractionReplayed;
@@ -55,11 +55,11 @@ class ReplayMiddleware implements HttpMiddleware
     /**
      * Handle an HTTP request by replaying a recorded response if available
      * 
-     * @param \Cognesy\Http\Data\HttpClientRequest $request The request to handle
+     * @param \Cognesy\Http\Data\HttpRequest $request The request to handle
      * @param \Cognesy\Http\Contracts\CanHandleHttpRequest $next The next handler in the chain
-     * @return \Cognesy\Http\Contracts\HttpClientResponse The response
+     * @return \Cognesy\Http\Contracts\HttpResponse The response
      */
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Try to find a recorded response
         $record = $this->records->find($request);

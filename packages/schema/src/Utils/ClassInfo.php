@@ -10,7 +10,7 @@ use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type;
 
 class ClassInfo {
     private PropertyInfoExtractor $extractor;
@@ -39,11 +39,6 @@ class ClassInfo {
 
     public function getShortName() : string {
         return $this->reflectionClass->getShortName();
-    }
-
-    /** @return Type[] */
-    public function getTypes(string $property) : array {
-        return $this->getProperty($property)->getTypes();
     }
 
     public function getType(string $property): Type {
@@ -124,12 +119,10 @@ class ClassInfo {
         }
         $required = [];
         foreach ($properties as $property) {
-            if (!$property->isPublic()) {
+            if (!$property->isRequired()) {
                 continue;
             }
-            if (!$property->isNullable()) {
-                $required[] = $property->getName();
-            }
+            $required[] = $property->getName();
         }
         return $required;
     }
@@ -167,6 +160,18 @@ class ClassInfo {
             return false;
         }
         return in_array($interface, class_implements($this->class));
+    }
+
+    // CONSTRUCTOR ///////////////////////////////////////////////////////////////
+
+    public function getConstructorInfo(): ConstructorInfo {
+        return ConstructorInfo::fromReflectionClass($this->reflectionClass);
+    }
+
+    public function hasConstructor(): bool {
+        return $this
+            ->getConstructorInfo()
+            ->hasConstructor();
     }
 
     // FILTERING /////////////////////////////////////////////////////////////////
@@ -249,4 +254,163 @@ class ClassInfo {
             array: $this->filterProperties($filters),
         );
     }
+
+    // INTERNAL HELPER METHODS ///////////////////////////////////////////////////
+
+    // ACCESSORS AND MUTATORS ////////////////////////////////////////////////
+
+//    public function hasPropertyAccessor(string $property) : bool {
+//        $accessorProperties = $this->getAccessorProperties();
+//        return in_array($property, $accessorProperties);
+//    }
+//
+//    public function hasPropertyMutator(string $property) : bool {
+//        $mutatorProperties = $this->getMutatorProperties();
+//        return isset($mutatorProperties[$property]);
+//    }
+//
+//    public function isConstructorProperty(string $property) : bool {
+//        $constructorProperties = $this->getConstructorProperties();
+//        return in_array($property, $constructorProperties);
+//    }
+//
+//    public function getMutatorProperties() : array {
+//        $propertyNames = $this->getPropertyNames();
+//        return $this->getMutatorCandidates($propertyNames);
+//    }
+//
+//    public function getAccessorProperties() : array {
+//        $propertyNames = $this->getPropertyNames();
+//        return $this->getAccessorCandidates($propertyNames);
+//    }
+//
+//    private function getVirtualPropertyCandidates() : array {
+//        $prefixes = [
+//            'get',
+//            'set',
+//            'has',
+//            'is',
+//        ];
+//        $properties = [];
+//        foreach ($this->reflectionClass->getMethods() as $method) {
+//            if (!$method->isPublic() || $method->isStatic()) {
+//                continue; // Skip non-public or static methods
+//            }
+//            foreach ($prefixes as $prefix) {
+//                $propertyName = $this->getMutatorOrAccessorCandidate($method, $prefix);
+//                if ($propertyName === null) {
+//                    continue;
+//                }
+//                // Check if the method is already in the list
+//                $properties[] = $propertyName;
+//            }
+//        }
+//        return array_unique($properties);
+//    }
+//
+//    private function getMutatorOrAccessorCandidate(ReflectionMethod $method, string $prefix) : ?string {
+//        $name = $method->getName();
+//        if (!str_starts_with($name, $prefix)) {
+//            return null;
+//        }
+//        // Check if the method is a getter (no parameters) or a setter (one parameter)
+//        if ($prefix === 'get' && $method->getNumberOfParameters() > 0) {
+//            return null;
+//        }
+//        // if getter but void return type, skip
+//        if ($prefix === 'get' && $method->getReturnType() && $method->getReturnType()->isBuiltin() && $method->getReturnType()->getName() === 'void') {
+//            return null;
+//        }
+//        if ($prefix === 'set' && $method->getNumberOfParameters() !== 1) {
+//            return null;
+//        }
+//        $propertyName = lcfirst(substr($name, strlen($prefix)));
+//        // check if has a method (getter for 'set' or setter for 'get' prefix)
+//        if ($prefix === 'set' && $this->reflectionClass->hasMethod('get' . ucfirst($propertyName))) {
+//            return null;
+//        }
+//        if ($prefix === 'get' && $this->reflectionClass->hasMethod('set' . ucfirst($propertyName))) {
+//            return null;
+//        }
+//        return $propertyName;
+//    }
+//
+//    private function getMutatorCandidates(array $propertyNames) : array {
+//        $patterns = [
+//            fn($name) => 'set' . ucfirst($name),
+//            //fn($name) => 'with' . ucfirst($name),
+//        ];
+//
+//        $mutatorProperties = [];
+//        foreach ($propertyNames as $propertyName) {
+//            foreach ($patterns as $pattern) {
+//                $methodName = $pattern($propertyName);
+//                if (!$this->reflectionClass->hasMethod($methodName)) {
+//                    continue; // Skip if method does not exist
+//                }
+//                $method = $this->reflectionClass->getMethod($methodName);
+//                // Check if the method is public
+//                if (!$method->isPublic()) {
+//                    continue; // Skip non-public methods
+//                }
+//                // Check if the method is a setter (one parameter)
+//                if ($method->getNumberOfParameters() !== 1) {
+//                    continue; // Skip methods with more or less than one parameter
+//                }
+//                $mutatorProperties[] = $propertyName;
+//                break;
+//            }
+//        }
+//        return $mutatorProperties;
+//    }
+//
+//    private function getAccessorCandidates(array $propertyNames) : array {
+//        $patterns = [
+//            //fn($name) => $name,
+//            fn($name) => 'has'. ucfirst($name),
+//            fn($name) => 'get' . ucfirst($name),
+//            fn($name) => 'is' . ucfirst($name),
+//        ];
+//
+//        $accessorProperties = [];
+//        foreach ($this->getProperties() as $propertyName) {
+//            foreach ($patterns as $pattern) {
+//                $methodName = $pattern($propertyName);
+//                if (!$this->reflectionClass->hasMethod($methodName)) {
+//                    continue; // Skip if method does not exist
+//                }
+//                $method = $this->reflectionClass->getMethod($methodName);
+//                // Check if the method is public
+//                if (!$method->isPublic()) {
+//                    continue; // Skip non-public methods
+//                }
+//                // Check if the method is a getter (no parameters)
+//                if ($method->getNumberOfParameters() > 0) {
+//                    continue; // Skip methods with parameters
+//                }
+//                // If we reach here, the method is a valid getter
+//                $accessorProperties[] = $propertyName;
+//                break;
+//            }
+//        }
+//        return $accessorProperties;
+//    }
+
+//    public function getVirtualProperties() : array {
+//        $virtualPropertyNames = $this->getVirtualPropertyCandidates();
+//        $virtualProperties = [];
+//        foreach ($virtualPropertyNames as $propertyName) {
+//            // add to the list if has corresponding private property
+//            if ($this->reflectionClass->hasProperty($propertyName)) {
+//                $virtualProperties[] = $propertyName;
+//            }
+//        }
+//        return $virtualProperties;
+//    }
+//
+//    public function isVirtualProperty(string $property) : bool {
+//        $virtualProperties = $this->getVirtualProperties();
+//        return in_array($property, $virtualProperties);
+//    }
+
 }

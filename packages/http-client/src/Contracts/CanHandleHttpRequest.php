@@ -1,7 +1,7 @@
 <?php
 namespace Cognesy\Http\Contracts;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Interface CanHandleHttp
@@ -13,8 +13,8 @@ interface CanHandleHttpRequest
     /**
      * Handle an HTTP request
      *
-     * @param HttpClientRequest $request
-     * @return HttpClientResponse
+     * @param HttpRequest $request
+     * @return HttpResponse
      */
-    public function handle(HttpClientRequest $request) : HttpClientResponse;
+    public function handle(HttpRequest $request) : HttpResponse;
 }

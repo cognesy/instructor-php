@@ -8,11 +8,6 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Instructor\Core\StructuredOutputConfigBuilder;
 use Cognesy\Instructor\Core\StructuredOutputRequestBuilder;
-use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
-use Cognesy\Instructor\Deserialization\ResponseDeserializer;
-use Cognesy\Instructor\Transformation\ResponseTransformer;
-use Cognesy\Instructor\Validation\ResponseValidator;
-use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\Inference\LLMProvider;
 
 /**
@@ -32,10 +27,6 @@ class StructuredOutput
     use Traits\HandlesPartialUpdates;
     use Traits\HandlesSequenceUpdates;
 
-    private ResponseDeserializer $responseDeserializer;
-    private ResponseValidator $responseValidator;
-    private ResponseTransformer $responseTransformer;
-
     // CONSTRUCTORS ///////////////////////////////////////////////////////////
 
     public function __construct(
@@ -43,14 +34,8 @@ class StructuredOutput
         ?CanProvideConfig         $configProvider = null,
     ) {
         $this->events = EventBusResolver::using($events);
-
-        $this->responseDeserializer = new ResponseDeserializer($this->events, [SymfonyDeserializer::class]);
-        $this->responseValidator = new ResponseValidator($this->events, [SymfonyValidator::class]);
-        $this->responseTransformer = new ResponseTransformer($this->events, []);
-
         $this->configBuilder = new StructuredOutputConfigBuilder(configProvider: $configProvider);
         $this->requestBuilder = new StructuredOutputRequestBuilder();
-
         $this->llmProvider = LLMProvider::new(
             events: $this->events,
             configProvider: $configProvider,

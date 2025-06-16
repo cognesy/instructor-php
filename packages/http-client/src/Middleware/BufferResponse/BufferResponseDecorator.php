@@ -2,10 +2,9 @@
 
 namespace Cognesy\Http\Middleware\BufferResponse;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\Base\BaseResponseDecorator;
-use Generator;
 
 /**
  * Decorates HTTP responses with buffering capabilities
@@ -18,8 +17,8 @@ class BufferResponseDecorator extends BaseResponseDecorator
     private bool $isStreamBuffered = false;
 
     public function __construct(
-        HttpClientRequest $request,
-        HttpClientResponse $response,
+        HttpRequest  $request,
+        HttpResponse $response,
     )
     {
         parent::__construct($request, $response);
@@ -33,7 +32,7 @@ class BufferResponseDecorator extends BaseResponseDecorator
         return $this->bufferedBody;
     }
 
-    public function stream(int $chunkSize = 1): Generator
+    public function stream(?int $chunkSize = null): iterable
     {
         if (!$this->isStreamBuffered) {
             foreach ($this->response->stream($chunkSize) as $chunk) {

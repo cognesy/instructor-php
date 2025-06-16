@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
@@ -22,20 +22,20 @@ abstract class BaseInferenceDriver implements CanHandleInference
     protected ProviderRequestAdapter $requestAdapter;
     protected ProviderResponseAdapter $responseAdapter;
 
-    public function handle(InferenceRequest $request): HttpClientResponse {
+    public function handle(InferenceRequest $request): HttpResponse {
         $clientRequest = $this->requestAdapter->toHttpClientRequest($request);
         return $this->httpClient->withRequest($clientRequest)->get();
     }
 
-    public function fromResponse(array $data): ?InferenceResponse {
-        return $this->responseAdapter->fromResponse($data);
+    public function fromResponse(HttpResponse $response): ?InferenceResponse {
+        return $this->responseAdapter->fromResponse($response);
     }
 
-    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
-        return $this->responseAdapter->fromStreamResponse($data);
+    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
+        return $this->responseAdapter->fromStreamResponse($eventBody);
     }
 
-    public function fromStreamData(string $data): string|bool {
-        return $this->responseAdapter->fromStreamData($data);
+    public function toEventBody(string $data): string|bool {
+        return $this->responseAdapter->toEventBody($data);
     }
 }

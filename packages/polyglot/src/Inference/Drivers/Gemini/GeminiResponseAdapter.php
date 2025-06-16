@@ -2,6 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanMapUsage;
 use Cognesy\Polyglot\Inference\Contracts\ProviderResponseAdapter;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -16,7 +17,9 @@ class GeminiResponseAdapter implements ProviderResponseAdapter
         protected CanMapUsage $usageFormat,
     ) {}
 
-    public function fromResponse(array $data): ?InferenceResponse {
+    public function fromResponse(HttpResponse $response): ?InferenceResponse {
+        $responseBody = $response->body();
+        $data = json_decode($responseBody, true);
         return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['candidates'][0]['finishReason'] ?? '',
@@ -26,7 +29,8 @@ class GeminiResponseAdapter implements ProviderResponseAdapter
         );
     }
 
-    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
+    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
+        $data = json_decode($eventBody, true);
         if (empty($data)) {
             return null;
         }
@@ -41,7 +45,7 @@ class GeminiResponseAdapter implements ProviderResponseAdapter
         );
     }
 
-    public function fromStreamData(string $data): string|bool {
+    public function toEventBody(string $data): string|bool {
         if (!str_starts_with($data, 'data:')) {
             return '';
         }

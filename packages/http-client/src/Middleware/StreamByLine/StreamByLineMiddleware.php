@@ -3,8 +3,8 @@ namespace Cognesy\Http\Middleware\StreamByLine;
 
 use Closure;
 use Cognesy\Events\Dispatchers\EventDispatcher;
-use Cognesy\Http\Contracts\HttpClientResponse;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\Base\BaseMiddleware;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -25,12 +25,12 @@ class StreamByLineMiddleware extends BaseMiddleware
         $this->events = $events ?? new EventDispatcher();
     }
 
-    protected function shouldDecorateResponse(HttpClientRequest $request, HttpClientResponse $response): bool
+    protected function shouldDecorateResponse(HttpRequest $request, HttpResponse $response): bool
     {
         return $request->isStreamed();
     }
 
-    protected function toResponse(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse
+    protected function toResponse(HttpRequest $request, HttpResponse $response): HttpResponse
     {
         return new StreamByLineResponseDecorator($request, $response, $this->parser, $this->events);
     }

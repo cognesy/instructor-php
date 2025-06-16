@@ -2,7 +2,7 @@
 
 namespace Cognesy\Http\Contracts;
 
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 
 /**
  * Interface HttpMiddleware
@@ -18,5 +18,5 @@ interface HttpMiddleware
      *
      * Return a HttpClientResponse.
      */
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse;
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse;
 }

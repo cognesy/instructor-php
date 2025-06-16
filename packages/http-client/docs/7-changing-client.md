@@ -283,14 +283,14 @@ Here's an example of selecting different client configurations based on the task
 <?php
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 function fetchApiData($url, $apiKey) {
     // Use a client with short timeouts for quick API calls
     $client = new HttpClient('guzzle-short-timeout');
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         url: $url,
         method: 'GET',
         headers: [
@@ -313,7 +313,7 @@ function downloadLargeFile($url, $outputPath) {
     // Use a client with long timeouts for downloading large files
     $client = new HttpClient('guzzle-long-timeout');
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         url: $url,
         method: 'GET',
         headers: [],
@@ -344,7 +344,7 @@ function generateAiResponse($prompt) {
     // Use a specialized client for AI API requests
     $client = new HttpClient('http-ollama');
 
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         url: 'https://api.example.com/ai/generate',
         method: 'POST',
         headers: [

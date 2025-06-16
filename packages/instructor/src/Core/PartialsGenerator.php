@@ -191,7 +191,7 @@ class PartialsGenerator implements CanGeneratePartials
 
         // we only want to send partial response if it's different from the previous one
         $currentHash = hash('xxh3', Json::encode($partialObject));
-        if ($this->previousHash == $currentHash) {
+        if ($this->previousHash === $currentHash) {
             return Result::failure('No changes detected');
         }
         $this->events->dispatch(new PartialResponseGenerated($partialObject));

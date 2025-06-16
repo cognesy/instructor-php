@@ -1,9 +1,9 @@
 <?php
 
-use Cognesy\Schema\Tests\Examples\Schema\SimpleClass;
 use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Symfony\Component\PropertyInfo\Type;
+use Cognesy\Schema\Tests\Examples\Schema\SimpleClass;
+use Symfony\Component\TypeInfo\Type;
 
 test('creates TypeDetails from type string', function () {
     $factory = new TypeDetailsFactory();
@@ -17,12 +17,13 @@ test('creates TypeDetails from type string', function () {
     $factory->fromTypeName('object');
 });
 
-test('creates TypeDetails from PropertyInfo', function () {
+test('creates TypeDetails from TypeInfo', function () {
     $factory = new TypeDetailsFactory();
     // Assuming you have a PropertyInfo instance $propertyInfo
 
-    $propertyInfo = new Type(TypeDetails::PHP_STRING, false, null, false, null, null);
-    $typeDetails = $factory->fromPropertyInfo($propertyInfo);
+    //$typeInfo = new DeprecatedType(TypeDetails::PHP_STRING, false, null, false, null, null);
+    $typeInfo = Type::string();
+    $typeDetails = $factory->fromTypeInfo($typeInfo);
     $this->assertInstanceOf(TypeDetails::class, $typeDetails);
     $this->assertSame(TypeDetails::PHP_STRING, $typeDetails->type);
 });

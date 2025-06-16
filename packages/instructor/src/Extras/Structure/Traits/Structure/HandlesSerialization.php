@@ -7,6 +7,8 @@ use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Schema\Data\TypeDetails;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
+use JsonSerializable;
 
 trait HandlesSerialization
 {
@@ -40,6 +42,9 @@ trait HandlesSerialization
         return match(true) {
             (method_exists($object, 'toArray')) => $object->toArray(),
             ($object instanceof Structure) => $object->toArray(),
+            //($object instanceof CanDeserializeSelf) => $object->toArray(),
+            ($object instanceof JsonSerializable) => $object->jsonSerialize(),
+            ($object instanceof DateTimeInterface) => $object->format('Y-m-d H:i:s'),
             ($object instanceof DateTime) => $object->format('Y-m-d H:i:s'),
             ($object instanceof DateTimeImmutable) => $object->format('Y-m-d H:i:s'),
             (is_object($object) && ($object instanceof BackedEnum)) => $object->value,

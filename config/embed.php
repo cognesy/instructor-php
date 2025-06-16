@@ -20,17 +20,8 @@ return [
             'defaultDimensions' => 1536,
             'maxInputs' => 16,
         ],
-        'cohere1' => [
-            'driver' => 'cohere2',
-            'apiUrl' => 'https://api.cohere.ai/v2',
-            'apiKey' => Env::get('COHERE_API_KEY', ''),
-            'endpoint' => '/embed',
-            'defaultModel' => 'embed-multilingual-v3.0',
-            'defaultDimensions' => 1024,
-            'maxInputs' => 96,
-        ],
-        'cohere2' => [
-            'driver' => 'cohere2',
+        'cohere' => [
+            'driver' => 'cohere',
             'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',

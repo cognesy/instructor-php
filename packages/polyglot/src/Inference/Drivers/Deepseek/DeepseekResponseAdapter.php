@@ -2,13 +2,16 @@
 
 namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 
+use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIResponseAdapter;
 
 class DeepseekResponseAdapter extends OpenAIResponseAdapter
 {
-    public function fromResponse(array $data): ?InferenceResponse {
+    public function fromResponse(HttpResponse $response): ?InferenceResponse {
+        $responseBody = $response->body();
+        $data = json_decode($responseBody, true);
         return new InferenceResponse(
             content: $this->makeContent($data),
             finishReason: $data['choices'][0]['finish_reason'] ?? '',
@@ -19,7 +22,8 @@ class DeepseekResponseAdapter extends OpenAIResponseAdapter
         );
     }
 
-    public function fromStreamResponse(array $data): ?PartialInferenceResponse {
+    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse {
+        $data = json_decode($eventBody, true);
         if ($data === null || empty($data)) {
             return null;
         }

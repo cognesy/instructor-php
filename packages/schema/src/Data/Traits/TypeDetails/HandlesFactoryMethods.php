@@ -4,7 +4,6 @@ namespace Cognesy\Schema\Data\Traits\TypeDetails;
 
 use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Symfony\Component\PropertyInfo\Type;
 
 trait HandlesFactoryMethods
 {
@@ -20,10 +19,6 @@ trait HandlesFactoryMethods
     //    $phpType = TypeDetails::toPhpType($jsonType);
     //    return (new TypeDetailsFactory)->fromTypeName($phpType);
     //}
-
-    static public function fromPropertyInfoType(Type $type) : TypeDetails {
-        return (new TypeDetailsFactory)->fromPropertyInfo($type);
-    }
 
     static public function object(string $class) : TypeDetails {
         return (new TypeDetailsFactory)->objectType($class);

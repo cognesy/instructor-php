@@ -6,13 +6,13 @@ use Cognesy\Schema\Tests\Examples\ClassInfo\StringEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
 use Cognesy\Schema\Utils\ClassInfo;
 use Cognesy\Schema\Utils\PropertyInfo;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type;
 
-it('can get property types', function () {
+it('can get property type', function () {
     // Assuming TestClass has properties with defined types
-    $types = (new ClassInfo(TestClassA::class))->getTypes('testProperty');
-    expect($types)->toBeArray();
-    expect($types[0])->toBeInstanceOf(Type::class);
+    $type = (new ClassInfo(TestClassA::class))->getType('testProperty');
+    expect($type)->toBeInstanceOf(Type::class);
+    //expect($type->getName())->toEqual('string');
 });
 
 //it('throws exception for undefined property type', function () {

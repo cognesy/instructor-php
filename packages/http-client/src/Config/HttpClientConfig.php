@@ -14,9 +14,9 @@ final class HttpClientConfig
      * Constructor for HttpClientConfig.
      *
      * @param string $driver The driver name of HTTP client.
-     * @param int $connectTimeout Connection timeout in seconds.
-     * @param int $requestTimeout Request timeout in seconds.
-     * @param int $idleTimeout Idle timeout in seconds.
+     * @param int $connectTimeout Max time to connect in seconds.
+     * @param int $requestTimeout Max total request execution time in seconds.
+     * @param int $idleTimeout Idle timeout in seconds (if supported by the driver).
      * @param int $maxConcurrent Maximum number of concurrent connections.
      * @param int $poolTimeout Pool timeout in seconds.
      * @param bool $failOnError Whether to fail on error.
@@ -26,6 +26,7 @@ final class HttpClientConfig
         public readonly int    $connectTimeout = 3,
         public readonly int    $requestTimeout = 30,
         public readonly int    $idleTimeout = -1,
+        public readonly int    $streamChunkSize = 256,
         // Concurrency-related properties
         public readonly int    $maxConcurrent = 5,
         public readonly int    $poolTimeout = 120,
@@ -48,6 +49,7 @@ final class HttpClientConfig
             connectTimeout: $config['connectTimeout'] ?? 3,
             requestTimeout: $config['requestTimeout'] ?? 30,
             idleTimeout: $config['idleTimeout'] ?? -1,
+            streamChunkSize: $config['streamChunkSize'] ?? 256,
             maxConcurrent: $config['maxConcurrent'] ?? 5,
             poolTimeout: $config['poolTimeout'] ?? 120,
             failOnError: $config['failOnError'] ?? false,
@@ -60,6 +62,7 @@ final class HttpClientConfig
             'connectTimeout' => $this->connectTimeout,
             'requestTimeout' => $this->requestTimeout,
             'idleTimeout' => $this->idleTimeout,
+            'streamChunkSize' => $this->streamChunkSize,
             'maxConcurrent' => $this->maxConcurrent,
             'poolTimeout' => $this->poolTimeout,
             'failOnError' => $this->failOnError,

@@ -302,7 +302,7 @@ Create a custom logging middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\Log\LoggerInterface;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\Log\LoggerInterface;
 
 class DetailedLoggingMiddleware extends BaseMiddleware
 {
@@ -314,7 +314,7 @@ class DetailedLoggingMiddleware extends BaseMiddleware
         $this->logger = $logger;
     }
 
-    protected function beforeRequest(HttpClientRequest $request): void
+    protected function beforeRequest(HttpRequest $request): void
     {
         $requestId = bin2hex(random_bytes(8));
         $this->startTimes[$requestId] = microtime(true);
@@ -342,9 +342,9 @@ class DetailedLoggingMiddleware extends BaseMiddleware
     }
 
     protected function afterRequest(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         $requestId = $request->{__CLASS__} ?? 'unknown';
         $duration = 0;
 
@@ -391,7 +391,7 @@ For production environments, consider implementing distributed tracing with syst
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use OpenTelemetry\API\Trace\SpanKind;use OpenTelemetry\API\Trace\TracerInterface;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use OpenTelemetry\API\Trace\SpanKind;use OpenTelemetry\API\Trace\TracerInterface;
 
 class OpenTelemetryMiddleware extends BaseMiddleware
 {
@@ -402,7 +402,7 @@ class OpenTelemetryMiddleware extends BaseMiddleware
         $this->tracer = $tracer;
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         $url = parse_url($request->url());
         $path = $url['path'] ?? '/';
@@ -678,7 +678,7 @@ Here's a comprehensive example that combines multiple error handling strategies:
 namespace YourNamespace;
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -706,7 +706,7 @@ class ApiService {
             $url .= '?' . http_build_query($params);
         }
 
-        $request = new HttpClientRequest(
+        $request = new HttpRequest(
             url: $url,
             method: 'GET',
             headers: [
@@ -1231,7 +1231,7 @@ Create a custom logging middleware:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\Log\LoggerInterface;
+use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\Log\LoggerInterface;
 
 class DetailedLoggingMiddleware extends BaseMiddleware
 {
@@ -1243,7 +1243,7 @@ class DetailedLoggingMiddleware extends BaseMiddleware
         $this->logger = $logger;
     }
 
-    protected function beforeRequest(HttpClientRequest $request): void
+    protected function beforeRequest(HttpRequest $request): void
     {
         $requestId = bin2hex(random_bytes(8));
         $this->startTimes[$requestId] = microtime(true);
@@ -1271,9 +1271,9 @@ class DetailedLoggingMiddleware extends BaseMiddleware
     }
 
     protected function afterRequest(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         $requestId = $request->{__CLASS__} ?? 'unknown';
         $duration = 0;
 

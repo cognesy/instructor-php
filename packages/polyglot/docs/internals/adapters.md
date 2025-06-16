@@ -97,9 +97,9 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter {
         protected CanMapUsage $usageFormat
     ) { ... }
 
-    public function fromResponse(array $data): ?InferenceResponse { ... }
-    public function fromStreamResponse(array $data): ?PartialInferenceResponse { ... }
-    public function fromStreamData(string $data): string|bool { ... }
+    public function fromResponse(HttpClientResponse $response): ?InferenceResponse { ... }
+    public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
+    public function toEventBody(string $data): string|bool { ... }
 
     protected function makeToolCalls(array $data): ToolCalls { ... }
     protected function makeContent(array $data): string { ... }
