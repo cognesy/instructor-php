@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-schema-v6",
-  "version": "1.0-rc1",
+  "version": "1.0-rc4",
   "description": "Object to schema conversion for Instructor library, should be used with Instructor - fallback version for Symfony 6.4+",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -23,12 +23,11 @@
     "psr-4": {
       "Cognesy\\Schema\\Tests\\": "tests/"
     },
-    "files": [
-    ]
+    "files": []
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-utils": "^1.0-rc1",
+    "cognesy/instructor-utils": "^1.0",
     "symfony/property-info": "^6.4"
   },
   "require-dev": {
