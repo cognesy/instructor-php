@@ -70,10 +70,10 @@ dataset('schema_converter_json', [[[
             'description' => 'Collection property',
             'type' => 'array',
             'items' => [
-                'x-php-class' => 'Cognesy\Schema\Extras\Scalar\Scalar',
+                'x-php-class' => 'Cognesy\Schema\Tests\Examples\SchemaConverter\Simple',
                 'type' => 'object',
                 'properties' => [
-                    'nestedStringProperty' => [
+                    'stringProperty' => [
                         'type' => 'string',
                     ],
                 ],
@@ -204,7 +204,7 @@ it('creates Schema object from JSON Schema array - collection props', function (
     expect($schema->properties['collectionProperty']->description)->toBe('Collection property');
     expect($schema->properties['collectionProperty']->typeDetails->type)->toBe('collection');
     expect($schema->properties['collectionProperty']->nestedItemSchema->typeDetails->type)->toBe('object');
-    expect($schema->properties['collectionProperty']->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Extras\Scalar\Scalar');
+    expect($schema->properties['collectionProperty']->nestedItemSchema->typeDetails->class)->toBe('Cognesy\Schema\Tests\Examples\SchemaConverter\Simple');
     expect($schema->properties['collectionObjectProperty']->name)->toBe('collectionObjectProperty');
     expect($schema->properties['collectionObjectProperty']->description)->toBe('Collection of objects property');
     expect($schema->properties['collectionObjectProperty']->typeDetails->type)->toBe('collection');

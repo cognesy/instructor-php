@@ -15,15 +15,12 @@ use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
-//use Symfony\Component\PropertyInfo\Type;
-
 class PropertyInfo
 {
     private ReflectionProperty $reflection;
     private string $class;
     private string $propertyName;
     private PropertyInfoExtractor $extractor;
-    private array $types;
     private ?Type $type = null;
     private ReflectionClass $parentClass;
     private ClassInfo $classInfo;
@@ -57,14 +54,6 @@ class PropertyInfo
             $this->type = $this->makeTypes();
         }
         return $this->type;
-//        $propertyTypes = $this->getTypes();
-//        if (!count($propertyTypes)) {
-//            throw new \Exception("No type found for property: $this->class::$this->propertyName");
-//        }
-//        if (count($propertyTypes) > 1) {
-//            throw new \Exception("Unsupported union type found for property: $this->class::$this->propertyName");
-//        }
-//        return $propertyTypes[0];
     }
 
     public function getTypeName() : string {
@@ -178,11 +167,12 @@ class PropertyInfo
         return $this->reflection->hasDefaultValue();
     }
 
-    public function matchesConstructorParam() : bool {
-        return in_array($this->propertyName, $this->constructorParams(), true);
-    }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////////
+
+    private function matchesConstructorParam() : bool {
+        return in_array($this->propertyName, $this->constructorParams(), true);
+    }
 
     private function constructorParams() : array {
         if (!isset($this->constructorParams)) {
@@ -232,10 +222,8 @@ class PropertyInfo
     }
 
     protected function makeTypes() : Type {
-        //$types = $this->extractor()->getTypes($this->class, $this->propertyName);
         $type = $this->extractor()->getType($this->class, $this->propertyName);
         if (is_null($type)) {
-            //$types = [new Type(Type::BUILTIN_TYPE_STRING)];
             $type = Type::mixed();
         }
         return $type;

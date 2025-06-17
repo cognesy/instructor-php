@@ -21,7 +21,7 @@ test('creates TypeDetails from TypeInfo', function () {
     $factory = new TypeDetailsFactory();
     // Assuming you have a PropertyInfo instance $propertyInfo
 
-    //$typeInfo = new DeprecatedType(TypeDetails::PHP_STRING, false, null, false, null, null);
+    //$typeInfo = new Type(TypeDetails::PHP_STRING, false, null, false, null, null);
     $typeInfo = Type::string();
     $typeDetails = $factory->fromTypeInfo($typeInfo);
     $this->assertInstanceOf(TypeDetails::class, $typeDetails);

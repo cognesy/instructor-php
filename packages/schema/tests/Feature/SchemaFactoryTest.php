@@ -12,7 +12,14 @@ it('creates a schema from a class name', function () {
 
     expect($schema)->toBeInstanceOf(ObjectSchema::class);
     expect($schema->getPropertyNames())->toBeArray();
-    expect($schema->getPropertyNames())->toBe(['testProperty', 'attributeProperty', 'nonNullableProperty', 'publicProperty', 'nullableProperty', 'readOnlyProperty']);
+    expect($schema->getPropertyNames())->toBe([
+        'mixedProperty',
+        'attributeMixedProperty',
+        'nonNullableIntProperty',
+        'explicitMixedProperty',
+        'nullableIntProperty',
+        'readOnlyStringProperty'
+    ]);
 });
 
 it('creates a schema from a class name with object references', function () {
@@ -26,33 +33,33 @@ it('creates a schema from a class name with object references', function () {
         'x-title' => 'TestClassA',
         'description' => 'Class description',
         'properties' => [
-            'testProperty' => [
-                'type' => 'string',
+            'mixedProperty' => [
+                //'type' => ['null', 'boolean', 'object', 'array', 'number', 'string'],
                 'description' => 'Property description'
             ],
-            'attributeProperty' => [
-                'type' => 'string',
+            'attributeMixedProperty' => [
+                //'type' => 'string',
                 'description' => 'Attribute description'
             ],
-            'nonNullableProperty' => [
+            'nonNullableIntProperty' => [
                 'type' => 'integer'
             ],
-            'publicProperty' => [
-                'type' => 'string'
+            'explicitMixedProperty' => [
+                //'type' => 'string'
             ],
-            'nullableProperty' => [
+            'nullableIntProperty' => [
                 'type' => 'integer'
             ],
-            'readOnlyProperty' => [
+            'readOnlyStringProperty' => [
                 'type' => 'string'
             ],
         ],
         'required' => [
-            'testProperty',
-            'attributeProperty',
-            'nonNullableProperty',
-            'publicProperty',
-            'readOnlyProperty',
+            //'mixedProperty',
+            //'attributeMixedProperty',
+            'nonNullableIntProperty',
+            //'explicitMixedProperty',
+            'readOnlyStringProperty',
         ],
         'x-php-class' => 'Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA',
         'additionalProperties' => false,

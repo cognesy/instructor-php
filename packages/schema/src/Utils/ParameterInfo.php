@@ -11,7 +11,8 @@ use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
-use Symfony\Component\PropertyInfo\Type;
+use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 class ParameterInfo
 {
@@ -22,7 +23,7 @@ class ParameterInfo
     private array $types;
 
     public function __construct(
-        ReflectionParameter                 $paramReflection,
+        ReflectionParameter $paramReflection,
         ReflectionFunction|ReflectionMethod $functionReflection,
     ) {
         $this->reflection = $paramReflection;
@@ -30,8 +31,10 @@ class ParameterInfo
         $this->name = $paramReflection->getName();
     }
 
-    public static function fromName(ReflectionFunction|ReflectionMethod $function, string $parameterName): self
-    {
+    public static function fromName(
+        ReflectionFunction|ReflectionMethod $function,
+        string $parameterName
+    ): self {
         $parameters = $function->getParameters();
         foreach ($parameters as $parameter) {
             if ($parameter->getName() === $parameterName) {
@@ -41,68 +44,56 @@ class ParameterInfo
         throw new \Exception("Parameter `$parameterName` not found in function/method.");
     }
 
-    public function getName(): string
-    {
+    public function getName(): string {
         return $this->name;
     }
 
-    public function getPosition(): int
-    {
+    public function getPosition(): int {
         return $this->reflection->getPosition();
     }
 
-    public function isNullable(): bool
-    {
+    public function isNullable(): bool {
         return $this->reflection->allowsNull();
     }
 
-    public function isOptional(): bool
-    {
+    public function isOptional(): bool {
         return $this->reflection->isOptional();
     }
 
-    public function isVariadic(): bool
-    {
+    public function isVariadic(): bool {
         return $this->reflection->isVariadic();
     }
 
-    public function isPassedByReference(): bool
-    {
+    public function isPassedByReference(): bool {
         return $this->reflection->isPassedByReference();
     }
 
-    public function hasDefaultValue(): bool
-    {
+    public function hasDefaultValue(): bool {
         return $this->reflection->isDefaultValueAvailable();
     }
 
-    public function getDefaultValue(): mixed
-    {
+    public function getDefaultValue(): mixed {
         if (!$this->hasDefaultValue()) {
             throw new \Exception("Parameter `{$this->name}` has no default value.");
         }
         return $this->reflection->getDefaultValue();
     }
 
-    public function isDefaultValueConstant(): bool
-    {
+    public function isDefaultValueConstant(): bool {
         return $this->reflection->isDefaultValueConstant();
     }
 
-    public function getDefaultValueConstantName(): ?string
-    {
+    public function getDefaultValueConstantName(): ?string {
         return $this->reflection->isDefaultValueConstant()
             ? $this->reflection->getDefaultValueConstantName()
             : null;
     }
 
-    public function hasType(): bool
-    {
+    public function hasType(): bool {
         return $this->reflection->hasType();
     }
 
-    public function getTypeName(): string
-    {
+    public function getTypeName(): string {
         if (!$this->hasType()) {
             return 'mixed';
         }
@@ -126,16 +117,14 @@ class ParameterInfo
         return 'mixed';
     }
 
-    public function getTypes(): array
-    {
+    public function getTypes(): array {
         if (!isset($this->types)) {
             $this->types = $this->makeTypes();
         }
         return $this->types;
     }
 
-    public function getType(): Type
-    {
+    public function getType(): Type {
         $parameterTypes = $this->getTypes();
         if (!count($parameterTypes)) {
             throw new \Exception("No type found for parameter: {$this->name}");
@@ -146,22 +135,21 @@ class ParameterInfo
         return $parameterTypes[0];
     }
 
-    public function getBuiltinTypeName(): string
-    {
+    public function getBuiltinTypeName(): string {
         try {
             $type = $this->getType();
-            $builtInType = $type->getBuiltinType();
-            return match($builtInType) {
-                Type::BUILTIN_TYPE_INT => 'int',
-                Type::BUILTIN_TYPE_FLOAT => 'float',
-                Type::BUILTIN_TYPE_STRING => 'string',
-                Type::BUILTIN_TYPE_BOOL => 'bool',
-                Type::BUILTIN_TYPE_ARRAY => $this->getCollectionOrArrayType($type),
-                Type::BUILTIN_TYPE_OBJECT => $type->getClassName() ?? 'object',
-                Type::BUILTIN_TYPE_CALLABLE => 'callable',
-                Type::BUILTIN_TYPE_ITERABLE => 'iterable',
-                Type::BUILTIN_TYPE_RESOURCE => 'resource',
-                Type::BUILTIN_TYPE_NULL => 'null',
+            return match(true) {
+                $type->isIdentifiedBy(TypeIdentifier::INT) => 'int',
+                $type->isIdentifiedBy(TypeIdentifier::FLOAT) => 'float',
+                $type->isIdentifiedBy(TypeIdentifier::STRING) => 'string',
+                $type->isIdentifiedBy(TypeIdentifier::BOOL) => 'bool',
+                $type->isIdentifiedBy(TypeIdentifier::ARRAY) => $this->getCollectionOrArrayType($type),
+                $type->isIdentifiedBy(TypeIdentifier::OBJECT) => $type->getClassName() ?? 'object',
+                $type->isIdentifiedBy(TypeIdentifier::CALLABLE) => 'callable',
+                $type->isIdentifiedBy(TypeIdentifier::ITERABLE) => 'iterable',
+                $type->isIdentifiedBy(TypeIdentifier::RESOURCE) => 'resource',
+                $type->isIdentifiedBy(TypeIdentifier::NULL) => 'null',
+                $type->isIdentifiedBy(TypeIdentifier::MIXED) => 'mixed',
                 default => 'mixed',
             };
         } catch (\Exception $e) {
@@ -169,8 +157,7 @@ class ParameterInfo
         }
     }
 
-    public function getDescription(): string
-    {
+    public function getDescription(): string {
         // get #[Description] attributes
         $descriptions = array_merge(
             AttributeUtils::getValues($this->reflection, Description::class, 'text'),
@@ -187,19 +174,16 @@ class ParameterInfo
         return trim(implode('\n', array_filter($descriptions)));
     }
 
-    public function hasAttribute(string $attributeClass): bool
-    {
+    public function hasAttribute(string $attributeClass): bool {
         return AttributeUtils::hasAttribute($this->reflection, $attributeClass);
     }
 
     /** @return array<string|bool|int|float> */
-    public function getAttributeValues(string $attributeClass, string $attributeProperty): array
-    {
+    public function getAttributeValues(string $attributeClass, string $attributeProperty): array {
         return AttributeUtils::getValues($this->reflection, $attributeClass, $attributeProperty);
     }
 
-    public function isBuiltinType(): bool
-    {
+    public function isBuiltinType(): bool {
         if (!$this->hasType()) {
             return false;
         }
@@ -208,8 +192,7 @@ class ParameterInfo
         return $type instanceof \ReflectionNamedType && $type->isBuiltin();
     }
 
-    public function isClassType(): bool
-    {
+    public function isClassType(): bool {
         if (!$this->hasType()) {
             return false;
         }
@@ -218,8 +201,7 @@ class ParameterInfo
         return $type instanceof \ReflectionNamedType && !$type->isBuiltin();
     }
 
-    public function getClassName(): ?string
-    {
+    public function getClassName(): ?string {
         if (!$this->isClassType()) {
             return null;
         }
@@ -228,18 +210,15 @@ class ParameterInfo
         return $type instanceof \ReflectionNamedType ? $type->getName() : null;
     }
 
-    public function isArray(): bool
-    {
+    public function isArray(): bool {
         return $this->getTypeName() === 'array';
     }
 
-    public function allowsNull(): bool
-    {
+    public function allowsNull(): bool {
         return $this->isNullable();
     }
 
-    public function canBePassedValue(mixed $value): bool
-    {
+    public function canBePassedValue(mixed $value): bool {
         // If parameter allows null and value is null
         if ($value === null) {
             return $this->allowsNull();
@@ -268,40 +247,38 @@ class ParameterInfo
 
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
-    private function getCollectionOrArrayType(Type $type): string
-    {
-        $valueType = $type->getCollectionValueTypes();
+    private function getCollectionOrArrayType(Type $type): string {
+        $valueType = $type->getCollectionValueType();
         $valueType = $valueType[0] ?? null;
         if (is_null($valueType)) {
             return 'array';
         }
 
-        $builtInType = $valueType->getBuiltinType();
-        return match($builtInType) {
-            Type::BUILTIN_TYPE_INT => 'int[]',
-            Type::BUILTIN_TYPE_FLOAT => 'float[]',
-            Type::BUILTIN_TYPE_STRING => 'string[]',
-            Type::BUILTIN_TYPE_BOOL => 'bool[]',
-            Type::BUILTIN_TYPE_ARRAY => throw new \Exception("Nested arrays are not supported"),
-            Type::BUILTIN_TYPE_OBJECT => ($valueType->getClassName() ?? 'object') . '[]',
-            Type::BUILTIN_TYPE_CALLABLE => 'callable[]',
-            Type::BUILTIN_TYPE_ITERABLE => 'iterable[]',
-            Type::BUILTIN_TYPE_RESOURCE => 'resource[]',
-            Type::BUILTIN_TYPE_NULL => 'null[]',
+        //$builtInType = $valueType->getBuiltinType();
+        return match(true) {
+            $valueType->isIdentifiedBy(TypeIdentifier::INT) => 'int[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::FLOAT) => 'float[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::STRING) => 'string[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::BOOL) => 'bool[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::ARRAY) => throw new \Exception("Nested arrays are not supported"),
+            $valueType->isIdentifiedBy(TypeIdentifier::OBJECT) => ($valueType->getClassName() ?? 'object') . '[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::CALLABLE) => 'callable[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::ITERABLE) => 'iterable[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::RESOURCE) => 'resource[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::NULL) => 'null[]',
+            $valueType->isIdentifiedBy(TypeIdentifier::MIXED) => 'mixed[]',
             default => 'array',
         };
     }
 
-    private function extractor(): PropertyInfoExtractor
-    {
+    private function extractor(): PropertyInfoExtractor {
         if (!isset($this->extractor)) {
             $this->extractor = $this->makeExtractor();
         }
         return $this->extractor;
     }
 
-    protected function makeExtractor(): PropertyInfoExtractor
-    {
+    protected function makeExtractor(): PropertyInfoExtractor {
         // initialize extractor instance
         $phpDocExtractor = new PhpDocExtractor();
         $reflectionExtractor = new ReflectionExtractor();
@@ -314,12 +291,11 @@ class ParameterInfo
         );
     }
 
-    protected function makeTypes(): array
-    {
+    protected function makeTypes(): array {
         // For parameters, we need to extract type info differently
         // since PropertyInfoExtractor is designed for class properties
         if (!$this->hasType()) {
-            return [new Type(Type::BUILTIN_TYPE_STRING)];
+            return [Type::string()];
         }
 
         $reflectionType = $this->reflection->getType();
@@ -337,33 +313,32 @@ class ParameterInfo
         }
 
         // Default fallback
-        return [new Type(Type::BUILTIN_TYPE_STRING)];
+        return [Type::string()];
     }
 
-    private function convertReflectionTypeToPropertyInfoType(\ReflectionNamedType $reflectionType): Type
-    {
+    private function convertReflectionTypeToPropertyInfoType(\ReflectionNamedType $reflectionType): Type {
         $typeName = $reflectionType->getName();
         $isNullable = $reflectionType->allowsNull();
 
         if ($reflectionType->isBuiltin()) {
             $builtinType = match($typeName) {
-                'int' => Type::BUILTIN_TYPE_INT,
-                'float' => Type::BUILTIN_TYPE_FLOAT,
-                'string' => Type::BUILTIN_TYPE_STRING,
-                'bool' => Type::BUILTIN_TYPE_BOOL,
-                'array' => Type::BUILTIN_TYPE_ARRAY,
-                'object' => Type::BUILTIN_TYPE_OBJECT,
-                'callable' => Type::BUILTIN_TYPE_CALLABLE,
-                'iterable' => Type::BUILTIN_TYPE_ITERABLE,
-                'resource' => Type::BUILTIN_TYPE_RESOURCE,
-                'null' => Type::BUILTIN_TYPE_NULL,
-                'mixed' => Type::BUILTIN_TYPE_STRING, // fallback
-                default => Type::BUILTIN_TYPE_STRING,
+                'int' => Type::int(),
+                'float' => Type::float(),
+                'string' => Type::string(),
+                'bool' => Type::bool(),
+                'array' => Type::array(),
+                'object' => Type::object($typeName),
+                'callable' => Type::callable(),
+                'iterable' => Type::iterable(),
+                'resource' => Type::resource(),
+                'null' => Type::null(),
+                'mixed' => Type::mixed(), // fallback
+                default => Type::string(), // fallback for unknown types
             };
 
-            return new Type($builtinType, $isNullable);
+            return $builtinType;
         }
 
-        return new Type(Type::BUILTIN_TYPE_OBJECT, $isNullable, $typeName);
+        return Type::object($typeName);
     }
 }

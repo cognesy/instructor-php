@@ -28,6 +28,7 @@ trait HandlesResolvers
             ($normalized == TypeDetails::PHP_ENUM) => throw new \Exception('Enum type must have a class'),
             ($normalized == TypeDetails::PHP_COLLECTION) => $this->collectionType($anyType),
             ($normalized == TypeDetails::PHP_ARRAY) => $this->arrayType(),
+            ($normalized === TypeDetails::PHP_MIXED) => $this->mixedType(),
             (in_array($normalized, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($anyType),
             default => $this->objectType($anyType),
         };
@@ -50,15 +51,10 @@ trait HandlesResolvers
             $className = $this->toObjectTypeString((string) $typeInfo);
             return $this->objectType($className);
         }
-        throw new \Exception('Unsupported type: '.$typeInfo);
+        return $this->mixedType();
+        //throw new \Exception('Unsupported type: '.$typeInfo);
     }
 
-    /**
-     * Create TypeDetails from object instance
-     *
-     * @param object $instance
-     * @return TypeDetails
-     */
     public function fromValue(mixed $anyVar) : TypeDetails {
         $type = TypeDetails::getType($anyVar);
         return match (true) {
@@ -66,7 +62,8 @@ trait HandlesResolvers
             ($type == TypeDetails::PHP_ARRAY && $this->allItemsShareType($anyVar)) => $this->collectionType($this->collectionTypeStringFromValues($anyVar)),
             ($type == TypeDetails::PHP_ARRAY) => $this->arrayType(),
             (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($type),
-            default => throw new \Exception('Unsupported type: '.$type),
+            default => $this->mixedType(),
+            //default => throw new \Exception('Unsupported type: '.$type),
         };
     }
 

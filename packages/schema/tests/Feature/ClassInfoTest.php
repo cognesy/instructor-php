@@ -10,7 +10,7 @@ use Symfony\Component\TypeInfo\Type;
 
 it('can get property type', function () {
     // Assuming TestClass has properties with defined types
-    $type = (new ClassInfo(TestClassA::class))->getType('testProperty');
+    $type = (new ClassInfo(TestClassA::class))->getType('mixedProperty');
     expect($type)->toBeInstanceOf(Type::class);
     //expect($type->getName())->toEqual('string');
 });
@@ -23,14 +23,14 @@ it('can get property type', function () {
 it('can get class property names', function () {
     $properties = (new ClassInfo(TestClassA::class))->getPropertyNames();
     expect($properties)->toBeArray();
-    expect($properties)->toContain('testProperty');
+    expect($properties)->toContain('mixedProperty');
 });
 
 it('can get class properties', function () {
     $properties = (new ClassInfo(TestClassA::class))->getProperties();
     expect($properties)->toBeArray();
-    expect($properties)->toHaveKey('testProperty');
-    $property = $properties['testProperty'];
+    expect($properties)->toHaveKey('mixedProperty');
+    $property = $properties['mixedProperty'];
     expect($property)->toBeInstanceOf(PropertyInfo::class);
 });
 
@@ -43,7 +43,7 @@ it('can get class description', function () {
 
 it('can get property description', function () {
     // Assuming TestClass has properties with PHPDoc descriptions
-    $description = (new ClassInfo(TestClassA::class))->getPropertyDescription('testProperty');
+    $description = (new ClassInfo(TestClassA::class))->getPropertyDescription('mixedProperty');
     expect($description)->toBeString();
 });
 
@@ -51,19 +51,19 @@ it('can determine required properties', function () {
     // Assuming TestClass has at least one non-nullable property
     $requiredProperties = (new ClassInfo(TestClassA::class))->getRequiredProperties();
     expect($requiredProperties)->toBeArray();
-    expect($requiredProperties)->toContain('nonNullableProperty');
-    expect($requiredProperties)->not()->toContain('nullableProperty');
+    expect($requiredProperties)->toContain('nonNullableIntProperty');
+    expect($requiredProperties)->not()->toContain('nullableIntProperty');
 });
 
 it('can check if property is public', function () {
     // Assuming TestClass has a public property
-    $isPublic = (new ClassInfo(TestClassA::class))->isPublic('publicProperty');
+    $isPublic = (new ClassInfo(TestClassA::class))->isPublic('explicitMixedProperty');
     expect($isPublic)->toBeTrue();
 });
 
 it('can check if property is nullable', function () {
     // Assuming TestClass has a nullable property
-    $isNullable = (new ClassInfo(TestClassA::class))->isNullable('nullableProperty');
+    $isNullable = (new ClassInfo(TestClassA::class))->isNullable('nullableIntProperty');
     expect($isNullable)->toBeTrue();
 });
 
