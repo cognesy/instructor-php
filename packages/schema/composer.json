@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-schema",
-  "version": "1.0.0-RC6",
+  "version": "1.0.0-RC7",
   "description": "Object to schema conversion for Instructor library, should be used with Instructor",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -53,6 +53,6 @@
     },
     "sort-packages": true
   },
-  "minimum-stability": "rc",
+  "minimum-stability": "RC",
   "prefer-stable": true
 }

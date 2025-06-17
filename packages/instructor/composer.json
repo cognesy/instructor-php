@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-struct",
-  "version": "1.0.0-RC6",
+  "version": "1.0.0-RC7",
   "license": "MIT",
   "description": "Structured data extraction in PHP, powered by LLMs - core library",
   "keywords": [
@@ -85,6 +85,6 @@
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },
-  "minimum-stability": "rc",
+  "minimum-stability": "RC",
   "prefer-stable": true
 }

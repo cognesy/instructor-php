@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-utils",
-  "version": "1.0.0-RC6",
+  "version": "1.0.0-RC7",
   "description": "Collection of utility classes used by Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -60,6 +60,6 @@
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },
-  "minimum-stability": "rc",
+  "minimum-stability": "RC",
   "prefer-stable": true
 }
