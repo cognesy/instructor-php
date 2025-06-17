@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-events",
-  "version": "1.0.0-rc5",
+  "version": "1.0.0-RC6",
   "description": "Configuration functionality for Instructor PHP library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",

@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-utils",
-  "version": "1.0.0-rc5",
+  "version": "1.0.0-RC6",
   "description": "Collection of utility classes used by Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",

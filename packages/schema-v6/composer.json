@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-schema-v6",
-  "version": "1.0.0-rc5",
+  "version": "1.0.0-RC6",
   "description": "Object to schema conversion for Instructor library, should be used with Instructor - fallback version for Symfony 6.4+",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
