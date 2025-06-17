@@ -50,8 +50,8 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-addons": "^1.0",
     "cognesy/instructor-config": "^1.0",
+    "cognesy/instructor-events": "^1.0",
     "cognesy/instructor-polyglot": "^1.0",
     "cognesy/instructor-setup": "^1.0",
     "cognesy/instructor-templates": "^1.0",
@@ -64,6 +64,8 @@
     "symfony/validator": "^6.4 || ^7.0"
   },
   "require-dev": {
+    "cognesy/instructor-addons": "^1.0",
+    "cognesy/instructor-schema": "^1.0",
     "roave/security-advisories": "dev-latest",
     "mockery/mockery": "^1.6",
     "icanhazstring/composer-unused": "^0.9.0",
@@ -74,6 +76,7 @@
     "vimeo/psalm": "^6.0"
   },
   "suggest": {
+    "cognesy/instructor-addons": "Extra capabilities for Instructor and Polyglot packages",
     "cognesy/instructor-schema": "For Symfony 7+ schema validation and management",
     "cognesy/instructor-schema-v6": "For Symfony 6 schema validation and management"
   },

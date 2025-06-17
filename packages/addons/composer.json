@@ -31,10 +31,12 @@
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
-    "cognesy/instructor-utils": "^1.0",
-    "cognesy/instructor-struct": "^1.0"
+    "cognesy/instructor-utils": "^1.0"
   },
   "require-dev": {
+    "cognesy/instructor-polyglot": "^1.0",
+    "cognesy/instructor-schema": "^1.0",
+    "cognesy/instructor-struct": "^1.0",
     "roave/security-advisories": "dev-latest",
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",
@@ -49,8 +51,10 @@
     "psalm": "@php vendor/bin/psalm"
   },
   "suggest": {
-    "cognesy/instructor-struct": "Some addons need Instructor core library - e.g. Image class",
-    "cognesy/instructor-polyglot": "Some addones can be used with Instructor Polyglot library - e.g. Chat, Evals, FunctionCall, ToolUse"
+    "cognesy/instructor-schema": "Support for Instructor Schema - default",
+    "cognesy/instructor-schema-v6": "Support for Instructor Schema - if you need Symfony 6 compatibility",
+    "cognesy/instructor-struct": "Some addons need Instructor structured outputs package - e.g. Image class",
+    "cognesy/instructor-polyglot": "Some addones should be used with Polyglot package - e.g. Chat, Evals, FunctionCall, ToolUse"
   },
   "config": {
     "allow-plugins": {
