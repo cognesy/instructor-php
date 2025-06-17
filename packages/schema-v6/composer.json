@@ -51,5 +51,6 @@
     "sort-packages": true
   },
   "minimum-stability": "RC",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "version": "1.0.0-RC8"
 }

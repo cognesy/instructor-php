@@ -244,6 +244,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v1.0.0-RC8",
                 "release-notes/v1.0.0-RC7",
                 "release-notes/v1.0.0-RC6",
                 "release-notes/v1.0.0-rc5",
