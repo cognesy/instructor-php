@@ -28,7 +28,7 @@ Here's a template for creating a custom HTTP client driver:
 
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use Exception;
+use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use Exception;
 
 class CustomHttpDriver implements CanHandleHttpRequest
 {
@@ -53,7 +53,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request
      */
-    public function handle(HttpClientRequest $request): HttpClientResponse
+    public function handle(HttpRequest $request): HttpResponse
     {
         $url = $request->url();
         $headers = $request->headers();
@@ -128,10 +128,10 @@ You also need to create a response adapter that implements the `HttpClientRespon
 
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Generator;
 
-class YourHttpClientResponse implements HttpClientResponse
+class YourHttpClientResponse implements HttpResponse
 {
     /**
      * Constructor
@@ -223,7 +223,7 @@ Here's a practical example of implementing a custom driver using PHP's cURL exte
 
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpClientResponse;use Cognesy\Http\Data\HttpClientRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use YourNamespace\Http\Adapters\CurlHttpResponse;
+use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use YourNamespace\Http\Adapters\CurlHttpResponse;
 
 class CurlHttpDriver implements CanHandleHttpRequest
 {
@@ -240,7 +240,7 @@ class CurlHttpDriver implements CanHandleHttpRequest
     /**
      * Handle an HTTP request
      */
-    public function handle(HttpClientRequest $request): HttpClientResponse
+    public function handle(HttpRequest $request): HttpResponse
     {
         $url = $request->url();
         $headers = $request->headers();
@@ -436,10 +436,10 @@ And here's the corresponding response adapter:
 
 namespace YourNamespace\Http\Adapters;
 
-use Cognesy\Http\Contracts\HttpClientResponse;
+use Cognesy\Http\Contracts\HttpResponse;
 use Generator;
 
-class CurlHttpResponse implements HttpClientResponse
+class CurlHttpResponse implements HttpResponse
 {
     private $stream;
     private $tempFile;

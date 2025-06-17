@@ -95,7 +95,7 @@ enum StakeholderRole: string {
     case Other = 'other';
 }
 
-$structuredOutput = (new StructuredOutput)->using('cohere2');
+$structuredOutput = (new StructuredOutput)->using('cohere');
 
 echo "PROJECT EVENTS:\n\n";
 

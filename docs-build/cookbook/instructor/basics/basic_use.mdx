@@ -49,17 +49,13 @@ print($text . "\n\n");
 // Step 3: Extract structured data using default language model API (OpenAI)
 print("Extracting structured data using LLM...\n\n");
 $user = (new StructuredOutput)
-    //->wiretap(fn($e) => $e->print())
     ->using('openai')
-    ->with(
-        messages: $text,
-        responseModel: User::class,
-    )
+    ->withMessages($text)
+    ->withResponseModel(User::class)
     ->get();
 
 // Step 4: Now you can use the extracted data in your application
 print("Extracted data:\n");
-
 dump($user);
 
 assert(isset($user->name));

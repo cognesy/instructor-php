@@ -24,7 +24,7 @@ class User {
 
 $user = (new StructuredOutput)
     //->wiretap(fn($e) => $e->print())
-    ->withDSN('preset=xai,model=grok-2')
+    ->withDsn('preset=xai,model=grok-2')
     ->withMessages("Our user Jason is 25 years old.")
     ->withresponseClass(User::class)
     ->get();

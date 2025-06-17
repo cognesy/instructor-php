@@ -15,10 +15,10 @@ and use it to retrieve a component implementing `CanHandleRequest` interface (sp
 `StructuredOutput` class dispatches several high level events during initialization and processing
 of the request and response:
 
- - `InstructorStarted` - dispatched when Instructor is created
- - `InstructorReady` - dispatched when Instructor is configured and ready to process the request
- - `RequestReceived` - dispatched when the request is received
- - `ResponseGenerated` - dispatched when the response is generated
+ - `StructuredOutputStarted` - dispatched when the structured output processes starts
+ - `StructuredOutputRequestReceived` - dispatched when the request is received
+ - `StructuredOutputResponseGenerated` - dispatched when the response is generated
+ - `StructuredOutputResponseUpdated` - dispatched when the response update is streamed
 
 
 ## Event listeners

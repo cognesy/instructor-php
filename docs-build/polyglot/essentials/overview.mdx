@@ -190,8 +190,7 @@ the client connection.
     'presets' => [
         'anthropic' => [ ... ],
         'azure' => [ ... ],
-        'cohere1' => [ ... ],
-        'cohere2' => [ ... ],
+        'cohere' => [ ... ],
         'fireworks' => [ ... ],
         'gemini' => [ ... ],
         'grok' => [ ... ],

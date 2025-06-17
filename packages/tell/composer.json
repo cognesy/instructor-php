@@ -23,7 +23,7 @@
       "Cognesy\\Tell\\Tests\\": "tests/"
     }
   },
-  "version": "1.0-rc1",
+  "version": "1.0-rc2",
   "require": {
     "php": "^8.2",
     "cognesy/instructor-config": "^1.0",

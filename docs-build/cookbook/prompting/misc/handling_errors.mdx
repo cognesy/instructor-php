@@ -33,17 +33,15 @@ class MaybeUser
     /** If no user data, provide reason */
     public ?string $errorMessage = '';
 
-    public function get(): ?UserDetail
-    {
+    public function get(): ?UserDetail {
         return $this->noUserData ? null : $this->user;
     }
 }
 
-$user = (new StructuredOutput)->with(
-    messages: [['role' => 'user', 'content' => 'We don\'t know anything about this guy.']],
-    responseModel: MaybeUser::class
-)->get();
-
+$user = (new StructuredOutput)
+    ->withMessages([['role' => 'user', 'content' => 'We don\'t know anything about this guy.']])
+    ->withResponseModel(MaybeUser::class)
+    ->get();
 
 dump($user);
 

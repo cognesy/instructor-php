@@ -36,7 +36,7 @@ $config = new EmbeddingsConfig(
     dimensions: 1024,
     maxInputs : 96,
     httpClientPreset: 'guzzle',
-    driver: 'cohere2',
+    driver: 'cohere',
 );
 
 $provider = EmbeddingsProvider::new()

@@ -52,13 +52,13 @@ Here's a simple example:
 <?php
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 
 // Create a new HTTP client (uses the default client from configuration)
 $client = new HttpClient();
 
 // Create a request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
@@ -180,14 +180,14 @@ Let's put everything together with a practical example of making a POST request 
 <?php
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create an HTTP client using the 'guzzle' configuration
 $client = new HttpClient('guzzle');
 
 // Create a POST request with JSON data
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
     headers: [
@@ -234,14 +234,14 @@ Here's an example of making a GET request to fetch data:
 <?php
 
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create an HTTP client
 $client = new HttpClient();
 
 // Create a GET request with query parameters
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users?page=1&limit=10',
     method: 'GET',
     headers: [

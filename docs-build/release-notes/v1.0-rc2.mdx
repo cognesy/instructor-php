@@ -5,3 +5,6 @@
 - (instructor) Replaced deprecated PropertyInfo Type class with TypeInfo one.
 - (instructor) Support for mixed property type.
 - (schema) Introduced 2 versions of the schema package - Symfony 7 (default) and Symfony 6 (compatibility).
+- (inference) Added `withHttpClientPreset()` to `Inference` and `StructuredOutput` facades
+- (http) Configurable stream chunk size to optimize performance
+- (http) Replaced debugging middleware with EventSourceMiddleware - generates events for HTTP requests, added 2 built-in listeners (PrintToConsole, DispatchHttpEvents)

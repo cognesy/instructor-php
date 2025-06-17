@@ -39,7 +39,7 @@ $query = "technology news";
 
 $presets = [
     'azure',
-    'cohere2',
+    'cohere',
     'gemini',
     'jina',
     'mistral',

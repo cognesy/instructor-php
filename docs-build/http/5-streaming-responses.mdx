@@ -18,10 +18,10 @@ To receive a streaming response, you need to configure the request with the `str
 
 ```php
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 
 // Create a streaming request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/stream',
     method: 'GET',
     headers: [
@@ -81,11 +81,11 @@ Here's an example of downloading a large file with streaming to avoid memory iss
 
 ```php
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create a streaming request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://example.com/large-file.zip',
     method: 'GET',
     headers: [],
@@ -204,7 +204,7 @@ For many streaming APIs, especially those that send event streams or line-delimi
 
 ```php
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
 
 // Create a client with the StreamByLineMiddleware
@@ -212,7 +212,7 @@ $client = new HttpClient();
 $client->withMiddleware(new StreamByLineMiddleware());
 
 // Create a streaming request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/events',
     method: 'GET',
     headers: [],
@@ -261,7 +261,7 @@ Here's a practical example of using the `StreamByLineMiddleware` to process stre
 
 ```php
 use Cognesy\Http\HttpClient;
-use Cognesy\Http\Data\HttpClientRequest;
+use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Middleware\StreamByLine\StreamByLineMiddleware;
 
 // OpenAI API requires a parser that handles their SSE format
@@ -292,7 +292,7 @@ $client = new HttpClient('guzzle'); // Use Guzzle for better streaming support
 $client->withMiddleware(new StreamByLineMiddleware($openAiParser));
 
 // Create a request to OpenAI API
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.openai.com/v1/chat/completions',
     method: 'POST',
     headers: [
