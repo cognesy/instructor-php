@@ -1,6 +1,5 @@
 {
   "name": "cognesy/instructor-setup",
-  "version": "1.0.0-RC7",
   "description": "Setup tool for Instructor PHP library",
   "license": "MIT",
   "homepage": "https://polyglotphp.com",

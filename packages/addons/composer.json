@@ -1,6 +1,5 @@
 {
   "name": "cognesy/instructor-addons",
-  "version": "1.0.0-RC7",
   "description": "Optional addons for Instructor library, should be used with Instructor or Polyglot",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
