@@ -53,7 +53,6 @@
     "cognesy/instructor-addons": "^1.0",
     "cognesy/instructor-config": "^1.0",
     "cognesy/instructor-polyglot": "^1.0",
-    "cognesy/instructor-schema": "^1.0",
     "cognesy/instructor-setup": "^1.0",
     "cognesy/instructor-templates": "^1.0",
     "cognesy/instructor-utils": "^1.0",
@@ -62,7 +61,6 @@
     "symfony/property-access": "^6.4 || ^7.0",
     "symfony/property-info": "^6.4 || ^7.0",
     "symfony/serializer": "^6.4 || ^7.0",
-    "symfony/type-info": "^7.1",
     "symfony/validator": "^6.4 || ^7.0"
   },
   "require-dev": {
@@ -83,5 +81,7 @@
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
-  }
+  },
+  "minimum-stability": "rc",
+  "prefer-stable": true
 }
