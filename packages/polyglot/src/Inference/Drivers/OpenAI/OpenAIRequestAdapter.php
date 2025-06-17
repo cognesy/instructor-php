@@ -5,10 +5,10 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
-use Cognesy\Polyglot\Inference\Contracts\ProviderRequestAdapter;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 
-class OpenAIRequestAdapter implements ProviderRequestAdapter
+class OpenAIRequestAdapter implements CanTranslateInferenceRequest
 {
     public function __construct(
         protected LLMConfig $config,

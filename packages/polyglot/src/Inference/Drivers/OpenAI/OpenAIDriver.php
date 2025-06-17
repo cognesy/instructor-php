@@ -4,15 +4,15 @@ namespace Cognesy\Polyglot\Inference\Drivers\OpenAI;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\ProviderRequestAdapter;
-use Cognesy\Polyglot\Inference\Contracts\ProviderResponseAdapter;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class OpenAIDriver extends BaseInferenceDriver
 {
-    protected ProviderRequestAdapter  $requestAdapter;
-    protected ProviderResponseAdapter $responseAdapter;
+    protected CanTranslateInferenceRequest  $requestTranslator;
+    protected CanTranslateInferenceResponse $responseTranslator;
 
     public function __construct(
         protected LLMConfig $config,
@@ -20,14 +20,14 @@ class OpenAIDriver extends BaseInferenceDriver
         protected EventDispatcherInterface $events,
     )
     {
-        $this->requestAdapter = new OpenAIRequestAdapter(
+        $this->requestTranslator = new OpenAIRequestAdapter(
             $config,
             new OpenAIBodyFormat(
                 $config,
                 new OpenAIMessageFormat(),
             )
         );
-        $this->responseAdapter = new OpenAIResponseAdapter(
+        $this->responseTranslator = new OpenAIResponseAdapter(
             new OpenAIUsageFormat()
         );
     }

@@ -4,15 +4,15 @@ namespace Cognesy\Polyglot\Inference\Drivers\Gemini;
 
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\ProviderRequestAdapter;
-use Cognesy\Polyglot\Inference\Contracts\ProviderResponseAdapter;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class GeminiDriver extends BaseInferenceDriver
 {
-    protected ProviderRequestAdapter $requestAdapter;
-    protected ProviderResponseAdapter $responseAdapter;
+    protected CanTranslateInferenceRequest $requestTranslator;
+    protected CanTranslateInferenceResponse $responseTranslator;
 
     public function __construct(
         protected LLMConfig $config,
@@ -20,14 +20,14 @@ class GeminiDriver extends BaseInferenceDriver
         protected EventDispatcherInterface $events,
     )
     {
-        $this->requestAdapter = new GeminiRequestAdapter(
+        $this->requestTranslator = new GeminiRequestAdapter(
             $config,
             new GeminiBodyFormat(
                 $config,
                 new GeminiMessageFormat(),
             )
         );
-        $this->responseAdapter = new GeminiResponseAdapter(
+        $this->responseTranslator = new GeminiResponseAdapter(
             new GeminiUsageFormat()
         );
     }

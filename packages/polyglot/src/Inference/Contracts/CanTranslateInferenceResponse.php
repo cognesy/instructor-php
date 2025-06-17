@@ -6,7 +6,7 @@ use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 
-interface ProviderResponseAdapter
+interface CanTranslateInferenceResponse
 {
     public function fromResponse(HttpResponse $response): ?InferenceResponse;
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;

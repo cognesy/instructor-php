@@ -3,8 +3,8 @@
 namespace Cognesy\Polyglot\Inference\Drivers\SambaNova;
 use Cognesy\Http\HttpClient;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
-use Cognesy\Polyglot\Inference\Contracts\ProviderRequestAdapter;
-use Cognesy\Polyglot\Inference\Contracts\ProviderResponseAdapter;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceRequest;
+use Cognesy\Polyglot\Inference\Contracts\CanTranslateInferenceResponse;
 use Cognesy\Polyglot\Inference\Drivers\BaseInferenceDriver;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIMessageFormat;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
@@ -14,8 +14,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class SambaNovaDriver extends BaseInferenceDriver
 {
-    protected ProviderRequestAdapter $requestAdapter;
-    protected ProviderResponseAdapter $responseAdapter;
+    protected CanTranslateInferenceRequest $requestTranslator;
+    protected CanTranslateInferenceResponse $responseTranslator;
 
     public function __construct(
         protected LLMConfig $config,
@@ -23,14 +23,14 @@ class SambaNovaDriver extends BaseInferenceDriver
         protected EventDispatcherInterface $events,
     )
     {
-        $this->requestAdapter = new OpenAIRequestAdapter(
+        $this->requestTranslator = new OpenAIRequestAdapter(
             $config,
             new SambaNovaBodyFormat(
                 $config,
                 new OpenAIMessageFormat(),
             )
         );
-        $this->responseAdapter = new OpenAIResponseAdapter(
+        $this->responseTranslator = new OpenAIResponseAdapter(
             new OpenAIUsageFormat()
         );
     }

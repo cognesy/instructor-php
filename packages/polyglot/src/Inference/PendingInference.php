@@ -2,7 +2,6 @@
 
 namespace Cognesy\Polyglot\Inference;
 
-use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Inference\Contracts\CanHandleInference;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
@@ -22,9 +21,6 @@ class PendingInference
     protected readonly CanHandleInference $driver;
     protected readonly EventDispatcherInterface $events;
     protected readonly InferenceRequest $request;
-
-    protected HttpResponse $httpResponse;
-    protected string $responseContent = '';
 
     public function __construct(
         InferenceRequest         $request,
@@ -104,41 +100,4 @@ class PendingInference
         };
         return $response;
     }
-
-    // INTERNAL /////////////////////////////////////////////////
-
-//    private function tryMakeInferenceResponse() : InferenceResponse {
-//        try {
-//            return $this->makeInferenceResponse();
-//        } catch (Exception $e) {
-//            $this->events->dispatch(new InferenceFailed([
-//                'exception' => $e->getMessage(),
-//                'statusCode' => $this->httpResponse()->statusCode() ?? 500,
-//                'headers' => $this->httpResponse()->headers() ?? [],
-//                'body' => $this->httpResponseBody() ?? '',
-//            ]));
-//            throw $e;
-//        }
-//    }
-//
-//    private function makeInferenceResponse() : InferenceResponse {
-//        $inferenceResponse = $this->driver->fromResponse($this->httpResponse());
-//        $this->events->dispatch(new InferenceResponseCreated(['response' => $inferenceResponse?->toArray() ?? []]));
-//        return $inferenceResponse;
-//    }
-//
-//    private function httpResponseBody() : string {
-//        if (empty($this->responseContent)) {
-//            $this->responseContent = $this->httpResponse()->body();
-//        }
-//        return $this->responseContent;
-//    }
-//
-//    private function httpResponse() : HttpResponse {
-//        if (!isset($this->httpResponse)) {
-//            $this->events->dispatch(new InferenceRequested(['request' => $this->request->toArray()]));
-//            $this->httpResponse = $this->driver->handle($this->request);
-//        }
-//        return $this->httpResponse;
-//    }
 }

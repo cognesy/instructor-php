@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\HuggingFace;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAI\OpenAIRequestAdapter;
 
-class HuggingFaceRequestAdapter extends OpenAIRequestAdapter
+class HuggingFaceRequestAdapterAdapter extends OpenAIRequestAdapter
 {
     protected function toUrl(InferenceRequest $request): string {
         return str_replace(

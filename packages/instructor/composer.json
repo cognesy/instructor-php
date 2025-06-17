@@ -75,6 +75,10 @@
     "phpstan/phpstan": "^1.11",
     "vimeo/psalm": "^6.0"
   },
+  "suggest": {
+    "cognesy/instructor-schema": "For Symfony 7+ schema validation and management",
+    "cognesy/instructor-schema-v6": "For Symfony 6 schema validation and management"
+  },
   "scripts": {
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
