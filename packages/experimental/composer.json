@@ -50,5 +50,7 @@
       "pestphp/pest-plugin": true
     },
     "sort-packages": true
-  }
+  },
+  "minimum-stability": "rc",
+  "prefer-stable": true
 }

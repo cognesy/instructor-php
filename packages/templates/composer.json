@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-templates",
-  "version": "1.0-rc4",
+  "version": "1.0.0-rc5",
   "description": "Text and chat template tools used by Instructor library",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -54,5 +54,7 @@
   "suggest": {
     "eftec/bladeone": "For BladeOne template engine support",
     "twig/twig": "For Twig template engine support"
-  }
+  },
+  "minimum-stability": "rc",
+  "prefer-stable": true
 }

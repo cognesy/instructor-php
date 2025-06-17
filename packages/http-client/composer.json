@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-http-client",
-  "version": "1.0-rc4",
+  "version": "1.0.0-rc5",
   "license": "MIT",
   "description": "Polyglot's unified HTTP connectivity layer",
   "autoload": {
@@ -48,5 +48,7 @@
       "pestphp/pest-plugin": true
     },
     "sort-packages": true
-  }
+  },
+  "minimum-stability": "rc",
+  "prefer-stable": true
 }

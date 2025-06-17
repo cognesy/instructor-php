@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-hub",
-  "version": "1.0-rc4",
+  "version": "1.0.0-rc5",
   "description": "CLI tool to work with Instructor PHP code examples and docs",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -54,5 +54,7 @@
       "pestphp/pest-plugin": true
     },
     "sort-packages": true
-  }
+  },
+  "minimum-stability": "rc",
+  "prefer-stable": true
 }

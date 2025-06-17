@@ -1,6 +1,6 @@
 {
   "name": "cognesy/instructor-addons",
-  "version": "1.0-rc4",
+  "version": "1.0.0-rc5",
   "description": "Optional addons for Instructor library, should be used with Instructor or Polyglot",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
@@ -57,5 +57,7 @@
       "pestphp/pest-plugin": true
     },
     "sort-packages": true
-  }
+  },
+  "minimum-stability": "rc",
+  "prefer-stable": true
 }
