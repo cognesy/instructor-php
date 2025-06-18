@@ -11,19 +11,19 @@ it('can get property name', function () {
     expect($name)->toEqual('mixedProperty');
 });
 
-it('can get property types', function () {
-    $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');
-    $type = $propertyInfo->getTypeDetails();
-    expect($type)->toBeInstanceOf(TypeDetails::class);
-    expect($type->type())->toEqual('mixed');
-});
-
 it('can get property type', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');
     $type = $propertyInfo->getTypeDetails();
     expect($type)->toBeInstanceOf(TypeDetails::class);
     expect($type->type())->toEqual('mixed');
 });
+
+//it('can get property types', function () {
+//    $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');
+//    $type = $propertyInfo->getTypeDetails();
+//    expect($type)->toBeInstanceOf(TypeDetails::class);
+//    expect($type->type())->toEqual('mixed');
+//});
 
 it('can get property description via PhpDoc', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');

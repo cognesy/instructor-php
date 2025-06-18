@@ -22,7 +22,6 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
     private string $propertyName;
     private ReflectionProperty $reflection;
 
-    private array $types;
     private PropertyInfoExtractor $extractor;
 
     public function __construct(
@@ -48,6 +47,10 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
 
     public function getPropertyTypeName(): string {
         $type = $this->getType();
+        if ($type === null) {
+            return 'mixed';
+        }
+
         $builtInType = $type->getBuiltinType();
         return match ($builtInType) {
             Type::BUILTIN_TYPE_INT => 'int',
@@ -78,24 +81,26 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
     }
 
     public function isPropertyNullable(): bool {
-        $types = $this->getTypes();
+        $types = $this->makeTypes();
         if (is_null($types)) {
-            return false;
+            return true;
         }
+
         foreach ($types as $type) {
             if ($type->isNullable()) {
                 return true;
             }
         }
+
         return false;
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
-    private function getType(): Type {
-        $propertyTypes = $this->getTypes();
-        if (!count($propertyTypes)) {
-            throw new \Exception("No type found for property: $this->class::$this->propertyName");
+    private function getType(): ?Type {
+        $propertyTypes = $this->makeTypes();
+        if (is_null($propertyTypes) || !count($propertyTypes)) {
+            return null;
         }
         if (count($propertyTypes) > 1) {
             throw new \Exception("Unsupported union type found for property: $this->class::$this->propertyName");
@@ -109,6 +114,7 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
         if (is_null($valueType)) {
             return 'array';
         }
+
         $builtInType = $valueType->getBuiltinType();
         return match ($builtInType) {
             Type::BUILTIN_TYPE_INT => 'int',
@@ -125,17 +131,11 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
         };
     }
 
-    private function getTypes(): array {
-        if (!isset($this->types)) {
-            $this->types = $this->makeTypes();
-        }
-        return $this->types;
-    }
-
-    private function makeTypes(): array {
+    /** @return Type[] */
+    private function makeTypes(): ?array {
         $types = $this->extractor()->getTypes($this->class, $this->propertyName);
         if (is_null($types)) {
-            $types = [new Type(Type::BUILTIN_TYPE_STRING)];
+            $types = null;
         }
         return $types;
     }
