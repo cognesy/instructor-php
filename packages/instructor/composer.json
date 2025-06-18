@@ -64,7 +64,6 @@
   },
   "require-dev": {
     "cognesy/instructor-addons": "^1.0",
-    "cognesy/instructor-schema": "^1.0",
     "roave/security-advisories": "dev-latest",
     "mockery/mockery": "^1.6",
     "icanhazstring/composer-unused": "^0.9.0",

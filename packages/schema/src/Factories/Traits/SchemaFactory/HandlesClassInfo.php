@@ -21,7 +21,7 @@ trait HandlesClassInfo
 
     public function fromPropertyInfo(PropertyInfo $propertyInfo) : Schema {
         return $this->makePropertySchema(
-            $this->typeDetailsFactory->fromTypeInfo($propertyInfo->getType()),
+            $propertyInfo->getTypeDetails(),
             $propertyInfo->getName(),
             $propertyInfo->getDescription()
         );

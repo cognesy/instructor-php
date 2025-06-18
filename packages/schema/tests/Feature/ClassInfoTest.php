@@ -1,18 +1,18 @@
 <?php
 
+use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Tests\Examples\ClassInfo\EnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\IntEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\StringEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
 use Cognesy\Schema\Utils\ClassInfo;
 use Cognesy\Schema\Utils\PropertyInfo;
-use Symfony\Component\TypeInfo\Type;
 
 it('can get property type', function () {
     // Assuming TestClass has properties with defined types
-    $type = (new ClassInfo(TestClassA::class))->getType('mixedProperty');
-    expect($type)->toBeInstanceOf(Type::class);
-    //expect($type->getName())->toEqual('string');
+    $type = (new ClassInfo(TestClassA::class))->getPropertyTypeDetails('mixedProperty');
+    expect($type)->toBeInstanceOf(TypeDetails::class);
+    expect($type->type)->toEqual('mixed');
 });
 
 //it('throws exception for undefined property type', function () {

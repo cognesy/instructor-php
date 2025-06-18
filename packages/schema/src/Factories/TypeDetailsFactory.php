@@ -8,5 +8,5 @@ namespace Cognesy\Schema\Factories;
 class TypeDetailsFactory
 {
     use Traits\TypeDetailsFactory\HandlesResolvers;
-    use Traits\TypeDetailsFactory\HandlesBuilders;
+    use Traits\TypeDetailsFactory\HandlesFactoryMethods;
 }

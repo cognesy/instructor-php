@@ -27,8 +27,7 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^1.0",
-    "symfony/property-info": "^7.3",
-    "symfony/type-info": "^7.3"
+    "symfony/property-info": "^6.4|^7.3"
   },
   "require-dev": {
     "icanhazstring/composer-unused": "^0.9.0",
@@ -37,6 +36,7 @@
     "pestphp/pest": "^2.34",
     "phpstan/phpstan": "^1.11",
     "roave/security-advisories": "dev-latest",
+    "symfony/type-info": "^7.3",
     "symfony/var-dumper": "^7.3",
     "vimeo/psalm": "^6.0"
   },
@@ -45,7 +45,9 @@
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm"
   },
-  "suggest": {},
+  "suggest": {
+    "symfony/type-info": "TypeInfo replaces deprecated PropertyInfo types in Symfony 7.3+, but is not supported in Symfony 6.4."
+  },
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true

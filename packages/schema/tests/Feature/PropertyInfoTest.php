@@ -1,9 +1,9 @@
 <?php
 
 use Cognesy\Schema\Attributes\Description;
+use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
 use Cognesy\Schema\Utils\PropertyInfo;
-use Symfony\Component\TypeInfo\Type;
 
 it('can get property name', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');
@@ -13,14 +13,16 @@ it('can get property name', function () {
 
 it('can get property types', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');
-    $type = $propertyInfo->getType();
-    expect($type)->toBeInstanceOf(Type::class);
+    $type = $propertyInfo->getTypeDetails();
+    expect($type)->toBeInstanceOf(TypeDetails::class);
+    expect($type->type())->toEqual('mixed');
 });
 
 it('can get property type', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');
-    $type = $propertyInfo->getType();
-    expect($type)->toBeInstanceOf(Type::class);
+    $type = $propertyInfo->getTypeDetails();
+    expect($type)->toBeInstanceOf(TypeDetails::class);
+    expect($type->type())->toEqual('mixed');
 });
 
 it('can get property description via PhpDoc', function () {

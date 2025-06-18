@@ -3,17 +3,12 @@ namespace Cognesy\Schema\Utils;
 
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Attributes\Instructions;
+use Cognesy\Schema\Data\TypeDetails;
 use Exception;
 use ReflectionClass;
 use ReflectionEnum;
-use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
-use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
-use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
-use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
-use Symfony\Component\TypeInfo\Type;
 
 class ClassInfo {
-    private PropertyInfoExtractor $extractor;
     private string $class;
     private ReflectionClass $reflectionClass;
     private ReflectionEnum $reflectionEnum;
@@ -41,8 +36,8 @@ class ClassInfo {
         return $this->reflectionClass->getShortName();
     }
 
-    public function getType(string $property): Type {
-        return $this->getProperty($property)->getType();
+    public function getPropertyTypeDetails(string $property): TypeDetails {
+        return $this->getProperty($property)->getTypeDetails();
     }
 
     /** @return string[] */
@@ -203,7 +198,7 @@ class ClassInfo {
      * @param callable[] $filters
      * @return PropertyInfo[]
      */
-    protected function filterProperties(array $filters) : array {
+    private function filterProperties(array $filters) : array {
         $propertyInfos = $this->getProperties();
         foreach($filters as $filter) {
             if (!is_callable($filter)) {
@@ -215,33 +210,13 @@ class ClassInfo {
     }
 
     /** @return PropertyInfo[] */
-    protected function makePropertyInfos() : array {
+    private function makePropertyInfos() : array {
         $properties = $this->reflectionClass->getProperties() ?? [];
         $info = [];
         foreach ($properties as $property) {
             $info[$property->name] = new PropertyInfo($property);
         }
         return $info;
-    }
-
-    protected function extractor() : PropertyInfoExtractor {
-        if (!isset($this->extractor)) {
-            $this->extractor = $this->makeExtractor();
-        }
-        return $this->extractor;
-    }
-
-    protected function makeExtractor() : PropertyInfoExtractor {
-        // initialize extractor instance
-        $phpDocExtractor = new PhpDocExtractor();
-        $reflectionExtractor = new ReflectionExtractor();
-        return new PropertyInfoExtractor(
-            [$reflectionExtractor],
-            [new PhpStanExtractor(), $phpDocExtractor, $reflectionExtractor],
-            [$phpDocExtractor],
-            [$reflectionExtractor],
-            [$reflectionExtractor]
-        );
     }
 
     /**
