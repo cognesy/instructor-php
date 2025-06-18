@@ -83,13 +83,13 @@ trait HandlesTransformation
         return $messages;
     }
 
-    public function toRoleString() : string {
-        $text = '';
-        foreach ($this->messages as $message) {
-            $text .= $message->toRoleString() . "\n";
-        }
-        return $text;
-    }
+//    public function toRoleString() : string {
+//        $text = '';
+//        foreach ($this->messages as $message) {
+//            $text .= $message->toRoleString() . "\n";
+//        }
+//        return $text;
+//    }
 
     public function remapRoles(array $mapping) : Messages {
         $messages = new Messages();

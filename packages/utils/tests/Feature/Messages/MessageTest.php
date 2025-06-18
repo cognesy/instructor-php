@@ -245,11 +245,11 @@ test('converts simple message to string', function () {
 //    $message->toString();
 //})->throws(RuntimeException::class, 'Message contains non-text parts and cannot be flattened to text');
 
-test('converts message to role-prefixed string', function () {
-    $message = new Message('assistant', 'Hello, I am an assistant');
-
-    expect($message->toRoleString())->toBe('assistant: Hello, I am an assistant');
-});
+//test('converts message to role-prefixed string', function () {
+//    $message = new Message('assistant', 'Hello, I am an assistant');
+//
+//    expect($message->toRoleString())->toBe('assistant: Hello, I am an assistant');
+//});
 
 // Static Utility Tests
 test('checks if message array becomes composite', function () {

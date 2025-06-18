@@ -321,17 +321,18 @@ test('can filter messages by roles', function () {
         ->and($nonSystemMessages->last()->role()->value)->toBe('assistant');
 });
 
-test('can convert to role string', function () {
-    $messages = Messages::fromArray([
-        ['role' => 'user', 'content' => 'Hello'],
-        ['role' => 'assistant', 'content' => 'Hi']
-    ]);
-    
-    $roleString = $messages->toRoleString();
-    
-    expect($roleString)->toContain('user: Hello')
-        ->and($roleString)->toContain('assistant: Hi');
-});
+// Template moved out of utils package, so this test is commented out
+//test('can convert to role string', function () {
+//    $messages = Messages::fromArray([
+//        ['role' => 'user', 'content' => 'Hello'],
+//        ['role' => 'assistant', 'content' => 'Hi']
+//    ]);
+//
+//    $roleString = $messages->toRoleString();
+//
+//    expect($roleString)->toContain('user: Hello')
+//        ->and($roleString)->toContain('assistant: Hi');
+//});
 
 test('can remap roles', function () {
     $messages = Messages::fromArray([

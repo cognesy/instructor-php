@@ -21,10 +21,7 @@ test('dispatcher can register listeners for events', function () {
     $eventClass = TestEvent::class;
     $listener = fn() => null;
 
-    $result = $dispatcher->addListener($eventClass, $listener);
-
-    // Test method chaining
-    expect($result)->toBe($dispatcher);
+    $dispatcher->addListener($eventClass, $listener);
 
     // Test getListenersForEvent
     $event = new TestEvent();

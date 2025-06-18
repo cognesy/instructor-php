@@ -32,6 +32,7 @@ trait HandlesConversion
      */
     public function toString(array $parameters = [], string $separator = "\n") : string {
         if ($this->hasComposites()) {
+            // TODO: we should check if composites are text only and allow conversion if so
             throw new RuntimeException('Section contains composite messages and cannot be converted to string.');
         }
         $text = array_reduce(

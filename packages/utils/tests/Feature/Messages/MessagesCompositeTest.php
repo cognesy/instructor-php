@@ -141,20 +141,21 @@ test('correctly handles toAllComposites transformation', function () {
     expect($hasComposite)->toBeTrue();
 });
 
-test('converts messages to role string format correctly', function () {
-    // Create messages with different roles
-    $messages = Messages::fromArray([
-        ['role' => 'user', 'content' => 'User message'],
-        ['role' => 'assistant', 'content' => 'Assistant message'],
-        ['role' => 'system', 'content' => 'System message']
-    ]);
-    
-    $roleString = $messages->toRoleString();
-    
-    expect($roleString)->toContain('user: User message')
-        ->and($roleString)->toContain('assistant: Assistant message')
-        ->and($roleString)->toContain('system: System message');
-});
+// Template moved out of utils package, so this test is commented out
+//test('converts messages to role string format correctly', function () {
+//    // Create messages with different roles
+//    $messages = Messages::fromArray([
+//        ['role' => 'user', 'content' => 'User message'],
+//        ['role' => 'assistant', 'content' => 'Assistant message'],
+//        ['role' => 'system', 'content' => 'System message']
+//    ]);
+//
+//    $roleString = $messages->toRoleString();
+//
+//    expect($roleString)->toContain('user: User message')
+//        ->and($roleString)->toContain('assistant: Assistant message')
+//        ->and($roleString)->toContain('system: System message');
+//});
 
 test('mergeRolesFlat correctly handles composite messages', function () {
     // This tests the internal mergeRolesFlat method by testing its effects

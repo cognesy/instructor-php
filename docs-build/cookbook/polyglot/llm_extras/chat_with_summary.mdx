@@ -69,8 +69,6 @@ for($i = 0; $i < $maxSteps; $i++) {
         ->toMessages()
         ->remapRoles(['assistant' => 'user', 'user' => 'assistant', 'system' => 'system']);
 
-    dump($messages->toRoleString());
-
     $response = (new Inference)
         ->using('deepseek')
         ->with(

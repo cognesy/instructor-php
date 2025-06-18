@@ -60,6 +60,5 @@
     "psalm": "@php vendor/bin/psalm"
   },
   "minimum-stability": "RC",
-  "prefer-stable": true,
-  "version": "1.0.0-RC8"
+  "prefer-stable": true
 }
