@@ -23,5 +23,5 @@ interface CanVisitSchema
     public function visitEnumSchema(EnumSchema $schema): void;
     public function visitScalarSchema(ScalarSchema $schema): void;
     public function visitObjectRefSchema(ObjectRefSchema $schema): void;
-    public function visitOptionSchema(OptionSchema $param) : void;
+    public function visitOptionSchema(OptionSchema $schema) : void;
 }

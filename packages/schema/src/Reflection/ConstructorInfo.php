@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Schema\Utils;
+namespace Cognesy\Schema\Reflection;
 
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Attributes\Instructions;

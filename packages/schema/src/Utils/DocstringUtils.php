@@ -7,7 +7,7 @@ class DocstringUtils
 {
     public static function descriptionsOnly(string $code): string
     {
-        return (new RawChain())
+        return (new RawChain)
             ->through(fn($code) => self::removeMarkers($code))
             ->through(fn($code) => self::removeAnnotations($code))
             ->then(fn($code) => trim($code))

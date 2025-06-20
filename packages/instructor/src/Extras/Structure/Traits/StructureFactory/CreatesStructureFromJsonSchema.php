@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
+namespace Cognesy\Instructor\Extras\Structure\Traits\StructureFactory;
 
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;

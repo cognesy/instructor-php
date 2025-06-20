@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
+namespace Cognesy\Instructor\Extras\Structure\Traits\StructureFactory;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\FieldFactory;

@@ -30,26 +30,27 @@ use Exception;
  */
 class JsonSchema implements CanProvideJsonSchema
 {
+    use Traits\DefinesJsonTypes;
     use Traits\HandlesAccess;
     use Traits\HandlesMutation;
     use Traits\HandlesTypeFactory;
     use Traits\HandlesTransformation;
 
-    public string $type;
-    public string $name;
-    public ?bool $nullable = null;
+    protected string $type;
+    protected string $name;
+    protected ?bool $nullable = null;
     /** @var JsonSchema[]|null */
-    public ?array $properties = null;
+    protected ?array $properties = null;
     /** @var array<string>|null */
-    public ?array $requiredProperties = null;
-    public ?JsonSchema $itemSchema = null;
+    protected ?array $requiredProperties = null;
+    protected ?JsonSchema $itemSchema = null;
     /** @var array<string>|null */
-    public ?array $enumValues = null;
-    public ?bool $additionalProperties = null;
-    public ?string $description = null;
-    public ?string $title = null;
+    protected ?array $enumValues = null;
+    protected ?bool $additionalProperties = null;
+    protected ?string $description = null;
+    protected ?string $title = null;
     /** @var array<string, mixed> */
-    public array $meta = [];
+    protected array $meta = [];
 
     public function __construct(
         string      $type,
@@ -91,13 +92,13 @@ class JsonSchema implements CanProvideJsonSchema
 
     // MAIN ////////////////////////////////////////////////////////////////////
 
-    public static function fromArray(array $data, ?string $name = null) : ?JsonSchema {
+    public static function fromArray(array $data, ?string $name = null) : JsonSchema {
         if (empty($data)) {
-            return null;
-        }
-
-        if (!isset($data['type'])) {
-            throw new Exception('Invalid schema: missing "type"');
+            return new JsonSchema(
+                type: '',
+                name: $name ?? '',
+                nullable: true,
+            );
         }
 
         $properties = [];
@@ -114,7 +115,7 @@ class JsonSchema implements CanProvideJsonSchema
         };
 
         return new self(
-            type: $data['type'],
+            type: $data['type'] ?? '',
             name: $name ?? $data['name'] ?? $data['x-name'] ?? '',
             nullable: $data['nullable'] ?? null,
             properties: $properties,
@@ -124,9 +125,10 @@ class JsonSchema implements CanProvideJsonSchema
             additionalProperties: $data['additionalProperties'] ?? null,
             description: $data['description'] ?? '',
             title: $data['title'] ?? '',
-            meta: self::extractMetaFields($data, [
-                'type', 'nullable', 'properties', 'required', 'items', 'enum', 'additionalProperties', 'title', 'description',
-            ]),
+            meta: self::extractMetaFields(
+                data: $data,
+                excludedFields: ['type', 'nullable', 'properties', 'required', 'items', 'enum', 'additionalProperties', 'title', 'description']
+            ),
         );
     }
 

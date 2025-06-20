@@ -2,8 +2,8 @@
 
 use Cognesy\Schema\Attributes\Description;
 use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Reflection\PropertyInfo;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
-use Cognesy\Schema\Utils\PropertyInfo;
 
 it('can get property name', function () {
     $propertyInfo = PropertyInfo::fromName(TestClassA::class, 'mixedProperty');

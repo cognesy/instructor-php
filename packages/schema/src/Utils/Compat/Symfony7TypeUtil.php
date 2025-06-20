@@ -3,8 +3,7 @@
 namespace Cognesy\Schema\Utils\Compat;
 
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Schema\Utils\TypeStringUtil;
+use Cognesy\Schema\TypeString\TypeString;
 use JetBrains\PhpStorm\Deprecated;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type\CollectionType;
@@ -13,33 +12,24 @@ use Symfony\Component\TypeInfo\TypeIdentifier;
 #[Deprecated('Not needed, temporarily kept until all usages are removed')]
 class Symfony7TypeUtil
 {
-    private readonly TypeDetailsFactory $factory;
-    private readonly TypeStringUtil $typeString;
-
-    public function __construct(
-    ) {
-        $this->factory = new TypeDetailsFactory();
-        $this->typeString = new TypeStringUtil();
-    }
-
     public function fromTypeInfo(Type $typeInfo) : TypeDetails {
         if ($this->isCollection($typeInfo)) {
-            $typeString = (string) $typeInfo;
-            $collectionType = $this->typeString->toCollectionTypeString($typeString);
-            return $this->factory->collectionType($collectionType);
+            $typeString = TypeString::fromString((string) $typeInfo);
+            $collectionType = $typeString->toCollectionType();
+            return TypeDetails::collection($collectionType);
         }
         if ($this->isArray($typeInfo)) {
-            return $this->factory->arrayType();
+            return TypeDetails::array();
         }
         if ($this->isScalar($typeInfo)) {
             $type = $this->typeInfoToScalar($typeInfo);
-            return $this->factory->scalarType($type);
+            return TypeDetails::scalar($type);
         }
         if ($this->isObject($typeInfo)) {
-            $className = $this->typeString->toObjectTypeString((string) $typeInfo);
-            return $this->factory->objectType($className);
+            $className = TypeString::fromString((string) $typeInfo)->toClassName();
+            return TypeDetails::object($className);
         }
-        return $this->factory->mixedType();
+        return TypeDetails::mixed();
         //throw new \Exception('Unsupported type: '.$typeInfo);
     }
 

@@ -5,13 +5,24 @@ use Cognesy\Utils\JsonSchema\JsonSchema;
 test('fromArray with empty array returns null', function () {
     $result = JsonSchema::fromArray([]);
 
-    expect($result)->toBeNull();
+    expect($result)->toBeInstanceOf(JsonSchema::class)
+        ->and($result->type())->toBe('')
+        ->and($result->name())->toBe('')
+        ->and($result->isNullable())->toBeTrue()
+        ->and($result->properties())->toBeEmpty()
+        ->and($result->requiredProperties())->toBeEmpty()
+        ->and($result->itemSchema())->toBeNull()
+        ->and($result->enumValues())->toBeEmpty()
+        ->and($result->additionalProperties())->toBeNull()
+        ->and($result->description())->toBe('')
+        ->and($result->title())->toBe('')
+        ->and($result->meta())->toBeEmpty();
 });
 
-test('fromArray without type throws exception', function () {
-    expect(fn() => JsonSchema::fromArray(['name' => 'empty']))
-        ->toThrow(Exception::class, 'Invalid schema: missing "type"');
-});
+//test('fromArray without type throws exception', function () {
+//    expect(fn() => JsonSchema::fromArray(['name' => 'empty']))
+//        ->toThrow(Exception::class, 'Invalid schema: missing "type"');
+//});
 
 test('fromArray creates string schema', function () {
     $array = [

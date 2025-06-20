@@ -2,11 +2,12 @@
 
 namespace Cognesy\Schema\Data\Schema\Traits\Schema;
 
+use Cognesy\Schema\Data\Schema\Schema;
 use Exception;
 
 trait ProvidesPropertyAccess
 {
-    /** @return \Cognesy\Schema\Data\Schema\Schema[] */
+    /** @return Schema[] */
     public function getPropertySchemas() : array {
         return $this->properties;
     }
@@ -16,7 +17,7 @@ trait ProvidesPropertyAccess
         return array_keys($this->properties);
     }
 
-    public function getPropertySchema(string $name) : \Cognesy\Schema\Data\Schema\Schema {
+    public function getPropertySchema(string $name) : Schema {
         if (!$this->hasProperty($name)) {
             throw new Exception('Property not found: ' . $name);
         }

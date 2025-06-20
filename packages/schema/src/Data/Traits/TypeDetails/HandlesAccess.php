@@ -34,6 +34,26 @@ trait HandlesAccess
         return in_array($this->type, [self::PHP_INT, self::PHP_STRING, self::PHP_BOOL, self::PHP_FLOAT]);
     }
 
+    public function isMixed() : bool {
+        return $this->type === self::PHP_MIXED;
+    }
+
+    public function isInt() : bool {
+        return $this->type === self::PHP_INT;
+    }
+
+    public function isString() : bool {
+        return $this->type === self::PHP_STRING;
+    }
+
+    public function isBool() : bool {
+        return $this->type === self::PHP_BOOL;
+    }
+
+    public function isFloat() : bool {
+        return $this->type === self::PHP_FLOAT;
+    }
+
     public function isObject() : bool {
         return $this->type === self::PHP_OBJECT;
     }

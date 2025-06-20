@@ -2,8 +2,15 @@
 
 namespace Cognesy\Schema\Factories;
 
+use Cognesy\Schema\Data\Schema\ArraySchema;
+use Cognesy\Schema\Data\Schema\CollectionSchema;
+use Cognesy\Schema\Data\Schema\EnumSchema;
 use Cognesy\Schema\Data\Schema\ObjectSchema;
-use Cognesy\Schema\Factories\Traits\JsonSchemaToSchema\HandlesMakers;
+use Cognesy\Schema\Data\Schema\OptionSchema;
+use Cognesy\Schema\Data\Schema\ScalarSchema;
+use Cognesy\Schema\Data\Schema\Schema;
+use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Utils\JsonSchema\JsonSchema;
 use Exception;
 
 /**
@@ -17,8 +24,6 @@ use Exception;
  */
 class JsonSchemaToSchema
 {
-    use HandlesMakers;
-
     private $defaultToolName;
     private $defaultToolDescription;
     private $defaultOutputClass;
@@ -41,18 +46,201 @@ class JsonSchemaToSchema
         string $customName = '',
         string $customDescription = '',
     ) : ObjectSchema {
-        $class = $jsonSchema['x-php-class'] ?? $this->defaultOutputClass;
-        $type = $jsonSchema['type'] ?? null;
-        if ($type !== 'object') {
-            throw new Exception('JSON Schema must have type: object');
+        $json = JsonSchema::fromArray($jsonSchema);
+        if (!$json->isObject()) {
+            throw new Exception('JSON Schema must be an object');
         }
-        $factory = new TypeDetailsFactory();
+        $class = $json->objectClass() ?? $this->defaultOutputClass;
         return new ObjectSchema(
-            type: $factory->objectType($class),
-            name: $customName ?? ($jsonSchema['x-title'] ?? $this->defaultToolName),
-            description: $customDescription ?? ($jsonSchema['description'] ?? $this->defaultToolDescription),
-            properties: $this->makeProperties($jsonSchema['properties'] ?? []),
-            required: $jsonSchema['required'] ?? [],
+            type: TypeDetails::object($class),
+            name: $customName ?? ($json->title() ?? $this->defaultToolName),
+            description: $customDescription ?? ($json->description() ?? $this->defaultToolDescription),
+            properties: $this->makeProperties($json->properties()),
+            required: $json->requiredProperties(),
         );
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////////
+
+    /**
+     * Create property schemas array (for object)
+     * @param JsonSchema[] $properties
+     * @returns Schema[]
+     */
+    private function makeProperties(array $properties) : array {
+        if (empty($properties)) {
+            throw new \Exception('Object must have at least one property');
+        }
+        /** @var Schema[] $result */
+        $result = [];
+        foreach ($properties as $propertyName => $propertySchema) {
+            $result[$propertyName] = $this->makePropertySchema($propertyName, $propertySchema);
+        }
+        return $result;
+    }
+
+    /**
+     * Create any property schema
+     */
+    private function makePropertySchema(string $name, JsonSchema $json) : Schema {
+        return match (true) {
+            $json->isEnum() => $this->makeEnumOrOptionProperty($name, $json),
+            $json->isObject() => $this->makeObjectProperty($name, $json),
+            $json->isCollection() => $this->makeCollectionProperty($name, $json),
+            $json->isArray() => $this->makeArrayProperty($name, $json),
+            $json->isScalar() => $this->makeScalarProperty($name, $json),
+            default => throw new \Exception('Unknown type: ' . $json->toString()),
+        };
+    }
+
+    /**
+     * Create enum or scalar property schema
+     */
+    private function makeEnumOrOptionProperty(string $name, JsonSchema $json) : Schema {
+        if ($json->hasObjectClass()) {
+            return $this->makeEnumProperty($name, $json);
+        }
+
+        if ($json->hasEnumValues()) {
+            return $this->makeOptionProperty($name, $json);
+        }
+
+        return match (true) {
+            $json->isScalar() => $this->makeScalarProperty($name, $json),
+            default => throw new \Exception('Unknown type: ' . $json->toString()),
+        };
+    }
+
+    /**
+     * Create enum property schema
+     */
+    private function makeEnumProperty(string $name, JsonSchema $json) : EnumSchema {
+        $backingType = $json->type();
+        if (!in_array($backingType, [JsonSchema::JSON_STRING, JsonSchema::JSON_INTEGER])) {
+            throw new \Exception('Enum type must be either string or int');
+        }
+        $class = $json->objectClass();
+        $type = TypeDetails::enum(
+            class:       $class,
+            backingType: TypeDetails::toPhpType($backingType),
+            values:      $json->enumValues()
+        );
+        return new EnumSchema(
+            type:        $type,
+            name:        $name,
+            description: $json->description()
+        );
+    }
+
+    /**
+     * Create option property schema
+     */
+    private function makeOptionProperty(string $name, JsonSchema $json) : OptionSchema {
+        $backingType = $json->type();
+        if (!in_array($backingType, [JsonSchema::JSON_STRING, JsonSchema::JSON_INTEGER])) {
+            throw new \Exception('Enum type must be either string or int');
+        }
+        if (!$json->hasEnumValues()) {
+            throw new \Exception('Option must have enum field values defined');
+        }
+        return new OptionSchema(
+            type:        TypeDetails::option($json->enumValues()),
+            name:        $name,
+            description: $json->description(),
+        );
+    }
+
+    /**
+     * Create scalar property schema
+     */
+    private function makeScalarProperty(string $name, JsonSchema $json) : ScalarSchema {
+        $phpType = TypeDetails::toPhpType($json->type());
+        $type = TypeDetails::scalar($phpType);
+        return new ScalarSchema(
+            type: $type,
+            name: $name,
+            description: $json->description(),
+        );
+    }
+
+    /**
+     * Create array property schema
+     */
+    private function makeCollectionProperty(string $name, JsonSchema $json) : CollectionSchema {
+        if (!$json->hasItemSchema()) {
+            throw new \Exception('Collection must have items field defining the nested type');
+        }
+        if (!$json->itemType()) {
+            throw new \Exception('Collection must have item types specified');
+        }
+        return new CollectionSchema(
+            type:             TypeDetails::collection($this->makeNestedType($json->itemSchema())),
+            name:             $name,
+            description:      $json->description(),
+            nestedItemSchema: $this->makePropertySchema('', $json->itemSchema()),
+        );
+    }
+
+    /**
+     * Create array property schema
+     */
+    private function makeArrayProperty(string $name, JsonSchema $json) : ArraySchema {
+        return new ArraySchema(
+            type:        TypeDetails::array(),
+            name:        $name,
+            description: $json->description(),
+        );
+    }
+
+    /**
+     * Create object property schema
+     */
+    private function makeObjectProperty(string $name, JsonSchema $json) : ObjectSchema {
+        if (!$json->hasObjectClass()) {
+            throw new \Exception('Object must have class specified via x-php-class field');
+        }
+        return new ObjectSchema(
+            type:        TypeDetails::object($json->objectClass()),
+            name:        $name,
+            description: $json->description(),
+            properties:  $this->makeProperties($json->properties()),
+            required:    $json->requiredProperties(),
+        );
+    }
+
+    /**
+     * Create nested type (for array property)
+     */
+    private function makeNestedType(JsonSchema $json) : TypeDetails {
+        if ($json->isArray()) {
+            throw new \Exception('Nested type cannot be array');
+        }
+
+        if ($json->isEnum()) {
+            if (!in_array($json->type(), [JsonSchema::JSON_STRING, JsonSchema::JSON_INTEGER])) {
+                throw new \Exception('Nested enum type must be either string or int');
+            }
+            if (!($json->hasEnumValues() || $json->hasObjectClass())) {
+                throw new \Exception('Nested enum must have either enum values or x-php-class field defined');
+            }
+            return TypeDetails::enum(
+                class: $json->objectClass(),
+                backingType: TypeDetails::toPhpType($json->type()),
+                values: $json->enumValues()
+            );
+        }
+
+        if ($json->isObject()) {
+            if (!$json->hasObjectClass()) {
+                throw new \Exception('Nested type must have x-php-class field with the target class name');
+            }
+            return TypeDetails::object($json->objectClass());
+        }
+
+        if ($json->isScalar()) {
+            return TypeDetails::scalar(type: TypeDetails::toPhpType($json->type()));
+        }
+
+        throw new \Exception('Unknown nested type: ' . $json->toString());
     }
 }

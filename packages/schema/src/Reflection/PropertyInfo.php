@@ -1,12 +1,13 @@
 <?php
 
-namespace Cognesy\Schema\Utils;
+namespace Cognesy\Schema\Reflection;
 
 use Cognesy\Schema\Contracts\CanGetPropertyType;
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Schema\Utils\AttributeUtils;
 use Cognesy\Schema\Utils\Compat\PropertyInfoV6Adapter;
 use Cognesy\Schema\Utils\Compat\PropertyInfoV7Adapter;
+use Cognesy\Schema\Utils\Descriptions;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -29,17 +30,23 @@ class PropertyInfo
         string $property
     ) : PropertyInfo {
         $reflection = new ReflectionProperty($class, $property);
+        return PropertyInfo::fromReflection($reflection);
+    }
+
+    static public function fromReflection(
+        ReflectionProperty $reflection
+    ) : PropertyInfo {
         return new PropertyInfo($reflection);
     }
 
-    public function __construct(
+    private function __construct(
         ReflectionProperty $reflection,
     ) {
         $this->reflection = $reflection;
         $this->propertyName = $reflection->getName();
         $this->parentClass = $reflection->getDeclaringClass();
         $this->class = $this->parentClass->getName();
-        $this->classInfo = new ClassInfo($this->class);
+        $this->classInfo = ClassInfo::fromString($this->class);
         $this->typeInfoAdapter = $this->makeAdapter();
     }
 
@@ -51,12 +58,8 @@ class PropertyInfo
         return $this->typeInfoAdapter->getPropertyTypeDetails();
     }
 
-    public function getTypeName() : string {
-        return $this->typeInfoAdapter->getPropertyTypeName();
-    }
-
     public function getDescription(): string {
-        return $this->typeInfoAdapter->getPropertyDescription();
+        return Descriptions::forProperty($this->class, $this->propertyName);
     }
 
     public function isNullable() : bool {
@@ -152,25 +155,20 @@ class PropertyInfo
     // INTERNAL /////////////////////////////////////////////////////////////////////////
 
     private function makeAdapter() : CanGetPropertyType {
+        $class = "Symfony\Component\PropertyInfo\PropertyInfoExtractor";
 //        $useV7Adapter = class_exists("\Symfony\Component\TypeInfo\Type")
 //            && interface_exists("\Symfony\Component\TypeInfo\TypeInterface");
-
-        $class = "Symfony\Component\PropertyInfo\PropertyInfoExtractor";
         $useV7Adapter = class_exists($class)
-            && method_exists($class, 'getTypes');
+            && method_exists($class, 'getType');
 
         return match(true) {
             $useV7Adapter => new PropertyInfoV7Adapter(
                 class: $this->class,
                 propertyName: $this->propertyName,
-                reflection: $this->reflection,
-                typeDetailsFactory: new TypeDetailsFactory(),
             ),
             default => new PropertyInfoV6Adapter(
                 class: $this->class,
                 propertyName: $this->propertyName,
-                reflection: $this->reflection,
-                typeDetailsFactory: new TypeDetailsFactory(),
             ),
         };
     }

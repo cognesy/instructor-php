@@ -3,7 +3,7 @@
 namespace Cognesy\Schema\Factories\Traits\TypeDetailsFactory;
 
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Utils\ClassInfo;
+use Cognesy\Schema\Reflection\ClassInfo;
 
 trait HandlesFactoryMethods
 {
@@ -14,6 +14,9 @@ trait HandlesFactoryMethods
      * @return TypeDetails
      */
     public function scalarType(string $type) : TypeDetails {
+        if (empty($type)) {
+            return $this->mixedType();
+        }
         if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
             throw new \Exception('Unsupported scalar type: '.$type);
         }
@@ -30,9 +33,9 @@ trait HandlesFactoryMethods
      * @return TypeDetails
      */
     public function arrayType(string $typeSpec = '') : TypeDetails {
-        if ($this->isArrayShape($typeSpec)) {
-            return $this->arrayShapeType($typeSpec);
-        }
+        //if ($this->isArrayShape($typeSpec)) {
+        //    return $this->arrayShapeType($typeSpec);
+        //}
         return new TypeDetails(
             type: TypeDetails::PHP_ARRAY,
             nestedType: null,
@@ -49,8 +52,8 @@ trait HandlesFactoryMethods
     public function collectionType(string $typeSpec) : TypeDetails {
         $typeName = $this->getCollectionType($typeSpec);
         $nestedType = match (true) {
-            ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed type not supported'),
-            ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('You have not specified array element type'),
+            ($typeName == TypeDetails::PHP_MIXED) => throw new \Exception('Mixed nested type not supported for collections - use array'),
+            ($typeName == TypeDetails::PHP_ARRAY) => throw new \Exception('You have not specified collection element type'),
             (in_array($typeName, TypeDetails::PHP_SCALAR_TYPES)) => $this->scalarType($typeName),
             default => $this->objectType($typeName),
         };
@@ -63,23 +66,13 @@ trait HandlesFactoryMethods
     }
 
     /**
-     * Create TypeDetails for array type
-     *
-     * @param string $typeSpec
-     * @return TypeDetails
-     */
-    public function arrayShapeType(string $typeSpec) : TypeDetails {
-        throw new \Exception('Array shape type not supported yet');
-    }
-
-    /**
      * Create TypeDetails for object type
      *
      * @param string $typeName
      * @return TypeDetails
      */
     public function objectType(string $typeName) : TypeDetails {
-        if ((new ClassInfo($typeName))->isEnum()) {
+        if (ClassInfo::fromString($typeName)->isEnum()) {
             return $this->enumType($typeName);
         }
         $instance = new TypeDetails(
@@ -97,7 +90,7 @@ trait HandlesFactoryMethods
      * @return TypeDetails
      */
     public function enumType(string $typeName, ?string $enumType = null, ?array $enumValues = null) : TypeDetails {
-        $classInfo = new ClassInfo($typeName);
+        $classInfo = ClassInfo::fromString($typeName);
         // enum specific
         if (!$classInfo->isBackedEnum()) {
             throw new \Exception('Enum must be backed by a string or int');
@@ -136,6 +129,16 @@ trait HandlesFactoryMethods
     }
 
     // INTERNAL ///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Create TypeDetails for array type
+     *
+     * @param string $typeSpec
+     * @return TypeDetails
+     */
+    private function arrayShapeType(string $typeSpec) : TypeDetails {
+        throw new \Exception('Array shape type not supported yet');
+    }
 
     /**
      * Extract array type from type string

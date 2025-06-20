@@ -9,7 +9,7 @@ use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Utils\ClassInfo;
+use Cognesy\Schema\Reflection\ClassInfo;
 
 trait HandlesFactoryMethods
 {
@@ -34,9 +34,9 @@ trait HandlesFactoryMethods
     }
 
     public function object(string $class, string $name = '', string $description = '', $properties = [], $required = []): ObjectSchema {
-        $classInfo = new ClassInfo($class);
+        $classInfo = ClassInfo::fromString($class);
         $properties = $properties ?: $this->getPropertySchemas($classInfo);
-        $required = $required ?: ($classInfo)->getRequiredProperties();
+        $required = $required ?: $classInfo->getRequiredProperties();
         $name = $name ?: $classInfo->getClass();
         $description = $description ?: $classInfo->getClassDescription();
         return new ObjectSchema(TypeDetails::object($class), $name, $description, $properties, $required);

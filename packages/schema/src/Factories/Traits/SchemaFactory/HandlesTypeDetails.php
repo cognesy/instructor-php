@@ -11,7 +11,7 @@ use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\ScalarSchema;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Utils\ClassInfo;
+use Cognesy\Schema\Reflection\ClassInfo;
 
 trait HandlesTypeDetails
 {
@@ -25,40 +25,47 @@ trait HandlesTypeDetails
      */
     protected function makeSchema(TypeDetails $type) : Schema {
         $classInfo = match(true) {
-            in_array($type->type, [TypeDetails::PHP_OBJECT, TypeDetails::PHP_ENUM], true) => new ClassInfo($type->class),
+            $type->hasClass() => ClassInfo::fromString($type->class),
             default => null,
         };
 
         return match (true) {
-            $classInfo && ($type->type === TypeDetails::PHP_OBJECT) => new ObjectSchema(
+            $type->isObject() && $classInfo => new ObjectSchema(
                 type: $type,
                 name: $type->classOnly(),
                 description: $classInfo->getClassDescription(),
                 properties: $this->getPropertySchemas($classInfo),
                 required: $classInfo->getRequiredProperties(),
             ),
-            $classInfo && ($type->type == TypeDetails::PHP_ENUM) => new EnumSchema(
+            $type->isObject() && !$type->hasClass() => new ObjectSchema(
                 type: $type,
-                name: $type->class,
-                description: $classInfo->getClassDescription(),
+                name: $type->classOnly(),
+                description: '',
+                properties: [],
+                required: [],
             ),
-            ($type->type === TypeDetails::PHP_COLLECTION) => new CollectionSchema(
+            $type->isEnum() => new EnumSchema(
+                type: $type,
+                name: $type->class(),
+                description: $classInfo?->getClassDescription() ?? '',
+            ),
+            $type->isCollection() => new CollectionSchema(
                 type: $type,
                 name: '',
                 description: '',
                 nestedItemSchema: $this->makePropertySchema($type, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName())
             ),
-            ($type->type === TypeDetails::PHP_ARRAY) => new ArraySchema(
+            $type->isArray() => new ArraySchema(
                 type: $type,
                 name: '',
                 description: ''
             ),
-            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema(
+            $type->isScalar() => new ScalarSchema(
                 type: $type,
                 name: 'value',
                 description: 'Correctly extracted value'
             ),
-            ($type->type === TypeDetails::PHP_MIXED) => new MixedSchema(
+            $type->isMixed() => new MixedSchema(
                 type: $type,
                 name: 'value',
                 description: 'Correctly extracted value'
@@ -77,18 +84,22 @@ trait HandlesTypeDetails
      */
     protected function makePropertySchema(TypeDetails $type, string $name, string $description): Schema {
         return match (true) {
-            ($type->type === TypeDetails::PHP_OBJECT) => $this->makeObjectSchema($type, $name, $description),
-            ($type->type === TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
-            ($type->type === TypeDetails::PHP_COLLECTION) => new CollectionSchema(
+            $type->isEnum() => new EnumSchema($type, $name, $description),
+            $type->isObject() => $this->makeObjectSchema($type, $name, $description),
+            $type->isCollection() => new CollectionSchema(
                 $type,
                 $name,
                 $description,
-                $this->makeNestedItemSchema($type->nestedType, 'item', 'Correctly extract items of type: '.$type->nestedType->shortName()),
+                $this->makeNestedItemSchema(
+                    type: $type->nestedType,
+                    name: 'item',
+                    description: 'Correctly extract items of type: ' . $type->nestedType->shortName()
+                ),
             ),
-            ($type->type === TypeDetails::PHP_ARRAY) => new ArraySchema($type, $name, $description),
-            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, $name, $description),
-            ($type->type === TypeDetails::PHP_MIXED) => new MixedSchema($type, $name, $description),
-            default => throw new \Exception('Unknown type: ' . $type->type),
+            $type->isScalar() => new ScalarSchema($type, $name, $description),
+            $type->isArray() => new ArraySchema($type, $name, $description),
+            $type->isMixed() => new MixedSchema($type, $name, $description),
+            default => throw new \Exception('Unknown type: ' . $type->toString()),
         };
     }
 
@@ -105,13 +116,13 @@ trait HandlesTypeDetails
             return new ObjectRefSchema($type, $name, $description);
         }
         // if references are turned off, just generate the object schema
-        $classInfo = new ClassInfo($type->class);
+        $classInfo = ClassInfo::fromString($type->class());
         return new ObjectSchema(
             $type,
             $name,
             $description,
             $this->getPropertySchemas($classInfo),
-            ($classInfo)->getRequiredProperties(),
+            $classInfo->getRequiredProperties(),
         );
     }
 
@@ -125,13 +136,13 @@ trait HandlesTypeDetails
      */
     protected function makeNestedItemSchema(TypeDetails $type, string $name, string $description): Schema {
         return match (true) {
-            ($type->type === TypeDetails::PHP_OBJECT) => $this->makeObjectSchema($type, $name, $description),
-            ($type->type === TypeDetails::PHP_ENUM) => new EnumSchema($type, $name, $description),
-            ($type->type === TypeDetails::PHP_COLLECTION) => throw new \Exception('Collections are not allowed as collection nested items'),
-            ($type->type === TypeDetails::PHP_ARRAY) => throw new \Exception('Arrays are not allowed as collection nested items'),
-            in_array($type->type, TypeDetails::PHP_SCALAR_TYPES) => new ScalarSchema($type, $name, $description),
-            ($type->type === TypeDetails::PHP_MIXED) => new MixedSchema($type, $name, $description),
-            default => throw new \Exception('Unknown type: ' . $type->type),
+            $type->isObject() => $this->makeObjectSchema($type, $name, $description),
+            $type->isEnum() => new EnumSchema($type, $name, $description),
+            $type->isCollection() => throw new \Exception('Collections are not allowed as collection nested items'),
+            $type->isArray() => throw new \Exception('Arrays are not allowed as collection nested items'),
+            $type->isScalar() => new ScalarSchema($type, $name, $description),
+            $type->isMixed() => new MixedSchema($type, $name, $description),
+            default => throw new \Exception('Unknown type: ' . $type->toString()),
         };
     }
 }

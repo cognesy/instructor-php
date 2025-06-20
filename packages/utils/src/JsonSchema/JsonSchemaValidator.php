@@ -15,7 +15,10 @@ class JsonSchemaValidator
     // INTERNAL //////////////////////////////////////////////////////////
 
     private function validateType(string $type) : void {
-        if (!in_array($type, ['object', 'array', 'string', 'boolean', 'number', 'integer'])) {
+        if (empty($type)) {
+            return;
+        }
+        if (!in_array($type, JsonSchema::JSON_TYPES)) {
             throw new \Exception("Invalid type: {$type}");
         }
     }
@@ -47,11 +50,11 @@ class JsonSchemaValidator
             return;
         }
         foreach ($properties as $propertyName => $schema) {
-            switch($schema->type) {
-                case 'object':
+            switch($schema->type()) {
+                case JsonSchema::JSON_OBJECT:
                     $this->validateObjectProperty($schema);
                     break;
-                case 'array':
+                case JsonSchema::JSON_ARRAY:
                     $this->validateArrayProperty($schema);
                     break;
                 default:
@@ -61,13 +64,13 @@ class JsonSchemaValidator
     }
 
     private function validateProperty(?JsonSchema $schema) : void {
-        if ($schema === null) {
+        if ($schema === null || empty($schema)) {
             return;
         }
         if (empty($schema->type())) {
             throw new \Exception('Invalid property: missing "type"');
         }
-        if (!in_array($schema->type(), ['object', 'array', 'string', 'boolean', 'number', 'integer'])) {
+        if (!in_array($schema->type(), JsonSchema::JSON_TYPES)) {
             throw new \Exception("Invalid property type: {$schema->type()}");
         }
     }
@@ -79,10 +82,9 @@ class JsonSchemaValidator
         if (empty($schema->type())) {
             throw new \Exception('Invalid property: missing "type"');
         }
-        if (empty($schema->itemSchema())) {
-            throw new \Exception('Invalid property: missing "items"');
+        if (!empty($schema->itemSchema())) {
+            $this->validateProperty($schema->itemSchema());
         }
-        $this->validateProperty($schema->itemSchema());
     }
 
     private function validateObjectProperty(?JsonSchema $schema) : void {

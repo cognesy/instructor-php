@@ -1,21 +1,18 @@
 <?php
-namespace Cognesy\Schema\Utils;
+namespace Cognesy\Schema\Reflection;
 
-use Cognesy\Schema\Attributes\Description;
-use Cognesy\Schema\Attributes\Instructions;
 use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Utils\Descriptions;
 use Exception;
 use ReflectionClass;
-use ReflectionEnum;
 
 class ClassInfo {
-    private string $class;
-    private ReflectionClass $reflectionClass;
-    private ReflectionEnum $reflectionEnum;
-    private array $propertyInfos = [];
-    private bool $isNullable = false;
+    protected string $class;
+    protected ReflectionClass $reflectionClass;
+    protected array $propertyInfos = [];
+    protected bool $isNullable = false;
 
-    public function __construct(string $class) {
+    protected function __construct(string $class) {
         // if class name starts with ?, remove it
         if (str_starts_with($class, '?')) {
             $class = substr($class, 1);
@@ -23,9 +20,15 @@ class ClassInfo {
         }
         $this->class = $class;
         $this->reflectionClass = new ReflectionClass($class);
-        if ($this->isEnum()) {
-            $this->reflectionEnum = new ReflectionEnum($class);
-        }
+    }
+
+    public static function fromString(string $class) : self {
+        return match(true) {
+            // is any enum class
+            class_exists($class) && is_subclass_of($class, \BackedEnum::class) => new EnumInfo($class),
+            class_exists($class) => new ClassInfo($class),
+            default => throw new Exception("Cannot create ClassInfo for `$class`"),
+        };
     }
 
     public function getClass() : string {
@@ -89,21 +92,7 @@ class ClassInfo {
     }
 
     public function getClassDescription() : string {
-        $reflection = $this->reflectionClass;
-
-        // get #[Description] attributes
-        $descriptions = array_merge(
-            AttributeUtils::getValues($reflection, Description::class, 'text'),
-            AttributeUtils::getValues($reflection, Instructions::class, 'text'),
-        );
-
-        // get class description from PHPDoc
-        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment());
-        if ($phpDocDescription) {
-            $descriptions[] = $phpDocDescription;
-        }
-
-        return trim(implode('\n', array_filter($descriptions)));
+        return Descriptions::forClass($this->class);
     }
 
     /** @return string[] */
@@ -123,31 +112,11 @@ class ClassInfo {
     }
 
     public function isEnum() : bool {
-        return $this->reflectionClass->isEnum();
+        return false;
     }
 
     public function isBackedEnum() : bool {
-        return !isset($this->reflectionEnum)
-            ? false
-            : $this->reflectionEnum->isBacked();
-    }
-
-    public function enumBackingType() : string {
-        return isset($this->reflectionEnum)
-            ? $this->reflectionEnum->getBackingType()?->getName()
-            : throw new \Exception("Not an enum");
-    }
-
-    /** @return string[]|int[] */
-    public function enumValues() : array {
-        $enum = isset($this->reflectionEnum)
-            ? $this->reflectionEnum
-            : throw new \Exception("Not an enum");
-        $values = [];
-        foreach ($enum->getCases() as $item) {
-            $values[] = $item->getValue()->value;
-        }
-        return $values;
+        return false;
     }
 
     public function implementsInterface(string $interface) : bool {
@@ -198,7 +167,7 @@ class ClassInfo {
      * @param callable[] $filters
      * @return PropertyInfo[]
      */
-    private function filterProperties(array $filters) : array {
+    protected function filterProperties(array $filters) : array {
         $propertyInfos = $this->getProperties();
         foreach($filters as $filter) {
             if (!is_callable($filter)) {
@@ -210,11 +179,11 @@ class ClassInfo {
     }
 
     /** @return PropertyInfo[] */
-    private function makePropertyInfos() : array {
+    protected function makePropertyInfos() : array {
         $properties = $this->reflectionClass->getProperties() ?? [];
         $info = [];
         foreach ($properties as $property) {
-            $info[$property->name] = new PropertyInfo($property);
+            $info[$property->name] = PropertyInfo::fromReflection($property);
         }
         return $info;
     }
@@ -223,7 +192,7 @@ class ClassInfo {
      * @param ClassInfo $classInfo
      * @return array<string, PropertyInfo>
      */
-    private function getFilteredPropertyData(array $filters, callable $extractor) : array {
+    protected function getFilteredPropertyData(array $filters, callable $extractor) : array {
         return array_map(
             callback: fn(PropertyInfo $property) => $extractor($property),
             array: $this->filterProperties($filters),

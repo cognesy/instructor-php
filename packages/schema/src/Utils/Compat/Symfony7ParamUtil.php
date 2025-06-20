@@ -2,7 +2,7 @@
 
 namespace Cognesy\Schema\Utils\Compat;
 
-use Cognesy\Schema\Utils\ParameterInfo;
+use Cognesy\Schema\Reflection\ParameterInfo;
 use JetBrains\PhpStorm\Deprecated;
 use ReflectionParameter;
 use ReflectionType;

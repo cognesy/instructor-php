@@ -6,8 +6,8 @@ use Cognesy\Schema\Attributes\InputField;
 use Cognesy\Schema\Attributes\OutputField;
 use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Utils\ClassInfo;
-use Cognesy\Schema\Utils\PropertyInfo;
+use Cognesy\Schema\Reflection\ClassInfo;
+use Cognesy\Schema\Reflection\PropertyInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 trait CreatesFromClassMetadata
@@ -29,7 +29,7 @@ trait CreatesFromClassMetadata
         string $class,
         string $description = '',
     ) : Signature {
-        $classInfo = new ClassInfo($class);
+        $classInfo = ClassInfo::fromString($class);
         $description = $description ?: $classInfo->getClassDescription();
 
         $inputProperties = $classInfo->getFilteredPropertyNames([

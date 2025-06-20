@@ -2,15 +2,8 @@
 
 namespace Cognesy\Schema\Utils\Compat;
 
-use Cognesy\Schema\Attributes\Description;
-use Cognesy\Schema\Attributes\InputField;
-use Cognesy\Schema\Attributes\Instructions;
-use Cognesy\Schema\Attributes\OutputField;
 use Cognesy\Schema\Contracts\CanGetPropertyType;
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Schema\Utils\AttributeUtils;
-use ReflectionProperty;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -20,86 +13,48 @@ use Symfony\Component\TypeInfo\TypeIdentifier;
 
 class PropertyInfoV7Adapter implements CanGetPropertyType
 {
-    private TypeDetailsFactory $typeDetailsFactory;
     private string $class;
     private string $propertyName;
-
-    private ?Type $type = null;
-    private PropertyInfoExtractor $extractor;
-    private ReflectionProperty $reflection;
 
     public function __construct(
         string $class,
         string $propertyName,
-        ReflectionProperty $reflection,
-        TypeDetailsFactory $typeDetailsFactory,
     ) {
+//dump('prop info v7', $class, $propertyName);
         // if class name starts with ?, remove it
         if (str_starts_with($class, '?')) {
             $class = substr($class, 1);
         }
         $this->class = $class;
         $this->propertyName = $propertyName;
-        $this->reflection = $reflection;
-        $this->typeDetailsFactory = $typeDetailsFactory;
-    }
-
-    public function getPropertyTypeName(): string {
-        $type = $this->getType();
-        return match (true) {
-            $type->isIdentifiedBy(TypeIdentifier::INT) => 'int',
-            $type->isIdentifiedBy(TypeIdentifier::FLOAT) => 'float',
-            $type->isIdentifiedBy(TypeIdentifier::STRING) => 'string',
-            $type->isIdentifiedBy(TypeIdentifier::BOOL) => 'bool',
-            $type->isIdentifiedBy(TypeIdentifier::ARRAY) => $this->getCollectionOrArrayType($type),
-            $type->isIdentifiedBy(TypeIdentifier::OBJECT) => $type->getClassName(),
-            $type->isIdentifiedBy(TypeIdentifier::CALLABLE) => 'callable',
-            $type->isIdentifiedBy(TypeIdentifier::ITERABLE) => 'iterable',
-            $type->isIdentifiedBy(TypeIdentifier::RESOURCE) => 'resource',
-            $type->isIdentifiedBy(TypeIdentifier::NULL) => 'null',
-            default => 'mixed',
-        };
     }
 
     public function getPropertyTypeDetails(): TypeDetails {
-        $typeName = $this->getPropertyTypeName();
-        return $this->typeDetailsFactory->fromTypeName($typeName);
-    }
-
-    public function getPropertyDescription(): string {
-        // get #[Description] attributes
-        $descriptions = array_merge(
-            AttributeUtils::getValues($this->reflection, Description::class, 'text'),
-            AttributeUtils::getValues($this->reflection, Instructions::class, 'text'),
-            AttributeUtils::getValues($this->reflection, InputField::class, 'description'),
-            AttributeUtils::getValues($this->reflection, OutputField::class, 'description'),
-        );
-        // get property description from PHPDoc
-        $descriptions[] = $this->extractor()->getShortDescription($this->class, $this->propertyName);
-        $descriptions[] = $this->extractor()->getLongDescription($this->class, $this->propertyName);
-
-        return trim(implode('\n', array_filter($descriptions)));
+        $types = $this->makeTypes();
+        $typeString = $this->typeToString($types);
+        return TypeDetails::fromPhpDocTypeString($typeString);
     }
 
     public function isPropertyNullable(): bool {
-        return $this->getType()->isNullable();
+        return $this->makeTypes()->isNullable();
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
-    private function getType(): Type {
-        if (!isset($this->type)) {
-            $this->type = $this->makeTypes();
+    private function typeToString(Type $type): string {
+        $types = [];
+        if ($type->isIdentifiedBy(TypeIdentifier::INT)) { $types[] = 'int'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::FLOAT)) { $types[] = 'float'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::STRING)) { $types[] = 'string'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::BOOL)) { $types[] = 'bool'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::ARRAY)) { $types[] = $this->getCollectionOrArrayType($type); }
+        if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) { $types[] = $type->getClassName(); }
+        if ($type->isIdentifiedBy(TypeIdentifier::ITERABLE)) { $types[] = $this->getCollectionOrArrayType($type); }
+        //if ($type->isIdentifiedBy(TypeIdentifier::NULL)) { $types[] = 'null'; }
+        if (empty($types)) {
+            $types[] = 'mixed';
         }
-        return $this->type;
-    }
-
-    private function makeTypes() : Type {
-        $type = $this->extractor()->getType($this->class, $this->propertyName);
-        if (is_null($type)) {
-            $type = Type::mixed();
-        }
-        return $type;
+        return implode('|', $types);
     }
 
     private function getCollectionOrArrayType(Type $type): string {
@@ -107,30 +62,34 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         if (is_null($valueType)) {
             return 'array';
         }
-        return match (true) {
-            $valueType->isIdentifiedBy(TypeIdentifier::INT) => 'int',
-            $valueType->isIdentifiedBy(TypeIdentifier::FLOAT) => 'float',
-            $valueType->isIdentifiedBy(TypeIdentifier::STRING) => 'string',
-            $valueType->isIdentifiedBy(TypeIdentifier::BOOL) => 'bool',
-            $valueType->isIdentifiedBy(TypeIdentifier::ARRAY) => throw new \Exception("Nested arrays are not supported"),
-            $valueType->isIdentifiedBy(TypeIdentifier::OBJECT) => $valueType->getClassName(),
-            $valueType->isIdentifiedBy(TypeIdentifier::CALLABLE) => 'callable',
-            $valueType->isIdentifiedBy(TypeIdentifier::ITERABLE) => 'iterable',
-            $valueType->isIdentifiedBy(TypeIdentifier::RESOURCE) => 'resource',
-            $valueType->isIdentifiedBy(TypeIdentifier::NULL) => 'null',
-            default => 'array',
-        };
+        return $this->arrayTypeToString($valueType);
     }
 
-    private function extractor() : PropertyInfoExtractor {
-        if (!isset($this->extractor)) {
-            $this->extractor = $this->makeExtractor();
+    private function arrayTypeToString(Type $type) : string {
+        $types = [];
+        if ($type->isIdentifiedBy(TypeIdentifier::INT)) { $types[] = 'int[]'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::FLOAT)) { $types[] = 'float[]'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::STRING)) { $types[] = 'string[]'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::BOOL)) { $types[] = 'bool[]'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::ARRAY)) { $types[] = 'array'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::OBJECT)) { $types[] = $type->getClassName(). '[]'; }
+        if ($type->isIdentifiedBy(TypeIdentifier::ITERABLE)) { $types[] = 'array'; }
+        //if ($type->isIdentifiedBy(TypeIdentifier::NULL)) { $types[] = 'null'; }
+        if (empty($types)) {
+            $types[] = 'array';
         }
-        return $this->extractor;
+        return implode('|', $types);
+    }
+
+    private function makeTypes() : Type {
+        $type = $this->makeExtractor()->getType($this->class, $this->propertyName);
+        if (is_null($type)) {
+            $type = Type::mixed();
+        }
+        return $type;
     }
 
     private function makeExtractor() : PropertyInfoExtractor {
-        // initialize extractor instance
         $phpDocExtractor = new PhpDocExtractor();
         $reflectionExtractor = new ReflectionExtractor();
         return new PropertyInfoExtractor(

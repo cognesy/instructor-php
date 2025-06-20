@@ -56,10 +56,10 @@ abstract class SignatureField
         return $field;
     }
 
-    public static function collection(string $name, string $nestedTypeName, string $description = '') {
+    public static function collection(string $name, string $itemType, string $description = '') {
         $field = new static($description);
         $field->name = $name;
-        $field->type = TypeDetails::collection(TypeDetails::fromTypeName($nestedTypeName));
+        $field->type = TypeDetails::collection($itemType);
         return $field;
     }
 

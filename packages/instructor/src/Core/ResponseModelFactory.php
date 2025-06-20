@@ -15,7 +15,6 @@ use Cognesy\Schema\Data\Schema\Schema;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
 use Cognesy\Schema\Visitors\SchemaToJsonSchema;
 use Cognesy\Utils\JsonSchema\Contracts\CanProvideJsonSchema;
 use Cognesy\Utils\Str;
@@ -29,7 +28,6 @@ class ResponseModelFactory
     protected StructuredOutputConfig $config;
     protected EventDispatcherInterface $events;
 
-    protected TypeDetailsFactory $typeDetailsFactory;
     protected JsonSchemaToSchema $schemaConverter;
 
     public function __construct(
@@ -40,7 +38,6 @@ class ResponseModelFactory
     ) {
         $this->toolCallBuilder = $toolCallBuilder;
         $this->schemaFactory = $schemaFactory;
-        $this->typeDetailsFactory = new TypeDetailsFactory;
         $this->config = $config;
         $this->schemaConverter = new JsonSchemaToSchema(
             defaultToolName: $config->toolName(),

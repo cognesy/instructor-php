@@ -20,7 +20,7 @@ test('schema can be modified using withTitle', function () {
     $schema = JsonSchema::object()
         ->withTitle('User Model');
 
-    expect($schema->title)->toBe('User Model');
+    expect($schema->title())->toBe('User Model');
 });
 
 test('schema can be modified using withNullable', function () {
@@ -40,7 +40,7 @@ test('schema can be modified using withMeta', function () {
     $schema = JsonSchema::string()
         ->withMeta($meta);
 
-    expect($schema->meta)->toBe($meta);
+    expect($schema->meta())->toBe($meta);
 });
 
 test('string schema can be modified using withEnum', function () {
@@ -48,7 +48,7 @@ test('string schema can be modified using withEnum', function () {
     $schema = JsonSchema::string()
         ->withEnumValues($enum);
 
-    expect($schema->enumValues)->toBe($enum);
+    expect($schema->enumValues())->toBe($enum);
 });
 
 test('object schema can be modified using withProperties', function () {
@@ -70,7 +70,7 @@ test('array schema can be modified using withItemSchema', function () {
     $schema = JsonSchema::array()
         ->withItemSchema($itemSchema);
 
-    expect($schema->itemSchema)->not->toBeEmpty();
+    expect($schema->itemSchema())->not->toBeEmpty();
 });
 
 test('object schema can be modified using withRequired', function () {

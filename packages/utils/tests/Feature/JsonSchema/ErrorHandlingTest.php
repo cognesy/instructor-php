@@ -39,15 +39,16 @@ test('toFunctionCall throws exception when called on non-object schema', functio
     })->toThrow(Exception::class, 'Cannot convert to function call: string');
 });
 
-test('fromArray throws exception when type is missing', function () {
-    $data = [
-        'description' => 'Test description',
-    ];
-
-    expect(function () use ($data) {
-        JsonSchema::fromArray($data);
-    })->toThrow(Exception::class, 'Invalid schema: missing "type"');
-});
+// EXCLUDED - This is valid schema
+//test('fromArray throws exception when type is missing', function () {
+//    $data = [
+//        'description' => 'Test description',
+//    ];
+//
+//    expect(function () use ($data) {
+//        JsonSchema::fromArray($data);
+//    })->toThrow(Exception::class, 'Invalid schema: missing "type"');
+//});
 
 test('toKeyedProperties throws exception when property name is missing', function () {
     $reflectionClass = new ReflectionClass(JsonSchema::class);

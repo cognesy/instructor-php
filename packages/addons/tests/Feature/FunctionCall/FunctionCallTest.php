@@ -2,9 +2,6 @@
 
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Addons\Tests\Examples\Call\TestClass;
-use function Cognesy\Addons\Tests\Examples\Call\testFunction;
-use function Cognesy\Addons\Tests\Examples\Call\testFunctionWithDefault;
-use function Cognesy\Addons\Tests\Examples\Call\variadicFunction;
 
 it('can process function by name', function () {
     $call = FunctionCall::fromFunctionName('Cognesy\Addons\Tests\Examples\Call\testFunction');
@@ -13,7 +10,7 @@ it('can process function by name', function () {
 });
 
 it('can process function by callable', function () {
-    $call = FunctionCall::fromCallable(testFunction(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
     expect($call->getName())->toBe('testFunction');
     expect($call->getDescription())->toBe('Test function description');
 });
@@ -32,7 +29,7 @@ it('can process class method by callable', function () {
 });
 
 it('can get arguments from function', function () {
-    $call = FunctionCall::fromCallable(testFunction(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
     $arguments = $call->getArgumentNames();
     expect($arguments)->toBe([
         'intParam',
@@ -54,7 +51,7 @@ it('can get arguments from method', function () {
 });
 
 it('it can handle variadic args', function () {
-    $call = FunctionCall::fromCallable(variadicFunction(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\variadicFunction(...));
     $arguments = $call->getArgumentNames();
     expect($arguments)->toBe(['objectParams']);
     expect($call->getArgumentInfo('objectParams')->typeDetails()->type)->toBe('collection');
@@ -63,7 +60,7 @@ it('it can handle variadic args', function () {
 });
 
 it('it can handle default args', function () {
-    $call = FunctionCall::fromCallable(testFunctionWithDefault(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunctionWithDefault(...));
     $arguments = $call->getArgumentNames();
     expect($arguments)->toBe([
         'objectParam',
@@ -88,7 +85,7 @@ it('can deserialize from JSON', function () {
             "boolField": true
         }
     }';
-    $call = FunctionCall::fromCallable(testFunction(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
     $call->fromJson($json);
     $args = $call->transform();
     expect($args['intParam'])->toBe(1);
@@ -101,7 +98,7 @@ it('can deserialize from JSON', function () {
 });
 
 it('can provide JSON schema of function call', function () {
-    $call = FunctionCall::fromCallable(testFunction(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
     $jsonSchema = $call->toJsonSchema();
     expect($jsonSchema)->toBe([
         'type' => 'object',
@@ -129,7 +126,7 @@ it('can provide JSON schema of function call', function () {
 });
 
 it('can provide OpenAI tool call format for function', function () {
-    $call = FunctionCall::fromCallable(testFunction(...));
+    $call = FunctionCall::fromCallable(Cognesy\Addons\Tests\Examples\Call\testFunction(...));
     $toolCall = $call->toToolCall();
     expect($toolCall)->toBe([
         'type' => 'function',

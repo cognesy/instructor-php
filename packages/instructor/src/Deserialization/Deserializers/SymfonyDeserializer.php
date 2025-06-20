@@ -1,4 +1,5 @@
 <?php
+
 namespace Cognesy\Instructor\Deserialization\Deserializers;
 
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeClass;
@@ -20,7 +21,10 @@ use Symfony\Component\Serializer\Serializer;
 
 class SymfonyDeserializer implements CanDeserializeClass
 {
-    public function __construct(protected ?PropertyInfoExtractor $typeExtractor = null, protected ?Serializer $serializer = null,) {}
+    public function __construct(
+        protected ?PropertyInfoExtractor $typeExtractor = null,
+        protected ?Serializer $serializer = null,
+    ) {}
 
     public function fromJson(string $jsonData, string $dataType): mixed {
         return match ($dataType) {
@@ -96,7 +100,7 @@ class SymfonyDeserializer implements CanDeserializeClass
                     classMetadataFactory: $classMetadataFactory,
                     propertyAccessor: $propertyAccessor,
                     propertyTypeExtractor: $typeExtractor,
-                    propertyInfoExtractor: $typeExtractor,
+                    //propertyInfoExtractor: $typeExtractor,
                 ),
                 //new ObjectNormalizer(propertyTypeExtractor: $typeExtractor),
                 new PropertyNormalizer(

@@ -106,7 +106,7 @@ class SchemaToJsonSchema implements CanVisitSchema
         ]);
     }
 
-    public function visitOptionSchema(OptionSchema $param): void {
+    public function visitOptionSchema(OptionSchema $schema): void {
         $this->result = array_filter([
             'description' => $schema->description ?? '',
             'type' => 'string',

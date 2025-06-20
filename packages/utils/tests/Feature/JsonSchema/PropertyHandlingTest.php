@@ -62,7 +62,7 @@ test('withProperties replaces existing properties', function () {
         JsonSchema::string(name: 'new3'),
     ]);
 
-    expect($newSchema->properties)->toHaveCount(3)
+    expect($newSchema->properties())->toHaveCount(3)
         ->and(array_keys($newSchema->properties()))->toBe(['new1', 'new2', 'new3']);
 });
 
@@ -111,7 +111,7 @@ test('meta data is properly stored and retrieved', function () {
         meta: $meta,
     );
 
-    expect($schema->meta)->toBe($meta);
+    expect($schema->meta())->toBe($meta);
 
     // Check that meta data is correctly added to the array output
     $array = $schema->toArray();

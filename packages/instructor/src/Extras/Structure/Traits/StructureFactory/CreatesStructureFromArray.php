@@ -1,10 +1,10 @@
 <?php
 
-namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
+namespace Cognesy\Instructor\Extras\Structure\Traits\StructureFactory;
 
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Schema\Data\TypeDetails;
 
 trait CreatesStructureFromArray
 {
@@ -15,9 +15,8 @@ trait CreatesStructureFromArray
 
     static private function makeArrayFields(array $data) : array {
         $fields = [];
-        $typeDetailsFactory = new TypeDetailsFactory;
         foreach ($data as $name => $value) {
-            $typeDetails = $typeDetailsFactory->fromValue($value);
+            $typeDetails = TypeDetails::fromValue($value);
             $fields[] = FieldFactory::fromTypeDetails($name, $typeDetails, '')->optional();
         }
         return $fields;

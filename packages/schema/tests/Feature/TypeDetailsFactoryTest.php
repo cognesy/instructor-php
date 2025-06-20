@@ -1,24 +1,21 @@
 <?php
 
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Schema\Reflection\PropertyInfo;
 use Cognesy\Schema\Tests\Examples\Schema\SimpleClass;
 
 test('creates TypeDetails from type string', function () {
-    $factory = new TypeDetailsFactory();
-
-    $stringType = $factory->fromTypeName(TypeDetails::PHP_STRING);
+    $stringType = TypeDetails::fromTypeName(TypeDetails::PHP_STRING);
     $this->assertInstanceOf(TypeDetails::class, $stringType);
     $this->assertSame(TypeDetails::PHP_STRING, $stringType->type());
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Object type must have a class name');
-    $factory->fromTypeName('object');
+    TypeDetails::fromTypeName(TypeDetails::PHP_OBJECT);
 });
 
 test('creates TypeDetails from PropertyInfo', function () {
-    $factory = new TypeDetailsFactory();
-    $propertyInfo = new \Cognesy\Schema\Utils\PropertyInfo(
+    $propertyInfo = PropertyInfo::fromReflection(
         new \ReflectionProperty(SimpleClass::class, 'stringVar')
     );
     $typeDetails = $propertyInfo->getTypeDetails();
@@ -27,47 +24,39 @@ test('creates TypeDetails from PropertyInfo', function () {
 });
 
 test('creates TypeDetails from value', function () {
-    $factory = new TypeDetailsFactory();
-
-    $stringType = $factory->fromValue('test');
+    $stringType = TypeDetails::fromValue('test');
     $this->assertInstanceOf(TypeDetails::class, $stringType);
     $this->assertSame(TypeDetails::PHP_STRING, $stringType->type());
 });
 
 test('creates TypeDetails for scalar type', function () {
-    $factory = new TypeDetailsFactory();
-
-    $intType = $factory->scalarType(TypeDetails::PHP_INT);
+    $intType = TypeDetails::scalar(TypeDetails::PHP_INT);
     $this->assertInstanceOf(TypeDetails::class, $intType);
     $this->assertSame(TypeDetails::PHP_INT, $intType->type());
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Unsupported scalar type: unknown');
-    $factory->scalarType('unknown');
+    TypeDetails::scalar('unknown');
 });
 
 test('creates TypeDetails for array type', function () {
-    $factory = new TypeDetailsFactory();
-
     // Test with array
-    $arrayType = $factory->arrayType();
+    $arrayType = TypeDetails::array();
     $this->assertInstanceOf(TypeDetails::class, $arrayType);
     $this->assertSame(TypeDetails::PHP_ARRAY, $arrayType->type());
     $this->assertSame(null, $arrayType->nestedType());
 });
 
 test('creates TypeDetails for collection type', function () {
-    $factory = new TypeDetailsFactory();
-
     // Test with array brackets
-    $collectionType = $factory->collectionType('int[]');
+    $collectionType = TypeDetails::collection('int[]');
     $this->assertInstanceOf(TypeDetails::class, $collectionType);
     $this->assertSame(TypeDetails::PHP_COLLECTION, $collectionType->type());
     $this->assertInstanceOf(TypeDetails::class, $collectionType->nestedType());
     $this->assertSame(TypeDetails::PHP_INT, $collectionType->nestedType->type());
 
     // Test without array brackets
-    $collectionType = $factory->collectionType(TypeDetails::PHP_INT);
+    $collectionType = TypeDetails::collection(TypeDetails::PHP_INT);
     $this->assertInstanceOf(TypeDetails::class, $collectionType);
     $this->assertSame(TypeDetails::PHP_COLLECTION, $collectionType->type());
     $this->assertInstanceOf(TypeDetails::class, $collectionType->nestedType());
@@ -75,29 +64,25 @@ test('creates TypeDetails for collection type', function () {
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Class "unknown" does not exist');
-    $factory->fromTypeName('unknown[]');
+    TypeDetails::fromTypeName('unknown[]');
 });
 
 test('creates TypeDetails for object type', function () {
-    $factory = new TypeDetailsFactory();
-
     $className = SimpleClass::class;
-    $objectType = $factory->objectType($className);
+    $objectType = TypeDetails::object($className);
     $this->assertInstanceOf(TypeDetails::class, $objectType);
     $this->assertSame(TypeDetails::PHP_OBJECT, $objectType->type());
     $this->assertSame($className, $objectType->class());
 });
 
 test('creates TypeDetails for enum type', function () {
-    $factory = new TypeDetailsFactory();
-
     $enumClassName = 'Cognesy\Schema\Tests\Examples\Schema\StringEnum';
-    $enumType = $factory->enumType($enumClassName);
+    $enumType = TypeDetails::enum($enumClassName);
     $this->assertInstanceOf(TypeDetails::class, $enumType);
     $this->assertSame(TypeDetails::PHP_ENUM, $enumType->type());
     $this->assertSame($enumClassName, $enumType->class());
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Class "UnknownEnum" does not exist');
-    $factory->enumType('UnknownEnum');
+    TypeDetails::enum('UnknownEnum');
 });

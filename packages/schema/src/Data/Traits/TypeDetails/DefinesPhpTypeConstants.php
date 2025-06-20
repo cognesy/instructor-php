@@ -14,6 +14,7 @@ trait DefinesPhpTypeConstants
     public const PHP_FLOAT = 'float';
     public const PHP_STRING = 'string';
     public const PHP_BOOL = 'bool';
+    public const PHP_NULL = 'null';
     public const PHP_UNSUPPORTED = null;
 
     public const PHP_TYPES = [
@@ -33,6 +34,7 @@ trait DefinesPhpTypeConstants
         self::PHP_FLOAT,
         self::PHP_STRING,
         self::PHP_BOOL,
+        //self::PHP_NULL,
     ];
 
     public const PHP_OBJECT_TYPES = [

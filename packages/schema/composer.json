@@ -36,7 +36,6 @@
     "pestphp/pest": "^2.34",
     "phpstan/phpstan": "^1.11",
     "roave/security-advisories": "dev-latest",
-    "symfony/type-info": "^7.3",
     "symfony/var-dumper": "^7.3",
     "vimeo/psalm": "^6.0"
   },

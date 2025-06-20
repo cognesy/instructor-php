@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\Schema\Data\Traits\TypeDetails;
+namespace Cognesy\Utils\JsonSchema\Traits;
 
-trait DefinesJsonTypeConstants
+trait DefinesJsonTypes
 {
     public const JSON_OBJECT = 'object';
     public const JSON_ARRAY = 'array';
@@ -10,6 +10,9 @@ trait DefinesJsonTypeConstants
     public const JSON_NUMBER = 'number';
     public const JSON_STRING = 'string';
     public const JSON_BOOLEAN = 'boolean';
+    public const JSON_ENUM = 'enum';
+    public const JSON_NULL = 'null';
+    public const JSON_ANY = 'any';
 
     public const JSON_TYPES = [
         self::JSON_OBJECT,
@@ -18,6 +21,7 @@ trait DefinesJsonTypeConstants
         self::JSON_NUMBER,
         self::JSON_STRING,
         self::JSON_BOOLEAN,
+        self::JSON_ENUM,
     ];
 
     public const JSON_SCALAR_TYPES = [

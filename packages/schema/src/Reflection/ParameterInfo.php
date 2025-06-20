@@ -1,9 +1,9 @@
 <?php
 
-namespace Cognesy\Schema\Utils;
+namespace Cognesy\Schema\Reflection;
 
-use Cognesy\Schema\Attributes\Description;
-use Cognesy\Schema\Attributes\Instructions;
+use Cognesy\Schema\Utils\AttributeUtils;
+use Cognesy\Schema\Utils\Descriptions;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -14,6 +14,7 @@ class ParameterInfo
     private ReflectionParameter $reflection;
     private ReflectionFunction|ReflectionMethod $function;
     private string $name;
+    private bool $belongsToClassMethod = false;
 
     public function __construct(
         ReflectionParameter $paramReflection,
@@ -21,6 +22,9 @@ class ParameterInfo
     ) {
         $this->reflection = $paramReflection;
         $this->function = $functionReflection;
+        if ($functionReflection instanceof ReflectionMethod) {
+            $this->belongsToClassMethod = true;
+        }
         $this->name = $paramReflection->getName();
     }
 
@@ -63,6 +67,10 @@ class ParameterInfo
 
     public function hasDefaultValue(): bool {
         return $this->reflection->isDefaultValueAvailable();
+    }
+
+    public function isClassMethodParameter(): bool {
+        return $this->belongsToClassMethod;
     }
 
     public function getDefaultValue(): mixed {
@@ -111,20 +119,17 @@ class ParameterInfo
     }
 
     public function getDescription(): string {
-        // get #[Description] attributes
-        $descriptions = array_merge(
-            AttributeUtils::getValues($this->reflection, Description::class, 'text'),
-            AttributeUtils::getValues($this->reflection, Instructions::class, 'text'),
-        );
-
-        // get parameter description from PHPDoc
-        $methodDescription = $this->function->getDocComment();
-        $docDescription = DocstringUtils::getParameterDescription($this->name, $methodDescription);
-        if ($docDescription) {
-            $descriptions[] = $docDescription;
-        }
-
-        return trim(implode('\n', array_filter($descriptions)));
+        return match(true) {
+            $this->belongsToClassMethod => Descriptions::forMethodParameter(
+                class: $this->function->getDeclaringClass()->getName(),
+                methodName: $this->function->getShortName(),
+                parameterName: $this->name
+            ),
+            default => Descriptions::forFunctionParameter(
+                functionName: $this->function->getName(),
+                parameterName: $this->name
+            ),
+        };
     }
 
     public function hasAttribute(string $attributeClass): bool {
@@ -134,15 +139,6 @@ class ParameterInfo
     /** @return array<string|bool|int|float> */
     public function getAttributeValues(string $attributeClass, string $attributeProperty): array {
         return AttributeUtils::getValues($this->reflection, $attributeClass, $attributeProperty);
-    }
-
-    public function isBuiltinType(): bool {
-        if (!$this->hasType()) {
-            return false;
-        }
-
-        $type = $this->reflection->getType();
-        return $type instanceof \ReflectionNamedType && $type->isBuiltin();
     }
 
     public function isClassType(): bool {
@@ -173,32 +169,5 @@ class ParameterInfo
 
     public function getReflection(): ReflectionParameter {
         return $this->reflection;
-    }
-
-    public function canBePassedValue(mixed $value): bool {
-        // If parameter allows null and value is null
-        if ($value === null) {
-            return $this->allowsNull();
-        }
-
-        // If no type constraint, accept any non-null value
-        if (!$this->hasType()) {
-            return true;
-        }
-
-        $typeName = $this->getTypeName();
-
-        // Handle built-in types
-        return match ($typeName) {
-            'int' => is_int($value),
-            'float' => is_float($value) || is_int($value),
-            'string' => is_string($value),
-            'bool' => is_bool($value),
-            'array' => is_array($value),
-            'object' => is_object($value),
-            'callable' => is_callable($value),
-            'mixed' => true,
-            default => $this->isClassType() ? is_object($value) && is_a($value, $typeName) : true,
-        };
     }
 }

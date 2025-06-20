@@ -13,16 +13,16 @@ class FieldFactory
     }
 
     public static function fromTypeDetails(string $name, TypeDetails $typeDetails, string $description = ''): Field {
-        return match ($typeDetails->type) {
-            TypeDetails::PHP_INT => Field::int($name, $description),
-            TypeDetails::PHP_STRING => Field::string($name, $description),
-            TypeDetails::PHP_FLOAT => Field::float($name, $description),
-            TypeDetails::PHP_BOOL => Field::bool($name, $description),
-            TypeDetails::PHP_ENUM => Field::enum($name, $typeDetails->class, $description),
-            TypeDetails::PHP_COLLECTION => Field::collection($name, $typeDetails->nestedType, $description),
-            TypeDetails::PHP_ARRAY => Field::array($name, $description),
-            TypeDetails::PHP_OBJECT => Field::object($name, $typeDetails->class, $description),
-            TypeDetails::PHP_MIXED => Field::string($name, $description),
+        return match (true) {
+            $typeDetails->isInt() => Field::int($name, $description),
+            $typeDetails->isString() => Field::string($name, $description),
+            $typeDetails->isFloat() => Field::float($name, $description),
+            $typeDetails->isBool() => Field::bool($name, $description),
+            $typeDetails->isEnum() => Field::enum($name, $typeDetails->class, $description),
+            $typeDetails->isCollection() => Field::collection($name, $typeDetails->nestedType, $description),
+            $typeDetails->isArray() => Field::array($name, $description),
+            $typeDetails->isObject() => Field::object($name, $typeDetails->class, $description),
+            $typeDetails->isMixed() => Field::string($name, $description),
             default => throw new Exception('Unsupported type: ' . $typeDetails->type),
         };
     }

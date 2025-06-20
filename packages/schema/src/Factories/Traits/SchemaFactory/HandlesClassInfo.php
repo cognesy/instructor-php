@@ -4,14 +4,15 @@ namespace Cognesy\Schema\Factories\Traits\SchemaFactory;
 
 use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\Schema;
-use Cognesy\Schema\Utils\ClassInfo;
-use Cognesy\Schema\Utils\PropertyInfo;
+use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Reflection\ClassInfo;
+use Cognesy\Schema\Reflection\PropertyInfo;
 
 trait HandlesClassInfo
 {
     public function fromClassInfo(ClassInfo $classInfo) : ObjectSchema {
         return new ObjectSchema(
-            $this->typeDetailsFactory->fromTypeName($classInfo->getClass()),
+            TypeDetails::fromTypeName($classInfo->getClass()),
             $classInfo->getClass(),
             $classInfo->getClassDescription(),
             $this->getPropertySchemas($classInfo),
@@ -30,10 +31,11 @@ trait HandlesClassInfo
     /**
      * Gets all the property schemas of a class
      *
-     * @return \Cognesy\Schema\Data\Schema\Schema[]
+     * @return Schema[]
      */
     protected function getPropertySchemas(ClassInfo $classInfo) : array {
         $properties = $classInfo->getProperties();
+
         $propertySchemas = [];
         foreach ($properties as $propertyName => $propertyInfo) {
             if (!$propertyInfo->isDeserializable()) {

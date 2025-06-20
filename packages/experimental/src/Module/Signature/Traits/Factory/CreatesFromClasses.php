@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Experimental\Module\Signature\Signature;
 use Cognesy\Schema\Factories\SchemaFactory;
-use Cognesy\Schema\Utils\ClassInfo;
+use Cognesy\Schema\Reflection\ClassInfo;
 
 trait CreatesFromClasses
 {
@@ -15,7 +15,7 @@ trait CreatesFromClasses
         $signature = new Signature(
             input: (new SchemaFactory)->schema($input),
             output: (new SchemaFactory)->schema($output),
-            description: (new ClassInfo($outputClass))->getClassDescription(),
+            description: ClassInfo::fromString($outputClass)->getClassDescription(),
         );
         return $signature;
     }

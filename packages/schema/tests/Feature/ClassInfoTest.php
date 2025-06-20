@@ -1,16 +1,16 @@
 <?php
 
 use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Schema\Reflection\ClassInfo;
+use Cognesy\Schema\Reflection\PropertyInfo;
 use Cognesy\Schema\Tests\Examples\ClassInfo\EnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\IntEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\StringEnumType;
 use Cognesy\Schema\Tests\Examples\ClassInfo\TestClassA;
-use Cognesy\Schema\Utils\ClassInfo;
-use Cognesy\Schema\Utils\PropertyInfo;
 
 it('can get property type', function () {
     // Assuming TestClass has properties with defined types
-    $type = (new ClassInfo(TestClassA::class))->getPropertyTypeDetails('mixedProperty');
+    $type = ClassInfo::fromString(TestClassA::class)->getPropertyTypeDetails('mixedProperty');
     expect($type)->toBeInstanceOf(TypeDetails::class);
     expect($type->type)->toEqual('mixed');
 });
@@ -21,13 +21,13 @@ it('can get property type', function () {
 //})->throws(Exception::class, 'No type found for property');
 
 it('can get class property names', function () {
-    $properties = (new ClassInfo(TestClassA::class))->getPropertyNames();
+    $properties = ClassInfo::fromString(TestClassA::class)->getPropertyNames();
     expect($properties)->toBeArray();
     expect($properties)->toContain('mixedProperty');
 });
 
 it('can get class properties', function () {
-    $properties = (new ClassInfo(TestClassA::class))->getProperties();
+    $properties = ClassInfo::fromString(TestClassA::class)->getProperties();
     expect($properties)->toBeArray();
     expect($properties)->toHaveKey('mixedProperty');
     $property = $properties['mixedProperty'];
@@ -36,20 +36,20 @@ it('can get class properties', function () {
 
 it('can get class description', function () {
     // Assuming TestClass has a PHPDoc description
-    $description = (new ClassInfo(TestClassA::class))->getClassDescription();
+    $description = ClassInfo::fromString(TestClassA::class)->getClassDescription();
     expect($description)->toBeString();
     expect($description)->toEqual('Class description');
 });
 
 it('can get property description', function () {
     // Assuming TestClass has properties with PHPDoc descriptions
-    $description = (new ClassInfo(TestClassA::class))->getPropertyDescription('mixedProperty');
+    $description = ClassInfo::fromString(TestClassA::class)->getPropertyDescription('mixedProperty');
     expect($description)->toBeString();
 });
 
 it('can determine required properties', function () {
     // Assuming TestClass has at least one non-nullable property
-    $requiredProperties = (new ClassInfo(TestClassA::class))->getRequiredProperties();
+    $requiredProperties = ClassInfo::fromString(TestClassA::class)->getRequiredProperties();
     expect($requiredProperties)->toBeArray();
     expect($requiredProperties)->toContain('nonNullableIntProperty');
     expect($requiredProperties)->not()->toContain('nullableIntProperty');
@@ -57,42 +57,42 @@ it('can determine required properties', function () {
 
 it('can check if property is public', function () {
     // Assuming TestClass has a public property
-    $isPublic = (new ClassInfo(TestClassA::class))->isPublic('explicitMixedProperty');
+    $isPublic = ClassInfo::fromString(TestClassA::class)->isPublic('explicitMixedProperty');
     expect($isPublic)->toBeTrue();
 });
 
 it('can check if property is nullable', function () {
     // Assuming TestClass has a nullable property
-    $isNullable = (new ClassInfo(TestClassA::class))->isNullable('nullableIntProperty');
+    $isNullable = ClassInfo::fromString(TestClassA::class)->isNullable('nullableIntProperty');
     expect($isNullable)->toBeTrue();
 });
 
 it('can check if a class is an enum', function () {
     // Assuming EnumClass is an enum
-    $isEnum = (new ClassInfo(EnumType::class))->isEnum();
+    $isEnum = ClassInfo::fromString(EnumType::class)->isEnum();
     expect($isEnum)->toBeTrue();
 
     // Assuming TestClass is not an enum
-    $isEnum = (new ClassInfo(TestClassA::class))->isEnum();
+    $isEnum = ClassInfo::fromString(TestClassA::class)->isEnum();
     expect($isEnum)->toBeFalse();
 });
 
 
 it('can check if an enum is backed', function () {
     // Assuming BackedEnumClass is a backed enum
-    $isBackedEnum = (new ClassInfo(StringEnumType::class))->isBackedEnum();
+    $isBackedEnum = ClassInfo::fromString(StringEnumType::class)->isBackedEnum();
     expect($isBackedEnum)->toBeTrue();
 
     // Assuming EnumClass is not a backed enum
-    $isBackedEnum = (new ClassInfo(EnumType::class))->isBackedEnum();
+    $isBackedEnum = ClassInfo::fromString(EnumType::class)->isBackedEnum();
     expect($isBackedEnum)->toBeFalse();
 });
 
 it('can get the backing type of an enum', function () {
     // Assuming BackedEnumClass is a backed enum with a string backing type
-    $backingType = (new ClassInfo(StringEnumType::class))->enumBackingType();
+    $backingType = ClassInfo::fromString(StringEnumType::class)->enumBackingType();
     expect($backingType)->toEqual('string');
-    $backingType = (new ClassInfo(IntEnumType::class))->enumBackingType();
+    $backingType = ClassInfo::fromString(IntEnumType::class)->enumBackingType();
     expect($backingType)->toEqual('int');
 });
 

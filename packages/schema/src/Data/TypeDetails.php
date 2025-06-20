@@ -3,12 +3,11 @@ namespace Cognesy\Schema\Data;
 
 class TypeDetails
 {
+    use Traits\TypeDetails\DefinesPhpTypeConstants;
     use Traits\TypeDetails\HandlesAccess;
     use Traits\TypeDetails\HandlesConversion;
     use Traits\TypeDetails\HandlesFactoryMethods;
     use Traits\TypeDetails\HandlesJsonTypes;
-    use Traits\TypeDetails\DefinesJsonTypeConstants;
-    use Traits\TypeDetails\DefinesPhpTypeConstants;
     use Traits\TypeDetails\HandlesPhpTypes;
     use Traits\TypeDetails\HandlesValidation;
 

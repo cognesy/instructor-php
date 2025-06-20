@@ -2,13 +2,8 @@
 
 namespace Cognesy\Schema\Utils\Compat;
 
-use Cognesy\Schema\Attributes\Description;
-use Cognesy\Schema\Attributes\Instructions;
 use Cognesy\Schema\Contracts\CanGetPropertyType;
 use Cognesy\Schema\Data\TypeDetails;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Schema\Utils\AttributeUtils;
-use ReflectionProperty;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -17,67 +12,31 @@ use Symfony\Component\PropertyInfo\Type;
 
 class PropertyInfoV6Adapter implements CanGetPropertyType
 {
-    private TypeDetailsFactory $typeDetailsFactory;
     private string $class;
     private string $propertyName;
-    private ReflectionProperty $reflection;
 
     private PropertyInfoExtractor $extractor;
 
     public function __construct(
         string $class,
         string $propertyName,
-        ReflectionProperty $reflection,
-        TypeDetailsFactory $typeDetailsFactory,
     ) {
+//dump('prop info v6', $class, $propertyName);
         // if class name starts with ?, remove it
         if (str_starts_with($class, '?')) {
             $class = substr($class, 1);
         }
         $this->class = $class;
         $this->propertyName = $propertyName;
-        $this->reflection = $reflection;
-        $this->typeDetailsFactory = $typeDetailsFactory;
     }
 
     public function getPropertyTypeDetails(): TypeDetails {
-        $typeName = $this->getPropertyTypeName();
-        return $this->typeDetailsFactory->fromTypeName($typeName);
-    }
-
-    public function getPropertyTypeName(): string {
-        $type = $this->getType();
-        if ($type === null) {
-            return 'mixed';
+        $type = $this->makeTypes();
+        if ($type === null || count($type) === 0) {
+            return TypeDetails::mixed();
         }
-
-        $builtInType = $type->getBuiltinType();
-        return match ($builtInType) {
-            Type::BUILTIN_TYPE_INT => 'int',
-            Type::BUILTIN_TYPE_FLOAT => 'float',
-            Type::BUILTIN_TYPE_STRING => 'string',
-            Type::BUILTIN_TYPE_BOOL => 'bool',
-            Type::BUILTIN_TYPE_ARRAY => $this->getCollectionOrArrayType($type),
-            Type::BUILTIN_TYPE_OBJECT => $this->getType()->getClassName(),
-            Type::BUILTIN_TYPE_CALLABLE => 'callable',
-            Type::BUILTIN_TYPE_ITERABLE => 'iterable',
-            Type::BUILTIN_TYPE_RESOURCE => 'resource',
-            Type::BUILTIN_TYPE_NULL => 'null',
-            default => 'mixed',
-        };
-    }
-
-    public function getPropertyDescription(): string {
-        // get #[Description] attributes
-        $descriptions = array_merge(
-            AttributeUtils::getValues($this->reflection, Description::class, 'text'),
-            AttributeUtils::getValues($this->reflection, Instructions::class, 'text'),
-        );
-        // get property description from PHPDoc
-        $descriptions[] = $this->extractor()->getShortDescription($this->class, $this->propertyName);
-        $descriptions[] = $this->extractor()->getLongDescription($this->class, $this->propertyName);
-
-        return trim(implode('\n', array_filter($descriptions)));
+        $typeString = $this->typesToUnionString($type);
+        return TypeDetails::fromPhpDocTypeString($typeString);
     }
 
     public function isPropertyNullable(): bool {
@@ -85,50 +44,52 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
         if (is_null($types)) {
             return true;
         }
-
         foreach ($types as $type) {
             if ($type->isNullable()) {
                 return true;
             }
         }
-
         return false;
     }
 
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
-    private function getType(): ?Type {
-        $propertyTypes = $this->makeTypes();
-        if (is_null($propertyTypes) || !count($propertyTypes)) {
-            return null;
+    /**
+     * Convert the types to a string representation.
+     *
+     * @param Type[] $types
+     * @return string
+     */
+    private function typesToUnionString(array $types): string {
+        $result = [];
+        foreach ($types as $type) {
+            if (in_array($type->getBuiltinType(), TypeDetails::PHP_SCALAR_TYPES)) { $result[] = $type->getBuiltinType(); }
+            if ($type->isCollection()) { $result[] = $this->getCollectionOrArrayType($type); }
+            if ($type->getBuiltinType() === Type::BUILTIN_TYPE_ARRAY) { $result[] = 'array'; }
+            if ($type->getClassName()) { $result[] = $type->getClassName() ?? 'object'; }
+            //if ($type->isNullable()) { $result[] = 'null'; }
         }
-        if (count($propertyTypes) > 1) {
-            throw new \Exception("Unsupported union type found for property: $this->class::$this->propertyName");
-        }
-        return $propertyTypes[0];
+        return implode('|', $result);
     }
 
-    private function getCollectionOrArrayType(Type $type): string {
-        $valueType = $type->getCollectionValueTypes();
-        $valueType = $valueType[0] ?? null;
-        if (is_null($valueType)) {
+    private function getCollectionOrArrayType(Type $parentType): string {
+        $valueTypes = $parentType->getCollectionValueTypes();
+        if (is_null($valueTypes)) {
             return 'array';
         }
 
-        $builtInType = $valueType->getBuiltinType();
-        return match ($builtInType) {
-            Type::BUILTIN_TYPE_INT => 'int',
-            Type::BUILTIN_TYPE_FLOAT => 'float',
-            Type::BUILTIN_TYPE_STRING => 'string',
-            Type::BUILTIN_TYPE_BOOL => 'bool',
-            Type::BUILTIN_TYPE_ARRAY => throw new \Exception("Nested arrays are not supported"),
-            Type::BUILTIN_TYPE_OBJECT => $this->getType()->getClassName(),
-            Type::BUILTIN_TYPE_CALLABLE => 'callable',
-            Type::BUILTIN_TYPE_ITERABLE => 'iterable',
-            Type::BUILTIN_TYPE_RESOURCE => 'resource',
-            Type::BUILTIN_TYPE_NULL => 'null',
-            default => 'array',
-        };
+        $result = [];
+        foreach ($valueTypes as $valueType) {
+            if (in_array($valueType->getBuiltinType(), TypeDetails::PHP_SCALAR_TYPES)) { $result[] = $valueType->getBuiltinType() . '[]'; }
+            if ($valueType->isCollection()) { $result[] = 'array'; } // collection of collections is considered an array
+            if ($valueType->getBuiltinType() === Type::BUILTIN_TYPE_ARRAY) { $result[] = 'array'; }
+            if ($valueType->getClassName()) { $result[] = $parentType->getClassName()
+                ? ($parentType->getClassName() . '[]')
+                : 'array';  // collection of unspecified objects is considered an array
+            }
+            //if ($valueType->isNullable()) { $result[] = 'null'; }
+        }
+        return implode('|', $result);
     }
 
     /** @return Type[] */

@@ -5,34 +5,46 @@ namespace Cognesy\Addons\FunctionCall\Traits;
 use Cognesy\Addons\FunctionCall\FunctionCall;
 use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Instructor\Extras\Structure\StructureFactory;
-use Cognesy\Schema\Utils\FunctionInfo;
-use ReflectionFunction;
+use Cognesy\Schema\Reflection\FunctionInfo;
 
 trait HandlesConstruction
 {
     static public function fromFunctionName(string $function) : FunctionCall {
         $functionInfo = FunctionInfo::fromFunctionName($function);
         $structure = StructureFactory::fromFunctionName($function, '', '');
-        return self::fromFunctionInfo($functionInfo, $structure);
+        return self::makeFromFunctionInfo(
+            $functionInfo,
+            $structure
+        );
     }
 
     static public function fromMethodName(string $class, string $method) : FunctionCall {
         $functionInfo = FunctionInfo::fromMethodName($class, $method);
         $structure = StructureFactory::fromMethodName($class, $method, '', '');
-        return self::fromFunctionInfo($functionInfo, $structure);
+        return self::makeFromFunctionInfo(
+            $functionInfo,
+            $structure
+        );
     }
 
     static public function fromCallable(callable $callable) : FunctionCall {
-        $functionInfo = new FunctionInfo(new ReflectionFunction($callable));
+        $functionInfo = FunctionInfo::fromClosure($callable);
         $structure = StructureFactory::fromCallable($callable, '', '');
-        return self::fromFunctionInfo($functionInfo, $structure);
+        return self::makeFromFunctionInfo(
+            $functionInfo,
+            $structure
+        );
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////////
 
-    static private function fromFunctionInfo(FunctionInfo $functionInfo, Structure $structure) : FunctionCall {
+    static private function makeFromFunctionInfo(FunctionInfo $functionInfo, Structure $structure) : FunctionCall {
         $functionName = $functionInfo->getShortName();
         $functionDescription = $functionInfo->getDescription();
-        return new FunctionCall($functionName, $functionDescription, $structure);
+        return new FunctionCall(
+            $functionName,
+            $functionDescription,
+            $structure
+        );
     }
 }

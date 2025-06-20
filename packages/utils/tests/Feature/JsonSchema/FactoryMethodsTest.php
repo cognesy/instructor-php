@@ -38,7 +38,7 @@ test('array schema can be created using factory method', function () {
         ->and($schema->type())->toBe('array')
         ->and($schema->name())->toBe('UserList')
         ->and($schema->description())->toBe('List of users')
-        ->and($schema->itemSchema)->not->toBeEmpty();
+        ->and($schema->itemSchema())->not->toBeEmpty();
 });
 
 test('string schema can be created using factory method', function () {
@@ -66,7 +66,7 @@ test('boolean schema can be created using factory method', function () {
         ->and($schema->type())->toBe('boolean')
         ->and($schema->name())->toBe('IsActive')
         ->and($schema->description())->toBe('Active status')
-        ->and($schema->title)->toBe('Active');
+        ->and($schema->title())->toBe('Active');
 });
 
 test('number schema can be created using factory method', function () {
@@ -107,6 +107,6 @@ test('enum schema can be created using factory method', function () {
     expect($schema)->toBeInstanceOf(JsonSchema::class)
         ->and($schema->type())->toBe('string')
         ->and($schema->name())->toBe('Status')
-        ->and($schema->enumValues)->toBe(['pending', 'active', 'inactive'])
+        ->and($schema->enumValues())->toBe(['pending', 'active', 'inactive'])
         ->and($schema->description())->toBe('User status');
 });

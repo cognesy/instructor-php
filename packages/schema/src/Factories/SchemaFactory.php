@@ -28,7 +28,6 @@ class SchemaFactory
 
     protected SchemaMap $schemaMap;
     protected PropertyMap $propertyMap;
-    protected TypeDetailsFactory $typeDetailsFactory;
     protected JsonSchemaToSchema $schemaConverter;
 
     public function __construct(
@@ -39,7 +38,6 @@ class SchemaFactory
         //
         $this->schemaMap = new SchemaMap;
         $this->propertyMap = new PropertyMap;
-        $this->typeDetailsFactory = new TypeDetailsFactory;
         $this->schemaConverter = $schemaConverter ?? new JsonSchemaToSchema;
     }
 
@@ -69,8 +67,8 @@ class SchemaFactory
 
         $type = match(true) {
             $anyType instanceof TypeDetails => $anyType,
-            is_string($anyType) => $this->typeDetailsFactory->fromTypeName($anyType),
-            is_object($anyType) => $this->typeDetailsFactory->fromTypeName(get_class($anyType)),
+            is_string($anyType) => TypeDetails::fromTypeName($anyType),
+            is_object($anyType) => TypeDetails::fromTypeName(get_class($anyType)),
             default => throw new \Exception('Unknown input type: '.gettype($anyType)),
         };
 

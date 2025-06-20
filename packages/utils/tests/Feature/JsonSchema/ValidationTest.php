@@ -45,7 +45,7 @@ test('object schema validates property types correctly', function () {
     );
 
     expect($validSchema)->toBeInstanceOf(JsonSchema::class)
-        ->and($validSchema->properties)->toHaveCount(6);
+        ->and($validSchema->properties())->toHaveCount(6);
 });
 
 test('object schema with required properties validation', function () {
@@ -61,7 +61,7 @@ test('object schema with required properties validation', function () {
     );
 
     expect($validSchema)->toBeInstanceOf(JsonSchema::class)
-        ->and($validSchema->requiredProperties)->toBe(['id', 'name']);
+        ->and($validSchema->requiredProperties())->toBe(['id', 'name']);
 
     // Note: There's a bug in the JsonSchemaValidator class
     // The validateRequired method references $this->properties which doesn't exist
@@ -76,7 +76,7 @@ test('array schema item validation works', function () {
     );
 
     expect($validArraySchema)->toBeInstanceOf(JsonSchema::class)
-        ->and($validArraySchema->itemSchema)->toBeTruthy();
+        ->and($validArraySchema->itemSchema())->toBeTruthy();
 
     // Array with object items
     $arrayWithObjectsSchema = JsonSchema::array(
@@ -111,7 +111,7 @@ test('validation of enum allows only string values', function () {
     );
 
     expect($validEnum)->toBeInstanceOf(JsonSchema::class)
-        ->and($validEnum->enumValues)->toBe(['one', 'two', 'three']);
+        ->and($validEnum->enumValues())->toBe(['one', 'two', 'three']);
 
     // Invalid enum with non-string values should throw exception
     expect(function () {
@@ -168,5 +168,5 @@ test('complex nested schema validation works', function () {
     );
 
     expect($complexSchema)->toBeInstanceOf(JsonSchema::class)
-        ->and($complexSchema->properties)->toHaveCount(3);
+        ->and($complexSchema->properties())->toHaveCount(3);
 });

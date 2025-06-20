@@ -4,7 +4,6 @@ namespace Cognesy\Instructor\Extras\Structure\Traits\Structure;
 use Cognesy\Instructor\Deserialization\Deserializers\SymfonyDeserializer;
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Utils\Json\Json;
 use DateTime;
 use DateTimeImmutable;
@@ -44,14 +43,14 @@ trait HandlesDeserialization
         $type = $field->typeDetails();
         $value = match(true) {
             ($type === null) => throw new \Exception("Undefined field `$name` found in JSON data."),
-            ($type->type === TypeDetails::PHP_ENUM) => ($type->class)::from($fieldData),
-            ($type->type === TypeDetails::PHP_COLLECTION) => $this->deserializeCollection($field, $fieldData),
-            ($type->type === TypeDetails::PHP_ARRAY) => is_array($fieldData) ? $fieldData : [$fieldData],
-            ($type->class === null) => $fieldData,
-            ($type->class === Structure::class) => $structure->get($name)->fromArray($fieldData),
-            ($type->class === DateTime::class) => new DateTime($fieldData),
-            ($type->class === DateTimeImmutable::class) => new DateTimeImmutable($fieldData),
-            default => $this->deserializer->fromArray($fieldData, $type->class),
+            ($type->isEnum()) => ($type->class)::from($fieldData),
+            ($type->isCollection()) => $this->deserializeCollection($field, $fieldData),
+            ($type->isArray()) => is_array($fieldData) ? $fieldData : [$fieldData],
+            ($type->class() === null) => $fieldData,
+            ($type->class() === Structure::class) => $structure->get($name)->fromArray($fieldData),
+            ($type->class() === DateTime::class) => new DateTime($fieldData),
+            ($type->class() === DateTimeImmutable::class) => new DateTimeImmutable($fieldData),
+            default => $this->deserializer->fromArray($fieldData, $type->class()),
         };
         return $value;
     }
@@ -61,14 +60,14 @@ trait HandlesDeserialization
         $typeDetails = $field->nestedType();
         foreach($fieldData as $itemData) {
             $values[] = match(true) {
-                ($typeDetails->type === TypeDetails::PHP_ENUM) => ($typeDetails->class)::from($itemData),
-                ($typeDetails->type === TypeDetails::PHP_COLLECTION) => throw new Exception('Nested collections are not supported.'),
-                ($typeDetails->type === TypeDetails::PHP_ARRAY) => is_array($itemData) ? $itemData : [$itemData],
-                ($typeDetails->class === null) => $itemData,
-                ($typeDetails->class === Structure::class) && ($field->hasPrototype()) => $field->prototype()?->clone()->fromArray($itemData),
-                ($typeDetails->class === DateTime::class) => new DateTime($itemData),
-                ($typeDetails->class === DateTimeImmutable::class) => new DateTimeImmutable($itemData),
-                default => $this->deserializer->fromArray($itemData, $typeDetails->class),
+                ($typeDetails->isScalar()) => $itemData,
+                ($typeDetails->isEnum()) => ($typeDetails->class)::from($itemData),
+                ($typeDetails->isCollection()) => throw new Exception('Nested collections are not supported.'),
+                ($typeDetails->class() === Structure::class) && ($field->hasPrototype()) => $field->prototype()?->clone()->fromArray($itemData),
+                ($typeDetails->class() === DateTime::class) => new DateTime($itemData),
+                ($typeDetails->class() === DateTimeImmutable::class) => new DateTimeImmutable($itemData),
+                ($typeDetails->isArray()) => is_array($itemData) ? $itemData : [$itemData],
+                default => $this->deserializer->fromArray($itemData, $typeDetails->class()),
             };
         }
         return $values;

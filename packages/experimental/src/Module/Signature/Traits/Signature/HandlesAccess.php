@@ -1,8 +1,6 @@
 <?php
 namespace Cognesy\Experimental\Module\Signature\Traits\Signature;
 
-use Cognesy\Schema\Data\TypeDetails;
-
 trait HandlesAccess
 {
     public function getDescription(): string {
@@ -22,28 +20,47 @@ trait HandlesAccess
     }
 
     public function hasArrayOutput(): bool {
+        $firstOutput = $this->outputNames()[0];
         return (count($this->outputNames()) == 1)
-            && ($this->output->isArray() || $this->output->getPropertySchema($this->outputNames()[0])->isArray());
+            && (
+                $this->output->isArray()
+                || $this->output->getPropertySchema($firstOutput)->isArray()
+            );
     }
 
     public function hasObjectOutput(): bool {
+        $firstOutput = $this->outputNames()[0];
         return (count($this->outputNames()) == 1)
-            && ($this->output->isObject() || $this->output->getPropertySchema($this->outputNames()[0])->isObject());
+            && (
+                $this->output->isObject()
+                || $this->output->getPropertySchema($firstOutput)->isObject()
+            );
     }
 
     public function hasEnumOutput(): bool {
+        $firstOutput = $this->outputNames()[0];
         return (count($this->outputNames()) == 1)
-            && ($this->output->isEnum() || $this->output->getPropertySchema($this->outputNames()[0])->isEnum());
+            && (
+                $this->output->isEnum()
+                || $this->output->getPropertySchema($firstOutput)->isEnum()
+            );
     }
 
     public function hasScalarOutput(): bool {
+        $firstOutput = $this->outputNames()[0];
         return (count($this->outputNames()) == 1)
-            && ($this->output->isScalar() || $this->output->getPropertySchema($this->outputNames()[0])->isScalar());
+            && (
+                $this->output->isScalar()
+                || $this->output->getPropertySchema($firstOutput)->isScalar()
+            );
     }
 
     public function hasTextOutput(): bool {
-        return $this->hasScalarOutput() && ($this->output->typeDetails()->type() === TypeDetails::PHP_STRING
-                || $this->output->getPropertySchema($this->outputNames()[0])->typeDetails()->type() === TypeDetails::PHP_STRING
+        $firstOutput = $this->outputNames()[0];
+        return $this->hasScalarOutput()
+            && (
+                $this->output->typeDetails()->isString()
+                || $this->output->getPropertySchema($firstOutput)->typeDetails()->isString()
             );
     }
 }

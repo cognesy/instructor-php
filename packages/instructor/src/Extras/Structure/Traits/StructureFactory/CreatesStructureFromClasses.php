@@ -1,11 +1,10 @@
 <?php
-namespace Cognesy\Instructor\Extras\Structure\Traits\Factory;
+namespace Cognesy\Instructor\Extras\Structure\Traits\StructureFactory;
 
 use Cognesy\Instructor\Extras\Structure\Field;
 use Cognesy\Instructor\Extras\Structure\FieldFactory;
 use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Schema\Utils\ClassInfo;
+use Cognesy\Schema\Reflection\ClassInfo;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
 trait CreatesStructureFromClasses
@@ -15,7 +14,7 @@ trait CreatesStructureFromClasses
         ?string $name = null,
         ?string $description = null
     ) : Structure {
-        $classInfo = new ClassInfo($class);
+        $classInfo = ClassInfo::fromString($class);
         return self::fromClassInfo($classInfo, $name, $description);
     }
 
@@ -37,7 +36,6 @@ trait CreatesStructureFromClasses
      */
     static private function makePropertyFields(ClassInfo $classInfo) : array {
         $arguments = [];
-        $typeDetailsFactory = new TypeDetailsFactory;
         foreach ($classInfo->getProperties() as $propertyName => $propertyInfo) {
             switch (true) {
                 case $propertyInfo->isStatic():
@@ -49,7 +47,7 @@ trait CreatesStructureFromClasses
             }
             $arguments[] = FieldFactory::fromTypeDetails(
                 $propertyName,
-                $typeDetailsFactory->fromTypeName($propertyInfo->getTypeName()),
+                $propertyInfo->getTypeDetails(),
                 $propertyInfo->getDescription()
             )->optional($propertyInfo->isNullable());
         }

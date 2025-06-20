@@ -2,7 +2,7 @@
 
 namespace Cognesy\Schema\Utils\Compat;
 
-use Cognesy\Schema\Utils\ParameterInfo;
+use Cognesy\Schema\Reflection\ParameterInfo;
 use JetBrains\PhpStorm\Deprecated;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;

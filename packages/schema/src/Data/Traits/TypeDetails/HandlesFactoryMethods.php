@@ -4,27 +4,26 @@ namespace Cognesy\Schema\Data\Traits\TypeDetails;
 
 use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Factories\TypeDetailsFactory;
+use Cognesy\Utils\JsonSchema\JsonSchema;
 
 trait HandlesFactoryMethods
 {
-    static public function undefined() : TypeDetails {
-        return new self(self::PHP_UNSUPPORTED);
-    }
-
-    static public function fromTypeName(string $type) : TypeDetails {
-        return (new TypeDetailsFactory)->fromTypeName($type);
-    }
+    // TYPES
 
     static public function object(string $class) : TypeDetails {
         return (new TypeDetailsFactory)->objectType($class);
     }
 
-    static public function enum(string $class) : TypeDetails {
-        return (new TypeDetailsFactory)->enumType($class);
+    static public function enum(string $class, ?string $backingType = null, ?array $values = null) : TypeDetails {
+        return (new TypeDetailsFactory)->enumType($class, $backingType, $values);
     }
 
-    static public function collection(TypeDetails $nestedType) : TypeDetails {
-        return (new TypeDetailsFactory)->collectionType($nestedType);
+    static public function option(array $values) : TypeDetails {
+        return (new TypeDetailsFactory)->optionType($values);
+    }
+
+    static public function collection(string $itemType) : TypeDetails {
+        return (new TypeDetailsFactory)->collectionType($itemType);
     }
 
     static public function array() : TypeDetails {
@@ -49,5 +48,31 @@ trait HandlesFactoryMethods
 
     static public function mixed() : TypeDetails {
         return (new TypeDetailsFactory)->mixedType();
+    }
+
+    // MISC
+
+    static public function fromTypeName(string $type) : TypeDetails {
+        return (new TypeDetailsFactory)->fromTypeName($type);
+    }
+
+    public static function fromPhpDocTypeString(string $typeString) : TypeDetails {
+        return (new TypeDetailsFactory)->fromPhpDocTypeString($typeString);
+    }
+
+    public static function fromJsonSchema(JsonSchema $jsonSchema) : TypeDetails {
+        return (new TypeDetailsFactory)->fromJsonSchema($jsonSchema);
+    }
+
+    static public function fromValue(mixed $value) : TypeDetails {
+        return (new TypeDetailsFactory)->fromValue($value);
+    }
+
+    static public function scalar(string $type) : TypeDetails {
+        return (new TypeDetailsFactory)->scalarType($type);
+    }
+
+    static public function undefined() : TypeDetails {
+        return new self(self::PHP_UNSUPPORTED);
     }
 }

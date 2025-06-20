@@ -8,6 +8,10 @@ trait HandlesTransformation
         return $this->toArray();
     }
 
+    public function toString() : string {
+        return json_encode($this->toArray(), JSON_UNESCAPED_SLASHES);
+    }
+
     public function toArray() : array {
         return match($this->type) {
             'object' => $this->objectToArray(),

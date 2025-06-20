@@ -134,4 +134,23 @@ trait HandlesTypeFactory
             meta: $meta,
         );
     }
+
+    public static function collection(
+        string $name = '',
+        ?JsonSchema $itemSchema = null,
+        ?bool $nullable = null,
+        string $description = '',
+        string $title = '',
+        array $meta = [],
+    ) : self {
+        return new self(
+            type: 'array',
+            name: $name,
+            nullable: $nullable,
+            itemSchema: $itemSchema,
+            description: $description,
+            title: $title,
+            meta: $meta,
+        );
+    }
 }
