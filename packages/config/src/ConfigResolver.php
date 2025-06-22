@@ -33,7 +33,7 @@ class ConfigResolver implements CanProvideConfig
     public static function using(?CanProvideConfig $provider): static {
         return match(true) {
             is_null($provider) => self::default(),
-            $provider instanceof ConfigResolver => $provider,
+            $provider instanceof ConfigResolver => $provider, // avoid double wrapping
             $provider instanceof CanProvideConfig => (new static([$provider, new SettingsConfigProvider])),
             default => throw new InvalidArgumentException('Provider must be a CanProvideConfig instance or null.'),
         };

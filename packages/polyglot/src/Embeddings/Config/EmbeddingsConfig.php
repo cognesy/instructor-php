@@ -38,12 +38,17 @@ final class EmbeddingsConfig
         return $instance;
     }
 
+    public function withOverrides(array $values) : self {
+        $config = array_merge($this->toArray(), $values);
+        return self::fromArray($config);
+    }
+
     public function toArray() : array {
         return [
             'apiUrl' => $this->apiUrl,
             'apiKey' => $this->apiKey,
             'endpoint' => $this->endpoint,
-            'defaultModel' => $this->model,
+            'model' => $this->model,
             'defaultDimensions' => $this->dimensions,
             'maxInputs' => $this->maxInputs,
             'metadata' => $this->metadata,

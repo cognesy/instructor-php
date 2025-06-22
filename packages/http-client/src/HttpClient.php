@@ -5,7 +5,9 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpMiddleware;
 use Cognesy\Http\Data\HttpRequest;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * HTTP client adapter that provides unified access to underlying
@@ -19,13 +21,42 @@ class HttpClient
     private readonly MiddlewareStack $middlewareStack;
 
     public function __construct(
-        CanHandleHttpRequest $driver,
-        MiddlewareStack $middlewareStack,
-        CanHandleEvents $events,
+        ?CanHandleHttpRequest $driver = null,
+        ?MiddlewareStack $middlewareStack = null,
+        null|EventDispatcherInterface|CanHandleEvents $events = null,
     ) {
-        $this->driver = $driver;
-        $this->middlewareStack = $middlewareStack;
         $this->events = EventBusResolver::using($events);
+        $this->driver = $driver ?? $this->makeDefaultDriver();
+        $this->middlewareStack = $middlewareStack ?? new MiddlewareStack(
+            events: $this->events,
+            middlewares: [],
+        );
+    }
+
+    public function withMiddlewareStack(MiddlewareStack $middlewareStack): self {
+        return new self(
+            driver: $this->driver,
+            middlewareStack: $middlewareStack,
+            events: $this->events,
+        );
+    }
+
+    public function withMiddleware(HttpMiddleware $middleware, ?string $name = null): self {
+        $newStack = $this->middlewareStack->append($middleware, $name);
+        return new self(
+            driver: $this->driver,
+            middlewareStack: $newStack,
+            events: $this->events,
+        );
+    }
+
+    public function withoutMiddleware(string $name): self {
+        $newStack = $this->middlewareStack->remove($name);
+        return new self(
+            driver: $this->driver,
+            middlewareStack: $newStack,
+            events: $this->events,
+        );
     }
 
     /**
@@ -34,21 +65,7 @@ class HttpClient
     public function withRequest(HttpRequest $request): PendingHttpResponse {
         return new PendingHttpResponse(
             request: $request,
-            handler: $this->middlewareStack->decorate($this->driver),
+            driver: $this->middlewareStack->decorate($this->driver),
         );
-    }
-
-    /**
-     * Returns the middleware stack (read-only access).
-     */
-    public function middleware(): MiddlewareStack {
-        return $this->middlewareStack;
-    }
-
-    public function toDebugArray(): array {
-        return [
-            'driver' => $this->driver::class,
-            'middleware' => $this->middlewareStack->toDebugArray(),
-        ];
     }
 }

@@ -8,6 +8,7 @@ use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Embeddings is a facade responsible for generating embeddings for provided input data
@@ -25,7 +26,7 @@ class Embeddings
     protected EmbeddingsRequest $request;
 
     public function __construct(
-        ?CanHandleEvents $events = null,
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
         ?CanProvideConfig $configProvider = null,
     ) {
         $this->events = EventBusResolver::using($events);

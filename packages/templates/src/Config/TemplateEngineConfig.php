@@ -2,8 +2,10 @@
 
 namespace Cognesy\Template\Config;
 
+use Cognesy\Config\Exceptions\ConfigurationException;
 use Cognesy\Template\Enums\FrontMatterFormat;
 use Cognesy\Template\Enums\TemplateEngineType;
+use Throwable;
 
 class TemplateEngineConfig
 {
@@ -65,15 +67,43 @@ class TemplateEngineConfig
         ];
     }
 
-    public static function fromArray(array $data) : TemplateEngineConfig {
-        return new TemplateEngineConfig(
-            templateEngine: TemplateEngineType::from($data['templateEngine']),
-            resourcePath: $data['resourcePath'] ?? '',
-            cachePath: $data['cachePath'] ?? '',
-            extension: $data['extension'] ?? 'twig',
-            frontMatterTags: $data['frontMatterTags'] ?? [],
-            frontMatterFormat: FrontMatterFormat::from($data['frontMatterFormat'] ?? FrontMatterFormat::Yaml->value),
-            metadata: $data['metadata'] ?? [],
-        );
+    public function withOverrides(array $values) : self {
+        $config = array_merge($this->toArray(), $values);
+        return self::fromArray($config);
+    }
+
+    public static function fromArray(array $config) : TemplateEngineConfig {
+        try {
+            $config['templateEngine'] = match(true) {
+                !isset($config['templateEngine']) => TemplateEngineType::Twig,
+                is_string($config['templateEngine']) => TemplateEngineType::fromText($config['templateEngine']),
+                $config['templateEngine'] instanceof TemplateEngineType => $config['templateEngine'],
+                default => TemplateEngineType::Twig,
+            };
+            $config['frontMatterFormat'] = match(true) {
+                !isset($config['frontMatterFormat']) => FrontMatterFormat::Yaml,
+                is_string($config['frontMatterFormat']) => FrontMatterFormat::from($config['frontMatterFormat'] ?? FrontMatterFormat::Yaml->value),
+                $config['frontMatterFormat'] instanceof FrontMatterFormat => $config['frontMatterFormat'],
+                default => FrontMatterFormat::Yaml,
+            };
+            $instance = new self(...$config);
+        } catch (Throwable $e) {
+            $data = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            throw new ConfigurationException(
+                message: "Invalid configuration for TemplateEngineConfig: {$e->getMessage()}\nData: {$data}",
+                previous: $e,
+            );
+        }
+        return $instance;
+
+//        return new TemplateEngineConfig(
+//            templateEngine: TemplateEngineType::from($data['templateEngine']),
+//            resourcePath: $data['resourcePath'] ?? '',
+//            cachePath: $data['cachePath'] ?? '',
+//            extension: $data['extension'] ?? 'twig',
+//            frontMatterTags: $data['frontMatterTags'] ?? [],
+//            frontMatterFormat: FrontMatterFormat::from($data['frontMatterFormat'] ?? FrontMatterFormat::Yaml->value),
+//            metadata: $data['metadata'] ?? [],
+//        );
     }
 }

@@ -15,15 +15,15 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
 
         $options = array_merge($this->config->options, $request->options());
 
-        $model = $request->model() ?: $this->config->defaultModel;
+        $model = $request->model() ?: $this->config->model;
         $messages = match($this->supportsAlternatingRoles($request)) {
             false => Messages::fromArray($request->messages())->toMergedPerRole()->toArray(),
             true => $request->messages(),
         };
 
         $requestBody = array_merge(array_filter([
-            'model' => $model ?: $this->config->defaultModel,
-            'max_tokens' => $this->config->defaultMaxTokens,
+            'model' => $model ?: $this->config->model,
+            'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map($messages),
         ]), $options);
 
@@ -47,17 +47,17 @@ class DeepseekBodyFormat extends OpenAICompatibleBodyFormat
     // CAPABILITIES ///////////////////////////////////////////
 
     protected function supportsToolSelection(InferenceRequest $request) : bool {
-        $model = $request->model() ?: $this->config->defaultModel;
+        $model = $request->model() ?: $this->config->model;
         return !Str::contains($model, 'reasoner');
     }
 
     protected function supportsStructuredOutput(InferenceRequest $request) : bool {
-        $model = $request->model() ?: $this->config->defaultModel;
+        $model = $request->model() ?: $this->config->model;
         return !Str::contains($model, 'reasoner');
     }
 
     protected function supportsAlternatingRoles(InferenceRequest $request) : bool {
-        $model = $request->model() ?: $this->config->defaultModel;
+        $model = $request->model() ?: $this->config->model;
         return !Str::contains($model, 'reasoner');
     }
 

@@ -83,7 +83,7 @@ test('HTTP client with middleware', function() {
     $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
 
     // Add a simple test middleware that modifies the request
-    $httpClient->middleware()->append(new class implements HttpMiddleware {
+    $httpClient->withMiddleware(new class implements HttpMiddleware {
         public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
         {
             // Add a test header to the request
@@ -133,7 +133,7 @@ test('HTTP client with record/replay middleware', function() {
         $this->testStorageDir
     );
 
-    $httpClient->middleware()->append($recordReplayMiddleware, 'record-replay');
+    $httpClient->withMiddleware($recordReplayMiddleware, 'record-replay');
 
     // Create a request to a real endpoint
     $request = new HttpRequest(
@@ -175,7 +175,7 @@ test('mixed testing approach', function() {
 
     // Create the client with middleware
     $httpClient = (new HttpClientBuilder)->withDriver($mockDriver)->create();
-    $httpClient->middleware()->append($recordReplayMiddleware, 'record-replay');
+    $httpClient->withMiddleware($recordReplayMiddleware, 'record-replay');
 
     // Request 1: Should be handled by replay if recording exists, or mock if not
     $request1 = new HttpRequest(
@@ -199,7 +199,7 @@ test('mixed testing approach', function() {
     $response1 = $httpClient->withRequest($request1)->get();
 
     // For request 2, temporarily disable record/replay middleware
-    $httpClient->middleware()->remove('record-replay');
+    $httpClient->withoutMiddleware('record-replay');
     $response2 = $httpClient->withRequest($request2)->get();
 
     // Assert - Both approaches should work in the same test

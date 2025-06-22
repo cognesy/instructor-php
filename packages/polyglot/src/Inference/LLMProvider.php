@@ -30,13 +30,17 @@ final class LLMProvider
     private ?string $llmPreset;
     private ?string $debugPreset;
     private ?string $httpClientPreset;
+    private ?array $configOverrides = null;
 
     private ?LLMConfig $explicitConfig;
-    private ?HttpClient $explicitHttpClient;
     private ?CanHandleInference $explicitDriver;
 
+    private ?HttpClient $explicitHttpClient;
+    private ?string $explicitHttpDriverName = null;
+    private ?object $explicitHttpClientInstance = null;
+
     private function __construct(
-        ?CanHandleEvents          $events = null,
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
         ?CanProvideConfig         $configProvider = null,
         ?string                   $debugPreset = null,
         ?string                   $dsn = null,
@@ -57,23 +61,14 @@ final class LLMProvider
         $this->explicitDriver = $explicitDriver;
     }
 
-    /**
-     * Quick creation with preset
-     */
     public static function using(string $preset): LLMProvider {
         return self::new()->using($preset);
     }
 
-    /**
-     * Quick creation with DSN
-     */
     public static function dsn(string $dsn): LLMProvider {
         return self::new()->withDsn($dsn);
     }
 
-    /**
-     * Create a new builder instance
-     */
     public static function new(
         ?EventDispatcherInterface $events = null,
         ?CanProvideConfig         $configProvider = null,
@@ -81,41 +76,31 @@ final class LLMProvider
         return new self($events, $configProvider);
     }
 
-    /**
-     * Configure with a preset name
-     */
     public function withLLMPreset(string $preset): self {
         $this->llmPreset = $preset;
         return $this;
     }
 
-    /**
-     * Configure with explicit LLM configuration
-     */
     public function withConfig(LLMConfig $config): self {
         $this->explicitConfig = $config;
         return $this;
     }
 
-    /**
-     * Configure with a custom config provider
-     */
+    public function withConfigOverrides(array $overrides): self {
+        $this->configOverrides = $overrides;
+        return $this;
+    }
+
     public function withConfigProvider(CanProvideConfig $configProvider): self {
         $this->presets = $this->presets->withConfigProvider($configProvider);
         return $this;
     }
 
-    /**
-     * Configure with DSN string
-     */
     public function withDsn(string $dsn): self {
         $this->dsn = $dsn;
         return $this;
     }
 
-    /**
-     * Configure with explicit HTTP client
-     */
     public function withHttpClient(HttpClient $httpClient): self {
         $this->explicitHttpClient = $httpClient;
         return $this;
@@ -127,19 +112,23 @@ final class LLMProvider
         return $this;
     }
 
-    /**
-     * Configure with explicit inference driver
-     */
     public function withDriver(CanHandleInference $driver): self {
         $this->explicitDriver = $driver;
         return $this;
     }
 
-    /**
-     * Configure debug mode
-     */
     public function withDebugPreset(?string $preset): self {
         $this->debugPreset = $preset;
+        return $this;
+    }
+
+    public function withClientInstance(
+        string $driverName,
+        object $clientInstance
+    ) {
+        // Store the client instance for the specified driver
+        $this->explicitHttpDriverName = $driverName;
+        $this->explicitHttpClientInstance = $clientInstance;
         return $this;
     }
 
@@ -177,11 +166,11 @@ final class LLMProvider
             return $this->explicitConfig;
         }
 
-        // Determine effective preset
-        $effectivePreset = $this->determinePreset();
-
         // Get DSN overrides if any
-        $dsnOverrides = $this->dsn !== null ? Dsn::fromString($this->dsn)->toArray() : [];
+        $dsn = Dsn::fromString($this->dsn);
+
+        // Determine effective preset
+        $effectivePreset = $this->determinePreset($dsn);
 
         // Build config based on preset
         $result = Result::try(fn() => $this->presets->getOrDefault($effectivePreset));
@@ -200,9 +189,15 @@ final class LLMProvider
         $config = LLMConfig::fromArray($result->unwrap());
 
         // Apply DSN overrides if present
-        $final = !empty($dsnOverrides)
+        $dsnOverrides = $dsn?->without('preset')->toArray() ?? [];
+        $withDsn = !empty($dsnOverrides)
             ? $config->withOverrides($dsnOverrides)
             : $config;
+
+        // Apply any additional overrides if specified
+        $final = $this->configOverrides !== null
+            ? $withDsn->withOverrides($this->configOverrides)
+            : $withDsn;
 
         // Dispatch event
         $this->events->dispatch(new ConfigResolved([
@@ -236,16 +231,24 @@ final class LLMProvider
         // Apply debug setting if specified
         $builder = $builder->withDebugPreset($this->debugPreset);
 
+        // If explicit driver name and instance provided, set them
+        if ($this->explicitHttpDriverName !== null && $this->explicitHttpClientInstance !== null) {
+            $builder = $builder->withClientInstance(
+                driverName: $this->explicitHttpDriverName,
+                clientInstance: $this->explicitHttpClientInstance,
+            );
+        }
+
         return $builder->create();
     }
 
     /**
      * Determine the effective preset from various sources
      */
-    private function determinePreset(): ?string {
+    private function determinePreset(Dsn $dsn): ?string {
         return match (true) {
             $this->llmPreset !== null => $this->llmPreset,
-            $this->dsn !== null => Dsn::fromString($this->dsn)->param('preset'),
+            $this->dsn !== null => $dsn->param('preset'),
             default => null,
         };
     }

@@ -16,7 +16,7 @@ return [
                 'resourceName' => 'instructor-dev',
                 'deploymentId' => 'text-embedding-3-small',
             ],
-            'defaultModel' => 'text-embedding-3-small',
+            'model' => 'text-embedding-3-small',
             'defaultDimensions' => 1536,
             'maxInputs' => 16,
         ],
@@ -25,7 +25,7 @@ return [
             'apiUrl' => 'https://api.cohere.ai/v2',
             'apiKey' => Env::get('COHERE_API_KEY', ''),
             'endpoint' => '/embed',
-            'defaultModel' => 'embed-multilingual-v3.0',
+            'model' => 'embed-multilingual-v3.0',
             'defaultDimensions' => 1024,
             'maxInputs' => 96,
         ],
@@ -34,7 +34,7 @@ return [
             'apiUrl' => 'https://generativelanguage.googleapis.com/v1beta',
             'apiKey' => Env::get('GEMINI_API_KEY', ''),
             'endpoint' => '/{model}:batchEmbedContents',
-            'defaultModel' => 'models/text-embedding-004',
+            'model' => 'models/text-embedding-004',
             'defaultDimensions' => 768,
             'maxInputs' => 100, // max 2048 tokens
         ],
@@ -46,7 +46,7 @@ return [
             'metadata' => [
                 'organization' => ''
             ],
-            'defaultModel' => 'jina-embeddings-v2-base-en',
+            'model' => 'jina-embeddings-v2-base-en',
             'defaultDimensions' => 768,
             'maxInputs' => 500, // max 8192 tokens
         ],
@@ -55,7 +55,7 @@ return [
             'apiUrl' => 'https://api.mistral.ai/v1',
             'apiKey' => Env::get('MISTRAL_API_KEY', ''),
             'endpoint' => '/embeddings',
-            'defaultModel' => 'mistral-embed',
+            'model' => 'mistral-embed',
             'defaultDimensions' => 1024,
             'maxInputs' => 512, // max 512 tokens
         ],
@@ -64,10 +64,10 @@ return [
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/embeddings',
-            'defaultModel' => 'nomic-embed-text',
+            'model' => 'nomic-embed-text',
             'defaultDimensions' => 1024,
             'maxInputs' => 512,
-            'httpClient' => 'http-ollama',
+            'httpClientPreset' => 'http-ollama',
         ],
         'openai' => [
             'providerType' => 'openai',
@@ -77,7 +77,7 @@ return [
             'metadata' => [
                 'organization' => ''
             ],
-            'defaultModel' => 'text-embedding-3-small',
+            'model' => 'text-embedding-3-small',
             'defaultDimensions' => 1536,
             'maxInputs' => 2048, // max 8192 tokens
         ],

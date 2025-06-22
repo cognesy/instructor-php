@@ -201,9 +201,9 @@ the client connection.
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'qwen2.5:0.5b',
-            'defaultMaxTokens' => 1024,
-            'httpClient' => 'guzzle-ollama', // use custom HTTP client configuration
+            'model' => 'qwen2.5:0.5b',
+            'maxTokens' => 1024,
+            'httpClientPreset' => 'guzzle-ollama', // use custom HTTP client configuration
         ],
         'openai' => [ ... ],
         'openrouter' => [ ... ],

@@ -7,6 +7,7 @@ use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
 use Cognesy\Polyglot\Inference\Drivers\InferenceDriverFactory;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Inference class is facade for handling inference requests and responses.
@@ -24,7 +25,7 @@ class Inference
      * Constructor for initializing dependencies and configurations.
      */
     public function __construct(
-        ?CanHandleEvents $events = null,
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
         ?CanProvideConfig $configProvider = null,
     ) {
         $this->events = EventBusResolver::using($events);

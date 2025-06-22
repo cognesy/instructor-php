@@ -17,6 +17,7 @@ use Cognesy\Http\Middleware\EventSource\EventSourceMiddleware;
 use Cognesy\Http\Middleware\EventSource\Listeners\DispatchDebugEvents;
 use Cognesy\Http\Middleware\EventSource\Listeners\PrintToConsole;
 use Cognesy\Utils\Result\Result;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Fluent builder for creating HttpClient instances in a type-safe way.
@@ -31,12 +32,14 @@ final class HttpClientBuilder
     private ?HttpClientConfig $config = null;
     private ?DebugConfig $debugConfig = null;
     private ?CanHandleHttpRequest $driver = null;
+    private ?string $driverName = null;
     private ?object $clientInstance = null;
+    /** @var HttpMiddleware[] */
     private array $middleware = [];
 
     public function __construct(
-        ?CanHandleEvents          $events = null,
-        ?CanProvideConfig         $configProvider = null,
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
+        ?CanProvideConfig $configProvider = null,
     ) {
         $this->events = EventBusResolver::using($events);
         $this->presets = ConfigPresets::using($configProvider);
@@ -81,7 +84,11 @@ final class HttpClientBuilder
         return $this;
     }
 
-    public function withClientInstance(object $clientInstance): self {
+    public function withClientInstance(
+        string $driverName,
+        object $clientInstance,
+    ): self {
+        $this->driverName = $driverName;
         $this->clientInstance = $clientInstance;
         return $this;
     }
@@ -91,12 +98,18 @@ final class HttpClientBuilder
         return $this;
     }
 
-    public function withEventBus(CanHandleEvents $events): self {
-        $this->events = $events;
+    public function withEventBus(CanHandleEvents|EventDispatcherInterface $events): self {
+        $this->events = EventBusResolver::using($events);
         return $this;
     }
 
     public function create(): HttpClient {
+        return $this->buildClient();
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////////
+
+    private function buildClient() : HttpClient {
         $config = $this->buildHttpClientConfig();
         $debugConfig = $this->buildDebugConfig();
         $driver = $this->buildDriver($config);
@@ -118,11 +131,15 @@ final class HttpClientBuilder
 
     private function buildHttpClientConfig(): HttpClientConfig {
         if ($this->config !== null) {
+            $config = match(true) {
+                ($this->driverName !== null) => $this->config->withOverrides(['driver' => $this->driverName]),
+                default => $this->config,
+            };
             $this->events->dispatch(new ConfigResolved([
                 'group' => HttpClientConfig::group(),
-                'config' => $this->config,
+                'config' => $config,
             ]));
-            return $this->config;
+            return $config;
         }
 
         $result = Result::try(fn() => $this->presets
@@ -137,13 +154,30 @@ final class HttpClientBuilder
             throw $result->exception();
         }
 
+        $data = $result->unwrap();
+        $data['driver'] = match(true) {
+            ($this->driverName !== null) => $this->driverName,
+            default => $data['driver'] ?? '',
+        };
+
         $this->events->dispatch(new ConfigResolved([
             'group' => 'http',
-            'config' => $result->unwrap(),
+            'config' => $data,
             'preset' => $this->preset,
         ]));
 
-        return HttpClientConfig::fromArray($result->unwrap());
+        return HttpClientConfig::fromArray($data);
+    }
+
+    private function buildDriver(HttpClientConfig $config): CanHandleHttpRequest {
+        if ($this->driver !== null) {
+            return $this->driver;
+        }
+        return (new HttpClientDriverFactory($this->events))
+            ->makeDriver(
+                config: $config,
+                clientInstance: $this->clientInstance,
+            );
     }
 
     private function buildDebugConfig(): DebugConfig {
@@ -172,18 +206,6 @@ final class HttpClientBuilder
         ]));
 
         return DebugConfig::fromArray($config);
-    }
-
-    private function buildDriver(HttpClientConfig $config): CanHandleHttpRequest {
-        if ($this->driver !== null) {
-            return $this->driver;
-        }
-
-        return (new HttpClientDriverFactory($this->events))
-            ->makeDriver(
-                config: $config,
-                clientInstance: $this->clientInstance,
-            );
     }
 
     private function buildMiddlewareStack(DebugConfig $debugConfig): MiddlewareStack {

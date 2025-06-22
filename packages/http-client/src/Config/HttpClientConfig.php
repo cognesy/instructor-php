@@ -65,6 +65,11 @@ final class HttpClientConfig
         return $instance;
     }
 
+    public function withOverrides(array $overrides) : self {
+        $config = array_merge($this->toArray(), $overrides);
+        return self::fromArray($config);
+    }
+
     public function toArray() : array {
         return [
             'driver' => $this->driver,

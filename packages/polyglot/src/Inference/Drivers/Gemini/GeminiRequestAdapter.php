@@ -27,12 +27,12 @@ class GeminiRequestAdapter implements CanTranslateInferenceRequest
 
     protected function toHeaders(InferenceRequest $request): array {
         return [
-            'Content-Type' => 'application/json',
+            'Content-Type' => 'application/json; charset=utf-8',
         ];
     }
 
     protected function toUrl(InferenceRequest $request): string {
-        $model = $request->model() ?: $this->config->defaultModel;
+        $model = $request->model() ?: $this->config->model;
         $urlParams = ['key' => $this->config->apiKey];
 
         if ($request->isStreamed()) {

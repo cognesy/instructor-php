@@ -66,8 +66,8 @@ $configData = [
                 'apiUrl' => 'https://api.deepseek.com',
                 'apiKey' => Env::get('DEEPSEEK_API_KEY'),
                 'endpoint' => '/chat/completions',
-                'defaultModel' => 'deepseek-chat',
-                'defaultMaxTokens' => 128,
+                'model' => 'deepseek-chat',
+                'maxTokens' => 128,
                 'driver' => 'deepseek',
                 'httpClientPreset' => 'symfony',
             ],
@@ -75,8 +75,8 @@ $configData = [
                 'apiUrl' => 'https://api.openai.com',
                 'apiKey' => Env::get('OPENAI_API_KEY'),
                 'endpoint' => '/v1/chat/completions',
-                'defaultModel' => 'gpt-4',
-                'defaultMaxTokens' => 256,
+                'model' => 'gpt-4',
+                'maxTokens' => 256,
                 'driver' => 'openai',
                 'httpClientPreset' => 'symfony',
             ],
@@ -108,7 +108,10 @@ $customClient = (new HttpClientBuilder(
         events: $events,
         configProvider: $configProvider,
     ))
-    ->withClientInstance(SymfonyHttpClient::create(['http_version' => '2.0']))
+    ->withClientInstance(
+        driverName: 'symfony',
+        clientInstance: SymfonyHttpClient::create(['http_version' => '2.0'])
+    )
     ->create();
 
 $inference = (new Inference(

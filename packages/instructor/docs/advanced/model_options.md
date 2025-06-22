@@ -39,8 +39,8 @@ $config = new LLMConfig(
     apiKey: $yourApiKey,
     endpoint: '/chat/completions',
     metadata: ['organization' => ''],
-    defaultModel: 'gpt-4o-mini',
-    defaultMaxTokens: 128,
+    model: 'gpt-4o-mini',
+    maxTokens: 128,
     httpClientPreset: 'guzzle',
     driver: 'openai',
 ));

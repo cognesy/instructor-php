@@ -31,6 +31,11 @@ trait HandlesLLMProvider
         return $this;
     }
 
+    public function withLLMConfigOverrides(array $overrides) : static {
+        $this->llmProvider->withConfigOverrides($overrides);
+        return $this;
+    }
+
     public function withDriver(CanHandleInference $driver) : static {
         $this->llmProvider->withDriver($driver);
         return $this;
@@ -48,6 +53,14 @@ trait HandlesLLMProvider
 
     public function withDebugPreset(string $preset) : static {
         $this->llmProvider->withDebugPreset($preset);
+        return $this;
+    }
+
+    public function withClientInstance(
+        string $driverName,
+        object $clientInstance
+    ) : self {
+        $this->llmProvider->withClientInstance($driverName, $clientInstance);
         return $this;
     }
 }

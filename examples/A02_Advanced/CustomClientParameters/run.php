@@ -59,7 +59,7 @@ $customClient = (new HttpClientBuilder)
 $llmConfig = new LLMConfig(
     apiUrl  : 'https://api.deepseek.com',
     apiKey  : Env::get('DEEPSEEK_API_KEY'),
-    endpoint: '/chat/completions', defaultModel: 'deepseek-chat', defaultMaxTokens: 128, driver: 'openai-compatible',
+    endpoint: '/chat/completions', model: 'deepseek-chat', maxTokens: 128, driver: 'openai-compatible',
 );
 
 // Get Instructor with the default client component overridden with your own

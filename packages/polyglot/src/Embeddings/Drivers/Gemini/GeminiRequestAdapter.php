@@ -37,7 +37,7 @@ class GeminiRequestAdapter implements EmbedRequestAdapter
 
     protected function getRequestHeaders(): array {
         return [
-            'Content-Type' => 'application/json',
+            'Content-Type' => 'application/json; charset=utf-8',
         ];
     }
 }

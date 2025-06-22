@@ -4,12 +4,13 @@ namespace Cognesy\Events\Traits;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\Event;
 use Cognesy\Events\EventBusResolver;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 trait HandlesEvents
 {
     protected CanHandleEvents $events;
 
-    public function withEventHandler(CanHandleEvents $events) : static {
+    public function withEventHandler(CanHandleEvents|EventDispatcherInterface $events) : static {
         $this->events = EventBusResolver::using($events);
         return $this;
     }

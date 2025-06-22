@@ -12,6 +12,7 @@ use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Drivers\EmbeddingsDriverFactory;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Builder for creating fully configured embeddings vectorization drivers.
@@ -31,7 +32,7 @@ final class EmbeddingsProvider
     private ?CanHandleVectorization $explicitDriver;
 
     private function __construct(
-        ?CanHandleEvents          $events = null,
+        null|CanHandleEvents|EventDispatcherInterface $events = null,
         ?CanProvideConfig         $configProvider = null,
         ?string                   $preset = null,
         ?string                   $dsn = null,

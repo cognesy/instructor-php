@@ -24,7 +24,6 @@ class MockHttp
         $mockHttp->shouldReceive('withRequest')->andReturn($mockPending);
         $mockHttp->shouldReceive('get')->andReturn($mockResponse);
         $mockHttp->shouldReceive('withDebug')->andReturn($mockHttp);
-        $mockHttp->shouldReceive('toDebugArray')->andReturn([]);
 
         $mockPending->shouldReceive('get')->andReturn($mockResponse);
 

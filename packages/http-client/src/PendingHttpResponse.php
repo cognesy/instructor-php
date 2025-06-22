@@ -8,17 +8,17 @@ use Cognesy\Http\Data\HttpRequest;
 
 class PendingHttpResponse
 {
-    private readonly CanHandleHttpRequest $handler;
+    private readonly CanHandleHttpRequest $driver;
     private readonly HttpRequest $request;
 
     private ?HttpResponse $response = null;
 
     public function __construct(
         HttpRequest          $request,
-        CanHandleHttpRequest $handler,
+        CanHandleHttpRequest $driver,
     ) {
         $this->request = $request;
-        $this->handler = $handler;
+        $this->driver = $driver;
     }
 
     public function get(): HttpResponse {
@@ -49,9 +49,11 @@ class PendingHttpResponse
             ->stream($chunkSize);
     }
 
+    // INTERNAL ////////////////////////////////////////////////////////////////////////
+
     private function makeResponse(HttpRequest $request): HttpResponse {
         if (empty($this->response)) {
-            $this->response = $this->handler->handle($request);
+            $this->response = $this->driver->handle($request);
         }
 
         return $this->response;

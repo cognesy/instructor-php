@@ -15,8 +15,8 @@ class PerplexityBodyFormat extends OpenAICompatibleBodyFormat
         $options = array_merge($this->config->options, $request->options());
 
         $requestBody = array_merge(array_filter([
-            'model' => $request->model() ?: $this->config->defaultModel,
-            'max_tokens' => $this->config->defaultMaxTokens,
+            'model' => $request->model() ?: $this->config->model,
+            'max_tokens' => $this->config->maxTokens,
             'messages' => $this->messageFormat->map(Messages::fromArray($request->messages())->toMergedPerRole()->toArray()),
         ]), $options);
 

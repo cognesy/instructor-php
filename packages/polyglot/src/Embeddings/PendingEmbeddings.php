@@ -2,7 +2,6 @@
 
 namespace Cognesy\Polyglot\Embeddings;
 
-use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Embeddings\Contracts\CanHandleVectorization;
 use Cognesy\Polyglot\Embeddings\Data\EmbeddingsRequest;
@@ -23,7 +22,7 @@ class PendingEmbeddings
     public function __construct(
         EmbeddingsRequest $request,
         CanHandleVectorization $driver,
-        CanHandleEvents $events,
+        EventDispatcherInterface $events,
     ) {
         $this->events = $events;
         $this->request = $request;

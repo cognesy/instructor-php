@@ -30,7 +30,7 @@ class AnthropicRequestAdapter implements CanTranslateInferenceRequest
     protected function toHeaders(InferenceRequest $request): array {
         return array_filter([
             'x-api-key' => $this->config->apiKey,
-            'content-type' => 'application/json',
+            'Content-Type' => 'application/json; charset=utf-8',
             'accept' => 'application/json',
             'anthropic-version' => $this->config->metadata['apiVersion'] ?? '',
             'anthropic-beta' => $this->config->metadata['beta'] ?? '',

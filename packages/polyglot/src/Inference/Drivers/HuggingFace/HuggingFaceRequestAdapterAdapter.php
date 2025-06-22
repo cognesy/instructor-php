@@ -18,7 +18,7 @@ class HuggingFaceRequestAdapterAdapter extends OpenAIRequestAdapter
     protected function toHeaders(InferenceRequest $request): array {
         return [
             'Authorization' => 'Bearer '.$this->config->apiKey,
-            'Content-Type' => 'application/json',
+            'Content-Type' => 'application/json; charset=utf-8',
         ];
     }
 }

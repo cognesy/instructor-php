@@ -23,12 +23,7 @@ final class LaravelEventDispatcher implements CanHandleEvents
         $this->taps    = new SplPriorityQueue();
     }
 
-    /* ---------------------------------------------------------------------
-     * Registration helpers
-     * ------------------------------------------------------------------- */
-
-    public function addListener(string $name, callable $listener, int $priority = 0): void
-    {
+    public function addListener(string $name, callable $listener, int $priority = 0): void {
         if ($name === '*') {
             $this->taps->insert($listener, $priority);
             return;
@@ -42,17 +37,11 @@ final class LaravelEventDispatcher implements CanHandleEvents
         $this->dispatcher->listen($name, $listener);
     }
 
-    public function wiretap(callable $listener, int $priority = \PHP_INT_MIN): void
-    {
+    public function wiretap(callable $listener, int $priority = \PHP_INT_MIN): void {
         $this->addListener('*', $listener, $priority);
     }
 
-    /* ---------------------------------------------------------------------
-     * Dispatch
-     * ------------------------------------------------------------------- */
-
-    public function dispatch(object $event): object
-    {
+    public function dispatch(object $event): object {
         // Laravel executes all framework / user listeners.
         $this->dispatcher->dispatch($event);
 
@@ -64,12 +53,8 @@ final class LaravelEventDispatcher implements CanHandleEvents
         return $event;
     }
 
-    /* ---------------------------------------------------------------------
-     * Introspection (workaround for Laravel’s lack of introspection)
-     * ------------------------------------------------------------------- */
-
-    public function getListenersForEvent(object $event): iterable
-    {
+    // workaround for Laravel’s lack of introspection - via bridge
+    public function getListenersForEvent(object $event): iterable {
         $name = $event::class;
 
         // class-specific listeners registered through this bridge

@@ -77,7 +77,7 @@ class GeminiBodyFormat implements CanMapRequestBody
             "responseMimeType" => $this->toResponseMimeType($mode),
             "responseSchema" => $this->toResponseSchema($responseFormat, $mode),
             "candidateCount" => 1,
-            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->defaultMaxTokens,
+            "maxOutputTokens" => $options['max_tokens'] ?? $this->config->maxTokens,
             "temperature" => $options['temperature'] ?? 1.0,
         ]);
     }

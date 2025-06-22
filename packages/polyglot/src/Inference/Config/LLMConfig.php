@@ -19,8 +19,8 @@ final class LLMConfig
         public string $endpoint = '',
         public array  $queryParams = [],
         public array  $metadata = [],
-        public string $defaultModel = '',
-        public int    $defaultMaxTokens = 1024,
+        public string $model = '',
+        public int    $maxTokens = 1024,
         public int    $contextLength = 8000,
         public int    $maxOutputLength = 4096,
         public string $httpClientPreset = '',
@@ -41,29 +41,34 @@ final class LLMConfig
         return $instance;
     }
 
-    public function withOverrides(array $overrides) : LLMConfig {
-        $this->apiUrl = $overrides['apiUrl'] ?? $overrides['api_url'] ?? $this->apiUrl;
-        $this->apiKey = $overrides['apiKey'] ?? $overrides['api_key'] ?? $this->apiKey;
-        $this->endpoint = $overrides['endpoint'] ?? $this->endpoint;
-        $this->queryParams = $overrides['queryParams'] ?? $overrides['query_params'] ?? $this->queryParams;
-        $this->metadata = $overrides['metadata'] ?? $this->metadata;
-        $this->defaultModel = $overrides['model'] ?? $overrides['defaultModel'] ?? $this->defaultModel;
-        $this->defaultMaxTokens = $overrides['maxTokens']
-            ?? $overrides['max_tokens']
-            ?? $overrides['defaultMaxTokens']
-            ?? $overrides['default_max_tokens']
-            ?? $this->defaultMaxTokens;
-        $this->contextLength = $overrides['contextLength'] ?? $overrides['context_length'] ?? $this->contextLength;
-        $this->maxOutputLength = $overrides['maxOutputLength'] ?? $overrides['max_output_length'] ?? $this->maxOutputLength;
-        $this->httpClientPreset = $overrides['httpClient']
-            ?? $overrides['http_client']
-            ?? $overrides['httpClientPreset']
-            ?? $overrides['http_client_preset']
-            ?? $this->httpClientPreset;
-        $this->driver = $overrides['driverType'] ?? $overrides['driver'] ?? $this->driver;
-        $this->options = $overrides['options'] ?? $this->options;
-        return $this;
+    public function withOverrides(array $overrides) : self {
+        $config = array_merge($this->toArray(), $overrides);
+        return self::fromArray($config);
     }
+
+//    public function withOverrides(array $overrides) : LLMConfig {
+//        $this->apiUrl = $overrides['apiUrl'] ?? $overrides['api_url'] ?? $this->apiUrl;
+//        $this->apiKey = $overrides['apiKey'] ?? $overrides['api_key'] ?? $this->apiKey;
+//        $this->endpoint = $overrides['endpoint'] ?? $this->endpoint;
+//        $this->queryParams = $overrides['queryParams'] ?? $overrides['query_params'] ?? $this->queryParams;
+//        $this->metadata = $overrides['metadata'] ?? $this->metadata;
+//        $this->model = $overrides['model'] ?? $overrides['model'] ?? $this->model;
+//        $this->maxTokens = $overrides['maxTokens']
+//            ?? $overrides['max_tokens']
+//            ?? $overrides['maxTokens']
+//            ?? $overrides['default_max_tokens']
+//            ?? $this->maxTokens;
+//        $this->contextLength = $overrides['contextLength'] ?? $overrides['context_length'] ?? $this->contextLength;
+//        $this->maxOutputLength = $overrides['maxOutputLength'] ?? $overrides['max_output_length'] ?? $this->maxOutputLength;
+//        $this->httpClientPreset = $overrides['httpClientPreset']
+//            ?? $overrides['http_client']
+//            ?? $overrides['httpClientPreset']
+//            ?? $overrides['http_client_preset']
+//            ?? $this->httpClientPreset;
+//        $this->driver = $overrides['driverType'] ?? $overrides['driver'] ?? $this->driver;
+//        $this->options = $overrides['options'] ?? $this->options;
+//        return $this;
+//    }
 
     public function toArray() : array {
         return [
@@ -72,11 +77,11 @@ final class LLMConfig
             'endpoint' => $this->endpoint,
             'queryParams' => $this->queryParams,
             'metadata' => $this->metadata,
-            'defaultModel' => $this->defaultModel,
-            'defaultMaxTokens' => $this->defaultMaxTokens,
+            'model' => $this->model,
+            'maxTokens' => $this->maxTokens,
             'contextLength' => $this->contextLength,
             'maxOutputLength' => $this->maxOutputLength,
-            'httpClient' => $this->httpClientPreset,
+            'httpClientPreset' => $this->httpClientPreset,
             'driver' => $this->driver,
             'options' => $this->options,
         ];

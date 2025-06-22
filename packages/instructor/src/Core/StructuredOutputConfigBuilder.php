@@ -182,7 +182,7 @@ class StructuredOutputConfigBuilder
         $defaults = StructuredOutputConfig::fromArray($data);
 
         if ($this->explicitConfig) {
-            $defaults = $defaults->withOverrides($this->explicitConfig);
+            $defaults = $defaults->withOverrides($this->explicitConfig->toArray());
         }
 
         $config = new StructuredOutputConfig(

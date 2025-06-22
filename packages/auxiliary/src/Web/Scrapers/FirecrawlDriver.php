@@ -38,7 +38,7 @@ class FirecrawlDriver implements CanGetUrlContent
         $requestBody = [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
+                'Content-Type' => 'application/json; charset=utf-8',
                 'Accept' => 'application/json',
             ],
             'json' => $body,

@@ -2,7 +2,6 @@
 
 namespace Cognesy\Http;
 
-use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleHttpRequest;
 use Cognesy\Http\Drivers\Guzzle\GuzzleDriver;
@@ -10,15 +9,16 @@ use Cognesy\Http\Drivers\Laravel\LaravelDriver;
 use Cognesy\Http\Drivers\Symfony\SymfonyDriver;
 use Cognesy\Http\Events\HttpDriverBuilt;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class HttpClientDriverFactory
 {
     protected static array $drivers = [];
 
-    protected CanHandleEvents $events;
+    protected EventDispatcherInterface $events;
 
     public function __construct(
-        CanHandleEvents $events,
+        EventDispatcherInterface $events,
     ) {
         $this->events = $events;
     }
@@ -48,9 +48,12 @@ class HttpClientDriverFactory
      * @throws InvalidArgumentException If the specified client type is not supported.
      */
     public function makeDriver(
-        HttpClientConfig $config,
+        ?HttpClientConfig $config = null,
+        ?string $driver = null,
         ?object $clientInstance = null,
     ): CanHandleHttpRequest {
+        $config = $config ?? new HttpClientConfig();
+        $config = $config->withOverrides(['driver' => $driver ?? $config->driver ?? 'guzzle']);
         $name = $config->driver;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
 
@@ -66,6 +69,8 @@ class HttpClientDriverFactory
 
         return $driverClosure(config: $config, clientInstance: $clientInstance, events: $this->events);
     }
+
+    // INTERNAL ////////////////////////////////////////////////////
 
     /**
      * Returns the default drivers available for the HTTP client.

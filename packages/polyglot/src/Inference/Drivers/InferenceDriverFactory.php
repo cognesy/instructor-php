@@ -3,6 +3,7 @@
 namespace Cognesy\Polyglot\Inference\Drivers;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
+use Cognesy\Events\EventBusResolver;
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\HttpClientBuilder;
 use Cognesy\Polyglot\Inference\Config\LLMConfig;
@@ -29,6 +30,7 @@ use Cognesy\Polyglot\Inference\Drivers\SambaNova\SambaNovaDriver;
 use Cognesy\Polyglot\Inference\Drivers\XAI\XAiDriver;
 use Cognesy\Polyglot\Inference\Events\InferenceDriverBuilt;
 use InvalidArgumentException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Factory class for creating inference driver instances based
@@ -42,9 +44,9 @@ class InferenceDriverFactory
     private CanHandleEvents $events;
 
     public function __construct(
-        CanHandleEvents $events,
+        CanHandleEvents|EventDispatcherInterface $events,
     ) {
-        $this->events = $events;
+        $this->events = EventBusResolver::using($events);
         $this->bundledDrivers = $this->bundledDrivers();
     }
 
@@ -74,21 +76,24 @@ class InferenceDriverFactory
 
         $httpClient = match(true) {
             !is_null($httpClient) => $httpClient,
-            !empty($config->httpClientPreset) => (new HttpClientBuilder($this->events))->withPreset($config->httpClientPreset)->create(),
-            default => (new HttpClientBuilder($this->events))->create(),
+            !empty($config->httpClientPreset) => (new HttpClientBuilder(events: $this->events))
+                ->withPreset($config->httpClientPreset)
+                ->create(),
+            default => (new HttpClientBuilder(events: $this->events))
+                ->create(),
         };
 
         $driver = $driverFactory(
             config: $config,
             httpClient: $httpClient,
-            events: $this->events
+            events: $this->events,
         );
 
-        $this->events->dispatch(new InferenceDriverBuilt(
-            driverClass: get_class($driver),
-            config: $config,
-            httpClientInfo: $httpClient->toDebugArray(),
-        ));
+        $this->events->dispatch(new InferenceDriverBuilt([
+            'driverClass' => get_class($driver),
+            'config' => $config->toArray(),
+            'httpClient' => print_r($httpClient, true),
+        ]));
 
         return $driver;
     }

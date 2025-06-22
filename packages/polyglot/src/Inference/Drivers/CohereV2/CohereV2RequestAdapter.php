@@ -13,7 +13,7 @@ class CohereV2RequestAdapter extends OpenAIRequestAdapter
         ];
         return array_merge([
             'Authorization' => "Bearer {$this->config->apiKey}",
-            'Content-Type' => 'application/json',
+            'Content-Type' => 'application/json; charset=utf-8',
         ], $optional);
     }
 }

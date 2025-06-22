@@ -11,11 +11,12 @@ class EventBusResolver implements CanHandleEvents
     private CanHandleEvents $eventHandler;
 
     private function __construct(
-        ?CanHandleEvents $eventHandler
+        null|CanHandleEvents|EventDispatcher $eventHandler
     ) {
         $this->eventHandler = match(true) {
             is_null($eventHandler) => new EventDispatcher(),
             $eventHandler instanceof EventBusResolver => $eventHandler->eventHandler, // avoid double wrapping
+            $eventHandler instanceof EventDispatcher => $eventHandler, // already an EventDispatcher
             $eventHandler instanceof CanHandleEvents => $eventHandler, // CanHandleEvents implementation
             $eventHandler instanceof EventDispatcherInterface =>  new EventDispatcher(parent: $eventHandler), // wrap with EventDispatcher
             default => $eventHandler,
@@ -28,7 +29,7 @@ class EventBusResolver implements CanHandleEvents
         return new self(new EventDispatcher());
     }
 
-    public static function using(?CanHandleEvents $events): self {
+    public static function using(null|EventDispatcherInterface|CanHandleEvents $events): self {
         return new self($events);
     }
 

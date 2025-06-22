@@ -130,24 +130,29 @@ final class StructuredOutputConfig
         return self::fromArray($data);
     }
 
-    public function withOverrides(StructuredOutputConfig $overrides) : self {
-        return new self(
-            outputMode                  : $overrides->outputMode ?? $this->outputMode,
-            outputClass                 : $overrides->outputClass ?: $this->outputClass,
-            useObjectReferences         : $overrides->useObjectReferences ?? $this->useObjectReferences,
-            maxRetries                  : $overrides->maxRetries >= 0 ? $overrides->maxRetries : $this->maxRetries,
-            schemaName                  : $overrides->schemaName ?: $this->schemaName,
-            schemaDescription           : $overrides->schemaDescription ?: $this->schemaDescription,
-            toolName                    : $overrides->toolName ?: $this->toolName,
-            toolDescription             : $overrides->toolDescription ?: $this->toolDescription,
-            modePrompts                 : array_merge($this->modePrompts, $overrides->modePrompts),
-            retryPrompt                 : $overrides->retryPrompt ?: $this->retryPrompt,
-            chatStructure               : array_merge($this->chatStructure, $overrides->chatStructure),
-            defaultToStdClass     : $overrides->defaultToStdClass ?? $this->defaultToStdClass,
-            deserializationErrorPrompt  : $overrides->deserializationErrorPrompt ?: $this->deserializationErrorPrompt,
-            throwOnTransformationFailure: $overrides->throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
-        );
+    public function withOverrides(array $values) : self {
+        $config = array_merge($this->toArray(), $values);
+        return self::fromArray($config);
     }
+
+//    public function withOverrides(StructuredOutputConfig $overrides) : self {
+//        return new self(
+//            outputMode                  : $overrides->outputMode ?? $this->outputMode,
+//            outputClass                 : $overrides->outputClass ?: $this->outputClass,
+//            useObjectReferences         : $overrides->useObjectReferences ?? $this->useObjectReferences,
+//            maxRetries                  : $overrides->maxRetries >= 0 ? $overrides->maxRetries : $this->maxRetries,
+//            schemaName                  : $overrides->schemaName ?: $this->schemaName,
+//            schemaDescription           : $overrides->schemaDescription ?: $this->schemaDescription,
+//            toolName                    : $overrides->toolName ?: $this->toolName,
+//            toolDescription             : $overrides->toolDescription ?: $this->toolDescription,
+//            modePrompts                 : array_merge($this->modePrompts, $overrides->modePrompts),
+//            retryPrompt                 : $overrides->retryPrompt ?: $this->retryPrompt,
+//            chatStructure               : array_merge($this->chatStructure, $overrides->chatStructure),
+//            defaultToStdClass     : $overrides->defaultToStdClass ?? $this->defaultToStdClass,
+//            deserializationErrorPrompt  : $overrides->deserializationErrorPrompt ?: $this->deserializationErrorPrompt,
+//            throwOnTransformationFailure: $overrides->throwOnTransformationFailure ?? $this->throwOnTransformationFailure,
+//        );
+//    }
 
     public function clone() : self {
         return new self(

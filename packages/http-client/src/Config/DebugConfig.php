@@ -38,6 +38,11 @@ final class DebugConfig
         return $instance;
     }
 
+    public function withOverrides(array $overrides) : self {
+        $config = array_merge($this->toArray(), $overrides);
+        return self::fromArray($config);
+    }
+
     public function toArray() : array {
         return [
             'httpEnabled' => $this->httpEnabled,
