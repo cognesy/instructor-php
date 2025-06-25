@@ -35,7 +35,6 @@ trait HandlesClassInfo
      */
     protected function getPropertySchemas(ClassInfo $classInfo) : array {
         $properties = $classInfo->getProperties();
-
         $propertySchemas = [];
         foreach ($properties as $propertyName => $propertyInfo) {
             if (!$propertyInfo->isDeserializable()) {

@@ -15,7 +15,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
             throw new NotNormalizableValueException('The data is not a string, it cannot be converted to a DateTime.');
         }
 
-        $output = $this->parseDate($data);
+        $output = $this->parseDate($data, $type);
 
         if ($output === false) {
             throw new NotNormalizableValueException('The date string could not be parsed.');
@@ -40,7 +40,7 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
         ]);
     }
 
-    private function parseDate(string $dateString) : DateTimeImmutable|DateTime|false {
+    private function parseDate(string $dateString, string $targetType) : DateTimeImmutable|DateTime|false {
         $formats = [
             'Y-m-d\TH:i:s.uP', // ISO8601 with microseconds
             'Y-m-d\TH:i:sP',   // ISO8601
@@ -54,11 +54,24 @@ class FlexibleDateDenormalizer implements DenormalizerInterface
         foreach ($formats as $format) {
             $date = DateTime::createFromFormat($format, $dateString);
             if ($date !== false) {
-                return $date;
+                return $this->convertToTargetType($date, $targetType);
             }
         }
 
         // If none of the formats work, try a more flexible approach
-        return date_create($dateString);
+        $date = date_create($dateString);
+        if ($date !== false) {
+            return $this->convertToTargetType($date, $targetType);
+        }
+
+        return false;
+    }
+
+    private function convertToTargetType(DateTime $date, string $targetType): DateTimeImmutable|DateTime {
+        if ($targetType === DateTimeImmutable::class || $targetType === DateTimeInterface::class) {
+            return DateTimeImmutable::createFromMutable($date);
+        }
+        
+        return $date;
     }
 }

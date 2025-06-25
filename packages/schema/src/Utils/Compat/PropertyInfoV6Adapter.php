@@ -63,8 +63,8 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
     private function typesToUnionString(array $types): string {
         $result = [];
         foreach ($types as $type) {
-            if (in_array($type->getBuiltinType(), TypeDetails::PHP_SCALAR_TYPES)) { $result[] = $type->getBuiltinType(); }
             if ($type->isCollection()) { $result[] = $this->getCollectionOrArrayType($type); }
+            if (in_array($type->getBuiltinType(), TypeDetails::PHP_SCALAR_TYPES)) { $result[] = $type->getBuiltinType(); }
             if ($type->getBuiltinType() === Type::BUILTIN_TYPE_ARRAY) { $result[] = 'array'; }
             if ($type->getClassName()) { $result[] = $type->getClassName() ?? 'object'; }
             //if ($type->isNullable()) { $result[] = 'null'; }
@@ -74,19 +74,16 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
 
     private function getCollectionOrArrayType(Type $parentType): string {
         $valueTypes = $parentType->getCollectionValueTypes();
-        if (is_null($valueTypes)) {
-            return 'array';
-        }
 
         $result = [];
         foreach ($valueTypes as $valueType) {
             if (in_array($valueType->getBuiltinType(), TypeDetails::PHP_SCALAR_TYPES)) { $result[] = $valueType->getBuiltinType() . '[]'; }
-            if ($valueType->isCollection()) { $result[] = 'array'; } // collection of collections is considered an array
-            if ($valueType->getBuiltinType() === Type::BUILTIN_TYPE_ARRAY) { $result[] = 'array'; }
-            if ($valueType->getClassName()) { $result[] = $parentType->getClassName()
-                ? ($parentType->getClassName() . '[]')
+            if (!empty($valueType->getClassName())) { $result[] = $valueType->getClassName()
+                ? ($valueType->getClassName() . '[]')
                 : 'array';  // collection of unspecified objects is considered an array
             }
+            if ($valueType->isCollection()) { $result[] = 'array'; } // collection of collections is considered an array
+            if ($valueType->getBuiltinType() === Type::BUILTIN_TYPE_ARRAY) { $result[] = 'array'; }
             //if ($valueType->isNullable()) { $result[] = 'null'; }
         }
         return implode('|', $result);

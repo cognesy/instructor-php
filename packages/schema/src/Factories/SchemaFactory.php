@@ -80,6 +80,7 @@ class SchemaFactory
                 typeName: $typeString,
                 schema: $this->makeSchema($type));
         }
+
         return $this->schemaMap->get($anyType);
     }
 
