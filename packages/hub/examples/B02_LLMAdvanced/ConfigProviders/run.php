@@ -110,7 +110,7 @@ $customClient = (new HttpClientBuilder(
     ))
     ->withClientInstance(
         driverName: 'symfony',
-        clientInstance: SymfonyHttpClient::create(['http_version' => '2.0'])
+        clientInstance: SymfonyHttpClient::create(['http_version' => '2.0']),
     )
     ->create();
 

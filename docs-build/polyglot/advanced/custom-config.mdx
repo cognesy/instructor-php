@@ -48,8 +48,8 @@ return [
                 'organization' => '',
                 'project' => '',
             ],
-            'defaultModel' => 'gpt-4o-mini',
-            'defaultMaxTokens' => 1024,
+            'model' => 'gpt-4o-mini',
+            'maxTokens' => 1024,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,
         ],
@@ -64,8 +64,8 @@ return [
                 'apiVersion' => '2023-06-01',
                 'beta' => 'prompt-caching-2024-07-31',
             ],
-            'defaultModel' => 'claude-3-haiku-20240307',
-            'defaultMaxTokens' => 1024,
+            'model' => 'claude-3-haiku-20240307',
+            'maxTokens' => 1024,
             'contextLength' => 200_000,
             'maxOutputLength' => 8192,
         ],
@@ -95,7 +95,7 @@ return [
             'metadata' => [
                 'organization' => ''
             ],
-            'defaultModel' => 'text-embedding-3-small',
+            'model' => 'text-embedding-3-small',
             'defaultDimensions' => 1536,
             'maxInputs' => 2048,
         ],
@@ -114,8 +114,8 @@ Each connection includes several parameters:
 - **`apiKey`**: The API key for authentication
 - **`endpoint`**: The specific API endpoint for chat completions or embeddings
 - **`metadata`**: Additional provider-specific settings
-- **`defaultModel`**: The default model to use
-- **`defaultMaxTokens`**: Default maximum tokens for responses
+- **`model`**: The default model to use
+- **`maxTokens`**: Default maximum tokens for responses
 - **`contextLength`**: Maximum context length supported by the model
 - **`maxOutputLength`**: Maximum output length supported by the model
 - **`httpClient`**: (Optional) Custom HTTP client to use
@@ -128,7 +128,7 @@ For embedding connections, the parameters are:
 - **`apiKey`**: The API key for authentication
 - **`endpoint`**: The specific API endpoint for chat completions or embeddings
 - **`metadata`**: Additional provider-specific settings
-- **`defaultModel`**: The default model to use
+- **`model`**: The default model to use
 - **`defaultDimensions`**: The default dimensions of embedding vectors
 - **`maxInputs`**: Maximum number of inputs that can be processed in a single request
 
@@ -266,11 +266,11 @@ return [
             'apiUrl' => 'https://custom.openai-proxy.com/v1',
             'apiKey' => Env::get('CUSTOM_OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'gpt-4-turbo',
-            'defaultMaxTokens' => 2048,
+            'model' => 'gpt-4-turbo',
+            'maxTokens' => 2048,
             'contextLength' => 128_000,
             'maxOutputLength' => 16384,
-            'httpClient' => 'guzzle-custom', // Custom HTTP client configuration
+            'httpClientPreset' => 'guzzle-custom', // Custom HTTP client configuration
         ],
 
         // Other connections...
@@ -291,8 +291,8 @@ $customConfig = new LLMConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: getenv('OPENAI_API_KEY'),
     endpoint: '/chat/completions',
-    defaultModel: 'gpt-4-turbo',
-    defaultMaxTokens: 2048,
+    model: 'gpt-4-turbo',
+    maxTokens: 2048,
     contextLength: 128000,
     driver: 'openai'
 );
@@ -336,8 +336,8 @@ return [
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'gpt-4o-mini',
-            'defaultMaxTokens' => 1024,
+            'model' => 'gpt-4o-mini',
+            'maxTokens' => 1024,
         ],
 
         'ollama' => [
@@ -345,9 +345,9 @@ return [
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => '',
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'llama2',
-            'defaultMaxTokens' => 1024,
-            'httpClient' => 'http-ollama',
+            'model' => 'llama2',
+            'maxTokens' => 1024,
+            'httpClientPreset' => 'http-ollama',
         ],
 
         // Other connections...

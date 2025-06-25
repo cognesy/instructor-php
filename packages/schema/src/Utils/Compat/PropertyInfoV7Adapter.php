@@ -20,7 +20,7 @@ class PropertyInfoV7Adapter implements CanGetPropertyType
         string $class,
         string $propertyName,
     ) {
-//dump('prop info v7', $class, $propertyName);
+dump('prop info v7', $class, $propertyName);
         // if class name starts with ?, remove it
         if (str_starts_with($class, '?')) {
             $class = substr($class, 1);

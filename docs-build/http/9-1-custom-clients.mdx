@@ -589,12 +589,12 @@ Or you can refer to it in your LLM connections configuration:
             'apiUrl' => 'https://api.ai21.com/studio/v1',
             'apiKey' => Env::get('A21_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'jamba-1.5-mini',
-            'defaultMaxTokens' => 1024,
+            'model' => 'jamba-1.5-mini',
+            'maxTokens' => 1024,
             'contextLength' => 256_000,
             'maxOutputLength' => 4096,
             // Our custom HTTP client
-            'httpClient' => 'my-custom-client',
+            'httpClientPreset' => 'my-custom-client',
         ],
     // ...
 ```

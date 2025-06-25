@@ -74,7 +74,7 @@ $text = <<<TEXT
 
 $user = (new StructuredOutput)
     ->using('anthropic')
-    ->withDebugPreset('on')
+    //->withDebugPreset('on')
     ->withMessages($text)
     ->withResponseClass(UserWithSetter::class)
     ->withMaxRetries(2)

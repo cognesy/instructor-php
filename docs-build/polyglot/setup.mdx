@@ -91,8 +91,8 @@ return [
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
-            'defaultModel' => 'gpt-4o-mini',
-            'defaultMaxTokens' => 1024,
+            'model' => 'gpt-4o-mini',
+            'maxTokens' => 1024,
         ],
 
         'anthropic' => [
@@ -103,8 +103,8 @@ return [
             'metadata' => [
                 'apiVersion' => '2023-06-01',
             ],
-            'defaultModel' => 'claude-3-haiku-20240307',
-            'defaultMaxTokens' => 1024,
+            'model' => 'claude-3-haiku-20240307',
+            'maxTokens' => 1024,
         ],
 
         // Other connections...
@@ -131,7 +131,7 @@ return [
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/embeddings',
-            'defaultModel' => 'text-embedding-3-small',
+            'model' => 'text-embedding-3-small',
         ],
 
         // Other connections...
