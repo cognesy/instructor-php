@@ -33,8 +33,8 @@ class SchemaToJsonSchema implements CanVisitSchema
     }
 
     public function visitSchema(Schema $schema): void {
+        // this is fallback - should never be called in practice
         $this->result = array_filter([
-            'type' => $schema->typeDetails->type,
             'description' => $schema->description,
         ]);
     }
@@ -47,11 +47,12 @@ class SchemaToJsonSchema implements CanVisitSchema
     }
 
     public function visitArraySchema(ArraySchema $schema): void {
-        $this->result = array_filter([
+        $this->result = [
             'type' => 'array',
-            'items' => ['anyOf' => [['type' => 'string'], ['type' => 'integer'], ['type' => 'number'], ['type' => 'boolean']]],
+            'items' => ['anyOf' => [['type' => 'string'], ['type' => 'integer'], ['type' => 'number'], ['type' => 'boolean'], ['type' => 'object']]],
+            //'items' => [['type' => ['string', 'integer', 'number', 'boolean', 'object']]],
             'description' => $schema->description,
-        ]);
+        ];
     }
 
     public function visitCollectionSchema(CollectionSchema $schema): void {
@@ -99,8 +100,8 @@ class SchemaToJsonSchema implements CanVisitSchema
 
     public function visitEnumSchema(EnumSchema $schema): void {
         $this->result = array_filter([
-            'description' => $schema->description ?? '',
             'type' => $schema->typeDetails->enumType ?? 'string',
+            'description' => $schema->description ?? '',
             'enum' => $schema->typeDetails->enumValues ?? [],
             'x-php-class' => $schema->typeDetails->class ?? '',
         ]);
@@ -108,15 +109,15 @@ class SchemaToJsonSchema implements CanVisitSchema
 
     public function visitOptionSchema(OptionSchema $schema): void {
         $this->result = array_filter([
-            'description' => $schema->description ?? '',
             'type' => 'string',
+            'description' => $schema->description ?? '',
             'enum' => $schema->typeDetails->enumValues ?? [],
         ]);
     }
 
     public function visitScalarSchema(ScalarSchema $schema): void {
         $array = [
-            'type' => $schema->typeDetails->jsonType(),
+            'type' => $schema->typeDetails->toJsonType()->toString(),
             'description' => $schema->description,
         ];
         if ($schema->typeDetails->enumValues) {

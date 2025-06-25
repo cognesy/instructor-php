@@ -4,7 +4,6 @@ namespace Cognesy\Schema\Data\Traits\TypeDetails;
 
 use Cognesy\Schema\Data\TypeDetails;
 use Cognesy\Schema\Factories\TypeDetailsFactory;
-use Cognesy\Utils\JsonSchema\JsonSchema;
 
 trait HandlesFactoryMethods
 {
@@ -60,9 +59,9 @@ trait HandlesFactoryMethods
         return (new TypeDetailsFactory)->fromPhpDocTypeString($typeString);
     }
 
-    public static function fromJsonSchema(JsonSchema $jsonSchema) : TypeDetails {
-        return (new TypeDetailsFactory)->fromJsonSchema($jsonSchema);
-    }
+//    public static function fromJsonSchema(JsonSchema $jsonSchema) : TypeDetails {
+//        return (new TypeDetailsFactory)->fromJsonSchema($jsonSchema);
+//    }
 
     static public function fromValue(mixed $value) : TypeDetails {
         return (new TypeDetailsFactory)->fromValue($value);

@@ -6,7 +6,7 @@ test('fromArray with empty array returns null', function () {
     $result = JsonSchema::fromArray([]);
 
     expect($result)->toBeInstanceOf(JsonSchema::class)
-        ->and($result->type())->toBe('')
+        ->and($result->type()->toString())->toBe('')
         ->and($result->name())->toBe('')
         ->and($result->isNullable())->toBeTrue()
         ->and($result->properties())->toBeEmpty()
@@ -36,7 +36,7 @@ test('fromArray creates string schema', function () {
     $schema = JsonSchema::fromArray($array);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('string')
+        ->and($schema->type()->toString())->toBe('string')
         ->and($schema->isNullable())->toBeTrue()
         ->and($schema->description())->toBe('User name')
         ->and($schema->title())->toBe('Name')
@@ -54,7 +54,7 @@ test('fromArray creates enum schema', function () {
     $schema = JsonSchema::fromArray($array);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('string')
+        ->and($schema->type()->toString())->toBe('string')
         ->and($schema->enumValues())->toBe(['pending', 'active', 'inactive'])
         ->and($schema->description())->toBe('User status');
 });
@@ -73,16 +73,16 @@ test('fromArray creates object schema with properties', function () {
     $schema = JsonSchema::fromArray($array);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('object')
+        ->and($schema->type()->toString())->toBe('object')
         ->and($schema->properties())->toHaveCount(2)
         ->and($schema->requiredProperties())->toBe(['id', 'name'])
         ->and($schema->description())->toBe('User object');
 
     // Check properties
     expect($schema->property('id'))->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->property('id')->type())->toBe('string')
+        ->and($schema->property('id')->type()->toString())->toBe('string')
         ->and($schema->property('name'))->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->property('name')->type())->toBe('string');
+        ->and($schema->property('name')->type()->toString())->toBe('string');
 });
 
 test('fromArray creates array schema with items', function () {
@@ -97,13 +97,13 @@ test('fromArray creates array schema with items', function () {
     $schema = JsonSchema::fromArray($array);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('array')
+        ->and($schema->type()->toString())->toBe('array')
         ->and($schema->description())->toBe('String array')
         ->and($schema->itemSchema())->toBeObject();
 
     // Check items schema
     $itemSchema = $schema->itemSchema();
-    expect($itemSchema->type())->toBe('string');
+    expect($itemSchema->type()->toString())->toBe('string');
 });
 
 test('fromArray creates complex nested schema', function () {
@@ -132,18 +132,18 @@ test('fromArray creates complex nested schema', function () {
     $schema = JsonSchema::fromArray($array);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('object')
+        ->and($schema->type()->toString())->toBe('object')
         ->and($schema->properties())->toHaveCount(4)
         ->and($schema->requiredProperties())->toBe(['id', 'name']);
 
     // Check address object
     expect($schema->property('address'))->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->property('address')->type())->toBe('object')
+        ->and($schema->property('address')->type()->toString())->toBe('object')
         ->and($schema->property('address')->properties())->toHaveCount(2);
 
     // Check tags array
     expect($schema->property('tags'))->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->property('tags')->type())->toBe('array')
+        ->and($schema->property('tags')->type()->toString())->toBe('array')
         ->and($schema->property('tags')->itemSchema())->toBeInstanceOf(JsonSchema::class);
 });
 
@@ -160,7 +160,7 @@ test('fromArray extracts meta fields', function () {
     $schema = JsonSchema::fromArray($array);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('string')
+        ->and($schema->type()->toString())->toBe('string')
         ->and($schema->description())->toBe('Email field')
         ->and($schema->meta())->toHaveCount(4)
         ->and($schema->meta())->toHaveKeys(['format', 'example', 'min-length', 'max-length']);

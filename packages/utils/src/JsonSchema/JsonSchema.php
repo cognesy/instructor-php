@@ -30,13 +30,12 @@ use Exception;
  */
 class JsonSchema implements CanProvideJsonSchema
 {
-    use Traits\DefinesJsonTypes;
     use Traits\HandlesAccess;
     use Traits\HandlesMutation;
     use Traits\HandlesTypeFactory;
     use Traits\HandlesTransformation;
 
-    protected string $type;
+    protected JsonSchemaType $type;
     protected string $name;
     protected ?bool $nullable = null;
     /** @var JsonSchema[]|null */
@@ -52,10 +51,9 @@ class JsonSchema implements CanProvideJsonSchema
     /** @var array<string, mixed> */
     protected array $meta = [];
 
-    public function __construct(
-        string      $type,
+    private function __construct(
+        JsonSchemaType $type,
         string      $name = '',
-
         ?bool       $nullable = null,
         ?array      $properties = null,
         ?array      $requiredProperties = null,
@@ -64,9 +62,7 @@ class JsonSchema implements CanProvideJsonSchema
         ?bool       $additionalProperties = null,
         ?string     $description = null,
         ?string     $title = null,
-
         array       $meta = [],
-
         // public array $oneOf = [],
         // public array $anyOf = [],
         // public array $allOf = [],
@@ -84,43 +80,52 @@ class JsonSchema implements CanProvideJsonSchema
         $this->title = $title;
         $this->meta = $meta;
 
-        $this->properties = self::toKeyedProperties($properties);
+        if ($this->enumValues !== null) {
+            // validate enum values are strings
+            foreach ($this->enumValues as $value) {
+                if (!is_string($value)) {
+                    throw new Exception('Invalid JSON type: invalid in: ' . $this->name . ' - enum values must be strings');
+                }
+            }
+        }
 
-        $validator = new JsonSchemaValidator();
-        $validator->validate($this);
+        $this->properties = self::toKeyedProperties($properties);
     }
 
     // MAIN ////////////////////////////////////////////////////////////////////
 
-    public static function fromArray(array $data, ?string $name = null) : JsonSchema {
+    public static function fromArray(array $data, ?string $name = null, ?bool $required = null) : JsonSchema {
         if (empty($data)) {
-            return new JsonSchema(
-                type: '',
+            return new self(
+                type: JsonSchemaType::any(),
                 name: $name ?? '',
                 nullable: true,
             );
         }
 
+        $type = JsonSchemaType::fromJsonData($data, is_null($required) ? null : !$required);
+
         $properties = [];
         if (isset($data['properties'])) {
             foreach ($data['properties'] as $propertyName => $propertyData) {
-                $properties[$propertyName] = JsonSchema::fromArray($propertyData, $propertyName);
+                $isRequired = in_array($propertyName, $data['required'] ?? []);
+                $properties[$propertyName] = JsonSchema::fromArray($propertyData, $propertyName, $isRequired);
             }
             $properties = array_filter($properties);
         }
 
-        $items = match(true) {
+        $itemSchema = match(true) {
             isset($data['items']) => JsonSchema::fromArray($data['items']),
             default => null,
         };
 
         return new self(
-            type: $data['type'] ?? '',
+            type: $type,
             name: $name ?? $data['name'] ?? $data['x-name'] ?? '',
             nullable: $data['nullable'] ?? null,
             properties: $properties,
             requiredProperties: $data['required'] ?? null,
-            itemSchema: $items,
+            itemSchema: $itemSchema,
             enumValues: $data['enum'] ?? null,
             additionalProperties: $data['additionalProperties'] ?? null,
             description: $data['description'] ?? '',

@@ -5,27 +5,26 @@ namespace Cognesy\Schema\TypeString;
 class TypeStringParser
 {
     public function getTypes(string $typeString) : array {
-        $trimmed = trim($typeString);
-
-        return match(true) {
-            $trimmed === '' => [],
-            ($trimmed === '|' || $trimmed === '||') => [],
-            (str_starts_with($trimmed, '|')) => $this->process(substr($trimmed, 1)),
-            $trimmed === 'null' => ['null'],
-            $trimmed === 'mixed' => ['mixed'],
-            $trimmed === 'any' => ['mixed'],
-            $trimmed === 'array' => ['array'],
-            $trimmed === 'list' => ['list'],
-            $trimmed === '?' => throw new \InvalidArgumentException("Type string '$typeString' is incomplete. It is just a '?' without a base type."),
-            (preg_match('/^(array|list|iterable)\s*<$/i', $trimmed)) => throw new \InvalidArgumentException("Type string '$typeString' is incomplete. It ends with an opening generic delimiter '<'."),
-            default => $this->process($trimmed),
-        };
+        return $this->process($typeString);
     }
+
+    // INTERNAL //////////////////////////////////////////////////////////////////////
 
     private function process(string $typeString): array {
         $parsedTypes = $this->parse($typeString);
+        if (empty($parsedTypes)) {
+            return [];
+        }
+        // preprocess to ensure we have unique types
         $uniqueTypes = array_values(array_unique($parsedTypes));
-        sort($uniqueTypes); // Sort alphabetically to ensure consistent order
+        if (count($parsedTypes) === 1 && in_array('', $parsedTypes, true)) {
+            return [];
+        }
+        if (count($parsedTypes) === 1 && in_array('null', $parsedTypes, true)) {
+            return ['null'];
+        }
+        // sort alphabetically to ensure consistent order
+        sort($uniqueTypes);
         return $uniqueTypes;
     }
 
@@ -34,6 +33,32 @@ class TypeStringParser
      */
     private function parse(string $type): array
     {
+        $type = trim($type);
+
+        if (str_starts_with($type, '|')) {
+            $type = substr($type, 1);
+        }
+
+        if (str_ends_with($type, '|')) {
+            $type = substr($type, 0, -1);
+        }
+
+        if ($type === '?') {
+            throw new \InvalidArgumentException(
+                "Type string '$type' is incomplete. It is just a '?' without a base type."
+            );
+        }
+
+        if ($this->isUnfinishedArray($type)) {
+            throw new \InvalidArgumentException(
+                "Type string '$type' is incomplete. It ends with an opening generic delimiter '<'."
+            );
+        }
+
+        if ($type === '') {
+            return [];
+        }
+
         // First, split the type by the union operator '|'. This is the highest precedence operation.
         // `self::split(...)` correctly handles nested generics, e.g., in `int|array<string|bool>`.
         $unionParts = $this->splitOnTopLevelDelimiter($type, '|');
@@ -147,4 +172,43 @@ class TypeStringParser
 
         return array_values($parts);
     }
+
+    private function isUnfinishedArray(mixed $trimmed) : bool {
+        return (preg_match('/^(array|list|iterable)\s*<$/i', $trimmed));
+    }
 }
+
+//    private function normalize(string $typeString): string {
+//        $trimmed = trim($typeString);
+//        return match(true) {
+//            ($trimmed === '') => [],
+//            (str_starts_with($trimmed, '|')) => $this->normalize(substr($trimmed, 1)),
+//            (str_ends_with($trimmed, '|')) => $this->normalize(substr($trimmed, 0, -1)),
+//            ($trimmed === 'int') => ['int'],
+//            ($trimmed === 'string') => ['string'],
+//            ($trimmed === 'float') => ['float'],
+//            ($trimmed === 'bool') => ['bool'],
+//            ($trimmed === 'object') => ['object'],
+//            ($trimmed === 'iterable') => ['iterable'],
+//            ($trimmed === 'enum') => ['enum'],
+//            ($trimmed === 'object[]') => ['object[]'],
+//            ($trimmed === 'iterable[]') => ['iterable[]'],
+//            ($trimmed === 'enum[]') => ['enum[]'],
+//            ($trimmed === 'array[]') => ['array'],
+//            ($trimmed === 'list[]') => ['list'],
+//            ($trimmed === 'null') => ['mixed'],
+//            ($trimmed === 'mixed') => ['mixed'],
+//            ($trimmed === 'any') => ['mixed'],
+//            ($trimmed === 'array') => ['array'],
+//            ($trimmed === 'list') => ['list'],
+//            ($trimmed === '?') =>
+//                throw new \InvalidArgumentException(
+//                    "Type string '$typeString' is incomplete. It is just a '?' without a base type."
+//                ),
+//            $this->isUnfinishedArray($trimmed) =>
+//                throw new \InvalidArgumentException(
+//                    "Type string '$typeString' is incomplete. It ends with an opening generic delimiter '<'."
+//                ),
+//            default => $trimmed,
+//        };
+//    }

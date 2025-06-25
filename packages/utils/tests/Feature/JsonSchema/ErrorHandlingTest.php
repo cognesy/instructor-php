@@ -4,31 +4,8 @@ use Cognesy\Utils\JsonSchema\JsonSchema;
 
 test('constructor throws exception with invalid type', function () {
     expect(function () {
-        new JsonSchema(
-            type: 'invalid',
-            name: 'Test'
-        );
-    })->toThrow(Exception::class, 'Invalid type: invalid');
-});
-
-test('toArray throws exception with invalid type', function () {
-    // Create a reflection of JsonSchema to bypass constructor validation
-    $reflectionClass = new ReflectionClass(JsonSchema::class);
-    $schema = $reflectionClass->newInstanceWithoutConstructor();
-
-    // Set invalid type via reflection
-    $reflectionProp = $reflectionClass->getProperty('type');
-    $reflectionProp->setAccessible(true);
-    $reflectionProp->setValue($schema, 'invalid');
-
-    // Set required name property
-    $reflectionName = $reflectionClass->getProperty('name');
-    $reflectionName->setAccessible(true);
-    $reflectionName->setValue($schema, 'Test');
-
-    expect(function () use ($schema) {
-        $schema->toArray();
-    })->toThrow(Exception::class, 'Invalid type: invalid');
+        JsonSchema::fromArray(['type' => 'invalid']);
+    })->toThrow(Exception::class,  'Invalid JSON type: invalid in:');
 });
 
 test('toFunctionCall throws exception when called on non-object schema', function () {
@@ -82,10 +59,6 @@ test('toKeyedProperties throws exception when property is invalid', function () 
 
 test('constructor validates enum values are strings', function () {
     expect(function () {
-        new JsonSchema(
-            type: 'string',
-            name: 'Test',
-            enumValues: ['valid', 123, true] // mixed types: string, number, boolean
-        );
-    })->toThrow(Exception::class, 'Invalid enum value:');
+        JsonSchema::fromArray(['type' => 'string', 'name' => 'Test', 'enum' => ['valid', 123, true]]);
+    })->toThrow(Exception::class, 'Invalid JSON type: invalid in:');
 });

@@ -4,7 +4,7 @@ namespace Cognesy\Schema\TypeString;
 
 use Cognesy\Schema\Data\TypeDetails;
 
-class TypeString
+class TypeString implements \Stringable
 {
     private string $typeString;
     /** @var list<string> A list of normalized, unique type names. */
@@ -21,14 +21,18 @@ class TypeString
     public static function fromString(string $typeString) : self {
         if (empty($typeString)) {
             return new self(
-                typeString: '',
-                types: [],
+                typeString: $typeString,
+                types: ['mixed'],
             );
         }
         $types = (new TypeStringParser)->getTypes($typeString);
-        $trimmedTypes = array_map('trim', $types);
-        $uniqueTypes = array_unique($trimmedTypes);
-        $typeString = implode('|', $uniqueTypes);
+        $types = match(true) {
+            empty($types) => ['mixed'],
+            count($types) === 1 && $types[0] === '' => ['mixed'],
+            count($types) === 1 && $types[0] === 'null' => ['mixed'],
+            count($types) === 1 && $types[0] === 'any' => ['mixed'],
+            default => $types,
+        };
         return new self(
             typeString: $typeString,
             types: $types,
@@ -36,25 +40,19 @@ class TypeString
     }
 
     public function firstType(): string {
+        $types = $this->withoutNull($this->types);
         return match(true) {
-            $this->isScalar() => $this->firstOrFail($this->types),
-            $this->isObject() => $this->firstOrFail($this->types),
-            $this->isEnumObject() => $this->firstOrFail($this->types),
-            $this->isCollection() => $this->firstOrFail($this->types),
+            $this->isScalar() => $this->firstOrFail($types),
+            $this->isObject() => $this->firstOrFail($types),
+            $this->isEnumObject() => $this->firstOrFail($types),
+            $this->isCollection() => $this->firstOrFail($types),
             $this->isArray() => TypeDetails::PHP_ARRAY,
             default => TypeDetails::PHP_MIXED,
         };
     }
 
-    /**
-     * @return list<string>
-     */
-    public function types(): array {
-        return $this->types;
-    }
-
-    public function isEmpty() : bool {
-        return empty($this->types);
+    public function isNullable() : bool {
+        return $this->containsNull($this->types);
     }
 
     public function isScalar() : bool {
@@ -62,6 +60,9 @@ class TypeString
         foreach ($this->types as $type) {
             if ($type === TypeDetails::PHP_NULL) {
                 continue; // null is allowed in scalars
+            }
+            if ($type === TypeDetails::PHP_MIXED) {
+                return false; // mixed is not a scalar type
             }
             if (!in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
                 return false;
@@ -111,6 +112,62 @@ class TypeString
         return true;
     }
 
+    public function isUntypedObject() : bool {
+        $types = $this->withoutNull($this->types);
+        if (empty($types)) {
+            return false;
+        }
+        if (count($types) === 1 && $types[0] === TypeDetails::PHP_OBJECT) {
+            return true; // if only one type and it is an untyped object
+        }
+        return false;
+    }
+
+    public function isUntypedEnum() : bool {
+        $types = $this->withoutNull($this->types);
+        if (empty($types)) {
+            return false;
+        }
+        if (count($types) === 1 && $types[0] === TypeDetails::PHP_ENUM) {
+            return true; // if only one type and it is an untyped enum
+        }
+        return false;
+    }
+
+    public function isUnion() : bool {
+        $types = $this->withoutNull($this->types);
+        return count($types) > 1 || (count($types) === 1 && $types[0] !== TypeDetails::PHP_MIXED);
+    }
+
+    public function isMixed() : bool {
+        if (empty($this->withoutNull($this->types))) {
+            return true; // empty type string is considered mixed
+        }
+        // check if every $this->types is a mixed type or null
+        foreach ($this->types as $type) {
+            if ($type === TypeDetails::PHP_NULL) {
+                continue; // null is allowed in mixed
+            }
+            if ($type !== TypeDetails::PHP_MIXED) {
+                return false; // if any type is not mixed, it is not mixed
+            }
+        }
+        return true;
+    }
+
+    public function hasMixed() : bool {
+        $types = $this->withoutNull($this->types);
+        if (empty($types)) {
+            return true; // empty type string is considered mixed
+        }
+        foreach ($types as $type) {
+            if ($type === TypeDetails::PHP_MIXED) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function isEnumObject() : bool {
         if (!$this->isObject()) {
             return false; // if not an object, cannot be an enum
@@ -145,7 +202,7 @@ class TypeString
         return true;
     }
 
-    public function getItemType() : string {
+    public function itemType() : string {
         if (!$this->isCollection()) {
             throw new \Exception('Cannot get item type from non-collection type: '.$this->typeString);
         }
@@ -153,6 +210,37 @@ class TypeString
             fn($type) => $this->collectionToItemType($type),
             $this->withoutNull($this->types)
         ));
+    }
+
+    public function className() : ?string {
+        if (!$this->isObject() && !$this->isEnumObject()) {
+            return null; // only objects and enums have class names
+        }
+        $types = $this->withoutNull($this->types);
+        foreach ($types as $type) {
+            if ($type === TypeDetails::PHP_OBJECT || $type === TypeDetails::PHP_ENUM) {
+                continue; // skip untyped object and enum
+            }
+            if (class_exists($type)) {
+                return $type; // return the class name if it exists
+            }
+        }
+        return null; // no class name found
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function types(): array {
+        return $this->types;
+    }
+
+    public function toString() : string {
+        return implode('|', $this->types);
+    }
+
+    public function __toString() : string {
+        return $this->toString();
     }
 
     // INTERNAL //////////////////////////////////////////////////////////////////////
@@ -177,6 +265,15 @@ class TypeString
             $count === 1 => reset($types),
             default => reset($types),
         };
+    }
+
+    private function containsNull(array $types) : bool {
+        foreach ($types as $type) {
+            if ($type === TypeDetails::PHP_NULL) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function containsUntypedObject(array $types) : bool {
@@ -224,6 +321,10 @@ class TypeString
         return false;
     }
 
+    private function containsManyTypes(array $types) : bool {
+        return count($this->withoutNull($types)) > 1;
+    }
+
     private function collectionToItemType(string $collectionType) : string {
         return substr($collectionType, 0, -2);
     }
@@ -250,14 +351,14 @@ class TypeString
 
     private function containsTypedObject(array $types) : bool {
         foreach ($types as $type) {
+            if ($this->endsWithBrackets($type)) {
+                continue; // skip collection types
+            }
             if (in_array($type, TypeDetails::PHP_SCALAR_TYPES)) {
                 continue; // skip scalar types
             }
             if ($type === TypeDetails::PHP_ARRAY) {
                 continue; // skip array type
-            }
-            if ($this->endsWithBrackets($type)) {
-                continue; // skip collection types
             }
             if ($type === TypeDetails::PHP_OBJECT) {
                 continue; // skip untyped object

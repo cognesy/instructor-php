@@ -15,7 +15,7 @@ test('example from comments creates valid schema', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('object')
+        ->and($schema->type()->toString())->toBe('object')
         ->and($schema->name())->toBe('User')
         ->and($schema->description())->toBe('User object')
         ->and($schema->properties())->toHaveCount(2)
@@ -43,7 +43,7 @@ test('chained example from comments creates valid schema', function () {
         ->withRequiredProperties(['id', 'name']);
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('array')
+        ->and($schema->type()->toString())->toBe('array')
         ->and($schema->name())->toBe('list')
         ->and($schema->itemSchema())->not->toBeEmpty()
         ->and($schema->requiredProperties())->toBe(['id', 'name']);

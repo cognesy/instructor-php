@@ -27,6 +27,7 @@ it('creates a schema from a class name with object references', function () {
     /** @var ObjectSchema $schema */
     $schema = $factory->schema(TestClassA::class);
     $json = (new SchemaToJsonSchema)->toArray($schema);
+
     expect($json)->toBeArray();
     $expected = [
         'type' => 'object',

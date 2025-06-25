@@ -63,7 +63,7 @@ test('creates TypeDetails for collection type', function () {
     $this->assertSame(TypeDetails::PHP_INT, $collectionType->nestedType->type());
 
     $this->expectException(Exception::class);
-    $this->expectExceptionMessage('Class "unknown" does not exist');
+    $this->expectExceptionMessage('Cannot create ClassInfo for `unknown`');
     TypeDetails::fromTypeName('unknown[]');
 });
 
@@ -83,6 +83,6 @@ test('creates TypeDetails for enum type', function () {
     $this->assertSame($enumClassName, $enumType->class());
 
     $this->expectException(Exception::class);
-    $this->expectExceptionMessage('Class "UnknownEnum" does not exist');
+    $this->expectExceptionMessage('Cannot create ClassInfo for `UnknownEnum`');
     TypeDetails::enum('UnknownEnum');
 });

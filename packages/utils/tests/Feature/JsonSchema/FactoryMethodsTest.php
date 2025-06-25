@@ -14,7 +14,7 @@ test('object schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('object')
+        ->and($schema->type()->toString())->toBe('object')
         ->and($schema->name())->toBe('User')
         ->and($schema->description())->toBe('User object')
         ->and($schema->properties())->toHaveCount(2)
@@ -35,7 +35,7 @@ test('array schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('array')
+        ->and($schema->type()->toString())->toBe('array')
         ->and($schema->name())->toBe('UserList')
         ->and($schema->description())->toBe('List of users')
         ->and($schema->itemSchema())->not->toBeEmpty();
@@ -49,7 +49,7 @@ test('string schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('string')
+        ->and($schema->type()->toString())->toBe('string')
         ->and($schema->name())->toBe('UserName')
         ->and($schema->description())->toBe('User name')
         ->and($schema->isNullable())->toBeTrue();
@@ -63,7 +63,7 @@ test('boolean schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('boolean')
+        ->and($schema->type()->toString())->toBe('boolean')
         ->and($schema->name())->toBe('IsActive')
         ->and($schema->description())->toBe('Active status')
         ->and($schema->title())->toBe('Active');
@@ -77,7 +77,7 @@ test('number schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('number')
+        ->and($schema->type()->toString())->toBe('number')
         ->and($schema->name())->toBe('Price')
         ->and($schema->description())->toBe('Product price')
         ->and($schema->isNullable())->toBeFalse();
@@ -91,7 +91,7 @@ test('integer schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('integer')
+        ->and($schema->type()->toString())->toBe('integer')
         ->and($schema->name())->toBe('Count')
         ->and($schema->description())->toBe('Item count')
         ->and($schema->isNullable())->toBeTrue();
@@ -105,7 +105,7 @@ test('enum schema can be created using factory method', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('string')
+        ->and($schema->type()->toString())->toBe('string')
         ->and($schema->name())->toBe('Status')
         ->and($schema->enumValues())->toBe(['pending', 'active', 'inactive'])
         ->and($schema->description())->toBe('User status');

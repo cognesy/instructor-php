@@ -92,7 +92,7 @@ class InferenceDriverFactory
         $this->events->dispatch(new InferenceDriverBuilt([
             'driverClass' => get_class($driver),
             'config' => $config->toArray(),
-            'httpClient' => print_r($httpClient, true),
+            'httpClient' => $httpClient ? get_class($httpClient) : null,
         ]));
 
         return $driver;

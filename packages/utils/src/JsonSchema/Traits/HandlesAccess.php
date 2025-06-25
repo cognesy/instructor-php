@@ -3,11 +3,16 @@
 namespace Cognesy\Utils\JsonSchema\Traits;
 
 use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\JsonSchemaType;
 
 trait HandlesAccess
 {
-    public function type() : string {
+    public function type() : JsonSchemaType {
         return $this->type;
+    }
+
+    private function hasType() : bool {
+        return !empty($this->type) && !$this->type->isNull();
     }
 
     public function name() : string {
@@ -55,11 +60,15 @@ trait HandlesAccess
         return $this->title ?? '';
     }
 
-    public function meta(string $key = null) : mixed {
+    public function meta(string $key = null, mixed $default = null) : mixed {
         if ($key === null) {
             return $this->meta;
         }
-        return $this->meta[$key] ?? null;
+        return $this->meta[$key] ?? $default;
+    }
+
+    public function hasMeta(string $key) : bool {
+        return isset($this->meta[$key]);
     }
 
     // TYPE SPECIFIC //////////////////////////////////////////////////////////
@@ -83,46 +92,51 @@ trait HandlesAccess
         return $this->itemSchema !== null;
     }
 
-    public function itemType() : ?string {
+    public function itemType() : ?JsonSchemaType {
         return $this->itemSchema?->type ?? null;
     }
 
+    public function hasItemType() : bool {
+        return $this->itemSchema !== null && $this->itemSchema->hasType();
+    }
+
     public function objectClass() : ?string {
-        return $this->meta['php-class'] ?? null;
+        return $this->meta('php-class', null);
     }
 
     public function hasObjectClass() : bool {
-        return isset($this->meta['php-class']);
+        return $this->hasMeta('php-class')
+            && !empty($this->meta('php-class'));
     }
 
     // TYPE CHECKS ////////////////////////////////////////////////////////
 
-    public function isMixed() : bool {
-        return empty($this->type);
+    public function isAny() : bool {
+        return $this->type->isAny();
     }
 
     public function isObject() : bool {
-        return $this->type === self::JSON_OBJECT;
+        return $this->type->isObject();
     }
 
     public function isString() : bool {
-        return $this->type === self::JSON_STRING;
+        return $this->type->isString();
     }
 
     public function isInteger() : bool {
-        return $this->type === self::JSON_INTEGER;
+        return $this->type->isInteger();
     }
 
     public function isBoolean() : bool {
-        return $this->type === self::JSON_BOOLEAN;
+        return $this->type->isBoolean();
     }
 
     public function isNumber() : bool {
-        return $this->type === self::JSON_NUMBER;
+        return $this->type->isNumber();
     }
 
     public function isNull() : bool {
-        return $this->type === self::JSON_NULL;
+        return $this->type->isNull();
     }
 
     public function isEnum() : bool {
@@ -134,17 +148,52 @@ trait HandlesAccess
             );
     }
 
-    public function isCollection() : bool {
-        return $this->type === self::JSON_ARRAY
-            && $this->hasItemSchema();
+    public function isOption() : bool {
+        return $this->type->isString()
+            && $this->hasEnumValues()
+            && !$this->hasObjectClass();
     }
 
     public function isArray() : bool {
-        return $this->type === self::JSON_ARRAY
-            && (!$this->hasItemSchema() || $this->itemSchema()?->isMixed());
+        return $this->type->isArray()
+            && (
+                !$this->hasItemSchema()
+                || $this->itemSchema()?->isAny()
+            );
+    }
+
+    public function isCollection() : bool {
+        return $this->type->isArray()
+            && $this->hasItemSchema()
+            && !$this->itemSchema?->isAny();
+    }
+
+    public function isScalarCollection() : bool {
+        return $this->type->isArray()
+            && $this->hasItemType()
+            && $this->itemSchema?->isScalar();
+    }
+
+    public function isEnumCollection() : bool {
+        return $this->type->isArray()
+            && $this->hasItemSchema()
+            && $this->itemSchema?->isEnum();
+    }
+
+    public function isObjectCollection() : bool {
+        return $this->type->isArray()
+            && $this->hasItemSchema()
+            && $this->itemSchema?->isObject();
+    }
+
+    public function isOptionCollection() : bool {
+        return $this->type->isArray()
+            && $this->hasItemSchema()
+            && $this->itemSchema?->isOption();
     }
 
     public function isScalar() : bool {
-        return in_array($this->type, self::JSON_SCALAR_TYPES);
+        return in_array($this->type, JsonSchemaType::JSON_SCALAR_TYPES)
+            && !$this->hasEnumValues();
     }
 }

@@ -23,7 +23,7 @@ test('object schema can have nested object properties', function () {
     expect($schema)->toBeInstanceOf(JsonSchema::class)
         ->and($schema->properties())->toHaveCount(3)
         ->and($schema->property('address'))->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->property('address')->type())->toBe('object')
+        ->and($schema->property('address')->type()->toString())->toBe('object')
         ->and($schema->property('address')->properties())->toHaveCount(3);
 
     // Convert to array and check nested structure
@@ -49,7 +49,7 @@ test('object schema can have nested array properties', function () {
     expect($schema)->toBeInstanceOf(JsonSchema::class)
         ->and($schema->properties())->toHaveCount(3)
         ->and($schema->property('tags'))->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->property('tags')->type())->toBe('array');
+        ->and($schema->property('tags')->type()->toString())->toBe('array');
 
     // Convert to array and check nested structure
     $array = $schema->toArray();
@@ -71,7 +71,7 @@ test('array schema can have object items', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('array')
+        ->and($schema->type()->toString())->toBe('array')
         ->and($schema->itemSchema())->toBeTruthy();
 
     // Convert to array and check nested structure
@@ -92,7 +92,7 @@ test('array schema can have array items', function () {
     );
 
     expect($schema)->toBeInstanceOf(JsonSchema::class)
-        ->and($schema->type())->toBe('array');
+        ->and($schema->type()->toString())->toBe('array');
 
     // Convert to array and check nested structure
     $array = $schema->toArray();

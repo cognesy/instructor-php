@@ -92,7 +92,7 @@ trait HandlesFactoryMethods
     public function enumType(string $typeName, ?string $enumType = null, ?array $enumValues = null) : TypeDetails {
         $classInfo = ClassInfo::fromString($typeName);
         // enum specific
-        if (!$classInfo->isBackedEnum()) {
+        if (!$classInfo->isBacked()) {
             throw new \Exception('Enum must be backed by a string or int');
         }
         $backingType = $enumType ?? $classInfo->enumBackingType();

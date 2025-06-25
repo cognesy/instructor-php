@@ -17,7 +17,7 @@ class EnumInfo extends ClassInfo
         return true;
     }
 
-    public function isBackedEnum() : bool {
+    public function isBacked() : bool {
         return isset($this->reflectionEnum)
             && $this->reflectionEnum->isBacked();
     }

@@ -4,7 +4,7 @@ namespace Cognesy\Schema\Data\Traits\TypeDetails;
 
 trait HandlesPhpTypes
 {
-    static public function getType(mixed $variable) : ?string {
+    static public function getPhpType(mixed $variable) : ?string {
         $type = gettype($variable);
         return self::TYPE_MAP[$type] ?? self::PHP_UNSUPPORTED;
     }

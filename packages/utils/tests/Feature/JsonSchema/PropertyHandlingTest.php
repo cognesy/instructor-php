@@ -39,12 +39,12 @@ test('object schema with properties using different formats', function () {
         ->and(array_keys($schema3->properties()))->toBe(['prop1', 'prop2']);
 
     // Check that property types are preserved correctly
-    expect($schema1->property('prop1')->type())->toBe('string')
-        ->and($schema1->property('prop2')->type())->toBe('number')
-        ->and($schema2->property('prop1')->type())->toBe('string')
-        ->and($schema2->property('prop2')->type())->toBe('number')
-        ->and($schema3->property('prop1')->type())->toBe('string')
-        ->and($schema3->property('prop2')->type())->toBe('number');
+    expect($schema1->property('prop1')->type()->toString())->toBe('string')
+        ->and($schema1->property('prop2')->type()->toString())->toBe('number')
+        ->and($schema2->property('prop1')->type()->toString())->toBe('string')
+        ->and($schema2->property('prop2')->type()->toString())->toBe('number')
+        ->and($schema3->property('prop1')->type()->toString())->toBe('string')
+        ->and($schema3->property('prop2')->type()->toString())->toBe('number');
 });
 
 test('withProperties replaces existing properties', function () {
@@ -80,11 +80,6 @@ test('withItemSchema replaces existing items', function () {
 });
 
 test('required properties are validated against existing properties', function () {
-    // Note: There's a bug in the JsonSchemaValidator class
-    // The validateRequired method references $this->properties which doesn't exist
-    // This test would check if the validation worked correctly
-
-    // This should work because all required properties exist
     $schema = JsonSchema::object(
         name: 'Test',
         properties: [
@@ -171,11 +166,7 @@ test('appendMeta prefixes non-prefixed keys with x-', function () {
     $method = $reflectionClass->getMethod('appendMeta');
     $method->setAccessible(true);
 
-    $schema = new JsonSchema(
-        type: 'string',
-        name: 'Test',
-    );
-
+    $schema = JsonSchema::fromArray(['type' => 'string']);
     $values = ['type' => 'string'];
     $meta = [
         'already-prefixed' => 'value1',

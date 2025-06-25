@@ -80,11 +80,11 @@ it('can check if a class is an enum', function () {
 
 it('can check if an enum is backed', function () {
     // Assuming BackedEnumClass is a backed enum
-    $isBackedEnum = ClassInfo::fromString(StringEnumType::class)->isBackedEnum();
+    $isBackedEnum = ClassInfo::fromString(StringEnumType::class)->isBacked();
     expect($isBackedEnum)->toBeTrue();
 
     // Assuming EnumClass is not a backed enum
-    $isBackedEnum = ClassInfo::fromString(EnumType::class)->isBackedEnum();
+    $isBackedEnum = ClassInfo::fromString(EnumType::class)->isBacked();
     expect($isBackedEnum)->toBeFalse();
 });
 

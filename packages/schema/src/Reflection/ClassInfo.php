@@ -112,11 +112,12 @@ class ClassInfo {
     }
 
     public function isEnum() : bool {
-        return false;
+        return $this->reflectionClass->isEnum();
     }
 
-    public function isBackedEnum() : bool {
-        return false;
+    public function isBacked() : bool {
+        return $this->reflectionClass->isEnum()
+            && (new EnumInfo($this->class))->isBacked();
     }
 
     public function implementsInterface(string $interface) : bool {

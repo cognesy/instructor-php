@@ -62,6 +62,19 @@ dataset('schema_converter_json', [[[
         'arrayProperty' => [
             'description' => 'Array property',
             'type' => 'array',
+//            'items' => ['type' => 'string'],
+            'items' => ['anyOf' => [
+                ['type' => 'boolean'],
+                ['type' => 'integer'],
+                ['type' => 'number'],
+                ['type' => 'string'],
+                ['type' => 'array'],
+                ['type' => 'object'],
+            ]],
+        ],
+        'stringCollectionProperty' => [
+            'description' => 'String collection property',
+            'type' => 'array',
             'items' => [
                 'type' => 'string',
             ],
@@ -113,6 +126,7 @@ dataset('schema_converter_json', [[[
         'enumProperty',
         'objectProperty',
         'arrayProperty',
+        'stringCollectionProperty',
         'collectionProperty',
         'collectionObjectProperty',
         'collectionEnumProperty'
@@ -131,6 +145,7 @@ it('creates Schema object from JSON Schema array - required fields', function ($
         'enumProperty',
         'objectProperty',
         'arrayProperty',
+        'stringCollectionProperty',
         'collectionProperty',
         'collectionObjectProperty',
         'collectionEnumProperty'
@@ -230,18 +245,19 @@ it('throws exception when object schema has empty properties array', function ()
     (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
 })->throws(\Exception::class, 'Object must have at least one property');
 
-it('throws exception when array schema is missing items field', function () {
-    $jsonSchema = [
-        'x-php-class' => 'stdClass',
-        'type' => 'object',
-        'properties' => [
-            'arrayProperty' => [
-                'type' => 'array',
-            ],
-        ],
-    ];
-    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Array must have items field');
+// We should allow this and assume 'mixed' type items
+//it('throws exception when array schema is missing items field', function () {
+//    $jsonSchema = [
+//        'x-php-class' => 'stdClass',
+//        'type' => 'object',
+//        'properties' => [
+//            'arrayProperty' => [
+//                'type' => 'array',
+//            ],
+//        ],
+//    ];
+//    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
+//})->throws(\Exception::class, 'Array must have items field');
 
 it('throws exception for invalid enum type', function () {
     $jsonSchema = [
@@ -259,24 +275,7 @@ it('throws exception for invalid enum type', function () {
         ],
     ];
     (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Nested array type must be either object, string, integer, number or boolean');
-
-it('throws exception when x-php-class is missing for enum', function () {
-    $jsonSchema = [
-        'x-php-class' => 'stdClass',
-        'type' => 'object',
-        'properties' => [
-            'collectionProperty' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                    'enum' => ['one', 'two', 'three'],
-                ],
-            ],
-        ],
-    ];
-    (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Nested enum type needs x-php-class field')->skip('This should be supported by array type');
+})->throws(\Exception::class, 'Invalid JSON type: enum in:');
 
 it('throws exception when x-php-class is missing for object', function () {
     $jsonSchema = [
@@ -292,7 +291,7 @@ it('throws exception when x-php-class is missing for object', function () {
         ],
     ];
     (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Object must have x-php-class field with the target class name');
+})->throws(\Exception::class, 'Object must have class specified via x-php-class field');
 
 it('throws exception for invalid type in nested schema', function () {
     $jsonSchema = [
@@ -308,4 +307,4 @@ it('throws exception for invalid type in nested schema', function () {
         ],
     ];
     (new JsonSchemaToSchema)->fromJsonSchema($jsonSchema, '', '');
-})->throws(\Exception::class, 'Nested array type must be either object, string, integer, number or boolean');
+})->throws(\Exception::class, 'Invalid JSON type: invalidType in:');

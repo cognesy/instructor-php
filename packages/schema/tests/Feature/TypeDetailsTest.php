@@ -1,6 +1,7 @@
 <?php
 
 use Cognesy\Schema\Data\TypeDetails;
+use Cognesy\Utils\JsonSchema\JsonSchemaType;
 
 test('returns correct string representation', function () {
     $stringType = new TypeDetails('string');
@@ -21,24 +22,24 @@ test('returns correct string representation', function () {
 
 test('returns correct JSON type', function () {
     $stringType = new TypeDetails('string');
-    $this->assertSame('string', $stringType->jsonType());
+    $this->assertSame('string', $stringType->toJsonType()->toString());
 
     $objectType = new TypeDetails('object', 'Foo\Bar');
-    $this->assertSame('object', $objectType->jsonType());
+    $this->assertSame('object', $objectType->toJsonType()->toString());
 
     $enumType = new TypeDetails('enum', 'Foo\Bar', null, 'int', [1, 2, 3]);
-    $this->assertSame('integer', $enumType->jsonType());
+    $this->assertSame('integer', $enumType->toJsonType()->toString());
 
     $collectionType = new TypeDetails('collection', null, new TypeDetails('bool'));
-    $this->assertSame('array', $collectionType->jsonType());
+    $this->assertSame('array', $collectionType->toJsonType()->toString());
 
     $arrayType = new TypeDetails('array', null, null);
-    $this->assertSame('array', $arrayType->jsonType());
+    $this->assertSame('array', $arrayType->toJsonType()->toString());
 
     $this->expectException(Exception::class);
     $this->expectExceptionMessage('Unsupported type: unknown');
     $unknownType = new TypeDetails('unknown');
-    $unknownType->jsonType();
+    $unknownType->toJsonType();
 });
 
 test('returns correct short name', function () {
@@ -72,14 +73,14 @@ test('returns correct class only name', function () {
 });
 
 test('converts JSON type to PHP type', function () {
-    $this->assertSame('object', TypeDetails::toPhpType('object'));
-    $this->assertSame('array', TypeDetails::toPhpType('array'));
-    $this->assertSame('int', TypeDetails::toPhpType('integer'));
-    $this->assertSame('float', TypeDetails::toPhpType('number'));
-    $this->assertSame('string', TypeDetails::toPhpType('string'));
-    $this->assertSame('bool', TypeDetails::toPhpType('boolean'));
+    $this->assertSame('object', TypeDetails::jsonToPhpType(JsonSchemaType::object()));
+    $this->assertSame('array', TypeDetails::jsonToPhpType(JsonSchemaType::array()));
+    $this->assertSame('int', TypeDetails::jsonToPhpType(JsonSchemaType::integer()));
+    $this->assertSame('float', TypeDetails::jsonToPhpType(JsonSchemaType::number()));
+    $this->assertSame('string', TypeDetails::jsonToPhpType(JsonSchemaType::string()));
+    $this->assertSame('bool', TypeDetails::jsonToPhpType(JsonSchemaType::boolean()));
 
-    $this->expectException(Exception::class);
-    $this->expectExceptionMessage('Unknown type: unknown');
-    TypeDetails::toPhpType('unknown');
+//    $this->expectException(Exception::class);
+//    $this->expectExceptionMessage('Unknown type: unknown');
+//    TypeDetails::fromJsonType('unknown');
 });

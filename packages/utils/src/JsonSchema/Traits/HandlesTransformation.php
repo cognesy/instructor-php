@@ -13,13 +13,14 @@ trait HandlesTransformation
     }
 
     public function toArray() : array {
-        return match($this->type) {
-            'object' => $this->objectToArray(),
-            'array' => $this->arrayToArray(),
-            'string' => $this->stringToArray(),
-            'boolean' => $this->boolToArray(),
-            'number' => $this->numberToArray(),
-            'integer' => $this->integerToArray(),
+        return match(true) {
+            $this->type->isObject() => $this->objectToArray(),
+            $this->type->isArray() => $this->arrayToArray(),
+            $this->type->isString() => $this->stringToArray(),
+            $this->type->isBoolean() => $this->boolToArray(),
+            $this->type->isNumber() => $this->numberToArray(),
+            $this->type->isInteger() => $this->integerToArray(),
+            $this->type->isAny() => $this->anyToArray(),
             default => throw new \Exception('Invalid type: ' . $this->type),
         };
     }
@@ -29,7 +30,7 @@ trait HandlesTransformation
         string $functionDescription = '',
         bool $strict = false,
     ) : array {
-        if ($this->type !== 'object') {
+        if (!$this->type->isObject()) {
             throw new \Exception('Cannot convert to function call: ' . $this->type);
         }
         return [
@@ -62,13 +63,16 @@ trait HandlesTransformation
     // MAPPING //////////////////////////////////////////////////////////////
 
     private function stringToArray() : array {
-        return $this->prepare([
+        $result = $this->prepare([
             'type' => 'string',
             'nullable' => $this->nullable,
             'description' => $this->description,
             'title' => $this->title,
-            'enum' => $this->enumValues,
         ], $this->meta);
+        if (!empty($this->enumValues)) {
+            $result['enum'] = $this->enumValues;
+        }
+        return $result;
     }
 
     private function boolToArray() : array {
@@ -116,8 +120,16 @@ trait HandlesTransformation
             'nullable' => $this->nullable,
             'description' => $this->description,
             'title' => $this->title,
-            'items' => $this->itemSchemaAsArray(),
+            'items' => $this->itemSchema?->toArray() ?? [],
         ], $this->meta);
+    }
+
+    public function anyToArray() : array {
+        return ($this->prepare([
+            //JsonSchemaType::JSON_ANY_OF,
+            'description' => $this->description,
+            'title' => $this->title,
+        ], $this->meta));
     }
 
     // INTERNAL ////////////////////////////////////////////////////////////
@@ -128,10 +140,6 @@ trait HandlesTransformation
             $result[$property->name()] = $property->toArray();
         }
         return $result;
-    }
-
-    private function itemSchemaAsArray() : array {
-        return $this->itemSchema?->toArray() ?? [];
     }
 
     private function prepare(array $values, array $meta) : array {

@@ -3,6 +3,7 @@
 namespace Cognesy\Utils\JsonSchema\Traits;
 
 use Cognesy\Utils\JsonSchema\JsonSchema;
+use Cognesy\Utils\JsonSchema\JsonSchemaType;
 
 trait HandlesTypeFactory
 {
@@ -15,7 +16,7 @@ trait HandlesTypeFactory
         array       $meta = [],
     ) : self {
         return new self(
-            type: 'array',
+            type: JsonSchemaType::array(),
             name: $name,
             nullable: $nullable,
             itemSchema: $itemSchema,
@@ -36,7 +37,7 @@ trait HandlesTypeFactory
         array   $meta = [],
     ) : self {
         return new self(
-            type: 'object',
+            type: JsonSchemaType::object(),
             name: $name,
             nullable: $nullable,
             properties: $properties,
@@ -57,7 +58,7 @@ trait HandlesTypeFactory
         array  $meta = [],
     ) : self {
         return new self(
-            type: 'string',
+            type: JsonSchemaType::string(),
             name: $name,
             nullable: $nullable,
             enumValues: $enumValues,
@@ -75,7 +76,7 @@ trait HandlesTypeFactory
         array $meta = [],
     ) : self {
         return new self(
-            type: 'string',
+            type: JsonSchemaType::string(),
             name: $name,
             nullable: $nullable,
             description: $description,
@@ -92,7 +93,7 @@ trait HandlesTypeFactory
         array $meta = [],
     ) : self {
         return new self(
-            type: 'boolean',
+            type: JsonSchemaType::boolean(),
             name: $name,
             nullable: $nullable,
             description: $description,
@@ -109,7 +110,7 @@ trait HandlesTypeFactory
         array $meta = [],
     ) : self {
         return new self(
-            type: 'number',
+            type: JsonSchemaType::number(),
             name: $name,
             nullable: $nullable,
             description: $description,
@@ -126,7 +127,7 @@ trait HandlesTypeFactory
         array $meta = [],
     ) : self {
         return new self(
-            type: 'integer',
+            type: JsonSchemaType::integer(),
             name: $name,
             nullable: $nullable,
             description: $description,
@@ -144,7 +145,7 @@ trait HandlesTypeFactory
         array $meta = [],
     ) : self {
         return new self(
-            type: 'array',
+            type: JsonSchemaType::array(),
             name: $name,
             nullable: $nullable,
             itemSchema: $itemSchema,

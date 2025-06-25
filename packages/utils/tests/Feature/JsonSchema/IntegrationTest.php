@@ -26,18 +26,18 @@ test('schema can be created, converted to array, and converted back to schema', 
     $recreatedSchema = JsonSchema::fromArray($array);
 
     // Check that basic properties match
-    expect($recreatedSchema->type())->toBe($originalSchema->type())
+    expect($recreatedSchema->type()->toString())->toBe($originalSchema->type()->toString())
         ->and($recreatedSchema->description())->toBe($originalSchema->description())
         ->and(array_keys($recreatedSchema->properties()))->toBe(array_keys($originalSchema->properties()))
         ->and($recreatedSchema->requiredProperties())->toBe($originalSchema->requiredProperties())
         ->and($recreatedSchema->hasAdditionalProperties())->toBe($originalSchema->hasAdditionalProperties());
 
     // Check properties types
-    expect($recreatedSchema->property('id')->type())->toBe('string')
-        ->and($recreatedSchema->property('name')->type())->toBe('string')
-        ->and($recreatedSchema->property('age')->type())->toBe('number')
+    expect($recreatedSchema->property('id')->type()->toString())->toBe('string')
+        ->and($recreatedSchema->property('name')->type()->toString())->toBe('string')
+        ->and($recreatedSchema->property('age')->type()->toString())->toBe('number')
         ->and($recreatedSchema->property('age')->isNullable())->toBeTrue()
-        ->and($recreatedSchema->property('tags')->type())->toBe('array');
+        ->and($recreatedSchema->property('tags')->type()->toString())->toBe('array');
 });
 
 test('schema can be converted to function call and maintains structure', function () {

@@ -51,7 +51,7 @@ class EmbeddingsDriverFactory
         $this->events->dispatch(new EmbeddingsDriverBuilt([
             'driver' => get_class($driver),
             'config' => $config->toArray(),
-            'httpClient' => print_r($httpClient, true),
+            'httpClient' => $httpClient ? get_class($httpClient) : null,
         ]));
 
         return $driver($config, $httpClient, $this->events);

@@ -57,12 +57,13 @@ class Arrays
 
     /**
      * Checks if an array is a subset of another array.
-     * @param array $decodedKeys
-     * @param array $propertyNames
+     *
+     * @param array $compareTo
+     * @param array $compared
      * @return bool
      */
-    static public function isSubset(array $decodedKeys, array $propertyNames) {
-        return count(array_diff($decodedKeys, $propertyNames)) === 0;
+    static public function isSubset(array $compareTo, array $compared) {
+        return count(array_diff($compareTo, $compared)) === 0;
     }
 
     /**
@@ -184,5 +185,24 @@ class Arrays
             }
         }
         return rtrim($flat, $separator);
+    }
+
+    public static function valuesMatch(array $a, array $b) : bool {
+        if (count($a) !== count($b)) {
+            return false;
+        }
+        // we want to check if all values in $a are present in $b
+        // by making sure that intersection of both arrays is equal to $a
+        $intersection = array_intersect($a, $b);
+        if (count($intersection) !== count($a)) {
+            return false;
+        }
+        // we also want to check if all values in $b are present in $a
+        $intersection = array_intersect($b, $a);
+        if (count($intersection) !== count($b)) {
+            return false;
+        }
+        // if we reach here, it means that both arrays have the same values
+        return true;
     }
 }

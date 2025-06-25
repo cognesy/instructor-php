@@ -268,7 +268,7 @@ Available methods include:
 JsonSchema provides various methods to access schema properties:
 
 ```php
-$schema->type();                // Get schema type (string, object, array, etc.)
+$schema->type();                // Get schema type (e.g., 'object')
 $schema->name();                // Get schema name
 $schema->isNullable();          // Check if schema is nullable
 $schema->requiredProperties();  // Get array of required properties
