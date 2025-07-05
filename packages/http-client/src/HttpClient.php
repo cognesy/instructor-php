@@ -19,6 +19,7 @@ class HttpClient
 
     private readonly CanHandleHttpRequest $driver;
     private readonly MiddlewareStack $middlewareStack;
+    private readonly HttpClientDriverFactory $driverFactory;
 
     public function __construct(
         ?CanHandleHttpRequest $driver = null,
@@ -26,6 +27,7 @@ class HttpClient
         null|EventDispatcherInterface|CanHandleEvents $events = null,
     ) {
         $this->events = EventBusResolver::using($events);
+        $this->driverFactory = new HttpClientDriverFactory($this->events);
         $this->driver = $driver ?? $this->makeDefaultDriver();
         $this->middlewareStack = $middlewareStack ?? new MiddlewareStack(
             events: $this->events,
@@ -67,5 +69,11 @@ class HttpClient
             request: $request,
             driver: $this->middlewareStack->decorate($this->driver),
         );
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////////////////
+
+    private function makeDefaultDriver(): CanHandleHttpRequest {
+        return $this->driverFactory->makeDriver();
     }
 }

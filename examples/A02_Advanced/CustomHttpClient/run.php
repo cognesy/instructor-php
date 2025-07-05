@@ -33,13 +33,13 @@ $yourSymfonyEventDispatcher = new SymfonyEventDispatcher(new EventDispatcher());
 
 $user = (new StructuredOutput(events: $yourSymfonyEventDispatcher))
     ->using('openai')
+    //->withDebugPreset('on')
     //->wiretap(fn($e) => $e->print())
     ->withLLMConfigOverrides(['apiUrl' => 'https://api.openai.com/v1'])
     ->withClientInstance(
         driverName: 'symfony',
         clientInstance: $yourSymfonyClientInstance
     )
-    ->withDebugPreset('on')
     ->withMessages("Our user Jason is 25 years old.")
     ->withResponseClass(User::class)
     ->withOutputMode(OutputMode::Tools)

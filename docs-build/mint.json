@@ -244,6 +244,7 @@
             "group": "Release Notes",
             "pages": [
                 "release-notes/versions",
+                "release-notes/v1.0.1-RC13",
                 "release-notes/v1.0.0-RC13",
                 "release-notes/v1.0.0-RC12",
                 "release-notes/v1.0.0-RC11",
@@ -421,6 +422,7 @@
                 "cookbook/polyglot/llm_advanced/custom_llm_via_dsn",
                 "cookbook/polyglot/llm_advanced/embed_utils",
                 "cookbook/polyglot/llm_advanced/embeddings",
+                "cookbook/polyglot/llm_advanced/http_client",
                 "cookbook/polyglot/llm_advanced/parallel_calls",
                 "cookbook/polyglot/llm_advanced/reasoning_content"
             ]

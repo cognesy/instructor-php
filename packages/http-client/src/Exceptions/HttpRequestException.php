@@ -12,7 +12,7 @@ class HttpRequestException extends Exception {
     public function __construct(
         string      $message,
         HttpRequest $request,
-        Throwable   $previous = null,
+        ?Throwable   $previous = null,
     ) {
         $this->request = $request;
         $message = sprintf(

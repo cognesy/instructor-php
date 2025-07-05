@@ -13,7 +13,7 @@ class Content
      * If an array is provided, it should contain ContentPart instances or strings.
      */
     public function __construct(
-        string|array $content = null,
+        string|array|null $content = null,
     ) {
         if (is_string($content)) {
             $this->parts[] = ContentPart::text($content);

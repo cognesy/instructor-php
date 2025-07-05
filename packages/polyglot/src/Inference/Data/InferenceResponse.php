@@ -120,13 +120,13 @@ class InferenceResponse
      *
      * @return Json
      */
-    public function findJsonData(OutputMode $mode = null): Json {
+    public function findJsonData(?OutputMode $mode = null): Json {
         return match(true) {
-            ($mode == OutputMode::Tools) && $this->hasToolCalls() => match(true) {
+            OutputMode::Tools->is($mode) && $this->hasToolCalls() => match(true) {
                 $this->toolCalls->hasSingle() => Json::fromArray($this->toolCalls->first()?->args()),
                 default => Json::fromArray($this->toolCalls->toArray()),
             },
-            $this->hasContent() => Json::fromString($this->content),
+            //$this->hasContent() => Json::fromString($this->content),
             default => Json::fromString($this->content),
         };
     }

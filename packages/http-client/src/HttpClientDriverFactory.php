@@ -43,7 +43,7 @@ class HttpClientDriverFactory
     /**
      * Creates an HTTP driver instance based on the specified configuration.
      *
-     * @param HttpClientConfig $config The configuration object defining the type of HTTP client and its settings.
+     * @param ?HttpClientConfig $config The configuration object defining the type of HTTP client and its settings.
      * @return CanHandleHttpRequest The instantiated HTTP driver corresponding to the specified client type.
      * @throws InvalidArgumentException If the specified client type is not supported.
      */
@@ -53,7 +53,7 @@ class HttpClientDriverFactory
         ?object $clientInstance = null,
     ): CanHandleHttpRequest {
         $config = $config ?? new HttpClientConfig();
-        $config = $config->withOverrides(['driver' => $driver ?? $config->driver ?? 'guzzle']);
+        $config = $config->withOverrides(['driver' => ($driver ?: $config->driver ?: 'guzzle')]);
         $name = $config->driver;
         $driverClosure = self::$drivers[$name] ?? $this->defaultDrivers()[$name] ?? null;
 

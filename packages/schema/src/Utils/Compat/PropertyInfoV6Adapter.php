@@ -21,7 +21,6 @@ class PropertyInfoV6Adapter implements CanGetPropertyType
         string $class,
         string $propertyName,
     ) {
-//dump('prop info v6', $class, $propertyName);
         // if class name starts with ?, remove it
         if (str_starts_with($class, '?')) {
             $class = substr($class, 1);
