@@ -21,6 +21,14 @@ class HttpClient
     private readonly MiddlewareStack $middlewareStack;
     private readonly HttpClientDriverFactory $driverFactory;
 
+    public static function using(string $preset) : self {
+        return (new HttpClientBuilder())->withPreset($preset)->create();
+    }
+
+    public static function default() : self {
+        return (new HttpClientBuilder())->create();
+    }
+
     public function __construct(
         ?CanHandleHttpRequest $driver = null,
         ?MiddlewareStack $middlewareStack = null,

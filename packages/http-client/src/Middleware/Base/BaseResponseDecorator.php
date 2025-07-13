@@ -8,7 +8,7 @@ use Cognesy\Http\Data\HttpRequest;
 /**
  * Class BaseResponseDecorator
  *
- * A base class for convenient decoration of HttpClientResponse objects
+ * A base class for convenient decoration of HttpResponse objects
  * by overriding only the methods you need to change:
  * - statusCode() for the HTTP status code
  * - headers() for the HTTP headers

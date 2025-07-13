@@ -207,7 +207,7 @@ You can enable debug mode to see detailed information about requests and respons
 $client->withDebugPreset('on');
 
 // Make a request
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 
 // Disable debug mode when done
 $client->withDebugPreset('off');
@@ -220,7 +220,7 @@ When debug mode is enabled, detailed information about requests and responses is
 Here's an example of dynamically adjusting configuration based on the type of request:
 
 ```php
-function configureClientForRequest(HttpClient $client, HttpClientRequest $request): HttpClient {
+function configureClientForRequest(HttpClient $client, HttpRequest $request): HttpClient {
     // Get the current configuration
     $config = HttpClientConfig::load($client->getClientName());
 
@@ -256,13 +256,13 @@ function configureClientForRequest(HttpClient $client, HttpClientRequest $reques
 
 // Usage
 $client = new HttpClient();
-$request = new HttpClientRequest(...);
+$request = new HttpRequest(...);
 
 // Configure the client based on the request
 $client = configureClientForRequest($client, $request);
 
 // Send the request
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 ```
 
 This approach allows for highly dynamic and contextual configuration adjustments.

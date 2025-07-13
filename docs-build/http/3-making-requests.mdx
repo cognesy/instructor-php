@@ -14,7 +14,9 @@ All HTTP requests are created using the `HttpClientRequest` class, which encapsu
 The constructor for `HttpClientRequest` takes several parameters:
 
 ```php
-$request = new HttpClientRequest(
+use Cognesy\Http\Data\HttpRequest;
+
+$request = new HttpRequest(
     url: 'https://api.example.com/endpoint',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
@@ -75,7 +77,7 @@ The HTTP method is specified as a string in the `HttpClientRequest` constructor.
 GET requests are used to retrieve data from a server:
 
 ```php
-$getRequest = new HttpClientRequest(
+$getRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
@@ -87,7 +89,7 @@ $getRequest = new HttpClientRequest(
 For GET requests with query parameters, include them in the URL:
 
 ```php
-$getRequestWithParams = new HttpClientRequest(
+$getRequestWithParams = new HttpRequest(
     url: 'https://api.example.com/users?page=1&limit=10&sort=name',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
@@ -101,7 +103,7 @@ $getRequestWithParams = new HttpClientRequest(
 POST requests are used to create new resources or submit data:
 
 ```php
-$postRequest = new HttpClientRequest(
+$postRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
     headers: [
@@ -121,7 +123,7 @@ $postRequest = new HttpClientRequest(
 PUT requests are used to update existing resources:
 
 ```php
-$putRequest = new HttpClientRequest(
+$putRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'PUT',
     headers: [
@@ -141,7 +143,7 @@ $putRequest = new HttpClientRequest(
 PATCH requests are used to partially update resources:
 
 ```php
-$patchRequest = new HttpClientRequest(
+$patchRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'PATCH',
     headers: [
@@ -160,7 +162,7 @@ $patchRequest = new HttpClientRequest(
 DELETE requests are used to remove resources:
 
 ```php
-$deleteRequest = new HttpClientRequest(
+$deleteRequest = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'DELETE',
     headers: ['Accept' => 'application/json'],
@@ -174,7 +176,7 @@ $deleteRequest = new HttpClientRequest(
 The library also supports other HTTP methods like HEAD, OPTIONS, etc. Just specify the method name as a string:
 
 ```php
-$headRequest = new HttpClientRequest(
+$headRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'HEAD',
     headers: [],
@@ -182,7 +184,7 @@ $headRequest = new HttpClientRequest(
     options: []
 );
 
-$optionsRequest = new HttpClientRequest(
+$optionsRequest = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'OPTIONS',
     headers: [],
@@ -196,7 +198,7 @@ $optionsRequest = new HttpClientRequest(
 HTTP headers are specified as an associative array where keys are header names and values are header values:
 
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
     headers: [
@@ -253,7 +255,7 @@ The request body can be provided in two ways:
 If you provide an array as the request body, it will automatically be converted to a JSON string:
 
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
     headers: ['Content-Type' => 'application/json'],
@@ -285,7 +287,7 @@ $jsonBody = json_encode([
     'email' => 'john@example.com',
 ]);
 
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
     headers: ['Content-Type' => 'application/json'],
@@ -303,7 +305,7 @@ $formBody = http_build_query([
     'email' => 'john@example.com',
 ]);
 
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users',
     method: 'POST',
     headers: ['Content-Type' => 'application/x-www-form-urlencoded'],
@@ -329,7 +331,7 @@ $bodyArray = $request->body()->toArray();
 The `options` parameter allows you to specify additional options for the request:
 
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
     headers: [],
@@ -359,7 +361,7 @@ if ($request->isStreamed()) {
 Here's how to create a request for a streaming API:
 
 ```php
-$streamingRequest = new HttpClientRequest(
+$streamingRequest = new HttpRequest(
     url: 'https://api.openai.com/v1/completions',
     method: 'POST',
     headers: [

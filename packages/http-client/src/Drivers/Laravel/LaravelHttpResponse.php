@@ -10,7 +10,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * Class LaravelHttpResponse
  *
- * Implements HttpClientResponse contract for Laravel HTTP client
+ * Implements HttpResponse contract for Laravel HTTP client
  */
 class LaravelHttpResponse implements HttpResponse
 {

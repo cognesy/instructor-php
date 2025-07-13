@@ -7,10 +7,10 @@ After sending an HTTP request, you need to process the response received from th
 
 ## Response Interface
 
-All responses implement the `HttpClientResponse` interface, which provides a uniform way to access response data:
+All responses implement the `HttpResponse` interface, which provides a uniform way to access response data:
 
 ```php
-interface HttpClientResponse
+interface HttpResponse
 {
     public function statusCode(): int;
     public function headers(): array;
@@ -23,10 +23,16 @@ This interface ensures that the same code will work whether you're using Guzzle,
 
 ### Getting the Response
 
-When you send a request using the `HttpClient::handle()` method, it returns an implementation of `HttpClientResponse`:
+When you send a request using the `HttpClient::handle()` method, it returns an implementation of `HttpResponse`:
 
 ```php
-$response = $client->handle($request);
+use Cognesy\Http\HttpClient;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+
+// Create a new HTTP client
+$client = HttpClient::default();
+$response = $client->withRequest($request)->get();
 ```
 
 The specific implementation depends on the HTTP client driver being used:
@@ -43,7 +49,7 @@ However, since all these implementations provide the same interface, your code d
 The status code indicates the result of the HTTP request. You can access it using the `statusCode()` method:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 $statusCode = $response->statusCode();
 
 echo "Status code: $statusCode\n";
@@ -64,7 +70,7 @@ Status codes are grouped into categories:
 You can check if a response was successful:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 
 if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
     // Success response
@@ -104,7 +110,7 @@ Here are some common HTTP status codes you might encounter:
 Response headers provide metadata about the response. You can access the headers using the `headers()` method:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 $headers = $response->headers();
 
 // Print all headers
@@ -140,7 +146,7 @@ Here are some common response headers you might encounter:
 For non-streaming responses, you can get the entire response body as a string using the `body()` method:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 $body = $response->body();
 
 echo "Response body: $body\n";
@@ -151,7 +157,7 @@ echo "Response body: $body\n";
 Many APIs return JSON responses. You can decode them using PHP's `json_decode()` function:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 $body = $response->body();
 
 // Decode as associative array
@@ -171,7 +177,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 For XML responses, you can use PHP's built-in XML functions:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 $body = $response->body();
 
 // Load XML
@@ -191,7 +197,7 @@ if ($xml === false) {
 For binary responses (like file downloads), you can save the response body to a file:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 $body = $response->body();
 
 // Save to file
@@ -211,7 +217,7 @@ The main exception type is `RequestException`, which is thrown when a request fa
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
-    $response = $client->handle($request);
+    $response = $client->withRequest($request)->get();
     // Process the response
 } catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
@@ -237,7 +243,7 @@ By default, HTTP error responses (4xx, 5xx status codes) do not throw exceptions
 When `failOnError` is set to `true`, the client will throw a `RequestException` for error responses. When it's `false`, you need to check the status code yourself:
 
 ```php
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 
 if ($response->statusCode() >= 400) {
     // Handle error response
@@ -254,13 +260,14 @@ If a request fails, you might want to retry it. Here's a simple implementation o
 
 ```php
 use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Contracts\HttpResponse;
 
-function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?HttpClientResponse {
+function retryRequest($client, $request, $maxRetries = 3, $delay = 1): ?HttpResponse {
     $attempts = 0;
 
     while ($attempts < $maxRetries) {
         try {
-            return $client->handle($request);
+            return $client->withRequest($request)->get();
         } catch (HttpRequestException $e) {
             $attempts++;
 

@@ -86,7 +86,7 @@ The `HttpClient` class serves as the main entry point and provides a fluent inte
 
 ```
 HttpClient
-  └── withClient() - Switch to a different client configuration
+  └── using() - Switch to a different client configuration
   └── withConfig() - Apply custom configuration
   └── withDriver() - Use a custom driver
   └── withMiddleware() - Add middleware components
@@ -125,7 +125,7 @@ CanHandleHttpRequest (interface)
 Response adapters convert client-specific responses to a common interface:
 
 ```
-HttpClientResponse (interface)
+HttpResponse (interface)
   ├── PsrHttpResponse (Guzzle)
   ├── SymfonyHttpResponse
   ├── LaravelHttpResponse

@@ -370,7 +370,7 @@ The driver can be any class that implements `CanHandleInference` interface.
 LLM::registerDriver(
     'custom-driver',
     fn($config, $httpClient) => new class($config, $httpClient) extends OpenAIDriver {
-        public function handle(InferenceRequest $request): HttpClientResponse {
+        public function handle(InferenceRequest $request): HttpResponse {
             // some extra functionality to demonstrate our driver is being used
             echo ">>> Handling request...\n";
             return parent::handle($request);

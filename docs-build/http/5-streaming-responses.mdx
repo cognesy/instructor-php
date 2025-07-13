@@ -52,7 +52,7 @@ The `stream` option tells the HTTP client to treat the response as a stream, whi
 Once you have a streaming response, you can process it using the `stream()` method, which returns a PHP Generator:
 
 ```php
-$response = $client->handle($streamingRequest);
+$response = $client->withRequest($streamingRequest)->get();
 
 // Process the stream chunk by chunk
 foreach ($response->stream() as $chunk) {
@@ -141,7 +141,7 @@ This approach allows downloading very large files without loading the entire fil
 Server-Sent Events (SSE) are a common streaming format used by many APIs. Here's how to process them:
 
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/events',
     method: 'GET',
     headers: [
@@ -152,7 +152,7 @@ $request = new HttpClientRequest(
     options: ['stream' => true]
 );
 
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 
 $buffer = '';
 

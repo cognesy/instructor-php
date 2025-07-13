@@ -9,7 +9,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * MockHttpResponse
  * 
- * A simple implementation of HttpClientResponse for testing purposes.
+ * A simple implementation of HttpResponse for testing purposes.
  */
 class MockHttpResponse implements HttpResponse
 {

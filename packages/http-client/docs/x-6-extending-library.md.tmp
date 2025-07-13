@@ -33,7 +33,7 @@ class WeatherApiClient
 
     public function getCurrentWeather(string $city): array
     {
-        $request = new HttpClientRequest(
+        $request = new HttpRequest(
             url: "{$this->baseUrl}/current",
             method: 'GET',
             headers: [
@@ -47,7 +47,7 @@ class WeatherApiClient
         );
 
         try {
-            $response = $this->client->handle($request);
+            $response = $this->client->withRequest($request)->get();
 
             if ($response->statusCode() !== 200) {
                 $this->handleErrorResponse($response);
@@ -61,7 +61,7 @@ class WeatherApiClient
 
     public function getForecast(string $city, int $days = 5): array
     {
-        $request = new HttpClientRequest(
+        $request = new HttpRequest(
             url: "{$this->baseUrl}/forecast",
             method: 'GET',
             headers: [
@@ -78,7 +78,7 @@ class WeatherApiClient
         );
 
         try {
-            $response = $this->client->handle($request);
+            $response = $this->client->withRequest($request)->get();
 
             if ($response->statusCode() !== 200) {
                 $this->handleErrorResponse($response);
@@ -90,7 +90,7 @@ class WeatherApiClient
         }
     }
 
-    private function handleErrorResponse(HttpClientResponse $response): void
+    private function handleErrorResponse(HttpResponse $response): void
     {
         $statusCode = $response->statusCode();
         $errorData = json_decode($response->body(), true);
@@ -213,7 +213,7 @@ abstract class ApiResource
 
     abstract protected function getResourcePath(): string;
 
-    protected function createRequest(string $method, string $path, array $body = [], array $query = []): HttpClientRequest
+    protected function createRequest(string $method, string $path, array $body = [], array $query = []): HttpRequest
     {
         $url = $this->baseUrl . '/' . $this->resourcePath;
         if ($path) {
@@ -224,7 +224,7 @@ abstract class ApiResource
             $url .= '?' . http_build_query($query);
         }
 
-        return new HttpClientRequest(
+        return new HttpRequest(
             url: $url,
             method: $method,
             headers: [
@@ -239,7 +239,7 @@ abstract class ApiResource
 
     protected function execute(HttpClientRequest $request): array
     {
-        $response = $this->client->handle($request);
+        $response = $this->client->withRequest($request)->get();
 
         if ($response->statusCode() >= 400) {
             $this->handleErrorResponse($response);
@@ -248,7 +248,7 @@ abstract class ApiResource
         return json_decode($response->body(), true);
     }
 
-    protected function handleErrorResponse(HttpClientResponse $response): void
+    protected function handleErrorResponse(HttpResponse $response): void
     {
         // Implementation similar to previous example
     }

@@ -11,7 +11,7 @@ use Psr\Http\Message\StreamInterface;
 /**
  * Class PsrHttpResponse
  *
- * Implements HttpClientResponse contract for PSR-compatible HTTP client
+ * Implements HttpResponse contract for PSR-compatible HTTP client
  */
 class PsrHttpResponse implements HttpResponse
 {

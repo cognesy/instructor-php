@@ -91,7 +91,7 @@ $client->withConfig($config);
 2. **Missing Authorization Headers**:
 - Check that you're adding the correct Authorization header
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     // ...
     headers: [
         'Authorization' => 'Bearer ' . $apiToken,
@@ -118,7 +118,7 @@ $request = new HttpClientRequest(
 1. **Incorrect Content-Type**:
 - Ensure you're setting the correct Content-Type header
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     // ...
     headers: [
         'Content-Type' => 'application/json',
@@ -255,7 +255,7 @@ try {
     echo "Headers: " . json_encode($request->headers()) . "\n";
     echo "Body: " . $request->body()->toString() . "\n";
 
-    $response = $client->handle($request);
+    $response = $client->withRequest($request)->get();
 
     echo "Response status: {$response->statusCode()}\n";
     echo "Response headers: " . json_encode($response->headers()) . "\n";
@@ -423,7 +423,7 @@ class OpenTelemetryMiddleware extends BaseMiddleware
             $span->setAttribute('http.path', $path);
 
             // Make the actual request
-            $response = $next->handle($request);
+            $response = $next->withRequest($request)->get();
 
             // Record response information
             $span->setAttribute('http.status_code', $response->statusCode());
@@ -462,7 +462,7 @@ The simplest approach is to catch the `RequestException`:
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
-    $response = $client->handle($request);
+    $response = $client->withRequest($request)->get();
     // Process successful response
 } catch (HttpRequestException $e) {
     // Handle error
@@ -476,7 +476,7 @@ You can categorize errors based on the underlying exception or status code:
 
 ```php
 try {
-    $response = $client->handle($request);
+    $response = $client->withRequest($request)->get();
 
     // Check for error responses
     if ($response->statusCode() >= 400) {
@@ -510,7 +510,7 @@ try {
 For transient errors, implement retry logic:
 
 ```php
-function retryRequest($client, $request, $maxRetries = 3): HttpClientResponse {
+function retryRequest($client, $request, $maxRetries = 3): HttpResponse {
     $attempts = 0;
     $lastException = null;
 
@@ -539,7 +539,7 @@ function retryRequest($client, $request, $maxRetries = 3): HttpClientResponse {
 
     while ($attempts < $maxRetries) {
         try {
-            return $client->handle($request);
+            return $client->withRequest($request)->get();
         } catch (RequestException $e) {
             $lastException = $e;
             $attempts++;
@@ -616,7 +616,7 @@ $circuitBreaker = new CircuitBreaker();
 
 try {
     $response = $circuitBreaker->execute(function() use ($client, $request) {
-        return $client->handle($request);
+        return $client->withRequest($request)->get();
     });
 
     // Process response
@@ -637,7 +637,7 @@ When a service is unavailable, implement graceful degradation by providing fallb
 
 ```php
 function getUserData($userId, $client) {
-    $request = new HttpClientRequest(
+    $request = new HttpRequest(
         url: "https://api.example.com/users/{$userId}",
         method: 'GET',
         headers: ['Accept' => 'application/json'],
@@ -646,7 +646,7 @@ function getUserData($userId, $client) {
     );
 
     try {
-        $response = $client->handle($request);
+        $response = $client->withRequest($request)->get();
         return json_decode($response->body(), true);
     } catch (RequestException $e) {
         // Log the error
@@ -868,7 +868,7 @@ class ApiService {
         ];
     }
 
-    private function handleErrorResponse(HttpClientResponse $response, string $endpoint, array $params): array {
+    private function handleErrorResponse(HttpResponse $response, string $endpoint, array $params): array {
         $statusCode = $response->statusCode();
         $body = json_decode($response->body(), true);
 
@@ -1020,7 +1020,7 @@ $client->withConfig($config);
 2. **Missing Authorization Headers**:
 - Check that you're adding the correct Authorization header
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     // ...
     headers: [
         'Authorization' => 'Bearer ' . $apiToken,
@@ -1047,7 +1047,7 @@ $request = new HttpClientRequest(
 1. **Incorrect Content-Type**:
 - Ensure you're setting the correct Content-Type header
 ```php
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     // ...
     headers: [
         'Content-Type' => 'application/json',
@@ -1184,7 +1184,7 @@ try {
     echo "Headers: " . json_encode($request->headers()) . "\n";
     echo "Body: " . $request->body()->toString() . "\n";
 
-    $response = $client->handle($request);
+    $response = $client->withRequest($request)->get();
 
     echo "Response status: {$response->statusCode()}\n";
     echo "Response headers: " . json_encode($response->headers()) . "\n";

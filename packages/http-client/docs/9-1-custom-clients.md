@@ -17,7 +17,7 @@ The `CanHandleHttpRequest` interface requires implementing a single method:
 ```php
 interface CanHandleHttpRequest
 {
-    public function handle(HttpClientRequest $request): HttpClientResponse;
+    public function handle(HttpClientRequest $request): HttpResponse;
 }
 ```
 
@@ -86,7 +86,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
             ]));
 
             // Return the response wrapped in your adapter
-            return new YourHttpClientResponse($response, $streaming);
+            return new YourHttpResponse($response, $streaming);
 
         } catch (Exception $e) {
             // Dispatch event for failed request
@@ -121,7 +121,7 @@ class CustomHttpDriver implements CanHandleHttpRequest
 
 ### Creating a Response Adapter
 
-You also need to create a response adapter that implements the `HttpClientResponse` interface:
+You also need to create a response adapter that implements the `HttpResponse` interface:
 
 ```php
 <?php
@@ -131,7 +131,7 @@ namespace YourNamespace\Http\Adapters;
 use Cognesy\Http\Contracts\HttpResponse;
 use Generator;
 
-class YourHttpClientResponse implements HttpResponse
+class YourHttpResponse implements HttpResponse
 {
     /**
      * Constructor
@@ -211,7 +211,7 @@ $customDriver = new CustomHttpDriver($config);
 $client = (new HttpClient)->withDriver($customDriver);
 
 // Use the client as usual
-$response = $client->handle(new HttpClientRequest(/* ... */));
+$response = $client->withRequest(new HttpRequest(/* ... */))->get();
 ```
 
 ### Real-World Example: Creating a cURL Driver

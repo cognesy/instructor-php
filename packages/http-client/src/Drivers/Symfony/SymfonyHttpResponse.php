@@ -11,7 +11,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 /**
  * Class SymfonyHttpResponse
  *
- * Implements HttpClientResponse contract for Symfony HTTP client
+ * Implements HttpResponse contract for Symfony HTTP client
  */
 class SymfonyHttpResponse implements HttpResponse
 {

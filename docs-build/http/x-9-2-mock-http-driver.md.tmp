@@ -37,7 +37,7 @@ $client = new HttpClient();
 $client->withDriver($mockDriver);
 
 // Make a request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'GET',
     headers: [],
@@ -46,7 +46,7 @@ $request = new HttpClientRequest(
 );
 
 // This will return the mock response without making an actual HTTP request
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 
 echo "Status: " . $response->statusCode() . "\n";
 echo "Body: " . $response->body() . "\n";
@@ -453,7 +453,7 @@ In the next chapter, we'll explore the middleware system, which allows you to ad
         $promises = [];
 
         foreach ($requests as $index => $request) {
-            if (!$request instanceof HttpClientRequest) {
+            if (!$request instanceof HttpRequest) {
                 throw new \InvalidArgumentException('Invalid request type in pool');
             }
 
@@ -486,7 +486,7 @@ In the next chapter, we'll explore the middleware system, which allows you to ad
                     // Handle success
                     $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
 
-                    $results[$index] = Result::success(new YourHttpClientResponse($response));
+                    $results[$index] = Result::success(new YourHttpResponse($response));
                 }
             } catch (\Exception $e) {
                 $results[$index] = $this->handleError($e);
@@ -548,8 +548,8 @@ $client = new HttpClient();
 $client->withDriver($customDriver);
 
 // Use the client as usual
-$request = new HttpClientRequest(/* ... */);
-$response = $client->handle($request);
+$request = new HttpRequest(/* ... */);
+$response = $client->withRequest($request)->get();
 ```
 
 ## Using the Mock HTTP Driver
@@ -588,7 +588,7 @@ $client = new HttpClient();
 $client->withDriver($mockDriver);
 
 // Make a request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/users/123',
     method: 'GET',
     headers: [],
@@ -597,7 +597,7 @@ $request = new HttpClientRequest(
 );
 
 // This will return the mock response without making an actual HTTP request
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 
 echo "Status: " . $response->statusCode() . "\n";
 echo "Body: " . $response->body() . "\n";

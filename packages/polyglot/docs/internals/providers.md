@@ -19,8 +19,8 @@ Several interfaces define the contract for LLM drivers and adapters:
 namespace Cognesy\Polyglot\Inference\Contracts;
 
 interface CanHandleInference {
-    public function handle(InferenceRequest $request): HttpClientResponse;
-    public function fromResponse(HttpClientResponse $response): ?InferenceResponse;
+    public function handle(InferenceRequest $request): HttpResponse;
+    public function fromResponse(HttpResponse $response): ?InferenceResponse;
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;
     public function toEventBody(string $data): string|bool;
 }
@@ -34,11 +34,11 @@ interface ProviderRequestAdapter {
         array $responseFormat,
         array $options,
         Mode $mode
-    ): HttpClientRequest;
+    ): HttpRequest;
 }
 
 interface ProviderResponseAdapter {
-    public function fromResponse(HttpClientResponse $response): ?InferenceResponse;
+    public function fromResponse(HttpResponse $response): ?InferenceResponse;
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse;
     public function toEventBody(string $data): string|bool;
 }
@@ -96,8 +96,8 @@ class ModularLLMDriver implements CanHandleInference {
         protected ?EventDispatcher $events = null
     ) { ... }
 
-    public function handle(InferenceRequest $request): HttpClientResponse { ... }
-    public function fromResponse(HttpClientResponse $response): ?InferenceResponse { ... }
+    public function handle(InferenceRequest $request): HttpResponse { ... }
+    public function fromResponse(HttpResponse $response): ?InferenceResponse { ... }
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
     public function toEventBody(string $data): string|bool { ... }
 }

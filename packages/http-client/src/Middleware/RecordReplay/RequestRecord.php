@@ -131,7 +131,7 @@ class RequestRecord
     }
     
     /**
-     * Create an HttpClientResponse from this record
+     * Create an HttpResponse from this record
      * 
      * @param bool $isStreaming Whether to return a streaming response
      * @return \Cognesy\Http\Contracts\HttpResponse

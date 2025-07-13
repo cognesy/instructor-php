@@ -86,7 +86,7 @@ HTTP requests can fail for various reasons. You should always wrap request handl
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 try {
-    $response = $client->handle($request);
+    $response = $client->withRequest($request)->get();
     // Process the response
 } catch (HttpRequestException $e) {
     echo "Request failed: {$e->getMessage()}\n";
@@ -162,11 +162,14 @@ return [
 You can also configure the client at runtime:
 
 ```php
+<?php
+use Cognesy\Http\HttpClient;
+
 // Create client with specific configuration
 $client = new HttpClient('guzzle');
 
 // Or switch to a different configuration
-$client->withClient('symfony');
+$client->using('symfony');
 
 // Enable debug mode
 $client->withDebugPreset('on');
@@ -184,7 +187,7 @@ use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
 // Create an HTTP client using the 'guzzle' configuration
-$client = new HttpClient('guzzle');
+$client = HttpClient::using('guzzle');
 
 // Create a POST request with JSON data
 $request = new HttpRequest(
@@ -237,8 +240,8 @@ use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
 
-// Create an HTTP client
-$client = new HttpClient();
+// Create a default HTTP client
+$client = HttpClient::default();
 
 // Create a GET request with query parameters
 $request = new HttpRequest(

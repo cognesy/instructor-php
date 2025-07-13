@@ -27,7 +27,7 @@ All middleware components must implement the `HttpMiddleware` interface:
 ```php
 interface HttpMiddleware
 {
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse;
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse;
 }
 ```
 
@@ -48,12 +48,12 @@ While you can implement the `HttpMiddleware` interface directly, the library pro
 ```php
 abstract class BaseMiddleware implements HttpMiddleware
 {
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse {
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse {
         // 1) Pre-request logic
         $this->beforeRequest($request);
 
         // 2) Get the response from the next handler
-        $response = $next->handle($request);
+        $response = $next->withRequest($request)->get();
 
         // 3) Post-request logic, e.g. logging or rewriting
         $response = $this->afterRequest($request, $response);
@@ -69,13 +69,13 @@ abstract class BaseMiddleware implements HttpMiddleware
 
     // Override these methods in your subclass
     protected function beforeRequest(HttpClientRequest $request): void {}
-    protected function afterRequest(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse {
+    protected function afterRequest(HttpClientRequest $request, HttpResponse $response): HttpResponse {
         return $response;
     }
-    protected function shouldDecorateResponse(HttpClientRequest $request, HttpClientResponse $response): bool {
+    protected function shouldDecorateResponse(HttpClientRequest $request, HttpResponse $response): bool {
         return false;
     }
-    protected function toResponse(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse {
+    protected function toResponse(HttpClientRequest $request, HttpResponse $response): HttpResponse {
         return $response;
     }
 }
@@ -199,7 +199,7 @@ $client->withMiddleware(
 );
 
 // Create a request
-$request = new HttpClientRequest(
+$request = new HttpRequest(
     url: 'https://api.example.com/data',
     method: 'GET',
     headers: ['Accept' => 'application/json'],
@@ -215,7 +215,7 @@ $request = new HttpClientRequest(
 // 5. TimeoutMiddleware processes the response
 // 6. RetryMiddleware processes the response (may retry on certain status codes)
 // 7. LoggingMiddleware processes the response (logs incoming response)
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 ```
 
 ## Built-in Middleware

@@ -97,7 +97,7 @@ class AuthenticationMiddleware extends BaseMiddleware
         $headers['Authorization'] = 'Bearer ' . $this->apiKey;
 
         // Note: In a real implementation, you would need to create a new request
-        // with the updated headers, as HttpClientRequest is immutable
+        // with the updated headers, as HttpRequest is immutable
     }
 
     protected function afterRequest(
@@ -118,9 +118,9 @@ class AuthenticationMiddleware extends BaseMiddleware
 With `BaseMiddleware`, you only need to override the methods that matter for your middleware:
 
 - `beforeRequest(HttpClientRequest $request): void` - Called before the request is sent
-- `afterRequest(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse` - Called after the response is received
-- `shouldDecorateResponse(HttpClientRequest $request, HttpClientResponse $response): bool` - Determines if the response should be decorated
-- `toResponse(HttpClientRequest $request, HttpClientResponse $response): HttpClientResponse` - Creates a decorated response
+- `afterRequest(HttpClientRequest $request, HttpResponse $response): HttpResponse` - Called after the response is received
+- `shouldDecorateResponse(HttpClientRequest $request, HttpResponse $response): bool` - Determines if the response should be decorated
+- `toResponse(HttpClientRequest $request, HttpResponse $response): HttpResponse` - Creates a decorated response
 
 ### Approach 3: Using Anonymous Classes
 
@@ -131,7 +131,7 @@ $client = new HttpClient();
 
 // Add a simple timing middleware
 $client->withMiddleware(new class implements HttpMiddleware {
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         $startTime = microtime(true);
 
@@ -160,7 +160,11 @@ This middleware automatically retries failed requests:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Exceptions\HttpRequestException;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class RetryMiddleware extends BaseMiddleware
 {
@@ -225,7 +229,10 @@ This middleware throttles requests to respect API rate limits:
 
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class RateLimitingMiddleware extends BaseMiddleware
 {
@@ -356,7 +363,7 @@ Response decoration is a powerful technique for wrapping HTTP responses to add f
 
 ### Creating a Response Decorator
 
-All response decorators should implement the `HttpClientResponse` interface. The library provides a `BaseResponseDecorator` class that makes this easier:
+All response decorators should implement the `HttpResponse` interface. The library provides a `BaseResponseDecorator` class that makes this easier:
 
 ```php
 <?php
@@ -738,7 +745,7 @@ This middleware adds a unique ID to each request and tracks it through the respo
 namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Polyglot\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 use Ramsey\Uuid\Uuid;
 
@@ -759,13 +766,13 @@ class RequestIdMiddleware extends BaseMiddleware
         $headers['X-Request-ID'] = $requestId;
 
         // In a real implementation, you would need to create a new request
-        // with the updated headers, as HttpClientRequest is immutable
+        // with the updated headers, as HttpRequest is immutable
     }
 
     protected function afterRequest(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         // Get the request ID
         $requestId = $this->requestIds[spl_object_hash($request)] ?? 'unknown';
 
@@ -790,7 +797,7 @@ This middleware adds OpenTelemetry tracing to HTTP requests:
 namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Polyglot\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 use OpenTelemetry\API\Trace\SpanKind;
 use OpenTelemetry\API\Trace\StatusCode;
@@ -811,7 +818,7 @@ class TracingMiddleware extends BaseMiddleware
         // we'll create the span in the handle method
     }
 
-    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpClientResponse
+    public function handle(HttpClientRequest $request, CanHandleHttpRequest $next): HttpResponse
     {
         // Extract the operation name from the URL
         $url = parse_url($request->url());
@@ -872,14 +879,14 @@ When working with Large Language Model (LLM) APIs, you can create specialized mi
 namespace YourNamespace\Http\Middleware;
 
 use Cognesy\Polyglot\Http\BaseMiddleware;
-use Cognesy\Polyglot\Http\Contracts\HttpClientResponse;
+use Cognesy\Polyglot\Http\Contracts\HttpResponse;
 use Cognesy\Polyglot\Http\Data\HttpClientRequest;
 
 class LlmStreamingMiddleware extends BaseMiddleware
 {
     protected function shouldDecorateResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
+        HttpRequest $request,
+        HttpResponse $response
     ): bool {
         // Only decorate streaming responses to LLM APIs
         return $request->isStreamed() &&
@@ -887,9 +894,9 @@ class LlmStreamingMiddleware extends BaseMiddleware
     }
 
     protected function toResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         return new class($request, $response) extends BaseResponseDecorator {
             private string $buffer = '';
             private array $chunks = [];
@@ -1015,7 +1022,7 @@ $client->withMiddleware(
 );
 
 // Now the client is ready to use with a complete middleware pipeline
-$response = $client->handle($request);
+$response = $client->withRequest($request)->get();
 ```
 
 With this setup, requests and responses flow through the middleware in the following order:

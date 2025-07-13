@@ -83,7 +83,7 @@ namespace Cognesy\Polyglot\LLM;
 
 class InferenceStream {
     public function __construct(
-        HttpClientResponse        $httpResponse,
+        HttpResponse        $httpResponse,
         CanHandleInference        $driver,
         EventDispatcherInterface  $events,
     ) { ... }

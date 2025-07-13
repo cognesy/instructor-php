@@ -12,7 +12,7 @@ class HttpRequest
     private HttpRequestBody $body;
 
     /**
-     * HttpClientRequest constructor.
+     * HttpRequest constructor.
      *
      * @param string $url
      * @param string $method

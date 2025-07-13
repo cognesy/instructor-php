@@ -35,21 +35,21 @@ class HttpClient implements CanHandleHttpRequest {
     public function withMiddleware(...$middleware): self { ... }
     public function withDebugPreset(?string $preset): self { ... }
 
-    public function handle(HttpClientRequest $request): HttpClientResponse { ... }
+    public function handle(HttpClientRequest $request): HttpResponse { ... }
     public function middleware(): MiddlewareStack { ... }
 }
 ```
 
 
 
-## HttpClientRequest and HttpClientResponse
+## HttpRequest and HttpResponse
 
 These classes represent HTTP requests and responses:
 
 ```php
 namespace Cognesy\Http\Data;
 
-class HttpClientRequest {
+class HttpRequest {
     public function __construct(
         private string $url,
         private string $method,
@@ -68,7 +68,7 @@ class HttpClientRequest {
     public function withStreaming(bool $streaming): self { ... }
 }
 
-interface HttpClientResponse {
+interface HttpResponse {
     public function statusCode(): int;
     public function headers(): array;
     public function body(): string;
@@ -88,37 +88,37 @@ namespace Cognesy\Http;
 
 interface HttpMiddleware {
     public function handle(
-        HttpClientRequest $request,
+        HttpRequest $request,
         CanHandleHttpRequest $next
-    ): HttpClientResponse;
+    ): HttpResponse;
 }
 
 abstract class BaseMiddleware implements HttpMiddleware {
     public function handle(
-        HttpClientRequest $request,
+        HttpRequest $request,
         CanHandleHttpRequest $next
-    ): HttpClientResponse { ... }
+    ): HttpResponse { ... }
 
     protected function beforeRequest(HttpClientRequest $request): void {}
 
     protected function afterRequest(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         return $response;
     }
 
     protected function shouldDecorateResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
+        HttpRequest $request,
+        HttpResponse $response
     ): bool {
         return false;
     }
 
     protected function toResponse(
-        HttpClientRequest $request,
-        HttpClientResponse $response
-    ): HttpClientResponse {
+        HttpRequest $request,
+        HttpResponse $response
+    ): HttpResponse {
         return $response;
     }
 }
@@ -133,8 +133,8 @@ class MiddlewareStack {
     public function get(string|int $nameOrIndex): ?HttpMiddleware { ... }
     public function all(): array { ... }
     public function process(
-        HttpClientRequest $request,
+        HttpRequest $request,
         CanHandleHttpRequest $handler
-    ): HttpClientResponse { ... }
+    ): HttpResponse { ... }
 }
 ```

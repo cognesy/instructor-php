@@ -16,7 +16,7 @@ interface HttpMiddleware
      * Intercept or modify the request, optionally return a response
      * immediately, or call $next->handle($request) to continue the chain.
      *
-     * Return a HttpClientResponse.
+     * Return a HttpResponse.
      */
     public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse;
 }

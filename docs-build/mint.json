@@ -329,6 +329,7 @@
                 "cookbook/instructor/advanced/context_cache_structured",
                 "cookbook/instructor/advanced/custom_config",
                 "cookbook/instructor/advanced/custom_http_client",
+                "cookbook/instructor/advanced/custom_http_client_laravel",
                 "cookbook/instructor/advanced/custom_prompts",
                 "cookbook/instructor/advanced/custom_llm_with_dsn",
                 "cookbook/instructor/advanced/function_calls",

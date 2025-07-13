@@ -27,7 +27,7 @@ class OpenAIRequestAdapter implements ProviderRequestAdapter {
         array $responseFormat,
         array $options,
         Mode $mode
-    ): HttpClientRequest { ... }
+    ): HttpRequest { ... }
 
     protected function toHeaders(): array { ... }
     protected function toUrl(string $model = '', bool $stream = false): string { ... }
@@ -97,7 +97,7 @@ class OpenAIResponseAdapter implements ProviderResponseAdapter {
         protected CanMapUsage $usageFormat
     ) { ... }
 
-    public function fromResponse(HttpClientResponse $response): ?InferenceResponse { ... }
+    public function fromResponse(HttpResponse $response): ?InferenceResponse { ... }
     public function fromStreamResponse(string $eventBody): ?PartialInferenceResponse { ... }
     public function toEventBody(string $data): string|bool { ... }
 
