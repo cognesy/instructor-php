@@ -76,10 +76,11 @@ For most cases, extending the `BaseMiddleware` abstract class is more convenient
 
 ```php
 <?php
-
 namespace YourNamespace\Http\Middleware;
 
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Middleware\Base\BaseMiddleware;
 
 class AuthenticationMiddleware extends BaseMiddleware
 {
@@ -127,6 +128,8 @@ With `BaseMiddleware`, you only need to override the methods that matter for you
 For simple middleware that you only need to use once, you can use anonymous classes:
 
 ```php
+use Cognesy\Http\Contracts\HttpMiddleware;
+
 $client = new HttpClient();
 
 // Add a simple timing middleware

@@ -16,8 +16,9 @@ method with the preset name.
 Default LLM configuration file is located in `/config/llm.php` in the root directory
 of Instructor codebase.
 
-You can set the location of the configuration file via `INSTRUCTOR_CONFIG_PATH` environment
-variable. You can use a copy of the default configuration file as a starting point.
+You can set the location of the configuration file via `INSTRUCTOR_CONFIG_PATHS` environment
+variable (comma-separated list of paths). You can use a copy of the default configuration
+file as a starting point.
 
 LLM config file defines available connection presets to LLM APIs and their parameters.
 It also specifies the default provider and parameters to be used when calling Instructor.

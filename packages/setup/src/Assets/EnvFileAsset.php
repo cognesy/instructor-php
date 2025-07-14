@@ -49,7 +49,7 @@ class EnvFileAsset implements Publishable
             }
         }
 
-        // merge variable values into existing env file - needed to add INSTRUCTOR_CONFIG_PATH
+        // merge variable values into existing env file - needed to add INSTRUCTOR_CONFIG_PATHS
         $this->envFile->mergeEnvFiles($this->sourcePath, $this->destinationPath, $this->configDir);
         if ($this->filesystem->exists($this->destinationPath)) {
             //$this->output->out("Merged env files into {$this->destinationPath}");

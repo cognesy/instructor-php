@@ -12,7 +12,7 @@ use RuntimeException;
 class EnvFile
 {
     private const HEADER_NEW_VARS = '# INSTRUCTOR PHP // added new variables';
-    private const CONFIG_PATH_KEY = 'INSTRUCTOR_CONFIG_PATH';
+    private const CONFIG_PATH_KEY = 'INSTRUCTOR_CONFIG_PATHS';
 
     public const RESULT_OK = 0;
     public const RESULT_ERROR = 1;

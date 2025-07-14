@@ -21,7 +21,7 @@ Correct your config files to use new namespaces.
 
 ## Step 3: Instructor config path
 
-Correct INSTRUCTOR_CONFIG_PATH in .env file to `config/instructor` (or your custom path).
+Correct INSTRUCTOR_CONFIG_PATHS in .env file to `config/instructor` (or your custom path).
 
 
 ## Step 4: Codebase

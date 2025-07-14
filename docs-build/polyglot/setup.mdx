@@ -141,10 +141,10 @@ return [
 
 ### Custom Configuration Location
 
-By default, Polyglot looks for configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATH` environment variable:
+By default, Polyglot looks for configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATHS` environment variable:
 
 ```
-INSTRUCTOR_CONFIG_PATH=/path/to/your/config
+INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
 ```
 
 ### Overriding Configuration Location

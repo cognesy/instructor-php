@@ -230,7 +230,7 @@ $answer = (new Inference)
 ```
 
 You can change the location of the configuration files for Instructor to use via
-`INSTRUCTOR_CONFIG_PATH` environment variable. You can use copies of the default
+`INSTRUCTOR_CONFIG_PATHS` environment variable. You can use copies of the default
 configuration files as a starting point.
 
 

@@ -191,7 +191,7 @@ it('correctly identifies absolute paths', function () {
 
 it('reads environment variable for config path if set', function () {
     // Mock the environment variable
-    $_ENV['INSTRUCTOR_CONFIG_PATH'] = $this->tempDir;
+    $_ENV['INSTRUCTOR_CONFIG_PATHS'] = $this->tempDir;
 
     // Reset path to force reading from environment
     $reflectionClass = new ReflectionClass(Settings::class);
@@ -203,5 +203,5 @@ it('reads environment variable for config path if set', function () {
     expect(Settings::getPath())->toBe($this->tempDir . '/');
 
     // Clean up
-    unset($_ENV['INSTRUCTOR_CONFIG_PATH']);
+    unset($_ENV['INSTRUCTOR_CONFIG_PATHS']);
 });

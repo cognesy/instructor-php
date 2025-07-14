@@ -62,12 +62,12 @@ Instructor uses a configuration directory to store its settings, e.g. LLM provid
 
 You can set the path to this directory in your `.env` file:
 ```
-INSTRUCTOR_CONFIG_PATH='/../../config/'
+INSTRUCTOR_CONFIG_PATHS='/../../config/,another/path'
 ```
 
 This tells Instructor where to find its configuration files, if it has not been configured manually
 via `Settings` class. The path is relative to the vendor directory where Instructor is installed.
 
 <Note>
-    `INSTRUCTOR_CONFIG_PATH` is set automatically if you use the Instructor CLI tool to publish assets.
+    `INSTRUCTOR_CONFIG_PATHS` is set automatically if you use the Instructor CLI tool to publish assets.
 </Note>

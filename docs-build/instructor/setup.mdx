@@ -76,11 +76,11 @@ But to make it easier you can just set the value in your `.env` file. `Settings`
 from there. This way you don't have to set it in every script.
 
 ```ini .env
-INSTRUCTOR_CONFIG_PATH='/path/to/your/config/dir/'
+INSTRUCTOR_CONFIG_PATHS='/path/to/your/config/dir/,another/path'
 ```
 
 <Note>
-`INSTRUCTOR_CONFIG_PATH` is set automatically if you use the Instructor CLI tool to publish assets.
+`INSTRUCTOR_CONFIG_PATHS` is set automatically if you use the Instructor CLI tool to publish assets.
 </Note>
 
 
@@ -129,7 +129,7 @@ For Symfony Flex applications, you may want to create a recipe to automate this 
 
 You can use environment variables to set the location of configuration files:
 ```
-INSTRUCTOR_CONFIG_PATH=/path/to/config
+INSTRUCTOR_CONFIG_PATHS=/path/to/config,another/path
 ```
 
 This allows you to maintain consistent paths across your application without specifying them in each command.
@@ -216,5 +216,5 @@ OPENAI_API_KEY=your_api_key
 # ...
 
 # Set up Instructor configuration path (optional)
-INSTRUCTOR_CONFIG_PATH=<path/to/config>
+INSTRUCTOR_CONFIG_PATHS='<path/to/config>,<another/path>'
 ```

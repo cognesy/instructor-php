@@ -4,18 +4,23 @@ namespace Cognesy\Config;
 use Cognesy\Config\Exceptions\MissingSettingException;
 use Cognesy\Config\Exceptions\NoSettingsFileException;
 use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 
 class Settings
 {
     /**
-     * @var string The path to the configuration files.
+     * @var ?string The path to the configuration files.
      */
     static private ?string $path = null;
 
     /**
-     * @var string The default path to the configuration files.
+     * @var array<string> The default path to the configuration files.
      */
-    static private string $defaultPath = 'config/';
+    static private array $defaultPaths = [
+        'config/',
+        'vendor/cognesy/instructor-php/config/',
+    ];
 
     /**
      * @var array The loaded settings.
@@ -40,16 +45,21 @@ class Settings
      * @return string The current path to the configuration files.
      */
     public static function getPath(): string {
-        return self::$path ?? self::resolvePath($_ENV['INSTRUCTOR_CONFIG_PATH'] ?? self::$defaultPath);
+        return self::$path
+            ?? self::getFirstValidPath(paths:
+                $_ENV['INSTRUCTOR_CONFIG_PATHS']
+                ?? $_ENV['INSTRUCTOR_CONFIG_PATH']
+                ?? self::$defaultPaths
+            );
     }
 
     /**
      * Gets the default path to the configuration files.
-     * @return string
+     * @return array<string> The default paths to the configuration files.
      * @throws Exception
      */
-    public static function getDefaultPath(): string {
-        return BasePath::get(self::$defaultPath);
+    public static function getDefaultPaths(): array {
+        return self::$defaultPaths;
     }
 
     /**
@@ -63,7 +73,7 @@ class Settings
      */
     public static function get(string $group, string $key, mixed $default = null) : mixed {
         if (empty($group)) {
-            throw new \InvalidArgumentException("Settings group not provided");
+            throw new InvalidArgumentException("Settings group not provided");
         }
 
         if (!self::isGroupLoaded($group)) {
@@ -81,13 +91,13 @@ class Settings
      * If key is not provided, it checks if the group exists.
      *
      * @param string $group The settings group.
-     * @param string $key The settings key.
+     * @param ?string $key The settings key.
      * @return bool True if the setting exists, false otherwise.
      * @throws Exception If the group is not provided.
      */
     public static function has(string $group, ?string $key = null) : bool {
         if (empty($group)) {
-            throw new Exception("Settings group not provided");
+            throw new RuntimeException("Settings group not provided");
         }
 
         if (empty($key)) {
@@ -110,7 +120,7 @@ class Settings
      */
     public static function hasGroup(string $group) : bool {
         if (empty($group)) {
-            throw new Exception("Settings group not provided");
+            throw new RuntimeException("Settings group not provided");
         }
 
         if (!self::isGroupLoaded($group)) {
@@ -129,7 +139,7 @@ class Settings
      */
     public static function getGroup(string $group) : mixed {
         if (empty($group)) {
-            throw new Exception("Settings group not provided");
+            throw new RuntimeException("Settings group not provided");
         }
 
         if (!self::isGroupLoaded($group)) {
@@ -211,6 +221,22 @@ class Settings
         return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
+    private static function getFirstValidPath(string|array $paths): string {
+        $paths = is_array($paths) ? $paths : explode(',', $paths);
+        if (empty($paths)) {
+            throw new InvalidArgumentException("No settings paths provided");
+        }
+
+        foreach ($paths as $path) {
+            $resolvedPath = self::resolvePath($path);
+            if (is_dir($resolvedPath)) {
+                return $resolvedPath;
+            }
+        }
+
+        throw new NoSettingsFileException("No valid settings path found in: " . implode(', ', $paths));
+    }
+
     /**
      * Checks if a given path is absolute.
      *
@@ -218,6 +244,6 @@ class Settings
      * @return bool True if the path is absolute, false otherwise.
      */
     private static function isAbsolutePath(string $path): bool {
-        return strpos($path, '/') === 0 || preg_match('/^[a-zA-Z]:\\\\/', $path) === 1;
+        return str_starts_with($path, '/') || preg_match('/^[a-zA-Z]:\\\\/', $path) === 1;
     }
 }
