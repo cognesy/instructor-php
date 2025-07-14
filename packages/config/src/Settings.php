@@ -44,12 +44,13 @@ class Settings
      *
      * @return string The current path to the configuration files.
      */
-    public static function getPath(): string {
+    public static function getPath(?string $group = null): string {
         return self::$path
-            ?? self::getFirstValidPath(paths:
-                $_ENV['INSTRUCTOR_CONFIG_PATHS']
-                ?? $_ENV['INSTRUCTOR_CONFIG_PATH']
-                ?? self::$defaultPaths
+            ?? self::getFirstValidPath(
+                paths: $_ENV['INSTRUCTOR_CONFIG_PATHS']
+                    ?? $_ENV['INSTRUCTOR_CONFIG_PATH']
+                    ?? self::$defaultPaths,
+                group: $group,
             );
     }
 
@@ -195,7 +196,7 @@ class Settings
      * @throws Exception If the settings file is not found.
      */
     private static function loadGroup(string $group) : array {
-        $rootPath = self::getPath();
+        $rootPath = self::getPath($group);
 
         // Ensure the rootPath ends with a directory separator
         $rootPath = rtrim($rootPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -221,7 +222,7 @@ class Settings
         return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
-    private static function getFirstValidPath(string|array $paths): string {
+    private static function getFirstValidPath(string|array $paths, ?string $group = null): string {
         $paths = is_array($paths) ? $paths : explode(',', $paths);
         if (empty($paths)) {
             throw new InvalidArgumentException("No settings paths provided");
@@ -230,7 +231,15 @@ class Settings
         foreach ($paths as $path) {
             $resolvedPath = self::resolvePath($path);
             if (is_dir($resolvedPath)) {
-                return $resolvedPath;
+                // if $group is not provided, return the resolved path
+                if (empty($group)) {
+                    return $resolvedPath;
+                }
+                // check if group file exists
+                $groupPath = $resolvedPath . $group . '.php';
+                if (file_exists($groupPath)) {
+                    return $resolvedPath;
+                }
             }
         }
 
