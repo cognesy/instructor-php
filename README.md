@@ -84,6 +84,13 @@ For usage examples, check Hub section or `examples` directory in the code reposi
 
 ## Usage
 
+### Installation
+
+You can install Instructor via Composer:
+
+```bash
+composer require cognesy/instructor-php
+```
 
 ### Basic Example
 
@@ -302,10 +309,14 @@ Links to read-only repositories of the standalone package distributions:
 
 - [instructor-addons](https://github.com/cognesy/instructor-addons) - extra capabilities and common LLM-related problem solutions
 - [instructor-aux](https://github.com/cognesy/instructor-aux) - external tools and integrations, e.g. used by Instructor examples
+- [instructor-config](https://github.com/cognesy/instructor-config) - configuration management for Instructor
 - [instructor-evals](https://github.com/cognesy/instructor-evals) - LLM output evaluation tools
+- [instructor-events](https://github.com/cognesy/instructor-events) - events and event listeners for Instructor
 - [instructor-http-client](https://github.com/cognesy/instructor-http-client) - easily switch between underlying HTTP client libraries (out-of-the-box support for Guzzle, Symfony, Laravel)
 - [instructor-hub](https://github.com/cognesy/instructor-hub) - CLI tool for browsing and running Instructor examples
+- [instructor-messages](https://github.com/cognesy/instructor-messages) - chat message sequence handling for Instructor
 - [instructor-polyglot](https://github.com/cognesy/instructor-polyglot) - use single API for inference and embeddings across most of LLM providers, easily switch between them (e.g., develop on Ollama, switch to Groq in production)
+- [instructor-schema](https://github.com/cognesy/instructor-schema) - object schema handling for Instructor
 - [instructor-setup](https://github.com/cognesy/instructor-setup) - CLI tool for publishing Instructor config files in your app
 - [instructor-struct](https://github.com/cognesy/instructor-struct) - get dev friendly structured outputs from LLMs
 - [instructor-tell](https://github.com/cognesy/instructor-tell) - CLI tool for executing LLM prompts in your terminal

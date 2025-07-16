@@ -24,7 +24,13 @@
     }
   },
   "require": {
-    "php": "^8.2"
+    "php": "^8.2",
+    "cognesy/instructor-dynamic": "^1.0",
+    "cognesy/instructor-messages": "^1.0",
+    "cognesy/instructor-polyglot": "^1.0",
+    "cognesy/instructor-schema": "^1.0",
+    "cognesy/instructor-struct": "^1.0",
+    "cognesy/instructor-utils": "^1.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

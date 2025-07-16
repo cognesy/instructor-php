@@ -1,8 +1,8 @@
 <?php
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
+use Cognesy\Dynamic\Structure;
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Structure\Structure;
 
 trait CreatesFromStructure
 {

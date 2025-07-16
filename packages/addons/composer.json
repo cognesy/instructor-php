@@ -30,13 +30,14 @@
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
+    "cognesy/instructor-dynamic": "^1.0",
     "cognesy/instructor-messages": "^1.0",
-    "cognesy/instructor-utils": "^1.0"
-  },
-  "require-dev": {
     "cognesy/instructor-polyglot": "^1.0",
     "cognesy/instructor-schema": "^1.0",
     "cognesy/instructor-struct": "^1.0",
+    "cognesy/instructor-utils": "^1.0"
+  },
+  "require-dev": {
     "roave/security-advisories": "dev-latest",
     "icanhazstring/composer-unused": "^0.9.0",
     "jetbrains/phpstorm-attributes": "^1.2",

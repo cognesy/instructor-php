@@ -88,6 +88,6 @@ class RunnerView
     }
 
     private function percent(int $value, int $total) : int {
-        return ($total == 0) ? 0 : round(($value / $total) * 100, 0);
+        return ($total == 0) ? 0 : (int) (round(($value / $total) * 100, 0));
     }
 }

@@ -33,7 +33,7 @@ final class StructuredOutputConfig
     private string $schemaDescription = '';
     private string $toolName = 'extracted_data';
     private string $toolDescription = 'Function call based on user instructions.';
-    private string $outputClass = 'Cognesy\Instructor\Extras\Structure\Structure';
+    private string $outputClass = 'Cognesy\Dynamic\Structure';
     private bool $defaultToStdClass = false;
     private string $deserializationErrorPrompt = "Failed to serialize response:\n<|json|>\n\nSerializer error:\n<|error|>\n\nExpected schema:\n<|jsonSchema|>\n";
     private bool $throwOnTransformationFailure = false;

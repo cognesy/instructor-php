@@ -3,8 +3,8 @@
 namespace Cognesy\Addons\FunctionCall\Traits;
 
 use Cognesy\Addons\FunctionCall\FunctionCall;
-use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Structure\StructureFactory;
+use Cognesy\Dynamic\Structure;
+use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Schema\Reflection\FunctionInfo;
 
 trait HandlesConstruction

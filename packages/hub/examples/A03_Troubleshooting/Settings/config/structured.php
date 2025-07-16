@@ -15,7 +15,7 @@ return [
             'useObjectReferences' => false,
 
             // default output class
-            'outputClass' => 'Cognesy\Instructor\Extras\Structure\Structure',
+            'outputClass' => 'Cognesy\Dynamic\Structure',
 
             // default schema name
             'schemaName' => 'default_schema',

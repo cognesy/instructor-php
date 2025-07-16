@@ -2,9 +2,9 @@
 
 namespace Cognesy\Experimental\Module\Signature\Traits\Signature;
 
+use Cognesy\Dynamic\Structure;
+use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Structure\StructureFactory;
 
 trait ConvertsToStructure
 {

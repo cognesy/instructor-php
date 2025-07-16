@@ -21,8 +21,8 @@ JSON Schema for them.
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Dynamic\Field;
+use Cognesy\Dynamic\Structure;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 

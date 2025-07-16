@@ -3,7 +3,7 @@
 namespace Cognesy\Addons\ToolUse\Tools;
 
 use Cognesy\Addons\ToolUse\Contracts\ToolInterface;
-use Cognesy\Instructor\Extras\Structure\StructureFactory;
+use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 

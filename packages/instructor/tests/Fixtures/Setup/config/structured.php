@@ -22,7 +22,7 @@ return [
             'defaultToolDescription' => 'Function call based on user instructions.',
 
             // default output class
-            'defaultOutputClass' => 'Cognesy\Instructor\Extras\Structure\Structure',
+            'defaultOutputClass' => 'Cognesy\Dynamic\Structure',
 
             // default prompts
             'defaultRetryPrompt' => "JSON generated incorrectly, fix following errors:\n",

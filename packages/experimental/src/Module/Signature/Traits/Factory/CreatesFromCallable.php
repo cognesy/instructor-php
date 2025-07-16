@@ -2,10 +2,10 @@
 
 namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
+use Cognesy\Dynamic\FieldFactory;
+use Cognesy\Dynamic\Structure;
+use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Instructor\Extras\Structure\FieldFactory;
-use Cognesy\Instructor\Extras\Structure\Structure;
-use Cognesy\Instructor\Extras\Structure\StructureFactory;
 use Cognesy\Schema\Data\Schema\Schema;
 use Exception;
 use InvalidArgumentException;

@@ -26,6 +26,7 @@
     "psr-4": {
       "Cognesy\\Addons\\": "packages/addons/src/",
       "Cognesy\\Config\\": "packages/config/src/",
+      "Cognesy\\Dynamic\\": "packages/dynamic/src/",
       "Cognesy\\Events\\": "packages/events/src/",
       "Cognesy\\Http\\": "packages/http-client/src/",
       "Cognesy\\Instructor\\": "packages/instructor/src/",
@@ -45,9 +46,11 @@
       "Cognesy\\Experimental\\": "packages/experimental/src/",
       "Cognesy\\InstructorHub\\": "packages/hub/src/",
       "Cognesy\\Tell\\": "packages/tell/src/",
+
       "Cognesy\\Addons\\Tests\\": "packages/addons/tests/",
       "Cognesy\\Config\\Tests\\": "packages/config/tests/",
       "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",
+      "Cognesy\\Dynamic\\Tests\\": "packages/dynamic/tests/",
       "Cognesy\\Experimental\\Tests\\": "packages/experimental/tests/",
       "Cognesy\\Evals\\Tests\\": "packages/evals/tests/",
       "Cognesy\\Events\\Tests\\": "packages/events/tests/",
@@ -61,6 +64,7 @@
       "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
       "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
+
       "Tests\\": "tests/",
       "Evals\\": "evals/",
       "Examples\\": "examples/"

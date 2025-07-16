@@ -8,7 +8,6 @@ use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Events\Request\ResponseModelBuildModeSelected;
 use Cognesy\Instructor\Events\Request\ResponseModelBuilt;
 use Cognesy\Instructor\Events\Request\ResponseModelRequested;
-use Cognesy\Instructor\Extras\Structure\Structure;
 use Cognesy\Schema\Contracts\CanProvideSchema;
 use Cognesy\Schema\Data\Schema\ObjectSchema;
 use Cognesy\Schema\Data\Schema\Schema;
@@ -90,7 +89,7 @@ class ResponseModelFactory
 
     private function fromJsonSchema(array $requestedModel) : ResponseModel {
         $this->events->dispatch(new ResponseModelBuildModeSelected(['mode' => 'fromJsonSchema']));
-        $class = $requestedModel['x-php-class'] ?? Structure::class;
+        $class = $requestedModel['x-php-class'] ?? '\Cognesy\Dynamic\Structure';
         $instance = $this->makeInstance($class);
         $schema = $this->schemaConverter->fromJsonSchema($requestedModel);
         $jsonSchema = $requestedModel;

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\FunctionCall\Traits;
 
-use Cognesy\Instructor\Extras\Structure\Field;
+use Cognesy\Dynamic\Field;
 
 trait HandlesAccess
 {
