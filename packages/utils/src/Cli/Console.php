@@ -62,7 +62,7 @@ class Console
         int          $align,
         string|array $color = ''
     ): string {
-        $short = Str::limit(text: $text, limit: $width, align: $align);
+        $short = Str::limit(text: (string) $text, limit: $width, align: $align);
         return self::color($color, str_pad($short, $width, ' ', $align));
     }
 
