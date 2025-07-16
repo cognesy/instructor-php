@@ -2,7 +2,7 @@
 
 namespace Cognesy\Template\Script\Traits\Script;
 
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 use Exception;
 
 trait HandlesConversion

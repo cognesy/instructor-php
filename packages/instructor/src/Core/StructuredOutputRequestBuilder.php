@@ -10,8 +10,8 @@ use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Schema\Factories\JsonSchemaToSchema;
 use Cognesy\Schema\Factories\SchemaFactory;
 use Cognesy\Schema\Factories\ToolCallBuilder;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

@@ -30,6 +30,7 @@
     "php": "^8.2",
     "ext-fileinfo": "*",
     "ext-libxml": "*",
+    "cognesy/instructor-messages": "^1.0",
     "cognesy/instructor-utils": "^1.0"
   },
   "require-dev": {

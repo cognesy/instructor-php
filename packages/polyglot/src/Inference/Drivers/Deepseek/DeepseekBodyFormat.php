@@ -5,7 +5,7 @@ namespace Cognesy\Polyglot\Inference\Drivers\Deepseek;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Drivers\OpenAICompatible\OpenAICompatibleBodyFormat;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 use Cognesy\Utils\Str;
 
 class DeepseekBodyFormat extends OpenAICompatibleBodyFormat

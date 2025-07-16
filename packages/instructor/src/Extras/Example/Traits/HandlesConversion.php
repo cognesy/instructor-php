@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Extras\Example\Traits;
 use BackedEnum;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Json\Json;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 trait HandlesConversion
 {

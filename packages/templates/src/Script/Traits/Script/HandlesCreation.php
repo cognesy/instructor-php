@@ -4,7 +4,7 @@ namespace Cognesy\Template\Script\Traits\Script;
 
 use Cognesy\Template\Script\Script;
 use Cognesy\Template\Script\Section;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 trait HandlesCreation
 {

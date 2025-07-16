@@ -4,7 +4,7 @@ namespace Cognesy\Addons\Image;
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Messages\Utils\Image as ImageUtil;
+use Cognesy\Messages\Utils\Image as ImageUtil;
 
 /**
  * The Image class.

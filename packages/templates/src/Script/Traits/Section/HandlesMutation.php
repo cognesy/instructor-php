@@ -3,8 +3,8 @@
 namespace Cognesy\Template\Script\Traits\Section;
 
 use Cognesy\Template\Script\Section;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 trait HandlesMutation
 {

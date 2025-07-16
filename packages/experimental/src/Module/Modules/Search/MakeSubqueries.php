@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Module\Modules\Search;
 
 use Cognesy\Experimental\Module\Core\Module;
 use Cognesy\Experimental\Module\Core\Predictor;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class MakeSubqueries extends Module
 {

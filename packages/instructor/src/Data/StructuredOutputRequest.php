@@ -3,8 +3,8 @@ namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Extras\Example\Example;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 class StructuredOutputRequest
 {

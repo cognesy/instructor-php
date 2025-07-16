@@ -3,8 +3,8 @@
 namespace Cognesy\Template\Script\Traits;
 
 use Cognesy\Template\Template;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 trait RendersContent
 {
@@ -21,7 +21,7 @@ trait RendersContent
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Utils\Messages\Message $messages
+     * @param array<string,string|array>|\Cognesy\Messages\Message $messages
      * @param array<string,mixed>|null $parameters
      * @return string
      */
@@ -33,7 +33,7 @@ trait RendersContent
     }
 
     /**
-     * @param array<string,string|array>|\Cognesy\Utils\Messages\Messages $messages
+     * @param array<string,string|array>|\Cognesy\Messages\Messages $messages
      * @param array<string,mixed>|null $parameters
      * @return string
      */

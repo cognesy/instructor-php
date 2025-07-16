@@ -3,7 +3,7 @@
 namespace Cognesy\Template\Script\Traits\Section;
 
 use Cognesy\Template\Script\Traits\RendersContent;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 use RuntimeException;
 
 trait HandlesConversion

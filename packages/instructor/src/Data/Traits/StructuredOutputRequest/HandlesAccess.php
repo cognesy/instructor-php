@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Data\Traits\StructuredOutputRequest;
 use Cognesy\Instructor\Config\StructuredOutputConfig;
 use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 trait HandlesAccess
 {

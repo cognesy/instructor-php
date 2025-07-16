@@ -9,8 +9,8 @@ use Cognesy\Auxiliary\Web\Traits\HandlesContent;
 use Cognesy\Auxiliary\Web\Traits\HandlesCreation;
 use Cognesy\Auxiliary\Web\Traits\HandlesExtraction;
 use Cognesy\Auxiliary\Web\Traits\HandlesLinks;
-use Cognesy\Utils\Messages\Contracts\CanProvideMessage;
-use Cognesy\Utils\Messages\Message;
+use Cognesy\Messages\Contracts\CanProvideMessage;
+use Cognesy\Messages\Message;
 
 class Webpage implements CanProvideMessage
 {

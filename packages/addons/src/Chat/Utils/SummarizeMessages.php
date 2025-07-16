@@ -6,8 +6,8 @@ use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 class SummarizeMessages implements CanSummarizeMessages
 {

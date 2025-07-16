@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Chat\Contracts;
 
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 interface CanSummarizeMessages
 {

@@ -6,7 +6,7 @@ use Cognesy\Instructor\Extras\Example\Traits\HandlesAccess;
 use Cognesy\Instructor\Extras\Example\Traits\HandlesConversion;
 use Cognesy\Instructor\Extras\Example\Traits\HandlesCreation;
 use Cognesy\Instructor\Extras\Example\Traits\HandlesTemplates;
-use Cognesy\Utils\Messages\Contracts\CanProvideMessages;
+use Cognesy\Messages\Contracts\CanProvideMessages;
 use JsonSerializable;
 
 class Example implements CanProvideMessages, JsonSerializable

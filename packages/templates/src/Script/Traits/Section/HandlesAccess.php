@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Template\Script\Traits\Section;
 
-use Cognesy\Utils\Messages\Enums\MessageRole;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Messages;
 
 trait HandlesAccess
 {

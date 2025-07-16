@@ -5,7 +5,7 @@ namespace Cognesy\Addons\ToolUse\Processors;
 use Cognesy\Addons\ToolUse\Contracts\CanProcessStep;
 use Cognesy\Addons\ToolUse\ToolUseContext;
 use Cognesy\Addons\ToolUse\ToolUseStep;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class AppendContextVariables implements CanProcessStep
 {

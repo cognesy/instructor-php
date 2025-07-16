@@ -2,7 +2,7 @@
 
 namespace Cognesy\Addons\Chat\Utils;
 
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class SplitMessages
 {

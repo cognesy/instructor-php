@@ -6,7 +6,7 @@ use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Polyglot\Inference\Data\Usage;
 use Cognesy\Polyglot\Inference\Enums\InferenceFinishReason;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 use Throwable;
 
 class ToolUseStep

@@ -5,8 +5,8 @@ namespace Cognesy\Addons\Chat;
 use Cognesy\Addons\Chat\Contracts\CanSummarizeMessages;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Template\Script\Script;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Utils\Tokenizer;
 
 class ChatWithSummary

@@ -10,8 +10,8 @@ use Cognesy\Instructor\Extras\Example\Example;
 use Cognesy\Template\Script\Script;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Exception;
 
 class RequestMaterializer implements CanMaterializeRequest

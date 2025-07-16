@@ -19,8 +19,8 @@ use Cognesy\Addons\Chat\Pipelines\ChatWithSummary;
 use Cognesy\Addons\Chat\Utils\SummarizeMessages;
 use Cognesy\Polyglot\Inference\Inference;
 use Cognesy\Polyglot\Inference\LLMProvider;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 $maxSteps = 5;
 $sys = [

@@ -4,7 +4,7 @@ namespace Cognesy\Addons\ToolUse;
 
 use Cognesy\Addons\ToolUse\Enums\ToolUseStatus;
 use Cognesy\Polyglot\Inference\Data\Usage;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class ToolUseContext
 {

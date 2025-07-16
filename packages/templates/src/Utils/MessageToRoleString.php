@@ -3,8 +3,8 @@
 namespace Cognesy\Template\Utils;
 
 use Cognesy\Template\Template;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 class MessageToRoleString
 {

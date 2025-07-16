@@ -7,7 +7,7 @@ use Cognesy\Template\Script\Traits\Section\HandlesHeaderFooter;
 use Cognesy\Template\Script\Traits\Section\HandlesMetadata;
 use Cognesy\Template\Script\Traits\Section\HandlesMutation;
 use Cognesy\Template\Script\Traits\Section\HandlesTransformation;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 /**
  * Represents a distinct named section of message sequence (script).

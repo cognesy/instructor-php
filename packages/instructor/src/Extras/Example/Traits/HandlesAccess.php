@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Instructor\Extras\Example\Traits;
 
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 trait HandlesAccess
 {

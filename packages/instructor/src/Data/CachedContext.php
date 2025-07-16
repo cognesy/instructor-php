@@ -3,7 +3,7 @@
 namespace Cognesy\Instructor\Data;
 
 use Cognesy\Instructor\Extras\Example\Example;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class CachedContext
 {

@@ -10,8 +10,8 @@ use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\Validators\SymfonyValidator;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Exception;
 
 /**

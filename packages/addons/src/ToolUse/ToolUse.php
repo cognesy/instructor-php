@@ -6,7 +6,7 @@ use Cognesy\Addons\ToolUse\Contracts\CanUseTools;
 use Cognesy\Addons\ToolUse\Drivers\ToolCallingDriver;
 use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesContinuationCriteria;
 use Cognesy\Addons\ToolUse\Traits\ToolUse\HandlesStepProcessors;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 use Generator;
 
 class ToolUse {

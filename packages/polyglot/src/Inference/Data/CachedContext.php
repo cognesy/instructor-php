@@ -2,7 +2,7 @@
 
 namespace Cognesy\Polyglot\Inference\Data;
 
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class CachedContext
 {

@@ -6,8 +6,8 @@ use Cognesy\Polyglot\Inference\Config\LLMConfig;
 use Cognesy\Polyglot\Inference\Contracts\CanMapMessages;
 use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
-use Cognesy\Utils\Messages\Enums\MessageRole;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Enums\MessageRole;
+use Cognesy\Messages\Messages;
 
 class AnthropicBodyFormat implements CanMapRequestBody
 {

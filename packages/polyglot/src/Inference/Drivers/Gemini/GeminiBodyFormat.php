@@ -8,7 +8,7 @@ use Cognesy\Polyglot\Inference\Contracts\CanMapRequestBody;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Messages;
 
 class GeminiBodyFormat implements CanMapRequestBody
 {

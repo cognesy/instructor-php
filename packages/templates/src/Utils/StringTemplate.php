@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Cognesy\Template\Utils;
 
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Utils\TextRepresentation;
 
 class StringTemplate

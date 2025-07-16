@@ -2,8 +2,8 @@
 
 namespace Cognesy\Template\Script\Traits\Section;
 
-use Cognesy\Utils\Messages\Message;
-use Cognesy\Utils\Messages\Messages;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 
 trait HandlesHeaderFooter
 {
