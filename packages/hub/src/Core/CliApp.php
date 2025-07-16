@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Cognesy\InstructorHub\Core;
 
 use Cognesy\Utils\Cli\Color;

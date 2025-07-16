@@ -9,22 +9,56 @@
         <testsuite name="Test Suite">
             <directory suffix="Test.php">./tests</directory>
         </testsuite>
-        <testsuite name="Packages Tests">
-            <directory suffix="Test.php">./packages/addons/tests</directory>
-            <directory suffix="Test.php">./packages/auxiliary/tests</directory>
-            <directory suffix="Test.php">./packages/config/tests</directory>
-            <directory suffix="Test.php">./packages/evals/tests</directory>
-            <directory suffix="Test.php">./packages/events/tests</directory>
-            <directory suffix="Test.php">./packages/experimental/tests</directory>
-            <directory suffix="Test.php">./packages/http-client/tests</directory>
-            <directory suffix="Test.php">./packages/hub/tests</directory>
-            <directory suffix="Test.php">./packages/instructor/tests</directory>
-            <directory suffix="Test.php">./packages/polyglot/tests</directory>
-            <directory suffix="Test.php">./packages/schema/tests</directory>
-            <directory suffix="Test.php">./packages/setup/tests</directory>
-            <directory suffix="Test.php">./packages/tell/tests</directory>
-            <directory suffix="Test.php">./packages/templates/tests</directory>
-            <directory suffix="Test.php">./packages/utils/tests</directory>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./packages/addons/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/auxiliary/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/config/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/evals/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/events/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/experimental/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/http-client/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/hub/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/instructor/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/polyglot/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/schema/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/setup/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/tell/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/templates/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/utils/tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./packages/addons/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/auxiliary/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/config/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/evals/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/events/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/experimental/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/http-client/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/hub/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/instructor/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/polyglot/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/schema/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/setup/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/tell/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/templates/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/utils/tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory suffix="Test.php">./packages/addons/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/auxiliary/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/config/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/evals/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/events/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/experimental/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/http-client/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/hub/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/instructor/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/schema/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/setup/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/tell/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/templates/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/utils/tests/Integration</directory>
         </testsuite>
     </testsuites>
     <source>

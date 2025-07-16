@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Http\Middleware\Base;
 
 use Cognesy\Http\Contracts\CanHandleHttpRequest;

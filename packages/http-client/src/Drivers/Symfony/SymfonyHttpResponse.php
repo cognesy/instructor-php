@@ -1,10 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Http\Drivers\Symfony;
 
 use Cognesy\Http\Contracts\HttpResponse;
 use Cognesy\Http\Events\HttpResponseChunkReceived;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -45,7 +46,7 @@ class SymfonyHttpResponse implements HttpResponse
     /**
      * Get the response headers
      *
-     * @return array
+     * @return array<string, string>
      */
     public function headers(): array {
         return $this->response->getHeaders();
@@ -58,10 +59,11 @@ class SymfonyHttpResponse implements HttpResponse
      */
     public function body(): string {
         // workaround to handle connect timeout: https://github.com/symfony/symfony/pull/57811
+        /** @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($this->client->stream($this->response, $this->connectTimeout) as $chunk) {
             if ($chunk->isTimeout() && !$this->response->getInfo('connect_time')) {
                 $this->response->cancel();
-                throw new \Exception('Connect timeout');
+                throw new RuntimeException('Connect timeout');
             }
             break;
         }
@@ -71,7 +73,6 @@ class SymfonyHttpResponse implements HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @param int $chunkSize
      * @return iterable<string>
      */
     public function stream(?int $chunkSize = null): iterable {

@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Http;
 
 use Cognesy\Events\Contracts\CanHandleEvents;
@@ -79,9 +80,41 @@ class HttpClient
         );
     }
 
+    /**
+     * Handles a pool of HTTP requests concurrently using the configured driver.
+     *
+     * @param HttpRequest[] $requests Array of HttpRequest objects to be processed
+     * @param int|null $maxConcurrent Maximum number of concurrent requests
+     * @return array Array of Result objects containing HttpResponse or exceptions
+     */
+    public function pool(array $requests, ?int $maxConcurrent = null): array {
+        $poolHandler = $this->driverFactory->makePoolHandler($this->getConfigFromDriver());
+        return $poolHandler->pool($requests, $maxConcurrent);
+    }
+
+    /**
+     * Creates a pending pool that can be executed later with deferred execution.
+     *
+     * @param HttpRequest[] $requests Array of HttpRequest objects to be processed
+     * @return PendingHttpPool Deferred pool execution object
+     */
+    public function withPool(array $requests): PendingHttpPool {
+        $poolHandler = $this->driverFactory->makePoolHandler($this->getConfigFromDriver());
+        return new PendingHttpPool($requests, $poolHandler);
+    }
+
     // INTERNAL /////////////////////////////////////////////////////////////////////
 
     private function makeDefaultDriver(): CanHandleHttpRequest {
         return $this->driverFactory->makeDriver();
+    }
+
+    /**
+     * Extracts configuration from the current driver to pass to pool handler.
+     */
+    private function getConfigFromDriver(): ?HttpClientConfig {
+        // For now, we'll let the factory create with default config
+        // In future, we might want to extract actual config from driver
+        return null;
     }
 }

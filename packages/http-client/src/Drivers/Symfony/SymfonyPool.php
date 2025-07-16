@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Http\Drivers\Symfony;
 
@@ -17,7 +17,7 @@ use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class SymfonyPool implements CanHandleRequestPool
+readonly class SymfonyPool implements CanHandleRequestPool
 {
     public function __construct(
         private HttpClientInterface $client,
@@ -49,7 +49,7 @@ class SymfonyPool implements CanHandleRequestPool
         return $httpResponses;
     }
 
-    private function prepareRequest(HttpRequest $request) : ResponseInterface {
+    private function prepareRequest(HttpRequest $request) : ?ResponseInterface {
         try {
             $clientRequest = $this->client->request(
                 method: $request->method(),
@@ -64,7 +64,17 @@ class SymfonyPool implements CanHandleRequestPool
             );
             $this->dispatchRequestEvent($request);
         } catch (Exception $e) {
-            $this->handleRequestError($e, $request);
+            $this->events->dispatch(new HttpRequestFailed([
+                'url' => $request->url(),
+                'method' => $request->method(),
+                'headers' => $request->headers(),
+                'body' => $request->body()->toArray(),
+                'errors' => $e->getMessage(),
+            ]));
+            if ($this->config->failOnError) {
+                throw new HttpRequestException($e->getMessage(), $request);
+            }
+            $clientRequest = null;
         }
         return $clientRequest;
     }
@@ -83,7 +93,6 @@ class SymfonyPool implements CanHandleRequestPool
 
                     if ($chunk->isLast()) {
                         $this->processLastChunk($response, $httpResponses, $responses);
-
                         if ($this->isPoolComplete($responses, count($httpResponses), $maxConcurrent)) {
                             break;
                         }
@@ -112,7 +121,9 @@ class SymfonyPool implements CanHandleRequestPool
             // Cancel any leftover/unconsumed responses
             foreach ($httpResponses as $resp) {
                 try {
-                    $resp->cancel();
+                    if ($resp !== null && method_exists($resp, 'cancel')) {
+                        $resp->cancel();
+                    }
                 } catch (\Throwable $t) {
                     // swallow any cancel() error
                 }
@@ -136,11 +147,12 @@ class SymfonyPool implements CanHandleRequestPool
             $statusCode = $response->getStatusCode();
             if ($statusCode >= 400) {
                 $responseInfo = $response->getInfo();
-                $error = new HttpRequestException(sprintf(
+                $errorMessage = sprintf(
                     'HTTP error %d: %s',
                     $statusCode,
-                    $responseInfo['response_headers'][0] ?? 'Unknown error'
-                ));
+                        $responseInfo['response_headers'][0] ?? 'Unknown error'
+                );
+                $error = new HttpRequestException($errorMessage, $response->getRequest());
                 if ($this->config->failOnError) {
                     throw $error;
                 }
@@ -148,7 +160,10 @@ class SymfonyPool implements CanHandleRequestPool
             }
             return null;
         } catch (TransportException $e) {
-            $error = new HttpRequestException($e->getMessage());
+            $error = new HttpRequestException(
+                $e->getMessage(),
+                $response->getRequest(),
+            );
             if ($this->config->failOnError) {
                 throw $error;
             }
@@ -169,6 +184,8 @@ class SymfonyPool implements CanHandleRequestPool
                 $responses[$index] = Result::success(new SymfonyHttpResponse(
                     client: $this->client,
                     response: $response,
+                    events: $this->events,
+                    isStreamed: $this->isStreamed($response),
                     connectTimeout: $this->config->connectTimeout ?? 3
                 ));
             }
@@ -181,14 +198,14 @@ class SymfonyPool implements CanHandleRequestPool
 
     private function handleError(Exception $error): Result {
         return match($this->config->failOnError) {
-            true => throw new HttpRequestException($error),
+            true => throw new HttpRequestException($error->getMessage()),
             default => Result::failure($error),
         };
     }
 
     private function handlePoolException(Exception $e, array $httpResponses): array {
         if ($this->config->failOnError) {
-            throw new HttpRequestException($e);
+            throw new HttpRequestException($e->getMessage());
         }
 
         $responses = [];
@@ -199,34 +216,31 @@ class SymfonyPool implements CanHandleRequestPool
     }
 
     private function isPoolComplete(array $responses, int $totalRequests, int $maxConcurrent): bool {
-        return count($responses) >= min($totalRequests, $maxConcurrent);
+        return count($responses) >= $totalRequests;
     }
 
     private function dispatchRequestEvent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
-            'url' => $url,
-            'method' => $method,
-            'headers' => $headers,
-            'body' => $body,
-        ]));
-    }
-
-    private function handleRequestError(Exception $e, HttpRequest $request): void {
-        $this->events->dispatch(new HttpRequestFailed([
             'url' => $request->url(),
             'method' => $request->method(),
             'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $e->getMessage(),
+            'body' => $request->body()->toString(),
         ]));
-
-        if ($this->config->failOnError) {
-            throw new HttpRequestException($e);
-        }
     }
 
     private function normalizeResponses(array $responses): array {
         ksort($responses);
         return array_values($responses);
+    }
+
+    private function isStreamed(ResponseInterface $response): bool {
+        $headers = $response->getHeaders(false);
+        $contentType = $headers['content-type'][0] ?? '';
+        $transferEncoding = $headers['transfer-encoding'][0] ?? '';
+        
+        return $contentType === 'text/event-stream' ||
+            $contentType === 'application/json-stream' ||
+            $transferEncoding === 'chunked' ||
+            !isset($headers['content-length']);
     }
 }

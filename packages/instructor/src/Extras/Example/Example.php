@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Cognesy\Instructor\Extras\Example;
 
 use Cognesy\Instructor\Data\Traits;

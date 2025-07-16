@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Utils\Messages\Traits\Messages;
 
 use Cognesy\Utils\Messages\Enums\MessageRole;

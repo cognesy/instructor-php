@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
@@ -6,7 +6,6 @@ use Cognesy\Events\Dispatchers\EventDispatcher;
 use Cognesy\Http\Config\HttpClientConfig;
 use Cognesy\Http\Contracts\CanHandleRequestPool;
 use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Events\HttpRequestFailed;
 use Cognesy\Http\Events\HttpRequestSent;
 use Cognesy\Http\Events\HttpResponseReceived;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -28,6 +27,14 @@ class GuzzlePool implements CanHandleRequestPool
         $this->events = $events ?? new EventDispatcher();
     }
 
+    /**
+     * Handles a pool of HTTP requests concurrently.
+     *
+     * @param HttpRequest[] $requests Array of HttpRequest objects to be processed.
+     * @param int|null $maxConcurrent Maximum number of concurrent requests, defaults to config value.
+     * @return array Array of results for each request, in the same order as the input.
+     * @throws HttpRequestException If any request fails and failOnError is true.
+     */
     public function pool(array $requests, ?int $maxConcurrent = null): array {
         $responses = [];
         $concurrency = $maxConcurrent ?? $this->config->maxConcurrent;
@@ -38,10 +45,13 @@ class GuzzlePool implements CanHandleRequestPool
         );
 
         // Execute the pool with a timeout
-        $pool->promise()->wait($this->config->poolTimeout);
+        $promise = $pool->promise();
+        $promise->wait(unwrap: true);
 
         return $this->normalizeResponses($responses);
     }
+
+    // INTERNAL ////////////////////////////////////////////////////////////////
 
     private function createRequestGenerator(array $requests): callable {
         return function() use ($requests) {
@@ -79,40 +89,50 @@ class GuzzlePool implements CanHandleRequestPool
 
     private function handleFulfilledResponse(ResponseInterface $response): Result {
         $this->events->dispatch(new HttpResponseReceived($response->getStatusCode()));
+        $isStreamed = $this->isStreamed($response);
         return Result::success(new PsrHttpResponse(
             response: $response,
             stream: $response->getBody(),
-            isStreamed: $response->isStreamed,
+            events: $this->events,
+            isStreamed: $isStreamed,
+            streamChunkSize: $this->config->streamChunkSize,
         ));
     }
 
     private function handleRejectedResponse($reason): Result {
         if ($this->config->failOnError) {
-            throw new HttpRequestException($reason);
+            $errorMessage = is_string($reason) ? $reason : 'Unknown error';
+            throw new HttpRequestException($errorMessage);
         }
-
-        $this->events->dispatch(new HttpRequestFailed([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $e->getMessage(),
-        ]));
-
+        // TODO: we don't know how to handle this atm
+        //        $this->events->dispatch(new HttpRequestFailed([
+        //            'url' => $request->url(),
+        //            'method' => $request->method(),
+        //            'headers' => $request->headers(),
+        //            'body' => $request->body()->toArray(),
+        //            'errors' => $e->getMessage(),
+        //        ]));
         return Result::failure($reason);
     }
 
     private function dispatchRequestEvent(HttpRequest $request): void {
         $this->events->dispatch(new HttpRequestSent([
-            'url' => $url,
-            'method' => $method,
-            'headers' => $headers,
-            'body' => $body,
+            'url' => $request->url(),
+            'method' => $request->method(),
+            'headers' => $request->headers(),
+            'body' => $request->body()->toString()
         ]));
     }
 
     private function normalizeResponses(array $responses): array {
         ksort($responses);
         return array_values($responses);
+    }
+
+    private function isStreamed(ResponseInterface $response) : bool {
+        return $response->getHeaderLine('Content-Type') === 'text/event-stream' ||
+            $response->getHeaderLine('Content-Type') === 'application/json-stream' ||
+            $response->getHeaderLine('Transfer-Encoding') === 'chunked' ||
+            !$response->hasHeader('Content-Length');
     }
 }

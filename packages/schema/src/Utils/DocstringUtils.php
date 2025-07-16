@@ -1,12 +1,12 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Schema\Utils;
 
 use Cognesy\Utils\Chain\RawChain;
 
 class DocstringUtils
 {
-    public static function descriptionsOnly(string $code): string
-    {
+    public static function descriptionsOnly(string $code): string {
         return (new RawChain)
             ->through(fn($code) => self::removeMarkers($code))
             ->through(fn($code) => self::removeAnnotations($code))
@@ -22,8 +22,7 @@ class DocstringUtils
         return '';
     }
 
-    private static function removeMarkers(string $code): string
-    {
+    private static function removeMarkers(string $code): string {
         // Pattern to match comment markers
         $pattern = '/(\/\*\*|\*\/|\/\/|#)/';
 
@@ -31,13 +30,10 @@ class DocstringUtils
         $cleanedString = preg_replace($pattern, '', $code);
 
         // Optional: Clean up extra asterisks and whitespace from multiline comments
-        $cleanedString = preg_replace('/^\s*\*\s?/m', '', $cleanedString);
-
-        return $cleanedString;
+        return preg_replace('/^\s*\*\s?/m', '', $cleanedString);
     }
 
-    private static function removeAnnotations(string $code): string
-    {
+    private static function removeAnnotations(string $code): string {
         $lines = explode("\n", $code);
         $cleanedLines = [];
         foreach ($lines as $line) {

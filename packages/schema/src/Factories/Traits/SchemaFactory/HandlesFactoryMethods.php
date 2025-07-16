@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Schema\Factories\Traits\SchemaFactory;
 
@@ -49,7 +49,7 @@ trait HandlesFactoryMethods
     public function collection(string $nestedType, string $name = '', string $description = '', ?Schema $nestedTypeSchema = null): CollectionSchema {
         $nestedTypeDetails = TypeDetails::fromTypeName($nestedType);
         $nestedSchema = $nestedTypeSchema ?? $this->makeSchema($nestedTypeDetails);
-        $schema = new CollectionSchema(TypeDetails::collection($nestedTypeDetails), $name, $description, $nestedSchema);
+        $schema = new CollectionSchema(TypeDetails::collection($nestedTypeDetails->toString()), $name, $description, $nestedSchema);
         return $schema;
     }
 }

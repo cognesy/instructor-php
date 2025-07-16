@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Schema\Factories;
 
@@ -75,7 +75,7 @@ class SchemaFactory
         $typeString = (string) $type;
 
         // if schema is not registered, create it, register it and return it
-        if (!$this->schemaMap->has($type)) {
+        if (!$this->schemaMap->has($typeString)) {
             $this->schemaMap->register(
                 typeName: $typeString,
                 schema: $this->makeSchema($type));

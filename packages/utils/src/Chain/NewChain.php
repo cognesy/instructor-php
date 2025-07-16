@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Utils;
 
@@ -10,7 +10,7 @@ use Throwable;
 /**
  * A lean, hookable chain of processors.
  */
-final class RawChain
+final class NewChain
 {
     use HandlesChainHooks;
 

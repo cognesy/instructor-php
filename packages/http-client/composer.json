@@ -20,15 +20,17 @@
     "cognesy/instructor-setup": "^1.0"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-latest",
-    "mockery/mockery": "^1.6",
-    "icanhazstring/composer-unused": "^0.9.0",
-    "jetbrains/phpstorm-attributes": "^1.2",
-    "maglnet/composer-require-checker": "^4.16",
     "guzzlehttp/guzzle": "^7.4",
     "guzzlehttp/psr7": "^2.7",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "illuminate/http": "^12.20",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "mockery/mockery": "^1.6",
     "pestphp/pest": "^2.34",
     "phpstan/phpstan": "^1.11",
+    "roave/security-advisories": "dev-latest",
+    "symfony/http-client": "^7.3",
     "vimeo/psalm": "^6.0"
   },
   "scripts": {

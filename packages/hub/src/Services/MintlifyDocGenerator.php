@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\InstructorHub\Services;
 
@@ -61,7 +61,7 @@ class MintlifyDocGenerator
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
-    private function updateHubIndex() : bool {
+    private function updateHubIndex() : bool|int {
         // get the content of the hub index
         $index = MintlifyIndex::fromFile($this->mintlifySourceIndexFile);
         if ($index === false) {

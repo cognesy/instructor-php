@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Polyglot\Inference\Data;
 
 use Cognesy\Polyglot\Inference\Enums\OutputMode;

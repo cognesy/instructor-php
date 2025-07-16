@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Http\Drivers\Laravel;
 
 use Cognesy\Http\Config\HttpClientConfig;
@@ -23,7 +24,8 @@ class LaravelPool implements CanHandleRequestPool
         protected HttpClientConfig $config,
     ) {}
 
-    public function pool(array $requests, ?int $maxConcurrent = 5): array {
+    public function pool(array $requests, ?int $maxConcurrent = null): array {
+        $maxConcurrent = $maxConcurrent ?? $this->config->maxConcurrent;
         $responses = [];
         $batches = array_chunk($requests, $maxConcurrent);
 
@@ -81,28 +83,34 @@ class LaravelPool implements CanHandleRequestPool
 
     private function handleSuccessfulResponse(Response $response): Result {
         $this->events->dispatch(new HttpResponseReceived($response->status()));
-        return Result::success(new LaravelHttpResponse($response));
+        return Result::success(new LaravelHttpResponse(
+            response: $response,
+            events: $this->events,
+            streaming: false,
+            streamChunkSize: $this->config->streamChunkSize
+        ));
     }
 
     private function handleFailedResponse(Response $response): Result {
+        $errorMessage = sprintf('HTTP %d: %s', $response->status(), $response->body());
         return match($this->config->failOnError) {
-            true => throw new HttpRequestException($response),
-            default => Result::failure(new HttpRequestException($response)),
+            true => throw new HttpRequestException($errorMessage),
+            default => Result::failure(new HttpRequestException($errorMessage)),
         };
     }
 
-    private function handleException(Exception $response): Result {
+    private function handleException(Exception $exception): Result {
         if ($this->config->failOnError) {
-            throw $response;
+            throw $exception;
         }
 
         $this->events->dispatch(new HttpRequestFailed([
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toArray(),
-            'errors' => $e->getMessage(),
+            'url' => 'unknown',
+            'method' => 'unknown',
+            'headers' => [],
+            'body' => [],
+            'errors' => $exception->getMessage(),
         ]));
-        return Result::failure($response);
+        return Result::failure($exception);
     }
 }

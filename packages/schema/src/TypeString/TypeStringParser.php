@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Schema\TypeString;
 
@@ -174,41 +174,6 @@ class TypeStringParser
     }
 
     private function isUnfinishedArray(mixed $trimmed) : bool {
-        return (preg_match('/^(array|list|iterable)\s*<$/i', $trimmed));
+        return (preg_match('/^(array|list|iterable)\s*<$/i', $trimmed)) > 0;
     }
 }
-
-//    private function normalize(string $typeString): string {
-//        $trimmed = trim($typeString);
-//        return match(true) {
-//            ($trimmed === '') => [],
-//            (str_starts_with($trimmed, '|')) => $this->normalize(substr($trimmed, 1)),
-//            (str_ends_with($trimmed, '|')) => $this->normalize(substr($trimmed, 0, -1)),
-//            ($trimmed === 'int') => ['int'],
-//            ($trimmed === 'string') => ['string'],
-//            ($trimmed === 'float') => ['float'],
-//            ($trimmed === 'bool') => ['bool'],
-//            ($trimmed === 'object') => ['object'],
-//            ($trimmed === 'iterable') => ['iterable'],
-//            ($trimmed === 'enum') => ['enum'],
-//            ($trimmed === 'object[]') => ['object[]'],
-//            ($trimmed === 'iterable[]') => ['iterable[]'],
-//            ($trimmed === 'enum[]') => ['enum[]'],
-//            ($trimmed === 'array[]') => ['array'],
-//            ($trimmed === 'list[]') => ['list'],
-//            ($trimmed === 'null') => ['mixed'],
-//            ($trimmed === 'mixed') => ['mixed'],
-//            ($trimmed === 'any') => ['mixed'],
-//            ($trimmed === 'array') => ['array'],
-//            ($trimmed === 'list') => ['list'],
-//            ($trimmed === '?') =>
-//                throw new \InvalidArgumentException(
-//                    "Type string '$typeString' is incomplete. It is just a '?' without a base type."
-//                ),
-//            $this->isUnfinishedArray($trimmed) =>
-//                throw new \InvalidArgumentException(
-//                    "Type string '$typeString' is incomplete. It ends with an opening generic delimiter '<'."
-//                ),
-//            default => $trimmed,
-//        };
-//    }

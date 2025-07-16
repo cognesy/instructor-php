@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Cognesy\Instructor\Extras\Maybe;
 
 use Cognesy\Instructor\Deserialization\Contracts\CanDeserializeSelf;

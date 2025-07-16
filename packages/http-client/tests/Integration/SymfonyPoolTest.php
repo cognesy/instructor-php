@@ -1,0 +1,207 @@
+<?php
+
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Drivers\Symfony\SymfonyPool;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Cognesy\Utils\Result\Failure;
+use Cognesy\Utils\Result\Success;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+
+beforeEach(function() {
+    $this->mockResponses = [];
+    $this->responseIndex = 0;
+    $this->mockClient = new MockHttpClient(function($method, $url, $options) {
+        $response = $this->mockResponses[$this->responseIndex++] ?? new MockResponse('Default response', ['http_code' => 200]);
+        return $response;
+    });
+    
+    $this->events = new EventDispatcher();
+    
+    $this->config = new HttpClientConfig(
+        driver: 'symfony',
+        maxConcurrent: 3,
+        poolTimeout: 30,
+        failOnError: false
+    );
+    
+    $this->pool = new SymfonyPool($this->mockClient, $this->config, $this->events);
+});
+
+test('pool with successful requests', function() {
+    $this->responseIndex = 0;
+    $this->mockResponses = [
+        new MockResponse('Response 1', ['http_code' => 200]),
+        new MockResponse('Response 2', ['http_code' => 200]),
+        new MockResponse('Response 3', ['http_code' => 200])
+    ];
+
+    $requests = [
+        new HttpRequest('https://example.com/1', 'GET', [], [], []),
+        new HttpRequest('https://example.com/2', 'GET', [], [], []),
+        new HttpRequest('https://example.com/3', 'GET', [], [], [])
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(3);
+    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($results[1])->toBeInstanceOf(Success::class);
+    expect($results[2])->toBeInstanceOf(Success::class);
+});
+
+test('pool with error handling', function() {
+    $this->responseIndex = 0;
+    $this->mockResponses = [
+        new MockResponse('Not Found', ['http_code' => 404])
+    ];
+
+    $requests = [
+        new HttpRequest('https://example.com/notfound', 'GET', [], [], [])
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(1);
+    expect($results[0])->toBeInstanceOf(Failure::class);
+});
+
+test('pool with fail on error true', function() {
+    $this->responseIndex = 0;
+    $config = new HttpClientConfig(
+        driver: 'symfony',
+        maxConcurrent: 3,
+        poolTimeout: 30,
+        failOnError: true
+    );
+
+    $this->mockResponses = [
+        new MockResponse('Success', ['http_code' => 200]),
+        new MockResponse('Server Error', ['http_code' => 500])
+    ];
+
+    $pool = new SymfonyPool($this->mockClient, $config, $this->events);
+
+    $requests = [
+        new HttpRequest('https://example.com/1', 'GET', [], [], []),
+        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+    ];
+
+    expect(fn() => $pool->pool($requests))
+        ->toThrow(HttpRequestException::class);
+});
+
+test('pool processes all requests', function() {
+    $this->responseIndex = 0;
+    $this->mockResponses = [
+        new MockResponse('Response 1', ['http_code' => 200]),
+        new MockResponse('Response 2', ['http_code' => 200])
+    ];
+
+    $requests = [
+        new HttpRequest('https://example.com/1', 'GET', [], [], []),
+        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(2);
+    expect($results[0])->toBeInstanceOf(Success::class);
+    expect($results[1])->toBeInstanceOf(Success::class);
+});
+
+test('pool with streamed response', function() {
+    $this->responseIndex = 0;
+    $this->mockResponses = [
+        new MockResponse('data: test\n\n', [
+            'http_code' => 200,
+            'response_headers' => ['Content-Type' => 'text/event-stream']
+        ])
+    ];
+
+    $requests = [
+        new HttpRequest('https://example.com/stream', 'GET', [], [], [])
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(1);
+    expect($results[0])->toBeInstanceOf(Success::class);
+});
+
+test('pool with post request', function() {
+    $this->responseIndex = 0;
+    $this->mockResponses = [
+        new MockResponse('Created', ['http_code' => 201])
+    ];
+
+    $requests = [
+        new HttpRequest('https://example.com/api', 'POST', ['Content-Type' => 'application/json'], '{"test": "data"}', [])
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(1);
+    expect($results[0])->toBeInstanceOf(Success::class);
+});
+
+test('pool with empty request array', function() {
+    $results = $this->pool->pool([]);
+
+    expect($results)->toHaveCount(0);
+    expect($results)->toBeArray();
+});
+
+test('pool with invalid request type', function() {
+    $requests = ['invalid-request'];
+    
+    expect(fn() => $this->pool->pool($requests))
+        ->toThrow(InvalidArgumentException::class, 'Invalid request type in pool');
+});
+
+test('pool with timeout handling', function() {
+    $this->responseIndex = 0;
+    $config = new HttpClientConfig(
+        driver: 'symfony',
+        maxConcurrent: 3,
+        poolTimeout: 1,
+        failOnError: false
+    );
+
+    $this->mockResponses = [
+        new MockResponse('Success', ['http_code' => 200]),
+    ];
+
+    $pool = new SymfonyPool($this->mockClient, $config, $this->events);
+
+    $requests = [
+        new HttpRequest('https://example.com/1', 'GET', [], [], []),
+    ];
+
+    $results = $pool->pool($requests);
+
+    expect($results)->toHaveCount(1);
+    expect($results[0])->toBeInstanceOf(Success::class);
+});
+
+test('pool with client error status code', function() {
+    $this->responseIndex = 0;
+    $this->mockResponses = [
+        new MockResponse('Bad Request', ['http_code' => 400]),
+        new MockResponse('Unauthorized', ['http_code' => 401])
+    ];
+
+    $requests = [
+        new HttpRequest('https://example.com/1', 'GET', [], [], []),
+        new HttpRequest('https://example.com/2', 'GET', [], [], [])
+    ];
+
+    $results = $this->pool->pool($requests);
+
+    expect($results)->toHaveCount(2);
+    expect($results[0])->toBeInstanceOf(Failure::class);
+    expect($results[1])->toBeInstanceOf(Failure::class);
+});

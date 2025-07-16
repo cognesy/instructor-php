@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference\Data;
 
@@ -83,7 +83,7 @@ class PartialInferenceResponse
         return '' !== ($this->toolArgs ?? '');
     }
 
-    public function hasToolName() : string {
+    public function hasToolName() : bool {
         return '' !== ($this->toolName ?? '');
     }
 

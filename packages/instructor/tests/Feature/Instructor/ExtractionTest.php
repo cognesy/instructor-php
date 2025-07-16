@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Cognesy\Instructor\StructuredOutput;
 use Cognesy\Instructor\Tests\Examples\Complex\ProjectEvent;

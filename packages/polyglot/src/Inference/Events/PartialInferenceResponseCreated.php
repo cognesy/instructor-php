@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Polyglot\Inference\Events;
 
 use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;

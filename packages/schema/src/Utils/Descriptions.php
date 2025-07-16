@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Schema\Utils;
 
@@ -7,6 +7,7 @@ use Cognesy\Schema\Attributes\InputField;
 use Cognesy\Schema\Attributes\Instructions;
 use Cognesy\Schema\Attributes\OutputField;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -79,7 +80,7 @@ class Descriptions
         );
 
         // get class description from PHPDoc
-        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment());
+        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment() ?: '');
         if ($phpDocDescription) {
             $descriptions[] = $phpDocDescription;
         }
@@ -118,7 +119,7 @@ class Descriptions
         );
 
         // get parameter description from PHPDoc
-        $methodDescription = $function->getDocComment();
+        $methodDescription = $function->getDocComment() ?: '';
         $docDescription = DocstringUtils::getParameterDescription($parameterName, $methodDescription);
         if ($docDescription) {
             $descriptions[] = $docDescription;
@@ -137,7 +138,7 @@ class Descriptions
         );
 
         // get function description from PHPDoc
-        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment());
+        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment() ?: '');
         if ($phpDocDescription) {
             $descriptions[] = $phpDocDescription;
         }
@@ -149,7 +150,7 @@ class Descriptions
         string $class,
         string $methodName,
     ): string {
-        $reflection = new \ReflectionMethod($class, $methodName);
+        $reflection = new ReflectionMethod($class, $methodName);
 
         // get #[Description] attributes
         $descriptions = array_merge(
@@ -158,7 +159,7 @@ class Descriptions
         );
 
         // get function description from PHPDoc
-        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment());
+        $phpDocDescription = DocstringUtils::descriptionsOnly($reflection->getDocComment() ?: '');
         if ($phpDocDescription) {
             $descriptions[] = $phpDocDescription;
         }

@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Auxiliary\Web\Html;
 
 use Cognesy\Auxiliary\Web\Contracts\CanConvertToMarkdown;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Polyglot\Inference;
 
@@ -16,7 +16,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * execute any request to the underlying LLM API until the data is accessed
  * via its methods (`get()`, `response()`).
  */
-class PendingInference
+readonly class PendingInference
 {
     protected readonly CanHandleInference $driver;
     protected readonly EventDispatcherInterface $events;

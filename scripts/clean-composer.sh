@@ -6,6 +6,7 @@ for dir in packages/*; do
     echo "🔍 Removing composer caches and ./vendor/* in $dir"
     composer --working-dir="$dir" clear-cache
     composer --working-dir="$dir" dump-autoload
+    # Remove vendor directory contents
     rm -rf "$dir/vendor/"*
   fi
 done

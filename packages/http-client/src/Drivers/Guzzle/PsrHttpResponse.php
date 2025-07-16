@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Http\Drivers\Guzzle;
 
@@ -47,7 +47,7 @@ class PsrHttpResponse implements HttpResponse
     /**
      * Get the response headers
      *
-     * @return array
+     * @return array<string, string>
      */
     public function headers(): array {
         return $this->response->getHeaders();
@@ -65,7 +65,6 @@ class PsrHttpResponse implements HttpResponse
     /**
      * Read chunks of the stream
      *
-     * @param int $chunkSize
      * @return iterable<string>
      */
     public function stream(?int $chunkSize = null): iterable {

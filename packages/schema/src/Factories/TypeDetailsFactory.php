@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Schema\Factories;
 
@@ -89,7 +89,7 @@ class TypeDetailsFactory
         $typeName = TypeDetails::getPhpType($anyVar);
         $type = TypeString::fromString($typeName);
         return match (true) {
-            $type->isScalar() => $this->scalarType($type),
+            $type->isScalar() => $this->scalarType($typeName),
             $type->isObject() => $this->objectType(get_class($anyVar)),
             $type->isEnumObject() => $this->enumType(get_class($anyVar)),
             is_array($anyVar) && empty($anyVar) => $this->arrayType(),

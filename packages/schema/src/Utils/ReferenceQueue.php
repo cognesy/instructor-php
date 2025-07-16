@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Schema\Utils;
 
@@ -8,7 +8,7 @@ use Cognesy\Schema\Factories\SchemaFactory;
 class ReferenceQueue
 {
     /**
-     * @var \Cognesy\Schema\Data\Reference[]
+     * @var Reference[]
      */
     private array $references = [];
 
@@ -48,7 +48,7 @@ class ReferenceQueue
         $definitions = [];
         while($this->hasQueued()) {
             $reference = $this->dequeue();
-            if ($reference == null) {
+            if ($reference === null) {
                 break;
             }
             $definitions[$reference->classShort] = $this->schemaFactory

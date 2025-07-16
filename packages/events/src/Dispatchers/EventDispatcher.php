@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Cognesy\Events\Dispatchers;
 
 use Cognesy\Events\Contracts\CanHandleEvents;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Cognesy\Http\Drivers\Laravel;
 
@@ -35,6 +35,11 @@ class LaravelHttpResponse implements HttpResponse
         return $this->response->status();
     }
 
+    /**
+     * Get the response headers
+     *
+     * @return array<string, string>
+     */
     public function headers(): array {
         return $this->response->headers();
     }
