@@ -22,8 +22,8 @@ See more: [Structures](../../structures.md)
 <?php
 require 'examples/boot.php';
 
-use Cognesy\Instructor\Extras\Structure\Field;
-use Cognesy\Instructor\Extras\Structure\Structure;
+use Cognesy\Dynamic\Field;
+use Cognesy\Dynamic\Structure;
 use Cognesy\Instructor\StructuredOutput;
 
 enum Role : string {
