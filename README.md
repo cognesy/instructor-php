@@ -296,7 +296,7 @@ This repository is a monorepo containing all Instructor's components (required a
 
 Individual components are also distributed as standalone packages that can be used independently.
 
-![image](docs/images/instructor-packages.png)
+![image](docs/images/instructor-packages.svg)
 
 Links to read-only repositories of the standalone package distributions:
 
