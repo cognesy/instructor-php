@@ -1,6 +1,9 @@
 ---
 title: 'Setup'
 description: 'Setup of Polyglot in your PHP project'
+meta:
+  - name: 'has_code'
+    content: true
 ---
 
 This chapter will guide you through the initial steps of setting up and using Polyglot in your PHP project. We'll cover installation and configuration to get you up and running quickly.
@@ -52,11 +55,11 @@ GEMINI_API_KEY=your-gemini-key
 # etc.
 ```
 
-3. Make sure your application loads these environment variables (using a package like `vlucas/phpdotenv` or your framework's built-in environment handling)
-
 ### Configuration Files
 
-Polyglot loads its configuration from PHP files. The default configuration files are located in the Instructor package, but you can publish and customize them:
+Polyglot loads its configuration from PHP files.
+
+The default configuration files are located in the Instructor package, but you can publish and customize them:
 
 1. Create a `config` directory in your project if it doesn't exist
 2. Copy the configuration files from the Instructor package:
@@ -66,11 +69,11 @@ Polyglot loads its configuration from PHP files. The default configuration files
 mkdir -p config
 
 # Copy configuration files
-cp vendor/cognesy/instructor/config/llm.php config/
-cp vendor/cognesy/instructor/config/embed.php config/
+cp vendor/cognesy/instructor-polyglot/config/* config/
 ```
 
 3. Customize the configuration files as needed
+
 
 #### LLM Configuration
 
@@ -132,6 +135,8 @@ return [
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/embeddings',
             'model' => 'text-embedding-3-small',
+            'dimensions' => 1536,
+            'maxInputs' => 16,
         ],
 
         // Other connections...
@@ -141,7 +146,7 @@ return [
 
 ### Custom Configuration Location
 
-By default, Polyglot looks for configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATHS` environment variable:
+By default, Polyglot looks for custom configuration files in the `config` directory relative to your project root. You can specify a different location by setting the `INSTRUCTOR_CONFIG_PATHS` environment variable:
 
 ```
 INSTRUCTOR_CONFIG_PATHS='/path/to/your/config,alternative/path'
@@ -166,6 +171,7 @@ Settings::setPath('/your/path/to/config');
 - **API Keys**: Verify that your API keys are correctly set in your environment variables.
 - **Configuration Files**: Check that your configuration files are properly formatted and accessible.
 
+
 ### Testing Your Installation
 
 A simple way to test if everything is working correctly is to run a small script:
@@ -176,14 +182,9 @@ require 'vendor/autoload.php';
 
 use Cognesy\Polyglot\Inference\Inference;
 
-try {
-    $result = (new Inference)->with(messages: 'Say hello.')->get();
-    echo "Successfully received response: $result\n";
-    echo "Polyglot is working correctly!\n";
-} catch (\Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-}
+$result = (new Inference)
+    ->withMessages('Say hello.')
+    ->get();
 ```
 
 If you see a friendly greeting, your installation is working correctly!
-

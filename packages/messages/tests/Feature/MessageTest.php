@@ -1,5 +1,6 @@
 <?php
 
+use Cognesy\Messages\Content;
 use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Tests\Fixtures\MockImage;
@@ -134,7 +135,7 @@ test('creates a message from array', function () {
 });
 
 test('creates a message from content with role', function () {
-    $message = Message::fromContent('system', 'System instruction');
+    $message = Message::fromContent(new Content('System instruction'), 'system');
 
     expect($message)->toBeInstanceOf(Message::class)
         ->and($message->role())->toBe(MessageRole::System)

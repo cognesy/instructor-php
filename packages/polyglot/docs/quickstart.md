@@ -1,6 +1,9 @@
 ---
 title: 'Quickstart'
 description: 'Start working with LLMs in under 5 minutes'
+meta:
+  - name: 'has_code'
+    content: true
 ---
 
 This guide will help you get started with Polyglot in your PHP project in under 5 minutes.
@@ -40,7 +43,9 @@ $apiKey = 'your-openai-api-key';
 putenv("OPENAI_API_KEY=" . $apiKey);
 // WARNING: In real project you should set up API key in .env file.
 
-$answer = (new Inference)->with('What is capital of Germany')->get();
+$answer = (new Inference)
+    ->withMessages('What is capital of Germany')
+    ->get();
 
 echo "USER: What is capital of Germany\n";
 echo "ASSISTANT: $answer\n";

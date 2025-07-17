@@ -2,11 +2,30 @@
 
 namespace Cognesy\Messages\Traits\Messages;
 
+use Cognesy\Messages\Content;
+use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 use Cognesy\Messages\Messages;
 
 trait HandlesMutation
 {
+    public function asSystem(string|array|Message|Content|ContentPart $message) : static {
+        return $this->appendMessage(Message::fromAny($message, MessageRole::System));
+    }
+
+    public function asDeveloper(string|array|Message|Content|ContentPart $message) : static {
+        return $this->appendMessage(Message::fromAny($message, MessageRole::Developer));
+    }
+
+    public function asUser(string|array|Message|Content|ContentPart $message) : static {
+        return $this->appendMessage(Message::fromAny($message, MessageRole::User));
+    }
+
+    public function asAssistant(string|array|Message|Content|ContentPart $message) : static {
+        return $this->appendMessage(Message::fromAny($message, MessageRole::Assistant));
+    }
+
     public function withMessage(string|array|Message $message) : static {
         $this->messages = match (true) {
             is_string($message) => [Message::fromString($message)],

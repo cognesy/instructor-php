@@ -6,7 +6,6 @@ use Cognesy\Config\Contracts\CanProvideConfig;
 use Cognesy\Events\Contracts\CanHandleEvents;
 use Cognesy\Events\EventBusResolver;
 use Cognesy\Events\Traits\HandlesEvents;
-use Cognesy\Polyglot\Inference\Drivers\InferenceDriverFactory;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**

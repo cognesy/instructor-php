@@ -12,7 +12,7 @@ class ContentPart
 
     public function __construct(
         string $type,
-        array  $fields = [],
+        array $fields = [],
     ) {
         $this->type = $type;
         foreach ($fields as $key => $value) {
@@ -25,30 +25,30 @@ class ContentPart
 
     // FACTORY METHODS //////////////////////////////////////
 
-    public static function fromArray(array $content) : static {
+    public static function fromArray(array $content): static {
         $type = $content['type'] ?? 'text';
         $fields = $content;
         unset($fields['type']);
         return new self($type, $fields);
     }
 
-    public static function text(string $text) : static  {
+    public static function text(string $text): static {
         return new self('text', ['text' => $text]);
     }
 
-    public static function imageUrl(string $url) : static  {
+    public static function imageUrl(string $url): static {
         return new self('image_url', ['url' => $url]);
     }
 
-    public static function image(Image $image) : static  {
+    public static function image(Image $image): static {
         return new self('image_url', $image->toContentPart()->fields());
     }
 
-    public static function file(File $file) : static  {
+    public static function file(File $file): static {
         return new self('file', $file->toContentPart()->fields());
     }
 
-    public static function fromAny(mixed $item) : static {
+    public static function fromAny(mixed $item): static {
         return match (true) {
             is_string($item) => self::text($item),
             is_array($item) => self::fromArray($item),
@@ -80,7 +80,7 @@ class ContentPart
         return $this->type === 'text';
     }
 
-    public function hasText() : bool {
+    public function hasText(): bool {
         return isset($this->fields['text']) && is_string($this->fields['text']);
     }
 
@@ -127,7 +127,7 @@ class ContentPart
         return $this->fields['text'] ?? "";
     }
 
-    public function clone() : self {
+    public function clone(): self {
         $clone = new self($this->type);
         $clone->fields = $this->fields;
         return $clone;
@@ -135,7 +135,7 @@ class ContentPart
 
     // INTERNAL /////////////////////////////////////////////
 
-    private function shouldExport(string $key, mixed $value) : bool {
+    private function shouldExport(string $key, mixed $value): bool {
         return !is_null($value)
             && ($value !== '')
             && ($value !== [])

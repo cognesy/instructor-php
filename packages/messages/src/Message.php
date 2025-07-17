@@ -46,14 +46,14 @@ class Message {
      * @param string|array<string|array> $content
      */
     public function __construct(
-        string|MessageRole $role = '',
+        string|MessageRole|null $role = '',
         string|array|Content|null $content = null,
         string $name = '',
         array $metadata = [],
     ) {
         $this->role = match(true) {
             $role instanceof MessageRole => $role->value,
-            ($role === '') => self::DEFAULT_ROLE,
+            ($role === '') || is_null($role) => self::DEFAULT_ROLE,
             default => $role,
         };
         $this->name = $name;
@@ -67,7 +67,7 @@ class Message {
      * @return bool
      */
     public static function isMessage(array $message): bool {
-        return isset($message['role']) && isset($message['content']);
+        return isset($message['role'], $message['content']);
     }
 
     /**
@@ -76,6 +76,11 @@ class Message {
      * @return bool
      */
     public static function isMessages(array $messages): bool {
-        return isset($messages[0]['role']) && isset($messages[0]['content']);
+        foreach ($messages as $message) {
+            if (!self::isMessage($message)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -9,7 +9,7 @@ enum MessageRole : string {
     case Assistant = 'assistant';
     case Tool = 'tool';
 
-    static public function fromString(string $role) : static
+    public static function fromString(string $role) : static
     {
         return match($role) {
             'system' => self::System,
@@ -18,6 +18,13 @@ enum MessageRole : string {
             'assistant' => self::Assistant,
             'tool' => self::Tool,
             default => self::User,
+        };
+    }
+
+    public static function fromAny(string|MessageRole $role) : static {
+        return match(true) {
+            is_string($role) => self::fromString($role),
+            $role instanceof MessageRole => $role,
         };
     }
 

@@ -2,6 +2,8 @@
 
 namespace Cognesy\Polyglot\Inference\Traits;
 
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Polyglot\Inference\InferenceRequestBuilder;
 
@@ -9,7 +11,7 @@ trait HandlesRequestBuilder
 {
     private InferenceRequestBuilder $requestBuilder;
 
-    public function withMessages(string|array $messages): static {
+    public function withMessages(string|array|Message|Messages $messages): static {
         $this->requestBuilder->withMessages($messages);
         return $this;
     }

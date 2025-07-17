@@ -5,19 +5,24 @@
 ## High priority
 
 - Polyglot/Instructor: Add (optional) automatic continuation if the finish reason is 'length' - this will allow to continue the response in the next call, if the model did not finish the response due to length limit
-- Polyglot - more events to get better insight into the execution
-- More meaningful exceptions - e.g. timeout, rate limit, etc. so we can handle them in a relevant way
-- RequestMaterializer (ex ChatTemplate) - should be pluggable / customizable
+- Better/cleaner DSL around retries - check back Retry Schedule from EffectPHP
+- Better overall pipeline design & expose it to end-used - make it more modular, so we can plug in different components, e.g. for validation, serialization, transformation, etc.
 
 ## Better control over underlying prompts
 
+- RequestMaterializer (ex ChatTemplate) - should be pluggable / customizable
 - Unify TemplateUtil and Prompt + decide on how to proceed with ChatTemplate class
 - Unify template conventions - <||> vs. {{}}, update docs
 - Full control over generated prompt (access to Script object processing)
 
+## Code
+
+- More meaningful exceptions - e.g. timeout, rate limit, etc. so we can handle them in a relevant way
+
 
 # SCRATCHPAD
 
+- ContextGem like semantic structure processing
 - Make configurable per preset - merge per role, merge to string vs message sequence
 - Move script structure to text template
 - Add default template dialect to structured config file
@@ -25,9 +30,9 @@
 - Clean up dependency on schema - make it very simple interface based API (object > json schema)
 - Simplify the code of structure class, extract it to a separate package (instructor-adhoc)
 - Polyglot: Gemini context caching
+- Polyglot: Batch completion API
 - Polyglot: Citations API
 - Polyglot: Predicted outputs API
-- Polyglot: Batch completion API
 - Polyglot: Async / parallel calls to multiple APIs
 - Addon: Generate unstructured, then format to structured - to improve reasoning
 - Addon: MCP support as addon
@@ -195,6 +200,10 @@ Catch up with the latest additions.
 # DONE (TO BE CLEANED UP)
 
 > NOTE: Move notes here
+
+## Any
+
+- Polyglot - more events to get better insight into the execution
 
 ## Configuration
 

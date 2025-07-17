@@ -8,15 +8,18 @@ class Content
     protected array $parts = [];
 
     /**
-     * @param string|ContentPart[] $content
+     * @param string|ContentPart[]|ContentPart $content
      * If a string is provided, it will be treated as a single text part.
      * If an array is provided, it should contain ContentPart instances or strings.
+     * If a ContentPart is provided, it will be used directly.
      */
     public function __construct(
-        string|array|null $content = null,
+        string|array|ContentPart|null $content = null,
     ) {
         if (is_string($content)) {
             $this->parts[] = ContentPart::text($content);
+        } elseif ($content instanceof ContentPart) {
+            $this->parts[] = $content;
         } elseif (is_array($content)) {
             foreach ($content as $item) {
                 $this->parts[] = ContentPart::fromAny($item);
@@ -27,11 +30,14 @@ class Content
     public static function fromAny(string|array|Content|ContentPart|null $content): self {
         return match (true) {
             is_null($content) => new self(),
-            is_string($content) && $content === '' => new self(),
             is_string($content) => new self($content),
-            $content instanceof ContentPart => new self([$content]),
-            $content instanceof self => new self($content->parts()),
+            is_array($content) && Message::isMessage($content) => new self(content: $content['content'] ?? ''),
+            is_array($content) && array_reduce($content, fn(bool $carry, $item) => $carry && is_string($item), true) => new self(
+                array_map(fn($text) => ContentPart::text($text), $content)
+            ),
             is_array($content) => new self(array_map(fn($item) => ContentPart::fromAny($item), $content)),
+            $content instanceof Content => new self($content->parts()),
+            $content instanceof ContentPart => new self([$content]),
             default => throw new \InvalidArgumentException('Content must be a string, array, or ContentPart.'),
         };
     }
@@ -93,7 +99,7 @@ class Content
     public function toString(): string {
         return match(true) {
             $this->isNull() => '',
-            default => implode("\n", array_map(fn($part) => $part->toString(), $this->parts)),
+            default => implode("\n", array_map(fn($part) => $part->toString(), array_filter($this->parts, fn($part) => !$part->isEmpty()))),
         };
     }
 

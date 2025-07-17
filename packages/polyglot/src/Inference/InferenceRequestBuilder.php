@@ -2,13 +2,15 @@
 
 namespace Cognesy\Polyglot\Inference;
 
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Polyglot\Inference\Data\CachedContext;
 use Cognesy\Polyglot\Inference\Data\InferenceRequest;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 
 class InferenceRequestBuilder
 {
-    private string|array    $messages = [];
+    private Messages        $messages;
     private string          $model = '';
     private array           $tools = [];
     private string|array    $toolChoice = [];
@@ -36,7 +38,7 @@ class InferenceRequestBuilder
      * @param OutputMode $mode The mode of operation for the inference.
      */
     public function with(
-        string|array $messages = [],
+        string|array|Message|Messages $messages = [],
         string       $model = '',
         array        $tools = [],
         string|array $toolChoice = [],
@@ -44,7 +46,7 @@ class InferenceRequestBuilder
         array        $options = [],
         ?OutputMode  $mode = null,
     ) : static {
-        $this->messages = $messages;
+        $this->messages = Messages::fromAny($messages);
         $this->model = $model;
         $this->tools = $tools;
         $this->toolChoice = $toolChoice;
@@ -55,8 +57,8 @@ class InferenceRequestBuilder
         return $this;
     }
 
-    public function withMessages(string|array $messages): static {
-        $this->messages = $messages;
+    public function withMessages(string|array|Message|Messages $messages): static {
+        $this->messages = Messages::fromAny($messages);
         return $this;
     }
 
@@ -123,7 +125,7 @@ class InferenceRequestBuilder
     }
 
     public function withRequest(InferenceRequest $request) : self {
-        $this->messages = $request->messages();
+        $this->messages = Messages::fromAny($request->messages());
         $this->model = $request->model();
         $this->tools = $request->tools();
         $this->toolChoice = $request->toolChoice();
@@ -142,7 +144,7 @@ class InferenceRequestBuilder
         $options = $this->override($options, 'max_tokens', $this->maxTokens);
 
         return new InferenceRequest(
-            messages: $this->messages,
+            messages: $this->messages->toArray(),
             model: $this->model,
             tools: $this->tools,
             toolChoice: $this->toolChoice,

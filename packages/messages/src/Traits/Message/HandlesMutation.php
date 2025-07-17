@@ -4,10 +4,16 @@ namespace Cognesy\Messages\Traits\Message;
 
 use Cognesy\Messages\Content;
 use Cognesy\Messages\ContentPart;
+use Cognesy\Messages\Enums\MessageRole;
 use Cognesy\Messages\Message;
 
 trait HandlesMutation
 {
+    public function withContent(Content $content) : static {
+        $this->content = $content;
+        return $this;
+    }
+
     public function addContentFrom(Message $source) : static {
         foreach ($source->content()->parts() as $part) {
             $this->content->addContentPart($part);
@@ -20,8 +26,11 @@ trait HandlesMutation
         return $this;
     }
 
-    public function withRole(string $role) : static {
-        $this->role = $role;
+    public function withRole(string|MessageRole $role) : static {
+        $this->role = match (true) {
+            is_string($role) => $role,
+            $role instanceof MessageRole => $role->value,
+        };
         return $this;
     }
 

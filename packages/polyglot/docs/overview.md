@@ -1,6 +1,9 @@
 ---
 title: Overview
 description: 'Polyglot is a PHP library that provides a unified API to access various LLM API providers.'
+meta:
+  - name: 'has_code'
+    content: false
 ---
 
 Polyglot is a PHP library that provides a unified API for interacting with various Large Language Model (LLM) providers. It allows developers to build applications that use LLMs without being locked into a specific provider or having to rewrite code when switching between providers.
@@ -120,6 +123,8 @@ Polyglot currently supports the following LLM providers for chat completion:
 - **Deepseek**: Deepseek models including reasoning capabilities
 - **Google Gemini**: Google's Gemini models (both native and OpenAI compatible)
 - **Groq**: High-performance inference platform
+- **Hugging Face**: Hugging Face hosted models
+- **Meta**: Jina AI models
 - **Minimaxi**: MiniMax models
 - **Mistral**: Mistral AI models
 - **Moonshot**: Kimi models
