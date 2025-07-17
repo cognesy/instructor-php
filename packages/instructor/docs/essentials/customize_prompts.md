@@ -42,12 +42,12 @@ respond in JSON format rather than plain text.
 
 ```php
 <?php
-$user = (new StructuredOutput)->generate(
+$user = (new StructuredOutput)->with(
     messages: "Our user Jason is 25 years old.",
     responseModel: User::class,
     prompt: "\nYour task is to respond correctly with JSON object.",
     mode: OutputMode::Json
-);
+)->get();
 ```
 Note that various models and API providers have specific requirements
 on the input format, e.g. for OpenAI JSON mode you are required to include
