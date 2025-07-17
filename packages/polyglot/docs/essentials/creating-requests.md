@@ -92,6 +92,7 @@ $response = (new Inference)
     ->withModel('gpt-4o')
     ->withMessages($messages)
     ->get();
+```
 
 ## Message Formats
 
@@ -134,5 +135,3 @@ $response = new Inference()
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.
-
-
