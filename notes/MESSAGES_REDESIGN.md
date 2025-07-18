@@ -54,11 +54,12 @@ final readonly class Messages implements Countable, IteratorAggregate
     public static function empty(): self
     
     // FLUENT API for building message sequences - the MAJOR use case
-    public function asSystem(string|Content|array $content): self
-    public function asDeveloper(string|Content|array $content): self
-    public function asUser(string|Content|array $content): self
-    public function asAssistant(string|Content|array $content): self
-    public function asTool(string|Content|array $content): self
+    public function asSystem(string|Content $content): self
+    public function asDeveloper(string|Content $content): self
+    public function asUser(string|Content $content): self
+    public function asAssistant(string|Content $content): self
+    public function asTool(string|Content $content): self
+    public function as(MessageRole $role, string|Content $content): self
     
     // Advanced sequence building
     public function add(Message $message): self
@@ -87,6 +88,16 @@ final readonly class Messages implements Countable, IteratorAggregate
     public function since(string $messageId): self
     public function until(string $messageId): self
     
+    // Iterators - callbacks get Message objects
+    public function map(callable $callback): self
+    public function filter(callable $callback): self
+    public function reduce(callable $callback, mixed $initial = null): mixed
+
+    // ContentPart iterators - callbacks get ContentPart objects
+    public function mapByContentParts(callable $callback): self
+    public function filterByContentParts(callable $callback): self
+    public function reduceByContentParts(callable $callback, mixed $initial = null): mixed
+
     // Conversion methods
     public function toArray(): array
     public function __toString(): string
@@ -110,13 +121,16 @@ final readonly class Message implements Stringable
         public ?array $toolCallId = null // For tool calls
     ) {}
     
+    public static function empty(): self
+
     // Essential creation methods with proper naming
-    public static function asSystem(string|Content|array $content, ?string $id = null): self
-    public static function asDeveloper(string|Content|array $content, ?string $id = null): self
-    public static function asUser(string|Content|array $content, ?string $id = null): self
-    public static function asAssistant(string|Content|array $content, ?string $id = null): self
-    public static function asTool(string|Content|array $content, ?string $id = null): self
+    public static function system(string|Content|array $content, ?string $id = null): self
+    public static function developer(string|Content|array $content, ?string $id = null): self
+    public static function user(string|Content|array $content, ?string $id = null): self
+    public static function assistant(string|Content|array $content, ?string $id = null): self
+    public static function tool(string|Content|array $content, ?string $id = null): self
     public static function create(MessageRole $role, string|Content|array $content, ?string $id = null): self
+    public static function as(MessageRole $role, string|Content $content): self  // alias for `create()`
     
     // Multipart content creation
     public static function multipart(MessageRole $role, ContentPart ...$parts): self
@@ -138,7 +152,7 @@ final readonly class Message implements Stringable
     public function withId(string $id): self
     public function withRole(MessageRole $role): self
     public function withContent(string|Content|array $content): self
-    public function addContent(ContentPart ...$parts): self
+    public function addContentPart(ContentPart ...$parts): self
     public function addText(string $text): self
     public function addImage(string $url): self
     public function addFile(string $path): self
@@ -150,7 +164,7 @@ final readonly class Message implements Stringable
     // Generate unique ID if not provided
     private static function generateId(): string
     {
-        return 'msg_' . bin2hex(random_bytes(8));
+        return 'msg_' . Uuid::v4();
     }
 }
 ```
@@ -165,6 +179,7 @@ final readonly class Content implements Stringable
     ) {}
     
     // Essential creation methods
+    public static function empty(): self // alias for ::text('')
     public static function text(string $text): self
     public static function parts(ContentPart ...$parts): self
     public static function fromArray(array $data): self
@@ -204,6 +219,7 @@ final readonly class ContentPart implements Stringable
     ) {}
     
     // Type-specific factory methods
+    public static function empty(): self // alias for ::text('')
     public static function text(string $text): self
     public static function image(string $url): self
     public static function file(string $path, string $mimeType = null): self
@@ -247,12 +263,12 @@ enum ContentType: string
 ```php
 // Building conversation sequences - the MAJOR use case
 $conversation = Messages::empty()
-    ->add(MessageRole::System, 'You are a helpful assistant')
-    ->add(MessageRole::Developer, 'Use concise responses')
-    ->add(MessageRole::User, 'What is PHP?')
-    ->add(MessageRole::Assistant, 'PHP is a server-side scripting language...')
-    ->add(MessageRole::User, 'Can you show me an example?')
-    ->add(MessageRole::Assistant, 'Here is a simple example...');
+    ->add(Message::system('You are a helpful assistant'))
+    ->add(Message::developer('Use concise responses'))
+    ->add(Message::user('What is PHP?'))
+    ->add(Message::assistant('PHP is a server-side scripting language...'))
+    ->add(Message::user('Can you show me an example?'))
+    ->add(Message::assistant('Here is a simple example...'));
 
 // Chat UI manipulation - modify message x steps before and regenerate
 $messageId = $conversation->last()->id;

@@ -33,13 +33,17 @@ Instructor will only fill in the fields that are public. Private and protected f
 ## Private vs public object field
 
 Instructor only sets public fields of the object with the data provided by LLM.
-Private and protected fields are left unchanged. If you want to access them
-directly after extraction, consider providing default values for them.
 
-See `examples/PrivateVsPublicFields/run.php` to check the details on the behavior
-of extraction for classes with private and public fields.
+Private and protected fields are left unchanged, unless the class has setter methods defined or there are parameters in the constructor that match the field names.
 
+Provide default values for the fields that are not set by Instructor, to avoid unexpected
+behavior when accessing those fields.
 
+See:
+ - `examples/A01_Basics/BasicPrivateVsPublicFields/run.php` to check the details on the behavior
+of extraction for classes with private and public fields,
+ - `examples/A01_Basics/BasicGetSet/run.php` to see how Instructor uses getter and setter methods,
+ - `examples/A01_Basics/BasicConstructor/run.php` to see how Instructor uses constructor parameters.
 
 
 
