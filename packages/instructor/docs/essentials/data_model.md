@@ -123,6 +123,8 @@ class User {
 }
 ```
 
+> NOTE: Technically both `#[Description]` and `#[Instructions]` attributes do the same thing - they provide additional context to the language model. Yet, providing them in separate attributes allows you to better organize your code and make it more readable. In the future, we may extend the functionality of these attributes to provide more specific instructions to the language model, so it is a good idea to use them now.
+
 
 ## Typed Collections / Arrays
 
