@@ -16,6 +16,22 @@ trait HandlesCreation
         return new Message(role: $role, content: $content, name: $name);
     }
 
+    public static function asUser(string|array|Message $message) : static {
+        return static::fromAny($message, MessageRole::User);
+    }
+
+    public static function asAssistant(string|array|Message $message) : static {
+        return static::fromAny($message, MessageRole::Assistant);
+    }
+
+    public static function asSystem(string|array|Message $message) : static {
+        return static::fromAny($message, MessageRole::System);
+    }
+
+    public static function asDeveloper(string|array|Message $message) : static {
+        return static::fromAny($message, MessageRole::Developer);
+    }
+
     public static function fromAny(
         string|array|Message|Content|ContentPart $message,
         string|MessageRole|null $role = null

@@ -1,6 +1,9 @@
 ---
 title: Creating Requests
 description: 'Learn how to create requests to LLM providers using Polyglot.'
+meta:
+  - name: 'has_code'
+    content: true
 ---
 
 This section covers how to create requests to LLM providers using the Polyglot library. It includes examples of basic requests, handling multiple messages, and using different message formats.
@@ -66,6 +69,30 @@ $response = $inference
 echo "Response: $response";
 ```
 
+## Using `Messages` Class
+
+You can also use the `Messages` class to create message sequences more conveniently:
+
+```php
+<?php
+use Cognesy\Messages\Messages;
+use Cognesy\Messages\Utils\Image;
+use Cognesy\Polyglot\Inference\Inference;
+
+$messages = (new Messages)
+    ->asSystem('You are a senior PHP8 backend developer.')
+    ->asDeveloper('Be concise and use modern PHP8.2+ features.') // OpenAI developer role is supported and normalized for other providers
+    ->asUser([
+        'What is the best way to handle errors in PHP8?',
+        'Provide a code example.',
+    ]); // you can pass array of strings to create multiple content parts
+
+$response = (new Inference)
+    ->using('openai')
+    ->withModel('gpt-4o')
+    ->withMessages($messages)
+    ->get();
+```
 
 ## Message Formats
 
@@ -106,3 +133,5 @@ $response = new Inference()
     ->with(messages: $messages)
     ->toText();
 ```
+
+Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.
