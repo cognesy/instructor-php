@@ -22,8 +22,7 @@ function findAutoload()
 }
 
 require findAutoload();
-echo "Running Instructor Hub\n";
 
 // run the app
-$app = new Cognesy\InstructorHub\Hub();
-$app->run($argc, $argv);
+$app = new \Cognesy\InstructorHub\Hub();
+$app->run();

@@ -9,19 +9,18 @@ use Cognesy\InstructorHub\Commands\ListAllExamples;
 use Cognesy\InstructorHub\Commands\RunAllExamples;
 use Cognesy\InstructorHub\Commands\RunOneExample;
 use Cognesy\InstructorHub\Commands\ShowExample;
-use Cognesy\InstructorHub\Core\CliApp;
-use Cognesy\InstructorHub\Core\CommandProvider;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
+use Symfony\Component\Console\Application;
 
-class Hub extends CliApp
+class Hub extends Application
 {
-    public string $name = "Hub // Instructor for PHP";
-    public string $description = " (^) Get typed structured outputs from LLMs";
-
     public function __construct()
     {
+        parent::__construct('Hub // Instructor for PHP', '1.0.0');
+        //$this->setDescription('(^) Get typed structured outputs from LLMs');
+
         $exampleRepo = new ExampleRepository(
             BasePath::get('examples'),
         );
@@ -64,15 +63,14 @@ class Hub extends CliApp
             stopOnError: false
         );
 
-        $commands = [
+        // Register commands
+        $this->addCommands([
             new GenerateDocs($docGen),
             new ClearDocs($docGen),
             new ListAllExamples($exampleRepo),
             new RunAllExamples($runner),
             new RunOneExample($runner, $exampleRepo),
             new ShowExample($exampleRepo),
-        ];
-
-        parent::__construct(new CommandProvider($commands));
+        ]);
     }
 }
