@@ -14,7 +14,6 @@ The primary configuration files for the HTTP client are:
 This file defines the available client types and their settings:
 
 ```php
-<?php
 return [
     'defaultClient' => 'guzzle',
     'clients' => [
@@ -54,7 +53,6 @@ return [
 This file controls debugging options for HTTP requests and responses:
 
 ```php
-<?php
 return [
     'http' => [
         'enabled' => false, // enable/disable debug

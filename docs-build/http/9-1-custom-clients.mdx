@@ -24,11 +24,18 @@ interface CanHandleHttpRequest
 Here's a template for creating a custom HTTP client driver:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use Exception;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Exception;
 
 class CustomHttpDriver implements CanHandleHttpRequest
 {
@@ -124,8 +131,6 @@ class CustomHttpDriver implements CanHandleHttpRequest
 You also need to create a response adapter that implements the `HttpResponse` interface:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Adapters;
 
 use Cognesy\Http\Contracts\HttpResponse;
@@ -191,7 +196,9 @@ class YourHttpResponse implements HttpResponse
 Once you've implemented your custom driver, you can use it with the `HttpClient`:
 
 ```php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use YourNamespace\Http\Drivers\CustomHttpDriver;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\HttpClient;
+use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Create a configuration for your custom driver
 $config = new HttpClientConfig(
@@ -207,8 +214,8 @@ $config = new HttpClientConfig(
 // Create your custom driver
 $customDriver = new CustomHttpDriver($config);
 
-// Create a client with your driver
-$client = (new HttpClient)->withDriver($customDriver);
+// Create a client with your driver using the builder
+$client = (new HttpClientBuilder())->withDriver($customDriver)->create();
 
 // Use the client as usual
 $response = $client->withRequest(new HttpRequest(/* ... */))->get();
@@ -219,11 +226,18 @@ $response = $client->withRequest(new HttpRequest(/* ... */))->get();
 Here's a practical example of implementing a custom driver using PHP's cURL extension directly:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use YourNamespace\Http\Adapters\CurlHttpResponse;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use YourNamespace\Http\Adapters\CurlHttpResponse;
 
 class CurlHttpDriver implements CanHandleHttpRequest
 {
@@ -432,8 +446,6 @@ class CurlHttpDriver implements CanHandleHttpRequest
 And here's the corresponding response adapter:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Adapters;
 
 use Cognesy\Http\Contracts\HttpResponse;
@@ -529,17 +541,17 @@ class CurlHttpResponse implements HttpResponse
 
 ## Registering Custom HTTP Client Drivers
 
-To register your custom driver, you can use the `registerDriver` method of the `HttpClient` class. This allows you to add your custom driver to the list of available drivers.
+To use your custom driver, you can register it with the driver factory or use it directly with the HttpClientBuilder:
 
 ```php
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
 
-// Register your custom driver
-HttpClient::registerDriver('my-custom-driver', fn($config, $events) => new CustomHttpDriver(
-    config: $config,
-    events: $events,
-));
+// Use your custom driver directly with the builder
+$customDriver = new CustomHttpDriver($config);
+$client = (new HttpClientBuilder())
+    ->withDriver($customDriver)
+    ->create();
 ```
 
 ## Adding Custom HTTP Client to Configuration
@@ -574,7 +586,7 @@ After adding the driver to the configuration, you can use it in your code:
 use Cognesy\Http\HttpClient;
 
 // Create a client with your custom driver
-$client = HttpClient::make('my-custom-client');
+$client = HttpClient::using('my-custom-client');
 ```
 
 ## Using Custom HTTP Clients in Configuration Files

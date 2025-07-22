@@ -158,7 +158,7 @@ for API keys.
 
 Create a `.env` file in your project root:
 
-```
+```bash
 # OpenAI
 OPENAI_API_KEY=sk-your-key-here
 

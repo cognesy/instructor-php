@@ -117,7 +117,8 @@ You can create a custom configuration for your embeddings provider, allowing you
 
 ```php
 <?php
-use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;use Cognesy\Polyglot\Embeddings\Embeddings;
+use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
+use Cognesy\Polyglot\Embeddings\Embeddings;
 
 // Create a custom embeddings configuration
 $embeddingsConfig = new EmbeddingsConfig(

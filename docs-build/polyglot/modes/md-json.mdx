@@ -50,7 +50,6 @@ $inference = new Inference();
 $prompt = <<<EOT
 List three programming languages with their key features.
 Respond with a JSON object following this structure:
-```json
 {
   "languages": [
     {
@@ -59,10 +58,8 @@ Respond with a JSON object following this structure:
       "year_created": year as number,
       "key_features": ["feature1", "feature2", "feature3"]
     },
-    ...
   ]
 }
-```
 EOT;
 
 $response = $inference->with(

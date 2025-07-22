@@ -90,13 +90,13 @@ The simplest approach is to specify the client when creating the `HttpClient` in
 
 ```php
 // Use Guzzle (assuming it's configured in config/http.php)
-$guzzleClient = new HttpClient('guzzle');
+$guzzleClient = HttpClient::using('guzzle');
 
 // Use Symfony
-$symfonyClient = new HttpClient('symfony');
+$symfonyClient = HttpClient::using('symfony');
 
 // Use Laravel
-$laravelClient = new HttpClient('laravel');
+$laravelClient = HttpClient::using('laravel');
 ```
 
 The client name must correspond to a configuration entry in your `config/http.php` file.
@@ -107,7 +107,7 @@ If you don't specify a client, the default one from your configuration will be u
 
 ```php
 // Uses the default client specified in config/http.php
-$client = new HttpClient();
+$client = HttpClient::default();
 ```
 
 The default client is specified in the `config/http.php` file:
@@ -123,39 +123,33 @@ return [
 
 ### Switching at Runtime
 
-You can switch to a different client at runtime using the `withClient` method:
+You can create different clients for different requirements within the same application:
 
 ```php
-// Start with default client
-$client = new HttpClient();
-
-// Later, switch to Symfony client
-$client->withClient('symfony');
-
-// Switch to Laravel client
-$client->withClient('laravel');
-
-// Switch to a custom configuration (http-ollama in this example)
-$client->withClient('http-ollama');
+// Create clients with different configurations
+$defaultClient = HttpClient::default();
+$symfonyClient = HttpClient::using('symfony');
+$laravelClient = HttpClient::using('laravel');
+$customClient = HttpClient::using('http-ollama');
 ```
 
-This allows you to adapt to different requirements within the same application.
+Note: HttpClient instances are immutable, so you create new instances rather than switching configurations at runtime.
 
 ### Using the Static Make Method
 
 The `HttpClient` class provides a static `make` method as an alternative to the constructor:
 
 ```php
-use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\HttpClientBuilder;
 
-// Create with specific client
-$client = (new HttpClientFactory)->make('guzzle');
+// Create with specific client using builder
+$client = (new HttpClientBuilder())->withPreset('guzzle')->create();
 // Equivalent to:
-$client = (new HttpClientFactory)->fromPreset('guzzle');
+$client = HttpClient::using('guzzle');
 
 // Create with default client and custom event dispatcher
 $events = new EventDispatcher();
-$client = (new HttpClientFactory($events))->default();
+$client = (new HttpClientBuilder())->withEventBus($events)->create();
 ```
 
 ## Client-Specific Configuration
@@ -245,16 +239,16 @@ Then you can select the appropriate configuration based on your needs:
 
 ```php
 // For quick API calls
-$quickClient = new HttpClient('guzzle-short-timeout');
+$quickClient = HttpClient::using('guzzle-short-timeout');
 
 // For long-running operations
-$longClient = new HttpClient('guzzle-long-timeout');
+$longClient = HttpClient::using('guzzle-long-timeout');
 
 // For streaming responses
-$streamingClient = new HttpClient('guzzle-streaming');
+$streamingClient = HttpClient::using('guzzle-streaming');
 
 // For AI model requests
-$aiClient = new HttpClient('http-ollama');
+$aiClient = HttpClient::using('http-ollama');
 ```
 
 ### Common Configuration Parameters
