@@ -50,8 +50,125 @@ var_dump($person);
 
 !!! note
 
-    Currently, Instructor for PHP only supports classes / objects as response models. In case you want to extract simple types or arrays, you need to wrap them in a class (or use `Scalar` helper class).
+    Instructor supports classes/objects as response models, as well as specialized helper classes like `Scalar` for simple values, `Maybe` for optional data, `Sequence` for arrays, and `Structure` for dynamically defined schemas.
 
+
+
+## Fluent API Methods
+
+StructuredOutput provides a comprehensive fluent API for configuring requests:
+
+### Request Configuration
+```php
+$structuredOutput = (new StructuredOutput)
+    ->withMessages($messages)           // Set chat messages
+    ->withInput($input)                 // Set input (converted to messages)
+    ->withSystem($systemPrompt)         // Set system prompt
+    ->withPrompt($prompt)               // Set additional prompt
+    ->withExamples($examples)           // Set example data
+    ->withModel($modelName)             // Set LLM model
+    ->withOptions($options)             // Set LLM options
+    ->withStreaming(true)               // Enable streaming
+```
+
+### Response Model Configuration
+```php
+$structuredOutput = (new StructuredOutput)
+    ->withResponseModel($model)         // Set response model (class/object/array)
+    ->withResponseClass($className)     // Set response class specifically
+    ->withResponseObject($object)       // Set response object instance
+    ->withResponseJsonSchema($schema)   // Set JSON schema directly
+```
+
+### Configuration and Behavior
+```php
+$structuredOutput = (new StructuredOutput)
+    ->withMaxRetries(3)                 // Set retry count
+    ->withOutputMode($mode)             // Set output mode
+    ->withToolName($name)               // Set tool name for Tools mode
+    ->withToolDescription($desc)        // Set tool description
+    ->withRetryPrompt($prompt)          // Set retry prompt
+    ->withConfig($config)               // Set configuration object
+    ->withConfigPreset($preset)         // Use configuration preset
+```
+
+### LLM Provider Configuration
+```php
+$structuredOutput = (new StructuredOutput)
+    ->using($preset)                    // Use LLM preset (e.g., 'openai')
+    ->withDsn($dsn)                     // Set connection DSN
+    ->withLLMProvider($provider)        // Set custom LLM provider
+    ->withLLMConfig($config)            // Set LLM configuration
+    ->withDriver($driver)               // Set inference driver
+    ->withHttpClient($client)           // Set HTTP client
+```
+
+### Processing Overrides
+```php
+$structuredOutput = (new StructuredOutput)
+    ->withValidators(...$validators)    // Override validators
+    ->withTransformers(...$transformers) // Override transformers
+    ->withDeserializers(...$deserializers) // Override deserializers
+```
+
+
+## Request Execution Methods
+
+After configuring your `StructuredOutput` instance, you have several ways to execute the request and access different types of responses:
+
+### Direct Execution Methods
+
+```php
+<?php
+use Cognesy\Instructor\StructuredOutput;
+
+$structuredOutput = (new StructuredOutput)->with(
+    messages: "His name is Jason, he is 28 years old.",
+    responseModel: Person::class,
+);
+
+// Get structured result directly
+$person = $structuredOutput->get();
+
+// Get raw LLM response
+$llmResponse = $structuredOutput->response();
+
+// Get streaming interface
+$stream = $structuredOutput->stream();
+?>
+```
+
+### Pending Execution with `create()`
+
+The `create()` method returns a `PendingStructuredOutput` instance, which acts as an execution handler that provides the same access methods:
+
+```php
+<?php
+$pending = $structuredOutput->create();
+
+// Execute and get structured result
+$person = $pending->get();
+
+// Execute and get raw LLM response
+$llmResponse = $pending->response();
+
+// Execute and get streaming interface
+$stream = $pending->stream();
+
+// Additional utility methods
+$json = $pending->toJson();      // Convert result to JSON string
+$array = $pending->toArray();    // Convert result to array
+$jsonObj = $pending->toJsonObject(); // Convert result to Json object
+?>
+```
+
+### Response Types Explained
+
+- **`get()`**: Returns the parsed and validated structured result (e.g., `Person` object)
+- **`response()`**: Returns the raw LLM response object with metadata like tokens, model info, etc.
+- **`stream()`**: Returns `StructuredOutputStream` for real-time processing of streaming responses
+
+The `PendingStructuredOutput` class serves as a flexible execution interface that lets you choose how to process the LLM response based on your specific needs.
 
 
 ## String as Input
@@ -78,7 +195,7 @@ Instructor offers a way to use structured data as an input. This is
 useful when you want to use object data as input and get another object
 with a result of LLM inference.
 
-The `input` field of Instructor's `create()` method
+The `input` field of Instructor's `with()` method
 can be an object, but also an array or just a string.
 
 ```php
@@ -152,3 +269,25 @@ See [Streaming and partial updates](/advanced/partials) for more information on 
 ## Extracting arguments for function call
 
 See [FunctionCall helper class](/advanced/function_calls) for more information on how to extract arguments for callable objects.
+
+
+## Execution Methods Summary
+
+Once configured, you can execute your request using different methods depending on your needs:
+
+```php
+// Direct execution methods
+$result = $structuredOutput->get();       // Get structured result
+$response = $structuredOutput->response(); // Get raw LLM response  
+$stream = $structuredOutput->stream();     // Get streaming interface
+
+// Or use create() to get PendingStructuredOutput for flexible execution
+$pending = $structuredOutput->create();
+$result = $pending->get();                 // Same methods available
+$json = $pending->toJson();               // Plus utility methods
+```
+
+- **`get()`**: Returns the parsed and validated structured result
+- **`response()`**: Returns the raw LLM response with metadata
+- **`stream()`**: Returns `StructuredOutputStream` for real-time processing
+- **`create()`**: Returns `PendingStructuredOutput` for flexible execution control

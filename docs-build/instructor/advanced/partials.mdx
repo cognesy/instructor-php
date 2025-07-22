@@ -48,17 +48,36 @@ with it, e.g. save it to the database.
 
 ## Streaming responses
 
-You can get a stream of responses by setting the `stream` option to `true` and calling the `stream()` method
-instead of `get()`. It returns `Stream` object, which gives you access to the response streamed from LLM and
-processed by Instructor into structured data.
+You can get a stream of responses by calling the `stream()` method instead of `get()`. The `stream()` method is available on both `StructuredOutput` and `PendingStructuredOutput` instances.
 
-Following methods are available to process the stream:
+```php
+// Direct streaming
+$stream = $structuredOutput->stream();
 
- - `partials()`: Returns a generator of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
- - `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
- - `getLastUpdate()`: Returns the last object received and processed by Instructor.
+// Or via create() method
+$pending = $structuredOutput->create();
+$stream = $pending->stream();
+```
 
-One more method available on `Stream` is `final()`. It returns only the final response object. It **blocks until the response is fully processed**. It is typically used when you only need final result and prefer to use `onPartialUpdate()` or `onSequenceUpdate()` to process partial updates. It's an equivalent to calling `get()` method (but requires `stream` option set to `true`).
+Both approaches return a `StructuredOutputStream` object, which gives you access to the response streamed from LLM and processed by Instructor into structured data.
+
+## StructuredOutputStream Methods
+
+The `StructuredOutputStream` class provides comprehensive methods for processing streaming responses:
+
+### Core Streaming Methods
+- `partials()`: Returns an iterable of partial updates from the stream. Only final update is validated, partial updates are only deserialized and transformed.
+- `sequence()`: Dedicated to processing `Sequence` response models - returns only completed items in the sequence.
+- `responses()`: Generator of partial LLM responses as they are received.
+
+### Result Access Methods
+- `finalValue()`: Get the final parsed result (blocks until completion).
+- `finalResponse()`: Get the final LLM response (blocks until completion).
+- `lastUpdate()`: Returns the last object received and processed by Instructor.
+- `lastResponse()`: Returns the last received LLM response.
+
+### Utility Methods
+- `usage()`: Get token usage statistics from the streaming response.
 
 
 ### Example: streaming partial responses
@@ -79,7 +98,7 @@ foreach ($stream->partials() as $update) {
 }
 
 // now you can get final, fully processed person object
-$person = $stream->lastUpdate();
+$person = $stream->finalValue();
 // ...and for example save it to the database
 $db->savePerson($person);
 ```
@@ -105,7 +124,7 @@ foreach ($stream->sequence() as $update) {
 }
 
 // now you can get final, fully processed sequence of participants
-$participants = $stream->lastUpdate();
+$participants = $stream->finalValue();
 // ...and for example save it to the database
 $db->saveParticipants($participants->toArray());
 ```

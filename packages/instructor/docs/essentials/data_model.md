@@ -223,3 +223,45 @@ var_dump($person);
 In case you work with dynamic data schemas, you can use `Structure` class to define the data model.
 
 See [Structures](/advanced/structures) for more details on how to work with dynamic data schemas.
+
+
+## Optional data with `Maybe` class
+
+The `Maybe` class provides a way to handle optional data that may or may not be present in the input text. It wraps a value type and indicates whether the data was found or not, along with an error message when the data is missing.
+
+### Basic Usage
+
+```php
+<?php
+use Cognesy\Instructor\StructuredOutput;
+use Cognesy\Instructor\Extras\Maybe\Maybe;
+
+class Person {
+    public string $name;
+    public int $age;
+}
+
+$maybe = Maybe::is(Person::class, 'person', 'Person data if found in the text');
+
+$result = (new StructuredOutput)
+    ->with(
+        messages: "The document mentions some information but no person details.",
+        responseModel: $maybe,
+    )
+    ->get();
+
+if ($result->hasValue()) {
+    $person = $result->get();
+    echo "Found person: " . $person->name;
+} else {
+    echo "No person found. Error: " . $result->error();
+}
+```
+
+### Maybe Methods
+
+- `Maybe::is(class, name?, description?)` - Static factory method to create a Maybe instance
+- `get()` - Get the value if present, or null if not found
+- `error()` - Get the error message explaining why the value wasn't found
+- `hasValue()` - Check if a value was successfully extracted
+- `toJsonSchema()` - Generate JSON schema for the Maybe wrapper

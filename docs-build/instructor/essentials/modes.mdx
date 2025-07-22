@@ -45,7 +45,7 @@ $response = $structuredOutput
     ->withResponseModel(...)
     //...
     ->withOutputMode(OutputMode::Json)
-)->get();
+    ->get();
 ```
 
 ## Modes
