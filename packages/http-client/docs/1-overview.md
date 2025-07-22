@@ -86,11 +86,14 @@ The `HttpClient` class serves as the main entry point and provides a fluent inte
 
 ```
 HttpClient
-  └── using() - Switch to a different client configuration
-  └── withConfig() - Apply custom configuration
-  └── withDriver() - Use a custom driver
+  └── using() - Create client with specific configuration (static)
+  └── default() - Create client with default configuration (static)
   └── withMiddleware() - Add middleware components
-  └── handle() - Process an HTTP request
+  └── withMiddlewareStack() - Replace entire middleware stack
+  └── withoutMiddleware() - Remove middleware by name
+  └── withRequest() - Create pending request for execution
+  └── pool() - Execute multiple requests concurrently
+  └── withPool() - Create pending pool for deferred execution
 ```
 
 ### Middleware Layer

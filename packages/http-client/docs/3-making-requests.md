@@ -7,11 +7,11 @@ The Instructor HTTP client API provides a flexible and consistent way to create 
 
 ## Creating Requests
 
-All HTTP requests are created using the `HttpClientRequest` class, which encapsulates the various components of an HTTP request.
+All HTTP requests are created using the `HttpRequest` class, which encapsulates the various components of an HTTP request.
 
 ### Basic Request Creation
 
-The constructor for `HttpClientRequest` takes several parameters:
+The constructor for `HttpRequest` takes several parameters:
 
 ```php
 use Cognesy\Http\Data\HttpRequest;

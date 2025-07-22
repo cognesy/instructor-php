@@ -214,8 +214,8 @@ $config = new HttpClientConfig(
 // Create your custom driver
 $customDriver = new CustomHttpDriver($config);
 
-// Create a client with your driver
-$client = (new HttpClient)->withDriver($customDriver);
+// Create a client with your driver using the builder
+$client = (new HttpClientBuilder())->withDriver($customDriver)->create();
 
 // Use the client as usual
 $response = $client->withRequest(new HttpRequest(/* ... */))->get();
@@ -541,17 +541,17 @@ class CurlHttpResponse implements HttpResponse
 
 ## Registering Custom HTTP Client Drivers
 
-To register your custom driver, you can use the `registerDriver` method of the `HttpClient` class. This allows you to add your custom driver to the list of available drivers.
+To use your custom driver, you can register it with the driver factory or use it directly with the HttpClientBuilder:
 
 ```php
-use Cognesy\Http\HttpClient;
+use Cognesy\Http\HttpClientBuilder;
 use YourNamespace\Http\Drivers\CustomHttpDriver;
 
-// Register your custom driver
-HttpClient::registerDriver('my-custom-driver', fn($config, $events) => new CustomHttpDriver(
-    config: $config,
-    events: $events,
-));
+// Use your custom driver directly with the builder
+$customDriver = new CustomHttpDriver($config);
+$client = (new HttpClientBuilder())
+    ->withDriver($customDriver)
+    ->create();
 ```
 
 ## Adding Custom HTTP Client to Configuration
@@ -586,7 +586,7 @@ After adding the driver to the configuration, you can use it in your code:
 use Cognesy\Http\HttpClient;
 
 // Create a client with your custom driver
-$client = HttpClient::make('my-custom-client');
+$client = HttpClient::using('my-custom-client');
 ```
 
 ## Using Custom HTTP Clients in Configuration Files
