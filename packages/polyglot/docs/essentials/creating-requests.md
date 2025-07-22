@@ -127,11 +127,11 @@ $messages = [
     ]
 ];
 
-$response = new Inference()
+$response = (new Inference())
     ->using('openai')
-    ->withModel('gpt-4o'); // use multimodal model
+    ->withModel('gpt-4o') // use multimodal model
     ->with(messages: $messages)
-    ->toText();
+    ->get();
 ```
 
 Instructor library offers `Cognesy\Messages\Utils\Image` class for easier conversion of image files to the message format.

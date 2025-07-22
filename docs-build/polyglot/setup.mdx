@@ -90,7 +90,7 @@ return [
 
     'presets' => [
         'openai' => [
-            'providerType' => 'openai',
+            'driver' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -99,7 +99,7 @@ return [
         ],
 
         'anthropic' => [
-            'providerType' => 'anthropic',
+            'driver' => 'anthropic',
             'apiUrl' => 'https://api.anthropic.com/v1',
             'apiKey' => Env::get('ANTHROPIC_API_KEY', ''),
             'endpoint' => '/messages',
@@ -130,7 +130,7 @@ return [
 
     'presets' => [
         'openai' => [
-            'providerType' => 'openai',
+            'driver' => 'openai',
             'apiUrl' => 'https://api.openai.com/v1',
             'apiKey' => Env::get('OPENAI_API_KEY', ''),
             'endpoint' => '/embeddings',

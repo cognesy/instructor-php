@@ -72,7 +72,10 @@ Use event listeners to trace the flow of requests and responses:
 
 ```php
 <?php
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Polyglot\Inference\Events\InferenceRequested;use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Polyglot\Inference\Events\InferenceRequested;
+use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create an event dispatcher
 $events = new EventDispatcher();
@@ -107,7 +110,10 @@ For more persistent debugging, you can log to files:
 
 ```php
 <?php
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Polyglot\Inference\Events\InferenceRequested;use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;use Cognesy\Polyglot\Inference\Inference;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Polyglot\Inference\Events\InferenceRequested;
+use Cognesy\Polyglot\Inference\Events\InferenceResponseCreated;
+use Cognesy\Polyglot\Inference\Inference;
 
 // Create a function to log to file
 function logToFile(string $message, string $filename = 'llm_debug.log'): void {

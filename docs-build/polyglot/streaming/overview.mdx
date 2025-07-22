@@ -103,7 +103,7 @@ After processing the stream, you can get the complete response:
 
 ```php
 // Method 1: Using the original response object's get() method
-$completeText = $response->vectors();
+$completeText = $response->get();
 
 // Method 2: Getting the final state from the stream
 $finalResponse = $response->stream()->final();

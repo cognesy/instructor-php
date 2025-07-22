@@ -30,98 +30,146 @@ Common use cases for embeddings include:
 
 ## `Embeddings` class
 
-`Embeddings` class offers access to embeddings APIs and convenient methods to find top K vectors
-or documents most similar to provided query.
+The `Embeddings` class is a facade that provides access to embeddings APIs across multiple providers.
+It combines functionality through traits for provider configuration, request building, and result handling.
 
+### Architecture Overview
+
+The `Embeddings` class combines functionality through traits:
+- **HandlesInitMethods**: Provider configuration and setup
+- **HandlesFluentMethods**: Request parameter configuration
+- **HandlesInvocation**: Request execution and PendingEmbeddings creation
+- **HandlesShortcuts**: Convenient methods for common result formats
 
 
 ## Supported providers
 
-`Embeddings` class supports following embeddings providers:
-- Azure
-- Cohere
-- Gemini
-- Jina
-- Mistral
-- OpenAI
+`Embeddings` class supports the following embeddings providers:
+- **Azure OpenAI**: Azure-hosted OpenAI embedding models
+- **Cohere**: Cohere's embedding models
+- **Gemini**: Google's Gemini embedding models  
+- **Jina**: Jina AI's embedding models
+- **OpenAI**: OpenAI's embedding models (text-embedding-ada-002, text-embedding-3-small, text-embedding-3-large)
 
-Embeddings providers access details can be found and modified via
-`/config/embed.php`.
+Provider configurations are managed through the configuration system.
 
 
-## Working with embeddings
-
-Polyglot also makes it easy to generate embeddings:
+## Basic Usage
 
 ```php
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
-// Generate embeddings for a document
+// Simple embedding generation
 $embeddings = new Embeddings();
 $result = $embeddings->with('The quick brown fox jumps over the lazy dog.')->get();
 
-// Get the vector values from the first (and only) result
+// Get the vector values from the first result
 $vector = $result->first()->values();
-
 echo "Generated a vector with " . count($vector) . " dimensions.\n";
 ```
 
 
-## Selecting a provider
+## Provider Configuration Methods
 
-In this example, we use OpenAI embeddings provider to generate embeddings for a given list of documents
-(only one in this case).
+Configure the underlying embeddings provider:
 
-The result is a list of embeddings vectors (one per document).
+```php
+// Provider selection and configuration
+$embeddings->using('openai');                          // Use preset configuration
+$embeddings->withPreset('openai');                     // Alternative preset method
+$embeddings->withDsn('openai://model=text-embedding-3-large'); // Configure via DSN
+$embeddings->withConfig($customConfig);                // Explicit configuration
+$embeddings->withConfigProvider($configProvider);     // Custom config provider
+
+// HTTP and debugging
+$embeddings->withHttpClient($customHttpClient);       // Custom HTTP client
+$embeddings->withDebugPreset('verbose');              // Debug configuration
+
+// Driver management
+$embeddings->withDriver($customDriver);               // Custom vectorization driver
+$embeddings->withProvider($customProvider);           // Custom provider instance
+```
+
+
+## Request Configuration Methods
+
+Configure the embedding request:
+
+```php
+// Input configuration
+$embeddings->withInputs('Single text input');         // Single string
+$embeddings->withInputs(['Text 1', 'Text 2']);       // Multiple strings
+$embeddings->with('Input text');                      // Shorthand input method
+
+// Model and options
+$embeddings->withModel('text-embedding-3-large');    // Specific model
+$embeddings->withOptions(['dimensions' => 1536]);     // Provider-specific options
+
+// Complete configuration
+$embeddings->with(
+    input: ['Text 1', 'Text 2'],
+    options: ['dimensions' => 1536],
+    model: 'text-embedding-3-large'
+);
+```
+
+
+## Response Methods
+
+Get embeddings in different formats:
+
+```php
+// Full response object
+$response = $embeddings->get();                       // EmbeddingsResponse object
+
+// Vector extraction
+$vectors = $embeddings->vectors();                    // Array of Vector objects
+$firstVector = $embeddings->first();                 // First Vector object
+$values = $embeddings->first()->values();           // Array of floats
+
+// Advanced response handling
+$pending = $embeddings->create();                    // PendingEmbeddings for custom handling
+$response = $pending->get();                         // Execute and get response
+```
+
+
+## Working with Multiple Providers
 
 ```php
 <?php
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
-$docs = ['Computer vision models are used to analyze images and videos.'];
-
-$embedding = (new Embeddings)
+// OpenAI embeddings
+$openaiVectors = (new Embeddings())
     ->using('openai')
-    ->with(input: $docs)
+    ->withModel('text-embedding-3-large')
+    ->with(['Document 1', 'Document 2'])
     ->vectors();
-?>
+
+// Cohere embeddings  
+$cohereVectors = (new Embeddings())
+    ->using('cohere')
+    ->withModel('embed-english-v3.0')
+    ->with(['Document 1', 'Document 2'])
+    ->vectors();
+
+echo "OpenAI dimensions: " . count($openaiVectors[0]->values()) . "\n";
+echo "Cohere dimensions: " . count($cohereVectors[0]->values()) . "\n";
 ```
 
 
-## Specifying Models for Embeddings
+## Custom Configuration
 
-```php
-<?php
-use Cognesy\Polyglot\Embeddings\Embeddings;
-
-$embeddings = new Embeddings('openai');
-
-// Use the default model
-$defaultVector = $embeddings->with("Sample text")->first()->values();
-
-// Use a specific model
-$largeVector = $embeddings->withModel('text-embedding-3-large')
-    ->with("Sample text")
-    ->first()
-    ->values();
-
-echo "Default model dimensions: " . count($defaultVector) . "\n";
-echo "Large model dimensions: " . count($largeVector) . "\n";
-```
-
-
-## Creating Custom Configuration
-
-You can create a custom configuration for your embeddings provider, allowing you to specify different models, dimensions, and other parameters:
+Create custom configurations for specific use cases:
 
 ```php
 <?php
 use Cognesy\Polyglot\Embeddings\Config\EmbeddingsConfig;
 use Cognesy\Polyglot\Embeddings\Embeddings;
 
-// Create a custom embeddings configuration
-$embeddingsConfig = new EmbeddingsConfig(
+// Create custom configuration
+$config = new EmbeddingsConfig(
     apiUrl: 'https://api.openai.com/v1',
     apiKey: getenv('OPENAI_API_KEY'),
     endpoint: '/embeddings',
@@ -131,13 +179,26 @@ $embeddingsConfig = new EmbeddingsConfig(
     driver: 'openai'
 );
 
-// Use the custom configuration
-$embeddings = new Embeddings();
-$embeddings->withConfig($embeddingsConfig);
+// Use custom configuration
+$embeddings = (new Embeddings())
+    ->withConfig($config)
+    ->with('Custom configuration example');
 
-$vector = $embeddings->with('Custom configuration example')
-    ->first()
-    ->values();
-
+$vector = $embeddings->first()->values();
 echo "Generated embedding with " . count($vector) . " dimensions\n";
+```
+
+
+## Driver Registration
+
+Register custom drivers for new providers:
+
+```php
+// Register with class name
+Embeddings::registerDriver('custom-provider', CustomEmbeddingsDriver::class);
+
+// Register with factory callable
+Embeddings::registerDriver('custom-provider', function($config, $httpClient) {
+    return new CustomEmbeddingsDriver($config, $httpClient);
+});
 ```

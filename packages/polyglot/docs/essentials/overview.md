@@ -136,7 +136,6 @@ $answer = (new Inference)
     ->using('openai') // optional, default is set in /config/llm.php
     ->withMessages([['role' => 'user', 'content' => 'What is capital of France']])
     ->withOptions(['max_tokens' => 64])
-    ->with()
     ->get();
 
 echo "USER: What is capital of France\n";
@@ -193,11 +192,11 @@ the client connection.
         'cohere' => [ ... ],
         'fireworks' => [ ... ],
         'gemini' => [ ... ],
-        'grok' => [ ... ],
+        'xai' => [ ... ],
         'groq' => [ ... ],
         'mistral' => [ ... ],
         'ollama' => [
-            'providerType' => 'ollama',
+            'driver' => 'ollama',
             'apiUrl' => 'http://localhost:11434/v1',
             'apiKey' => Env::get('OLLAMA_API_KEY', ''),
             'endpoint' => '/chat/completions',
@@ -225,7 +224,7 @@ $answer = (new Inference)
         messages: [['role' => 'user', 'content' => 'What is the capital of France']],
         options: ['max_tokens' => 64]
     )
-    ->toText();
+    ->get();
 // ...
 ```
 
