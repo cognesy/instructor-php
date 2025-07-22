@@ -20,6 +20,13 @@ class Uuid {
         return self::fromRandomBytes();
     }
 
+    public static function hex(int $length = 4) : string {
+        if ($length <= 0) {
+            throw new \InvalidArgumentException('Length must be a positive integer.');
+        }
+        return bin2hex(random_bytes($length));
+    }
+
     /**
      * Generates a UUID using random bytes.
      *

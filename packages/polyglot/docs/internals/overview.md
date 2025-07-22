@@ -21,7 +21,7 @@ and promotes extensibility. The high-level architecture consists of:
 4. **Configuration Layer**: Configuration management for different providers and models
 
 
-```
+```text
 +---------------------+    +---------------------+
 |      Inference      |    |     Embeddings      |
 +---------------------+    +---------------------+

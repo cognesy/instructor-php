@@ -28,7 +28,8 @@
     "cognesy/instructor-struct": "^1.1",
     "cognesy/instructor-auxiliary": "^1.1",
     "toolkit/cli-utils": "^2.0",
-    "cebe/markdown": "^1.2"
+    "cebe/markdown": "^1.2",
+    "nikic/iter": "^2.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

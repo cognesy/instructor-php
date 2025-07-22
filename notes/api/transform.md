@@ -1,7 +1,6 @@
 
 
 ```php
-<?php
 $output = StructuredOutput::transform(
     [
         'name' => 'name',

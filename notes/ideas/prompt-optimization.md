@@ -16,9 +16,6 @@ instructions and examples (e.g. similar to DSPy).
 - CanOptimize::optimize() - check results from evaluator and modify the instructions
 
 ```php
-<?php
-
-
 IdentifyProjectIssues::with($emailContent)
     ->inputs(Scalar::STRING)
     ->outputs(Sequence::of(Issue::class));
@@ -41,6 +38,4 @@ class IdentifyProjectIssues extends Transformer {
         }
     }
 }
-
-?>
 ```

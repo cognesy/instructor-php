@@ -94,10 +94,12 @@
     "icanhazstring/composer-unused": "^0.9.0",
     "illuminate/http": "^11.37",
     "jetbrains/phpstorm-attributes": "^1.2",
+    "league/commonmark": "^2.7",
     "league/html-to-markdown": "^5.1",
     "maglnet/composer-require-checker": "^4.16",
     "mockery/mockery": "^1.6",
     "monolog/monolog": "^3.9",
+    "nikic/iter": "^2.4",
     "pestphp/pest": "^2.0",
     "phpstan/phpstan": "^1.11",
     "psr/http-factory-implementation": "*",
@@ -137,7 +139,7 @@
     "vlucas/phpdotenv": "^5.6"
   },
   "scripts": {
-    "hub": "bin/instructor-hub",
+    "hub": "@php ./bin/instructor-hub",
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
     "tell": "bin/tell",

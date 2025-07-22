@@ -245,7 +245,6 @@ Connecting to LLM API via predefined connection is as simple as calling `withCli
 method with the connection name.
 
 ```php
-<?php
 // ...
 $user = (new StructuredOutput)
     ->using('ollama')
@@ -272,7 +271,6 @@ The `input` field of Instructor's `create()` and `request()` methods
 can be an object, but also an array or just a string.
 
 ```php
-<?php
 use Cognesy\Instructor\StructuredOutput;
 
 class Email {
@@ -379,7 +377,6 @@ Instructor supports streaming of partial results, allowing you to start
 processing the data as soon as it is available.
 
 ```php
-<?php
 use Cognesy\Instructor\StructuredOutput;
 
 $stream = (new StructuredOutput)->with(
@@ -398,7 +395,6 @@ foreach ($stream as $partialPerson) {
 $person = $stream->getLastUpdate()
 // ...to, for example, save it to the database
 $db->save($person);
-?>
 ```
 
 
@@ -668,7 +664,6 @@ LLM to infer from the provided text or chat messages.
 Example below demonstrates how to define a structure and use it as a response model:
 
 ```php
-<?php
 use Cognesy\Dynamic\Field;
 use Cognesy\Dynamic\Structure;
 
@@ -692,7 +687,6 @@ $person = (new StructuredOutput)->with(
 assert($person->field('name') === 'Jason');
 // ...or as structure object properties
 assert($person->age === 25);
-?>
 ```
 
 For more information see [Structures](docs/structures.md) section.

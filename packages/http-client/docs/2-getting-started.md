@@ -49,8 +49,6 @@ Using the Instructor HTTP client API involves a few key steps:
 Here's a simple example:
 
 ```php
-<?php
-
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 
@@ -104,7 +102,6 @@ Create the configuration files in your project:
 
 **config/http.php:**
 ```php
-<?php
 return [
     'defaultClient' => 'guzzle',
     'clients' => [
@@ -141,7 +138,6 @@ return [
 
 **config/debug.php:**
 ```php
-<?php
 return [
     'http' => [
         'enabled' => false, // enable/disable debug
@@ -180,8 +176,6 @@ $client->withDebugPreset('on');
 Let's put everything together with a practical example of making a POST request to create a new resource:
 
 ```php
-<?php
-
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;
@@ -234,8 +228,6 @@ try {
 Here's an example of making a GET request to fetch data:
 
 ```php
-<?php
-
 use Cognesy\Http\HttpClient;
 use Cognesy\Http\Data\HttpRequest;
 use Cognesy\Http\Exceptions\HttpRequestException;

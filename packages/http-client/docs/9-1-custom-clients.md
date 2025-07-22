@@ -24,11 +24,18 @@ interface CanHandleHttpRequest
 Here's a template for creating a custom HTTP client driver:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use Exception;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use Exception;
 
 class CustomHttpDriver implements CanHandleHttpRequest
 {
@@ -124,8 +131,6 @@ class CustomHttpDriver implements CanHandleHttpRequest
 You also need to create a response adapter that implements the `HttpResponse` interface:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Adapters;
 
 use Cognesy\Http\Contracts\HttpResponse;
@@ -191,7 +196,9 @@ class YourHttpResponse implements HttpResponse
 Once you've implemented your custom driver, you can use it with the `HttpClient`:
 
 ```php
-use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\HttpClient;use YourNamespace\Http\Drivers\CustomHttpDriver;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\HttpClient;
+use YourNamespace\Http\Drivers\CustomHttpDriver;
 
 // Create a configuration for your custom driver
 $config = new HttpClientConfig(
@@ -219,11 +226,18 @@ $response = $client->withRequest(new HttpRequest(/* ... */))->get();
 Here's a practical example of implementing a custom driver using PHP's cURL extension directly:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Drivers;
 
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Config\HttpClientConfig;use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;use Cognesy\Http\Exceptions\HttpRequestException;use YourNamespace\Http\Adapters\CurlHttpResponse;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Config\HttpClientConfig;
+use Cognesy\Http\Contracts\CanHandleHttpRequest;
+use Cognesy\Http\Contracts\HttpResponse;
+use Cognesy\Http\Data\HttpRequest;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Http\Exceptions\HttpRequestException;
+use YourNamespace\Http\Adapters\CurlHttpResponse;
 
 class CurlHttpDriver implements CanHandleHttpRequest
 {
@@ -432,8 +446,6 @@ class CurlHttpDriver implements CanHandleHttpRequest
 And here's the corresponding response adapter:
 
 ```php
-<?php
-
 namespace YourNamespace\Http\Adapters;
 
 use Cognesy\Http\Contracts\HttpResponse;

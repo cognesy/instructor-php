@@ -12,21 +12,39 @@ use Cognesy\InstructorHub\Commands\ShowExample;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
+use Cognesy\InstructorHub\TestDocs\Batch\BatchProcessingService;
+use Cognesy\InstructorHub\TestDocs\Commands\MarkSnippets;
+use Cognesy\InstructorHub\TestDocs\Commands\MarkSnippetsRecursively;
+use Cognesy\InstructorHub\TestDocs\DocRepo\DocRepository;
+use Cognesy\InstructorHub\TestDocs\FileDiscovery\FileDiscoveryService;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Filesystem\Filesystem;
 
 class Hub extends Application
 {
-    public function __construct()
-    {
+    private ExampleRepository $exampleRepo;
+    private MintlifyDocGenerator $docGen;
+    private Runner $runner;
+    private Filesystem $filesystem;
+    private DocRepository $docRepository;
+    private $fileDiscoveryService;
+    private $batchProcessingService;
+
+    public function __construct() {
         parent::__construct('Hub // Instructor for PHP', '1.0.0');
         //$this->setDescription('(^) Get typed structured outputs from LLMs');
 
-        $exampleRepo = new ExampleRepository(
+        $this->registerServices();
+        $this->registerCommands();
+    }
+
+    private function registerServices(): void
+    {
+        $this->exampleRepo = new ExampleRepository(
             BasePath::get('examples'),
         );
-
-        $docGen = new MintlifyDocGenerator(
-            examples: $exampleRepo,
+        $this->docGen = new MintlifyDocGenerator(
+            examples: $this->exampleRepo,
             docsSourceDir: BasePath::get('docs'),
             docsTargetDir: BasePath::get('docs-build'),
             cookbookTargetDir: BasePath::get('docs-build/cookbook'),
@@ -53,24 +71,40 @@ class Hub extends Application
                 'Cookbook \ Prompting \ Self-Criticism',
                 'Cookbook \ Prompting \ Decomposition',
                 'Cookbook \ Prompting \ Miscellaneous',
-            ]
+            ],
         );
-
-        $runner = new Runner(
-            examples: $exampleRepo,
+        $this->runner = new Runner(
+            examples: $this->exampleRepo,
             displayErrors: true,
             stopAfter: 0,
-            stopOnError: false
+            stopOnError: false,
         );
 
+        $this->filesystem = new Filesystem();
+        $this->docRepository = new DocRepository($this->filesystem);
+        $this->fileDiscoveryService = new FileDiscoveryService();
+        $this->batchProcessingService = new BatchProcessingService(
+            $this->docRepository,
+        );
+    }
+
+    private function registerCommands(): void
+    {
         // Register commands
         $this->addCommands([
-            new GenerateDocs($docGen),
-            new ClearDocs($docGen),
-            new ListAllExamples($exampleRepo),
-            new RunAllExamples($runner),
-            new RunOneExample($runner, $exampleRepo),
-            new ShowExample($exampleRepo),
+            new GenerateDocs($this->docGen),
+            new ClearDocs($this->docGen),
+            new ListAllExamples($this->exampleRepo),
+            new RunAllExamples($this->runner),
+            new RunOneExample($this->runner, $this->exampleRepo),
+            new ShowExample($this->exampleRepo),
+            new MarkSnippets(
+                $this->docRepository,
+            ),
+            new MarkSnippetsRecursively(
+                $this->fileDiscoveryService,
+                $this->batchProcessingService,
+            ),
         ]);
     }
 }
