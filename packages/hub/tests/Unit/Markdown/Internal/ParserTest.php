@@ -154,7 +154,7 @@ describe('Parser', function () {
             
             expect($codeBlock->language)->toBe('php')
                 ->and($codeBlock->metadata)->toBe([
-                    'marked' => '1',
+                    'marked' => 1,  // Now correctly parsed as integer
                     'author' => 'jclaude',
                     'lastUpdate' => '2025-05-07@10:01:12'
                 ]);
@@ -175,14 +175,14 @@ describe('Parser', function () {
                 ->and($codeBlock->language)->toBe('javascript')
                 ->and($codeBlock->metadata)->toBe([
                     'id' => 'abc1',
-                    'marked' => '1'
+                    'marked' => 1  // Now correctly parsed as integer
                 ]);
         });
 
-        it('extracts snippet ID from content comment', function () {
+        it('extracts ID from @doctest annotation', function () {
             $tokens = [
                 new Token(TokenType::CodeBlockFenceStart, '```', 1),
-                new Token(TokenType::CodeBlockContent, '// @snippetId="def4"\necho "test";', 2),
+                new Token(TokenType::CodeBlockContent, "// @doctest id=\"def4\"\necho \"test\";", 2),
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
@@ -192,18 +192,17 @@ describe('Parser', function () {
             expect($codeBlock->id)->toBe('codeblock_def4');
         });
 
-        it('prioritizes snippet ID from content over metadata', function () {
+        it('throws exception when fence metadata and @doctest have conflicting keys', function () {
             $tokens = [
                 new Token(TokenType::CodeBlockFenceStart, '```', 1),
                 new Token(TokenType::CodeBlockFenceInfo, 'php id=abc1', 1),
-                new Token(TokenType::CodeBlockContent, '// @snippetId="def4"\necho "test";', 2),
+                new Token(TokenType::CodeBlockContent, "// @doctest id=\"def4\"\necho \"test\";", 2),
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
-            $codeBlock = $document->children[0];
-            
-            expect($codeBlock->id)->toBe('codeblock_def4');
+            expect(function() use ($tokens) {
+                DocumentNode::fromIterator($this->parser->parse($tokens));
+            })->toThrow(\Cognesy\InstructorHub\Markdown\Exceptions\MetadataConflictException::class);
         });
 
         it('handles empty code block', function () {
@@ -277,7 +276,7 @@ describe('Parser', function () {
             
             expect($document->children[6])->toBeInstanceOf(CodeBlockNode::class);
             expect($document->children[6]->language)->toBe('php');
-            expect($document->children[6]->metadata)->toBe(['marked' => '1']);
+            expect($document->children[6]->metadata)->toBe(['marked' => 1]);  // Now correctly parsed as integer
             expect($document->children[6]->content)->toBe("echo 'Hello World';");
             
             expect($document->children[9])->toBeInstanceOf(HeaderNode::class);
@@ -336,9 +335,9 @@ describe('Parser', function () {
             
             expect($codeBlock->language)->toBe('bash')
                 ->and($codeBlock->metadata)->toBe([
-                    'title' => '"My Script"',
-                    'version' => '1.2.3',
-                    'debug' => 'true'
+                    'title' => 'My Script',  // Quotes are properly removed
+                    'version' => '1.2.3',    // Parsed as string (has 3 parts)
+                    'debug' => true          // Parsed as boolean
                 ]);
         });
 
@@ -358,6 +357,114 @@ describe('Parser', function () {
                     'author' => 'jane',
                     'date' => '2024-01-01'
                 ]);
+        });
+
+        it('parses array parameters in fence info', function () {
+            $tokens = [
+                new Token(TokenType::CodeBlockFenceStart, '```', 1),
+                new Token(TokenType::CodeBlockFenceInfo, 'python retries=[1, 2, 3] tags=["test", "demo"]', 1),
+                new Token(TokenType::CodeBlockContent, "print('hello')", 2),
+                new Token(TokenType::CodeBlockFenceEnd, '```', 3)
+            ];
+            
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
+            $codeBlock = $document->children[0];
+            
+            expect($codeBlock->language)->toBe('python')
+                ->and($codeBlock->metadata)->toBe([
+                    'retries' => [1, 2, 3],
+                    'tags' => ['test', 'demo']
+                ]);
+        });
+
+        it('parses @doctest annotations in code content', function () {
+            $tokens = [
+                new Token(TokenType::CodeBlockFenceStart, '```', 1),
+                new Token(TokenType::CodeBlockFenceInfo, 'php', 1),
+                new Token(TokenType::CodeBlockContent, "// @doctest timeout=5000 id=\"test123\"\necho \"test\";", 2),
+                new Token(TokenType::CodeBlockFenceEnd, '```', 3)
+            ];
+            
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
+            $codeBlock = $document->children[0];
+            
+            expect($codeBlock->language)->toBe('php')
+                ->and($codeBlock->id)->toBe('codeblock_test123')
+                ->and($codeBlock->metadata)->toBe([
+                    'timeout' => 5000,
+                    'id' => 'test123'
+                ]);
+        });
+
+        it('combines fence metadata and @doctest metadata without conflicts', function () {
+            $tokens = [
+                new Token(TokenType::CodeBlockFenceStart, '```', 1),
+                new Token(TokenType::CodeBlockFenceInfo, 'php timeout=1000 debug=true', 1),
+                new Token(TokenType::CodeBlockContent, "// @doctest id=\"test123\" verbose=false\necho \"test\";", 2),
+                new Token(TokenType::CodeBlockFenceEnd, '```', 3)
+            ];
+            
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
+            $codeBlock = $document->children[0];
+            
+            expect($codeBlock->language)->toBe('php')
+                ->and($codeBlock->id)->toBe('codeblock_test123')
+                ->and($codeBlock->metadata)->toBe([
+                    'timeout' => 1000,   // from fence
+                    'debug' => true,     // from fence
+                    'id' => 'test123',   // from @doctest
+                    'verbose' => false   // from @doctest
+                ]);
+        });
+
+        it('handles different comment styles for @doctest', function () {
+            $tokens = [
+                new Token(TokenType::CodeBlockFenceStart, '```', 1),
+                new Token(TokenType::CodeBlockFenceInfo, 'python', 1),
+                new Token(TokenType::CodeBlockContent, "# @doctest param=\"python_test\"\nprint(\"hello\")", 2),
+                new Token(TokenType::CodeBlockFenceEnd, '```', 3)
+            ];
+            
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
+            $codeBlock = $document->children[0];
+            
+            expect($codeBlock->language)->toBe('python')
+                ->and($codeBlock->metadata)->toBe([
+                    'param' => 'python_test'
+                ]);
+        });
+
+        it('uses extracted ID when no id in fence or @doctest metadata', function () {
+            $tokens = [
+                new Token(TokenType::CodeBlockFenceStart, '```', 1),
+                new Token(TokenType::CodeBlockFenceInfo, 'php debug=true', 1),
+                new Token(TokenType::CodeBlockContent, "// @doctest id=\"extracted123\" timeout=5000\necho \"test\";", 2),
+                new Token(TokenType::CodeBlockFenceEnd, '```', 3)
+            ];
+            
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
+            $codeBlock = $document->children[0];
+            
+            expect($codeBlock->language)->toBe('php')
+                ->and($codeBlock->id)->toBe('codeblock_extracted123')
+                ->and($codeBlock->metadata)->toBe([
+                    'debug' => true,         // from fence
+                    'id' => 'extracted123',  // from @doctest
+                    'timeout' => 5000       // from @doctest
+                ]);
+        });
+
+        it('throws exception for conflicting non-id metadata keys', function () {
+            $tokens = [
+                new Token(TokenType::CodeBlockFenceStart, '```', 1),
+                new Token(TokenType::CodeBlockFenceInfo, 'php timeout=1000', 1),
+                new Token(TokenType::CodeBlockContent, "// @doctest timeout=2000\necho \"test\";", 2),
+                new Token(TokenType::CodeBlockFenceEnd, '```', 3)
+            ];
+            
+            expect(function() use ($tokens) {
+                DocumentNode::fromIterator($this->parser->parse($tokens));
+            })->toThrow(\Cognesy\InstructorHub\Markdown\Exceptions\MetadataConflictException::class);
         });
     });
 });

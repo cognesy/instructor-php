@@ -75,12 +75,12 @@ final class Parser
         
         // Check for optional CodeBlockFenceInfo (language and metadata)
         $language = '';
-        $metadata = [];
+        $fenceMetadata = [];
         if ($this->hasMoreTokens && $this->currentToken !== null 
             && $this->currentToken->type === TokenType::CodeBlockFenceInfo) {
-            $fenceInfo = $this->parseFenceInfo($this->currentToken->value);
+            $fenceInfo = CodeBlockMetadataParser::parseFenceLineMetadata($this->currentToken->value);
             $language = $fenceInfo['language'];
-            $metadata = $fenceInfo['metadata'];
+            $fenceMetadata = $fenceInfo['metadata'];
             $this->advance();
         }
         
@@ -113,16 +113,25 @@ final class Parser
             return null;
         }
         
-        // Extract or generate codeblock ID
-        $codeblockId = CodeBlockIdentifier::extractId($content)
-            ?: ($metadata['id'] ?? null)
-            ?: CodeBlockIdentifier::generateId();
+        // Extract metadata from different sources
+        $extractedId = CodeBlockIdentifier::extractId($content);
+        $doctestMetadata = CodeBlockMetadataParser::extractDoctestMetadata($content, $language);
+        
+        // Combine metadata with precedence: @doctest > fence params > extracted ID
+        $combinedMetadata = CodeBlockMetadataParser::combineMetadata(
+            $fenceMetadata, 
+            $doctestMetadata, 
+            $extractedId
+        );
+        
+        // Generate codeblock ID using centralized method
+        $fullId = CodeBlockIdentifier::createCodeBlockId($combinedMetadata['id'] ?? null);
             
         return new CodeBlockNode(
-            "codeblock_{$codeblockId}", 
+            $fullId, 
             $language, 
             $contentWithoutPhpTags,  // Store clean content as main content
-            $metadata,
+            $combinedMetadata,
             $hasPhpOpenTag,
             $hasPhpCloseTag,
             $content  // Store original content with PHP tags for reference if needed
@@ -134,57 +143,4 @@ final class Parser
         return new ContentNode($token->value);
     }
 
-    private function parseFenceInfo(string $fenceInfo): array {
-        $fenceInfo = trim($fenceInfo);
-        $parts = [];
-        $current = '';
-        $inQuotes = false;
-        $quoteChar = null;
-
-        $fenceInfoLength = strlen($fenceInfo);
-        for ($i = 0; $i < $fenceInfoLength; $i++) {
-            $char = $fenceInfo[$i];
-            
-            if (!$inQuotes && ($char === '"' || $char === "'")) {
-                $inQuotes = true;
-                $quoteChar = $char;
-                $current .= $char;
-            } elseif ($inQuotes && $char === $quoteChar) {
-                $inQuotes = false;
-                $quoteChar = null;
-                $current .= $char;
-            } elseif (!$inQuotes && ctype_space($char)) {
-                if ($current !== '') {
-                    $parts[] = $current;
-                    $current = '';
-                }
-            } else {
-                $current .= $char;
-            }
-        }
-        
-        if ($current !== '') {
-            $parts[] = $current;
-        }
-        
-        // The first part is the language
-        $language = $parts[0] ?? '';
-
-        // Parse other values
-        $metadata = [];
-        $partsCount = count($parts);
-        for ($i = 1; $i < $partsCount; $i++) {
-            // key=value pairs
-            if (str_contains($parts[$i], '=')) {
-                [$key, $value] = explode('=', $parts[$i], 2);
-                $metadata[$key] = $value;
-            }
-            // standalone values - treated as boolean flags
-            else {
-                $metadata[$parts[$i]] = true;
-            }
-        }
-        
-        return ['language' => $language, 'metadata' => $metadata];
-    }
 }

@@ -5,20 +5,19 @@ namespace Cognesy\InstructorHub\Markdown\Internal;
 final class CodeBlockIdentifier
 {
     /**
-     * Extracts snippet ID from codeblock content using language-appropriate comment syntax
+     * Extracts ID from @doctest annotation using language-appropriate comment syntax
+     * Returns the raw ID without the 'codeblock_' prefix
      */
     public static function extractId(string $content): string {
-        $patterns = [
-            '/\/\/\s*@snippetId="([a-zA-Z0-9_-]+)"/',  // // style
-            '/#\s*@snippetId="([a-zA-Z0-9_-]+)"/',     // # style
-            '/<!--\s*@snippetId="([a-zA-Z0-9_-]+)"/',  // <!-- style
-            '/\/\*\s*@snippetId="([a-zA-Z0-9_-]+)"/',  // /* style
-            '/--\s*@snippetId="([a-zA-Z0-9_-]+)"/',    // -- style
-        ];
+        $allSyntax = ['//','#','<!--','/*','--']; // All possible comment styles
         
-        foreach ($patterns as $pattern) {
+        foreach ($allSyntax as $syntax) {
+            $escapedSyntax = preg_quote($syntax, '/');
+            // Match @doctest with id parameter - stop at line end
+            $pattern = "/^{$escapedSyntax}\s*@doctest\s+.*?id=([\"']?)([a-zA-Z0-9_-]+)\\1.*?$/m";
+            
             if (preg_match($pattern, $content, $matches)) {
-                return $matches[1];
+                return $matches[2]; // Return the ID value
             }
         }
         
@@ -26,34 +25,26 @@ final class CodeBlockIdentifier
     }
 
     /**
-     * Checks if content already has a snippet ID embedded
-     */
-    public static function hasId(string $content): bool {
-        return self::extractId($content) !== '';
-    }
-
-    /**
-     * Embeds snippet ID into content using language-appropriate comment syntax
-     */
-    public static function embedId(string $content, string $snippetId, string $language): string {
-        if (self::hasId($content)) {
-            return $content;
-        }
-
-        $commentSyntax = self::getCommentSyntax($language);
-        
-        if (!empty(trim($content))) {
-            return "{$commentSyntax} @snippetId=\"{$snippetId}\"\n{$content}";
-        } else {
-            return "{$commentSyntax} @snippetId=\"{$snippetId}\"";
-        }
-    }
-
-    /**
      * Generates a new 4-character hex ID
      */
     public static function generateId(): string {
         return bin2hex(random_bytes(2));
+    }
+
+    /**
+     * Creates a complete codeblock ID with the 'codeblock_' prefix
+     * Uses provided ID or generates a new one if none provided
+     */
+    public static function createCodeBlockId(?string $id = null): string {
+        $actualId = $id ?? self::generateId();
+        return "codeblock_{$actualId}";
+    }
+
+    /**
+     * Extracts the raw ID part from a full codeblock ID (removes 'codeblock_' prefix)
+     */
+    public static function extractRawId(string $codeblockId): string {
+        return str_replace('codeblock_', '', $codeblockId);
     }
 
     /**

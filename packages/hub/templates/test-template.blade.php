@@ -14,7 +14,7 @@ afterEach(function () {
  * Test for {{ $id }}
  */
 it('test of codeblock {{ $id }}', function () {
-    // @snippetId="{{$id}}"
+    // @doctest id="{{$id}}"
 
     {{ $code }}
 

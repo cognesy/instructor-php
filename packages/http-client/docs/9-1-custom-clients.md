@@ -1,6 +1,10 @@
 ---
 title: Using Custom HTTP Clients
 description: 'Learn how to create and use custom HTTP client drivers.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'CustomClients_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 While the Instructor HTTP client API provides built-in support for popular HTTP client libraries (Guzzle, Symfony, and Laravel), there may be cases where you need to integrate with other HTTP client libraries or create specialized implementations. This chapter covers how to create and use custom HTTP client drivers.

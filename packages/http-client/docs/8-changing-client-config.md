@@ -1,6 +1,10 @@
 ---
 title: Customizing Client Configuration
 description: 'Learn how to configure different HTTP clients using the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'ClientConfig_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 The Instructor HTTP client API offers extensive configuration options to customize client behavior for different scenarios. This chapter explores how to configure clients through configuration files and at runtime.

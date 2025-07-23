@@ -123,6 +123,6 @@ MD;
             ->and($serialized)->toContain('echo "Hello World";')
             ->and($serialized)->toContain('?>')
             ->and($serialized)->toContain('```')
-            ->and($serialized)->toContain('// @snippetId=');
+            ->and($serialized)->toContain('// @doctest id=');
     });
 });

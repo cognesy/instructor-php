@@ -1,6 +1,10 @@
 ---
 title: Streaming Responses
 description: 'Learn how to handle streaming responses using the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'StreamingResponses_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 Streaming responses are a powerful feature that allows processing data as it arrives from the server, rather than waiting for the entire response to be received. This is particularly valuable when:

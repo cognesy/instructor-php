@@ -1,6 +1,10 @@
 ---
 title: Troubleshooting
 description: 'Learn how to troubleshoot issues with the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'Troubleshooting_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 Even with a well-designed API, you may encounter issues when working with HTTP requests and responses. This chapter covers common problems, debugging techniques, and error handling strategies for the Instructor HTTP client API.

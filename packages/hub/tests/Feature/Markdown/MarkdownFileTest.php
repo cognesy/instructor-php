@@ -18,13 +18,13 @@ describe('MarkdownFile Feature Tests', function () {
             ```php marked=1 author=jane
             <?php
             echo "Hello, World!";
-            // @snippetId="abc1"
+            // @doctest id="abc1"
             ?>
             ```
 
             And here's a JavaScript example:
 
-            ```javascript version=2.0
+            ```javascript version='2.0'
             console.log('Hello from JS');
             ```
 
@@ -57,10 +57,10 @@ describe('MarkdownFile Feature Tests', function () {
 
             $phpBlock = $codeblocks[0];
             expect($phpBlock->language)->toBe('php')
-                ->and($phpBlock->metadata)->toBe(['marked' => '1', 'author' => 'jane'])
+                ->and($phpBlock->metadata)->toBe(['marked' => 1, 'author' => 'jane', 'id' => 'abc1'])  // includes extracted ID
                 ->and($phpBlock->id)->toBe('codeblock_abc1')
                 ->and($phpBlock->content)->toContain('echo "Hello, World!"')
-                ->and($phpBlock->content)->toContain('@snippetId="abc1"');
+                ->and($phpBlock->content)->toContain('@doctest id="abc1"');
 
             $jsBlock = $codeblocks[1];
             expect($jsBlock->language)->toBe('javascript')
@@ -153,11 +153,11 @@ describe('MarkdownFile Feature Tests', function () {
             expect($codeblocks[0]->id)->not->toBe($codeblocks[1]->id);
         });
 
-        it('respects snippet IDs in code comments', function () {
+        it('respects IDs in @doctest annotations', function () {
             $input = <<<'MARKDOWN'
             ```php
             <?php
-            // @snippetId="test"
+            // @doctest id="test"
             echo "Hello";
             ?>
             ```
@@ -169,11 +169,26 @@ describe('MarkdownFile Feature Tests', function () {
             expect($codeblocks[0]->id)->toBe('codeblock_test');
         });
 
-        it('prioritizes comment snippetId over fence metadata', function () {
+        it('throws exception for conflicting fence metadata and @doctest ID', function () {
             $input = <<<'MARKDOWN'
             ```php id=fence
             <?php
-            // @snippetId="comm"
+            // @doctest id="comm"
+            echo "Hello";
+            ?>
+            ```
+            MARKDOWN;
+
+            expect(function() use ($input) {
+                MarkdownFile::fromString($input);
+            })->toThrow(\Cognesy\InstructorHub\Markdown\Exceptions\MetadataConflictException::class);
+        });
+
+        it('combines fence metadata and @doctest metadata without conflicts', function () {
+            $input = <<<'MARKDOWN'
+            ```php timeout=1000
+            <?php
+            // @doctest id="test123"
             echo "Hello";
             ?>
             ```
@@ -182,7 +197,9 @@ describe('MarkdownFile Feature Tests', function () {
             $markdownFile = MarkdownFile::fromString($input);
             $codeblocks = iterator_to_array($markdownFile->codeBlocks());
 
-            expect($codeblocks[0]->id)->toBe('codeblock_comm');
+            // Should combine metadata from both sources
+            expect($codeblocks[0]->id)->toBe('codeblock_test123')
+                ->and($codeblocks[0]->metadata)->toBe(['timeout' => 1000, 'id' => 'test123']);
         });
     });
 
@@ -208,6 +225,70 @@ describe('MarkdownFile Feature Tests', function () {
                 ->and($output)->toContain('```')
                 ->and($output)->toContain('echo "test";')
                 ->and($output)->toContain('## Section');
+        });
+
+        it('renders metadata with comments style by default', function () {
+            $input = <<<'MARKDOWN'
+            ```php timeout=1000 debug=true
+            // @doctest id="test123" verbose=false
+            echo "Hello World";
+            ```
+            MARKDOWN;
+
+            $markdownFile = MarkdownFile::fromString($input);
+            $output = $markdownFile->toString(\Cognesy\InstructorHub\Markdown\Enums\MetadataStyle::Comments);
+
+            expect($output)->toContain('```php')
+                ->and($output)->toContain('// @doctest timeout=1000 debug=true id="test123" verbose=false')
+                ->and($output)->toContain('echo "Hello World";')
+                ->and($output)->not->toContain('```php timeout=1000 debug=true') // Should not have metadata in fence line
+                ->and($output)->not->toContain('// @doctest id="test123" verbose=false'); // Should not have original line
+        });
+
+        it('renders metadata with fence style', function () {
+            $input = <<<'MARKDOWN'
+            ```php timeout=1000 debug=true
+            // @doctest id="test123" verbose=false
+            echo "Hello World";
+            ```
+            MARKDOWN;
+
+            $markdownFile = MarkdownFile::fromString($input);
+            $output = $markdownFile->toString(\Cognesy\InstructorHub\Markdown\Enums\MetadataStyle::Fence);
+
+            expect($output)->toContain('```php timeout=1000 debug=true verbose=false') // Metadata in fence line
+                ->and($output)->toContain('// @doctest id="test123"') // Only ID in comment
+                ->and($output)->toContain('echo "Hello World";')
+                ->and($output)->not->toContain('// @doctest id="test123" verbose=false'); // Should not have original line
+        });
+
+        it('handles boolean, array, and string values correctly in fence style', function () {
+            $input = <<<'MARKDOWN'
+            ```php timeout=5000 debug=true tags=["test", "demo"] name="example"
+            echo "test";
+            ```
+            MARKDOWN;
+
+            $markdownFile = MarkdownFile::fromString($input);
+            $output = $markdownFile->toString(\Cognesy\InstructorHub\Markdown\Enums\MetadataStyle::Fence);
+
+            expect($output)->toContain('```php timeout=5000 debug=true tags=["test", "demo"] name="example"')
+                ->and($output)->toContain('echo "test";');
+        });
+
+        it('handles boolean, array, and string values correctly in comments style', function () {
+            $input = <<<'MARKDOWN'
+            ```php timeout=5000 debug=true tags=["test", "demo"] name="example"
+            echo "test";
+            ```
+            MARKDOWN;
+
+            $markdownFile = MarkdownFile::fromString($input);
+            $output = $markdownFile->toString(\Cognesy\InstructorHub\Markdown\Enums\MetadataStyle::Comments);
+
+            expect($output)->toContain('```php')
+                ->and($output)->toContain('// @doctest timeout=5000 debug=true tags=["test", "demo"] name="example"')
+                ->and($output)->toContain('echo "test";');
         });
 
         it('preserves language in code blocks', function () {
@@ -299,7 +380,7 @@ describe('MarkdownFile Feature Tests', function () {
             ```php marked=true secure=high
             <?php
             $token = authenticate_user($username, $password);
-            // @snippetId="auth"
+            // @doctest id="auth"
             ?>
             ```
 
@@ -351,7 +432,7 @@ describe('MarkdownFile Feature Tests', function () {
             $phpBlock = $codeblocks[0];
             expect($phpBlock->language)->toBe('php')
                 ->and($phpBlock->id)->toBe('codeblock_auth')
-                ->and($phpBlock->metadata)->toBe(['marked' => 'true', 'secure' => 'high']);
+                ->and($phpBlock->metadata)->toBe(['marked' => true, 'secure' => 'high', 'id' => 'auth']);  // includes extracted ID
 
             $getBlock = $codeblocks[1];
             expect($getBlock->language)->toBe('javascript')
@@ -385,7 +466,7 @@ This is sample content.
 ## Code Example
 
 ```php
-// @snippetId="auth"
+// @doctest id="auth"
 <?php
 $token = authenticate();
 ?>
@@ -394,7 +475,7 @@ $token = authenticate();
 Some text between blocks.
 
 ```javascript
-// @snippetId="fetch"
+// @doctest id="fetch"
 fetch('/api/data')
   .then(response => response.json());
 ```
@@ -420,8 +501,8 @@ MARKDOWN;
                 ->and($reconstructed)->toContain('```javascript')
                 ->and($reconstructed)->toContain('$token = authenticate();')
                 ->and($reconstructed)->toContain("fetch('/api/data')")
-                ->and($reconstructed)->toContain('@snippetId="auth"')
-                ->and($reconstructed)->toContain('@snippetId="fetch"');
+                ->and($reconstructed)->toContain('@doctest id="auth"')
+                ->and($reconstructed)->toContain('@doctest id="fetch"');
             
             // Parse the reconstructed markdown to ensure it's still valid
             $reparsed = MarkdownFile::fromString($reconstructed);
@@ -459,7 +540,7 @@ MARKDOWN;
                 ->toContain('```python')
                 ->toContain('echo "Hello World"')
                 ->toContain('print("Hello World")')
-                ->toContain('@snippetId='); // Should have generated IDs
+                ->toContain('@doctest id='); // Should have generated IDs
             
             // Verify IDs were generated for code blocks
             $codeblocks = iterator_to_array($markdownFile->codeBlocks());
@@ -482,7 +563,7 @@ Intro paragraph with **bold** and *italic* text.
 ### Subsection
 
 ```bash
-# @snippetId="setup"
+# @doctest id="setup"
 npm install
 npm run build
 ```
@@ -518,7 +599,7 @@ MARKDOWN;
                 ->toContain('"version": "1.0.0"')
                 ->toContain('Regular paragraph.')
                 ->toContain('Final paragraph.')
-                ->toContain('@snippetId="setup"');
+                ->toContain('@doctest id="setup"');
             
             // Ensure parsing still works correctly
             $reparsed = MarkdownFile::fromString($reconstructed);

@@ -2,6 +2,7 @@
 
 namespace Cognesy\InstructorHub\Markdown;
 
+use Cognesy\InstructorHub\Markdown\Enums\MetadataStyle;
 use Cognesy\InstructorHub\Markdown\Internal\CodeBlockManipulator;
 use Cognesy\InstructorHub\Markdown\Internal\Lexer;
 use Cognesy\InstructorHub\Markdown\Internal\Parser;
@@ -29,9 +30,10 @@ final readonly class MarkdownFile
         string $path = '',
         array $metadata = [],
     ): self {
+        $parsedDocument = FrontMatter::createYaml()->parse($text);
         return new self(
-            document: self::parseMarkdown($text),
-            metadata: $metadata ?: FrontMatter::createYaml()->parse($text)->getData(),
+            document: self::parseMarkdown($parsedDocument->getContent()),
+            metadata: $metadata ?: $parsedDocument->getData(),
             path: $path,
         );
     }
@@ -101,8 +103,8 @@ final readonly class MarkdownFile
         );
     }
 
-    public function toString(): string {
-        $content = $this->document->accept(new ToString());
+    public function toString(MetadataStyle $metadataStyle = MetadataStyle::Comments): string {
+        $content = $this->document->accept(new ToString($metadataStyle));
         return match(true) {
             !empty($this->metadata) => $this->makeFrontMatter() . $content,
             default => $content,
@@ -140,6 +142,7 @@ final readonly class MarkdownFile
     private function makeFrontMatter() : string {
         return "---\n"
             . Yaml::dump($this->metadata)
-            . "---\n\n";
+            . "---\n"
+            . "\n";
     }
 }
