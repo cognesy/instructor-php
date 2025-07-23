@@ -25,7 +25,7 @@ final class CodeBlockManipulator
         return $document->accept(new RetrieveCodeBlock($this->id))->content;
     }
 
-    public function node() : CodeBlockNode {
+    public function get() : CodeBlockNode {
         $document = $this->file->root();
         $node = $document->accept(new RetrieveCodeBlock($this->id));
         if (!$node instanceof CodeBlockNode) {

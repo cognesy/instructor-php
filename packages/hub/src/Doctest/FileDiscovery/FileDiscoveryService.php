@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\InstructorHub\TestDocs\FileDiscovery;
+namespace Cognesy\InstructorHub\Doctest\FileDiscovery;
 
 use InvalidArgumentException;
 use RuntimeException;

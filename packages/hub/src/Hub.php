@@ -12,11 +12,12 @@ use Cognesy\InstructorHub\Commands\ShowExample;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\InstructorHub\Services\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Services\Runner;
-use Cognesy\InstructorHub\TestDocs\Batch\BatchProcessingService;
-use Cognesy\InstructorHub\TestDocs\Commands\MarkSnippets;
-use Cognesy\InstructorHub\TestDocs\Commands\MarkSnippetsRecursively;
-use Cognesy\InstructorHub\TestDocs\DocRepo\DocRepository;
-use Cognesy\InstructorHub\TestDocs\FileDiscovery\FileDiscoveryService;
+use Cognesy\InstructorHub\Doctest\Batch\BatchProcessingService;
+use Cognesy\InstructorHub\Doctest\Commands\ExtractCodeBlocks;
+use Cognesy\InstructorHub\Doctest\Commands\MarkSnippets;
+use Cognesy\InstructorHub\Doctest\Commands\MarkSnippetsRecursively;
+use Cognesy\InstructorHub\Doctest\DocRepo\DocRepository;
+use Cognesy\InstructorHub\Doctest\FileDiscovery\FileDiscoveryService;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -104,6 +105,9 @@ class Hub extends Application
             new MarkSnippetsRecursively(
                 $this->fileDiscoveryService,
                 $this->batchProcessingService,
+            ),
+            new ExtractCodeBlocks(
+                $this->docRepository,
             ),
         ]);
     }

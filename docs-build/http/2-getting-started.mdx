@@ -1,6 +1,10 @@
 ---
 title: Getting Started
 description: 'Learn how to use the Instructor HTTP client API in your PHP project.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'GettingStarted_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 ## Installation
@@ -102,6 +106,7 @@ Create the configuration files in your project:
 
 **config/http.php:**
 ```php
+// @doctest skip=true
 return [
     'defaultClient' => 'guzzle',
     'clients' => [

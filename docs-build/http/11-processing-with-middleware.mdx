@@ -1,6 +1,10 @@
 ---
 title: Custom Processing with Middleware
 description: 'Learn how to use middleware to process HTTP requests and responses using the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'MiddlewareProcessing_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 While the Instructor HTTP client API provides several built-in middleware components, you'll often need to create custom middleware to handle specific requirements for your application. This chapter explores how to create custom middleware components and use response decoration for advanced processing.
@@ -17,55 +21,7 @@ There are three main approaches to creating custom middleware:
 
 The most direct approach is to implement the `HttpMiddleware` interface:
 
-```php
-<?php
-
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpMiddleware;
-use Cognesy\Http\Contracts\HttpResponse;
-use Cognesy\Http\Data\HttpRequest;
-
-class LoggingMiddleware implements HttpMiddleware
-{
-    private $logger;
-
-    public function __construct($logger)
-    {
-        $this->logger = $logger;
-    }
-
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
-    {
-        // Pre-request logging
-        $this->logger->info('Sending request', [
-            'url' => $request->url(),
-            'method' => $request->method(),
-            'headers' => $request->headers(),
-            'body' => $request->body()->toString(),
-        ]);
-
-        $startTime = microtime(true);
-
-        // Call the next handler in the chain
-        $response = $next->handle($request);
-
-        $endTime = microtime(true);
-        $duration = round(($endTime - $startTime) * 1000, 2); // in milliseconds
-
-        // Post-response logging
-        $this->logger->info('Received response', [
-            'status' => $response->statusCode(),
-            'headers' => $response->headers(),
-            'body' => $response->body(),
-            'duration_ms' => $duration,
-        ]);
-
-        // Return the response
-        return $response;
-    }
-}
+```php include="examples/D03_Docs_HTTP/BasicHttpMiddleware/code.php"
 ```
 
 This approach gives you complete control over the middleware behavior, but it requires you to implement the entire logic from scratch.
@@ -74,46 +30,7 @@ This approach gives you complete control over the middleware behavior, but it re
 
 For most cases, extending the `BaseMiddleware` abstract class is more convenient:
 
-```php
-<?php
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\HttpResponse;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Middleware\Base\BaseMiddleware;
-
-class AuthenticationMiddleware extends BaseMiddleware
-{
-    private $apiKey;
-
-    public function __construct(string $apiKey)
-    {
-        $this->apiKey = $apiKey;
-    }
-
-    protected function beforeRequest(HttpRequest $request): void
-    {
-        // Add authorization header to the request
-        $headers = $request->headers();
-        $headers['Authorization'] = 'Bearer ' . $this->apiKey;
-
-        // Note: In a real implementation, you would need to create a new request
-        // with the updated headers, as HttpRequest is immutable
-    }
-
-    protected function afterRequest(
-        HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
-        // Check if the response indicates an authentication error
-        if ($response->statusCode() === 401) {
-            // Log or handle authentication failures
-            error_log('Authentication failed: ' . $response->body());
-        }
-
-        return $response;
-    }
-}
+```php include="examples/D03_Docs_HTTP/AuthenticationMiddleware/code.php"
 ```
 
 With `BaseMiddleware`, you only need to override the methods that matter for your middleware:
@@ -158,206 +75,21 @@ This approach is concise but less reusable than defining a named class.
 
 This middleware automatically retries failed requests:
 
-```php
-<?php
-
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Exceptions\HttpRequestException;
-use Cognesy\Http\Middleware\Base\BaseMiddleware;
-
-class RetryMiddleware extends BaseMiddleware
-{
-    private int $maxRetries;
-    private int $retryDelay;
-    private array $retryStatusCodes;
-
-    public function __construct(
-        int $maxRetries = 3,
-        int $retryDelay = 1,
-        array $retryStatusCodes = [429, 500, 502, 503, 504]
-    ) {
-        $this->maxRetries = $maxRetries;
-        $this->retryDelay = $retryDelay;
-        $this->retryStatusCodes = $retryStatusCodes;
-    }
-
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
-    {
-        $attempts = 0;
-
-        while (true) {
-            try {
-                $attempts++;
-                $response = $next->handle($request);
-
-                // If we got a response with a status code we should retry on
-                if (in_array($response->statusCode(), $this->retryStatusCodes) && $attempts <= $this->maxRetries) {
-                    $this->delay($attempts);
-                    continue;
-                }
-
-                return $response;
-
-            } catch (HttpRequestException $e) {
-                // If we've exceeded our retry limit, rethrow the exception
-                if ($attempts >= $this->maxRetries) {
-                    throw $e;
-                }
-
-                // Otherwise, wait and try again
-                $this->delay($attempts);
-            }
-        }
-    }
-
-    private function delay(int $attempt): void
-    {
-        // Exponential backoff: 1s, 2s, 4s, 8s, etc.
-        $sleepTime = $this->retryDelay * (2 ** ($attempt - 1));
-        sleep($sleepTime);
-    }
-}
+```php include="examples/D03_Docs_HTTP/RetryMiddleware/code.php"
 ```
 
 #### Rate Limiting Middleware
 
 This middleware throttles requests to respect API rate limits:
 
-```php
-<?php
-
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\CanHandleHttpRequest;
-use Cognesy\Http\Contracts\HttpResponse;
-use Cognesy\Http\Data\HttpRequest;
-use Cognesy\Http\Middleware\Base\BaseMiddleware;
-
-class RateLimitingMiddleware extends BaseMiddleware
-{
-    private int $maxRequests;
-    private int $perSeconds;
-    private array $requestTimes = [];
-
-    public function __construct(int $maxRequests = 60, int $perSeconds = 60)
-    {
-        $this->maxRequests = $maxRequests;
-        $this->perSeconds = $perSeconds;
-    }
-
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
-    {
-        // Clean up old request times
-        $this->removeOldRequestTimes();
-
-        // If we've hit our limit, wait until we can make another request
-        if (count($this->requestTimes) >= $this->maxRequests) {
-            $oldestRequest = $this->requestTimes[0];
-            $timeToWait = $oldestRequest + $this->perSeconds - time();
-
-            if ($timeToWait > 0) {
-                sleep($timeToWait);
-            }
-
-            // Clean up again after waiting
-            $this->removeOldRequestTimes();
-        }
-
-        // Record this request time
-        $this->requestTimes[] = time();
-
-        // Make the request
-        return $next->handle($request);
-    }
-
-    private function removeOldRequestTimes(): void
-    {
-        $cutoff = time() - $this->perSeconds;
-
-        // Remove request times older than our window
-        $this->requestTimes = array_filter(
-            $this->requestTimes,
-            fn($time) => $time > $cutoff
-        );
-
-        // Reindex the array
-        $this->requestTimes = array_values($this->requestTimes);
-    }
-}
+```php include="examples/D03_Docs_HTTP/RateLimitingMiddleware/code.php"
 ```
 
 #### Caching Middleware
 
 This middleware caches responses for GET requests:
 
-```php
-<?php
-
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\CanHandleHttpRequest;use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Drivers\Mock\MockHttpResponse;use Cognesy\Http\Middleware\Base\BaseMiddleware;use Psr\SimpleCache\CacheInterface;
-
-class CachingMiddleware extends BaseMiddleware
-{
-    private CacheInterface $cache;
-    private int $ttl;
-
-    public function __construct(CacheInterface $cache, int $ttl = 3600)
-    {
-        $this->cache = $cache;
-        $this->ttl = $ttl;
-    }
-
-    public function handle(HttpRequest $request, CanHandleHttpRequest $next): HttpResponse
-    {
-        // Only cache GET requests
-        if ($request->method() !== 'GET') {
-            return $next->handle($request);
-        }
-
-        // Generate a cache key for this request
-        $cacheKey = $this->generateCacheKey($request);
-
-        // Check if we have a cached response
-        if ($this->cache->has($cacheKey)) {
-            $cachedData = $this->cache->get($cacheKey);
-
-            // Create a response from the cached data
-            return new MockHttpResponse(
-                statusCode: $cachedData['status_code'],
-                headers: $cachedData['headers'],
-                body: $cachedData['body']
-            );
-        }
-
-        // If not in cache, make the actual request
-        $response = $next->handle($request);
-
-        // Cache the response if it was successful
-        if ($response->statusCode() >= 200 && $response->statusCode() < 300) {
-            $this->cache->set(
-                $cacheKey,
-                [
-                    'status_code' => $response->statusCode(),
-                    'headers' => $response->headers(),
-                    'body' => $response->body(),
-                ],
-                $this->ttl
-            );
-        }
-
-        return $response;
-    }
-
-    private function generateCacheKey(HttpRequest $request): string
-    {
-        return md5($request->method() . $request->url() . $request->body()->toString());
-    }
-}
+```php include="examples/D03_Docs_HTTP/CachingMiddleware/code.php"
 ```
 
 ## Response Decoration
@@ -368,103 +100,14 @@ Response decoration is a powerful technique for wrapping HTTP responses to add f
 
 All response decorators should implement the `HttpResponse` interface. The library provides a `BaseResponseDecorator` class that makes this easier:
 
-```php
-<?php
-
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseResponseDecorator;use Generator;
-
-class JsonStreamDecorator extends BaseResponseDecorator
-{
-    private string $buffer = '';
-
-    public function __construct(
-        HttpRequest $request,
-        HttpResponse $response
-    ) {
-        parent::__construct($request, $response);
-    }
-
-    public function stream(int $chunkSize = 1): Generator
-    {
-        foreach ($this->response->stream($chunkSize) as $chunk) {
-            // Add the chunk to our buffer
-            $this->buffer .= $chunk;
-
-            // Process complete JSON objects
-            $result = $this->processBuffer();
-
-            // Yield the original chunk (or modified if needed)
-            yield $chunk;
-        }
-    }
-
-    private function processBuffer(): void
-    {
-        // Keep processing until we can't find any more complete JSON objects
-        while (($jsonEnd = strpos($this->buffer, '}')) !== false) {
-            // Try to find the start of the JSON object
-            $jsonStart = strpos($this->buffer, '{');
-
-            if ($jsonStart === false || $jsonStart > $jsonEnd) {
-                // Invalid JSON, discard up to the end
-                $this->buffer = substr($this->buffer, $jsonEnd + 1);
-                continue;
-            }
-
-            // Extract the potential JSON string
-            $jsonString = substr($this->buffer, $jsonStart, $jsonEnd - $jsonStart + 1);
-
-            // Try to decode it
-            $data = json_decode($jsonString, true);
-
-            if ($data !== null) {
-                // We found a valid JSON object!
-                // You could process it here or dispatch an event
-
-                // Remove the processed part from the buffer
-                $this->buffer = substr($this->buffer, $jsonEnd + 1);
-            } else {
-                // Invalid JSON, it might be incomplete
-                // Keep waiting for more data
-                break;
-            }
-        }
-    }
-}
+```php include="examples/D03_Docs_HTTP/MiddleResponseDecorator/code.php"
 ```
 
 ### Using Response Decorators in Middleware
 
 To use a response decorator, you need to create a middleware that wraps the response:
 
-```php
-<?php
-
-namespace YourNamespace\Http\Middleware;
-
-use Cognesy\Http\Contracts\HttpResponse;use Cognesy\Http\Data\HttpRequest;use Cognesy\Http\Middleware\Base\BaseMiddleware;
-
-class JsonStreamMiddleware extends BaseMiddleware
-{
-    protected function shouldDecorateResponse(
-        HttpRequest $request,
-        HttpResponse $response
-    ): bool {
-        // Only decorate streaming JSON responses
-        return $request->isStreamed() &&
-               isset($response->headers()['Content-Type']) &&
-               strpos($response->headers()['Content-Type'][0], 'application/json') !== false;
-    }
-
-    protected function toResponse(
-        HttpRequest $request,
-        HttpResponse $response
-    ): HttpResponse {
-        return new JsonStreamDecorator($request, $response);
-    }
-}
+```php include="examples/D03_Docs_HTTP/MiddlewareStreamDecorator/code.php"
 ```
 
 Then add the middleware to your client:

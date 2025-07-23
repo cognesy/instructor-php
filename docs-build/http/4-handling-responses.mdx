@@ -1,6 +1,10 @@
 ---
 title: Handling Responses
 description: 'Learn how to handle HTTP responses using the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'HandlingResponses_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 After sending an HTTP request, you need to process the response received from the server. The Instructor HTTP client API provides a consistent interface for handling responses, regardless of the underlying HTTP client implementation.

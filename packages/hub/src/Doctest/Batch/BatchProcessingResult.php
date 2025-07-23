@@ -1,8 +1,8 @@
 <?php
 
-namespace Cognesy\InstructorHub\TestDocs\Batch;
+namespace Cognesy\InstructorHub\Doctest\Batch;
 
-use Cognesy\InstructorHub\TestDocs\FileDiscovery\FileProcessingResult;
+use Cognesy\InstructorHub\Doctest\FileDiscovery\FileProcessingResult;
 
 /**
  * Result of batch processing operation

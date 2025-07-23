@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\InstructorHub\TestDocs\Commands;
+namespace Cognesy\InstructorHub\Doctest\Commands;
 
 use Cognesy\InstructorHub\Markdown\MarkdownFile;
-use Cognesy\InstructorHub\TestDocs\DocRepo\DocRepository;
+use Cognesy\InstructorHub\Doctest\DocRepo\DocRepository;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;

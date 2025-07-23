@@ -1,9 +1,9 @@
 ---
 title: Troubleshooting
 description: 'Learn how to troubleshoot issues with the Instructor HTTP client API.'
-doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_dir: 'examples/D03_Docs_HTTP'
 doctest_case_prefix: 'Troubleshooting_'
-doctest_include_types: ['php']
+doctest_included_types: ['php']
 doctest_min_lines: 10
 ---
 

@@ -1,6 +1,10 @@
 ---
 title: Middleware
 description: 'Learn how to use middleware in the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'Middleware_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 Middleware is one of the most powerful features of the Instructor HTTP client API. It allows you to intercept and modify HTTP requests and responses, add functionality to the HTTP client, and create reusable components that can be applied across different applications.

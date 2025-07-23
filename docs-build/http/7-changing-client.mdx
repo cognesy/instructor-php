@@ -1,6 +1,10 @@
 ---
 title: Changing the Underlying Client
 description: 'Learn how to switch between different HTTP client implementations using the Instructor HTTP client API.'
+doctest_dir: 'examples/D03_Docs_HTTP'
+doctest_case_prefix: 'ChangingClient_'
+doctest_include_types: ['php']
+doctest_min_lines: 10
 ---
 
 One of the core features of the Instructor HTTP client API is its ability to seamlessly switch between different HTTP client implementations. This flexibility allows you to use the same code across different environments or to choose the most appropriate client for specific use cases.

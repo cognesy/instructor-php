@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\InstructorHub\TestDocs\Batch;
+namespace Cognesy\InstructorHub\Doctest\Batch;
 
 use Cognesy\InstructorHub\Markdown\MarkdownFile;
-use Cognesy\InstructorHub\TestDocs\DocRepo\DocRepository;
-use Cognesy\InstructorHub\TestDocs\FileDiscovery\DiscoveredFile;
-use Cognesy\InstructorHub\TestDocs\FileDiscovery\FileDiscoveryResult;
-use Cognesy\InstructorHub\TestDocs\FileDiscovery\FileProcessingResult;
-use Cognesy\InstructorHub\TestDocs\Parser\MarkdownParser;
+use Cognesy\InstructorHub\Doctest\DocRepo\DocRepository;
+use Cognesy\InstructorHub\Doctest\FileDiscovery\DiscoveredFile;
+use Cognesy\InstructorHub\Doctest\FileDiscovery\FileDiscoveryResult;
+use Cognesy\InstructorHub\Doctest\FileDiscovery\FileProcessingResult;
 use RuntimeException;
 
 /**

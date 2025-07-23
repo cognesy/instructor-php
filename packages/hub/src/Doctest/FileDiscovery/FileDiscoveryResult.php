@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\InstructorHub\TestDocs\FileDiscovery;
+namespace Cognesy\InstructorHub\Doctest\FileDiscovery;
 
 /**
  * Result of file discovery operation
