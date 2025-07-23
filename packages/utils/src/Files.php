@@ -5,9 +5,11 @@ namespace Cognesy\Utils;
 use DirectoryIterator;
 use FilesystemIterator;
 use InvalidArgumentException;
+use Iterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use SplFileInfo;
 
 /**
  * Utility class for working with files and directories.
@@ -171,6 +173,44 @@ class Files
         if (!@copy($source, $destination)) {
             // Prepend the '@' to suppress PHP native warnings, but handle errors ourselves
             throw new \RuntimeException(sprintf('Failed to copy "%s" to "%s".', $source, $destination));
+        }
+    }
+
+    /**
+     * @param string $path
+     * @return Iterator<SplFileInfo>
+     */
+    public static function directories(string $path): Iterator {
+        if (!is_dir($path)) {
+            throw new InvalidArgumentException("The provided path is not a directory: {$path}");
+        }
+
+        $iterator = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+        $recursiveIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($recursiveIterator as $fileInfo) {
+            if ($fileInfo->isDir()) {
+                yield $fileInfo;
+            }
+        }
+    }
+
+    /**
+     * @param string $path
+     * @return Iterator<SplFileInfo>
+     */
+    public static function files(string $path): Iterator {
+        if (!is_dir($path)) {
+            throw new InvalidArgumentException("The provided path is not a directory: {$path}");
+        }
+
+        $iterator = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+        $recursiveIterator = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($recursiveIterator as $fileInfo) {
+            if ($fileInfo->isFile()) {
+                yield $fileInfo;
+            }
         }
     }
 }

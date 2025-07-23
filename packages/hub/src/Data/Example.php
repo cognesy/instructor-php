@@ -59,12 +59,12 @@ class Example
             'C07_Misc' => ['tab' => 'prompting', 'name' => 'misc', 'title' => 'Cookbook \ Prompting \ Miscellaneous'],
         ];
 
-        $tab = $mapping[$group]['tab'];
+        $tab = $mapping[$group]['tab'] ?? '';
         return new Example(
             index: $index,
             tab: $tab,
-            group: $mapping[$group]['name'],
-            groupTitle: $mapping[$group]['title'],
+            group: $mapping[$group]['name'] ?? '',
+            groupTitle: $mapping[$group]['title'] ?? '',
             name: $name,
             hasTitle: $info->hasTitle(),
             title: $info->title,

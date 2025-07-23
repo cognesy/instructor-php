@@ -19,7 +19,7 @@ describe('Parser', function () {
 
     describe('Empty and basic parsing', function () {
         it('parses empty token array', function () {
-            $document = $this->parser->parse([]);
+            $document = DocumentNode::fromIterator($this->parser->parse([]));
             
             expect($document)->toBeInstanceOf(DocumentNode::class)
                 ->and($document->children)->toBeEmpty();
@@ -30,7 +30,7 @@ describe('Parser', function () {
                 new Token(TokenType::Content, 'Hello world', 1)
             ];
 
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toHaveCount(1)
                 ->and($document->children[0])->toBeInstanceOf(ContentNode::class)
@@ -44,7 +44,7 @@ describe('Parser', function () {
                 new Token(TokenType::Content, 'Line 2', 2)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toHaveCount(3)
                 ->and($document->children[0])->toBeInstanceOf(ContentNode::class)
@@ -59,7 +59,7 @@ describe('Parser', function () {
                 new Token(TokenType::Header, '# Main Title', 1)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toHaveCount(1)
                 ->and($document->children[0])->toBeInstanceOf(HeaderNode::class)
@@ -72,7 +72,7 @@ describe('Parser', function () {
                 new Token(TokenType::Header, '### Section Title', 1)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $header = $document->children[0];
             
             expect($header)->toBeInstanceOf(HeaderNode::class)
@@ -85,7 +85,7 @@ describe('Parser', function () {
                 new Token(TokenType::Header, '###### Deep Section', 1)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $header = $document->children[0];
             
             expect($header->level)->toBe(6)
@@ -97,7 +97,7 @@ describe('Parser', function () {
                 new Token(TokenType::Header, '#InvalidHeader', 1)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $header = $document->children[0];
             
             expect($header)->toBeInstanceOf(HeaderNode::class)
@@ -114,7 +114,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock)->toBeInstanceOf(CodeBlockNode::class)
@@ -132,7 +132,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock)->toBeInstanceOf(CodeBlockNode::class)
@@ -149,7 +149,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('php')
@@ -168,7 +168,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->id)->toBe('codeblock_abc1')
@@ -186,7 +186,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->id)->toBe('codeblock_def4');
@@ -200,7 +200,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->id)->toBe('codeblock_def4');
@@ -212,7 +212,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 2)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toBeEmpty();
         });
@@ -223,7 +223,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 2)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toBeEmpty();
         });
@@ -234,7 +234,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockContent, "echo 'hello';", 2)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toBeEmpty();
         });
@@ -249,7 +249,7 @@ describe('Parser', function () {
                 new Token(TokenType::Content, 'After', 2)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             expect($document->children)->toHaveCount(2)
                 ->and($document->children[0]->content)->toBe('Before')
@@ -262,7 +262,7 @@ describe('Parser', function () {
             $input = "# Main Title\n\nSome content here.\n\n```php marked=1\necho 'Hello World';\n```\n\n## Subsection\n\nMore content.";
             
             $tokens = $this->lexer->tokenizeToArray($input);
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             // Should have: Header, Newline, Newline, Content, Newline, Newline, CodeBlock, Newline, Newline, Header, Newline, Newline, Content
             expect($document->children)->toHaveCount(13);
@@ -289,7 +289,7 @@ describe('Parser', function () {
             $input = "```php\necho 'first';\n```\n\n```javascript id=abc1\nconsole.log('second');\n```";
             
             $tokens = $this->lexer->tokenizeToArray($input);
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             
             $codeBlocks = array_filter($document->children, fn($node) => $node instanceof CodeBlockNode);
             
@@ -316,7 +316,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('python')
@@ -331,7 +331,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('bash')
@@ -350,7 +350,7 @@ describe('Parser', function () {
                 new Token(TokenType::CodeBlockFenceEnd, '```', 3)
             ];
             
-            $document = $this->parser->parse($tokens);
+            $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('ruby')

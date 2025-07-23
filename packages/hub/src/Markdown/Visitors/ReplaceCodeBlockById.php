@@ -7,7 +7,7 @@ use Cognesy\InstructorHub\Markdown\Nodes\CodeBlockNode;
 use Cognesy\InstructorHub\Markdown\Nodes\DocumentNode;
 use Cognesy\InstructorHub\Markdown\Nodes\Node;
 
-final class ReplaceCodeBlockVisitor implements NodeVisitor
+final class ReplaceCodeBlockById implements NodeVisitor
 {
     public function __construct(
         private string $targetId,

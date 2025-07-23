@@ -186,7 +186,7 @@ mkdir -p config/instructor
 
 # Copy configuration files
 cp -r vendor/cognesy/instructor-php/config/* config/instructor/
-   ```
+```
 These files contain LLM API connection settings and Instructor's behavior configuration.
 
 ### Prompt Templates
@@ -197,7 +197,7 @@ mkdir -p resources/prompts
 
 # Copy prompt templates
 cp -r vendor/cognesy/instructor-php/prompts/* resources/prompts/
-   ```
+```
 Prompt templates define how Instructor communicates with LLMs for different tasks.
 
 ### Environment Configuration

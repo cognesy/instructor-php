@@ -10,7 +10,8 @@ use Cognesy\InstructorHub\Markdown\Nodes\ContentNode;
 use Cognesy\InstructorHub\Markdown\Nodes\DocumentNode;
 use Cognesy\InstructorHub\Markdown\Nodes\HeaderNode;
 use Cognesy\InstructorHub\Markdown\Nodes\Node;
-use Cognesy\InstructorHub\Markdown\Visitors\ToStringVisitor;
+use Cognesy\InstructorHub\Markdown\Visitors\ReplaceCodeBlockByCallable;
+use Cognesy\InstructorHub\Markdown\Visitors\ToString;
 use Iterator;
 use Symfony\Component\Yaml\Yaml;
 use Webuni\FrontMatter\FrontMatter;
@@ -58,7 +59,7 @@ final readonly class MarkdownFile
     }
 
     public function hasCodeblocks(): bool {
-        return !$this->codeBlocks()->isEmpty();
+        return iterator_count($this->codeBlocks()) > 0;
     }
 
     public function root(): DocumentNode {
@@ -101,11 +102,19 @@ final readonly class MarkdownFile
     }
 
     public function toString(): string {
-        $content = $this->document->accept(new ToStringVisitor());
+        $content = $this->document->accept(new ToString());
         return match(true) {
             !empty($this->metadata) => $this->makeFrontMatter() . $content,
             default => $content,
         };
+    }
+
+    public function withReplacedCodeBlocks(callable $replacer) : self {
+        return new self(
+            document: $this->document->accept(new ReplaceCodeBlockByCallable($replacer)),
+            metadata: $this->metadata,
+            path: $this->path,
+        );
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
@@ -114,8 +123,7 @@ final readonly class MarkdownFile
         $lexer = new Lexer();
         $parser = new Parser();
         $tokens = $lexer->tokenize($text);
-        $nodes = iterator_to_array($parser->parse($tokens));
-        return new DocumentNode(...$nodes);
+        return DocumentNode::fromIterator($parser->parse($tokens));
     }
 
     /**

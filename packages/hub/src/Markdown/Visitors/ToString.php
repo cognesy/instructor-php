@@ -11,7 +11,7 @@ use Cognesy\InstructorHub\Markdown\Nodes\HeaderNode;
 use Cognesy\InstructorHub\Markdown\Nodes\NewlineNode;
 use Cognesy\InstructorHub\Markdown\Nodes\Node;
 
-final class ToStringVisitor implements NodeVisitor
+final class ToString implements NodeVisitor
 {
     public function visit(Node $node): string {
         return match (true) {

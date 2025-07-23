@@ -4,8 +4,8 @@ namespace Cognesy\InstructorHub\Markdown\Internal;
 
 use Cognesy\InstructorHub\Markdown\MarkdownFile;
 use Cognesy\InstructorHub\Markdown\Nodes\CodeBlockNode;
-use Cognesy\InstructorHub\Markdown\Visitors\ReplaceCodeBlockVisitor;
-use Cognesy\InstructorHub\Markdown\Visitors\RetrieveCodeBlockVisitor;
+use Cognesy\InstructorHub\Markdown\Visitors\ReplaceCodeBlockById;
+use Cognesy\InstructorHub\Markdown\Visitors\RetrieveCodeBlock;
 
 final class CodeBlockManipulator
 {
@@ -16,18 +16,18 @@ final class CodeBlockManipulator
 
     public function withContent(string $content): MarkdownFile {
         $document = $this->file->root();
-        $newDocument = $document->accept(new ReplaceCodeBlockVisitor($this->id, $content));
+        $newDocument = $document->accept(new ReplaceCodeBlockById($this->id, $content));
         return $this->file->withRoot($newDocument);
     }
 
     public function content() : string {
         $document = $this->file->root();
-        return $document->accept(new RetrieveCodeBlockVisitor($this->id))->content;
+        return $document->accept(new RetrieveCodeBlock($this->id))->content;
     }
 
     public function node() : CodeBlockNode {
         $document = $this->file->root();
-        $node = $document->accept(new RetrieveCodeBlockVisitor($this->id));
+        $node = $document->accept(new RetrieveCodeBlock($this->id));
         if (!$node instanceof CodeBlockNode) {
             throw new \RuntimeException("Code block with ID '{$this->id}' not found.");
         }

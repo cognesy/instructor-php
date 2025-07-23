@@ -26,6 +26,28 @@ final readonly class CodeBlockNode extends Node
         return $this->hasPhpOpenTag || $this->hasPhpCloseTag;
     }
 
+    public function hasMetadata(string $key): bool {
+        return array_key_exists($key, $this->metadata);
+    }
+
+    public function metadata(string $key, mixed $default = null): mixed {
+        return $this->metadata[$key] ?? $default;
+    }
+
+    public function withContent(string $content): self {
+        return new self(
+            id: $this->id,
+            language: $this->language,
+            content: $content,
+            metadata: $this->metadata,
+            hasPhpOpenTag: $this->hasPhpOpenTag,
+            hasPhpCloseTag: $this->hasPhpCloseTag,
+            originalContent: $this->originalContent,
+        );
+    }
+
+    // INTERNAL /////////////////////////////////////////////////////////
+
     private function calculateLinesOfCode(): int {
         $lines = explode("\n", $this->content);
         $count = 0;

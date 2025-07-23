@@ -4,7 +4,6 @@ namespace Cognesy\InstructorHub\Markdown\Internal;
 
 use Cognesy\InstructorHub\Markdown\Nodes\CodeBlockNode;
 use Cognesy\InstructorHub\Markdown\Nodes\ContentNode;
-use Cognesy\InstructorHub\Markdown\Nodes\DocumentNode;
 use Cognesy\InstructorHub\Markdown\Nodes\HeaderNode;
 use Cognesy\InstructorHub\Markdown\Nodes\NewlineNode;
 use Cognesy\InstructorHub\Markdown\Nodes\Node;
@@ -141,8 +140,9 @@ final class Parser
         $current = '';
         $inQuotes = false;
         $quoteChar = null;
-        
-        for ($i = 0; $i < strlen($fenceInfo); $i++) {
+
+        $fenceInfoLength = strlen($fenceInfo);
+        for ($i = 0; $i < $fenceInfoLength; $i++) {
             $char = $fenceInfo[$i];
             
             if (!$inQuotes && ($char === '"' || $char === "'")) {
@@ -167,20 +167,24 @@ final class Parser
             $parts[] = $current;
         }
         
+        // The first part is the language
         $language = $parts[0] ?? '';
+
+        // Parse other values
         $metadata = [];
-        
-        // Parse key=value pairs
-        for ($i = 1; $i < count($parts); $i++) {
+        $partsCount = count($parts);
+        for ($i = 1; $i < $partsCount; $i++) {
+            // key=value pairs
             if (str_contains($parts[$i], '=')) {
                 [$key, $value] = explode('=', $parts[$i], 2);
                 $metadata[$key] = $value;
             }
+            // standalone values - treated as boolean flags
+            else {
+                $metadata[$parts[$i]] = true;
+            }
         }
         
-        return [
-            'language' => $language,
-            'metadata' => $metadata,
-        ];
+        return ['language' => $language, 'metadata' => $metadata];
     }
 }

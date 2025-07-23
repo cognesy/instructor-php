@@ -69,27 +69,23 @@
     </testsuites>
     <source>
         <include>
-            <directory suffix=".php">./src</directory>
-            <directory suffix=".php">./packages/addons/tests</directory>
-            <directory suffix=".php">./packages/auxiliary/tests</directory>
-            <directory suffix=".php">./packages/config/tests</directory>
-            <directory suffix=".php">./packages/dynamic/tests</directory>
-            <directory suffix=".php">./packages/evals/tests</directory>
-            <directory suffix=".php">./packages/events/tests</directory>
-            <directory suffix=".php">./packages/experimental/tests</directory>
-            <directory suffix=".php">./packages/http-client/tests</directory>
-            <directory suffix=".php">./packages/hub/tests</directory>
-            <directory suffix=".php">./packages/instructor/tests</directory>
-            <directory suffix=".php">./packages/messages/tests</directory>
-            <directory suffix=".php">./packages/polyglot/tests</directory>
-            <directory suffix=".php">./packages/schema/tests</directory>
-            <directory suffix=".php">./packages/setup/tests</directory>
-            <directory suffix=".php">./packages/tell/tests</directory>
-            <directory suffix=".php">./packages/templates/tests</directory>
-            <directory suffix=".php">./packages/utils/tests</directory>
+            <directory suffix=".php">./packages/addons/src</directory>
+            <directory suffix=".php">./packages/auxiliary/src</directory>
+            <directory suffix=".php">./packages/config/src</directory>
+            <directory suffix=".php">./packages/dynamic/src</directory>
+            <directory suffix=".php">./packages/evals/src</directory>
+            <directory suffix=".php">./packages/events/src</directory>
+            <directory suffix=".php">./packages/experimental/src</directory>
+            <directory suffix=".php">./packages/http-client/src</directory>
+            <directory suffix=".php">./packages/hub/src</directory>
+            <directory suffix=".php">./packages/instructor/src</directory>
+            <directory suffix=".php">./packages/messages/src</directory>
+            <directory suffix=".php">./packages/polyglot/src</directory>
+            <directory suffix=".php">./packages/schema/src</directory>
+            <directory suffix=".php">./packages/setup/src</directory>
+            <directory suffix=".php">./packages/tell/src</directory>
+            <directory suffix=".php">./packages/templates/src</directory>
+            <directory suffix=".php">./packages/utils/src</directory>
         </include>
-        <exclude>
-            <directory suffix=".php">./src/Contracts</directory>
-        </exclude>
     </source>
 </phpunit>

@@ -22,9 +22,9 @@
   
 ### Getting Started:
 1. Install the library via Composer:
-   ```bash
+```bash
    composer require cognesy/instructor-php
-   ```
+```
 2. Define your data structure (e.g., a `City` class).
 3. Use Instructor to run LLM inference and extract structured data.
    

@@ -6,7 +6,7 @@ use Cognesy\InstructorHub\Markdown\Contracts\NodeVisitor;
 use Cognesy\InstructorHub\Markdown\Nodes\CodeBlockNode;
 use Cognesy\InstructorHub\Markdown\Nodes\DocumentNode;
 
-class RetrieveCodeBlockVisitor implements NodeVisitor
+class RetrieveCodeBlock implements NodeVisitor
 {
     public function __construct(
         private string $id,

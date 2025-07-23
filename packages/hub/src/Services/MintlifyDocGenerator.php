@@ -7,6 +7,8 @@ use Cognesy\Auxiliary\Mintlify\NavigationGroup;
 use Cognesy\Auxiliary\Mintlify\NavigationItem;
 use Cognesy\Config\BasePath;
 use Cognesy\InstructorHub\Data\Example;
+use Cognesy\InstructorHub\Markdown\MarkdownFile;
+use Cognesy\InstructorHub\Markdown\Nodes\CodeBlockNode;
 use Cognesy\InstructorHub\Views\DocGenView;
 use Cognesy\Utils\Files;
 
@@ -26,7 +28,7 @@ class MintlifyDocGenerator
         $this->view = new DocGenView;
     }
 
-    public function makeDocs() : void {
+    public function makeDocs(): void {
         //        if (!is_dir($this->cookbookTargetDir)) {
         //            throw new \Exception("Hub docs directory '$this->cookbookTargetDir' does not exist");
         //        }
@@ -35,18 +37,18 @@ class MintlifyDocGenerator
         $this->view->renderUpdate(true);
     }
 
-    public function clearDocs() : void {
+    public function clearDocs(): void {
         $this->view->renderHeader();
         Files::removeDirectory($this->docsTargetDir);
         $this->view->renderUpdate(true);
     }
 
-    private function updateFiles() : void {
+    private function updateFiles(): void {
         Files::removeDirectory($this->docsTargetDir);
         Files::copyDirectory($this->docsSourceDir, $this->docsTargetDir);
-        $this->copySubpackageDocs('instructor', 'docs-build/instructor');
-        $this->copySubpackageDocs('polyglot', 'docs-build/polyglot');
-        $this->copySubpackageDocs('http-client', 'docs-build/http');
+        $this->makeSubpackageDocs('instructor', 'docs-build/instructor');
+        $this->makeSubpackageDocs('polyglot', 'docs-build/polyglot');
+        $this->makeSubpackageDocs('http-client', 'docs-build/http');
         Files::renameFileExtensions($this->docsTargetDir, 'md', 'mdx');
 
         // make backup copy of mint.json
@@ -61,7 +63,7 @@ class MintlifyDocGenerator
 
     // INTERNAL ////////////////////////////////////////////////////////////////
 
-    private function updateHubIndex() : bool|int {
+    private function updateHubIndex(): bool|int {
         // get the content of the hub index
         $index = MintlifyIndex::fromFile($this->mintlifySourceIndexFile);
         if ($index === false) {
@@ -88,7 +90,12 @@ class MintlifyDocGenerator
         return $index->saveFile($this->mintlifyTargetIndexFile);
     }
 
-    private function copyExample(Example $example) : void {
+    private function copyExample(Example $example): void {
+        if (empty($example->tab)) {
+            // skip examples without a tab
+            return;
+        }
+
         $this->view->renderFile($example);
         $targetFilePath = $this->cookbookTargetDir . $example->toDocPath() . '.mdx';
 
@@ -116,25 +123,7 @@ class MintlifyDocGenerator
         $this->view->renderResult(true);
     }
 
-    private function copySubpackageDocs(string $subpackage, string $targetDir, bool $renameToMdx = false) : bool {
-        // copy from packages/instructor/docs to docs/instructor
-        Files::removeDirectory(BasePath::get($targetDir));
-        Files::copyDirectory(
-            BasePath::get("packages/$subpackage/docs"),
-            BasePath::get($targetDir),
-        );
-        if ($renameToMdx) {
-            Files::renameFileExtensions(
-                BasePath::get($targetDir),
-                'md',
-                'mdx',
-            );
-        }
-        return true;
-    }
-
-    private function getReleaseNotesGroup() : NavigationGroup
-    {
+    private function getReleaseNotesGroup(): NavigationGroup {
         // get all .mdx files from docs/release-notes
         $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx'));
         $pages = [];
@@ -145,7 +134,7 @@ class MintlifyDocGenerator
         }
 
         // sort by version x.y.z in descending order
-        usort($pages, function($a, $b) {
+        usort($pages, function ($a, $b) {
             return version_compare($b, $a);
         });
 
@@ -156,5 +145,82 @@ class MintlifyDocGenerator
             $releaseNotesGroup->pages[] = NavigationItem::fromString('release-notes/v' . $page);
         }
         return $releaseNotesGroup;
+    }
+
+    private function makeSubpackageDocs(string $subpackage, string $targetDir): bool {
+        // copy from packages/instructor/docs to docs/instructor
+        $sourcePath = BasePath::get("packages/$subpackage/docs");
+        $targetPath = BasePath::get($targetDir);
+        Files::removeDirectory($targetPath);
+        Files::copyDirectory($sourcePath, $targetPath);
+        // process docs in target directory
+        $this->inlineExternalCodeblocks($targetPath, $subpackage);
+        return true;
+    }
+
+    private function inlineExternalCodeblocks(string $targetPath, string $subpackage) : void {
+        $examplesPath = BasePath::get("examples");
+
+        // inline example code blocks
+        $docFiles = array_merge(
+            glob("$targetPath/*.mdx"),
+            glob("$targetPath/**/*.mdx"),
+            glob("$targetPath/*.md"),
+            glob("$targetPath/**/*.md"),
+        );
+
+        $this->view->renderInlineHeader($subpackage);
+        foreach ($docFiles as $docFile) {
+            $this->view->renderInlinedItem($docFile, $subpackage);
+            $content = file_get_contents(realpath($docFile));
+            $markdown = MarkdownFile::fromString($content);
+            if (!$markdown->hasCodeBlocks()) {
+                $this->view->renderInlinedResult('skip');
+                continue;
+            }
+            try {
+                $newMarkdown = $this->tryInline($markdown, $examplesPath);
+                if ($newMarkdown === null) {
+                    // no code blocks were replaced, skip this file
+                    $this->view->renderInlinedResult('skip');
+                    continue; // no replacements made, skip this file
+                }
+                // if we made replacements, we need to write the file back
+                $fileContent = $newMarkdown->toString();
+                // write back to file
+                file_put_contents($docFile, $fileContent);
+                $this->view->renderInlinedResult('ok');
+            } catch (\Throwable $e) {
+                $this->view->renderInlinedResult('error');
+                continue;
+            }
+        }
+    }
+
+    private function tryInline(MarkdownFile $markdown, string $examplesPath) : ?MarkdownFile {
+        $madeReplacements = false;
+
+        $newMarkdown = $markdown->withReplacedCodeBlocks(function(CodeBlockNode $codeblock) use ($examplesPath, &$madeReplacements) {
+            $includePath = $codeblock->metadata('include');
+            if (empty($includePath)) {
+                return $codeblock;
+            }
+            $includeDir = trim($includePath, '\'"'); // remove quotes
+            $path = $examplesPath . '/' . $includeDir;
+            if (!file_exists($path)) {
+                throw new \Exception("Codeblock include file '$path' does not exist");
+            }
+            $content = file_get_contents($path);
+            if ($content === false) {
+                throw new \Exception("Failed to read codeblock include file '$path'");
+            }
+            $madeReplacements = true;
+            return $codeblock->withContent($content);
+        });
+
+        return match(true) {
+            $madeReplacements => $newMarkdown,
+            default => null,
+        };
     }
 }

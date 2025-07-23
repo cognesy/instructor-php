@@ -526,6 +526,22 @@
                 "cookbook/prompting/misc/component_reuse",
                 "cookbook/prompting/misc/component_reuse_cot"
             ]
+        },
+        {
+            "group": "",
+            "pages": [
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example",
+                "cookbook///example"
+            ]
         }
     ],
     "footerSocials": {
