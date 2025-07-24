@@ -133,6 +133,7 @@ class ExtractCodeBlocks extends Command
 
         $extracted = 0;
         foreach ($doctests as $doctest) {
+            // Extract full code block first
             $outputPath = $this->determineOutputPath($doctest, $targetDir);
             $this->ensureDirectoryExists(dirname($outputPath));
             
@@ -141,6 +142,22 @@ class ExtractCodeBlocks extends Command
             
             if ($io->isVerbose()) {
                 $io->writeln("  ✓ Extracted {$doctest->id} ({$doctest->language}) to {$outputPath}");
+            }
+            
+            // Extract individual regions if they exist
+            if ($doctest->hasRegions()) {
+                $regions = $doctest->getAvailableRegions();
+                foreach ($regions as $regionName) {
+                    $regionOutputPath = $this->determineRegionOutputPath($doctest, $regionName, $targetDir);
+                    $this->ensureDirectoryExists(dirname($regionOutputPath));
+                    
+                    $this->docRepository->writeFile($regionOutputPath, $doctest->toFileContent($regionName));
+                    $extracted++;
+                    
+                    if ($io->isVerbose()) {
+                        $io->writeln("  ✓ Extracted {$doctest->id}:{$regionName} ({$doctest->language}) to {$regionOutputPath}");
+                    }
+                }
             }
         }
 
@@ -226,13 +243,45 @@ class ExtractCodeBlocks extends Command
     private function determineOutputPath(Doctest $doctest, ?string $targetDir): string
     {
         if ($targetDir) {
-            // Use provided target directory with original filename structure
+            // Use provided target directory as root, but preserve the case_dir structure
             $filename = basename($doctest->codePath);
-            return rtrim($targetDir, '/') . '/' . $filename;
+            $caseDir = $doctest->caseDir;
+            
+            // Normalize path separators to system ones
+            $normalizedTargetDir = $this->normalizePath($targetDir);
+            $normalizedCaseDir = $this->normalizePath($caseDir);
+            
+            // Combine target dir with case dir and filename
+            return rtrim($normalizedTargetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 
+                   ltrim($normalizedCaseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 
+                   $filename;
         }
         
-        // Use metadata-based path from Doctest
-        return $doctest->codePath;
+        // Use metadata-based path from Doctest (also normalize it)
+        return $this->normalizePath($doctest->codePath);
+    }
+
+    private function determineRegionOutputPath(Doctest $doctest, string $regionName, ?string $targetDir): string
+    {
+        $pathInfo = pathinfo($doctest->codePath);
+        $baseFilename = $pathInfo['filename'] ?? '';
+        $extension = $pathInfo['extension'] ?? '';
+        
+        // Create filename with region suffix: filename_regionName.ext
+        $regionFilename = $baseFilename . '_' . $regionName . '.' . $extension;
+        
+        if ($targetDir) {
+            $normalizedTargetDir = $this->normalizePath($targetDir);
+            $normalizedCaseDir = $this->normalizePath($doctest->caseDir);
+            
+            return rtrim($normalizedTargetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 
+                   ltrim($normalizedCaseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 
+                   $regionFilename;
+        }
+        
+        // Use metadata-based path with region filename
+        $pathInfo = pathinfo($this->normalizePath($doctest->codePath));
+        return $pathInfo['dirname'] . DIRECTORY_SEPARATOR . $regionFilename;
     }
 
     private function ensureDirectoryExists(string $directory): void
@@ -302,20 +351,50 @@ class ExtractCodeBlocks extends Command
     private function modifySourceFile(MarkdownFile $markdown, string $filePath, SymfonyStyle $io): void
     {
         // Replace extracted code blocks with references or placeholders
-        $modifiedMarkdown = $markdown->withReplacedCodeBlocks(function (CodeBlockNode $codeBlock) {
-            // Only modify blocks that would be extracted (have ID and meet criteria)
-            if (empty($codeBlock->metadata['id'] ?? '')) {
+        $modifiedMarkdown = $markdown->withReplacedCodeBlocks(function (CodeBlockNode $codeBlock) use ($markdown) {
+            // Check if this code block would be extracted by creating a Doctest and checking if it should be included
+            $caseDir = Doctest::getEffectiveCaseDir($markdown);
+            $casePrefix = Doctest::getEffectiveCasePrefix($markdown);
+            
+            $doctest = new Doctest(
+                id: $codeBlock->id,
+                language: $codeBlock->language,
+                linesOfCode: $codeBlock->linesOfCode,
+                markdownPath: $markdown->path(),
+                codePath: '',
+                code: $codeBlock->content,
+                markdownTitle: $markdown->metadata('title', ''),
+                markdownDescription: $markdown->metadata('description', ''),
+                caseDir: $caseDir,
+                casePrefix: $casePrefix,
+                minLines: $markdown->metadata('doctest_min_lines', 0),
+                includedTypes: $markdown->metadata('doctest_included_types', []),
+            );
+            
+            // Only modify blocks that would be extracted
+            if (empty($doctest->id) || 
+                !in_array($doctest->language, $doctest->includedTypes) || 
+                $doctest->linesOfCode < $doctest->minLines) {
                 return $codeBlock; // Keep unchanged
             }
             
-            $id = $codeBlock->metadata['id'];
-            $language = $codeBlock->language;
+            // Generate the relative path to the extracted file
+            $extractedPath = $this->generateExtractedFilePath($doctest);
             
-            // Replace with a reference comment
+            // Add include metadata to enable GenerateDocs to include the external file
+            $updatedMetadata = array_merge($codeBlock->metadata, [
+                'include' => $extractedPath
+            ]);
+            
+            // Replace with minimal content and include metadata
             return new CodeBlockNode(
-                language: $language,
-                content: "// Code extracted to external file - see doctest ID: {$id}",
-                metadata: $codeBlock->metadata
+                id: $codeBlock->id,
+                language: $codeBlock->language,
+                content: "// Code extracted - will be included from external file",
+                metadata: $updatedMetadata,
+                hasPhpOpenTag: $codeBlock->hasPhpOpenTag,
+                hasPhpCloseTag: $codeBlock->hasPhpCloseTag,
+                originalContent: $codeBlock->originalContent
             );
         });
         
@@ -324,5 +403,25 @@ class ExtractCodeBlocks extends Command
         if ($io->isVerbose()) {
             $io->writeln("  ✏️  Modified source file: {$filePath}");
         }
+    }
+
+    private function generateExtractedFilePath(Doctest $doctest): string
+    {
+        // Generate relative path from docs to examples directory
+        // This should match the path structure expected by GenerateDocs
+        $filename = basename($doctest->codePath);
+        $relativePath = $doctest->caseDir . '/' . $filename;
+        
+        // Remove leading slashes and normalize path
+        return ltrim($relativePath, '/');
+    }
+
+    /**
+     * Normalize path separators to system-appropriate ones
+     */
+    private function normalizePath(string $path): string
+    {
+        // Replace both forward and backward slashes with system separator
+        return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     }
 }

@@ -58,7 +58,7 @@ describe('MarkdownFile Feature Tests', function () {
             $phpBlock = $codeblocks[0];
             expect($phpBlock->language)->toBe('php')
                 ->and($phpBlock->metadata)->toBe(['marked' => 1, 'author' => 'jane', 'id' => 'abc1'])  // includes extracted ID
-                ->and($phpBlock->id)->toBe('codeblock_abc1')
+                ->and($phpBlock->id)->toBe('abc1')
                 ->and($phpBlock->content)->toContain('echo "Hello, World!"')
                 ->and($phpBlock->content)->toContain('@doctest id="abc1"');
 
@@ -116,7 +116,7 @@ describe('MarkdownFile Feature Tests', function () {
 
             expect($codeblocks[0]->language)->toBe('php');
             expect($codeblocks[1]->language)->toBe('javascript')
-                ->and($codeblocks[1]->id)->toBe('codeblock_test1');
+                ->and($codeblocks[1]->id)->toBe('test1');
             expect($codeblocks[2]->language)->toBe('python')
                 ->and($codeblocks[2]->metadata)->toBe(['author' => 'bob', 'date' => '2024-01-01']);
         });
@@ -166,7 +166,7 @@ describe('MarkdownFile Feature Tests', function () {
             $markdownFile = MarkdownFile::fromString($input);
             $codeblocks = iterator_to_array($markdownFile->codeBlocks());
 
-            expect($codeblocks[0]->id)->toBe('codeblock_test');
+            expect($codeblocks[0]->id)->toBe('test');
         });
 
         it('throws exception for conflicting fence metadata and @doctest ID', function () {
@@ -198,7 +198,7 @@ describe('MarkdownFile Feature Tests', function () {
             $codeblocks = iterator_to_array($markdownFile->codeBlocks());
 
             // Should combine metadata from both sources
-            expect($codeblocks[0]->id)->toBe('codeblock_test123')
+            expect($codeblocks[0]->id)->toBe('test123')
                 ->and($codeblocks[0]->metadata)->toBe(['timeout' => 1000, 'id' => 'test123']);
         });
     });
@@ -431,7 +431,7 @@ describe('MarkdownFile Feature Tests', function () {
             // Test specific blocks
             $phpBlock = $codeblocks[0];
             expect($phpBlock->language)->toBe('php')
-                ->and($phpBlock->id)->toBe('codeblock_auth')
+                ->and($phpBlock->id)->toBe('auth')
                 ->and($phpBlock->metadata)->toBe(['marked' => true, 'secure' => 'high', 'id' => 'auth']);  // includes extracted ID
 
             $getBlock = $codeblocks[1];
@@ -440,7 +440,7 @@ describe('MarkdownFile Feature Tests', function () {
 
             $postBlock = $codeblocks[2];
             expect($postBlock->language)->toBe('javascript')
-                ->and($postBlock->id)->toBe('codeblock_post1')
+                ->and($postBlock->id)->toBe('post1')
                 ->and($postBlock->metadata)->toBe(['example' => 'post', 'id' => 'post1']);
 
             $jsonBlock = $codeblocks[3];
@@ -513,8 +513,8 @@ MARKDOWN;
                 ->and($codeblocks)->toHaveCount(2)
                 ->and(CodeBlockIdentifier::isValid($codeblocks[0]->id))->toBeTrue()
                 ->and(CodeBlockIdentifier::isValid($codeblocks[1]->id))->toBeTrue()
-                ->and($codeblocks[0]->id)->toBe('codeblock_auth')
-                ->and($codeblocks[1]->id)->toBe('codeblock_fetch');
+                ->and($codeblocks[0]->id)->toBe('auth')
+                ->and($codeblocks[1]->id)->toBe('fetch');
         });
 
         it('handles markdown without embedded IDs by adding them', function () {

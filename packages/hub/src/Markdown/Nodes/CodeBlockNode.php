@@ -2,9 +2,11 @@
 
 namespace Cognesy\InstructorHub\Markdown\Nodes;
 
+use Cognesy\Utils\ProgrammingLanguage;
+
 final readonly class CodeBlockNode extends Node
 {
-    public readonly int $linesOfCode;
+    public int $linesOfCode;
 
     public function __construct(
         public string $id,
@@ -15,7 +17,7 @@ final readonly class CodeBlockNode extends Node
         public bool $hasPhpCloseTag = false,
         public string $originalContent = '',  // Original content with PHP tags if needed
     ) {
-        $this->linesOfCode = $this->calculateLinesOfCode();
+        $this->linesOfCode = ProgrammingLanguage::linesOfCode($this->language, $this->content);
     }
 
     public function getContentWithoutPhpTags(): string {
@@ -46,58 +48,15 @@ final readonly class CodeBlockNode extends Node
         );
     }
 
-    // INTERNAL /////////////////////////////////////////////////////////
-
-    private function calculateLinesOfCode(): int {
-        $lines = explode("\n", $this->content);
-        $count = 0;
-
-        foreach ($lines as $line) {
-            $trimmed = trim($line);
-
-            // Skip empty lines
-            if ($trimmed === '') {
-                continue;
-            }
-
-            // Skip comment lines based on language
-            if ($this->isCommentLine($trimmed)) {
-                continue;
-            }
-
-            $count++;
-        }
-
-        return $count;
-    }
-
-    private function isCommentLine(string $line): bool {
-        $language = strtolower($this->language);
-
-        // Handle different comment styles based on language
-        return match (true) {
-            // C-style languages (PHP, JS, Java, C#, etc.)
-            in_array($language, ['php', 'javascript', 'js', 'java', 'c', 'cpp', 'csharp', 'c#', 'typescript', 'ts']) =>
-                str_starts_with($line, '//') || str_starts_with($line, '/*') || str_starts_with($line, '*'),
-
-            // Python, Ruby, Bash, etc.
-            in_array($language, ['python', 'py', 'ruby', 'rb', 'bash', 'shell', 'sh']) =>
-                str_starts_with($line, '#') && !str_starts_with($line, '#!'),
-
-            // HTML/XML
-            in_array($language, ['html', 'xml']) =>
-            str_starts_with($line, '<!--'),
-
-            // CSS
-            $language === 'css' =>
-                str_starts_with($line, '/*') || str_starts_with($line, '*'),
-
-            // SQL
-            $language === 'sql' =>
-                str_starts_with($line, '--') || str_starts_with($line, '/*') || str_starts_with($line, '*'),
-
-            // Default: no comment detection for unknown languages
-            default => false,
-        };
+    public function withMetadata(array $metadata): self {
+        return new self(
+            id: $this->id,
+            language: $this->language,
+            content: $this->content,
+            metadata: $metadata,
+            hasPhpOpenTag: $this->hasPhpOpenTag,
+            hasPhpCloseTag: $this->hasPhpCloseTag,
+            originalContent: $this->originalContent,
+        );
     }
 }

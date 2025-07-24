@@ -2,6 +2,8 @@
 
 namespace Cognesy\InstructorHub\Markdown\Internal;
 
+use Cognesy\Utils\ProgrammingLanguage;
+
 final class CodeBlockMetadataParser
 {
     /**
@@ -34,7 +36,7 @@ final class CodeBlockMetadataParser
      * Extracts @doctest metadata from code content
      */
     public static function extractDoctestMetadata(string $content, string $language): array {
-        $commentSyntax = CodeBlockIdentifier::getCommentSyntax($language);
+        $commentSyntax = ProgrammingLanguage::commentSyntax($language);
         $escapedSyntax = preg_quote($commentSyntax, '/');
         
         // Pattern to match @doctest annotations (non-greedy, stop at line end)

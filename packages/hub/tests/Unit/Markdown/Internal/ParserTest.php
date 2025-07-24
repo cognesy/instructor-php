@@ -121,7 +121,7 @@ describe('Parser', function () {
                 ->and($codeBlock->content)->toBe("echo 'hello';")
                 ->and($codeBlock->language)->toBe('')
                 ->and($codeBlock->metadata)->toBe([])
-                ->and($codeBlock->id)->toMatch('/^codeblock_[a-f0-9]{4}$/');
+                ->and($codeBlock->id)->toMatch('/^[a-f0-9]{4}$/');
         });
 
         it('parses code block with language', function () {
@@ -171,7 +171,7 @@ describe('Parser', function () {
             $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
-            expect($codeBlock->id)->toBe('codeblock_abc1')
+            expect($codeBlock->id)->toBe('abc1')
                 ->and($codeBlock->language)->toBe('javascript')
                 ->and($codeBlock->metadata)->toBe([
                     'id' => 'abc1',
@@ -189,7 +189,7 @@ describe('Parser', function () {
             $document = DocumentNode::fromIterator($this->parser->parse($tokens));
             $codeBlock = $document->children[0];
             
-            expect($codeBlock->id)->toBe('codeblock_def4');
+            expect($codeBlock->id)->toBe('def4');
         });
 
         it('throws exception when fence metadata and @doctest have conflicting keys', function () {
@@ -301,7 +301,7 @@ describe('Parser', function () {
                 ->and($firstBlock->content)->toBe("echo 'first';");
             
             expect($secondBlock->language)->toBe('javascript')
-                ->and($secondBlock->id)->toBe('codeblock_abc1')
+                ->and($secondBlock->id)->toBe('abc1')
                 ->and($secondBlock->content)->toBe("console.log('second');");
         });
     });
@@ -389,7 +389,7 @@ describe('Parser', function () {
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('php')
-                ->and($codeBlock->id)->toBe('codeblock_test123')
+                ->and($codeBlock->id)->toBe('test123')
                 ->and($codeBlock->metadata)->toBe([
                     'timeout' => 5000,
                     'id' => 'test123'
@@ -408,7 +408,7 @@ describe('Parser', function () {
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('php')
-                ->and($codeBlock->id)->toBe('codeblock_test123')
+                ->and($codeBlock->id)->toBe('test123')
                 ->and($codeBlock->metadata)->toBe([
                     'timeout' => 1000,   // from fence
                     'debug' => true,     // from fence
@@ -446,7 +446,7 @@ describe('Parser', function () {
             $codeBlock = $document->children[0];
             
             expect($codeBlock->language)->toBe('php')
-                ->and($codeBlock->id)->toBe('codeblock_extracted123')
+                ->and($codeBlock->id)->toBe('extracted123')
                 ->and($codeBlock->metadata)->toBe([
                     'debug' => true,         // from fence
                     'id' => 'extracted123',  // from @doctest

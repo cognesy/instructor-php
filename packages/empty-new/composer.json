@@ -1,6 +1,6 @@
 {
-  "name": "cognesy/instructor-hub",
-  "description": "CLI tool to work with Instructor PHP code examples and docs",
+  "name": "cognesy/instructor-{{PACKAGE_NAME}}",
+  "description": "{{PACKAGE_DESCRIPTION}}",
   "license": "MIT",
   "homepage": "https://instructorphp.com",
   "support": {
@@ -15,22 +15,17 @@
   ],
   "autoload": {
     "psr-4": {
-      "Cognesy\\InstructorHub\\": "src/"
+      "Cognesy\\{{NAMESPACE}}\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Cognesy\\InstructorHub\\Tests\\": "tests/"
+      "Cognesy\\{{NAMESPACE}}\\Tests\\": "tests/"
     }
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-struct": "dev-main",
-    "cognesy/instructor-auxiliary": "dev-main",
-    "cognesy/instructor-utils": "^1.1",
-    "toolkit/cli-utils": "^2.0",
-    "cebe/markdown": "^1.2",
-    "nikic/iter": "^2.0"
+    "cognesy/instructor-utils": "^1.1"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
@@ -44,12 +39,8 @@
   "scripts": {
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
-    "psalm": "@php vendor/bin/psalm",
-    "hub": "bin/instructor-hub"
+    "psalm": "@php vendor/bin/psalm"
   },
-  "bin": [
-    "bin/instructor-hub"
-  ],
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true

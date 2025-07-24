@@ -1,52 +1,57 @@
 #!/bin/bash
+# Remove shared resource files from all packages
+set -e
 
-# Remove resource files from the project, except from their source directories.
+echo "Removing shared resource files from all packages..."
 
-TARGET_DIR="."
+# Find all package directories with composer.json files
+for package_dir in packages/*/; do
+    if [ -f "${package_dir}composer.json" ]; then
+        package_name=$(basename "$package_dir")
+        echo "Processing package: $package_name"
+        
+        # Remove config directory contents (but keep the directory)
+        if [ -d "${package_dir}config" ]; then
+            rm -rf "${package_dir}config/"*
+            echo "  ✓ Removed config files"
+        fi
+        
+        # Remove prompts directory
+        if [ -d "${package_dir}prompts" ]; then
+            rm -rf "${package_dir}prompts"
+            echo "  ✓ Removed prompts directory"
+        fi
+        
+        # Remove .env-dist file
+        if [ -f "${package_dir}.env-dist" ]; then
+            rm -f "${package_dir}.env-dist"
+            echo "  ✓ Removed .env-dist file"
+        fi
+        
+        # Remove bin directory contents (but keep the directory)
+        if [ -d "${package_dir}bin" ]; then
+            rm -rf "${package_dir}bin/"*
+            echo "  ✓ Removed bin files"
+        fi
+        
+        # Remove examples directory contents (but keep the directory)
+        if [ -d "${package_dir}examples" ]; then
+            rm -rf "${package_dir}examples/"*
+            echo "  ✓ Removed examples"
+        fi
+        
+        # Remove release notes contents (but keep the directory)
+        if [ -d "${package_dir}release_notes" ]; then
+            rm -rf "${package_dir}release_notes/"*
+            echo "  ✓ Removed release notes"
+        fi
+    fi
+done
 
-echo "Removing resource files from:"
+# Clean up docs-build directory if it exists
+if [ -d "docs-build" ]; then
+    rm -rf docs-build/*
+    echo "✓ Cleaned docs-build directory"
+fi
 
-echo " ... ./packages/config"
-rm -rf "$TARGET_DIR/packages/config/config/"*
-rm -f "$TARGET_DIR/packages/config/.env-dist"
-
-echo " ... ./packages/templates"
-rm -rf "$TARGET_DIR/packages/templates/config/"*
-rm -rf "$TARGET_DIR/packages/templates/prompts/"*
-
-echo " ... ./packages/setup"
-rm -rf "$TARGET_DIR/packages/setup/prompts/"*
-rm -rf "$TARGET_DIR/packages/setup/config/"*
-rm -rf "$TARGET_DIR/packages/setup/bin/"*
-rm -f "$TARGET_DIR/packages/setup/.env-dist"
-
-echo " ... ./packages/http-client"
-rm -rf "$TARGET_DIR/packages/http-client/config/"*
-
-echo " ... ./packages/polyglot"
-rm -rf "$TARGET_DIR/packages/polyglot/prompts/"*
-rm -rf "$TARGET_DIR/packages/polyglot/config/"*
-rm -f "$TARGET_DIR/packages/polyglot/.env-dist"
-
-echo " ... ./packages/instructor"
-rm -rf "$TARGET_DIR/packages/instructor/prompts/"*
-rm -rf "$TARGET_DIR/packages/instructor/config/"*
-rm -f "$TARGET_DIR/packages/instructor/.env-dist"
-
-echo " ... ./packages/tell"
-rm -rf "$TARGET_DIR/packages/tell/config/"*
-rm -rf "$TARGET_DIR/packages/tell/prompts/"*
-rm -rf "$TARGET_DIR/packages/tell/bin/"*
-rm -f "$TARGET_DIR/packages/tell/.env-dist"
-
-echo " ... ./packages/hub"
-rm -rf "$TARGET_DIR/packages/hub/config/"*
-rm -rf "$TARGET_DIR/packages/hub/prompts/"*
-rm -rf "$TARGET_DIR/packages/hub/examples/"*
-rm -rf "$TARGET_DIR/packages/hub/bin/"*
-rm -f "$TARGET_DIR/packages/hub/.env-dist"
-
-echo " ... ./docs-build"
-rm -rf "$TARGET_DIR/docs-build/"*
-
-echo "Done!"
+echo "✅ Done! All shared resource files have been removed from packages."

@@ -1,0 +1,7 @@
+{
+  "package_name": "example",
+  "namespace": "Example",
+  "package_title": "Example Package",
+  "package_description": "Example functionality for Instructor PHP library",
+  "target_directory": "packages/example"
+}

@@ -11,6 +11,7 @@ use Cognesy\InstructorHub\Markdown\Nodes\DocumentNode;
 use Cognesy\InstructorHub\Markdown\Nodes\HeaderNode;
 use Cognesy\InstructorHub\Markdown\Nodes\NewlineNode;
 use Cognesy\InstructorHub\Markdown\Nodes\Node;
+use Cognesy\Utils\ProgrammingLanguage;
 
 final class ToString implements NodeVisitor
 {
@@ -53,7 +54,7 @@ final class ToString implements NodeVisitor
         
         // Add ID as @doctest comment only if there's an ID in metadata
         if (isset($node->metadata['id'])) {
-            $commentSyntax = CodeBlockIdentifier::getCommentSyntax($node->language);
+            $commentSyntax = ProgrammingLanguage::commentSyntax($node->language);
             $content = "{$commentSyntax} @doctest id=\"{$node->metadata['id']}\"\n{$content}";
         }
         
@@ -67,7 +68,7 @@ final class ToString implements NodeVisitor
         $content = $this->prepareCodeBlockContent($node);
         $content = $this->removeExistingDoctestLines($content, $node->language);
         
-        $commentSyntax = CodeBlockIdentifier::getCommentSyntax($node->language);
+        $commentSyntax = ProgrammingLanguage::commentSyntax($node->language);
         
         // Add all metadata as @doctest comment
         if (!empty($node->metadata)) {
@@ -87,7 +88,7 @@ final class ToString implements NodeVisitor
     private function removeExistingDoctestLines(string $content, string $language): string {
         $contentLines = explode("\n", $content);
         $cleanedLines = [];
-        $commentSyntax = CodeBlockIdentifier::getCommentSyntax($language);
+        $commentSyntax = ProgrammingLanguage::commentSyntax($language);
         $escapedSyntax = preg_quote($commentSyntax, '/');
         
         foreach ($contentLines as $line) {

@@ -32,19 +32,17 @@ final class CodeBlockIdentifier
     }
 
     /**
-     * Creates a complete codeblock ID with the 'codeblock_' prefix
-     * Uses provided ID or generates a new one if none provided
+     * Creates a codeblock ID - uses provided ID or generates a new one if none provided
      */
     public static function createCodeBlockId(?string $id = null): string {
-        $actualId = $id ?? self::generateId();
-        return "codeblock_{$actualId}";
+        return $id ?? self::generateId();
     }
 
     /**
-     * Extracts the raw ID part from a full codeblock ID (removes 'codeblock_' prefix)
+     * Returns the ID as-is (no longer needed since there's no prefix)
      */
     public static function extractRawId(string $codeblockId): string {
-        return str_replace('codeblock_', '', $codeblockId);
+        return $codeblockId;
     }
 
     /**
@@ -52,22 +50,7 @@ final class CodeBlockIdentifier
      * Accepts both human-readable IDs and generated hex IDs
      */
     public static function isValid(string $codeblockId): bool {
-        return preg_match('/^codeblock_[a-zA-Z0-9_-]+$/', $codeblockId) === 1;
+        return preg_match('/^[a-zA-Z0-9_-]+$/', $codeblockId) === 1;
     }
 
-    /**
-     * Gets the appropriate comment syntax for a given language
-     */
-    public static function getCommentSyntax(string $language): string {
-        return match (strtolower($language)) {
-            'python', 'py', 'bash', 'sh', 'shell', 'yaml', 'yml', 'ruby', 'r', 'perl', 'makefile', 'dockerfile', 'toml', 'conf', 'ini' => '#',
-            'html', 'xml', 'svg' => '<!--',
-            'css', 'scss', 'sass', 'less' => '/*',
-            'sql' => '--',
-            'lua' => '--',
-            'haskell', 'hs' => '--',
-            'elm' => '--',
-            default => '//', // Default for most C-style languages: js, ts, java, c, cpp, php, go, rust, etc.
-        };
-    }
 }

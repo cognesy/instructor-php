@@ -2,27 +2,24 @@
 
 namespace Cognesy\InstructorHub\Doctest;
 
+use Cognesy\InstructorHub\Doctest\Internal\DoctestIdNode;
+use Cognesy\InstructorHub\Doctest\Internal\DoctestLexer;
+use Cognesy\InstructorHub\Doctest\Internal\DoctestParser;
+use Cognesy\InstructorHub\Doctest\Internal\DoctestRegionNode;
+use Cognesy\InstructorHub\Doctest\Internal\MarkdownInfo;
 use Cognesy\InstructorHub\Markdown\MarkdownFile;
 use Cognesy\InstructorHub\Markdown\Nodes\CodeBlockNode;
-use Cognesy\Utils\FileExtension;
+use Cognesy\Utils\ProgrammingLanguage;
 use Iterator;
 
 class Doctest {
-    private function __construct(
+    public function __construct(
         public ?string $id,
         public string $language,
         public int $linesOfCode,
-        //
-        public string $markdownPath,
-        public string $codePath,
         public string $code,
-        //
-        private string $markdownTitle,
-        private string $markdownDescription,
-        private string $caseDir,
-        private string $casePrefix,
-        private int $minLines,
-        private array $includedTypes,
+        public string $codePath,
+        public MarkdownInfo $sourceMarkdown,
     ) {}
 
     /**
@@ -32,8 +29,10 @@ class Doctest {
      * @return Iterator<Doctest>
      */
     public static function fromMarkdown(MarkdownFile $markdownFile) : Iterator {
+        $markdownInfo = MarkdownInfo::from($markdownFile);
+        
         foreach ($markdownFile->codeBlocks() as $codeBlock) {
-            $doctest = self::make($markdownFile, $codeBlock);
+            $doctest = self::make($markdownInfo, $codeBlock);
             if (!self::shouldBeIncluded($doctest)) {
                 continue;
             }
@@ -41,25 +40,93 @@ class Doctest {
         }
     }
 
-    public function toFileContent() : string {
-        $template = match($this->language) {
-            'php' => "<?php\n// @doctest id=%s\n%s\n?>\n",
-            'python' => "# @doctest id=%s\n%s\n",
-            'ruby' => "# @doctest id=%s\n%s\n",
-            'bash' => "# @doctest id=%s\n%s\n",
-            'sh' => "# @doctest id=%s\n%s\n",
-            'javascript' => "// @doctest id=%s\n%s\n",
-            'java' => "// @doctest id=%s\n%s\n",
-            'csharp' => "// @doctest id=%s\n%s\n",
-            'go' => "// @doctest id=%s\n%s\n",
-            'c' => "// @doctest id=%s\n%s\n",
-            'cpp' => "// @doctest id=%s\n%s\n",
-            'typescript' => "// @doctest id=%s\n%s\n",
-            'cs' => "// @doctest id=%s\n%s\n",
-            'rust' => "// @doctest id=%s\n%s\n",
-            default => "// @doctest id=%s\n%s\n",
+    public function toFileContent(?string $region = null) : string {
+        $content = $this->code;
+        
+        // Extract specific region if requested
+        if ($region !== null && $this->hasRegions()) {
+            $extractedRegion = $this->extractRegion($region);
+            if ($extractedRegion !== null) {
+                $content = $extractedRegion;
+            }
+        }
+        
+        $template = ProgrammingLanguage::fileTemplate($this->language);
+        return sprintf($template, $this->id, $content);
+    }
+
+    /**
+     * Get all available regions in this doctest's code
+     * 
+     * @return array<string> List of region names
+     */
+    public function getAvailableRegions(): array
+    {
+        $parsedRegions = $this->parseRegions();
+        return array_map(fn($region) => $region->name, $parsedRegions);
+    }
+
+    /**
+     * Check if this doctest has regions
+     */
+    public function hasRegions(): bool
+    {
+        $parsedRegions = $this->parseRegions();
+        return !empty($parsedRegions);
+    }
+
+    /**
+     * Extract specific region content using the new parser
+     */
+    public function extractRegion(string $regionName): ?string
+    {
+        $parsedRegions = $this->parseRegions();
+        foreach ($parsedRegions as $region) {
+            if ($region->name === $regionName) {
+                return $region->content;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get the doctest ID from code using the new parser
+     */
+    public function getIdFromCode(): ?string
+    {
+        $parsedNodes = $this->parseCode();
+        foreach ($parsedNodes as $node) {
+            if ($node instanceof DoctestIdNode) {
+                return $node->id;
+            }
+        }
+        
+        return null;
+    }
+
+    // BACKWARD COMPATIBILITY ACCESSORS ////////////////////////////////////////
+
+    public function __get(string $name): mixed
+    {
+        return match ($name) {
+            'markdownPath' => $this->sourceMarkdown->path,
+            'markdownTitle' => $this->sourceMarkdown->title,
+            'markdownDescription' => $this->sourceMarkdown->description,
+            'caseDir' => $this->sourceMarkdown->caseDir,
+            'casePrefix' => $this->sourceMarkdown->casePrefix,
+            'minLines' => $this->sourceMarkdown->minLines,
+            'includedTypes' => $this->sourceMarkdown->includedTypes,
+            default => throw new \InvalidArgumentException("Unknown property: {$name}"),
         };
-        return sprintf($template, $this->id, $this->code);
+    }
+
+    public function __isset(string $name): bool
+    {
+        return in_array($name, [
+            'markdownPath', 'markdownTitle', 'markdownDescription',
+            'caseDir', 'casePrefix', 'minLines', 'includedTypes'
+        ]);
     }
 
     // INTERNAL //////////////////////////////////////////////////////////
@@ -67,28 +134,22 @@ class Doctest {
     /**
      * Create a Doctest instance from a CodeBlockNode.
      *
-     * @param MarkdownFile $markdown
+     * @param MarkdownInfo $markdownInfo
      * @param CodeBlockNode $node
      * @return Doctest
      */
-    private static function make(MarkdownFile $markdown, CodeBlockNode $node) : self {
-        $id = $node->metadata['id'] ?? null;
+    private static function make(MarkdownInfo $markdownInfo, CodeBlockNode $node) : self {
+        $id = $node->id;
         $language = $node->language;
-        $linesOfCode = count(explode("\n", $node->content));
+        $linesOfCode = ProgrammingLanguage::linesOfCode($language, $node->content);
 
         return new self(
             id: $id,
             language: $language,
             linesOfCode: $linesOfCode,
-            markdownPath: $markdown->path(),
-            codePath: self::makeTargetPath($markdown, $id, $language),
             code: $node->content,
-            markdownTitle: $markdown->metadata('title', ''),
-            markdownDescription: $markdown->metadata('description', ''),
-            caseDir: $markdown->metadata('doctest_case_dir', ''),
-            casePrefix: $markdown->metadata('doctest_case_prefix', ''),
-            minLines: $markdown->metadata('doctest_min_lines', 0),
-            includedTypes: $markdown->metadata('doctest_included_types', []),
+            codePath: self::makeTargetPath($markdownInfo->caseDir, $markdownInfo->casePrefix, $id, $language),
+            sourceMarkdown: $markdownInfo,
         );
     }
 
@@ -98,22 +159,63 @@ class Doctest {
             return false;
         }
         // Exclude doctests with no code
-        if ($doctest->linesOfCode === 0 || $doctest->linesOfCode < $doctest->minLines) {
+        if ($doctest->linesOfCode === 0 || $doctest->linesOfCode < $doctest->sourceMarkdown->minLines) {
             return false;
         }
         // Exclude doctests with no language or not included language
-        if ($doctest->language === '' || !in_array($doctest->language, $doctest->includedTypes)) {
+        if ($doctest->language === '' || !in_array($doctest->language, $doctest->sourceMarkdown->includedTypes)) {
             return false;
         }
         return true;
     }
 
-    private static function makeTargetPath(MarkdownFile $markdown, mixed $id, string $language) : string {
-        return $markdown->metadata('doctest_case_dir', '')
+    private static function makeTargetPath(string $caseDir, string $casePrefix, mixed $id, string $language) : string {
+        return $caseDir
             . '/'
-            . $markdown->metadata('doctest_case_prefix', '')
+            . $casePrefix
             . $id
             . '.'
-            . FileExtension::forLanguage($language);
+            . ProgrammingLanguage::fileExtension($language);
+    }
+
+    /**
+     * Get the effective case directory for a markdown file (with defaults applied)
+     */
+    public static function getEffectiveCaseDir(MarkdownFile $markdown): string {
+        $markdownInfo = MarkdownInfo::from($markdown);
+        return $markdownInfo->caseDir;
+    }
+
+    /**
+     * Get the effective case prefix for a markdown file (with defaults applied)
+     */
+    public static function getEffectiveCasePrefix(MarkdownFile $markdown): string {
+        $markdownInfo = MarkdownInfo::from($markdown);
+        return $markdownInfo->casePrefix;
+    }
+
+    /**
+     * Parse code using the new DoctestParser and return all nodes
+     * 
+     * @return array<\Cognesy\InstructorHub\Doctest\Internal\DoctestNode>
+     */
+    private function parseCode(): array
+    {
+        $lexer = new DoctestLexer($this->language);
+        $parser = new DoctestParser();
+        
+        $tokens = $lexer->tokenize($this->code);
+        return iterator_to_array($parser->parse($tokens));
+    }
+
+    /**
+     * Parse code and extract only region nodes
+     * 
+     * @return array<DoctestRegionNode>
+     */
+    private function parseRegions(): array
+    {
+        $nodes = $this->parseCode();
+        return array_filter($nodes, fn($node) => $node instanceof DoctestRegionNode);
     }
 }

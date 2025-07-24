@@ -1,89 +1,166 @@
 #!/usr/bin/env bash
-set -e  # stops script on first error
+# Generate markdown contexts from codebase for LLM-based development tools
+set -e
 
-TMP_CODE_DIR="./tmp/code"
+# Configuration
+OUTPUT_DIR="./tmp/code"
+TEMP_DIR="./tmp/code-processing"
 
-echo "🔧 Exporting sources to Markdown"
+# Check dependencies
+if ! command -v code2prompt &> /dev/null; then
+    echo "❌ Error: 'code2prompt' command not found. Please install it first."
+    echo "   Visit: https://github.com/mufeedvh/code2prompt"
+    exit 1
+fi
 
-echo "🗑️ Cleaning up old files"
+echo "🔧 Generating LLM contexts from codebase..."
 
-rm -rf $TEMP_CODE_DIR/*
+# Clean up and prepare directories
+echo "🗑️ Cleaning up old files..."
+rm -rf "$OUTPUT_DIR" "$TEMP_DIR"
+mkdir -p "$OUTPUT_DIR" "$TEMP_DIR"
 
-for dir in packages/*; do
-  dirname=$(basename "$dir")
-  if [ -d "$dir/src" ]; then
-    echo "🔍 Exporting sources to Markdown in $dirname"
-    code2prompt "$dir/src" -o "$TEMP_CODE_DIR/$dirname.md"
-  fi
+# ================================
+# FULL PACKAGE EXPORTS
+# ================================
+echo "📦 Exporting complete packages..."
+
+for package_dir in packages/*/; do
+    if [[ -d "${package_dir}src" ]]; then
+        package_name=$(basename "$package_dir")
+        echo "  📄 Generating: ${package_name}.md"
+        code2prompt "${package_dir}src" -o "$OUTPUT_DIR/${package_name}.md"
+    fi
 done
 
-echo "📦 Exporting sub-package sources to Markdown"
+# ================================
+# FOCUSED SUBSYSTEM EXPORTS
+# ================================
+echo "🎯 Exporting focused subsystems..."
 
-code2prompt "packages/utils/src/JsonSchema" -o "$TEMP_CODE_DIR/cut-util-json-schema.md"
-code2prompt "packages/utils/src/Messages" -o "$TEMP_CODE_DIR/cut-util-messages.md"
-code2prompt "packages/polyglot/src/Inference" -o "$TEMP_CODE_DIR/cut-poly-inference.md"
-code2prompt "packages/polyglot/src/Embeddings" -o "$TEMP_CODE_DIR/cut-poly-embeddings.md"
+# Define subsystem exports for focused analysis
+declare -A SUBSYSTEMS
+SUBSYSTEMS["utils-json-schema"]="packages/utils/src/JsonSchema"
+SUBSYSTEMS["utils-messages"]="packages/utils/src/Messages"
+SUBSYSTEMS["poly-inference"]="packages/polyglot/src/Inference"
+SUBSYSTEMS["poly-embeddings"]="packages/polyglot/src/Embeddings"
 
-echo "📦 Making cut-down Markdown versions of selected packages"
+for name in "${!SUBSYSTEMS[@]}"; do
+    path="${SUBSYSTEMS[$name]}"
+    if [[ -d "$path" ]]; then
+        echo "  🎯 Generating: ${name}.md"
+        code2prompt "$path" -o "$OUTPUT_DIR/${name}.md"
+    else
+        echo "  ⚠️  Skipping ${name}: path not found"
+    fi
+done
 
-# MAKE POLYGLOT WITH LIMITED NUMBER OF DRIVERS
-mkdir -p $TEMP_CODE_DIR/polyglot-tmp
-mkdir -p $TEMP_CODE_DIR/tmp1
-cp -rf "./packages/polyglot/src/"* "$TEMP_CODE_DIR/polyglot-tmp/"
-# remove everything under tmp/polyglot-tmp/Inference/Drivers/* except ./OpenAI and ./Gemini
-mv "$TEMP_CODE_DIR/polyglot-tmp/Inference/Drivers/OpenAI" "$TEMP_CODE_DIR/tmp1"
-mv "$TEMP_CODE_DIR/polyglot-tmp/Inference/Drivers/Gemini" "$TEMP_CODE_DIR/tmp1"
-rm -rf $TEMP_CODE_DIR/polyglot-tmp/Inference/Drivers/*
-mv "$TEMP_CODE_DIR/tmp1/"* "$TEMP_CODE_DIR/polyglot-tmp/Inference/Drivers"
-rm -rf $TEMP_CODE_DIR/tmp1
-code2prompt "$TEMP_CODE_DIR/polyglot-tmp" -o "$TEMP_CODE_DIR/cut-poly.md"
-rm -rf $TEMP_CODE_DIR/polyglot-tmp
+# ================================
+# CURATED PACKAGE VARIANTS
+# ================================
+echo "✂️  Creating curated package variants..."
 
-# MAKE INSTRUCTOR WITH LIMITED NUMBER OF DRIVERS
-mkdir -p ./tmp/instructor-tmp
-cp -rf "./packages/instructor/src/"* "$TEMP_CODE_DIR/instructor-tmp/"
-rm -rf "$TEMP_CODE_DIR/instructor-tmp/Extras"
-rm -rf "$TEMP_CODE_DIR/instructor-tmp/Events"
-rm -rf "$TEMP_CODE_DIR/instructor-tmp/Deserialization"
-rm -rf "$TEMP_CODE_DIR/instructor-tmp/Transformation"
-rm -rf "$TEMP_CODE_DIR/instructor-tmp/Validation"
-rm -f "$TEMP_CODE_DIR/instructor-tmp/SettingsStructuredOutputConfigProvider.php"
-code2prompt "$TEMP_CODE_DIR/instructor-tmp" -o "$TEMP_CODE_DIR/cut-instructor.md"
-rm -rf $TEMP_CODE_DIR/instructor-tmp
+# Polyglot with limited drivers (for context size management)
+create_polyglot_minimal() {
+    local temp_dir="$TEMP_DIR/polyglot-minimal"
+    echo "  ✂️  Creating polyglot-minimal.md (OpenAI + Gemini drivers only)"
+    
+    mkdir -p "$temp_dir"
+    cp -rf "packages/polyglot/src/"* "$temp_dir/"
+    
+    # Keep only OpenAI and Gemini drivers
+    local drivers_dir="$temp_dir/Inference/Drivers"
+    if [[ -d "$drivers_dir" ]]; then
+        local keep_temp="$TEMP_DIR/keep-drivers"
+        mkdir -p "$keep_temp"
+        [[ -d "$drivers_dir/OpenAI" ]] && mv "$drivers_dir/OpenAI" "$keep_temp/"
+        [[ -d "$drivers_dir/Gemini" ]] && mv "$drivers_dir/Gemini" "$keep_temp/"
+        rm -rf "$drivers_dir"/*
+        [[ -d "$keep_temp/OpenAI" ]] && mv "$keep_temp/OpenAI" "$drivers_dir/"
+        [[ -d "$keep_temp/Gemini" ]] && mv "$keep_temp/Gemini" "$drivers_dir/"
+        rm -rf "$keep_temp"
+    fi
+    
+    code2prompt "$temp_dir" -o "$OUTPUT_DIR/polyglot-minimal.md"
+    rm -rf "$temp_dir"
+}
 
-# MAKE HTTP-CLIENT WITH NO EXTRA MIDDLEWARE
-mkdir -p $TEMP_CODE_DIR/http-tmp
-cp -rf "./packages/http-client/src/"* "$TEMP_CODE_DIR/http-tmp/"
-# remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
-rm -rf "$TEMP_CODE_DIR/http-tmp/Middleware/RecordReplay"
-rm -rf "$TEMP_CODE_DIR/http-tmp/Middleware/Examples"
-code2prompt "$TEMP_CODE_DIR/http-tmp" -o "$TEMP_CODE_DIR/cut-http-normal.md"
-rm -rf $TEMP_CODE_DIR/http-tmp
+# Instructor core (without extras, events, validation, etc.)
+create_instructor_core() {
+    local temp_dir="$TEMP_DIR/instructor-core"
+    echo "  ✂️  Creating instructor-core.md (core functionality only)"
+    
+    mkdir -p "$temp_dir"
+    cp -rf "packages/instructor/src/"* "$temp_dir/"
+    
+    # Remove optional/complex subsystems
+    local remove_dirs=("Extras" "Events" "Deserialization" "Transformation" "Validation")
+    for dir in "${remove_dirs[@]}"; do
+        [[ -d "$temp_dir/$dir" ]] && rm -rf "$temp_dir/$dir"
+    done
+    
+    # Remove specific complex files
+    [[ -f "$temp_dir/SettingsStructuredOutputConfigProvider.php" ]] && rm -f "$temp_dir/SettingsStructuredOutputConfigProvider.php"
+    
+    code2prompt "$temp_dir" -o "$OUTPUT_DIR/instructor-core.md"
+    rm -rf "$temp_dir"
+}
 
-# MAKE MINIMAL VER OF HTTP-CLIENT
-mkdir -p ./tmp/http-tmp
-cp -rf "./packages/http-client/src/"* "$TEMP_CODE_DIR/http-tmp/"
-# remove everything under tmp/instructor-tmp/LLM/Drivers/* except ./OpenAI and ./Gemini
-rm -rf "$TEMP_CODE_DIR/http-tmp/Middleware/"
-rm -rf "$TEMP_CODE_DIR/http-tmp/Debug/"
-rm -rf "$TEMP_CODE_DIR/http-tmp/Adapters/Laravel"*
-rm -rf "$TEMP_CODE_DIR/http-tmp/Adapters/Mock"*
-rm -rf "$TEMP_CODE_DIR/http-tmp/Adapters/Symfony"*
-rm -rf "$TEMP_CODE_DIR/http-tmp/Drivers/Laravel"*
-rm -rf "$TEMP_CODE_DIR/http-tmp/Drivers/Mock"*
-rm -rf "$TEMP_CODE_DIR/http-tmp/Drivers/Symfony"*
-code2prompt "$TEMP_CODE_DIR/http-tmp" -o "$TEMP_CODE_DIR/cut-http-mini.md"
-rm -rf $TEMP_CODE_DIR/http-tmp
+# HTTP Client variants
+create_http_variants() {
+    # Normal version (without examples and record/replay)
+    local temp_dir1="$TEMP_DIR/http-normal"
+    echo "  ✂️  Creating http-normal.md (without debug middleware)"
+    
+    mkdir -p "$temp_dir1"
+    cp -rf "packages/http-client/src/"* "$temp_dir1/"
+    
+    # Remove debug/example middleware
+    [[ -d "$temp_dir1/Middleware/RecordReplay" ]] && rm -rf "$temp_dir1/Middleware/RecordReplay"
+    [[ -d "$temp_dir1/Middleware/Examples" ]] && rm -rf "$temp_dir1/Middleware/Examples"
+    
+    code2prompt "$temp_dir1" -o "$OUTPUT_DIR/http-normal.md"
+    rm -rf "$temp_dir1"
+    
+    # Minimal version (core functionality only)
+    local temp_dir2="$TEMP_DIR/http-minimal"
+    echo "  ✂️  Creating http-minimal.md (core functionality only)"
+    
+    mkdir -p "$temp_dir2"
+    cp -rf "packages/http-client/src/"* "$temp_dir2/"
+    
+    # Remove all optional components
+    local remove_patterns=("Middleware" "Debug" "Adapters/Laravel" "Adapters/Mock" "Adapters/Symfony" "Drivers/Laravel" "Drivers/Mock" "Drivers/Symfony")
+    for pattern in "${remove_patterns[@]}"; do
+        find "$temp_dir2" -path "*/$pattern*" -type d -exec rm -rf {} + 2>/dev/null || true
+    done
+    
+    code2prompt "$temp_dir2" -o "$OUTPUT_DIR/http-minimal.md"
+    rm -rf "$temp_dir2"
+}
 
-## MAKE MINIMAL VER OF CONFIG RELATED CODE
-#mkdir -p ./tmp/config-tmp
-#cp -rf "./packages/utils/src/Config"* "$TEMP_CODE_DIR/config-tmp/"
-#cp -rf "./packages/http-client/src/Config/"* "$TEMP_CODE_DIR/config-tmp/"
-#cp -rf "./packages/instructor/src/Config/"* "$TEMP_CODE_DIR/config-tmp/"
-#cp -rf "./packages/polyglot/src/Embeddings/Config/"* "$TEMP_CODE_DIR/config-tmp/"
-#cp -rf "./packages/polyglot/src/LLM/Config/"* "$TEMP_CODE_DIR/config-tmp/"
-#cp -rf "./packages/templates/src/Config/"* "$TEMP_CODE_DIR/config-tmp/"
-#code2prompt "$TEMP_CODE_DIR/config-tmp" -o "$TEMP_CODE_DIR/x-config.md"
-#rm -rf $TEMP_CODE_DIR/config-tmp
+# Execute curated variants
+create_polyglot_minimal
+create_instructor_core
+create_http_variants
 
-echo "✅ Export completed successfully!"
+# ================================
+# CLEANUP AND SUMMARY
+# ================================
+echo "🧹 Cleaning up temporary files..."
+rm -rf "$TEMP_DIR"
+
+echo ""
+echo "✅ LLM context generation completed!"
+echo "📁 Generated files in: $OUTPUT_DIR"
+echo ""
+echo "📋 Generated contexts:"
+echo "   📦 Full packages: $(ls "$OUTPUT_DIR"/*.md | grep -E '/(addons|auxiliary|config|dynamic|events|experimental|http-client|hub|instructor|messages|polyglot|schema|setup|tell|templates|utils)\.md$' | wc -l) files"
+echo "   🎯 Focused subsystems: $(ls "$OUTPUT_DIR"/*-*.md | grep -E '(utils-|poly-)' | wc -l) files"  
+echo "   ✂️  Curated variants: $(ls "$OUTPUT_DIR"/*-*.md | grep -E '(minimal|core|normal)' | wc -l) files"
+echo ""
+echo "💡 Use these contexts with LLM tools for:"
+echo "   • Code analysis and understanding"
+echo "   • Generating consistent code following project patterns"
+echo "   • Debugging and troubleshooting"
+echo "   • Documentation generation"

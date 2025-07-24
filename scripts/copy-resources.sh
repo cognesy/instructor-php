@@ -1,136 +1,93 @@
 #!/bin/bash
-# Copy resource files to subpackages
+# Copy shared resource files to packages automatically
+set -e
 
 SOURCE_DIR="."
-TARGET_DIR="."
+echo "Copying shared resource files to packages..."
 
-echo "Copying resource files to:"
+# Define which binary goes to which package
+declare -A BINARY_MAP
+BINARY_MAP["instructor-setup"]="setup"
+BINARY_MAP["instructor-hub"]="hub"  
+BINARY_MAP["tell"]="tell"
 
-########################
-### CONFIG RESOURCES ###
-########################
-echo " ... ./packages/config"
-# config
-rm -rf "$TARGET_DIR/packages/config/config"
-mkdir -p "$TARGET_DIR/packages/config/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/config/config"
-# .env-dist
-cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/config/.env-dist"
+# Define packages that need specific resource types
+# These can be determined by checking composer.json bin entries or package purpose
+PACKAGES_NEEDING_CONFIG=("config" "templates" "setup" "http-client" "polyglot" "instructor" "tell" "hub")
+PACKAGES_NEEDING_ENV=("config" "setup" "polyglot" "instructor" "tell" "hub")
+PACKAGES_NEEDING_PROMPTS=("templates" "setup" "polyglot" "instructor" "tell" "hub")
+PACKAGES_NEEDING_EXAMPLES=("hub")
 
-###########################
-### TEMPLATES RESOURCES ###
-###########################
-echo " ... ./packages/templates"
-# config
-rm -rf "$TARGET_DIR/packages/templates/config"
-mkdir -p "$TARGET_DIR/packages/templates/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/templates/config"
-# prompts
-rm -rf "$TARGET_DIR/packages/templates/prompts"
-mkdir -p "$TARGET_DIR/packages/templates/prompts"
-cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/templates/prompts"
+# Helper function to check if package is in array
+package_needs_resource() {
+    local package="$1"
+    local -n resource_array=$2
+    
+    for needed_package in "${resource_array[@]}"; do
+        if [[ "$package" == "$needed_package" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
-#######################
-### SETUP RESOURCES ###
-#######################
-echo " ... ./packages/setup"
-# config
-rm -rf "$TARGET_DIR/packages/setup/config"
-mkdir -p "$TARGET_DIR/packages/setup/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/setup/config"
-# .env-dist
-cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/setup/.env-dist"
-# prompts
-rm -rf "$TARGET_DIR/packages/setup/prompts"
-mkdir -p "$TARGET_DIR/packages/setup/prompts"
-cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/setup/prompts"
-# scripts
-rm -rf "$TARGET_DIR/packages/setup/bin"
-mkdir -p "$TARGET_DIR/packages/setup/bin"
-cp "$SOURCE_DIR/bin/instructor-setup" "$TARGET_DIR/packages/setup/bin/"
-#cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/setup/bin/"
+# Process all packages with composer.json files
+for package_dir in packages/*/; do
+    if [[ -f "${package_dir}composer.json" ]]; then
+        package_name=$(basename "$package_dir")
+        echo "Processing package: $package_name"
+        
+        # Copy config files if package needs them
+        if package_needs_resource "$package_name" PACKAGES_NEEDING_CONFIG; then
+            if [[ -d "$SOURCE_DIR/config" ]]; then
+                rm -rf "${package_dir}config"
+                mkdir -p "${package_dir}config"
+                cp -R "$SOURCE_DIR/config/"* "${package_dir}config/"
+                echo "  ✓ Copied config files"
+            fi
+        fi
+        
+        # Copy .env-dist if package needs it
+        if package_needs_resource "$package_name" PACKAGES_NEEDING_ENV; then
+            if [[ -f "$SOURCE_DIR/.env-dist" ]]; then
+                cp "$SOURCE_DIR/.env-dist" "${package_dir}.env-dist"
+                echo "  ✓ Copied .env-dist file"
+            fi
+        fi
+        
+        # Copy prompts if package needs them
+        if package_needs_resource "$package_name" PACKAGES_NEEDING_PROMPTS; then
+            if [[ -d "$SOURCE_DIR/prompts" ]]; then
+                rm -rf "${package_dir}prompts"
+                mkdir -p "${package_dir}prompts"
+                cp -R "$SOURCE_DIR/prompts/"* "${package_dir}prompts/"
+                echo "  ✓ Copied prompts"
+            fi
+        fi
+        
+        # Copy examples if package needs them
+        if package_needs_resource "$package_name" PACKAGES_NEEDING_EXAMPLES; then
+            if [[ -d "$SOURCE_DIR/examples" ]]; then
+                rm -rf "${package_dir}examples"
+                mkdir -p "${package_dir}examples"
+                cp -R "$SOURCE_DIR/examples/"* "${package_dir}examples/"
+                echo "  ✓ Copied examples"
+            fi
+        fi
+        
+        # Copy specific binary files based on mapping
+        for binary_name in "${!BINARY_MAP[@]}"; do
+            target_package="${BINARY_MAP[$binary_name]}"
+            if [[ "$package_name" == "$target_package" ]]; then
+                if [[ -f "$SOURCE_DIR/bin/$binary_name" ]]; then
+                    rm -rf "${package_dir}bin"
+                    mkdir -p "${package_dir}bin"
+                    cp "$SOURCE_DIR/bin/$binary_name" "${package_dir}bin/"
+                    echo "  ✓ Copied binary: $binary_name"
+                fi
+            fi
+        done
+    fi
+done
 
-#############################
-### HTTP CLIENT RESOURCES ###
-#############################
-echo " ... ./packages/http-client"
-# config
-rm -rf "$TARGET_DIR/packages/http-client/config"
-mkdir -p "$TARGET_DIR/packages/http-client/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/http-client/config"
-
-##########################
-### POLYGLOT RESOURCES ###
-##########################
-echo " ... ./packages/polyglot"
-# config
-rm -rf "$TARGET_DIR/packages/polyglot/config"
-mkdir -p "$TARGET_DIR/packages/polyglot/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/polyglot/config"
-# copy .env-dist
-cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/polyglot/.env-dist"
-# prompts
-rm -rf "$TARGET_DIR/packages/polyglot/prompts"
-mkdir -p "$TARGET_DIR/packages/polyglot/prompts"
-cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/polyglot/prompts"
-
-############################
-### INSTRUCTOR RESOURCES ###
-############################
-echo " ... ./packages/instructor"
-# config
-rm -rf "$TARGET_DIR/packages/instructor/config"
-mkdir -p "$TARGET_DIR/packages/instructor/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/instructor/config"
-# copy .env-dist
-cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/instructor/.env-dist"
-# prompts
-rm -rf "$TARGET_DIR/packages/instructor/prompts"
-mkdir -p "$TARGET_DIR/packages/instructor/prompts"
-cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/instructor/prompts"
-
-######################
-### TELL RESOURCES ###
-######################
-echo " ... ./packages/tell"
-# config
-rm -rf "$TARGET_DIR/packages/tell/config"
-mkdir -p "$TARGET_DIR/packages/tell/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/tell/config"
-# copy .env-dist
-cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/tell/.env-dist"
-# prompts
-rm -rf "$TARGET_DIR/packages/tell/prompts"
-mkdir -p "$TARGET_DIR/packages/tell/prompts"
-cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/tell/prompts"
-# Copy tell script
-rm -rf "$TARGET_DIR/packages/tell/bin"
-mkdir -p "$TARGET_DIR/packages/tell/bin"
-cp "$SOURCE_DIR/bin/tell" "$TARGET_DIR/packages/tell/bin/"
-#cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/tell/bin/"
-
-#####################
-### HUB RESOURCES ###
-#####################
-echo " ... ./packages/hub"
-# config
-rm -rf "$TARGET_DIR/packages/hub/config"
-mkdir -p "$TARGET_DIR/packages/hub/config"
-cp -R "$SOURCE_DIR/config/"* "$TARGET_DIR/packages/hub/config"
-# examples
-rm -rf "$TARGET_DIR/packages/hub/examples"
-mkdir -p "$TARGET_DIR/packages/hub/examples"
-cp -R "$SOURCE_DIR/examples/"* "$TARGET_DIR/packages/hub/examples"
-# copy .env-dist
-cp "$SOURCE_DIR/.env-dist" "$TARGET_DIR/packages/hub/.env-dist"
-# prompts
-rm -rf "$TARGET_DIR/packages/hub/prompts"
-mkdir -p "$TARGET_DIR/packages/hub/prompts"
-cp -R "$SOURCE_DIR/prompts/"* "$TARGET_DIR/packages/hub/prompts"
-# Copy hub script
-rm -rf "$TARGET_DIR/packages/hub/bin"
-mkdir -p "$TARGET_DIR/packages/hub/bin"
-cp "$SOURCE_DIR/bin/instructor-hub" "$TARGET_DIR/packages/hub/bin/"
-#cp "$SOURCE_DIR/bin/bootstrap.php" "$TARGET_DIR/packages/hub/bin/"
-
-echo "Done!"
+echo "✅ Done! All shared resources have been copied to appropriate packages."
