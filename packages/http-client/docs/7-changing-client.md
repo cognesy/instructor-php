@@ -1,7 +1,7 @@
 ---
 title: Changing the Underlying Client
 description: 'Learn how to switch between different HTTP client implementations using the Instructor HTTP client API.'
-doctest_case_dir: 'examples/D03_Docs_HTTP'
+doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
 doctest_case_prefix: 'ChangingClient_'
 doctest_included_types: ['php']
 doctest_min_lines: 10

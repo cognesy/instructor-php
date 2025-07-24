@@ -1,7 +1,7 @@
 ---
 title: Handling Responses
 description: 'Learn how to handle HTTP responses using the Instructor HTTP client API.'
-doctest_case_dir: 'examples/D03_Docs_HTTP'
+doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
 doctest_case_prefix: 'HandlingResponses_'
 doctest_included_types: ['php']
 doctest_min_lines: 10

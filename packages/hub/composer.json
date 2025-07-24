@@ -28,9 +28,9 @@
     "cognesy/instructor-struct": "dev-main",
     "cognesy/instructor-auxiliary": "dev-main",
     "cognesy/instructor-utils": "^1.1",
+    "cognesy/instructor-doctor": "dev-main",
     "toolkit/cli-utils": "^2.0",
-    "cebe/markdown": "^1.2",
-    "nikic/iter": "^2.0"
+    "cebe/markdown": "^1.2"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

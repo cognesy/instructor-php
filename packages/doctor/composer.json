@@ -1,0 +1,58 @@
+{
+  "name": "cognesy/instructor-doctor",
+  "description": "Documentation automation and testing utilities for technical projects",
+  "license": "MIT",
+  "homepage": "https://instructorphp.com",
+  "support": {
+    "issues": "https://github.com/cognesy/instructor-php/issues",
+    "source": "https://github.com/cognesy/instructor-php"
+  },
+  "authors": [
+    {
+      "name": "Dariusz Debowczyk",
+      "email": "ddebowczyk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Cognesy\\Doctor\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cognesy\\Doctor\\Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "cognesy/instructor-utils": "^1.1",
+    "webuni/front-matter": "^2.0",
+    "symfony/yaml": "^6.0|^7.0",
+    "symfony/filesystem": "^6.0|^7.0",
+    "symfony/finder": "^6.0|^7.0",
+    "symfony/console": "^6.0|^7.0",
+    "nikic/iter": "^2.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "icanhazstring/composer-unused": "^0.9.0",
+    "jetbrains/phpstorm-attributes": "^1.2",
+    "maglnet/composer-require-checker": "^4.16",
+    "pestphp/pest": "^2.34",
+    "phpstan/phpstan": "^1.11",
+    "vimeo/psalm": "^6.0"
+  },
+  "scripts": {
+    "tests": "@php vendor/bin/pest",
+    "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
+    "psalm": "@php vendor/bin/psalm"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "RC",
+  "prefer-stable": true
+}

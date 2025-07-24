@@ -1,7 +1,7 @@
 ---
 title: Getting Started
 description: 'Learn how to use the Instructor HTTP client API in your PHP project.'
-doctest_case_dir: 'examples/D03_Docs_HTTP'
+doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
 doctest_case_prefix: 'GettingStarted_'
 doctest_included_types: ['php']
 doctest_min_lines: 10

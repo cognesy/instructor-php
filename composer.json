@@ -42,6 +42,7 @@
   "autoload-dev": {
     "psr-4": {
       "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
+      "Cognesy\\Doctor\\": "packages/doctor/src/",
       "Cognesy\\Evals\\": "packages/evals/src/",
       "Cognesy\\Experimental\\": "packages/experimental/src/",
       "Cognesy\\InstructorHub\\": "packages/hub/src/",
@@ -139,6 +140,7 @@
     "vlucas/phpdotenv": "^5.6"
   },
   "scripts": {
+    "docs": "@php ./bin/instructor-docs",
     "hub": "@php ./bin/instructor-hub",
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
@@ -151,6 +153,7 @@
   "bin": [
     "bin/instructor-setup",
     "bin/instructor-hub",
+    "bin/instructor-docs",
     "bin/tell"
   ],
   "suggest": {

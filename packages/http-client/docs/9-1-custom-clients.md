@@ -1,7 +1,7 @@
 ---
 title: Using Custom HTTP Clients
 description: 'Learn how to create and use custom HTTP client drivers.'
-doctest_case_dir: 'examples/D03_Docs_HTTP'
+doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
 doctest_case_prefix: 'CustomClients_'
 doctest_included_types: ['php']
 doctest_min_lines: 10

@@ -13,6 +13,7 @@
             <directory suffix="Test.php">./packages/addons/tests/Unit</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Unit</directory>
             <directory suffix="Test.php">./packages/config/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/doctor/tests/Unit</directory>
             <directory suffix="Test.php">./packages/dynamic/tests/Unit</directory>
             <directory suffix="Test.php">./packages/evals/tests/Unit</directory>
             <directory suffix="Test.php">./packages/events/tests/Unit</directory>
@@ -32,6 +33,7 @@
             <directory suffix="Test.php">./packages/addons/tests/Feature</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Feature</directory>
             <directory suffix="Test.php">./packages/config/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/doctor/tests/Feature</directory>
             <directory suffix="Test.php">./packages/dynamic/tests/Feature</directory>
             <directory suffix="Test.php">./packages/evals/tests/Feature</directory>
             <directory suffix="Test.php">./packages/events/tests/Feature</directory>
@@ -51,6 +53,7 @@
             <directory suffix="Test.php">./packages/addons/tests/Integration</directory>
             <directory suffix="Test.php">./packages/auxiliary/tests/Integration</directory>
             <directory suffix="Test.php">./packages/config/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/doctor/tests/Integration</directory>
             <directory suffix="Test.php">./packages/dynamic/tests/Integration</directory>
             <directory suffix="Test.php">./packages/evals/tests/Integration</directory>
             <directory suffix="Test.php">./packages/events/tests/Integration</directory>
@@ -72,6 +75,7 @@
             <directory suffix=".php">./packages/addons/src</directory>
             <directory suffix=".php">./packages/auxiliary/src</directory>
             <directory suffix=".php">./packages/config/src</directory>
+            <directory suffix=".php">./packages/doctor/src</directory>
             <directory suffix=".php">./packages/dynamic/src</directory>
             <directory suffix=".php">./packages/evals/src</directory>
             <directory suffix=".php">./packages/events/src</directory>
