@@ -1,11 +1,3 @@
----
-name: Instructor for PHP
-description: Structured data extraction in PHP, powered by LLMs. Designed for simplicity, transparency, and control.
-doctest_case_dir: examples/D99_Other/README
-doctest_case_prefix: code_
-doctest_included_types: ['php']
-doctest_min_lines: 5
----
 
 # Instructor for PHP
 
