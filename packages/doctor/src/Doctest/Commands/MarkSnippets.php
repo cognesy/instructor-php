@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\Commands;
+namespace Cognesy\Doctor\Doctest\Commands;
 
-use Cognesy\Doctor\Console\DocRepo\DocRepository;
+use Cognesy\Doctor\Doctest\Services\DocRepository;
 use Cognesy\Doctor\Markdown\MarkdownFile;
 use InvalidArgumentException;
 use RuntimeException;

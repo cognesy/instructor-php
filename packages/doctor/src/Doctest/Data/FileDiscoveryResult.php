@@ -1,6 +1,6 @@
 <?php
 
-namespace Cognesy\Doctor\Console\FileDiscovery;
+namespace Cognesy\Doctor\Doctest\Data;
 
 /**
  * Result of file discovery operation

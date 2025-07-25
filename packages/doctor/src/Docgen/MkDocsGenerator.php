@@ -5,7 +5,9 @@ namespace Cognesy\Doctor\Docgen;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\Utils\Str;
+use JetBrains\PhpStorm\Deprecated;
 
+#[Deprecated]
 class MkDocsGenerator
 {
     private DocGenView $view;

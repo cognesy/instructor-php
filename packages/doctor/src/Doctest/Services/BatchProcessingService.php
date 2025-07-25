@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\Batch;
+namespace Cognesy\Doctor\Doctest\Services;
 
-use Cognesy\Doctor\Console\DocRepo\DocRepository;
-use Cognesy\Doctor\Console\FileDiscovery\DiscoveredFile;
-use Cognesy\Doctor\Console\FileDiscovery\FileDiscoveryResult;
-use Cognesy\Doctor\Console\FileDiscovery\FileProcessingResult;
+use Cognesy\Doctor\Doctest\Data\BatchProcessingResult;
+use Cognesy\Doctor\Doctest\Data\DiscoveredFile;
+use Cognesy\Doctor\Doctest\Data\FileDiscoveryResult;
+use Cognesy\Doctor\Doctest\Data\FileProcessingResult;
 use Cognesy\Doctor\Markdown\MarkdownFile;
 use RuntimeException;
 

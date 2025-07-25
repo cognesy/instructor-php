@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Docgen\Domain;
+namespace Cognesy\Doctor\Docgen\Data;
 
 readonly class DocumentationConfig
 {

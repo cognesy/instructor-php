@@ -1,7 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\FileDiscovery;
+namespace Cognesy\Doctor\Doctest\Services;
 
+use Cognesy\Doctor\Doctest\Data\DiscoveredFile;
+use Cognesy\Doctor\Doctest\Data\FileDiscoveryResult;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;

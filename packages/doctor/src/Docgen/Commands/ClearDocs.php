@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\Commands;
+namespace Cognesy\Doctor\Docgen\Commands;
 
 use Cognesy\Doctor\Docgen\MintlifyDocGenerator;
 use Cognesy\InstructorHub\Core\Cli;

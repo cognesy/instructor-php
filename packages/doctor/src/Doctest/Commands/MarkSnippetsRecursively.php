@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\Commands;
+namespace Cognesy\Doctor\Doctest\Commands;
 
-use Cognesy\Doctor\Console\Batch\BatchProcessingResult;
-use Cognesy\Doctor\Console\Batch\BatchProcessingService;
-use Cognesy\Doctor\Console\FileDiscovery\FileDiscoveryResult;
-use Cognesy\Doctor\Console\FileDiscovery\FileDiscoveryService;
+use Cognesy\Doctor\Doctest\Data\BatchProcessingResult;
+use Cognesy\Doctor\Doctest\Data\FileDiscoveryResult;
+use Cognesy\Doctor\Doctest\Services\BatchProcessingService;
+use Cognesy\Doctor\Doctest\Services\FileDiscoveryService;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;

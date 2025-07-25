@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Docgen\Domain;
+namespace Cognesy\Doctor\Docgen;
 
 use Cognesy\Auxiliary\Mintlify\MintlifyIndex;
 use Cognesy\Auxiliary\Mintlify\NavigationGroup;
 use Cognesy\Auxiliary\Mintlify\NavigationItem;
 use Cognesy\Config\BasePath;
-use Cognesy\Doctor\Docgen\Results\FileProcessingResult;
-use Cognesy\Doctor\Docgen\Results\GenerationResult;
+use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
+use Cognesy\Doctor\Docgen\Data\FileProcessingResult;
+use Cognesy\Doctor\Docgen\Data\GenerationResult;
 use Cognesy\Doctor\Markdown\MarkdownFile;
 use Cognesy\Doctor\Markdown\Nodes\CodeBlockNode;
 use Cognesy\InstructorHub\Data\Example;

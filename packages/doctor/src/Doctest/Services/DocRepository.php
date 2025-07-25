@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\DocRepo;
+namespace Cognesy\Doctor\Doctest\Services;
 
 use InvalidArgumentException;
 use RuntimeException;

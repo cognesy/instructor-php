@@ -1,8 +1,6 @@
 <?php
 
-namespace Cognesy\Doctor\Console\Batch;
-
-use Cognesy\Doctor\Console\FileDiscovery\FileProcessingResult;
+namespace Cognesy\Doctor\Doctest\Data;
 
 /**
  * Result of batch processing operation

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Doctor\Docgen\Views;
 
-use Cognesy\Doctor\Docgen\Results\GenerationResult;
+use Cognesy\Doctor\Docgen\Data\GenerationResult;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\Utils\Cli\Color;
 

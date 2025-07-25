@@ -2,8 +2,8 @@
 
 namespace Cognesy\Doctor\Docgen\Views;
 
-use Cognesy\Doctor\Docgen\Results\FileProcessingResult;
-use Cognesy\Doctor\Docgen\Results\GenerationResult;
+use Cognesy\Doctor\Docgen\Data\FileProcessingResult;
+use Cognesy\Doctor\Docgen\Data\GenerationResult;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\Utils\Cli\Color;

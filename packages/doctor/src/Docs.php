@@ -3,17 +3,17 @@
 namespace Cognesy\Doctor;
 
 use Cognesy\Config\BasePath;
-use Cognesy\Doctor\Console\Batch\BatchProcessingService;
-use Cognesy\Doctor\Console\Commands\ClearDocs;
-use Cognesy\Doctor\Console\Commands\ExtractCodeBlocks;
-use Cognesy\Doctor\Console\Commands\GenerateDocs;
-use Cognesy\Doctor\Console\Commands\GenerateExamplesCommand;
-use Cognesy\Doctor\Console\Commands\GeneratePackagesCommand;
-use Cognesy\Doctor\Console\Commands\MarkSnippets;
-use Cognesy\Doctor\Console\Commands\MarkSnippetsRecursively;
-use Cognesy\Doctor\Console\DocRepo\DocRepository;
-use Cognesy\Doctor\Console\FileDiscovery\FileDiscoveryService;
+use Cognesy\Doctor\Docgen\Commands\ClearDocs;
+use Cognesy\Doctor\Docgen\Commands\GenerateExamplesCommand;
+use Cognesy\Doctor\Docgen\Commands\GeneratePackagesCommand;
 use Cognesy\Doctor\Docgen\MintlifyDocGenerator;
+use Cognesy\Doctor\Doctest\Commands\ExtractCodeBlocks;
+use Cognesy\Doctor\Doctest\Commands\GenerateDocs;
+use Cognesy\Doctor\Doctest\Commands\MarkSnippets;
+use Cognesy\Doctor\Doctest\Commands\MarkSnippetsRecursively;
+use Cognesy\Doctor\Doctest\Services\BatchProcessingService;
+use Cognesy\Doctor\Doctest\Services\DocRepository;
+use Cognesy\Doctor\Doctest\Services\FileDiscoveryService;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Filesystem\Filesystem;

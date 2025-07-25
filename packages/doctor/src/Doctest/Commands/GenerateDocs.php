@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Doctor\Console\Commands;
+namespace Cognesy\Doctor\Doctest\Commands;
 
-use Cognesy\Doctor\Docgen\Domain\DocumentationConfig;
-use Cognesy\Doctor\Docgen\Domain\MintlifyDocumentation;
+use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
 use Cognesy\Doctor\Docgen\MintlifyDocGenerator;
+use Cognesy\Doctor\Docgen\MintlifyDocumentation;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\Utils\Cli\Color;
