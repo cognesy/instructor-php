@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         package:
+          # Generated from packages.json - DO NOT EDIT MANUALLY
           - local: 'packages/addons'
             repo:  'cognesy/instructor-addons'
             name:  'instructor-addons'
@@ -68,7 +69,6 @@ jobs:
           - local: 'packages/utils'
             repo:  'cognesy/instructor-utils'
             name:  'instructor-utils'
-
     steps:
       - uses: actions/checkout@v4
         with:

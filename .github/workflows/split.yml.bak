@@ -1,6 +1,7 @@
 name: Split packages
 on:
   push:
+    branches: ['main']
     tags: ['v*']
 
 permissions:
@@ -25,6 +26,9 @@ jobs:
           - local: 'packages/config'
             repo:  'cognesy/instructor-config'
             name:  'instructor-config'
+          - local: 'packages/doctor'
+            repo:  'cognesy/instructor-doctor'
+            name:  'instructor-doctor'
           - local: 'packages/dynamic'
             repo:  'cognesy/instructor-dynamic'
             name:  'instructor-dynamic'
@@ -70,8 +74,9 @@ jobs:
         with:
           fetch-depth: 0  # Full history for proper splitting
 
-      # Verify release notes exist for this package
+      # Verify release notes exist for this package (only for tags)
       - name: Verify release notes
+        if: github.ref_type == 'tag'
         id: check_notes
         run: |
           TAG_NAME=${{ github.ref_name }}
@@ -96,7 +101,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SPLIT_TOKEN_4 }}
         with:
           #github_token: ${{ secrets.SPLIT_TOKEN_4 }}      # PAT here
-          tag: ${{ github.ref_name }}             # e.g. v1.2.3
+          tag: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          branch: ${{ github.ref_type == 'branch' && github.ref_name || '' }}
           package_directory: ${{ matrix.package.local }}
           repository_organization: cognesy
           repository_name: ${{ matrix.package.name }}
@@ -116,6 +122,7 @@ jobs:
 
   wait-for-packagist:
     needs: split
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
       - name: Wait for Packagist
@@ -126,6 +133,7 @@ jobs:
 
   tests:
     needs: wait-for-packagist
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
