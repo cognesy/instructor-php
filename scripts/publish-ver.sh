@@ -29,6 +29,7 @@ declare -A PACKAGES
 PACKAGES["packages/addons"]="cognesy/instructor-addons"
 PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
 PACKAGES["packages/config"]="cognesy/instructor-config"
+PACKAGES["packages/doctor"]="cognesy/instructor-doctor"
 PACKAGES["packages/evals"]="cognesy/instructor-evals"
 PACKAGES["packages/events"]="cognesy/instructor-events"
 #PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
