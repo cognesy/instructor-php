@@ -17,31 +17,10 @@ MAJOR_MINOR=$(echo $VERSION | grep -o "^[0-9]*\.[0-9]*")
 
 echo "Updating to version $VERSION (dependency constraint ^$MAJOR_MINOR)"
 
-# Define packages and their sections based on composer.json
-declare -A PACKAGES
-PACKAGES["packages/addons"]="cognesy/instructor-addons"
-PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
-PACKAGES["packages/config"]="cognesy/instructor-config"
-#PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
-PACKAGES["packages/doctor"]="cognesy/instructor-doctor"
-PACKAGES["packages/evals"]="cognesy/instructor-evals"
-PACKAGES["packages/events"]="cognesy/instructor-events"
-PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
-PACKAGES["packages/hub"]="cognesy/instructor-hub"
-PACKAGES["packages/instructor"]="cognesy/instructor-struct"
-PACKAGES["packages/messages"]="cognesy/instructor-messages"
-PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
-PACKAGES["packages/schema"]="cognesy/instructor-schema"
-PACKAGES["packages/setup"]="cognesy/instructor-setup"
-PACKAGES["packages/tell"]="cognesy/instructor-tell"
-PACKAGES["packages/templates"]="cognesy/instructor-templates"
-PACKAGES["packages/utils"]="cognesy/instructor-utils"
-
-# Check if jq is installed
-if ! command -v jq &> /dev/null; then
-    echo "Error: jq is required but not installed. Please install jq first."
-    exit 1
-fi
+# Load centralized package configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$SCRIPT_DIR/load-packages.sh" "$PROJECT_ROOT"
 
 # Update version in each package's composer.json
 update_package_version() {

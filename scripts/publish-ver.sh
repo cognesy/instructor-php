@@ -24,25 +24,10 @@ fi
 echo "Creating release for version $VERSION..."
 echo "Using release notes from: $NOTES_FILE"
 
-# Define packages - must match those in sync-ver.sh
-declare -A PACKAGES
-PACKAGES["packages/addons"]="cognesy/instructor-addons"
-PACKAGES["packages/auxiliary"]="cognesy/instructor-auxiliary"
-PACKAGES["packages/config"]="cognesy/instructor-config"
-PACKAGES["packages/doctor"]="cognesy/instructor-doctor"
-PACKAGES["packages/evals"]="cognesy/instructor-evals"
-PACKAGES["packages/events"]="cognesy/instructor-events"
-#PACKAGES["packages/experimental"]="cognesy/instructor-experimental"
-PACKAGES["packages/http-client"]="cognesy/instructor-http-client"
-PACKAGES["packages/hub"]="cognesy/instructor-hub"
-PACKAGES["packages/instructor"]="cognesy/instructor-struct"
-PACKAGES["packages/messages"]="cognesy/instructor-messages"
-PACKAGES["packages/polyglot"]="cognesy/instructor-polyglot"
-PACKAGES["packages/schema"]="cognesy/instructor-schema"
-PACKAGES["packages/setup"]="cognesy/instructor-setup"
-PACKAGES["packages/tell"]="cognesy/instructor-tell"
-PACKAGES["packages/templates"]="cognesy/instructor-templates"
-PACKAGES["packages/utils"]="cognesy/instructor-utils"
+# Load centralized package configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$SCRIPT_DIR/load-packages.sh" "$PROJECT_ROOT"
 
 # 0. Build docs
 echo "Step 0: Rebuilding documentation..."

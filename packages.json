@@ -1,0 +1,106 @@
+{
+  "packages": [
+    {
+      "local": "packages/addons",
+      "repo": "cognesy/instructor-addons",
+      "github_name": "instructor-addons",
+      "composer_name": "cognesy/instructor-addons"
+    },
+    {
+      "local": "packages/auxiliary",
+      "repo": "cognesy/instructor-aux",
+      "github_name": "instructor-aux",
+      "composer_name": "cognesy/instructor-auxiliary"
+    },
+    {
+      "local": "packages/config",
+      "repo": "cognesy/instructor-config",
+      "github_name": "instructor-config",
+      "composer_name": "cognesy/instructor-config"
+    },
+    {
+      "local": "packages/doctor",
+      "repo": "cognesy/instructor-doctor",
+      "github_name": "instructor-doctor",
+      "composer_name": "cognesy/instructor-doctor"
+    },
+    {
+      "local": "packages/dynamic",
+      "repo": "cognesy/instructor-dynamic",
+      "github_name": "instructor-dynamic",
+      "composer_name": "cognesy/instructor-dynamic"
+    },
+    {
+      "local": "packages/evals",
+      "repo": "cognesy/instructor-evals",
+      "github_name": "instructor-evals",
+      "composer_name": "cognesy/instructor-evals"
+    },
+    {
+      "local": "packages/events",
+      "repo": "cognesy/instructor-events",
+      "github_name": "instructor-events",
+      "composer_name": "cognesy/instructor-events"
+    },
+    {
+      "local": "packages/http-client",
+      "repo": "cognesy/instructor-http-client",
+      "github_name": "instructor-http-client",
+      "composer_name": "cognesy/instructor-http-client"
+    },
+    {
+      "local": "packages/hub",
+      "repo": "cognesy/instructor-hub",
+      "github_name": "instructor-hub",
+      "composer_name": "cognesy/instructor-hub"
+    },
+    {
+      "local": "packages/instructor",
+      "repo": "cognesy/instructor-struct",
+      "github_name": "instructor-struct",
+      "composer_name": "cognesy/instructor-struct"
+    },
+    {
+      "local": "packages/messages",
+      "repo": "cognesy/instructor-messages",
+      "github_name": "instructor-messages",
+      "composer_name": "cognesy/instructor-messages"
+    },
+    {
+      "local": "packages/polyglot",
+      "repo": "cognesy/instructor-polyglot",
+      "github_name": "instructor-polyglot",
+      "composer_name": "cognesy/instructor-polyglot"
+    },
+    {
+      "local": "packages/schema",
+      "repo": "cognesy/instructor-schema",
+      "github_name": "instructor-schema",
+      "composer_name": "cognesy/instructor-schema"
+    },
+    {
+      "local": "packages/setup",
+      "repo": "cognesy/instructor-setup",
+      "github_name": "instructor-setup",
+      "composer_name": "cognesy/instructor-setup"
+    },
+    {
+      "local": "packages/tell",
+      "repo": "cognesy/instructor-tell",
+      "github_name": "instructor-tell",
+      "composer_name": "cognesy/instructor-tell"
+    },
+    {
+      "local": "packages/templates",
+      "repo": "cognesy/instructor-templates",
+      "github_name": "instructor-templates",
+      "composer_name": "cognesy/instructor-templates"
+    },
+    {
+      "local": "packages/utils",
+      "repo": "cognesy/instructor-utils",
+      "github_name": "instructor-utils",
+      "composer_name": "cognesy/instructor-utils"
+    }
+  ]
+}

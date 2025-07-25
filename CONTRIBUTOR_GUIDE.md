@@ -129,7 +129,26 @@ This script:
 - Replaces template placeholders with your configuration
 - Sets up basic `composer.json`, tests, and directory structure
 
-### 3. Complete Package Setup
+### 3. Update Centralized Configuration
+
+Add your new package to `packages.json`:
+
+```json
+{
+  "local": "packages/my-package",
+  "repo": "cognesy/instructor-my-package",
+  "github_name": "instructor-my-package", 
+  "composer_name": "cognesy/instructor-my-package"
+}
+```
+
+Update the GitHub Actions workflow:
+
+```bash
+./scripts/update-split-yml.sh
+```
+
+### 4. Complete Package Setup
 
 ```bash
 cd packages/my-package
@@ -138,6 +157,14 @@ composer test
 ```
 
 ## Version Management and Releases
+
+### Centralized Package Configuration
+
+This monorepo uses a centralized configuration system to manage packages and avoid inconsistencies:
+
+- **`packages.json`** - Central configuration file defining all packages with their paths, repository names, and Composer names
+- **Automatic synchronization** - Scripts load package configuration from this single source
+- **No manual lists** - Package lists in scripts and GitHub Actions are generated automatically
 
 ### Version Synchronization
 
@@ -148,24 +175,10 @@ All packages follow semantic versioning and are released together:
 ```
 
 This script:
+- Loads package configuration from `packages.json`
 - Updates version constraints across all packages
 - Ensures internal dependencies use compatible version ranges (^MAJOR.MINOR)
-- Updates the following packages:
-  - `cognesy/instructor-addons`
-  - `cognesy/instructor-auxiliary`
-  - `cognesy/instructor-config`
-  - `cognesy/instructor-evals`
-  - `cognesy/instructor-events`
-  - `cognesy/instructor-http-client`
-  - `cognesy/instructor-hub`
-  - `cognesy/instructor-struct`
-  - `cognesy/instructor-messages`
-  - `cognesy/instructor-polyglot`
-  - `cognesy/instructor-schema`
-  - `cognesy/instructor-setup`
-  - `cognesy/instructor-tell`
-  - `cognesy/instructor-templates`
-  - `cognesy/instructor-utils`
+- Processes all packages defined in the centralized configuration
 
 ### Creating a Release
 
@@ -189,10 +202,16 @@ The release process:
 ### Package Splitting
 
 After the main release is created, GitHub Actions automatically:
-- Splits each package into separate repositories
+- Splits each package into separate repositories (configured via `packages.json`)
 - Creates individual releases for each package on Packagist
+- The split workflow supports both tagged releases and continuous main branch synchronization
 
 ## Utilities and Helper Scripts
+
+### Package Configuration Management
+- `./scripts/load-packages.sh` - Load centralized package configuration (used by other scripts)
+- `./scripts/generate-split-matrix.sh` - Generate GitHub Actions matrix from `packages.json`
+- `./scripts/update-split-yml.sh` - Update `.github/workflows/split.yml` with current package configuration
 
 ### Resource Management
 - `./scripts/copy-resources.sh` - Copy shared resources to packages

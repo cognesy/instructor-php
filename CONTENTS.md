@@ -14,6 +14,9 @@ Comprehensive collection of working examples demonstrating various features, com
 Development and maintenance automation scripts:
 - `publish-ver.sh` - Release management and version publishing
 - `sync-ver.sh` - Synchronize versions across all packages
+- `load-packages.sh` - Load centralized package configuration
+- `generate-split-matrix.sh` - Generate GitHub Actions matrix from package config
+- `update-split-yml.sh` - Update split.yml with centralized package configuration
 - `run-all-tests.sh` - Execute tests for all packages
 - `composer-*-all.sh` - Composer operations across packages
 - `create-package.php` - Generate new package structure
@@ -46,6 +49,7 @@ Default configuration files for various components (debug, HTTP, LLM, prompts, s
 - `LICENSE` - Project license information
 
 ### Configuration
+- `packages.json` - Centralized package configuration for monorepo management
 - `package-config.example.json` - Template for creating new packages
 - `mkdocs.yml` - Documentation site configuration
 
