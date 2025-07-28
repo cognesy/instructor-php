@@ -10,7 +10,6 @@ use Cognesy\Doctor\Docgen\Data\DocumentationConfig;
 use Cognesy\Doctor\Docgen\Data\FileProcessingResult;
 use Cognesy\Doctor\Docgen\Data\GenerationResult;
 use Cognesy\Doctor\Markdown\MarkdownFile;
-use Cognesy\Doctor\Markdown\Nodes\CodeBlockNode;
 use Cognesy\InstructorHub\Data\Example;
 use Cognesy\InstructorHub\Services\ExampleRepository;
 use Cognesy\Utils\Files;
@@ -22,8 +21,7 @@ class MintlifyDocumentation
         private DocumentationConfig $config,
     ) {}
 
-    public function generateAll(): GenerationResult
-    {
+    public function generateAll(): GenerationResult {
         $startTime = microtime(true);
         $filesProcessed = 0;
         $filesCreated = 0;
@@ -32,7 +30,7 @@ class MintlifyDocumentation
 
         try {
             $this->initializeBaseFiles();
-            
+
             $packageResult = $this->generatePackageDocs();
             $exampleResult = $this->generateExampleDocs();
 
@@ -48,7 +46,7 @@ class MintlifyDocumentation
                 filesCreated: $filesCreated,
                 filesUpdated: $filesUpdated,
                 duration: $duration,
-                message: 'All documentation generated successfully'
+                message: 'All documentation generated successfully',
             );
 
         } catch (\Throwable $e) {
@@ -56,13 +54,12 @@ class MintlifyDocumentation
                 errors: [$e->getMessage()],
                 filesProcessed: $filesProcessed,
                 duration: microtime(true) - $startTime,
-                message: 'Documentation generation failed'
+                message: 'Documentation generation failed',
             );
         }
     }
 
-    public function generatePackageDocs(): GenerationResult
-    {
+    public function generatePackageDocs(): GenerationResult {
         $startTime = microtime(true);
         $filesProcessed = 0;
         $errors = [];
@@ -84,7 +81,7 @@ class MintlifyDocumentation
             return GenerationResult::success(
                 filesProcessed: $filesProcessed,
                 duration: $duration,
-                message: 'Package documentation generated successfully'
+                message: 'Package documentation generated successfully',
             );
 
         } catch (\Throwable $e) {
@@ -92,13 +89,12 @@ class MintlifyDocumentation
                 errors: [$e->getMessage()],
                 filesProcessed: $filesProcessed,
                 duration: microtime(true) - $startTime,
-                message: 'Package documentation generation failed'
+                message: 'Package documentation generation failed',
             );
         }
     }
 
-    public function generateExampleDocs(): GenerationResult
-    {
+    public function generateExampleDocs(): GenerationResult {
         $startTime = microtime(true);
         $filesProcessed = 0;
         $filesCreated = 0;
@@ -112,7 +108,7 @@ class MintlifyDocumentation
                 return GenerationResult::failure(
                     errors: $result->errors,
                     duration: microtime(true) - $startTime,
-                    message: 'Failed to update hub index'
+                    message: 'Failed to update hub index',
                 );
             }
 
@@ -121,9 +117,9 @@ class MintlifyDocumentation
                 foreach ($exampleGroup->examples as $example) {
                     $processResult = $this->processExample($example);
                     $filesProcessed++;
-                    
+
                     if ($processResult->isSuccess()) {
-                        match($processResult->action) {
+                        match ($processResult->action) {
                             'created' => $filesCreated++,
                             'updated' => $filesUpdated++,
                             'skipped' => $filesSkipped++,
@@ -142,7 +138,7 @@ class MintlifyDocumentation
                 filesCreated: $filesCreated,
                 filesUpdated: $filesUpdated,
                 duration: $duration,
-                message: 'Example documentation generated successfully'
+                message: 'Example documentation generated successfully',
             );
 
         } catch (\Throwable $e) {
@@ -150,35 +146,33 @@ class MintlifyDocumentation
                 errors: [$e->getMessage()],
                 filesProcessed: $filesProcessed,
                 duration: microtime(true) - $startTime,
-                message: 'Example documentation generation failed'
+                message: 'Example documentation generation failed',
             );
         }
     }
 
-    public function clearDocumentation(): GenerationResult
-    {
+    public function clearDocumentation(): GenerationResult {
         $startTime = microtime(true);
-        
+
         try {
             Files::removeDirectory($this->config->docsTargetDir);
-            
+
             return GenerationResult::success(
                 duration: microtime(true) - $startTime,
-                message: 'Documentation cleared successfully'
+                message: 'Documentation cleared successfully',
             );
         } catch (\Throwable $e) {
             return GenerationResult::failure(
                 errors: [$e->getMessage()],
                 duration: microtime(true) - $startTime,
-                message: 'Failed to clear documentation'
+                message: 'Failed to clear documentation',
             );
         }
     }
 
     // Public methods for standalone command execution
-    
-    public function initializeBaseFiles(): void
-    {
+
+    public function initializeBaseFiles(): void {
         Files::removeDirectory($this->config->docsTargetDir);
         Files::copyDirectory($this->config->docsSourceDir, $this->config->docsTargetDir);
         Files::renameFileExtensions($this->config->docsTargetDir, 'md', 'mdx');
@@ -186,37 +180,35 @@ class MintlifyDocumentation
 
     // Private methods - Domain operations
 
-    private function processPackage(string $package, string $targetDir): GenerationResult
-    {
+    private function processPackage(string $package, string $targetDir): GenerationResult {
         $startTime = microtime(true);
         $filesProcessed = 0;
-        
+
         try {
             $sourcePath = BasePath::get("packages/$package/docs");
             $targetPath = BasePath::get($targetDir);
-            
+
             Files::removeDirectory($targetPath);
             Files::copyDirectory($sourcePath, $targetPath);
             Files::renameFileExtensions($targetPath, 'md', 'mdx');
-            
+
             $this->inlineExternalCodeblocks($targetPath, $package);
             $filesProcessed++;
 
             return GenerationResult::success(
                 filesProcessed: $filesProcessed,
-                duration: microtime(true) - $startTime
+                duration: microtime(true) - $startTime,
             );
 
         } catch (\Throwable $e) {
             return GenerationResult::failure(
                 errors: [$e->getMessage()],
-                duration: microtime(true) - $startTime
+                duration: microtime(true) - $startTime,
             );
         }
     }
 
-    private function processExample(Example $example): FileProcessingResult
-    {
+    private function processExample(Example $example): FileProcessingResult {
         if (empty($example->tab)) {
             return FileProcessingResult::skipped($example->name, 'No tab specified');
         }
@@ -245,8 +237,7 @@ class MintlifyDocumentation
         }
     }
 
-    private function updateHubIndex(): GenerationResult
-    {
+    private function updateHubIndex(): GenerationResult {
         try {
             $index = MintlifyIndex::fromFile($this->config->mintlifySourceIndexFile);
             if ($index === false) {
@@ -266,8 +257,8 @@ class MintlifyDocumentation
             }
 
             $result = $index->saveFile($this->config->mintlifyTargetIndexFile);
-            
-            return $result 
+
+            return $result
                 ? GenerationResult::success(message: 'Hub index updated')
                 : GenerationResult::failure(['Failed to save hub index file']);
 
@@ -276,11 +267,10 @@ class MintlifyDocumentation
         }
     }
 
-    private function getReleaseNotesGroup(): NavigationGroup
-    {
+    private function getReleaseNotesGroup(): NavigationGroup {
         $releaseNotesFiles = glob(BasePath::get('docs/release-notes/*.mdx'));
         $pages = [];
-        
+
         foreach ($releaseNotesFiles as $releaseNotesFile) {
             $fileName = pathinfo($releaseNotesFile, PATHINFO_FILENAME);
             $pages[] = str_replace('v', '', $fileName);
@@ -293,12 +283,11 @@ class MintlifyDocumentation
         foreach ($pages as $page) {
             $releaseNotesGroup->pages[] = NavigationItem::fromString('release-notes/v' . $page);
         }
-        
+
         return $releaseNotesGroup;
     }
 
-    private function inlineExternalCodeblocks(string $targetPath, string $subpackage): void
-    {
+    private function inlineExternalCodeblocks(string $targetPath, string $subpackage): void {
         $docFiles = array_merge(
             glob("$targetPath/*.mdx"),
             glob("$targetPath/**/*.mdx"),
@@ -308,49 +297,18 @@ class MintlifyDocumentation
 
         foreach ($docFiles as $docFile) {
             $content = file_get_contents(realpath($docFile));
-            $markdown = MarkdownFile::fromString($content);
-            
+            $markdown = MarkdownFile::fromString($content, realpath($docFile));
+
             if (!$markdown->hasCodeBlocks()) {
                 continue;
             }
 
             try {
-                $newMarkdown = $this->tryInlineCodeblocks($markdown, $this->config->codeblocksDir);
-                if ($newMarkdown !== null) {
-                    file_put_contents($docFile, $newMarkdown->toString());
-                }
+                $newMarkdown = $markdown->withInlinedCodeblocks();
+                file_put_contents($docFile, $newMarkdown->toString());
             } catch (\Throwable $e) {
                 // Continue processing other files
             }
         }
-    }
-
-    private function tryInlineCodeblocks(MarkdownFile $markdown, string $codeblocksPath): ?MarkdownFile
-    {
-        $madeReplacements = false;
-
-        $newMarkdown = $markdown->withReplacedCodeBlocks(function(CodeBlockNode $codeblock) use ($codeblocksPath, &$madeReplacements) {
-            $includePath = $codeblock->metadata('include');
-            if (empty($includePath)) {
-                return $codeblock;
-            }
-            
-            $includeDir = trim($includePath, '\'"');
-            $path = $codeblocksPath . '/' . $includeDir;
-            
-            if (!file_exists($path)) {
-                throw new \Exception("Codeblock include file '$path' does not exist");
-            }
-            
-            $content = file_get_contents($path);
-            if ($content === false) {
-                throw new \Exception("Failed to read codeblock include file '$path'");
-            }
-            
-            $madeReplacements = true;
-            return $codeblock->withContent($content);
-        });
-
-        return $madeReplacements ? $newMarkdown : null;
     }
 }

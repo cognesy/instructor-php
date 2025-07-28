@@ -19,7 +19,7 @@ class GeneratePackagesCommand extends Command
         private string $docsSourceDir,
         private string $docsTargetDir,
         private string $cookbookTargetDir,
-        private string $mintlifySourceIndexFile,  
+        private string $mintlifySourceIndexFile,
         private string $mintlifyTargetIndexFile,
         private string $codeblocksDir,
         private array $dynamicGroups,
@@ -27,20 +27,18 @@ class GeneratePackagesCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this
             ->setName('gen:packages')
             ->setDescription('Generate package documentation');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         $view = new PackageGenerationView();
-        
+
         $view->renderStart();
-        
+
         // Create domain objects
         $config = DocumentationConfig::create(
             docsSourceDir: $this->docsSourceDir,
@@ -49,15 +47,15 @@ class GeneratePackagesCommand extends Command
             mintlifySourceIndexFile: $this->mintlifySourceIndexFile,
             mintlifyTargetIndexFile: $this->mintlifyTargetIndexFile,
             codeblocksDir: $this->codeblocksDir,
-            dynamicGroups: $this->dynamicGroups
+            dynamicGroups: $this->dynamicGroups,
         );
-        
+
         $documentation = new MintlifyDocumentation($this->examples, $config);
 
         try {
             // Initialize base files for standalone execution
             $documentation->initializeBaseFiles();
-            
+
             // Show individual package processing
             $packages = ['instructor', 'polyglot', 'http-client'];
             foreach ($packages as $package) {
@@ -65,9 +63,9 @@ class GeneratePackagesCommand extends Command
                 $view->renderInlineStart($package);
                 $view->renderPackageResult($package, true);
             }
-            
+
             $result = $documentation->generatePackageDocs();
-            
+
             if ($result->isSuccess()) {
                 $view->renderFinalResult($result);
                 $this->renderSuccess($result, microtime(true) - $timeStart);
@@ -83,11 +81,10 @@ class GeneratePackagesCommand extends Command
         }
     }
 
-    private function renderSuccess($result, float $totalTime): void
-    {
+    private function renderSuccess($result, float $totalTime): void {
         Cli::outln(
             sprintf("Done in %.2fs", $totalTime),
-            [Color::BOLD, Color::YELLOW]
+            [Color::BOLD, Color::YELLOW],
         );
     }
 }

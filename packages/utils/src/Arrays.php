@@ -2,6 +2,7 @@
 
 namespace Cognesy\Utils;
 
+use Generator;
 use WeakMap;
 
 /**
@@ -80,16 +81,6 @@ class Arrays
     }
 
     /**
-     * Flattens an array of arrays into a single string.
-     * @param array $arrays
-     * @param string $separator
-     * @return string
-     */
-    static public function flatten(array $arrays, string $separator = ''): string {
-        return self::doFlatten($arrays, $separator);
-    }
-
-    /**
      * Maps an array using a callback.
      * @param array $array
      * @param callable $callback
@@ -161,7 +152,32 @@ class Arrays
         return implode("\n", array_map(fn($c) => " - {$c}\n", $array));
     }
 
+    /**
+     * Flattens an array of arrays into a single string.
+     * @param array $arrays
+     * @param string $separator
+     * @return string
+     */
+    static public function flattenToString(array $arrays, string $separator = ''): string {
+        return self::doFlattenToString($arrays, $separator);
+    }
+
+    // turn array of arrays with key = string, value = mixed/object into a single array
+    static public function flatten(array $arrays): array {
+        return iterator_to_array(self::doFlatten($arrays));
+    }
+
     // INTERNAL ///////////////////////////////////////////////////////
+
+    static private function doFlatten(mixed $maybeArray) : Generator {
+        if (is_array($maybeArray)) {
+            foreach ($maybeArray as $item) {
+                yield from self::doFlatten($item);
+            }
+        } else {
+            yield $maybeArray;
+        }
+    }
 
     /**
      * Flattens an array of arrays into a single string.
@@ -169,11 +185,11 @@ class Arrays
      * @param string $separator
      * @return string
      */
-    private static function doFlatten(array $arrays, string $separator): string {
+    private static function doFlattenToString(array $arrays, string $separator): string {
         $flat = '';
         foreach ($arrays as $item) {
             if (is_array($item)) {
-                $flattenedItem = self::doFlatten($item, $separator);
+                $flattenedItem = self::doFlattenToString($item, $separator);
                 if ($flattenedItem !== '') {
                     $flat .= $flattenedItem . $separator;
                 }

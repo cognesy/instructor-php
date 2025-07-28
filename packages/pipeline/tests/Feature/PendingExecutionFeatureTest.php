@@ -1,0 +1,219 @@
+<?php declare(strict_types=1);
+
+use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\PendingPipelineExecution;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\StampInterface;
+use Cognesy\Utils\Result\Result;
+
+// Test stamps for pending execution testing
+class ExecutionStamp implements StampInterface
+{
+    public function __construct(public readonly string $phase) {}
+}
+
+describe('PendingExecution Feature Tests', function () {
+    it('supports lazy evaluation with complex transformations', function () {
+        $executionCount = 0;
+        
+        $pending = new PendingPipelineExecution(function() use (&$executionCount) {
+            $executionCount++;
+            $envelope = Envelope::wrap(['count' => 5], [new ExecutionStamp('initial')]);
+            return $envelope->withMessage(Result::success(['count' => 10]));
+        });
+
+        // Transform without executing
+        $mapped = $pending
+            ->map(fn($data) => $data['count'] * 2)
+            ->map(fn($count) => ['doubled' => $count]);
+
+        expect($executionCount)->toBe(0); // Not executed yet
+
+        // Execute and get result
+        $result = $mapped->value();
+        expect($result)->toBe(['doubled' => 20]);
+        expect($executionCount)->toBe(1); // Executed once
+
+        // Multiple calls use cached result
+        $result2 = $mapped->value();
+        expect($result2)->toBe(['doubled' => 20]);
+        expect($executionCount)->toBe(1); // Still once
+    });
+
+    it('chains complex transformations with envelope preservation', function () {
+        $pending = new PendingPipelineExecution(function() {
+            return Envelope::wrap(100, [
+                new ExecutionStamp('start'),
+                new ExecutionStamp('initialized')
+            ]);
+        });
+
+        $final = $pending
+            ->mapEnvelope(fn($env) => $env->with(new ExecutionStamp('processing')))
+            ->map(fn($x) => $x / 2)
+            ->mapEnvelope(fn($env) => $env->with(new ExecutionStamp('completed')))
+            ->then(fn($x) => $x + 25);
+
+        $envelope = $final->envelope();
+        
+        expect($envelope->getResult()->unwrap())->toBe(75); // (100 / 2) + 25
+        expect($envelope->count(ExecutionStamp::class))->toBe(4);
+        
+        $phases = array_map(
+            fn($stamp) => $stamp->phase,
+            $envelope->all(ExecutionStamp::class)
+        );
+        expect($phases)->toBe(['start', 'initialized', 'processing', 'completed']);
+    });
+
+    it('handles failure propagation through transformation chain', function () {
+        $pending = new PendingPipelineExecution(function() {
+            return Envelope::wrap(
+                Result::failure(new Exception('Initial failure')),
+                [new ExecutionStamp('failed')]
+            );
+        });
+
+        $transformed = $pending
+            ->map(fn($x) => $x * 2) // Should not execute
+            ->then(fn($x) => $x + 10); // Should not execute
+
+        expect($transformed->success())->toBeFalse();
+        expect($transformed->failure())->toBeInstanceOf(Exception::class);
+        expect($transformed->failure()->getMessage())->toBe('Initial failure');
+        
+        // Stamps are preserved even in failure
+        $envelope = $transformed->envelope();
+        expect($envelope->has(ExecutionStamp::class))->toBeTrue();
+    });
+
+    it('processes streams with complex data', function () {
+        $pending = new PendingPipelineExecution(function() {
+            return Envelope::wrap([
+                ['id' => 1, 'name' => 'Alice'],
+                ['id' => 2, 'name' => 'Bob'],
+                ['id' => 3, 'name' => 'Charlie']
+            ]);
+        });
+
+        $names = [];
+        foreach ($pending->stream() as $user) {
+            $names[] = $user['name'];
+        }
+
+        expect($names)->toBe(['Alice', 'Bob', 'Charlie']);
+    });
+
+    it('integrates with Pipeline for end-to-end processing', function () {
+        $executionLog = [];
+        
+        $pending = Pipeline::for(['items' => [1, 2, 3, 4, 5]])
+            ->through(function($data) use (&$executionLog) {
+                $executionLog[] = 'processing';
+                return array_map(fn($x) => $x * 2, $data['items']);
+            })
+            ->through(function($items) use (&$executionLog) {
+                $executionLog[] = 'filtering';
+                return array_filter($items, fn($x) => $x > 4);
+            })
+            ->withStamp(new ExecutionStamp('pipeline'))
+            ->process();
+
+        expect($executionLog)->toBe([]); // Nothing executed yet
+
+        // Transform the pending execution
+        $final = $pending
+            ->map(fn($items) => array_sum($items))
+            ->then(fn($sum) => "Total: $sum");
+
+        expect($executionLog)->toBe([]); // Still not executed
+
+        // Execute and verify
+        $result = $final->value();
+        expect($result)->toBe('Total: 24');
+        expect($executionLog)->toBe(['processing', 'filtering']);
+
+        // Verify stamps are preserved
+        $envelope = $final->envelope();
+        expect($envelope->has(ExecutionStamp::class))->toBeTrue();
+    });
+
+    it('handles complex envelope transformations', function () {
+        $pending = new PendingPipelineExecution(function() {
+            return Envelope::wrap('hello', [new ExecutionStamp('created')]);
+        });
+
+        $result = $pending
+            ->mapEnvelope(function($env) {
+                // Add processing metadata
+                return $env
+                    ->with(new ExecutionStamp('uppercase'))
+                    ->withMessage(Result::success(strtoupper($env->getResult()->unwrap())));
+            })
+            ->mapEnvelope(function($env) {
+                // Add more processing
+                return $env
+                    ->with(new ExecutionStamp('exclamation'))
+                    ->withMessage(Result::success($env->getResult()->unwrap() . '!'));
+            });
+
+        $envelope = $result->envelope();
+        
+        expect($envelope->getResult()->unwrap())->toBe('HELLO!');
+        expect($envelope->count(ExecutionStamp::class))->toBe(3);
+        
+        $phases = array_map(
+            fn($stamp) => $stamp->phase,
+            $envelope->all(ExecutionStamp::class)
+        );
+        expect($phases)->toBe(['created', 'uppercase', 'exclamation']);
+    });
+
+    it('supports conditional execution patterns', function () {
+        $executionCount = 0;
+        
+        $pending = new PendingPipelineExecution(function() use (&$executionCount) {
+            $executionCount++;
+            return Envelope::wrap(42);
+        });
+
+        // Check success without executing full computation
+        $isSuccessful = $pending->map(fn($x) => $x > 0)->success();
+        expect($isSuccessful)->toBeTrue();
+        expect($executionCount)->toBe(1);
+
+        // Conditional processing based on success
+        if ($isSuccessful) {
+            $result = Pipeline::for(100)
+                ->through(fn($x) => $x + $pending->value())
+                ->process()
+                ->value();
+            
+            expect($result)->toBe(142);
+        }
+        
+        expect($executionCount)->toBe(1); // Cached result used
+    });
+
+    it('handles error recovery in transformation chains', function () {
+        $pending = new PendingPipelineExecution(function() {
+            return Envelope::wrap(10);
+        });
+
+        // Test that we can detect when computation will fail
+        $errorResult = $pending->map(function($x) {
+            if ($x < 20) {
+                throw new Exception('Value too small');
+            }
+            return $x * 2;
+        });
+
+        // The error should be captured in the success/failure check
+        expect($errorResult->success())->toBeFalse();
+        
+        // The failure should contain our exception
+        $failure = $errorResult->failure();
+        expect($failure)->toBeInstanceOf(Exception::class);
+        expect($failure->getMessage())->toBe('Value too small');
+    });
+});

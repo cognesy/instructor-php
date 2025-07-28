@@ -7,11 +7,11 @@ use Cognesy\Instructor\Data\CachedContext;
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Instructor\Data\StructuredOutputRequest;
 use Cognesy\Instructor\Extras\Example\Example;
+use Cognesy\Messages\Message;
+use Cognesy\Messages\Messages;
 use Cognesy\Template\Script\Script;
 use Cognesy\Template\Template;
 use Cognesy\Utils\Arrays;
-use Cognesy\Messages\Message;
-use Cognesy\Messages\Messages;
 use Exception;
 
 class RequestMaterializer implements CanMaterializeRequest
@@ -147,7 +147,7 @@ class RequestMaterializer implements CanMaterializeRequest
         foreach($request->attempts() as $attempt) {
             $messages[] = ['role' => 'assistant', 'content' => $attempt->inferenceResponse()->content()];
             $retryFeedback = $this->config->retryPrompt()
-                . Arrays::flatten($attempt->errors(), "; ");
+                . Arrays::flattenToString($attempt->errors(), "; ");
             $messages[] = ['role' => 'user', 'content' => $retryFeedback];
         }
         $newScript->section('retries')->appendMessages($messages);

@@ -21,7 +21,7 @@ readonly class DocumentationConfig
         string $mintlifySourceIndexFile,
         string $mintlifyTargetIndexFile,
         string $codeblocksDir,
-        array $dynamicGroups = []
+        array $dynamicGroups = [],
     ): self {
         return new self(
             docsSourceDir: $docsSourceDir,
@@ -30,7 +30,7 @@ readonly class DocumentationConfig
             mintlifySourceIndexFile: $mintlifySourceIndexFile,
             mintlifyTargetIndexFile: $mintlifyTargetIndexFile,
             codeblocksDir: $codeblocksDir,
-            dynamicGroups: $dynamicGroups
+            dynamicGroups: $dynamicGroups,
         );
     }
 }

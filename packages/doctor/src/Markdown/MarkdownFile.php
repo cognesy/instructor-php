@@ -15,7 +15,7 @@ use Cognesy\Doctor\Markdown\Visitors\ReplaceCodeBlockByCallable;
 use Cognesy\Doctor\Markdown\Visitors\ToString;
 use Iterator;
 use Symfony\Component\Yaml\Yaml;
-use Webuni\FrontMatter\FrontMatter;
+use Cognesy\Utils\FrontMatter;
 
 final readonly class MarkdownFile
 {
@@ -30,10 +30,10 @@ final readonly class MarkdownFile
         string $path = '',
         array $metadata = [],
     ): self {
-        $parsedDocument = FrontMatter::createYaml()->parse($text);
+        $parsedDocument = FrontMatter::parse($text);
         return new self(
-            document: self::parseMarkdown($parsedDocument->getContent()),
-            metadata: $metadata ?: $parsedDocument->getData(),
+            document: self::parseMarkdown($parsedDocument->document()),
+            metadata: $metadata ?: $parsedDocument->data(),
             path: $path,
         );
     }
@@ -44,20 +44,20 @@ final readonly class MarkdownFile
 
     /** @return Iterator<CodeBlockNode> */
     public function codeBlocks(): Iterator {
-        return $this->collectNodes(CodeBlockNode::class);
+        return $this->collectNodes(CodeBlockNode::class, $this->document->children);
     }
 
     /** @return Iterator<string> */
     public function codeQuotes(): Iterator {
         return \iter\values(\iter\flatten(\iter\map(
             fn(ContentNode $node) => $node->codeQuotes(),
-            $this->collectNodes(ContentNode::class)
+            $this->collectNodes(ContentNode::class, $this->document->children)
         )));
     }
 
     /** @return Iterator<HeaderNode> */
     public function headers(): Iterator {
-        return $this->collectNodes(HeaderNode::class);
+        return $this->collectNodes(HeaderNode::class, $this->document->children);
     }
 
     public function hasCodeblocks(): bool {
@@ -106,7 +106,7 @@ final readonly class MarkdownFile
     public function toString(MetadataStyle $metadataStyle = MetadataStyle::Comments): string {
         $content = $this->document->accept(new ToString($metadataStyle));
         return match(true) {
-            !empty($this->metadata) => $this->makeFrontMatter() . $content,
+            !empty($this->metadata) => $this->makeFrontMatter($this->metadata) . $content,
             default => $content,
         };
     }
@@ -119,7 +119,34 @@ final readonly class MarkdownFile
         );
     }
 
+    public function withInlinedCodeBlocks(): self {
+        return $this->tryInlineCodeblocks($this, dirname($this->path()));
+    }
+
     // INTERNAL ////////////////////////////////////////////////////////
+
+    private function tryInlineCodeblocks(MarkdownFile $markdownFile, string $markdownDir): ?MarkdownFile {
+        $madeReplacements = false;
+        $newMarkdown = $markdownFile->withReplacedCodeBlocks(function (CodeBlockNode $codeblock) use ($markdownDir, &$madeReplacements) {
+            $includePath = $codeblock->metadata('include');
+            if (empty($includePath)) {
+                return $codeblock;
+            }
+            $includeDir = trim($includePath, '\'"');
+            // Resolve path relative to markdown file
+            $path = $markdownDir . '/' . ltrim($includeDir, './');
+            if (!file_exists($path)) {
+                throw new \Exception("Codeblock include file '$path' does not exist (resolved from markdown: {$markdownDir})");
+            }
+            $content = file_get_contents($path);
+            if ($content === false) {
+                throw new \Exception("Failed to read codeblock include file '$path'");
+            }
+            $madeReplacements = true;
+            return $codeblock->withContent($content);
+        });
+        return $madeReplacements ? $newMarkdown : $markdownFile;
+    }
 
     private static function parseMarkdown(string $text) : DocumentNode {
         $lexer = new Lexer();
@@ -130,18 +157,19 @@ final readonly class MarkdownFile
 
     /**
      * @param class-string<Node> $type
+     * @param Node[] $nodes
      * @return Iterator<Node>
      */
-    private function collectNodes(string $type): Iterator {
+    private function collectNodes(string $type, array $nodes): Iterator {
         return \iter\values(\iter\filter(
             fn($node) => $node instanceof $type,
-            $this->document->children,
+            $nodes,
         ));
     }
 
-    private function makeFrontMatter() : string {
+    private function makeFrontMatter(array $metadata) : string {
         return "---\n"
-            . Yaml::dump($this->metadata)
+            . Yaml::dump($metadata)
             . "---\n"
             . "\n";
     }

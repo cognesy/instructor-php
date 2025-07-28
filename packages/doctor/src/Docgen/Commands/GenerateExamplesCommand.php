@@ -20,7 +20,7 @@ class GenerateExamplesCommand extends Command
         private string $docsSourceDir,
         private string $docsTargetDir,
         private string $cookbookTargetDir,
-        private string $mintlifySourceIndexFile,  
+        private string $mintlifySourceIndexFile,
         private string $mintlifyTargetIndexFile,
         private string $codeblocksDir,
         private array $dynamicGroups,
@@ -28,20 +28,18 @@ class GenerateExamplesCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
+    protected function configure(): void {
         $this
             ->setName('gen:examples')
             ->setDescription('Generate example documentation');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $timeStart = microtime(true);
         $view = new ExampleGenerationView();
-        
+
         $view->renderStart();
-        
+
         // Create domain objects
         $config = DocumentationConfig::create(
             docsSourceDir: $this->docsSourceDir,
@@ -50,15 +48,15 @@ class GenerateExamplesCommand extends Command
             mintlifySourceIndexFile: $this->mintlifySourceIndexFile,
             mintlifyTargetIndexFile: $this->mintlifyTargetIndexFile,
             codeblocksDir: $this->codeblocksDir,
-            dynamicGroups: $this->dynamicGroups
+            dynamicGroups: $this->dynamicGroups,
         );
-        
+
         $documentation = new MintlifyDocumentation($this->examples, $config);
 
         try {
             // Initialize base files for standalone execution
             $documentation->initializeBaseFiles();
-            
+
             // Show individual example processing
             $exampleGroups = $this->examples->getExampleGroups();
             foreach ($exampleGroups as $exampleGroup) {
@@ -70,9 +68,9 @@ class GenerateExamplesCommand extends Command
                     }
                 }
             }
-            
+
             $result = $documentation->generateExampleDocs();
-            
+
             if ($result->isSuccess()) {
                 $view->renderFinalResult($result);
                 $this->renderSuccess($result, microtime(true) - $timeStart);
@@ -88,11 +86,10 @@ class GenerateExamplesCommand extends Command
         }
     }
 
-    private function renderSuccess($result, float $totalTime): void
-    {
+    private function renderSuccess($result, float $totalTime): void {
         Cli::outln(
             sprintf("Done in %.2fs", $totalTime),
-            [Color::BOLD, Color::YELLOW]
+            [Color::BOLD, Color::YELLOW],
         );
     }
 }

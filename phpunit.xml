@@ -22,6 +22,7 @@
             <directory suffix="Test.php">./packages/hub/tests/Unit</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Unit</directory>
             <directory suffix="Test.php">./packages/messages/tests/Unit</directory>
+            <directory suffix="Test.php">./packages/pipeline/tests/Unit</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Unit</directory>
             <directory suffix="Test.php">./packages/schema/tests/Unit</directory>
             <directory suffix="Test.php">./packages/setup/tests/Unit</directory>
@@ -42,6 +43,7 @@
             <directory suffix="Test.php">./packages/hub/tests/Feature</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Feature</directory>
             <directory suffix="Test.php">./packages/messages/tests/Feature</directory>
+            <directory suffix="Test.php">./packages/pipeline/tests/Feature</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Feature</directory>
             <directory suffix="Test.php">./packages/schema/tests/Feature</directory>
             <directory suffix="Test.php">./packages/setup/tests/Feature</directory>
@@ -62,6 +64,7 @@
             <directory suffix="Test.php">./packages/hub/tests/Integration</directory>
             <directory suffix="Test.php">./packages/instructor/tests/Integration</directory>
             <directory suffix="Test.php">./packages/messages/tests/Integration</directory>
+            <directory suffix="Test.php">./packages/pipeline/tests/Integration</directory>
             <directory suffix="Test.php">./packages/polyglot/tests/Integration</directory>
             <directory suffix="Test.php">./packages/schema/tests/Integration</directory>
             <directory suffix="Test.php">./packages/setup/tests/Integration</directory>
@@ -84,6 +87,7 @@
             <directory suffix=".php">./packages/hub/src</directory>
             <directory suffix=".php">./packages/instructor/src</directory>
             <directory suffix=".php">./packages/messages/src</directory>
+            <directory suffix=".php">./packages/pipeline/src</directory>
             <directory suffix=".php">./packages/polyglot/src</directory>
             <directory suffix=".php">./packages/schema/src</directory>
             <directory suffix=".php">./packages/setup/src</directory>

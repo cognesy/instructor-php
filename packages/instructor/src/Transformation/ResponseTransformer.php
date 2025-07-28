@@ -64,7 +64,7 @@ class ResponseTransformer
 
             $this->events->dispatch(new ResponseTransformationAttempt(['data' => $data]));
             $result = Result::try(fn() => $transformer->transform($data));
-            if ($result->isNull()) {
+            if ($result->isSuccessAndNull()) {
                 // if the transformer returns null, we skip it
                 continue;
             }

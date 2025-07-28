@@ -23,7 +23,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->caseDir)->toBe('examples');
+            expect($doctests[0]->sourceMarkdown->caseDir)->toBe('examples');
         });
 
         it('uses explicit caseDir when specified', function () {
@@ -45,7 +45,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->caseDir)->toBe('custom/directory');
+            expect($doctests[0]->sourceMarkdown->caseDir)->toBe('custom/directory');
         });
 
         it('uses default when caseDir is empty string', function () {
@@ -67,7 +67,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->caseDir)->toBe('examples');
+            expect($doctests[0]->sourceMarkdown->caseDir)->toBe('examples');
         });
     });
 
@@ -88,7 +88,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('introduction_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('introduction_');
         });
 
         it('generates casePrefix from filename with numbers', function () {
@@ -107,7 +107,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('gettingStarted_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('gettingStarted_');
         });
 
         it('generates casePrefix from complex filename with multiple separators', function () {
@@ -126,7 +126,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('advancedUsagePatterns_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('advancedUsagePatterns_');
         });
 
         it('generates casePrefix from filename with underscores and numbers', function () {
@@ -145,7 +145,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('apiReferenceGuide_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('apiReferenceGuide_');
         });
 
         it('uses explicit casePrefix when specified', function () {
@@ -165,7 +165,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('custom_prefix_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('custom_prefix_');
         });
 
         it('uses auto-generated when casePrefix is empty string', function () {
@@ -185,7 +185,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('apiGuide_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('apiGuide_');
         });
     });
 
@@ -244,7 +244,7 @@ MARKDOWN;
             $doctests = iterator_to_array(DoctestFile::fromMarkdown($markdownFile));
 
             expect($doctests)->toHaveCount(1);
-            expect($doctests[0]->casePrefix)->toBe('numeric_');
+            expect($doctests[0]->sourceMarkdown->casePrefix)->toBe('numeric_');
             expect($doctests[0]->codePath)->toBe('examples/numeric_test.php');
         });
     });

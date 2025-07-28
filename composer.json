@@ -31,6 +31,7 @@
       "Cognesy\\Http\\": "packages/http-client/src/",
       "Cognesy\\Instructor\\": "packages/instructor/src/",
       "Cognesy\\Messages\\": "packages/messages/src/",
+      "Cognesy\\Pipeline\\": "packages/pipeline/src/",
       "Cognesy\\Polyglot\\": "packages/polyglot/src/",
       "Cognesy\\Schema\\": "packages/schema/src/",
       "Cognesy\\Setup\\": "packages/setup/src/",
@@ -41,30 +42,37 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
-      "Cognesy\\Doctor\\": "packages/doctor/src/",
-      "Cognesy\\Evals\\": "packages/evals/src/",
-      "Cognesy\\Experimental\\": "packages/experimental/src/",
-      "Cognesy\\InstructorHub\\": "packages/hub/src/",
-      "Cognesy\\Tell\\": "packages/tell/src/",
-
       "Cognesy\\Addons\\Tests\\": "packages/addons/tests/",
       "Cognesy\\Config\\Tests\\": "packages/config/tests/",
-      "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",
       "Cognesy\\Dynamic\\Tests\\": "packages/dynamic/tests/",
-      "Cognesy\\Experimental\\Tests\\": "packages/experimental/tests/",
-      "Cognesy\\Evals\\Tests\\": "packages/evals/tests/",
       "Cognesy\\Events\\Tests\\": "packages/events/tests/",
       "Cognesy\\Http\\Tests\\": "packages/http-client/tests/",
-      "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
       "Cognesy\\Instructor\\Tests\\": "packages/instructor/tests/",
       "Cognesy\\Messages\\Tests\\": "packages/messages/tests/",
+      "Cognesy\\Pipeline\\Tests\\": "packages/pipeline/tests/",
       "Cognesy\\Polyglot\\Tests\\": "packages/polyglot/tests/",
       "Cognesy\\Schema\\Tests\\": "packages/schema/tests/",
       "Cognesy\\Setup\\Tests\\": "packages/setup/tests/",
-      "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
       "Cognesy\\Templates\\Tests\\": "packages/templates/tests/",
       "Cognesy\\Utils\\Tests\\": "packages/utils/tests/",
+
+      "Cognesy\\Auxiliary\\": "packages/auxiliary/src/",
+      "Cognesy\\Auxiliary\\Tests\\": "packages/auxiliary/tests/",
+
+      "Cognesy\\Doctor\\": "packages/doctor/src/",
+      "Cognesy\\Doctor\\Tests\\": "packages/doctor/tests/",
+
+      "Cognesy\\Evals\\": "packages/evals/src/",
+      "Cognesy\\Evals\\Tests\\": "packages/evals/tests/",
+
+      "Cognesy\\Experimental\\": "packages/experimental/src/",
+      "Cognesy\\Experimental\\Tests\\": "packages/experimental/tests/",
+
+      "Cognesy\\InstructorHub\\Tests\\": "packages/hub/tests/",
+      "Cognesy\\InstructorHub\\": "packages/hub/src/",
+
+      "Cognesy\\Tell\\": "packages/tell/src/",
+      "Cognesy\\Tell\\Tests\\": "packages/tell/tests/",
 
       "Tests\\": "tests/",
       "Evals\\": "evals/",
@@ -110,8 +118,7 @@
     "symfony/http-client": "^7.1",
     "toolkit/cli-utils": "^2.0",
     "twig/twig": "^3.0",
-    "vimeo/psalm": "^6.0",
-    "webuni/front-matter": "^2.0"
+    "vimeo/psalm": "^6.0"
   },
   "config": {
     "allow-plugins": {
@@ -148,13 +155,15 @@
     "test": "@php ./vendor/bin/pest --testsuite=Unit --testsuite=Feature",
     "tests": "@php ./vendor/bin/pest --testsuite=Unit --testsuite=Feature",
     "test-all": "@php ./vendor/bin/pest",
-    "setup": "bin/instructor-setup"
+    "setup": "bin/instructor-setup",
+    "make-package": "scripts/make-package"
   },
   "bin": [
     "bin/instructor-setup",
     "bin/instructor-hub",
     "bin/instructor-docs",
-    "bin/tell"
+    "bin/tell",
+    "scripts/make-package"
   ],
   "suggest": {
     "ext-dom": "Used by Cognesy\\Auxiliary\\Web\\Html for HTML parsing",
@@ -167,7 +176,6 @@
     "spatie/browsershot": "Used by Cognesy\\Auxiliary\\Web for Browsershot web crawler support",
     "symfony/http-client": "For Symfony HTTP client support",
     "symfony/http-client-contracts": "For Symfony HTTP client support",
-    "webuni/front-matter": "Used by Cognesy\\Utils\\Template\\Template for front matter support",
     "twig/twig": "For Twig template engine support",
     "guzzlehttp/guzzle": "For Guzzle HTTP client support",
     "guzzlehttp/psr7": "For Guzzle PSR-7 support"

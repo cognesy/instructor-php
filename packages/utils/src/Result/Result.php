@@ -2,7 +2,9 @@
 
 namespace Cognesy\Utils\Result;
 
+use Cognesy\Utils\Exceptions\CompositeException;
 use Exception;
+use Throwable;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -51,10 +53,10 @@ use Exception;
  */
 abstract class Result {
     public static function with(mixed $value) : Result {
-        if ($value instanceof Result) {
-            return $value;
-        }
-        return new Success($value);
+        return match(true) {
+            $value instanceof Result => $value,
+            default => self::success($value),
+        };
     }
 
     public static function success(mixed $value): Success {
@@ -117,11 +119,53 @@ abstract class Result {
         }
     }
 
-    /**
-     * @return bool True if the result is a success and not null.
-     */
-    public function isNull(): bool {
+    public function isSuccessAndNull(): bool {
         return $this->isSuccess()
             && ($this->unwrap() === null);
+    }
+
+    public function isSuccessAndTrue() : bool {
+        return $this->isSuccess()
+            && ($this->unwrap() === true);
+    }
+
+    public function isSuccessAndFalse() : bool {
+        return $this->isSuccess()
+            && ($this->unwrap() === false);
+    }
+
+    public static function tryAll(array $args, callable ...$callbacks): Result {
+        $errors = [];
+        $results = [];
+        foreach ($callbacks as $callback) {
+            try {
+                $results[] = $callback(...$args);
+            } catch (Throwable $e) {
+                $errors[] = $e;
+            }
+        }
+        return match (true) {
+            !empty($errors) => Result::failure(new CompositeException($errors)),
+            !empty($results) => Result::success($results),
+            default => Result::success(null),
+        };
+    }
+
+    public static function tryUntil(callable $condition, array $args, callable ...$callbacks): Result {
+        $errors = [];
+        foreach($callbacks as $callback) {
+            try {
+                $result = $callback(...$args);
+                if ($condition($result)) {
+                    return Result::success($result);
+                }
+            } catch (Throwable $e) {
+                $errors[] = $e;
+            }
+        }
+        return match (true) {
+            !empty($errors) => Result::failure(new CompositeException($errors)),
+            default => Result::success(false),
+        };
     }
 }

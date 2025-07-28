@@ -3,7 +3,7 @@
 namespace Cognesy\InstructorHub\Data;
 
 use Cognesy\Utils\Str;
-use Webuni\FrontMatter\FrontMatter;
+use Cognesy\Utils\FrontMatter;
 
 class ExampleInfo
 {
@@ -33,9 +33,9 @@ class ExampleInfo
 
     private static function yamlFrontMatter(string $path) : array {
         $content = file_get_contents($path);
-        $document = FrontMatter::createYaml()->parse($content);
-        $content = $document->getContent();
-        $data = $document->getData();
+        $document = FrontMatter::parse($content);
+        $content = $document->document();
+        $data = $document->data();
         return [$content, $data];
     }
 

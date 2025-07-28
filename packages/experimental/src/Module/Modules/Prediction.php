@@ -55,7 +55,7 @@ class Prediction extends Module implements HasSignature
         $signatures = AttributeUtils::getValues($reflection, ModuleSignature::class, 'signature');
         $descriptions = AttributeUtils::getValues($reflection, Description::class, 'text');
         //$instructions = AttributeUtils::getValues($reflection, Instructions::class, 'text');
-        $this->signature = SignatureFactory::fromString(Arrays::flatten($signatures), Arrays::flatten($descriptions));
+        $this->signature = SignatureFactory::fromString(Arrays::flattenToString($signatures), Arrays::flattenToString($descriptions));
 
         // OUTPUT NAME
         if (!$this->signature->hasSingleOutput()) {

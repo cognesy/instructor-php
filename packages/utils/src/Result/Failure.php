@@ -2,7 +2,8 @@
 
 namespace Cognesy\Utils\Result;
 
-use Exception;
+use Cognesy\Utils\Exceptions\CompositeException;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -32,15 +33,19 @@ class Failure extends Result {
     public function errorMessage() : string {
         return match(true) {
             $this->error instanceof Throwable => $this->error->getMessage(),
+            is_string($this->error) => $this->error,
+            is_array($this->error) => json_encode($this->error),
             default => (string) $this->error,
         };
     }
 
     public function exception() : Throwable {
-        if ($this->error instanceof Throwable) {
-            return $this->error;
-        }
-        throw new Exception($this->errorMessage());
+        return match(true) {
+            $this->error instanceof Throwable => $this->error,
+            is_string($this->error) => new RuntimeException($this->error),
+            is_array($this->error) => new CompositeException($this->error),
+            default => new RuntimeException($this->errorMessage()),
+        };
     }
 
     public function isSuccess(): bool {

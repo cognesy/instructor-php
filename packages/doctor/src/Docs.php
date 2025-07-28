@@ -3,12 +3,12 @@
 namespace Cognesy\Doctor;
 
 use Cognesy\Config\BasePath;
+use Cognesy\Doctor\Archived\GenerateDocs;
+use Cognesy\Doctor\Archived\MintlifyDocGenerator;
 use Cognesy\Doctor\Docgen\Commands\ClearDocs;
 use Cognesy\Doctor\Docgen\Commands\GenerateExamplesCommand;
 use Cognesy\Doctor\Docgen\Commands\GeneratePackagesCommand;
-use Cognesy\Doctor\Docgen\MintlifyDocGenerator;
 use Cognesy\Doctor\Doctest\Commands\ExtractCodeBlocks;
-use Cognesy\Doctor\Doctest\Commands\GenerateDocs;
 use Cognesy\Doctor\Doctest\Commands\MarkSnippets;
 use Cognesy\Doctor\Doctest\Commands\MarkSnippetsRecursively;
 use Cognesy\Doctor\Doctest\Services\BatchProcessingService;

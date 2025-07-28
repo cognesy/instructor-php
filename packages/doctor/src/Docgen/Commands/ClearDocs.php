@@ -2,7 +2,7 @@
 
 namespace Cognesy\Doctor\Docgen\Commands;
 
-use Cognesy\Doctor\Docgen\MintlifyDocGenerator;
+use Cognesy\Doctor\Docgen\MintlifyDocumentation;
 use Cognesy\InstructorHub\Core\Cli;
 use Cognesy\Utils\Cli\Color;
 use Symfony\Component\Console\Command\Command;
@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ClearDocs extends Command
 {
     public function __construct(
-        private MintlifyDocGenerator $docGen,
+        private MintlifyDocumentation $documentation,
     ) {
         parent::__construct();
     }
@@ -28,7 +28,7 @@ class ClearDocs extends Command
         Cli::outln("Clearing all docs...", [Color::BOLD, Color::YELLOW]);
 
         try {
-            $this->docGen->clearDocs();
+            $this->documentation->clearDocumentation();
         } catch (\Exception $e) {
             Cli::outln("Error:", [Color::BOLD, Color::RED]);
             Cli::outln($e->getMessage(), Color::GRAY);

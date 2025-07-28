@@ -26,7 +26,6 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^1.2",
-    "webuni/front-matter": "^2.0",
     "symfony/yaml": "^6.0|^7.0",
     "symfony/filesystem": "^6.0|^7.0",
     "symfony/finder": "^6.0|^7.0",

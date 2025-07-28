@@ -1,8 +1,8 @@
 ---
 title: Troubleshooting
 description: 'Learn how to troubleshoot issues with the Instructor HTTP client API.'
-doctest_case_dir: 'codeblocks/D03_Docs_HTTP'
-doctest_case_prefix: 'Troubleshooting_'
+doctest_case_dir: 'codeblocks/Troubleshooting'
+doctest_case_prefix: 'case_'
 doctest_included_types: ['php']
 doctest_min_lines: 10
 ---
@@ -222,7 +222,10 @@ return [
 The HTTP client dispatches events at key points in the request lifecycle:
 
 ```php
-use Cognesy\Events\Dispatchers\EventDispatcher;use Cognesy\Http\Events\HttpRequestFailed;use Cognesy\Http\Events\HttpRequestSent;use Cognesy\Http\Events\HttpResponseReceived;
+use Cognesy\Events\Dispatchers\EventDispatcher;
+use Cognesy\Http\Events\HttpRequestFailed;
+use Cognesy\Http\Events\HttpRequestSent;
+use Cognesy\Http\Events\HttpResponseReceived;
 
 // Create an event dispatcher with custom listeners
 $events = new EventDispatcher();
@@ -335,35 +338,35 @@ try {
 
 You can categorize errors based on the underlying exception or status code:
 
-```php include='D03_Docs_HTTP/ErrorCategorization/code.php'
+```php include='codeblocks/ErrorCategorization/code.php'
 ```
 
 ### Implementing Retry Logic
 
 For transient errors, implement retry logic:
 
-```php include='D03_Docs_HTTP/RetryLogic/code.php'
+```php include='codeblocks/RetryLogic/code.php'
 ```
 
 ### Circuit Breaker Pattern
 
 For critical services, implement a circuit breaker to prevent cascading failures:
 
-```php include='D03_Docs_HTTP/CircuitBreaker/code.php'
+```php include='codeblocks/CircuitBreaker/code.php'
 ```
 
 ### Graceful Degradation
 
 When a service is unavailable, implement graceful degradation by providing fallback functionality:
 
-```php include='D03_Docs_HTTP/GracefulDegradation/code.php'
+```php include='codeblocks/GracefulDegradation/code.php'
 ```
 
 ### Comprehensive Error Handling Example
 
 Here's a comprehensive example that combines multiple error handling strategies:
 
-```php include='D03_Docs_HTTP/ErrorHandling/code.php'
+```php include='codeblocks/ErrorHandling/code.php'
 ```
 
 This comprehensive approach combines:
@@ -590,21 +593,21 @@ return [
 
 The HTTP client dispatches events at key points in the request lifecycle:
 
-```php include='D03_Docs_HTTP/EventDispatching/code.php'
+```php include='codeblocks/EventDispatching/code.php'
 ```
 
 ### Manual Debugging
 
 You can implement your own debugging by adding logging statements:
 
-```php include='D03_Docs_HTTP/ManualDebugging/code.php'
+```php include='codeblocks/ManualDebugging/code.php'
 ```
 
 ### Record/Replay Middleware for Debugging
 
 The `RecordReplayMiddleware` can be useful for debugging by recording HTTP interactions and replaying them later:
 
-```php include='D03_Docs_HTTP/RecordReplay/code.php'
+```php include='codeblocks/RecordReplay/code.php'
 ```
 
 ## Logging and Tracing
@@ -615,5 +618,5 @@ Implementing proper logging and tracing is essential for troubleshooting HTTP is
 
 Create a custom logging middleware:
 
-```php include='D03_Docs_HTTP/Logging/code.php'
+```php include='codeblocks/Logging/code.php'
 ```

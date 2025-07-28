@@ -67,6 +67,12 @@
       "composer_name": "cognesy/instructor-messages"
     },
     {
+      "local": "packages/pipeline",
+      "repo": "cognesy/instructor-pipeline",
+      "github_name": "instructor-pipeline",
+      "composer_name": "cognesy/instructor-pipeline"
+    },
+    {
       "local": "packages/polyglot",
       "repo": "cognesy/instructor-polyglot",
       "github_name": "instructor-polyglot",

@@ -7,7 +7,7 @@ trait HandlesAccess
 {
     public function instructions() : string {
         return match(true) {
-            empty($this->instructions) => Arrays::flatten([
+            empty($this->instructions) => Arrays::flattenToString([
                 $this->signature->getDescription(),
                 $this->signature->toSignatureString(),
             ], PHP_EOL),

@@ -241,7 +241,7 @@ class ExtractCodeBlocks extends Command
         if ($targetDir) {
             // Use provided target directory as root, but preserve the case_dir structure
             $filename = basename($doctest->codePath);
-            $caseDir = $doctest->caseDir;
+            $caseDir = $doctest->sourceMarkdown->caseDir;
 
             // Normalize path separators to system ones
             $normalizedTargetDir = $this->normalizePath($targetDir);
@@ -253,8 +253,10 @@ class ExtractCodeBlocks extends Command
                 $filename;
         }
 
-        // Use metadata-based path from Doctest (also normalize it)
-        return $this->normalizePath($doctest->codePath);
+        // Resolve path relative to markdown file
+        $markdownDir = dirname($doctest->sourceMarkdown->path);
+        $resolvedPath = $markdownDir . '/' . ltrim($doctest->codePath, './');
+        return $this->normalizePath($resolvedPath);
     }
 
     private function determineRegionOutputPath(DoctestFile $doctest, string $regionName, ?string $targetDir): string {
@@ -267,16 +269,18 @@ class ExtractCodeBlocks extends Command
 
         if ($targetDir) {
             $normalizedTargetDir = $this->normalizePath($targetDir);
-            $normalizedCaseDir = $this->normalizePath($doctest->caseDir);
+            $normalizedCaseDir = $this->normalizePath($doctest->sourceMarkdown->caseDir);
 
             return rtrim($normalizedTargetDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
                 ltrim($normalizedCaseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR .
                 $regionFilename;
         }
 
-        // Use metadata-based path with region filename
-        $pathInfo = pathinfo($this->normalizePath($doctest->codePath));
-        return $pathInfo['dirname'] . DIRECTORY_SEPARATOR . $regionFilename;
+        // Resolve path relative to markdown file
+        $markdownDir = dirname($doctest->sourceMarkdown->path);
+        $resolvedCaseDir = $markdownDir . '/' . ltrim($doctest->sourceMarkdown->caseDir, './');
+        
+        return $this->normalizePath($resolvedCaseDir) . DIRECTORY_SEPARATOR . $regionFilename;
     }
 
     private function ensureDirectoryExists(string $directory): void {
@@ -350,11 +354,8 @@ class ExtractCodeBlocks extends Command
                 sourceMarkdown: MarkdownInfo::from($markdown),
             );
 
-            // Only modify blocks that would be extracted
-            if (empty($doctest->id)
-                || !in_array($doctest->language, $doctest->includedTypes)
-                || $doctest->linesOfCode < $doctest->minLines
-            ) {
+            // Only modify blocks that would be extracted (filtering already done by DoctestFile::fromMarkdown)
+            if (empty($doctest->id)) {
                 return $codeBlock; // Keep unchanged
             }
 
@@ -386,11 +387,16 @@ class ExtractCodeBlocks extends Command
     }
 
     private function generateExtractedFilePath(DoctestFile $doctest): string {
-        // Generate relative path from docs to examples directory
-        // This should match the path structure expected by GenerateDocs
+        // Resolve caseDir relative to markdown file
+        $markdownDir = dirname($doctest->sourceMarkdown->path);
+        $resolvedCaseDir = $markdownDir . '/' . ltrim($doctest->sourceMarkdown->caseDir, './');
+        
         $filename = basename($doctest->codePath);
-        $relativePath = $doctest->caseDir . '/' . $filename;
-
+        $fullPath = $resolvedCaseDir . '/' . $filename;
+        
+        // Generate path relative to markdown file
+        $relativePath = $doctest->sourceMarkdown->caseDir . '/' . $filename;
+        
         // Remove leading slashes and normalize path
         return ltrim($relativePath, '/');
     }
