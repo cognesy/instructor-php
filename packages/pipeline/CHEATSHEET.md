@@ -10,7 +10,7 @@ $result = Pipeline::for($data)
     ->through(fn($x) => transform($x))
     ->through(fn($x) => validate($x))
     ->process()
-    ->value();
+    ->payload();
 ```
 
 ## Creation Patterns
@@ -125,9 +125,10 @@ $envelope->all()                                // Get all stamps
 ```
 
 ### Stamp Management
+
 ```php
 $cleaned = $envelope->without(DebugStamp::class, TempStamp::class);
-$updated = $envelope->withMessage(Result::success($newValue));
+$updated = $envelope->withResult(Result::success($newValue));
 ```
 
 ## Error Handling
@@ -197,10 +198,10 @@ class CacheMiddleware implements PipelineMiddlewareInterface {
             return $envelope->withMessage(Result::success($cached));
         }
         
-        $result = $next($envelope);
+        $nextEnvelope = $next($envelope);
         
-        if ($result->getResult()->isSuccess()) {
-            $this->cache->set($key, $result->getResult()->unwrap());
+        if ($nextEnvelope->getResult()->isSuccess()) {
+            $this->cache->set($key, $nextEnvelope->getResult()->unwrap());
         }
         
         return $result;

@@ -2,6 +2,7 @@
 
 namespace Cognesy\Pipeline;
 
+use Closure;
 use Cognesy\Utils\Result\Result;
 use Generator;
 
@@ -17,23 +18,23 @@ use Generator;
  */
 class PendingPipelineExecution
 {
-    private mixed $computation;
+    private Closure $computation;
     private bool $executed = false;
-    private mixed $cachedResult = null;
+    private mixed $cachedOutput = null;
 
     public function __construct(callable $computation) {
         $this->computation = $computation;
     }
 
     /**
-     * Execute and return the raw, unwrapped value.
+     * Execute and return the raw, unwrapped payload.
      *
      * Extracts the payload from Result and ignores all stamps.
      */
-    public function value(): mixed {
+    public function payload(): mixed {
         $envelope = $this->executeOnce();
         if ($envelope instanceof Envelope) {
-            $result = $envelope->getResult();
+            $result = $envelope->result();
             return $result->isSuccess() ? $result->unwrap() : null;
         }
         // Fallback for non-envelope results
@@ -51,7 +52,7 @@ class PendingPipelineExecution
     public function result(): Result {
         $envelope = $this->executeOnce();
         if ($envelope instanceof Envelope) {
-            return $envelope->getResult();
+            return $envelope->result();
         }
         // Fallback for non-envelope results
         if ($envelope instanceof Result) {
@@ -77,7 +78,7 @@ class PendingPipelineExecution
     /**
      * Execute and return as a stream/generator.
      *
-     * Streams the unwrapped values, ignoring envelope metadata.
+     * Streams the unwrapped data, ignoring envelope metadata.
      */
     public function stream(): Generator {
         $envelope = $this->executeOnce();
@@ -86,14 +87,14 @@ class PendingPipelineExecution
         if ($result->isFailure()) {
             return;
         }
-        $value = $result->unwrap();
+        $payload = $result->unwrap();
         // Handle iterable results
-        if (is_iterable($value)) {
-            foreach ($value as $item) {
+        if (is_iterable($payload)) {
+            foreach ($payload as $item) {
                 yield $item;
             }
         } else {
-            yield $value;
+            yield $payload;
         }
     }
 
@@ -104,7 +105,7 @@ class PendingPipelineExecution
         try {
             $envelope = $this->executeOnce();
             if ($envelope instanceof Envelope) {
-                return $envelope->getResult()->isSuccess();
+                return $envelope->result()->isSuccess();
             }
             if ($envelope instanceof Result) {
                 return $envelope->isSuccess();
@@ -122,7 +123,7 @@ class PendingPipelineExecution
         try {
             $envelope = $this->executeOnce();
             if ($envelope instanceof Envelope) {
-                $result = $envelope->getResult();
+                $result = $envelope->result();
                 return $result->isFailure() ? $result->error() : null;
             }
             if ($envelope instanceof Result && $envelope->isFailure()) {
@@ -152,7 +153,7 @@ class PendingPipelineExecution
     }
 
     /**
-     * Transform the pending execution with a callback that receives the raw value.
+     * Transform the pending execution with a callback that receives the raw payload.
      *
      * Preserves the envelope structure and stamps.
      */
@@ -160,21 +161,21 @@ class PendingPipelineExecution
         return new self(function () use ($transformer) {
             $envelope = $this->executeOnce();
             if ($envelope instanceof Envelope) {
-                $result = $envelope->getResult();
+                $result = $envelope->result();
                 if ($result->isFailure()) {
                     return $envelope; // Preserve failure
                 }
-                $newValue = $transformer($result->unwrap());
-                $newResult = $newValue instanceof Result ? $newValue : Result::success($newValue);
-                return $envelope->withMessage($newResult);
+                $newPayload = $transformer($result->unwrap());
+                $newResult = $newPayload instanceof Result ? $newPayload : Result::success($newPayload);
+                return $envelope->withResult($newResult);
             }
             // Fallback for non-envelope results
             if ($envelope instanceof Result) {
                 if ($envelope->isFailure()) {
                     return $envelope;
                 }
-                $newValue = $transformer($envelope->unwrap());
-                return $newValue instanceof Result ? $newValue : Result::success($newValue);
+                $newPayload = $transformer($envelope->unwrap());
+                return $newPayload instanceof Result ? $newPayload : Result::success($newPayload);
             }
             return $transformer($envelope);
         });
@@ -183,28 +184,27 @@ class PendingPipelineExecution
     /**
      * Chain another computation after this one.
      *
-     * The next computation receives the unwrapped value, preserving envelope.
+     * The next computation receives the unwrapped payload, preserving envelope.
      */
     public function then(callable $next): self {
         return new self(function () use ($next) {
-            $envelope = $this->executeOnce();
-            if ($envelope instanceof Envelope) {
-                $result = $envelope->getResult();
+            $output = $this->executeOnce();
+            if ($output instanceof Envelope) {
+                $result = $output->result();
                 if ($result->isFailure()) {
-                    return $envelope; // Short-circuit on failure
+                    return $output; // Short-circuit on failure
                 }
-                $nextResult = $next($result->unwrap());
-                $newResult = $nextResult instanceof Result ? $nextResult : Result::success($nextResult);
-                return $envelope->withMessage($newResult);
+                $nextOutput = $next($result->unwrap());
+                return $output->withResult(Result::from($nextOutput));
             }
             // Fallback handling
-            if ($envelope instanceof Result) {
-                if ($envelope->isFailure()) {
-                    return $envelope;
+            if ($output instanceof Result) {
+                if ($output->isFailure()) {
+                    return $output;
                 }
-                return $next($envelope->unwrap());
+                return $next($output->unwrap());
             }
-            return $next($envelope);
+            return $next($output);
         });
     }
 
@@ -216,15 +216,15 @@ class PendingPipelineExecution
     private function executeOnce(): mixed {
         if (!$this->executed) {
             $computation = $this->computation;
-            $this->cachedResult = $computation();
+            $this->cachedOutput = $computation();
             $this->executed = true;
         }
-        return $this->cachedResult;
+        return $this->cachedOutput;
     }
 
     private function getResultFromEnvelope(mixed $envelope): Result {
         return match (true) {
-            $envelope instanceof Envelope => $envelope->getResult(),
+            $envelope instanceof Envelope => $envelope->result(),
             $envelope instanceof Result => $envelope,
             default => Result::success($envelope),
         };

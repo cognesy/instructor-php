@@ -2,9 +2,7 @@
 
 require_once __DIR__ . '/RetryExample.php';
 
-use Cognesy\Pipeline\Envelope;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Utils\Result\Result;
 
 /**
  * Test suite for the retry middleware example
@@ -47,7 +45,7 @@ class RetryExampleTest
         assert($attempts[1]->failed(), "Second attempt should fail");
         assert($attempts[2]->succeeded(), "Third attempt should succeed");
         
-        echo "  ✅ Test passed: " . $result->value() . "\n";
+        echo "  ✅ Test passed: " . $result->payload() . "\n";
     }
 
     public static function testRetryExhaustion(): void

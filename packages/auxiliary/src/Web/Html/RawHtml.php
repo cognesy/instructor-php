@@ -2,7 +2,7 @@
 
 namespace Cognesy\Auxiliary\Web\Html;
 
-use Cognesy\Utils\Chain\RawChain;
+use Cognesy\Pipeline\Pipeline;
 use DOMDocument;
 use DOMXPath;
 use League\HTMLToMarkdown\HtmlConverter;
@@ -21,8 +21,8 @@ class RawHtml
     }
 
     public function asCleanHtml(): string {
-        return (new RawChain())
-            ->through([
+        return (new Pipeline())
+            ->throughAll([
                 $this->normalizeEncoding(...),
                 $this->cleanupWhitespace(...),
                 $this->removeEmptyElements(...),
@@ -38,7 +38,7 @@ class RawHtml
 //                $this->normalizeUrls(...),
 //                //$this->linearizeContent,
 //                $this->extractMainContent(...),
-            ])->process($this->content);
+            ])->process($this->content)->payload();
     }
 
     public function asText(): string {

@@ -21,19 +21,19 @@ use Exception;
  * ```php
  * // Log failures with context
  * $middleware = new CallOnFailureMiddleware(function(Envelope $env) {
- *     $error = $env->getResult()->error();
+ *     $error = $env->result()->error();
  *     $trace = $env->last(TraceStamp::class);
  *
  *     logger()->error('Processing failed', [
  *         'error' => $error,
  *         'trace_id' => $trace?->traceId,
- *         'payload' => json_encode($env->getResult()->unwrap())
+ *         'payload' => json_encode($env->result()->unwrap())
  *     ]);
  * });
  *
  * // Send alerts on critical failures
  * $middleware = new CallOnFailureMiddleware(function(Envelope $env) {
- *     $error = $env->getResult()->error();
+ *     $error = $env->result()->error();
  *     if ($error instanceof CriticalException) {
  *         alerting()->sendAlert('Critical processing failure', $error);
  *     }
@@ -54,7 +54,7 @@ readonly class CallOnFailureMiddleware implements PipelineMiddlewareInterface
         $result = $next($envelope);
 
         // If result is a failure, execute the callback
-        if ($result->getResult()->isFailure()) {
+        if ($result->result()->isFailure()) {
             try {
                 ($this->callback)($result);
             } catch (Exception) {

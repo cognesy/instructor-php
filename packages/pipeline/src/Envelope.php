@@ -2,7 +2,6 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Utils\Arrays;
 use Cognesy\Utils\Result\Result;
 
 /**
@@ -20,43 +19,72 @@ use Cognesy\Utils\Result\Result;
  *
  * Example:
  * ```php
- * $envelope = new Envelope(Result::success($data), [
+ * $envelope = new Envelope(Result::success($data), StampMap::create([
  *     new TraceStamp('trace-123'),
  *     new TimestampStamp(microtime(true))
- * ]);
+ * ]));
  *
  * $newEnvelope = $envelope
  *     ->with(new MetricsStamp($duration))
- *     ->withoutAll(TimestampStamp::class);
+ *     ->without(TimestampStamp::class);
  * ```
  */
 final readonly class Envelope
 {
-    /**
-     * @param Result $payload The computation result (success or failure)
-     * @param StampInterface[] $stamps Stamps indexed by class name
-     */
-    public function __construct(
-        private Result $payload,
-        private array $stamps = [],
-    ) {}
+    private Result $result;
+    private StampMap $stamps;
 
     /**
-     * Wrap a message in an Envelope, adding optional stamps.
+     * @param Result $result The computation result (success or failure)
+     * @param StampMap|null $stamps Collection of stamps for metadata management
+     */
+    public function __construct(
+        Result $result,
+        ?StampMap $stamps = null,
+    ) {
+        $this->result = $result;
+        $this->stamps = $stamps ?? StampMap::empty();
+    }
+
+    /**
+     * Wrap a payload in an Envelope, adding optional stamps.
      *
-     * If the message is already a Result, it's used directly.
+     * If the payload is already a Result, it's used directly.
      * Otherwise, it's wrapped in Result::success().
      */
-    public static function wrap(mixed $message, array $stamps = []): self {
-        $result = $message instanceof Result ? $message : Result::success($message);
-        return new self($result, self::indexStamps($stamps));
+    public static function wrap(mixed $payload, array $stamps = []): self {
+        return new self(
+            result: Result::from($payload),
+            stamps: StampMap::create($stamps)
+        );
     }
 
     /**
      * Get the Result containing the computation.
      */
-    public function getResult(): Result {
-        return $this->payload;
+    public function result(): Result {
+        return $this->result;
+    }
+
+    public function payload(): mixed {
+        return $this->result->unwrap();
+    }
+
+    public function isSuccess(): bool {
+        return $this->result->isSuccess();
+    }
+
+    public function isFailure(): bool {
+        return $this->result->isFailure();
+    }
+
+    /**
+     * Create a new Envelope with a different Result.
+     *
+     * This preserves all stamps while changing the computation output.
+     */
+    public function withResult(Result $result): self {
+        return new self($result, $this->stamps);
     }
 
     /**
@@ -65,22 +93,7 @@ final readonly class Envelope
      * @param StampInterface ...$stamps
      */
     public function with(StampInterface ...$stamps): self {
-        $newStamps = $this->stamps;
-        foreach ($stamps as $stamp) {
-            $class = $stamp::class;
-            $newStamps[$class] = $newStamps[$class] ?? [];
-            $newStamps[$class][] = $stamp;
-        }
-        return new self($this->payload, $newStamps);
-    }
-
-    /**
-     * Create a new Envelope with a different Result message.
-     *
-     * This preserves all stamps while changing the computation result.
-     */
-    public function withMessage(Result $message): self {
-        return new self($message, $this->stamps);
+        return new self($this->result, $this->stamps->with(...$stamps));
     }
 
     /**
@@ -89,24 +102,17 @@ final readonly class Envelope
      * @param string ...$stampClasses
      */
     public function without(string ...$stampClasses): self {
-        $newStamps = $this->stamps;
-        foreach ($stampClasses as $class) {
-            unset($newStamps[$class]);
-        }
-        return new self($this->payload, $newStamps);
+        return new self($this->result, $this->stamps->without(...$stampClasses));
     }
 
     /**
      * Get all stamps, optionally filtered by class.
      *
      * @param string|null $stampClass Optional class filter
-     * @return StampInterface[]|StampInterface
+     * @return StampInterface[]
      */
     public function all(?string $stampClass = null): array {
-        return match(true) {
-            $stampClass === null => Arrays::flatten($this->stamps),
-            default => $this->stamps[$stampClass] ?? [],
-        };
+        return $this->stamps->all($stampClass);
     }
 
     /**
@@ -117,8 +123,7 @@ final readonly class Envelope
      * @return StampInterface|null
      */
     public function last(string $stampClass): ?StampInterface {
-        $stamps = $this->stamps[$stampClass] ?? [];
-        return empty($stamps) ? null : end($stamps);
+        return $this->stamps->last($stampClass);
     }
 
     /**
@@ -129,43 +134,21 @@ final readonly class Envelope
      * @return StampInterface|null
      */
     public function first(string $stampClass): ?StampInterface {
-        $stamps = $this->stamps[$stampClass] ?? [];
-        return empty($stamps) ? null : reset($stamps);
+        return $this->stamps->first($stampClass);
     }
 
     /**
      * Check if the envelope has stamps of a specific type.
      */
     public function has(string $stampClass): bool {
-        return !empty($this->stamps[$stampClass]);
+        return $this->stamps->has($stampClass);
     }
 
     /**
      * Get count of stamps of a specific type.
      */
     public function count(?string $stampClass = null): int {
-        if ($stampClass === null) {
-            return array_sum(array_map('count', $this->stamps));
-        }
-
-        return count($this->stamps[$stampClass] ?? []);
+        return $this->stamps->count($stampClass);
     }
 
-    /**
-     * Index stamps by their class name for efficient retrieval.
-     *
-     * @param StampInterface[] $stamps
-     * @return StampInterface
-     */
-    private static function indexStamps(array $stamps): array {
-        $indexed = [];
-
-        foreach ($stamps as $stamp) {
-            $class = $stamp::class;
-            $indexed[$class] = $indexed[$class] ?? [];
-            $indexed[$class][] = $stamp;
-        }
-
-        return $indexed;
-    }
 }

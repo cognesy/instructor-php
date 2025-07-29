@@ -39,7 +39,7 @@ describe('Envelope Feature Tests', function () {
             ->with(new FeatureTestStamp('processed', 'step1'));
 
         // Transform the message while preserving stamps
-        $envelope = $envelope->withMessage(Result::success('processed data'));
+        $envelope = $envelope->withResult(Result::success('processed data'));
 
         // Add more stamps
         $envelope = $envelope
@@ -47,7 +47,7 @@ describe('Envelope Feature Tests', function () {
             ->with(new FeatureTestStamp('completed', 'final'));
 
         // Verify final state
-        expect($envelope->getResult()->unwrap())->toBe('processed data');
+        expect($envelope->result()->unwrap())->toBe('processed data');
         expect($envelope->count())->toBe(6); // All stamps preserved
         expect($envelope->count(FeatureTestStamp::class))->toBe(3);
         expect($envelope->count(MetricsStamp::class))->toBe(2);
@@ -117,12 +117,12 @@ describe('Envelope Feature Tests', function () {
         ]);
 
         // Transform to success result
-        $successEnvelope = $envelope->withMessage(
+        $successEnvelope = $envelope->withResult(
             Result::success(['status' => 'authenticated', 'user' => 'john'])
         );
 
         // Transform to failure result
-        $failureEnvelope = $successEnvelope->withMessage(
+        $failureEnvelope = $successEnvelope->withResult(
             Result::failure(new Exception('Authentication failed'))
         );
 
@@ -132,9 +132,9 @@ describe('Envelope Feature Tests', function () {
         expect($failureEnvelope->count())->toBe(2);
 
         // But messages are different
-        expect($envelope->getResult()->unwrap())->toBe($originalData);
-        expect($successEnvelope->getResult()->unwrap()['status'])->toBe('authenticated');
-        expect($failureEnvelope->getResult()->isFailure())->toBeTrue();
+        expect($envelope->result()->unwrap())->toBe($originalData);
+        expect($successEnvelope->result()->unwrap()['status'])->toBe('authenticated');
+        expect($failureEnvelope->result()->isFailure())->toBeTrue();
 
         // Stamps remain accessible
         expect($failureEnvelope->first(TraceStamp::class)->traceId)->toBe('req-123');
@@ -150,10 +150,10 @@ describe('Envelope Feature Tests', function () {
         foreach ($steps as $step) {
             $envelope = $envelope
                 ->with(new FeatureTestStamp($step, microtime(true)))
-                ->withMessage(Result::success($envelope->getResult()->unwrap() . " -> $step"));
+                ->withResult(Result::success($envelope->result()->unwrap() . " -> $step"));
         }
 
-        expect($envelope->getResult()->unwrap())
+        expect($envelope->result()->unwrap())
             ->toBe('start -> validate -> transform -> persist -> notify');
         
         expect($envelope->count(FeatureTestStamp::class))->toBe(4);

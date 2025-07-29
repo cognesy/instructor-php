@@ -153,8 +153,8 @@
     "phpstan": "@php ./vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php ./vendor/bin/psalm",
     "tell": "bin/tell",
-    "test": "@php ./vendor/bin/pest --testsuite=Unit --testsuite=Feature",
-    "tests": "@php ./vendor/bin/pest --testsuite=Unit --testsuite=Feature",
+    "test": "@php ./vendor/bin/pest --testsuite=Unit,Feature",
+    "tests": "@php ./vendor/bin/pest --testsuite=Unit,Feature",
     "test-all": "@php ./vendor/bin/pest",
     "setup": "bin/instructor-setup",
     "make-package": "scripts/make-package"

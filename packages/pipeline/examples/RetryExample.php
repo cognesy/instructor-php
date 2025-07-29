@@ -122,8 +122,8 @@ class RetryMiddleware implements PipelineMiddlewareInterface
             $result = $next($envelope);
             
             // Check if the result is a failure (even if no exception was thrown)
-            if ($result instanceof Envelope && $result->getResult()->isFailure()) {
-                $error = $result->getResult()->error();
+            if ($result instanceof Envelope && $result->result()->isFailure()) {
+                $error = $result->result()->error();
                 if ($error instanceof \Throwable) {
                     // Treat failed results as exceptions for retry logic
                     throw $error;
@@ -166,7 +166,7 @@ class RetryMiddleware implements PipelineMiddlewareInterface
             }
 
             // No more retries, return failure envelope
-            return $envelopeWithAttempt->withMessage(Result::failure($e));
+            return $envelopeWithAttempt->withResult(Result::failure($e));
         }
     }
 
@@ -318,7 +318,7 @@ function demonstrateBasicRetry(): void
 
     if ($result->success()) {
         echo "✅ Operation succeeded!\n";
-        echo "Result: " . json_encode($result->value()) . "\n";
+        echo "Result: " . json_encode($result->payload()) . "\n";
     } else {
         echo "❌ Operation failed after all retries\n";
         echo "Error: " . $result->failure()->getMessage() . "\n";
@@ -393,7 +393,7 @@ function demonstrateRetryWithProcessing(): void
 
     if ($result->success()) {
         echo "✅ Data processing completed!\n";
-        echo "Processed data: " . json_encode($result->value(), JSON_PRETTY_PRINT) . "\n";
+        echo "Processed data: " . json_encode($result->payload(), JSON_PRETTY_PRINT) . "\n";
     } else {
         echo "❌ Data processing failed\n";
         echo "Error: " . $result->failure()->getMessage() . "\n";

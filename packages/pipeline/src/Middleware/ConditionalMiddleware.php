@@ -16,13 +16,13 @@ use Cognesy\Pipeline\PipelineMiddlewareInterface;
  * ```php
  * // Only log when payload is above threshold
  * $middleware = new ConditionalMiddleware(
- *     condition: fn(Envelope $env) => $env->getResult()->unwrap() > 100,
+ *     condition: fn(Envelope $env) => $env->result()->unwrap() > 100,
  *     middleware: new LoggingMiddleware()
  * );
  *
  * // Early termination - skip remaining middleware if condition met
  * $middleware = new ConditionalMiddleware(
- *     condition: fn(Envelope $env) => $env->getResult()->unwrap() < 10,
+ *     condition: fn(Envelope $env) => $env->result()->unwrap() < 10,
  *     middleware: new CallBeforeMiddleware(fn($env) => echo "Terminating early\n"),
  *     skipRemaining: true
  * );

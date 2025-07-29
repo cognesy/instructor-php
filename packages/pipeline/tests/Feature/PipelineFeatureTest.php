@@ -4,7 +4,6 @@ use Cognesy\Pipeline\Envelope;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\StampInterface;
-use Cognesy\Utils\Result\Result;
 
 // Test stamps for testing
 class TestStamp implements StampInterface
@@ -35,7 +34,7 @@ describe('Pipeline Feature Tests', function () {
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 5)
             ->process()
-            ->value();
+            ->payload();
 
         expect($result)->toBe(25);
     });
@@ -51,10 +50,10 @@ describe('Pipeline Feature Tests', function () {
 
     it('handles conditional processing', function () {
         $result = Pipeline::for(5)
-            ->when(fn($env) => $env->getResult()->unwrap() > 3, fn($x) => $x * 10)
-            ->when(fn($env) => $env->getResult()->unwrap() > 100, fn($x) => $x + 1000)
+            ->when(fn($env) => $env->result()->unwrap() > 3, fn($x) => $x * 10)
+            ->when(fn($env) => $env->result()->unwrap() > 100, fn($x) => $x + 1000)
             ->process()
-            ->value();
+            ->payload();
 
         expect($result)->toBe(50); // 5 * 10, but not + 1000 since 50 < 100
     });
@@ -62,7 +61,7 @@ describe('Pipeline Feature Tests', function () {
     it('processes stream of values', function () {
         $values = [];
         foreach (Pipeline::for([1, 2, 3])->through(fn($x) => $x * 2)->stream([1, 2, 3]) as $pending) {
-            $values[] = $pending->value();
+            $values[] = $pending->payload();
         }
 
         expect($values)->toBe([2, 4, 6]);
@@ -75,7 +74,7 @@ describe('Pipeline Feature Tests', function () {
             ->process()
             ->envelope();
 
-        expect($envelope->getResult()->unwrap())->toBe('TEST');
+        expect($envelope->result()->unwrap())->toBe('TEST');
         expect($envelope->count(TestStamp::class))->toBe(2);
         
         $stamps = $envelope->all(TestStamp::class);
@@ -91,7 +90,7 @@ describe('Pipeline Feature Tests', function () {
             ->process()
             ->envelope();
 
-        expect($envelope->getResult()->unwrap())->toBe(22); // (1 + 10) * 2
+        expect($envelope->result()->unwrap())->toBe(22); // (1 + 10) * 2
         expect($envelope->count(TestStamp::class))->toBe(4); // 2 stamps per processor
     });
 
@@ -100,19 +99,19 @@ describe('Pipeline Feature Tests', function () {
         
         $envelope = Pipeline::for(5)
             ->beforeEach(function($env) use (&$values) {
-                $values[] = 'before:' . $env->getResult()->unwrap();
+                $values[] = 'before:' . $env->result()->unwrap();
                 return $env;
             })
             ->through(fn($x) => $x * 2)
             ->afterEach(function($env) use (&$values) {
-                $values[] = 'after:' . $env->getResult()->unwrap();
+                $values[] = 'after:' . $env->result()->unwrap();
                 return $env;
             })
             ->through(fn($x) => $x + 1)
             ->process()
             ->envelope();
 
-        expect($envelope->getResult()->unwrap())->toBe(11); // (5 * 2) + 1
+        expect($envelope->result()->unwrap())->toBe(11); // (5 * 2) + 1
         expect($values)->toBe(['before:5', 'after:10', 'before:10', 'after:11']);
     });
 
@@ -124,13 +123,13 @@ describe('Pipeline Feature Tests', function () {
                 $processedValues[] = $x;
                 return $x + 1;
             })
-            ->finishWhen(fn($env) => $env->getResult()->unwrap() >= 3)
+            ->finishWhen(fn($env) => $env->result()->unwrap() >= 3)
             ->through(function($x) use (&$processedValues) {
                 $processedValues[] = $x;
                 return $x + 10; // This shouldn't execute
             })
             ->process()
-            ->value();
+            ->payload();
 
         expect($result)->toBe(12); // (1 + 1) + 10 - finishWhen doesn't prevent later processors
         expect($processedValues)->toBe([1, 2]); // Both processors executed
@@ -161,7 +160,7 @@ describe('Pipeline Feature Tests', function () {
             })
             ->through(fn($x) => $x . ' world')
             ->process()
-            ->value();
+            ->payload();
 
         expect($result)->toBe('hello world');
         expect($sideEffect)->toBe('HELLO');
@@ -172,7 +171,7 @@ describe('Pipeline Feature Tests', function () {
             ->through(fn($x) => $x * 2)
             ->then(fn($result) => 'Final: ' . $result->unwrap())
             ->process()
-            ->value();
+            ->payload();
 
         expect($result)->toBe('Final: 20');
     });
@@ -188,7 +187,7 @@ describe('Pipeline Feature Tests', function () {
             ->process()
             ->envelope();
 
-        expect($envelope->getResult()->unwrap())->toBe('START');
+        expect($envelope->result()->unwrap())->toBe('START');
         expect($envelope->has(TestStamp::class))->toBeTrue();
         expect($envelope->has(TimestampStamp::class))->toBeTrue();
         expect($envelope->count(TestStamp::class))->toBeGreaterThan(1);

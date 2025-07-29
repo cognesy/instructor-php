@@ -20,7 +20,7 @@ use Exception;
  * ```php
  * // Log results after processing
  * $middleware = new CallAfterMiddleware(function(Envelope $env) {
- *     $result = $env->getResult();
+ *     $result = $env->result();
  *     if ($result->isSuccess()) {
  *         echo "Success: " . $result->unwrap() . "\n";
  *     } else {
@@ -30,7 +30,7 @@ use Exception;
  *
  * // Modify result based on conditions
  * $middleware = new CallAfterMiddleware(function(Envelope $env) {
- *     $result = $env->getResult();
+ *     $result = $env->result();
  *     if ($result->isSuccess() && $result->unwrap() > 100) {
  *         return $env->withMessage(Result::success($result->unwrap() / 2));
  *     }

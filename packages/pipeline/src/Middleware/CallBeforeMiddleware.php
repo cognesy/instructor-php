@@ -20,13 +20,13 @@ use Exception;
  * ```php
  * // Add timestamp before each processor
  * $middleware = new CallBeforeMiddleware(function(Envelope $env) {
- *     echo "Processing: " . $env->getResult()->unwrap() . "\n";
+ *     echo "Processing: " . $env->result()->unwrap() . "\n";
  *     return $env->with(new TimestampStamp());
  * });
  *
  * // Just side effects, no modification
  * $middleware = new CallBeforeMiddleware(function(Envelope $env) {
- *     logger()->info('Processing started', ['payload' => $env->getResult()->unwrap()]);
+ *     logger()->info('Processing started', ['payload' => $env->result()->unwrap()]);
  * });
  * ```
  */
@@ -52,7 +52,7 @@ readonly class CallBeforeMiddleware implements PipelineMiddlewareInterface
         } catch (Exception $e) {
             // If callback fails, create failure envelope but still try to continue
             // This matches the behavior of the original hook system
-            $failureEnvelope = $envelope->withMessage(\Cognesy\Utils\Result\Result::failure($e));
+            $failureEnvelope = $envelope->withResult(\Cognesy\Utils\Result\Result::failure($e));
             return $next($failureEnvelope);
         }
     }

@@ -19,7 +19,7 @@ describe('PendingExecution Feature Tests', function () {
         $pending = new PendingPipelineExecution(function() use (&$executionCount) {
             $executionCount++;
             $envelope = Envelope::wrap(['count' => 5], [new ExecutionStamp('initial')]);
-            return $envelope->withMessage(Result::success(['count' => 10]));
+            return $envelope->withResult(Result::success(['count' => 10]));
         });
 
         // Transform without executing
@@ -30,12 +30,12 @@ describe('PendingExecution Feature Tests', function () {
         expect($executionCount)->toBe(0); // Not executed yet
 
         // Execute and get result
-        $result = $mapped->value();
+        $result = $mapped->payload();
         expect($result)->toBe(['doubled' => 20]);
         expect($executionCount)->toBe(1); // Executed once
 
         // Multiple calls use cached result
-        $result2 = $mapped->value();
+        $result2 = $mapped->payload();
         expect($result2)->toBe(['doubled' => 20]);
         expect($executionCount)->toBe(1); // Still once
     });
@@ -56,7 +56,7 @@ describe('PendingExecution Feature Tests', function () {
 
         $envelope = $final->envelope();
         
-        expect($envelope->getResult()->unwrap())->toBe(75); // (100 / 2) + 25
+        expect($envelope->result()->unwrap())->toBe(75); // (100 / 2) + 25
         expect($envelope->count(ExecutionStamp::class))->toBe(4);
         
         $phases = array_map(
@@ -129,7 +129,7 @@ describe('PendingExecution Feature Tests', function () {
         expect($executionLog)->toBe([]); // Still not executed
 
         // Execute and verify
-        $result = $final->value();
+        $result = $final->payload();
         expect($result)->toBe('Total: 24');
         expect($executionLog)->toBe(['processing', 'filtering']);
 
@@ -148,18 +148,18 @@ describe('PendingExecution Feature Tests', function () {
                 // Add processing metadata
                 return $env
                     ->with(new ExecutionStamp('uppercase'))
-                    ->withMessage(Result::success(strtoupper($env->getResult()->unwrap())));
+                    ->withMessage(Result::success(strtoupper($env->result()->unwrap())));
             })
             ->mapEnvelope(function($env) {
                 // Add more processing
                 return $env
                     ->with(new ExecutionStamp('exclamation'))
-                    ->withMessage(Result::success($env->getResult()->unwrap() . '!'));
+                    ->withMessage(Result::success($env->result()->unwrap() . '!'));
             });
 
         $envelope = $result->envelope();
         
-        expect($envelope->getResult()->unwrap())->toBe('HELLO!');
+        expect($envelope->result()->unwrap())->toBe('HELLO!');
         expect($envelope->count(ExecutionStamp::class))->toBe(3);
         
         $phases = array_map(
@@ -185,9 +185,9 @@ describe('PendingExecution Feature Tests', function () {
         // Conditional processing based on success
         if ($isSuccessful) {
             $result = Pipeline::for(100)
-                ->through(fn($x) => $x + $pending->value())
+                ->through(fn($x) => $x + $pending->payload())
                 ->process()
-                ->value();
+                ->payload();
             
             expect($result)->toBe(142);
         }

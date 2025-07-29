@@ -33,7 +33,7 @@ use Throwable;
  * // Old hook style (still works)
  * $pipeline
  *     ->beforeEach(fn($env) => $env->with(new TimestampStamp()))
- *     ->afterEach(fn($env) => logger()->info($env->getResult()->unwrap()));
+ *     ->afterEach(fn($env) => logger()->info($env->result()->unwrap()));
  *
  * // New middleware style (more powerful)
  * $pipeline->withMiddleware(
@@ -45,7 +45,7 @@ use Throwable;
  * $pipeline
  *     ->beforeEach(fn($env) => $env->with(new TimestampStamp()))
  *     ->withMiddleware(new DistributedTracingMiddleware($tracer))
- *     ->afterEach(fn($env) => logger()->info($env->getResult()->unwrap()));
+ *     ->afterEach(fn($env) => logger()->info($env->result()->unwrap()));
  * ```
  */
 class Pipeline
@@ -77,12 +77,12 @@ class Pipeline
     }
 
     /**
-     * Create a new MessageChain instance with an initial value.
+     * Create a new MessageChain instance with an initial payload.
      * 
-     * This is a convenience method that creates a source callable that returns the value.
+     * This is a convenience method that creates a source callable that returns the payload.
      */
-    public static function for(mixed $value): static {
-        return new static(source: fn() => $value);
+    public static function for(mixed $payload): static {
+        return new static(source: fn() => $payload);
     }
 
     // CONFIGURATION //////////////////////////////////////////////////////////////////////////
@@ -157,6 +157,13 @@ class Pipeline
 
     // PROCESSING /////////////////////////////////////////////////////////////////////////////
 
+    public function throughAll(callable ...$processors): static {
+        foreach ($processors as $processor) {
+            $this->processors[] = $this->suspendExecution($processor, NullStrategy::Allow);
+        }
+        return $this;
+    }
+
     public function through(callable $processor, NullStrategy $onNull = NullStrategy::Fail): static {
         $this->processors[] = $this->suspendExecution($processor, $onNull);
         return $this;
@@ -179,10 +186,10 @@ class Pipeline
 
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
-    public function process(mixed $value = null, array $stamps = []): PendingPipelineExecution {
-        return new PendingPipelineExecution(function () use ($value, $stamps) {
-            $initialValue = $value ?? $this->getSourceValue();
-            $envelope = $this->createInitialEnvelope($initialValue, $stamps);
+    public function process(mixed $payload = null, array $stamps = []): PendingPipelineExecution {
+        return new PendingPipelineExecution(function () use ($payload, $stamps) {
+            $initialPayload = $payload ?? $this->getSourcePayload();
+            $envelope = $this->createInitialEnvelope($initialPayload, $stamps);
             $processedEnvelope = $this->applyProcessors($envelope);
             return $this->applyFinalizer($this->finalizer, $processedEnvelope);
         });
@@ -196,21 +203,20 @@ class Pipeline
 
     // INTERNAL IMPLEMENTATION ///////////////////////////////////////////////////////////////
 
-    private function getSourceValue(): mixed {
+    private function getSourcePayload(): mixed {
         if ($this->source === null) {
-            throw new \InvalidArgumentException('MessageChain requires either an explicit value or a source callable');
+            throw new \InvalidArgumentException('MessageChain requires either an explicit payload or a source callable');
         }
         return ($this->source)();
     }
 
-    private function createInitialEnvelope(mixed $value, array $stamps = []): Envelope {
-        // Handle direct Envelope input
-        if ($value instanceof Envelope) {
-            return empty($stamps) ? $value : $value->with(...$stamps);
+    private function createInitialEnvelope(mixed $payload, array $stamps = []): Envelope {
+        if ($payload instanceof Envelope) {
+            return empty($stamps) ? $payload : $payload->with(...$stamps);
         }
         return new Envelope(
-            $this->asResult($value),
-            $this->indexStamps($stamps)
+            $this->asResult($payload),
+            StampMap::create($stamps)
         );
     }
 
@@ -248,16 +254,16 @@ class Pipeline
     }
 
     private function executeProcessorDirect(callable $processor, Envelope $envelope, NullStrategy $onNull): Envelope {
-        if ($envelope->getResult()->isFailure()) {
+        if (!$this->shouldContinueProcessing($envelope)) {
             return $envelope; // Short-circuit on existing failure
         }
         try {
             return match (true) {
                 $this->isEnvelopeProcessor($processor) => $this->asEnvelope($processor($envelope), $envelope, $onNull),
-                default => $this->asEnvelope($processor($envelope->getResult()->unwrap()), $envelope, $onNull),
+                default => $this->asEnvelope($processor($envelope->result()->unwrap()), $envelope, $onNull),
             };
         } catch (Exception $e) {
-            return $this->createFailureEnvelope($envelope, $e);
+            return $this->handleProcessorError($envelope, $e);
         }
     }
 
@@ -285,8 +291,8 @@ class Pipeline
         foreach ($this->processors as $processor) {
             $result = $processor($current);
 
-            // Handle failure
-            if ($result->getResult()->isFailure()) {
+            // Check if processing should continue
+            if (!$this->shouldContinueProcessing($result)) {
                 return $result;
             }
 
@@ -301,30 +307,21 @@ class Pipeline
             return $envelope;
         }
         try {
-            $value = match (true) {
+            $payload = match (true) {
                 $this->isEnvelopeProcessor($finalizer) => $finalizer($envelope),
-                default => $finalizer($envelope->getResult()),
+                default => $finalizer($envelope->result()),
             };
         } catch (Exception $e) {
-            return $this->createFailureEnvelope($envelope, $e);
+            return $this->handleProcessorError($envelope, $e);
         }
-        return $this->asEnvelope($value, $envelope, NullStrategy::Allow);
+        return $this->asEnvelope($payload, $envelope, NullStrategy::Allow);
     }
 
-    private function indexStamps(array $stamps): array {
-        $indexed = [];
-        foreach ($stamps as $stamp) {
-            $class = $stamp::class;
-            $indexed[$class] = $indexed[$class] ?? [];
-            $indexed[$class][] = $stamp;
-        }
-        return $indexed;
-    }
 
     private function asResult(mixed $payload, NullStrategy $onNull = NullStrategy::Allow): Result {
         return match (true) {
             $payload instanceof Result => $payload,
-            $payload === null && NullStrategy::Fail->is($onNull) => Result::failure(new Exception('Value cannot be null')),
+            $payload === null && NullStrategy::Fail->is($onNull) => Result::failure(new Exception('Payload cannot be null')),
             $payload === null && NullStrategy::Allow->is($onNull) => Result::success(null),
             default => Result::success($payload),
         };
@@ -334,22 +331,64 @@ class Pipeline
         return match (true) {
             $payload === null => $this->handleNullResult($envelope, $onNull),
             $payload instanceof Envelope => $payload,
-            $payload instanceof Result => $envelope->withMessage($payload),
-            default => $envelope->withMessage(Result::success($payload)),
+            $payload instanceof Result => $envelope->withResult($payload),
+            default => $envelope->withResult(Result::success($payload)),
         };
     }
 
     private function handleNullResult(Envelope $envelope, NullStrategy $onNull = NullStrategy::Fail): Envelope {
         return match ($onNull) {
             NullStrategy::Skip => $envelope,
-            NullStrategy::Fail => $this->createFailureEnvelope($envelope, "Processor returned null value"),
-            NullStrategy::Allow => $envelope->withMessage(Result::success(null)),
+            NullStrategy::Fail => $this->createFailureEnvelope($envelope, "Processor returned null payload"),
+            NullStrategy::Allow => $envelope->withResult(Result::success(null)),
         };
+    }
+
+    /**
+     * Determines if pipeline processing should continue based on envelope state.
+     * 
+     * @param Envelope $envelope Current envelope to check
+     * @return bool True if processing should continue, false to short-circuit
+     */
+    private function shouldContinueProcessing(Envelope $envelope): bool
+    {
+        return $envelope->result()->isSuccess();
+    }
+
+    /**
+     * Handles processor errors by converting them to failure envelopes.
+     * 
+     * Consolidates error-to-Result conversion, ErrorStamp creation, and 
+     * envelope wrapping into a single, focused method.
+     * 
+     * @param Envelope $envelope Current envelope context
+     * @param mixed $error Error to handle (Exception, string, or other)
+     * @return Envelope Failure envelope with error Result and ErrorStamp
+     */
+    private function handleProcessorError(Envelope $envelope, mixed $error): Envelope
+    {
+        // Convert error to Result::failure
+        $failure = match (true) {
+            $error instanceof Result => $error,
+            $error instanceof Throwable => Result::failure($error),
+            is_string($error) => Result::failure(new Exception($error)),
+            default => Result::failure(new Exception(json_encode(['error' => $error]))),
+        };
+
+        // Convert error to ErrorStamp
+        $errorStamp = match (true) {
+            $error instanceof Exception => ErrorStamp::fromException($error),
+            default => ErrorStamp::fromMessage((string)$error),
+        };
+
+        return $envelope
+            ->withResult($failure)
+            ->with($errorStamp);
     }
 
     private function createFailureEnvelope(Envelope $envelope, mixed $error): Envelope {
         return $envelope
-            ->withMessage($this->asFailure($error))
+            ->withResult($this->asFailure($error))
             ->with($this->asErrorStamp($error));
     }
 

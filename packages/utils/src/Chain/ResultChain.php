@@ -87,7 +87,7 @@ class ResultChain
      * @return ResultChain
      */
     static public function for(mixed $value): static {
-        return new ResultChain(value: Result::with($value));
+        return new ResultChain(value: Result::from($value));
     }
 
     /**

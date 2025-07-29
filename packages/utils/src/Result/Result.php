@@ -52,9 +52,10 @@ use Throwable;
  * @template E The type of the error in case of failure.
  */
 abstract class Result {
-    public static function with(mixed $value) : Result {
+    public static function from(mixed $value) : Result {
         return match(true) {
             $value instanceof Result => $value,
+            $value instanceof Throwable => self::failure($value),
             default => self::success($value),
         };
     }
@@ -76,13 +77,37 @@ abstract class Result {
      * @return Result<S, E> A new Result instance with the function applied, or the original failure
      */
     public function then(callable $f): Result {
+        return $this->flatMap(function($value) use ($f) {
+            $result = $f($value);
+            return $result instanceof Result ? $result : self::success($result);
+        });
+    }
+
+    /**
+     * @template S
+     * @param callable(T):S $f Function to apply to the value in case of success
+     * @return Result<S, E> A new Result instance with the transformed value, or the original failure
+     */
+    public function map(callable $f): Result {
         if ($this->isSuccess()) {
             try {
-                $result = $f($this->unwrap());
-                return match(true) {
-                    $result instanceof Result => $result,
-                    default => self::success($result),
-                };
+                return self::success($f($this->unwrap()));
+            } catch (Exception $e) {
+                return self::failure($e);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @template S
+     * @param callable(T):Result<S, E> $f Function to apply to the value in case of success
+     * @return Result<S, E> A new Result instance with the function applied, or the original failure
+     */
+    public function flatMap(callable $f): Result {
+        if ($this->isSuccess()) {
+            try {
+                return $f($this->unwrap());
             } catch (Exception $e) {
                 return self::failure($e);
             }
@@ -169,3 +194,16 @@ abstract class Result {
         };
     }
 }
+
+//                if ($this->isSuccess()) {
+//                    try {
+//                        $result = $f($this->unwrap());
+//                        return match(true) {
+//                            $result instanceof Result => $result,
+//                            default => self::success($result),
+//                        };
+//                    } catch (Exception $e) {
+//                        return self::failure($e);
+//                    }
+//                 }
+//                 return $this;

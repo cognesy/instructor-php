@@ -36,7 +36,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Envelope::wrap(42);
             });
             
-            expect($pending->value())->toBe(42);
+            expect($pending->payload())->toBe(42);
         });
 
         it('extracts value from direct Result', function () {
@@ -44,7 +44,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Result::success('direct result');
             });
             
-            expect($pending->value())->toBe('direct result');
+            expect($pending->payload())->toBe('direct result');
         });
 
         it('returns raw value for non-envelope/result', function () {
@@ -52,7 +52,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return ['raw' => 'data'];
             });
             
-            expect($pending->value())->toBe(['raw' => 'data']);
+            expect($pending->payload())->toBe(['raw' => 'data']);
         });
 
         it('returns null for failed envelope', function () {
@@ -60,7 +60,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Envelope::wrap(Result::failure(new Exception('error')));
             });
             
-            expect($pending->value())->toBeNull();
+            expect($pending->payload())->toBeNull();
         });
     });
 
@@ -116,7 +116,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             
             $envelope = $pending->envelope();
             expect($envelope)->toBeInstanceOf(Envelope::class);
-            expect($envelope->getResult()->unwrap())->toBe('to wrap');
+            expect($envelope->result()->unwrap())->toBe('to wrap');
         });
     });
 
@@ -251,7 +251,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 $mapped = $pending->map(fn($x) => $x * 2);
                 $envelope = $mapped->envelope();
                 
-                expect($envelope->getResult()->unwrap())->toBe(20);
+                expect($envelope->result()->unwrap())->toBe(20);
                 expect($envelope->has(PendingTestStamp::class))->toBeTrue(); // Stamps preserved
             });
 
@@ -286,11 +286,11 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 $mapped = $pending->mapEnvelope(function($env) {
                     return $env
                         ->with(new PendingTestStamp('transformed'))
-                        ->withMessage(Result::success(strtoupper($env->getResult()->unwrap())));
+                        ->withMessage(Result::success(strtoupper($env->result()->unwrap())));
                 });
                 
                 $envelope = $mapped->envelope();
-                expect($envelope->getResult()->unwrap())->toBe('TEST');
+                expect($envelope->result()->unwrap())->toBe('TEST');
                 expect($envelope->has(PendingTestStamp::class))->toBeTrue();
             });
 
@@ -304,7 +304,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 });
                 
                 $envelope = $mapped->envelope();
-                expect($envelope->getResult()->unwrap())->toBe('raw value');
+                expect($envelope->result()->unwrap())->toBe('raw value');
                 expect($envelope->has(PendingTestStamp::class))->toBeTrue();
             });
         });
@@ -318,7 +318,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 $chained = $pending->then(fn($x) => $x * 3);
                 $envelope = $chained->envelope();
                 
-                expect($envelope->getResult()->unwrap())->toBe(15);
+                expect($envelope->result()->unwrap())->toBe(15);
                 expect($envelope->has(PendingTestStamp::class))->toBeTrue(); // Stamps preserved
             });
 
@@ -345,7 +345,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
             
             // Multiple accesses
-            $pending->value();
+            $pending->payload();
             $pending->result();
             $pending->envelope();
             $pending->success();
@@ -364,8 +364,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
             $mapped = $pending->map(fn($x) => $x * 2);
             
             // Access multiple times
-            $mapped->value();
-            $mapped->value();
+            $mapped->payload();
+            $mapped->payload();
             
             expect($executionCount)->toBe(1);
         });
@@ -385,12 +385,12 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
             
             // Execute base only
-            $base->value();
+            $base->payload();
             expect($baseExecutions)->toBe(1);
             expect($transformExecutions)->toBe(0);
             
             // Execute transformed
-            $transformed->value();
+            $transformed->payload();
             expect($baseExecutions)->toBe(1); // Base used cached result
             expect($transformExecutions)->toBe(1);
         });

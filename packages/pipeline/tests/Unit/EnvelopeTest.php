@@ -26,25 +26,25 @@ describe('Envelope Unit Tests', function () {
             $result = Result::success('test data');
             $stamps = [new UnitStampA('test')];
             
-            $envelope = new Envelope($result, ['UnitStampA' => $stamps]);
+            $envelope = new Envelope($result, StampMap::create($stamps));
             
-            expect($envelope->getResult())->toBe($result);
+            expect($envelope->result())->toBe($result);
             expect($envelope->count())->toBe(1);
         });
 
         it('wraps mixed values with wrap()', function () {
             $envelope = Envelope::wrap('simple string');
             
-            expect($envelope->getResult()->unwrap())->toBe('simple string');
-            expect($envelope->getResult()->isSuccess())->toBeTrue();
+            expect($envelope->result()->unwrap())->toBe('simple string');
+            expect($envelope->result()->isSuccess())->toBeTrue();
         });
 
         it('wraps Result values directly', function () {
             $result = Result::failure(new Exception('test error'));
             $envelope = Envelope::wrap($result);
             
-            expect($envelope->getResult())->toBe($result);
-            expect($envelope->getResult()->isFailure())->toBeTrue();
+            expect($envelope->result())->toBe($result);
+            expect($envelope->result()->isFailure())->toBeTrue();
         });
 
         it('wraps with initial stamps', function () {
@@ -62,8 +62,8 @@ describe('Envelope Unit Tests', function () {
             $result = Result::success(['key' => 'value']);
             $envelope = new Envelope($result);
             
-            expect($envelope->getResult())->toBe($result);
-            expect($envelope->getResult()->unwrap())->toBe(['key' => 'value']);
+            expect($envelope->result())->toBe($result);
+            expect($envelope->result()->unwrap())->toBe(['key' => 'value']);
         });
     });
 
@@ -114,9 +114,9 @@ describe('Envelope Unit Tests', function () {
             $envelope = Envelope::wrap('original', [new UnitStampA('keep')]);
             $newResult = Result::success('replaced');
             
-            $newEnvelope = $envelope->withMessage($newResult);
+            $newEnvelope = $envelope->withResult($newResult);
             
-            expect($newEnvelope->getResult()->unwrap())->toBe('replaced');
+            expect($newEnvelope->result()->unwrap())->toBe('replaced');
             expect($newEnvelope->count())->toBe(1); // Stamps preserved
             expect($newEnvelope->has(UnitStampA::class))->toBeTrue();
         });
@@ -212,10 +212,10 @@ describe('Envelope Unit Tests', function () {
 
         it('preserves original envelope when replacing message', function () {
             $original = Envelope::wrap('original');
-            $modified = $original->withMessage(Result::success('modified'));
+            $modified = $original->withResult(Result::success('modified'));
             
-            expect($original->getResult()->unwrap())->toBe('original');
-            expect($modified->getResult()->unwrap())->toBe('modified');
+            expect($original->result()->unwrap())->toBe('original');
+            expect($modified->result()->unwrap())->toBe('modified');
         });
     });
 
@@ -230,8 +230,8 @@ describe('Envelope Unit Tests', function () {
         it('handles null values in Result', function () {
             $envelope = Envelope::wrap(null);
             
-            expect($envelope->getResult()->unwrap())->toBeNull();
-            expect($envelope->getResult()->isSuccess())->toBeTrue();
+            expect($envelope->result()->unwrap())->toBeNull();
+            expect($envelope->result()->isSuccess())->toBeTrue();
         });
 
         it('handles failure Results', function () {
@@ -239,16 +239,16 @@ describe('Envelope Unit Tests', function () {
             $result = Result::failure($error);
             $envelope = Envelope::wrap($result, [new UnitStampA('error-context')]);
             
-            expect($envelope->getResult()->isFailure())->toBeTrue();
-            expect($envelope->getResult()->error())->toBe($error);
+            expect($envelope->result()->isFailure())->toBeTrue();
+            expect($envelope->result()->error())->toBe($error);
             expect($envelope->has(UnitStampA::class))->toBeTrue();
         });
 
         it('preserves stamps through failure transitions', function () {
             $envelope = Envelope::wrap('success', [new UnitStampA('context')])
-                ->withMessage(Result::failure(new Exception('now failed')));
+                ->withResult(Result::failure(new Exception('now failed')));
             
-            expect($envelope->getResult()->isFailure())->toBeTrue();
+            expect($envelope->result()->isFailure())->toBeTrue();
             expect($envelope->has(UnitStampA::class))->toBeTrue();
             expect($envelope->first(UnitStampA::class)->value)->toBe('context');
         });

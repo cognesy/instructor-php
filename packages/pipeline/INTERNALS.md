@@ -23,6 +23,8 @@ Key internal methods:
 - `isEnvelopeProcessor()`: Uses reflection to detect envelope-aware processors
 - `applyProcessors()`: Iterates through processor chain, short-circuiting on failures
 - `createInitialEnvelope()`: Converts input values to Envelope instances
+- `shouldContinueProcessing()`: Consolidated flow control logic checking envelope state
+- `handleProcessorError()`: Consolidated error handling converting exceptions to failure envelopes
 
 The Pipeline implements both modern middleware patterns and legacy hook compatibility through middleware adapters.
 
@@ -117,20 +119,160 @@ middleware.process(envelope, finalProcessor) →
 
 ## Error Handling Strategy
 
-### Exception Capture
-- Processor exceptions caught in `executeProcessorDirect()`
-- Converted to Failure Result with ErrorStamp
-- Pipeline continues with failure envelope (no further processing)
+The error handling architecture follows the Result monad pattern with clear separation of responsibilities between pipeline infrastructure and middleware.
+
+### Exception Handling Responsibilities
+
+**Pipeline Infrastructure Responsibilities:**
+- Catch processor exceptions in `executeProcessorDirect()`
+- Convert exceptions to `Result::failure($exception)`
+- Create `ErrorStamp` with exception details for middleware inspection
+- Ensure all outcomes are wrapped in Result instances (never throw to middleware)
+
+**Middleware Responsibilities:**
+- **Never catch processor exceptions** - they are handled by infrastructure
+- Inspect envelope state via `$envelope->getResult()->isFailure()`
+- Extract error details from `ErrorStamp` when needed: `$envelope->first(ErrorStamp::class)`
+- Focus on cross-cutting concerns (timing, logging, metrics) based on envelope inspection
+
+### Exception to Result Flow
+```
+Processor throws Exception → 
+  Pipeline catches in executeProcessorDirect() →
+  Creates Result::failure($exception) + ErrorStamp →
+  Returns failure envelope to middleware →
+  Middleware inspects envelope state (never sees raw exception)
+```
+
+### Key Architectural Principle
+**Middleware operates on Results, not exceptions.** The infrastructure ensures middleware always receives envelopes with Results, maintaining the monadic error handling pattern.
+
+### Example: Correct Middleware Pattern
+```php
+public function handle(Envelope $envelope, callable $next): Envelope {
+    $result = $next($envelope); // Never throws - returns envelope
+    
+    // Inspect result state
+    $success = $result->getResult()->isSuccess();
+    
+    // Extract error details if needed
+    if (!$success) {
+        $errorStamp = $result->first(ErrorStamp::class);
+        $errorMessage = $errorStamp?->getMessage() ?? 'Unknown error';
+    }
+    
+    // Create appropriate stamps based on inspection
+    return $result->with(new MyStamp($success, $errorMessage));
+}
+```
 
 ### Failure Propagation
-- Result.isFailure() checked before each processor
+- `shouldContinueProcessing()` checks `Result.isFailure()` before each processor
 - Failure envelopes passed through without processing
 - Stamps preserved through failure states
+- Short-circuit behavior maintains performance
 
-### Middleware Error Handling
-- Middleware exceptions bubble up to processor level
-- Individual middleware can catch and handle their own errors
-- CallBeforeMiddleware example shows local error recovery
+## Dual Error Tracking Architecture
+
+The pipeline employs two complementary error tracking mechanisms that address different architectural concerns. Understanding their distinction is crucial for proper usage.
+
+### The Two Mechanisms
+
+**1. Result::failure($error) - The Monadic Layer**
+```php
+$result->isFailure()           // Business logic: did computation succeed?
+$result->exception()           // Original exception for debugging  
+$result->errorMessage()        // Human-readable error for users
+```
+
+**2. ErrorStamp - The Metadata Layer**
+```php
+$envelope->first(ErrorStamp::class)  // Rich error context for middleware
+$errorStamp->getTimestamp()          // When did error occur?
+$errorStamp->getStackTrace()         // Debugging information
+$errorStamp->getContext()            // Additional error context
+```
+
+### Independent Architectural Concerns
+
+These mechanisms are **not redundant** - they address fundamentally different aspects:
+
+**Result::failure() Addresses:**
+- **Monadic Composition**: Enables `map()`, `flatMap()`, railway-oriented programming
+- **Business Logic Flow**: "Should processing continue or stop?"
+- **Consumer API**: Simple success/failure check for pipeline users
+- **Type Safety**: Compiler/IDE can enforce error handling
+
+**ErrorStamp Addresses:**
+- **Observability**: Rich context for logging, monitoring, debugging
+- **Middleware Coordination**: Cross-cutting concerns can inspect/react to errors
+- **Multi-Error Scenarios**: Multiple errors can occur, multiple stamps can exist
+- **Structured Telemetry**: Serializable error metadata for external systems
+
+### Usage Guidelines
+
+**Use Result::failure() when:**
+```php
+// Business logic decisions
+$result = $pipeline->process($data);
+if ($result->isFailure()) {
+    return new ErrorResponse($result->errorMessage());
+}
+
+// Monadic operations
+$transformed = $result->map(fn($data) => transform($data));
+```
+
+**Use ErrorStamp when:**
+```php
+// Observability and middleware coordination
+$envelope = $result->envelope();
+
+// Rich error analysis for logging
+foreach ($envelope->all(ErrorStamp::class) as $error) {
+    $logger->error('Pipeline error', [
+        'timestamp' => $error->getTimestamp(),
+        'processor' => $error->getProcessorName(),
+        'context' => $error->getContext(),
+    ]);
+}
+
+// Middleware reactions
+if ($envelope->has(ErrorStamp::class)) {
+    $circuitBreaker->recordFailure();
+    $metrics->incrementErrorCount();
+}
+```
+
+### Industry Pattern Parallels
+
+This dual approach follows established patterns:
+
+**HTTP Responses:**
+- Status Code (like Result): 200 OK, 404 Not Found, 500 Error
+- Response Body (like ErrorStamp): Detailed error context, debugging info
+
+**Event Sourcing:**
+- Event Outcome (like Result): Success/Failure for business logic
+- Event Metadata (like ErrorStamp): Timestamps, correlation IDs, observability context
+
+### Architectural Invariants
+
+**Key Principle**: Result focuses on "what happened" for business logic, ErrorStamp focuses on "how/why/when" for observability.
+
+**Required Invariant**: If `Result::isFailure()` is true, an `ErrorStamp` must exist in the envelope.
+
+**Optional Pattern**: `ErrorStamp` can exist without `Result::failure()` for warnings, debug information, or non-fatal issues.
+
+### Benefits of Dual Approach
+
+1. **Clean APIs**: Simple Result for business logic, rich ErrorStamp for observability
+2. **Middleware Power**: Cross-cutting concerns access rich error context without affecting business logic
+3. **Monadic Composition**: Result enables functional programming patterns
+4. **Structured Observability**: ErrorStamp provides serializable telemetry data
+5. **Independent Evolution**: Each mechanism can be enhanced without affecting the other
+
+This design provides both the simplicity needed for business logic and the richness required for production observability systems.
 
 ## Processor Type Detection
 
@@ -213,6 +355,38 @@ The pipeline is designed for single-threaded use but is stateless after construc
 - All state changes create new instances (immutability)
 - No shared mutable state between pipeline instances
 - PendingPipelineExecution memoization is instance-local
+
+## Code Organization and Refactoring Insights
+
+### Logic Consolidation Patterns
+
+The Pipeline architecture employs consolidated logic methods to maintain clean separation of concerns:
+
+**Flow Control Consolidation:**
+- `shouldContinueProcessing(Envelope $envelope): bool` - Single decision point for processor chain continuation
+- Replaces scattered `$envelope->getResult()->isFailure()` checks throughout the codebase
+- Enables easy modification of flow control logic in one location
+
+**Error Handling Consolidation:**  
+- `handleProcessorError(Envelope $envelope, mixed $error): Envelope` - Unified error processing
+- Consolidates exception-to-Result conversion, ErrorStamp creation, and envelope wrapping
+- Eliminates code duplication across multiple error handling locations
+
+### 80/20 Refactoring Principle
+
+The architecture demonstrates effective application of the 80/20 rule:
+- **20% effort**: Extracting scattered logic into focused private methods
+- **80% benefit**: Dramatically improved readability, maintainability, and testability
+
+### Architectural Coherence
+
+The consolidation maintains high coherence through:
+- **Single Responsibility**: Each method handles one specific concern
+- **Clear Naming**: Method names describe the decision being made
+- **Zero Behavior Change**: Refactoring preserves all existing functionality
+- **Minimal Surface Area**: Changes only affect private implementation methods
+
+This design enables future enhancements (custom flow controllers, pluggable error handlers) without breaking existing functionality.
 
 ## Extension Points
 
