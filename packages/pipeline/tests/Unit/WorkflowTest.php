@@ -2,7 +2,7 @@
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Stamps\TimingStamp;
+use Cognesy\Pipeline\Tags\TimingTag;
 use Cognesy\Pipeline\Workflow\Workflow;
 
 describe('Workflow Unit Tests', function () {
@@ -20,7 +20,7 @@ describe('Workflow Unit Tests', function () {
 
         $result = $workflow->process('hello');
         
-        expect($result->payload())->toBe('HELLO');
+        expect($result->value())->toBe('HELLO');
         expect($result->success())->toBeTrue();
     });
 
@@ -41,10 +41,10 @@ describe('Workflow Unit Tests', function () {
 
         $result = $workflow->process('start');
         
-        expect($result->payload())->toBe('start_step1_step2_step3');
+        expect($result->value())->toBe('start_step1_step2_step3');
     });
 
-    it('executes conditional steps based on envelope state', function () {
+    it('executes conditional steps based on computation state', function () {
         $mainPipeline = Pipeline::for('data')
             ->through(fn($x) => $x * 2);
 
@@ -54,17 +54,17 @@ describe('Workflow Unit Tests', function () {
         $workflow = Workflow::empty()
             ->through($mainPipeline)
             ->when(
-                fn($env) => $env->result()->unwrap() > 10,
+                fn($computation) => $computation->result()->unwrap() > 10,
                 $conditionalPipeline
             );
 
         // Test condition true (20 > 10)
         $result1 = $workflow->process(10);
-        expect($result1->payload())->toBe(120); // (10 * 2) + 100
+        expect($result1->value())->toBe(120); // (10 * 2) + 100
 
         // Test condition false (4 < 10)
         $result2 = $workflow->process(2);
-        expect($result2->payload())->toBe(4); // 2 * 2, conditional skipped
+        expect($result2->value())->toBe(4); // 2 * 2, conditional skipped
     });
 
     it('executes tap steps for side effects without affecting main flow', function () {
@@ -85,7 +85,7 @@ describe('Workflow Unit Tests', function () {
 
         $result = $workflow->process('start');
         
-        expect($result->payload())->toBe('start_main'); // Tap doesn't affect result
+        expect($result->value())->toBe('start_main'); // Tap doesn't affect result
         expect($sideEffectExecuted)->toBeTrue(); // But tap was executed
     });
 
@@ -122,7 +122,7 @@ describe('Workflow Unit Tests', function () {
         expect($step3Executed)->toBeFalse(); // Step 3 never executed
     });
 
-    it('preserves stamps across pipeline boundaries', function () {
+    it('preserves tags across pipeline boundaries', function () {
         $pipeline1 = Pipeline::for('data')
             ->withMiddleware(TimingMiddleware::for('step1'))
             ->through(fn($x) => $x . '_1');
@@ -137,23 +137,23 @@ describe('Workflow Unit Tests', function () {
 
         $result = $workflow->process('start');
         
-        expect($result->payload())->toBe('start_1_2');
+        expect($result->value())->toBe('start_1_2');
         
-        $timingStamps = $result->envelope()->all(TimingStamp::class);
-        expect(count($timingStamps))->toBeGreaterThanOrEqual(2);
+        $timingTags = $result->computation()->all(TimingTag::class);
+        expect(count($timingTags))->toBeGreaterThanOrEqual(2);
         
-        // Check that we have stamps from both pipelines
-        $operationNames = array_map(fn($stamp) => $stamp->operationName, $timingStamps);
+        // Check that we have tags from both pipelines
+        $operationNames = array_map(fn($tag) => $tag->operationName, $timingTags);
         expect($operationNames)->toContain('step1');
         expect($operationNames)->toContain('step2');
     });
 
-    it('handles envelope input directly', function () {
-        $initialEnvelope = Pipeline::for('test')
+    it('handles computation input directly', function () {
+        $initialComputation = Pipeline::for('test')
             ->withMiddleware(TimingMiddleware::for('initial'))
             ->through(fn($x) => $x . '_initial')
             ->process()
-            ->envelope();
+            ->computation();
 
         $pipeline = Pipeline::for('data')
             ->withMiddleware(TimingMiddleware::for('workflow'))
@@ -162,13 +162,13 @@ describe('Workflow Unit Tests', function () {
         $workflow = Workflow::empty()
             ->through($pipeline);
 
-        $result = $workflow->process($initialEnvelope);
+        $result = $workflow->process($initialComputation);
         
-        expect($result->payload())->toBe('test_initial_workflow');
+        expect($result->value())->toBe('test_initial_workflow');
         
-        // Should have timing stamps from both initial processing and workflow
-        $timingStamps = $result->envelope()->all(TimingStamp::class);
-        expect(count($timingStamps))->toBeGreaterThanOrEqual(2);
+        // Should have timing tags from both initial processing and workflow
+        $timingTags = $result->computation()->all(TimingTag::class);
+        expect(count($timingTags))->toBeGreaterThanOrEqual(2);
     });
 
     it('supports complex conditional logic', function () {
@@ -189,46 +189,46 @@ describe('Workflow Unit Tests', function () {
         $workflow = Workflow::empty()
             ->through($validationPipeline)
             ->when(
-                fn($env) => $env->result()->unwrap()['type'] === 'premium',
+                fn($computation) => $computation->result()->unwrap()['type'] === 'premium',
                 $premiumPipeline
             )
             ->when(
-                fn($env) => $env->result()->unwrap()['type'] === 'standard',
+                fn($computation) => $computation->result()->unwrap()['type'] === 'standard',
                 $standardPipeline
             );
 
         // Test premium processing
         $premiumResult = $workflow->process(['type' => 'premium', 'value' => 100]);
         expect($premiumResult->success())->toBeTrue();
-        expect($premiumResult->payload()['premium_processed'] ?? false)->toBeTrue();
-        expect($premiumResult->payload()['standard_processed'] ?? false)->toBeFalse();
+        expect($premiumResult->value()['premium_processed'] ?? false)->toBeTrue();
+        expect($premiumResult->value()['standard_processed'] ?? false)->toBeFalse();
 
         // Test standard processing
         $standardResult = $workflow->process(['type' => 'standard', 'value' => 50]);
         expect($standardResult->success())->toBeTrue();
-        expect($standardResult->payload()['standard_processed'] ?? false)->toBeTrue();
-        expect($standardResult->payload()['premium_processed'] ?? false)->toBeFalse();
+        expect($standardResult->value()['standard_processed'] ?? false)->toBeTrue();
+        expect($standardResult->value()['premium_processed'] ?? false)->toBeFalse();
 
         // Test invalid data
         $invalidResult = $workflow->process('invalid');
         expect($invalidResult->success())->toBeFalse();
     });
 
-    it('processes with initial stamps', function () {
+    it('processes with initial tags', function () {
         $pipeline = Pipeline::for('data')
             ->through(fn($x) => strtoupper($x));
 
         $workflow = Workflow::empty()
             ->through($pipeline);
 
-        $customStamp = new class implements \Cognesy\Pipeline\StampInterface {
+        $customTag = new class implements \Cognesy\Pipeline\TagInterface {
             public function __construct(public readonly string $value = 'test') {}
         };
 
-        $result = $workflow->process('hello', [$customStamp]);
+        $result = $workflow->process('hello', [$customTag]);
         
-        expect($result->payload())->toBe('HELLO');
-        expect($result->envelope()->has($customStamp::class))->toBeTrue();
-        expect($result->envelope()->first($customStamp::class)->value)->toBe('test');
+        expect($result->value())->toBe('HELLO');
+        expect($result->computation()->has($customTag::class))->toBeTrue();
+        expect($result->computation()->first($customTag::class)->value)->toBe('test');
     });
 });

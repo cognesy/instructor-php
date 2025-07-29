@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Stamps\TimingStamp;
+use Cognesy\Pipeline\Tags\TimingTag;
 
 /**
  * Example demonstrating the TimingMiddleware for measuring pipeline execution time.
@@ -29,9 +29,9 @@ $result = Pipeline::for(100)
     })
     ->process();
 
-echo "Result: " . $result->payload() . "\n";
+echo "Result: " . $result->value() . "\n";
 
-$timings = $result->envelope()->all(TimingStamp::class);
+$timings = $result->computation()->all(TimingTag::class);
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";
 }
@@ -65,9 +65,9 @@ $result = Pipeline::for(['numbers' => [1, 2, 3, 4, 5]])
     })
     ->process();
 
-echo "Result: " . $result->payload() . "\n\n";
+echo "Result: " . $result->value() . "\n\n";
 
-$timings = $result->envelope()->all(TimingStamp::class);
+$timings = $result->computation()->all(TimingTag::class);
 $totalTime = array_sum(array_map(fn($t) => $t->duration, $timings));
 
 echo "Detailed Timing Breakdown:\n";
@@ -102,7 +102,7 @@ if (!$result->success()) {
     echo "Error: " . $result->failure()->getMessage() . "\n";
 }
 
-$timings = $result->envelope()->all(TimingStamp::class);
+$timings = $result->computation()->all(TimingTag::class);
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";
 }
@@ -128,7 +128,7 @@ function runPerformanceTest(string $name, callable $operation, int $iterations =
         })
         ->process();
     
-    $timing = $results->envelope()->last(TimingStamp::class);
+    $timing = $results->computation()->last(TimingTag::class);
     $avgTime = ($timing->duration / $iterations) * 1_000_000; // microseconds per iteration
     
     echo "  Total: " . $timing->durationFormatted() . "\n";
@@ -167,8 +167,8 @@ $complexResult = Pipeline::for(range(1, 100))
     })
     ->process();
 
-$envelope = $complexResult->envelope();
-$timings = $envelope->all(TimingStamp::class);
+$computation = $complexResult->computation();
+$timings = $computation->all(TimingTag::class);
 
 echo "Pipeline Analysis:\n";
 echo "  Total operations: " . count($timings) . "\n";

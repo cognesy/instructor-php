@@ -2,24 +2,24 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\Envelope;
-use Cognesy\Pipeline\PendingPipelineExecution;
+use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\PendingComputation;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\StampMap;
+use Cognesy\Pipeline\TagMap;
 use Cognesy\Utils\Result\Result;
 
 /**
  * Orchestrates the execution of multiple pipelines in sequence.
  *
  * A Workflow composes multiple Pipeline objects into a larger processing
- * flow, handling coordination, error propagation, and envelope management
+ * flow, handling coordination, error propagation, and computation management
  * between pipeline boundaries.
  *
  * Example:
  * ```php
  * $workflow = Workflow::empty()
  *     ->through($validationPipeline)
- *     ->when(fn($env) => $env->result()->isSuccess(), $processingPipeline)
+ *     ->when(fn($computation) => $computation->result()->isSuccess(), $processingPipeline)
  *     ->tap($loggingPipeline);
  *
  * $result = $workflow->process($data);
@@ -29,7 +29,6 @@ class Workflow
 {
     /** @var WorkflowStepInterface[] */
     private array $steps = [];
-
     private function __construct() {}
 
     /**
@@ -40,10 +39,10 @@ class Workflow
     }
 
     /**
-     * Add a pipeline that processes the envelope and returns its result.
+     * Add a pipeline that processes the computation and returns its result.
      *
      * This is the main workflow operation - the pipeline processes the current
-     * envelope state and its result becomes the new envelope state.
+     * computation state and its result becomes the new computation state.
      */
     public function through(Pipeline $pipeline): static {
         $this->steps[] = new ThroughStep($pipeline);
@@ -51,9 +50,9 @@ class Workflow
     }
 
     /**
-     * Conditionally execute a pipeline based on envelope state.
+     * Conditionally execute a pipeline based on computation state.
      *
-     * The condition callable receives the current envelope and should return
+     * The condition callable receives the current computation and should return
      * true to execute the pipeline, false to skip it.
      */
     public function when(callable $condition, Pipeline $pipeline): static {
@@ -65,7 +64,7 @@ class Workflow
      * Execute a pipeline for side effects without affecting the main flow.
      *
      * The tap pipeline executes but its result is ignored. The original
-     * envelope continues unchanged. Useful for logging, metrics, etc.
+     * computation continues unchanged. Useful for logging, metrics, etc.
      */
     public function tap(Pipeline $pipeline): static {
         $this->steps[] = new TapStep($pipeline);
@@ -76,12 +75,12 @@ class Workflow
      * Process input data through all workflow steps.
      *
      * Returns a PendingPipelineExecution that provides access to the final
-     * result value, envelope with all accumulated stamps, and execution state.
+     * result value, computation with all accumulated tags, and execution state.
      */
-    public function process(mixed $value = null, array $stamps = []): PendingPipelineExecution {
-        return new PendingPipelineExecution(function () use ($value, $stamps) {
-            $envelope = $this->createInitialEnvelope($value, $stamps);
-            return $this->executeSteps($envelope);
+    public function process(mixed $value = null, array $tags = []): PendingComputation {
+        return new PendingComputation(function () use ($value, $tags) {
+            $computation = $this->createInitialComputation($value, $tags);
+            return $this->executeSteps($computation);
         });
     }
 
@@ -91,33 +90,30 @@ class Workflow
      * Stops early if any step produces a failure result, following the
      * same short-circuit behavior as Pipeline processors.
      */
-    private function executeSteps(Envelope $envelope): Envelope {
-        $current = $envelope;
-
+    private function executeSteps(Computation $computation): Computation {
+        $current = $computation;
         foreach ($this->steps as $step) {
             // Short-circuit on failure (following Pipeline behavior)
             if ($current->result()->isFailure()) {
                 return $current;
             }
-
             $current = $step->execute($current);
         }
-
         return $current;
     }
 
     /**
-     * Create initial envelope from input value and stamps.
+     * Create initial computation from input value and tags.
      */
-    private function createInitialEnvelope(mixed $value, array $stamps = []): Envelope {
-        // Handle direct Envelope input
-        if ($value instanceof Envelope) {
-            return empty($stamps) ? $value : $value->with(...$stamps);
+    private function createInitialComputation(mixed $value, array $tags = []): Computation {
+        // Handle direct Computation input
+        if ($value instanceof Computation) {
+            return empty($tags) ? $value : $value->with(...$tags);
         }
 
-        // Wrap value in Result and create envelope
+        // Wrap value in Result and create computation
         $result = $value instanceof Result ? $value : Result::success($value);
-        return new Envelope($result, StampMap::create($stamps));
+        return new Computation($result, TagMap::create($tags));
     }
 
 }

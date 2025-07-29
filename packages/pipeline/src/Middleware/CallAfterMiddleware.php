@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Exception;
 
@@ -11,16 +11,16 @@ use Exception;
  * Middleware that executes a callback after processing completes.
  *
  * This provides a convenient way to add "after" hooks while using the
- * middleware pattern. The callback receives the processed envelope and can:
+ * middleware pattern. The callback receives the processed computation and can:
  * - Perform side effects (logging, metrics, cleanup, etc.)
- * - Return a modified envelope
- * - Return null to leave envelope unchanged
+ * - Return a modified computation
+ * - Return null to leave computation unchanged
  *
  * Example:
  * ```php
  * // Log results after processing
- * $middleware = new CallAfterMiddleware(function(Envelope $env) {
- *     $result = $env->result();
+ * $middleware = new CallAfterMiddleware(function(Computation $computation) {
+ *     $result = $computation->result();
  *     if ($result->isSuccess()) {
  *         echo "Success: " . $result->unwrap() . "\n";
  *     } else {
@@ -29,12 +29,12 @@ use Exception;
  * });
  *
  * // Modify result based on conditions
- * $middleware = new CallAfterMiddleware(function(Envelope $env) {
- *     $result = $env->result();
+ * $middleware = new CallAfterMiddleware(function(Computation $computation) {
+ *     $result = $computation->result();
  *     if ($result->isSuccess() && $result->unwrap() > 100) {
- *         return $env->withMessage(Result::success($result->unwrap() / 2));
+ *         return $computation->withMessage(Result::success($result->unwrap() / 2));
  *     }
- *     return $env;
+ *     return $computation;
  * });
  * ```
  */
@@ -47,20 +47,20 @@ readonly class CallAfterMiddleware implements PipelineMiddlewareInterface
     /**
      * Execute next middleware first, then run the callback on the result.
      */
-    public function handle(Envelope $envelope, callable $next): Envelope {
+    public function handle(Computation $computation, callable $next): Computation {
         // Process through next middleware first
-        $processedEnvelope = $next($envelope);
+        $processedComputation = $next($computation);
 
         try {
             // Execute the after callback on the processed result
-            $result = ($this->callback)($processedEnvelope);
+            $result = ($this->callback)($processedComputation);
 
-            // If callback returns an envelope, use it; otherwise use processed envelope
-            return $result instanceof Envelope ? $result : $processedEnvelope;
+            // If callback returns an computation, use it; otherwise use processed computation
+            return $result instanceof Computation ? $result : $processedComputation;
         } catch (Exception $e) {
-            // If callback fails, return the processed envelope as-is
+            // If callback fails, return the processed computation as-is
             // This prevents after hooks from breaking the main processing flow
-            return $processedEnvelope;
+            return $processedComputation;
         }
     }
 

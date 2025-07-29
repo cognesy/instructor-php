@@ -164,7 +164,7 @@ class Arrays
 
     // turn array of arrays with key = string, value = mixed/object into a single array
     static public function flatten(array $arrays): array {
-        return iterator_to_array(self::doFlatten($arrays));
+        return iterator_to_array(self::doFlatten($arrays), false);
     }
 
     // INTERNAL ///////////////////////////////////////////////////////

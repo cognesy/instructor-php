@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Stamps;
+namespace Cognesy\Pipeline\Tags;
 
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\TagInterface;
 use Throwable;
 
 /**
- * Stamp for tracking error information alongside the main Result-based error handling.
+ * Tag for tracking error information alongside the main Result-based error handling.
  *
- * This stamp allows custom error handling, logging, and tracing while the main
+ * This tag allows custom error handling, logging, and tracing while the main
  * error flow continues to use Result objects for type-safe error propagation.
  *
  * Use cases:
@@ -17,7 +17,7 @@ use Throwable;
  * - Custom error categorization
  * - Recovery strategy metadata
  */
-readonly class ErrorStamp implements StampInterface
+readonly class ErrorTag implements TagInterface
 {
     public mixed $error;
     public ?string $context;
@@ -40,7 +40,7 @@ readonly class ErrorStamp implements StampInterface
     }
 
     /**
-     * Create an ErrorStamp from an exception.
+     * Create an ErrorTag from an exception.
      */
     public static function fromException(Throwable $exception, ?string $context = null): self {
         return new self(
@@ -57,7 +57,7 @@ readonly class ErrorStamp implements StampInterface
     }
 
     /**
-     * Create an ErrorStamp from a string message.
+     * Create an ErrorTag from a string message.
      */
     public static function fromMessage(string $message, ?string $context = null, ?string $category = null): self {
         return new self(
@@ -68,7 +68,7 @@ readonly class ErrorStamp implements StampInterface
     }
 
     /**
-     * Create a new ErrorStamp with additional context.
+     * Create a new ErrorTag with additional context.
      */
     public function withContext(string $context): self {
         return new self(
@@ -81,7 +81,7 @@ readonly class ErrorStamp implements StampInterface
     }
 
     /**
-     * Create a new ErrorStamp with additional metadata.
+     * Create a new ErrorTag with additional metadata.
      */
     public function withMetadata(array $metadata): self {
         return new self(

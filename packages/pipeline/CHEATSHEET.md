@@ -10,7 +10,7 @@ $result = Pipeline::for($data)
     ->through(fn($x) => transform($x))
     ->through(fn($x) => validate($x))
     ->process()
-    ->payload();
+    ->value();
 ```
 
 ## Creation Patterns
@@ -33,18 +33,18 @@ $pipeline = Pipeline::make();
 ```php
 ->through(fn($x) => $x * 2)                    // Transform value
 ->through(fn($x) => $x, NullStrategy::Allow)   // Handle nulls explicitly
-->when(fn($env) => condition($env), fn($x) => process($x))  // Conditional
+->when(fn($computation) => condition($computation), fn($x) => process($x))  // Conditional
 ->tap(fn($x) => logger()->info($x))            // Side effects (doesn't change value)
 ->then(fn($result) => format($result->unwrap())) // Final transformation
 ```
 
-### Envelope-Aware Processors
+### Computation-Aware Processors
 ```php
-// Access full envelope with stamps
-->through(function(Envelope $env) {
-    $value = $env->getResult()->unwrap();
-    $stamps = $env->all(TimestampStamp::class);
-    return $env->withMessage(Result::success($transformed));
+// Access full computation with tags
+->through(function(Computation $computation) {
+    $value = $computation->result()->unwrap();
+    $tags = $computation->all(TimestampTag::class);
+    return $computation->withResult(Result::success($transformed));
 })
 ```
 
@@ -56,7 +56,7 @@ $pending = $pipeline->process($initialValue);
 
 $pending->value()       // Get raw value (null on failure)
 $pending->result()      // Get Result object  
-$pending->envelope()    // Get full Envelope with stamps
+$pending->computation() // Get full Computation with tags
 $pending->success()     // Check if successful (boolean)
 $pending->failure()     // Get exception if failed
 ```
@@ -78,9 +78,9 @@ foreach ($pending->stream() as $item) {
 ### Middleware (Modern Approach)
 ```php
 class LoggingMiddleware implements PipelineMiddlewareInterface {
-    public function handle(Envelope $envelope, callable $next): Envelope {
+    public function handle(Computation $computation, callable $next): Computation {
         logger()->info('Before processing');
-        $result = $next($envelope);
+        $result = $next($computation);
         logger()->info('After processing');
         return $result;
     }
@@ -92,43 +92,43 @@ $pipeline->prependMiddleware(new UrgentMiddleware()); // Executes first
 
 ### Hooks (Legacy-Compatible) 
 ```php
-->beforeEach(fn($env) => $env->with(new TimestampStamp()))
-->afterEach(fn($env) => logger()->info($env->getResult()->unwrap()))
-->onFailure(fn($env) => handleError($env))
-->finishWhen(fn($env) => $env->getResult()->unwrap() > 100)
+->beforeEach(fn($computation) => $computation->with(new TimestampTag()))
+->afterEach(fn($computation) => logger()->info($computation->result()->unwrap()))
+->onFailure(fn($computation) => handleError($computation))
+->finishWhen(fn($computation) => $computation->result()->unwrap() > 100)
 ```
 
-## Stamp System
+## Tag System
 
-### Adding Stamps
+### Adding Tags
 ```php
-->withStamp(new TimestampStamp(), new UserStamp($userId))
+->withTag(new TimestampTag(), new UserTag($userId))
 
 // In processors
-->through(function(Envelope $env) {
-    return $env
-        ->with(new MetricsStamp('duration', $time))
-        ->withMessage(Result::success($processedData));
+->through(function(Computation $computation) {
+    return $computation
+        ->with(new MetricsTag('duration', $time))
+        ->withResult(Result::success($processedData));
 })
 ```
 
-### Querying Stamps
+### Querying Tags
 ```php
-$envelope = $pending->envelope();
+$computation = $pending->computation();
 
-$envelope->has(TimestampStamp::class)           // Check existence
-$envelope->count(MetricsStamp::class)           // Count by type
-$envelope->first(UserStamp::class)              // Get first
-$envelope->last(TimestampStamp::class)          // Get latest
-$envelope->all(MetricsStamp::class)             // Get all of type
-$envelope->all()                                // Get all stamps
+$computation->has(TimestampTag::class)           // Check existence
+$computation->count(MetricsTag::class)           // Count by type
+$computation->first(UserTag::class)              // Get first
+$computation->last(TimestampTag::class)          // Get latest
+$computation->all(MetricsTag::class)             // Get all of type
+$computation->all()                                // Get all tags
 ```
 
-### Stamp Management
+### Tag Management
 
 ```php
-$cleaned = $envelope->without(DebugStamp::class, TempStamp::class);
-$updated = $envelope->withResult(Result::success($newValue));
+$cleaned = $computation->without(DebugTag::class, TempTag::class);
+$updated = $computation->withResult(Result::success($newValue));
 ```
 
 ## Error Handling
@@ -145,9 +145,9 @@ use Cognesy\Pipeline\Enums\NullStrategy;
 ### Exception Handling
 ```php
 ->through(fn($x) => mayThrow($x))
-->onFailure(function($env) {
-    logger()->error('Pipeline failed: ' . $env->getResult()->error());
-    return $env; // Continue with failure
+->onFailure(function($computation) {
+    logger()->error('Pipeline failed: ' . $computation->result()->error());
+    return $computation; // Continue with failure
 })
 
 // Check results
@@ -171,7 +171,7 @@ $value2 = $pending->value();  // Uses cache
 ```php
 $final = $pending
     ->map(fn($x) => $x * 2)                    // Transform value
-    ->mapEnvelope(fn($env) => $env->with($stamp)) // Transform envelope
+    ->mapComputation(fn($computation) => $computation->with($tag)) // Transform computation
     ->then(fn($x) => format($x));               // Chain computation
 ```
 
@@ -179,11 +179,11 @@ $final = $pending
 ```php
 $pipeline = Pipeline::for($user)
     ->when(
-        fn($env) => $env->getResult()->unwrap()->isAdmin(),
+        fn($computation) => $computation->result()->unwrap()->isAdmin(),
         fn($user) => $user->withPermissions('admin')
     )
     ->when(
-        fn($env) => $env->getResult()->unwrap()->needsVerification(),
+        fn($computation) => $computation->result()->unwrap()->needsVerification(),
         fn($user) => verifyUser($user)
     );
 ```
@@ -191,20 +191,20 @@ $pipeline = Pipeline::for($user)
 ### Complex Middleware
 ```php
 class CacheMiddleware implements PipelineMiddlewareInterface {
-    public function handle(Envelope $envelope, callable $next): Envelope {
-        $key = $this->getCacheKey($envelope);
+    public function handle(Computation $computation, callable $next): Computation {
+        $key = $this->getCacheKey($computation);
         
         if ($cached = $this->cache->get($key)) {
-            return $envelope->withMessage(Result::success($cached));
+            return $computation->withResult(Result::success($cached));
         }
         
-        $nextEnvelope = $next($envelope);
+        $nextComputation = $next($computation);
         
-        if ($nextEnvelope->getResult()->isSuccess()) {
-            $this->cache->set($key, $nextEnvelope->getResult()->unwrap());
+        if ($nextComputation->result()->isSuccess()) {
+            $this->cache->set($key, $nextComputation->result()->unwrap());
         }
         
-        return $result;
+        return $nextComputation;
     }
 }
 ```
@@ -214,12 +214,12 @@ class CacheMiddleware implements PipelineMiddlewareInterface {
 ### Data Processing Pipeline
 ```php
 $result = Pipeline::for($rawData)
-    ->withStamp(new TraceStamp($traceId))
-    ->beforeEach(fn($env) => $env->with(new TimestampStamp()))
+    ->withTag(new TraceTag($traceId))
+    ->beforeEach(fn($computation) => $computation->with(new TimestampTag()))
     ->through(fn($data) => validate($data))
     ->through(fn($data) => normalize($data))
     ->through(fn($data) => enrich($data))
-    ->afterEach(fn($env) => logMetrics($env))
+    ->afterEach(fn($computation) => logMetrics($computation))
     ->then(fn($result) => $result->unwrap())
     ->process()
     ->value();
@@ -231,11 +231,11 @@ $response = Pipeline::from(fn() => $request->getData())
     ->withMiddleware(new AuthMiddleware(), new RateLimitMiddleware())
     ->through(fn($data) => validateInput($data))
     ->when(
-        fn($env) => needsTransformation($env->getResult()->unwrap()),
+        fn($computation) => needsTransformation($computation->result()->unwrap()),
         fn($data) => transform($data)
     )
     ->through(fn($data) => processRequest($data))
-    ->onFailure(fn($env) => logError($env))
+    ->onFailure(fn($computation) => logError($computation))
     ->process()
     ->result();
 ```
@@ -255,11 +255,11 @@ foreach (Pipeline::for($events)->stream($events) as $pending) {
 ```php
 $result = Pipeline::for($data)
     ->through(fn($x) => riskyOperation($x))
-    ->through(function(Envelope $env) {
-        if ($env->getResult()->isFailure()) {
-            return $env->withMessage(Result::success($defaultValue));
+    ->through(function(Computation $computation) {
+        if ($computation->result()->isFailure()) {
+            return $computation->withResult(Result::success($defaultValue));
         }
-        return $env;
+        return $computation;
     })
     ->process()
     ->value();
@@ -268,27 +268,27 @@ $result = Pipeline::for($data)
 ## Performance Tips
 
 1. **Use lazy evaluation**: Don't call `value()` until needed
-2. **Batch stamp queries**: Get multiple stamp types in one operation  
-3. **Avoid excessive envelope copying**: Minimize `with()` calls in hot paths
+2. **Batch tag queries**: Get multiple tag types in one operation  
+3. **Avoid excessive computation copying**: Minimize `with()` calls in hot paths
 4. **Cache pipeline instances**: Reuse configured pipelines for similar data
 5. **Use tap() for side effects**: Avoids unnecessary value transformations
 
 ## Debugging
 
 ```php
-// Add debug stamps
-->withStamp(new DebugStamp('checkpoint-1'))
+// Add debug tags
+->withTag(new DebugTag('checkpoint-1'))
 
-// Log envelope state
-->tap(function($x) use ($envelope) {
+// Log computation state
+->tap(function($x) use ($computation) {
     logger()->debug('Pipeline state', [
         'value' => $x,
-        'stamps' => count($envelope->all()),
+        'tags' => count($computation->all()),
         'memory' => memory_get_usage()
     ]);
 })
 
-// Inspect full envelope
-$envelope = $pending->envelope();
-var_dump($envelope->getResult(), $envelope->all());
+// Inspect full computation
+$computation = $pending->computation();
+var_dump($computation->result(), $computation->all());
 ```

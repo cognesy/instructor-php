@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\TagInterface;
 
-// Test stamps for testing
-class TestStamp implements StampInterface
+// Test tags for testing
+class TestTag implements TagInterface
 {
     public function __construct(public readonly string $value) {}
 }
 
-class TimestampStamp implements StampInterface
+class TimestampTag implements TagInterface
 {
     public function __construct(public readonly float $timestamp) {}
 }
@@ -21,10 +21,10 @@ class TestMiddleware implements PipelineMiddlewareInterface
 {
     public function __construct(private string $prefix = 'middleware') {}
 
-    public function handle(Envelope $envelope, callable $next): Envelope
+    public function handle(Computation $computation, callable $next): Computation
     {
-        $result = $next($envelope->with(new TestStamp($this->prefix)));
-        return $result->with(new TestStamp($this->prefix . '_after'));
+        $result = $next($computation->with(new TestTag($this->prefix)));
+        return $result->with(new TestTag($this->prefix . '_after'));
     }
 }
 
@@ -34,26 +34,26 @@ describe('Pipeline Feature Tests', function () {
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 5)
             ->process()
-            ->payload();
+            ->value();
 
         expect($result)->toBe(25);
     });
 
-    it('processes with initial stamps', function () {
-        $envelope = Pipeline::for('test')
-            ->process(stamps: [new TestStamp('initial')])
-            ->envelope();
+    it('processes with initial tags', function () {
+        $computation = Pipeline::for('test')
+            ->process(tags: [new TestTag('initial')])
+            ->computation();
 
-        expect($envelope->has(TestStamp::class))->toBeTrue();
-        expect($envelope->first(TestStamp::class)->value)->toBe('initial');
+        expect($computation->has(TestTag::class))->toBeTrue();
+        expect($computation->first(TestTag::class)->value)->toBe('initial');
     });
 
     it('handles conditional processing', function () {
         $result = Pipeline::for(5)
-            ->when(fn($env) => $env->result()->unwrap() > 3, fn($x) => $x * 10)
-            ->when(fn($env) => $env->result()->unwrap() > 100, fn($x) => $x + 1000)
+            ->when(fn($computation) => $computation->result()->unwrap() > 3, fn($x) => $x * 10)
+            ->when(fn($computation) => $computation->result()->unwrap() > 100, fn($x) => $x + 1000)
             ->process()
-            ->payload();
+            ->value();
 
         expect($result)->toBe(50); // 5 * 10, but not + 1000 since 50 < 100
     });
@@ -61,57 +61,57 @@ describe('Pipeline Feature Tests', function () {
     it('processes stream of values', function () {
         $values = [];
         foreach (Pipeline::for([1, 2, 3])->through(fn($x) => $x * 2)->stream([1, 2, 3]) as $pending) {
-            $values[] = $pending->payload();
+            $values[] = $pending->value();
         }
 
         expect($values)->toBe([2, 4, 6]);
     });
 
     it('handles middleware execution', function () {
-        $envelope = Pipeline::for('test')
+        $computation = Pipeline::for('test')
             ->withMiddleware(new TestMiddleware('pre'))
             ->through(fn($x) => strtoupper($x))
             ->process()
-            ->envelope();
+            ->computation();
 
-        expect($envelope->result()->unwrap())->toBe('TEST');
-        expect($envelope->count(TestStamp::class))->toBe(2);
+        expect($computation->result()->unwrap())->toBe('TEST');
+        expect($computation->count(TestTag::class))->toBe(2);
         
-        $stamps = $envelope->all(TestStamp::class);
-        expect($stamps[0]->value)->toBe('pre');
-        expect($stamps[1]->value)->toBe('pre_after');
+        $tags = $computation->all(TestTag::class);
+        expect($tags[0]->value)->toBe('pre');
+        expect($tags[1]->value)->toBe('pre_after');
     });
 
     it('chains multiple processors with middleware', function () {
-        $envelope = Pipeline::for(1)
+        $computation = Pipeline::for(1)
             ->withMiddleware(new TestMiddleware('global'))
             ->through(fn($x) => $x + 10)
             ->through(fn($x) => $x * 2)
             ->process()
-            ->envelope();
+            ->computation();
 
-        expect($envelope->result()->unwrap())->toBe(22); // (1 + 10) * 2
-        expect($envelope->count(TestStamp::class))->toBe(4); // 2 stamps per processor
+        expect($computation->result()->unwrap())->toBe(22); // (1 + 10) * 2
+        expect($computation->count(TestTag::class))->toBe(4); // 2 tags per processor
     });
 
     it('uses beforeEach and afterEach hooks', function () {
         $values = [];
         
-        $envelope = Pipeline::for(5)
-            ->beforeEach(function($env) use (&$values) {
-                $values[] = 'before:' . $env->result()->unwrap();
-                return $env;
+        $computation = Pipeline::for(5)
+            ->beforeEach(function($computation) use (&$values) {
+                $values[] = 'before:' . $computation->result()->unwrap();
+                return $computation;
             })
             ->through(fn($x) => $x * 2)
-            ->afterEach(function($env) use (&$values) {
-                $values[] = 'after:' . $env->result()->unwrap();
-                return $env;
+            ->afterEach(function($computation) use (&$values) {
+                $values[] = 'after:' . $computation->result()->unwrap();
+                return $computation;
             })
             ->through(fn($x) => $x + 1)
             ->process()
-            ->envelope();
+            ->computation();
 
-        expect($envelope->result()->unwrap())->toBe(11); // (5 * 2) + 1
+        expect($computation->result()->unwrap())->toBe(11); // (5 * 2) + 1
         expect($values)->toBe(['before:5', 'after:10', 'before:10', 'after:11']);
     });
 
@@ -123,13 +123,13 @@ describe('Pipeline Feature Tests', function () {
                 $processedValues[] = $x;
                 return $x + 1;
             })
-            ->finishWhen(fn($env) => $env->result()->unwrap() >= 3)
+            ->finishWhen(fn($computation) => $computation->result()->unwrap() >= 3)
             ->through(function($x) use (&$processedValues) {
                 $processedValues[] = $x;
                 return $x + 10; // This shouldn't execute
             })
             ->process()
-            ->payload();
+            ->value();
 
         expect($result)->toBe(12); // (1 + 1) + 10 - finishWhen doesn't prevent later processors
         expect($processedValues)->toBe([1, 2]); // Both processors executed
@@ -140,9 +140,9 @@ describe('Pipeline Feature Tests', function () {
         
         $result = Pipeline::for('test')
             ->through(fn($x) => throw new Exception('Something went wrong'))
-            ->onFailure(function($env) use (&$failureHandled) {
+            ->onFailure(function($computation) use (&$failureHandled) {
                 $failureHandled = true;
-                return $env;
+                return $computation;
             })
             ->process();
 
@@ -160,7 +160,7 @@ describe('Pipeline Feature Tests', function () {
             })
             ->through(fn($x) => $x . ' world')
             ->process()
-            ->payload();
+            ->value();
 
         expect($result)->toBe('hello world');
         expect($sideEffect)->toBe('HELLO');
@@ -171,25 +171,25 @@ describe('Pipeline Feature Tests', function () {
             ->through(fn($x) => $x * 2)
             ->then(fn($result) => 'Final: ' . $result->unwrap())
             ->process()
-            ->payload();
+            ->value();
 
         expect($result)->toBe('Final: 20');
     });
 
-    it('preserves stamps through complex processing', function () {
-        $envelope = Pipeline::for('start')
-            ->withStamp(new TestStamp('initial'))
+    it('preserves tags through complex processing', function () {
+        $computation = Pipeline::for('start')
+            ->withTag(new TestTag('initial'))
             ->withMiddleware(new TestMiddleware('mid'))
             ->through(function($x) {
                 return strtoupper($x);
             })
-            ->beforeEach(fn($env) => $env->with(new TimestampStamp(microtime(true))))
+            ->beforeEach(fn($computation) => $computation->with(new TimestampTag(microtime(true))))
             ->process()
-            ->envelope();
+            ->computation();
 
-        expect($envelope->result()->unwrap())->toBe('START');
-        expect($envelope->has(TestStamp::class))->toBeTrue();
-        expect($envelope->has(TimestampStamp::class))->toBeTrue();
-        expect($envelope->count(TestStamp::class))->toBeGreaterThan(1);
+        expect($computation->result()->unwrap())->toBe('START');
+        expect($computation->has(TestTag::class))->toBeTrue();
+        expect($computation->has(TimestampTag::class))->toBeTrue();
+        expect($computation->count(TestTag::class))->toBeGreaterThan(1);
     });
 });

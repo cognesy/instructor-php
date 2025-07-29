@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Enums\NullStrategy;
-use Cognesy\Pipeline\Envelope;
-use Cognesy\Pipeline\PendingPipelineExecution;
+use Cognesy\Pipeline\PendingComputation;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\TagInterface;
 use Cognesy\Utils\Result\Result;
 
 // Test implementations for unit testing
-class UnitTestStamp implements StampInterface
+class UnitTestTag implements TagInterface
 {
     public function __construct(public readonly string $label) {}
 }
@@ -18,9 +18,9 @@ class MockMiddleware implements PipelineMiddlewareInterface
 {
     public function __construct(public readonly string $id) {}
 
-    public function handle(Envelope $envelope, callable $next): Envelope
+    public function handle(Computation $computation, callable $next): Computation
     {
-        return $next($envelope->with(new UnitTestStamp($this->id)));
+        return $next($computation->with(new UnitTestTag($this->id)));
     }
 }
 
@@ -33,13 +33,13 @@ describe('Pipeline Unit Tests', function () {
 
         it('creates pipeline with from() using callable source', function () {
             $pipeline = Pipeline::from(fn() => 'test value');
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             expect($result)->toBe('test value');
         });
 
         it('creates pipeline with for() using direct value', function () {
             $pipeline = Pipeline::for(42);
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             expect($result)->toBe(42);
         });
     });
@@ -50,16 +50,16 @@ describe('Pipeline Unit Tests', function () {
                 ->through(fn($x) => $x * 2)
                 ->through(fn($x) => $x + 1);
 
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             expect($result)->toBe(11); // (5 * 2) + 1
         });
 
         it('handles conditional processors with when()', function () {
             $pipeline = Pipeline::for(10)
-                ->when(fn($env) => $env->result()->unwrap() > 5, fn($x) => $x * 3)
-                ->when(fn($env) => $env->result()->unwrap() > 50, fn($x) => $x + 100);
+                ->when(fn($computation) => $computation->result()->unwrap() > 5, fn($x) => $x * 3)
+                ->when(fn($computation) => $computation->result()->unwrap() > 50, fn($x) => $x + 100);
 
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             expect($result)->toBe(10 * 3); // 30, second condition not met
         });
 
@@ -72,7 +72,7 @@ describe('Pipeline Unit Tests', function () {
                 })
                 ->through(fn($x) => $x . '!');
 
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             
             expect($result)->toBe('test!');
             expect($sideEffect)->toBe('TEST');
@@ -83,7 +83,7 @@ describe('Pipeline Unit Tests', function () {
                 ->through(fn($x) => $x * 2)
                 ->then(fn($result) => 'Final: ' . $result->unwrap());
 
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             expect($result)->toBe('Final: 20');
         });
     });
@@ -94,11 +94,11 @@ describe('Pipeline Unit Tests', function () {
                 ->withMiddleware(new MockMiddleware('first'))
                 ->through(fn($x) => strtoupper($x));
 
-            $envelope = $pipeline->process()->envelope();
+            $computation = $pipeline->process()->computation();
             
-            expect($envelope->result()->unwrap())->toBe('TEST');
-            expect($envelope->has(UnitTestStamp::class))->toBeTrue();
-            expect($envelope->first(UnitTestStamp::class)->label)->toBe('first');
+            expect($computation->result()->unwrap())->toBe('TEST');
+            expect($computation->has(UnitTestTag::class))->toBeTrue();
+            expect($computation->first(UnitTestTag::class)->label)->toBe('first');
         });
 
         it('prepends middleware with prependMiddleware()', function () {
@@ -107,41 +107,41 @@ describe('Pipeline Unit Tests', function () {
                 ->prependMiddleware(new MockMiddleware('first'))
                 ->through(fn($x) => $x);
 
-            $envelope = $pipeline->process()->envelope();
-            $stamps = $envelope->all(UnitTestStamp::class);
+            $computation = $pipeline->process()->computation();
+            $tags = $computation->all(UnitTestTag::class);
             
-            expect($stamps[0]->label)->toBe('first');
-            expect($stamps[1]->label)->toBe('second');
+            expect($tags[0]->label)->toBe('first');
+            expect($tags[1]->label)->toBe('second');
         });
     });
 
     describe('Hook System', function () {
-        it('adds stamps with withStamp()', function () {
-            $stamp1 = new UnitTestStamp('stamp1');
-            $stamp2 = new UnitTestStamp('stamp2');
+        it('adds tags with withTag()', function () {
+            $tag1 = new UnitTestTag('tag1');
+            $tag2 = new UnitTestTag('tag2');
             
             $pipeline = Pipeline::for('test')
-                ->withStamp($stamp1, $stamp2)
+                ->withTag($tag1, $tag2)
                 ->through(fn($x) => $x);
 
-            $envelope = $pipeline->process()->envelope();
+            $computation = $pipeline->process()->computation();
             
-            expect($envelope->count(UnitTestStamp::class))->toBe(2);
-            expect($envelope->first(UnitTestStamp::class)->label)->toBe('stamp1');
-            expect($envelope->last(UnitTestStamp::class)->label)->toBe('stamp2');
+            expect($computation->count(UnitTestTag::class))->toBe(2);
+            expect($computation->first(UnitTestTag::class)->label)->toBe('tag1');
+            expect($computation->last(UnitTestTag::class)->label)->toBe('tag2');
         });
 
         it('executes beforeEach hooks', function () {
             $executions = [];
             
             $pipeline = Pipeline::for(5)
-                ->beforeEach(function($env) use (&$executions) {
-                    $executions[] = 'before:' . $env->result()->unwrap();
-                    return $env;
+                ->beforeEach(function($computation) use (&$executions) {
+                    $executions[] = 'before:' . $computation->result()->unwrap();
+                    return $computation;
                 })
                 ->through(fn($x) => $x * 2);
 
-            $pipeline->process()->payload(); // Need to execute the pending result
+            $pipeline->process()->value(); // Need to execute the pending result
             
             expect($executions)->toBe(['before:5']);
         });
@@ -151,12 +151,12 @@ describe('Pipeline Unit Tests', function () {
             
             $pipeline = Pipeline::for(5)
                 ->through(fn($x) => $x * 2)
-                ->afterEach(function($env) use (&$executions) {
-                    $executions[] = 'after:' . $env->result()->unwrap();
-                    return $env;
+                ->afterEach(function($computation) use (&$executions) {
+                    $executions[] = 'after:' . $computation->result()->unwrap();
+                    return $computation;
                 });
 
-            $pipeline->process()->payload(); // Need to execute the pending result
+            $pipeline->process()->value(); // Need to execute the pending result
             
             expect($executions)->toBe(['after:10']);
         });
@@ -169,13 +169,13 @@ describe('Pipeline Unit Tests', function () {
                     $executions[] = 'step1';
                     return $x + 1;
                 })
-                ->finishWhen(fn($env) => $env->result()->unwrap() >= 2)
+                ->finishWhen(fn($computation) => $computation->result()->unwrap() >= 2)
                 ->through(function($x) use (&$executions) {
                     $executions[] = 'step2';
                     return $x + 10;
                 });
 
-            $result = $pipeline->process()->payload();
+            $result = $pipeline->process()->value();
             
             expect($result)->toBe(2);
             expect($executions)->toBe(['step1']); // step2 not executed
@@ -186,9 +186,9 @@ describe('Pipeline Unit Tests', function () {
             
             $pipeline = Pipeline::for('test')
                 ->through(fn($x) => throw new Exception('Test error'))
-                ->onFailure(function($env) use (&$failureHandled) {
+                ->onFailure(function($computation) use (&$failureHandled) {
                     $failureHandled = true;
-                    return $env;
+                    return $computation;
                 });
 
             $result = $pipeline->process();
@@ -203,28 +203,28 @@ describe('Pipeline Unit Tests', function () {
             $pipeline = Pipeline::for('test');
             $pending = $pipeline->process();
             
-            expect($pending)->toBeInstanceOf(PendingPipelineExecution::class);
+            expect($pending)->toBeInstanceOf(PendingComputation::class);
         });
 
         it('processes with initial value override', function () {
             $pipeline = Pipeline::for('original')
                 ->through(fn($x) => strtoupper($x));
 
-            $result = $pipeline->process('override')->payload();
+            $result = $pipeline->process('override')->value();
             
             expect($result)->toBe('OVERRIDE');
         });
 
-        it('processes with initial stamps', function () {
-            $stamp = new UnitTestStamp('initial');
+        it('processes with initial tags', function () {
+            $tag = new UnitTestTag('initial');
             
             $pipeline = Pipeline::for('test')
                 ->through(fn($x) => $x);
 
-            $envelope = $pipeline->process(stamps: [$stamp])->envelope();
+            $computation = $pipeline->process(tags: [$tag])->computation();
             
-            expect($envelope->has(UnitTestStamp::class))->toBeTrue();
-            expect($envelope->first(UnitTestStamp::class)->label)->toBe('initial');
+            expect($computation->has(UnitTestTag::class))->toBeTrue();
+            expect($computation->first(UnitTestTag::class)->label)->toBe('initial');
         });
 
         it('processes streams with stream()', function () {
@@ -233,7 +233,7 @@ describe('Pipeline Unit Tests', function () {
 
             $results = [];
             foreach ($pipeline->stream([1, 2, 3]) as $pending) {
-                $results[] = $pending->payload();
+                $results[] = $pending->value();
             }
             
             expect($results)->toBe([2, 4, 6]);
@@ -259,7 +259,7 @@ describe('Pipeline Unit Tests', function () {
                 ->through(fn($x) => null, NullStrategy::Fail);
 
             expect($pipelineAllow->process()->success())->toBeTrue();
-            expect($pipelineAllow->process()->payload())->toBeNull();
+            expect($pipelineAllow->process()->value())->toBeNull();
             
             expect($pipelineFail->process()->success())->toBeFalse();
         });
@@ -277,38 +277,38 @@ describe('Pipeline Unit Tests', function () {
                     return $x;
                 });
 
-            $pipeline->process()->payload(); // Need to execute the pending result
+            $pipeline->process()->value(); // Need to execute the pending result
             
             expect($executed)->toBe(['step1']); // step2 not executed
         });
     });
 
-    describe('Envelope Processing', function () {
-        it('handles envelope-aware processors', function () {
+    describe('Computation Processing', function () {
+        it('handles computation-aware processors', function () {
             $pipeline = Pipeline::for('test')
-                ->through(function(Envelope $env) {
-                    return $env
-                        ->with(new UnitTestStamp('processed'))
-                        ->withResult(Result::success(strtoupper($env->result()->unwrap())));
+                ->through(function(Computation $computation) {
+                    return $computation
+                        ->with(new UnitTestTag('processed'))
+                        ->withResult(Result::success(strtoupper($computation->result()->unwrap())));
                 });
 
-            $envelope = $pipeline->process()->envelope();
+            $computation = $pipeline->process()->computation();
             
-            expect($envelope->result()->unwrap())->toBe('TEST');
-            expect($envelope->has(UnitTestStamp::class))->toBeTrue();
+            expect($computation->result()->unwrap())->toBe('TEST');
+            expect($computation->has(UnitTestTag::class))->toBeTrue();
         });
 
-        it('differentiates between envelope and value processors', function () {
+        it('differentiates between computation and value processors', function () {
             $pipeline = Pipeline::for('hello')
                 ->through(fn($x) => $x . ' world') // Value processor
-                ->through(function(Envelope $env) { // Envelope processor
-                    return $env->with(new UnitTestStamp('envelope'));
+                ->through(function(Computation $computation) { // Computation processor
+                    return $computation->with(new UnitTestTag('computation'));
                 });
 
-            $envelope = $pipeline->process()->envelope();
+            $computation = $pipeline->process()->computation();
             
-            expect($envelope->result()->unwrap())->toBe('hello world');
-            expect($envelope->has(UnitTestStamp::class))->toBeTrue();
+            expect($computation->result()->unwrap())->toBe('hello world');
+            expect($computation->has(UnitTestTag::class))->toBeTrue();
         });
     });
 });

@@ -2,20 +2,20 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\TagInterface;
 use Cognesy\Utils\Result\Result;
 
 // ============================================================================
-// STAMPS FOR RETRY TRACKING
+// TAGS FOR RETRY TRACKING
 // ============================================================================
 
 /**
- * Stamp to track retry attempts and their outcomes
+ * Tag to track retry attempts and their outcomes
  */
-class RetryAttemptStamp implements StampInterface
+class RetryAttemptTag implements TagInterface
 {
     public function __construct(
         public readonly int $attemptNumber,
@@ -36,9 +36,9 @@ class RetryAttemptStamp implements StampInterface
 }
 
 /**
- * Stamp to configure retry behavior
+ * Tag to configure retry behavior
  */
-class RetryConfigStamp implements StampInterface
+class RetryConfigTag implements TagInterface
 {
     public function __construct(
         public readonly int $maxAttempts = 3,
@@ -75,9 +75,9 @@ class RetryConfigStamp implements StampInterface
 }
 
 /**
- * Stamp to track overall retry session metadata
+ * Tag to track overall retry session metadata
  */
-class RetrySessionStamp implements StampInterface
+class RetrySessionTag implements TagInterface
 {
     public function __construct(
         public readonly string $sessionId,
@@ -95,34 +95,34 @@ class RetrySessionStamp implements StampInterface
  */
 class RetryMiddleware implements PipelineMiddlewareInterface
 {
-    public function handle(Envelope $envelope, callable $next): Envelope
+    public function handle(Computation $computation, callable $next): Computation
     {
         // Get or create retry configuration
-        $retryConfig = $envelope->last(RetryConfigStamp::class) 
-            ?? new RetryConfigStamp();
+        $retryConfig = $computation->last(RetryConfigTag::class) 
+            ?? new RetryConfigTag();
 
         // Get or create retry session
-        $retrySession = $envelope->last(RetrySessionStamp::class)
-            ?? new RetrySessionStamp(
+        $retrySession = $computation->last(RetrySessionTag::class)
+            ?? new RetrySessionTag(
                 sessionId: uniqid('retry_', true),
                 startTime: new \DateTimeImmutable(),
                 operation: 'unknown'
             );
 
-        // Add session stamp if not present
-        if (!$envelope->has(RetrySessionStamp::class)) {
-            $envelope = $envelope->with($retrySession);
+        // Add session tag if not present
+        if (!$computation->has(RetrySessionTag::class)) {
+            $computation = $computation->with($retrySession);
         }
 
-        $currentAttempt = $envelope->count(RetryAttemptStamp::class) + 1;
+        $currentAttempt = $computation->count(RetryAttemptTag::class) + 1;
         $startTime = microtime(true);
 
         try {
             // Execute the next middleware/processor
-            $result = $next($envelope);
+            $result = $next($computation);
             
             // Check if the result is a failure (even if no exception was thrown)
-            if ($result instanceof Envelope && $result->result()->isFailure()) {
+            if ($result instanceof Computation && $result->result()->isFailure()) {
                 $error = $result->result()->error();
                 if ($error instanceof \Throwable) {
                     // Treat failed results as exceptions for retry logic
@@ -132,26 +132,26 @@ class RetryMiddleware implements PipelineMiddlewareInterface
             
             // If successful, record the successful attempt
             $duration = microtime(true) - $startTime;
-            $attemptStamp = new RetryAttemptStamp(
+            $attemptTag = new RetryAttemptTag(
                 attemptNumber: $currentAttempt,
                 timestamp: new \DateTimeImmutable(),
                 duration: $duration
             );
 
-            return $result->with($attemptStamp);
+            return $result->with($attemptTag);
 
         } catch (\Throwable $e) {
             $duration = microtime(true) - $startTime;
             
             // Record the failed attempt
-            $attemptStamp = new RetryAttemptStamp(
+            $attemptTag = new RetryAttemptTag(
                 attemptNumber: $currentAttempt,
                 timestamp: new \DateTimeImmutable(),
                 errorMessage: $e->getMessage(),
                 duration: $duration
             );
 
-            $envelopeWithAttempt = $envelope->with($attemptStamp);
+            $computationWithAttempt = $computation->with($attemptTag);
 
             // Check if we should retry
             if ($retryConfig->shouldRetry($e, $currentAttempt)) {
@@ -162,11 +162,11 @@ class RetryMiddleware implements PipelineMiddlewareInterface
                 }
 
                 // Recursive retry by calling handle again
-                return $this->handle($envelopeWithAttempt, $next);
+                return $this->handle($computationWithAttempt, $next);
             }
 
-            // No more retries, return failure envelope
-            return $envelopeWithAttempt->withResult(Result::failure($e));
+            // No more retries, return failure computation
+            return $computationWithAttempt->withResult(Result::failure($e));
         }
     }
 
@@ -179,7 +179,7 @@ class RetryMiddleware implements PipelineMiddlewareInterface
         string $strategy = 'exponential'
     ): array {
         return [
-            new RetryConfigStamp($maxAttempts, $baseDelay, strategy: $strategy),
+            new RetryConfigTag($maxAttempts, $baseDelay, strategy: $strategy),
             new self()
         ];
     }
@@ -209,18 +209,18 @@ class RetryLoggingMiddleware implements PipelineMiddlewareInterface
         };
     }
 
-    public function handle(Envelope $envelope, callable $next): Envelope
+    public function handle(Computation $computation, callable $next): Computation
     {
-        $session = $envelope->last(RetrySessionStamp::class);
-        $beforeAttempts = $envelope->count(RetryAttemptStamp::class);
+        $session = $computation->last(RetrySessionTag::class);
+        $beforeAttempts = $computation->count(RetryAttemptTag::class);
 
-        $result = $next($envelope);
+        $result = $next($computation);
 
-        $afterAttempts = $result->count(RetryAttemptStamp::class);
+        $afterAttempts = $result->count(RetryAttemptTag::class);
         
         // If new attempts were added, log them
         if ($afterAttempts > $beforeAttempts) {
-            $newAttempts = array_slice($result->all(RetryAttemptStamp::class), $beforeAttempts);
+            $newAttempts = array_slice($result->all(RetryAttemptTag::class), $beforeAttempts);
             
             foreach ($newAttempts as $attempt) {
                 if ($attempt->succeeded()) {
@@ -298,9 +298,9 @@ function demonstrateBasicRetry(): void
     );
 
     $result = Pipeline::for('/api/users')
-        ->withStamp(
+        ->withTag(
             $retryConfig,
-            new RetrySessionStamp(
+            new RetrySessionTag(
                 sessionId: 'demo_' . uniqid(),
                 startTime: new \DateTimeImmutable(),
                 operation: 'fetch_users'
@@ -318,16 +318,16 @@ function demonstrateBasicRetry(): void
 
     if ($result->success()) {
         echo "✅ Operation succeeded!\n";
-        echo "Result: " . json_encode($result->payload()) . "\n";
+        echo "Result: " . json_encode($result->value()) . "\n";
     } else {
         echo "❌ Operation failed after all retries\n";
         echo "Error: " . $result->failure()->getMessage() . "\n";
     }
 
     // Analyze retry attempts
-    $envelope = $result->envelope();
-    $attempts = $envelope->all(RetryAttemptStamp::class);
-    $session = $envelope->last(RetrySessionStamp::class);
+    $computation = $result->computation();
+    $attempts = $computation->all(RetryAttemptTag::class);
+    $session = $computation->last(RetrySessionTag::class);
 
     echo "\n📊 Retry Analysis:\n";
     echo "Session ID: {$session->sessionId}\n";
@@ -358,9 +358,9 @@ function demonstrateRetryWithProcessing(): void
     );
 
     $result = Pipeline::for(['endpoint' => '/api/data', 'params' => ['limit' => 10]])
-        ->withStamp(
+        ->withTag(
             $retryConfig,
-            new RetrySessionStamp(
+            new RetrySessionTag(
                 sessionId: 'processing_' . uniqid(),
                 startTime: new \DateTimeImmutable(),
                 operation: 'fetch_and_process_data'
@@ -393,15 +393,15 @@ function demonstrateRetryWithProcessing(): void
 
     if ($result->success()) {
         echo "✅ Data processing completed!\n";
-        echo "Processed data: " . json_encode($result->payload(), JSON_PRETTY_PRINT) . "\n";
+        echo "Processed data: " . json_encode($result->value(), JSON_PRETTY_PRINT) . "\n";
     } else {
         echo "❌ Data processing failed\n";
         echo "Error: " . $result->failure()->getMessage() . "\n";
     }
 
     // Show attempt history
-    $envelope = $result->envelope();
-    $attempts = $envelope->all(RetryAttemptStamp::class);
+    $computation = $result->computation();
+    $attempts = $computation->all(RetryAttemptTag::class);
     
     echo "\n📈 Processing Attempts:\n";
     foreach ($attempts as $attempt) {
@@ -440,7 +440,7 @@ function demonstrateRetryConfiguration(): void
         $start = microtime(true);
         
         $result = Pipeline::for("test-$strategy")
-            ->withStamp($retryConfig)
+            ->withTag($retryConfig)
             ->withMiddleware($retryMiddleware)
             ->through(function(string $test) {
                 return UnreliableService::makeApiCall("/api/$test");
@@ -449,7 +449,7 @@ function demonstrateRetryConfiguration(): void
 
         $totalTime = microtime(true) - $start;
         
-        $attempts = $result->envelope()->all(RetryAttemptStamp::class);
+        $attempts = $result->computation()->all(RetryAttemptTag::class);
         echo "  Total attempts: " . count($attempts) . "\n";
         echo "  Total time: " . number_format($totalTime * 1000, 2) . "ms\n";
         echo "  Result: " . ($result->success() ? '✅ Success' : '❌ Failed') . "\n";

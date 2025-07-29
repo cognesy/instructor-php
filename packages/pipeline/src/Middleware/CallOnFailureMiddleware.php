@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Exception;
 
@@ -11,7 +11,7 @@ use Exception;
  * Middleware that executes a callback when processing results in failure.
  *
  * This provides a convenient way to add "onFailure" hooks while using the
- * middleware pattern. The callback receives the failed envelope and can
+ * middleware pattern. The callback receives the failed computation and can
  * perform side effects like logging, alerting, or metrics collection.
  *
  * Note: This middleware does NOT modify the failure - it's purely for
@@ -20,20 +20,20 @@ use Exception;
  * Example:
  * ```php
  * // Log failures with context
- * $middleware = new CallOnFailureMiddleware(function(Envelope $env) {
- *     $error = $env->result()->error();
- *     $trace = $env->last(TraceStamp::class);
+ * $middleware = new CallOnFailureMiddleware(function(Computation $computation) {
+ *     $error = $computation->result()->error();
+ *     $trace = $computation->last(TraceTag::class);
  *
  *     logger()->error('Processing failed', [
  *         'error' => $error,
  *         'trace_id' => $trace?->traceId,
- *         'payload' => json_encode($env->result()->unwrap())
+ *         'value' => json_encode($computation->result()->unwrap())
  *     ]);
  * });
  *
  * // Send alerts on critical failures
- * $middleware = new CallOnFailureMiddleware(function(Envelope $env) {
- *     $error = $env->result()->error();
+ * $middleware = new CallOnFailureMiddleware(function(Computation $computation) {
+ *     $error = $computation->result()->error();
  *     if ($error instanceof CriticalException) {
  *         alerting()->sendAlert('Critical processing failure', $error);
  *     }
@@ -49,9 +49,9 @@ readonly class CallOnFailureMiddleware implements PipelineMiddlewareInterface
     /**
      * Process through next middleware and call callback if result is failure.
      */
-    public function handle(Envelope $envelope, callable $next): Envelope {
+    public function handle(Computation $computation, callable $next): Computation {
         // Process through next middleware
-        $result = $next($envelope);
+        $result = $next($computation);
 
         // If result is a failure, execute the callback
         if ($result->result()->isFailure()) {

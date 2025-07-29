@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Envelope;
-use Cognesy\Pipeline\PendingPipelineExecution;
+use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\PendingComputation;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\TagInterface;
 use Cognesy\Utils\Result\Result;
 
-// Test stamps for pending execution testing
-class ExecutionStamp implements StampInterface
+// Test tags for pending execution testing
+class ExecutionTag implements TagInterface
 {
     public function __construct(public readonly string $phase) {}
 }
@@ -16,10 +16,10 @@ describe('PendingExecution Feature Tests', function () {
     it('supports lazy evaluation with complex transformations', function () {
         $executionCount = 0;
         
-        $pending = new PendingPipelineExecution(function() use (&$executionCount) {
+        $pending = new PendingComputation(function() use (&$executionCount) {
             $executionCount++;
-            $envelope = Envelope::wrap(['count' => 5], [new ExecutionStamp('initial')]);
-            return $envelope->withResult(Result::success(['count' => 10]));
+            $computation = Computation::wrap(['count' => 5], [new ExecutionTag('initial')]);
+            return $computation->withResult(Result::success(['count' => 10]));
         });
 
         // Transform without executing
@@ -30,47 +30,47 @@ describe('PendingExecution Feature Tests', function () {
         expect($executionCount)->toBe(0); // Not executed yet
 
         // Execute and get result
-        $result = $mapped->payload();
+        $result = $mapped->value();
         expect($result)->toBe(['doubled' => 20]);
         expect($executionCount)->toBe(1); // Executed once
 
         // Multiple calls use cached result
-        $result2 = $mapped->payload();
+        $result2 = $mapped->value();
         expect($result2)->toBe(['doubled' => 20]);
         expect($executionCount)->toBe(1); // Still once
     });
 
-    it('chains complex transformations with envelope preservation', function () {
-        $pending = new PendingPipelineExecution(function() {
-            return Envelope::wrap(100, [
-                new ExecutionStamp('start'),
-                new ExecutionStamp('initialized')
+    it('chains complex transformations with computation preservation', function () {
+        $pending = new PendingComputation(function() {
+            return Computation::wrap(100, [
+                new ExecutionTag('start'),
+                new ExecutionTag('initialized')
             ]);
         });
 
         $final = $pending
-            ->mapEnvelope(fn($env) => $env->with(new ExecutionStamp('processing')))
+            ->mapComputation(fn($computation) => $computation->with(new ExecutionTag('processing')))
             ->map(fn($x) => $x / 2)
-            ->mapEnvelope(fn($env) => $env->with(new ExecutionStamp('completed')))
+            ->mapComputation(fn($computation) => $computation->with(new ExecutionTag('completed')))
             ->then(fn($x) => $x + 25);
 
-        $envelope = $final->envelope();
+        $computation = $final->computation();
         
-        expect($envelope->result()->unwrap())->toBe(75); // (100 / 2) + 25
-        expect($envelope->count(ExecutionStamp::class))->toBe(4);
+        expect($computation->result()->unwrap())->toBe(75); // (100 / 2) + 25
+        expect($computation->count(ExecutionTag::class))->toBe(4);
         
         $phases = array_map(
-            fn($stamp) => $stamp->phase,
-            $envelope->all(ExecutionStamp::class)
+            fn($tag) => $tag->phase,
+            $computation->all(ExecutionTag::class)
         );
         expect($phases)->toBe(['start', 'initialized', 'processing', 'completed']);
     });
 
     it('handles failure propagation through transformation chain', function () {
-        $pending = new PendingPipelineExecution(function() {
-            return Envelope::wrap(
+        $pending = new PendingComputation(function() {
+            return Computation::wrap(
                 Result::failure(new Exception('Initial failure')),
-                [new ExecutionStamp('failed')]
+                [new ExecutionTag('failed')]
             );
         });
 
@@ -82,14 +82,14 @@ describe('PendingExecution Feature Tests', function () {
         expect($transformed->failure())->toBeInstanceOf(Exception::class);
         expect($transformed->failure()->getMessage())->toBe('Initial failure');
         
-        // Stamps are preserved even in failure
-        $envelope = $transformed->envelope();
-        expect($envelope->has(ExecutionStamp::class))->toBeTrue();
+        // Tags are preserved even in failure
+        $computation = $transformed->computation();
+        expect($computation->has(ExecutionTag::class))->toBeTrue();
     });
 
     it('processes streams with complex data', function () {
-        $pending = new PendingPipelineExecution(function() {
-            return Envelope::wrap([
+        $pending = new PendingComputation(function() {
+            return Computation::wrap([
                 ['id' => 1, 'name' => 'Alice'],
                 ['id' => 2, 'name' => 'Bob'],
                 ['id' => 3, 'name' => 'Charlie']
@@ -116,7 +116,7 @@ describe('PendingExecution Feature Tests', function () {
                 $executionLog[] = 'filtering';
                 return array_filter($items, fn($x) => $x > 4);
             })
-            ->withStamp(new ExecutionStamp('pipeline'))
+            ->withTag(new ExecutionTag('pipeline'))
             ->process();
 
         expect($executionLog)->toBe([]); // Nothing executed yet
@@ -129,42 +129,42 @@ describe('PendingExecution Feature Tests', function () {
         expect($executionLog)->toBe([]); // Still not executed
 
         // Execute and verify
-        $result = $final->payload();
+        $result = $final->value();
         expect($result)->toBe('Total: 24');
         expect($executionLog)->toBe(['processing', 'filtering']);
 
-        // Verify stamps are preserved
-        $envelope = $final->envelope();
-        expect($envelope->has(ExecutionStamp::class))->toBeTrue();
+        // Verify tags are preserved
+        $computation = $final->computation();
+        expect($computation->has(ExecutionTag::class))->toBeTrue();
     });
 
-    it('handles complex envelope transformations', function () {
-        $pending = new PendingPipelineExecution(function() {
-            return Envelope::wrap('hello', [new ExecutionStamp('created')]);
+    it('handles complex computation transformations', function () {
+        $pending = new PendingComputation(function() {
+            return Computation::wrap('hello', [new ExecutionTag('created')]);
         });
 
         $result = $pending
-            ->mapEnvelope(function($env) {
+            ->mapComputation(function($computation) {
                 // Add processing metadata
-                return $env
-                    ->with(new ExecutionStamp('uppercase'))
-                    ->withMessage(Result::success(strtoupper($env->result()->unwrap())));
+                return $computation
+                    ->with(new ExecutionTag('uppercase'))
+                    ->withResult(Result::success(strtoupper($computation->result()->unwrap())));
             })
-            ->mapEnvelope(function($env) {
+            ->mapComputation(function($computation) {
                 // Add more processing
-                return $env
-                    ->with(new ExecutionStamp('exclamation'))
-                    ->withMessage(Result::success($env->result()->unwrap() . '!'));
+                return $computation
+                    ->with(new ExecutionTag('exclamation'))
+                    ->withResult(Result::success($computation->result()->unwrap() . '!'));
             });
 
-        $envelope = $result->envelope();
+        $computation = $result->computation();
         
-        expect($envelope->result()->unwrap())->toBe('HELLO!');
-        expect($envelope->count(ExecutionStamp::class))->toBe(3);
+        expect($computation->result()->unwrap())->toBe('HELLO!');
+        expect($computation->count(ExecutionTag::class))->toBe(3);
         
         $phases = array_map(
-            fn($stamp) => $stamp->phase,
-            $envelope->all(ExecutionStamp::class)
+            fn($tag) => $tag->phase,
+            $computation->all(ExecutionTag::class)
         );
         expect($phases)->toBe(['created', 'uppercase', 'exclamation']);
     });
@@ -172,9 +172,9 @@ describe('PendingExecution Feature Tests', function () {
     it('supports conditional execution patterns', function () {
         $executionCount = 0;
         
-        $pending = new PendingPipelineExecution(function() use (&$executionCount) {
+        $pending = new PendingComputation(function() use (&$executionCount) {
             $executionCount++;
-            return Envelope::wrap(42);
+            return Computation::wrap(42);
         });
 
         // Check success without executing full computation
@@ -185,9 +185,9 @@ describe('PendingExecution Feature Tests', function () {
         // Conditional processing based on success
         if ($isSuccessful) {
             $result = Pipeline::for(100)
-                ->through(fn($x) => $x + $pending->payload())
+                ->through(fn($x) => $x + $pending->value())
                 ->process()
-                ->payload();
+                ->value();
             
             expect($result)->toBe(142);
         }
@@ -196,8 +196,8 @@ describe('PendingExecution Feature Tests', function () {
     });
 
     it('handles error recovery in transformation chains', function () {
-        $pending = new PendingPipelineExecution(function() {
-            return Envelope::wrap(10);
+        $pending = new PendingComputation(function() {
+            return Computation::wrap(10);
         });
 
         // Test that we can detect when computation will fail

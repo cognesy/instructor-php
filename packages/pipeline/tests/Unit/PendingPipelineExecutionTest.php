@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Envelope;
-use Cognesy\Pipeline\PendingPipelineExecution;
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\PendingComputation;
+use Cognesy\Pipeline\TagInterface;
 use Cognesy\Utils\Result\Result;
 
-// Test stamp for unit testing
-class PendingTestStamp implements StampInterface
+// Test tag for unit testing
+class PendingTestTag implements TagInterface
 {
     public function __construct(public readonly string $label) {}
 }
@@ -14,14 +14,14 @@ class PendingTestStamp implements StampInterface
 describe('PendingPipelineExecution Unit Tests', function () {
     describe('Construction', function () {
         it('constructs with callable', function () {
-            $pending = new PendingPipelineExecution(fn() => 'test');
-            expect($pending)->toBeInstanceOf(PendingPipelineExecution::class);
+            $pending = new PendingComputation(fn() => 'test');
+            expect($pending)->toBeInstanceOf(PendingComputation::class);
         });
 
         it('does not execute computation on construction', function () {
             $executed = false;
             
-            new PendingPipelineExecution(function() use (&$executed) {
+            new PendingComputation(function() use (&$executed) {
                 $executed = true;
                 return 'test';
             });
@@ -31,43 +31,43 @@ describe('PendingPipelineExecution Unit Tests', function () {
     });
 
     describe('Value Extraction', function () {
-        it('extracts value from envelope result', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap(42);
+        it('extracts value from computation result', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap(42);
             });
             
-            expect($pending->payload())->toBe(42);
+            expect($pending->value())->toBe(42);
         });
 
         it('extracts value from direct Result', function () {
-            $pending = new PendingPipelineExecution(function() {
+            $pending = new PendingComputation(function() {
                 return Result::success('direct result');
             });
             
-            expect($pending->payload())->toBe('direct result');
+            expect($pending->value())->toBe('direct result');
         });
 
-        it('returns raw value for non-envelope/result', function () {
-            $pending = new PendingPipelineExecution(function() {
+        it('returns raw value for non-computation/result', function () {
+            $pending = new PendingComputation(function() {
                 return ['raw' => 'data'];
             });
             
-            expect($pending->payload())->toBe(['raw' => 'data']);
+            expect($pending->value())->toBe(['raw' => 'data']);
         });
 
-        it('returns null for failed envelope', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap(Result::failure(new Exception('error')));
+        it('returns null for failed computation', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap(Result::failure(new Exception('error')));
             });
             
-            expect($pending->payload())->toBeNull();
+            expect($pending->value())->toBeNull();
         });
     });
 
     describe('Result Extraction', function () {
-        it('extracts Result from envelope', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap('test data');
+        it('extracts Result from computation', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap('test data');
             });
             
             $result = $pending->result();
@@ -78,7 +78,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         it('returns Result directly', function () {
             $originalResult = Result::success('direct');
-            $pending = new PendingPipelineExecution(function() use ($originalResult) {
+            $pending = new PendingComputation(function() use ($originalResult) {
                 return $originalResult;
             });
             
@@ -86,7 +86,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('wraps non-result values in success Result', function () {
-            $pending = new PendingPipelineExecution(function() {
+            $pending = new PendingComputation(function() {
                 return 'wrapped';
             });
             
@@ -96,49 +96,49 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
     });
 
-    describe('Envelope Extraction', function () {
-        it('returns envelope directly', function () {
-            $originalEnvelope = Envelope::wrap('test', [new PendingTestStamp('original')]);
+    describe('Computation Extraction', function () {
+        it('returns computation directly', function () {
+            $originalComputation = Computation::wrap('test', [new PendingTestTag('original')]);
             
-            $pending = new PendingPipelineExecution(function() use ($originalEnvelope) {
-                return $originalEnvelope;
+            $pending = new PendingComputation(function() use ($originalComputation) {
+                return $originalComputation;
             });
             
-            $envelope = $pending->envelope();
-            expect($envelope)->toBe($originalEnvelope);
-            expect($envelope->has(PendingTestStamp::class))->toBeTrue();
+            $computation = $pending->computation();
+            expect($computation)->toBe($originalComputation);
+            expect($computation->has(PendingTestTag::class))->toBeTrue();
         });
 
-        it('wraps non-envelope results', function () {
-            $pending = new PendingPipelineExecution(function() {
+        it('wraps non-computation results', function () {
+            $pending = new PendingComputation(function() {
                 return Result::success('to wrap');
             });
             
-            $envelope = $pending->envelope();
-            expect($envelope)->toBeInstanceOf(Envelope::class);
-            expect($envelope->result()->unwrap())->toBe('to wrap');
+            $computation = $pending->computation();
+            expect($computation)->toBeInstanceOf(Computation::class);
+            expect($computation->result()->unwrap())->toBe('to wrap');
         });
     });
 
     describe('Success/Failure Checking', function () {
-        it('returns true for successful envelope', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap('success');
+        it('returns true for successful computation', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap('success');
             });
             
             expect($pending->success())->toBeTrue();
         });
 
-        it('returns false for failed envelope', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap(Result::failure(new Exception('failed')));
+        it('returns false for failed computation', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap(Result::failure(new Exception('failed')));
             });
             
             expect($pending->success())->toBeFalse();
         });
 
         it('returns true for successful Result', function () {
-            $pending = new PendingPipelineExecution(function() {
+            $pending = new PendingComputation(function() {
                 return Result::success('ok');
             });
             
@@ -146,7 +146,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns false for failed Result', function () {
-            $pending = new PendingPipelineExecution(function() {
+            $pending = new PendingComputation(function() {
                 return Result::failure(new Exception('error'));
             });
             
@@ -154,7 +154,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns false when computation throws', function () {
-            $pending = new PendingPipelineExecution(function() {
+            $pending = new PendingComputation(function() {
                 throw new Exception('computation error');
             });
             
@@ -163,18 +163,18 @@ describe('PendingPipelineExecution Unit Tests', function () {
     });
 
     describe('Failure Extraction', function () {
-        it('returns null for successful envelope', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap('success');
+        it('returns null for successful computation', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap('success');
             });
             
             expect($pending->failure())->toBeNull();
         });
 
-        it('returns error for failed envelope', function () {
-            $error = new Exception('envelope error');
-            $pending = new PendingPipelineExecution(function() use ($error) {
-                return Envelope::wrap(Result::failure($error));
+        it('returns error for failed computation', function () {
+            $error = new Exception('computation error');
+            $pending = new PendingComputation(function() use ($error) {
+                return Computation::wrap(Result::failure($error));
             });
             
             expect($pending->failure())->toBe($error);
@@ -182,7 +182,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         it('returns error for failed Result', function () {
             $error = new Exception('result error');
-            $pending = new PendingPipelineExecution(function() use ($error) {
+            $pending = new PendingComputation(function() use ($error) {
                 return Result::failure($error);
             });
             
@@ -190,7 +190,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns exception when computation throws', function () {
-            $pending = new PendingPipelineExecution(function() {
+            $pending = new PendingComputation(function() {
                 throw new Exception('thrown error');
             });
             
@@ -201,9 +201,9 @@ describe('PendingPipelineExecution Unit Tests', function () {
     });
 
     describe('Stream Processing', function () {
-        it('streams iterable envelope content', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap([1, 2, 3]);
+        it('streams iterable computation content', function () {
+            $pending = new PendingComputation(function() {
+                return Computation::wrap([1, 2, 3]);
             });
             
             $items = [];
@@ -215,8 +215,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('streams single value as single item', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap('single');
+            $pending = new PendingComputation(function() {
+                return Computation::wrap('single');
             });
             
             $items = [];
@@ -228,8 +228,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns empty stream for failed result', function () {
-            $pending = new PendingPipelineExecution(function() {
-                return Envelope::wrap(Result::failure(new Exception('error')));
+            $pending = new PendingComputation(function() {
+                return Computation::wrap(Result::failure(new Exception('error')));
             });
             
             $items = [];
@@ -243,21 +243,21 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Transformations', function () {
         describe('map()', function () {
-            it('transforms successful envelope value', function () {
-                $pending = new PendingPipelineExecution(function() {
-                    return Envelope::wrap(10, [new PendingTestStamp('original')]);
+            it('transforms successful computation value', function () {
+                $pending = new PendingComputation(function() {
+                    return Computation::wrap(10, [new PendingTestTag('original')]);
                 });
                 
                 $mapped = $pending->map(fn($x) => $x * 2);
-                $envelope = $mapped->envelope();
+                $computation = $mapped->computation();
                 
-                expect($envelope->result()->unwrap())->toBe(20);
-                expect($envelope->has(PendingTestStamp::class))->toBeTrue(); // Stamps preserved
+                expect($computation->result()->unwrap())->toBe(20);
+                expect($computation->has(PendingTestTag::class))->toBeTrue(); // Tags preserved
             });
 
-            it('preserves failure in envelope', function () {
-                $pending = new PendingPipelineExecution(function() {
-                    return Envelope::wrap(Result::failure(new Exception('error')));
+            it('preserves failure in computation', function () {
+                $pending = new PendingComputation(function() {
+                    return Computation::wrap(Result::failure(new Exception('error')));
                 });
                 
                 $mapped = $pending->map(fn($x) => $x * 2); // Should not execute
@@ -267,7 +267,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
 
             it('transforms direct Result', function () {
-                $pending = new PendingPipelineExecution(function() {
+                $pending = new PendingComputation(function() {
                     return Result::success(5);
                 });
                 
@@ -277,54 +277,54 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
         });
 
-        describe('mapEnvelope()', function () {
-            it('transforms envelope directly', function () {
-                $pending = new PendingPipelineExecution(function() {
-                    return Envelope::wrap('test');
+        describe('mapComputation()', function () {
+            it('transforms computation directly', function () {
+                $pending = new PendingComputation(function() {
+                    return Computation::wrap('test');
                 });
                 
-                $mapped = $pending->mapEnvelope(function($env) {
-                    return $env
-                        ->with(new PendingTestStamp('transformed'))
-                        ->withMessage(Result::success(strtoupper($env->result()->unwrap())));
+                $mapped = $pending->mapComputation(function($computation) {
+                    return $computation
+                        ->with(new PendingTestTag('transformed'))
+                        ->withResult(Result::success(strtoupper($computation->result()->unwrap())));
                 });
                 
-                $envelope = $mapped->envelope();
-                expect($envelope->result()->unwrap())->toBe('TEST');
-                expect($envelope->has(PendingTestStamp::class))->toBeTrue();
+                $computation = $mapped->computation();
+                expect($computation->result()->unwrap())->toBe('TEST');
+                expect($computation->has(PendingTestTag::class))->toBeTrue();
             });
 
-            it('wraps non-envelope results', function () {
-                $pending = new PendingPipelineExecution(function() {
+            it('wraps non-computation results', function () {
+                $pending = new PendingComputation(function() {
                     return 'raw value';
                 });
                 
-                $mapped = $pending->mapEnvelope(function($env) {
-                    return $env->with(new PendingTestStamp('wrapped'));
+                $mapped = $pending->mapComputation(function($computation) {
+                    return $computation->with(new PendingTestTag('wrapped'));
                 });
                 
-                $envelope = $mapped->envelope();
-                expect($envelope->result()->unwrap())->toBe('raw value');
-                expect($envelope->has(PendingTestStamp::class))->toBeTrue();
+                $computation = $mapped->computation();
+                expect($computation->result()->unwrap())->toBe('raw value');
+                expect($computation->has(PendingTestTag::class))->toBeTrue();
             });
         });
 
         describe('then()', function () {
-            it('chains computation with successful envelope', function () {
-                $pending = new PendingPipelineExecution(function() {
-                    return Envelope::wrap(5, [new PendingTestStamp('chained')]);
+            it('chains computation with successful computation', function () {
+                $pending = new PendingComputation(function() {
+                    return Computation::wrap(5, [new PendingTestTag('chained')]);
                 });
                 
                 $chained = $pending->then(fn($x) => $x * 3);
-                $envelope = $chained->envelope();
+                $computation = $chained->computation();
                 
-                expect($envelope->result()->unwrap())->toBe(15);
-                expect($envelope->has(PendingTestStamp::class))->toBeTrue(); // Stamps preserved
+                expect($computation->result()->unwrap())->toBe(15);
+                expect($computation->has(PendingTestTag::class))->toBeTrue(); // Tags preserved
             });
 
             it('short-circuits on failure', function () {
-                $pending = new PendingPipelineExecution(function() {
-                    return Envelope::wrap(Result::failure(new Exception('failed')));
+                $pending = new PendingComputation(function() {
+                    return Computation::wrap(Result::failure(new Exception('failed')));
                 });
                 
                 $chained = $pending->then(fn($x) => $x * 3); // Should not execute
@@ -339,15 +339,15 @@ describe('PendingPipelineExecution Unit Tests', function () {
         it('executes computation only once', function () {
             $executionCount = 0;
             
-            $pending = new PendingPipelineExecution(function() use (&$executionCount) {
+            $pending = new PendingComputation(function() use (&$executionCount) {
                 $executionCount++;
                 return 'result';
             });
             
             // Multiple accesses
-            $pending->payload();
+            $pending->value();
             $pending->result();
-            $pending->envelope();
+            $pending->computation();
             $pending->success();
             
             expect($executionCount)->toBe(1);
@@ -356,7 +356,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         it('caches result across transformations', function () {
             $executionCount = 0;
             
-            $pending = new PendingPipelineExecution(function() use (&$executionCount) {
+            $pending = new PendingComputation(function() use (&$executionCount) {
                 $executionCount++;
                 return 10;
             });
@@ -364,8 +364,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
             $mapped = $pending->map(fn($x) => $x * 2);
             
             // Access multiple times
-            $mapped->payload();
-            $mapped->payload();
+            $mapped->value();
+            $mapped->value();
             
             expect($executionCount)->toBe(1);
         });
@@ -374,7 +374,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             $baseExecutions = 0;
             $transformExecutions = 0;
             
-            $base = new PendingPipelineExecution(function() use (&$baseExecutions) {
+            $base = new PendingComputation(function() use (&$baseExecutions) {
                 $baseExecutions++;
                 return 5;
             });
@@ -385,12 +385,12 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
             
             // Execute base only
-            $base->payload();
+            $base->value();
             expect($baseExecutions)->toBe(1);
             expect($transformExecutions)->toBe(0);
             
             // Execute transformed
-            $transformed->payload();
+            $transformed->value();
             expect($baseExecutions)->toBe(1); // Base used cached result
             expect($transformExecutions)->toBe(1);
         });

@@ -1,6 +1,6 @@
 # Pipeline Retry Middleware Example
 
-This example demonstrates a comprehensive retry system implementation using Pipeline middleware and envelope stamps for tracking retry attempts.
+This example demonstrates a comprehensive retry system implementation using Pipeline middleware and computation tags for tracking retry attempts.
 
 ## Features
 
@@ -10,10 +10,10 @@ This example demonstrates a comprehensive retry system implementation using Pipe
 - **Attempt tracking** - records every retry attempt with timestamps and duration
 - **Automatic delay calculation** based on strategy and attempt number
 
-### 📊 Retry Tracking Stamps
-- **RetryAttemptStamp** - Records each individual attempt with outcome
-- **RetryConfigStamp** - Configures retry behavior and strategy
-- **RetrySessionStamp** - Tracks overall retry session metadata
+### 📊 Retry Tracking Tags
+- **RetryAttemptTag** - Records each individual attempt with outcome
+- **RetryConfigTag** - Configures retry behavior and strategy
+- **RetrySessionTag** - Tracks overall retry session metadata
 
 ### 🔍 Observability
 - **Comprehensive logging** of all retry attempts
@@ -22,11 +22,11 @@ This example demonstrates a comprehensive retry system implementation using Pipe
 
 ## Components
 
-### Stamps
+### Tags
 
-#### RetryAttemptStamp
+#### RetryAttemptTag
 ```php
-class RetryAttemptStamp {
+class RetryAttemptTag {
     public readonly int $attemptNumber;
     public readonly DateTimeImmutable $timestamp;
     public readonly ?string $errorMessage;
@@ -34,9 +34,9 @@ class RetryAttemptStamp {
 }
 ```
 
-#### RetryConfigStamp
+#### RetryConfigTag
 ```php
-class RetryConfigStamp {
+class RetryConfigTag {
     public readonly int $maxAttempts;
     public readonly float $baseDelay;
     public readonly string $strategy; // 'fixed', 'linear', 'exponential'
@@ -44,9 +44,9 @@ class RetryConfigStamp {
 }
 ```
 
-#### RetrySessionStamp
+#### RetrySessionTag
 ```php
-class RetrySessionStamp {
+class RetrySessionTag {
     public readonly string $sessionId;
     public readonly DateTimeImmutable $startTime;
     public readonly string $operation;
@@ -59,7 +59,7 @@ class RetrySessionStamp {
 The core retry logic middleware that:
 - Executes processors and catches exceptions
 - Implements delay strategies (fixed, linear, exponential backoff)
-- Records attempt outcomes as stamps
+- Records attempt outcomes as tags
 - Decides whether to retry based on configuration
 
 #### RetryLoggingMiddleware
@@ -79,7 +79,7 @@ Observability middleware that:
 );
 
 $result = Pipeline::for($data)
-    ->withStamp($retryConfig)
+    ->withTag($retryConfig)
     ->withMiddleware($retryMiddleware)
     ->through(fn($x) => unreliableOperation($x))
     ->process();
@@ -88,14 +88,14 @@ if ($result->success()) {
     echo "Success: " . $result->value();
 } else {
     // Analyze retry attempts
-    $attempts = $result->envelope()->all(RetryAttemptStamp::class);
+    $attempts = $result->computation()->all(RetryAttemptTag::class);
     echo "Failed after " . count($attempts) . " attempts";
 }
 ```
 
 ### Advanced Configuration
 ```php
-$retryConfig = new RetryConfigStamp(
+$retryConfig = new RetryConfigTag(
     maxAttempts: 5,
     baseDelay: 0.5,
     maxDelay: 30.0,
@@ -107,9 +107,9 @@ $retryConfig = new RetryConfigStamp(
 );
 
 $result = Pipeline::for($request)
-    ->withStamp(
+    ->withTag(
         $retryConfig,
-        new RetrySessionStamp(
+        new RetrySessionTag(
             sessionId: uniqid('api_'),
             startTime: new DateTimeImmutable(),
             operation: 'api_call'
@@ -125,9 +125,9 @@ $result = Pipeline::for($request)
 
 ### Analyzing Retry History
 ```php
-$envelope = $result->envelope();
-$attempts = $envelope->all(RetryAttemptStamp::class);
-$session = $envelope->last(RetrySessionStamp::class);
+$computation = $result->computation();
+$attempts = $computation->all(RetryAttemptTag::class);
+$session = $computation->last(RetrySessionTag::class);
 
 echo "Session: {$session->sessionId}\n";
 echo "Operation: {$session->operation}\n";
@@ -193,17 +193,17 @@ All strategies respect the `maxDelay` limit.
 
 1. **Comprehensive Tracking** - Every retry attempt is recorded with detailed metadata
 2. **Flexible Configuration** - Multiple retry strategies and exception filtering
-3. **Observable** - Rich logging and stamp-based introspection
+3. **Observable** - Rich logging and tag-based introspection
 4. **Composable** - Works seamlessly with other Pipeline middleware
-5. **Immutable** - All state changes create new envelope instances
+5. **Immutable** - All state changes create new computation instances
 6. **Type Safe** - Full PHP 8.2 type declarations throughout
 
 ## Architecture Highlights
 
 - **Middleware Pattern** - Clean separation of retry logic from business logic
-- **Stamp System** - Immutable metadata tracking with type-safe queries
+- **Tag System** - Immutable metadata tracking with type-safe queries
 - **Lazy Evaluation** - Retry logic only executes when results are needed
 - **Error Recovery** - Graceful handling of various failure scenarios
 - **Session Correlation** - Track related retry attempts across complex operations
 
-This example demonstrates how Pipeline's middleware and stamp systems can be used to implement sophisticated cross-cutting concerns while maintaining clean, testable, and observable code.
+This example demonstrates how Pipeline's middleware and tag systems can be used to implement sophisticated cross-cutting concerns while maintaining clean, testable, and observable code.

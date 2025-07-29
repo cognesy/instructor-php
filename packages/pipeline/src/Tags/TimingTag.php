@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Stamps;
+namespace Cognesy\Pipeline\Tags;
 
-use Cognesy\Pipeline\StampInterface;
+use Cognesy\Pipeline\TagInterface;
 
 /**
- * Stamp that records timing information for pipeline operations.
+ * Tag that records timing information for pipeline operations.
  *
  * Captures high-precision timing data including start time, end time,
  * and calculated duration. Supports optional operation naming and
@@ -13,8 +13,8 @@ use Cognesy\Pipeline\StampInterface;
  *
  * Example usage:
  * ```php
- * // Get timing information from envelope
- * $timings = $envelope->all(TimingStamp::class);
+ * // Get timing information from computation
+ * $timings = $computation->all(TimingTag::class);
  *
  * foreach ($timings as $timing) {
  *     echo "{$timing->operationName}: {$timing->durationMs()}ms\n";
@@ -24,7 +24,7 @@ use Cognesy\Pipeline\StampInterface;
  * $totalTime = array_sum(array_map(fn($t) => $t->duration, $timings));
  * ```
  */
-readonly class TimingStamp implements StampInterface
+readonly class TimingTag implements TagInterface
 {
     public function __construct(
         public float $startTime,
@@ -132,7 +132,7 @@ readonly class TimingStamp implements StampInterface
     }
 
     /**
-     * Create a timing stamp for a successful operation.
+     * Create a timing tag for a successful operation.
      */
     public static function success(
         float $startTime,
@@ -149,7 +149,7 @@ readonly class TimingStamp implements StampInterface
     }
 
     /**
-     * Create a timing stamp for a failed operation.
+     * Create a timing tag for a failed operation.
      */
     public static function failure(
         float $startTime,

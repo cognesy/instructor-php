@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Stamps\TimingStamp;
+use Cognesy\Pipeline\Tags\TimingTag;
 use Cognesy\Pipeline\Workflow\Workflow;
 
 echo "🔄 Workflow Example: E-commerce Order Processing\n";
@@ -87,11 +87,11 @@ echo "Creating order processing workflow...\n\n";
 $orderWorkflow = Workflow::empty()
     ->through($validationPipeline)
     ->when(
-        fn($env) => $env->result()->isSuccess(),
+        fn($computation) => $computation->result()->isSuccess(),
         $inventoryPipeline
     )
     ->when(
-        fn($env) => $env->result()->isSuccess() && $env->result()->unwrap()['total'] > 50,
+        fn($computation) => $computation->result()->isSuccess() && $computation->result()->unwrap()['total'] > 50,
         $paymentPipeline  // Only process payment for orders > $50
     )
     ->through($fulfillmentPipeline)
@@ -108,7 +108,7 @@ echo "────────────────────────�
 if ($result->success()) {
     echo "✅ Order processed successfully!\n\n";
     
-    $finalOrder = $result->payload();
+    $finalOrder = $result->value();
     echo "Final order status:\n";
     echo "  - Validated: " . ($finalOrder['validated'] ? '✅' : '❌') . "\n";
     echo "  - Customer validated: " . ($finalOrder['customer_validated'] ? '✅' : '❌') . "\n";
@@ -124,7 +124,7 @@ if ($result->success()) {
 // Show timing information from all pipeline stages
 echo "\nTiming Information:\n";
 echo "─────────────────────\n";
-$timings = $result->envelope()->all(TimingStamp::class);
+$timings = $result->computation()->all(TimingTag::class);
 $totalTime = 0;
 
 foreach ($timings as $timing) {

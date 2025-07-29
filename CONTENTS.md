@@ -5,7 +5,12 @@ This document provides an overview of the essential directories and important fi
 ## Essential Directories
 
 ### `packages/`
-Contains all independent PHP packages that make up the Instructor ecosystem. Each package has its own `composer.json`, tests, and documentation. Core packages include `instructor`, `config`, `events`, `messages`, `utils`, `schema`, and `templates`.
+Contains all independent PHP packages that make up the Instructor ecosystem. Each package has its own `composer.json`, tests, and documentation. Current packages include:
+- **Core**: `instructor`, `config`, `events`, `messages`, `utils`, `schema`, `templates`
+- **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`
+- **Development tools**: `evals`, `experimental`, `doctor`
+- **HTTP client**: `http-client`
+- **Pipeline processing**: `pipeline`
 
 ### `examples/`
 Comprehensive collection of working examples demonstrating various features, complexity levels, API integrations, and prompting techniques. Examples are organized by topic and difficulty to help users learn and implement different patterns.

@@ -9,7 +9,7 @@ namespace Cognesy\Pipeline;
  * logging, metrics, tracing, validation, etc. to message processing chains.
  * 
  * Each middleware can:
- * - Inspect/modify the envelope before processing
+ * - Inspect/modify the computation before processing
  * - Decide whether to continue to next middleware
  * - Inspect/modify the result after processing
  * - Handle errors and failures
@@ -18,13 +18,13 @@ namespace Cognesy\Pipeline;
  * ```php
  * class TimingMiddleware implements MessageMiddlewareInterface
  * {
- *     public function handle(Envelope $envelope, callable $next): Envelope
+ *     public function handle(Computation $computation, callable $next): Computation
  *     {
  *         $start = microtime(true);
- *         $result = $next($envelope);
+ *         $result = $next($computation);
  *         $duration = microtime(true) - $start;
  *         
- *         return $result->with(new MetricsStamp('duration', $duration));
+ *         return $result->with(new MetricsTag('duration', $duration));
  *     }
  * }
  * ```
@@ -32,11 +32,11 @@ namespace Cognesy\Pipeline;
 interface PipelineMiddlewareInterface
 {
     /**
-     * Process an envelope through this middleware.
+     * Process an computation through this middleware.
      * 
-     * @param Envelope $envelope The current envelope with message and stamps
+     * @param Computation $computation The current computation with message and tags
      * @param callable $next Callback to invoke next middleware/processor
-     * @return Envelope The processed envelope (may be modified)
+     * @return Computation The processed computation (may be modified)
      */
-    public function handle(Envelope $envelope, callable $next): Envelope;
+    public function handle(Computation $computation, callable $next): Computation;
 }

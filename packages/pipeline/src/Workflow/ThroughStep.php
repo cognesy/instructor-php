@@ -2,14 +2,14 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Pipeline;
 
 /**
- * Executes a pipeline and returns its result envelope.
+ * Executes a pipeline and returns its result computation.
  *
  * This is the main workflow step that processes data through a pipeline
- * and preserves all stamps and metadata from the execution.
+ * and preserves all tags and metadata from the execution.
  */
 readonly class ThroughStep implements WorkflowStepInterface
 {
@@ -17,7 +17,7 @@ readonly class ThroughStep implements WorkflowStepInterface
         private Pipeline $pipeline,
     ) {}
 
-    public function execute(Envelope $envelope): Envelope {
-        return $this->pipeline->process($envelope)->envelope();
+    public function execute(Computation $computation): Computation {
+        return $this->pipeline->process($computation)->computation();
     }
 }

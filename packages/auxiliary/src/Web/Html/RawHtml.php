@@ -38,7 +38,7 @@ class RawHtml
 //                $this->normalizeUrls(...),
 //                //$this->linearizeContent,
 //                $this->extractMainContent(...),
-            ])->process($this->content)->payload();
+            ])->process($this->content)->value();
     }
 
     public function asText(): string {

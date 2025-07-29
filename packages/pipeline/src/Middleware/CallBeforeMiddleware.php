@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Exception;
 
@@ -11,22 +11,22 @@ use Exception;
  * Middleware that executes a callback before processing continues.
  *
  * This provides a convenient way to add "before" hooks while using the
- * middleware pattern. The callback receives the current envelope and can:
+ * middleware pattern. The callback receives the current computation and can:
  * - Perform side effects (logging, metrics, etc.)
- * - Return a modified envelope
- * - Return null to leave envelope unchanged
+ * - Return a modified computation
+ * - Return null to leave computation unchanged
  *
  * Example:
  * ```php
  * // Add timestamp before each processor
- * $middleware = new CallBeforeMiddleware(function(Envelope $env) {
- *     echo "Processing: " . $env->result()->unwrap() . "\n";
- *     return $env->with(new TimestampStamp());
+ * $middleware = new CallBeforeMiddleware(function(Computation $computation) {
+ *     echo "Processing: " . $computation->result()->unwrap() . "\n";
+ *     return $computation->with(new TimestampTag());
  * });
  *
  * // Just side effects, no modification
- * $middleware = new CallBeforeMiddleware(function(Envelope $env) {
- *     logger()->info('Processing started', ['payload' => $env->result()->unwrap()]);
+ * $middleware = new CallBeforeMiddleware(function(Computation $computation) {
+ *     logger()->info('Processing started', ['value' => $computation->result()->unwrap()]);
  * });
  * ```
  */
@@ -39,21 +39,21 @@ readonly class CallBeforeMiddleware implements PipelineMiddlewareInterface
     /**
      * Execute the callback before continuing with next middleware.
      */
-    public function handle(Envelope $envelope, callable $next): Envelope {
+    public function handle(Computation $computation, callable $next): Computation {
         try {
             // Execute the before callback
-            $result = ($this->callback)($envelope);
+            $result = ($this->callback)($computation);
 
-            // If callback returns an envelope, use it; otherwise use original
-            $modifiedEnvelope = $result instanceof Envelope ? $result : $envelope;
+            // If callback returns an computation, use it; otherwise use original
+            $modifiedComputation = $result instanceof Computation ? $result : $computation;
 
             // Continue with next middleware
-            return $next($modifiedEnvelope);
+            return $next($modifiedComputation);
         } catch (Exception $e) {
-            // If callback fails, create failure envelope but still try to continue
+            // If callback fails, create failure computation but still try to continue
             // This matches the behavior of the original hook system
-            $failureEnvelope = $envelope->withResult(\Cognesy\Utils\Result\Result::failure($e));
-            return $next($failureEnvelope);
+            $failureComputation = $computation->withResult(\Cognesy\Utils\Result\Result::failure($e));
+            return $next($failureComputation);
         }
     }
 

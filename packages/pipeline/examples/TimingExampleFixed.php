@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Stamps\TimingStamp;
+use Cognesy\Pipeline\Tags\TimingTag;
 
 echo "🕒 Pipeline Timing Middleware Demo (Fixed)\n";
 echo "==========================================\n\n";
@@ -25,10 +25,10 @@ $result = Pipeline::for(100)
     })
     ->process();
 
-echo "Result: " . $result->payload() . "\n";
+echo "Result: " . $result->value() . "\n";
 
-$timings = $result->envelope()->all(TimingStamp::class);
-echo "Number of timing stamps: " . count($timings) . "\n";
+$timings = $result->computation()->all(TimingTag::class);
+echo "Number of timing tags: " . count($timings) . "\n";
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";
 }
@@ -53,7 +53,7 @@ $validatedResult = Pipeline::for($data)
     ->process();
 
 // Process 2: Processing  
-$processedResult = Pipeline::for($validatedResult->payload())
+$processedResult = Pipeline::for($validatedResult->value())
     ->withMiddleware(TimingMiddleware::for('processing'))
     ->through(function($data) {
         usleep(5000); // Simulate processing
@@ -64,7 +64,7 @@ $processedResult = Pipeline::for($validatedResult->payload())
     ->process();
 
 // Process 3: Formatting
-$finalResult = Pipeline::for($processedResult->payload())
+$finalResult = Pipeline::for($processedResult->value())
     ->withMiddleware(TimingMiddleware::for('formatting'))
     ->through(function($result) {
         usleep(1000); // Simulate formatting
@@ -72,13 +72,13 @@ $finalResult = Pipeline::for($processedResult->payload())
     })
     ->process();
 
-echo "Final result: " . $finalResult->payload() . "\n";
+echo "Final result: " . $finalResult->value() . "\n";
 
 // Collect all timing information
 $allTimings = [
-    ...$validatedResult->envelope()->all(TimingStamp::class),
-    ...$processedResult->envelope()->all(TimingStamp::class),
-    ...$finalResult->envelope()->all(TimingStamp::class)
+    ...$validatedResult->computation()->all(TimingTag::class),
+    ...$processedResult->computation()->all(TimingTag::class),
+    ...$finalResult->computation()->all(TimingTag::class)
 ];
 
 echo "\nTiming Breakdown:\n";
@@ -96,19 +96,19 @@ echo "------------------------------------\n";
 // Create a custom error-aware timing middleware
 class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\PipelineMiddlewareInterface
 {
-    public function handle(\Cognesy\Pipeline\Envelope $envelope, callable $next): \Cognesy\Pipeline\Envelope
+    public function handle(\Cognesy\Pipeline\Computation $computation, callable $next): \Cognesy\Pipeline\Computation
     {
         $startTime = microtime(true);
         
         try {
-            $nextEnvelope = $next($envelope);
+            $nextComputation = $next($computation);
             $endTime = microtime(true);
             
             // Check if result is a failure even without exception
-            $success = $nextEnvelope->result()->isSuccess();
-            $error = $success ? null : ($nextEnvelope->result()->error()->getMessage() ?? 'Unknown error');
+            $success = $nextComputation->result()->isSuccess();
+            $error = $success ? null : ($nextComputation->result()->error()->getMessage() ?? 'Unknown error');
             
-            $timingStamp = new TimingStamp(
+            $timingTag = new TimingTag(
                 startTime: $startTime,
                 endTime: $endTime,
                 duration: $endTime - $startTime,
@@ -117,12 +117,12 @@ class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\PipelineMiddleware
                 error: $error
             );
             
-            return $nextEnvelope->with($timingStamp);
+            return $nextComputation->with($timingTag);
             
         } catch (\Throwable $e) {
             $endTime = microtime(true);
             
-            $timingStamp = new TimingStamp(
+            $timingTag = new TimingTag(
                 startTime: $startTime,
                 endTime: $endTime,
                 duration: $endTime - $startTime,
@@ -131,9 +131,9 @@ class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\PipelineMiddleware
                 error: $e->getMessage()
             );
             
-            // Return failed envelope with timing
-            return $envelope
-                ->with($timingStamp)
+            // Return failed computation with timing
+            return $computation
+                ->with($timingTag)
                 ->withResult(\Cognesy\Utils\Result\Result::failure($e));
         }
     }
@@ -155,7 +155,7 @@ if (!$errorResult->success()) {
     echo "Error: " . $errorResult->failure()->getMessage() . "\n";
 }
 
-$timings = $errorResult->envelope()->all(TimingStamp::class);
+$timings = $errorResult->computation()->all(TimingTag::class);
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";
 }
@@ -186,9 +186,9 @@ $complexResult = Pipeline::for(range(1, 10))
     })
     ->process();
 
-echo "Result: " . json_encode($complexResult->payload()) . "\n";
+echo "Result: " . json_encode($complexResult->value()) . "\n";
 
-$timings = $complexResult->envelope()->all(TimingStamp::class);
+$timings = $complexResult->computation()->all(TimingTag::class);
 echo "Total operations measured: " . count($timings) . "\n";
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";

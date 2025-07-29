@@ -2,28 +2,28 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\Envelope;
+use Closure;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Pipeline;
 
 /**
- * Conditionally executes a pipeline based on envelope state.
+ * Conditionally executes a pipeline based on computation state.
  *
- * The condition receives the current envelope and determines whether
- * the associated pipeline should execute. If not, the envelope passes
+ * The condition receives the current computation and determines whether
+ * the associated pipeline should execute. If not, the computation passes
  * through unchanged.
  */
 readonly class ConditionalStep implements WorkflowStepInterface
 {
     public function __construct(
-        private \Closure $condition,
+        private Closure $condition,
         private Pipeline $pipeline,
     ) {}
 
-    public function execute(Envelope $envelope): Envelope {
-        if (($this->condition)($envelope)) {
-            return $this->pipeline->process($envelope)->envelope();
-        }
-
-        return $envelope;
+    public function execute(Computation $computation): Computation {
+        return match(true) {
+            ($this->condition)($computation) => $this->pipeline->process($computation)->computation(),
+            default => $computation,
+        };
     }
 }

@@ -159,6 +159,10 @@ abstract class Result {
             && ($this->unwrap() === false);
     }
 
+    public function valueOr(mixed $default): mixed {
+        return $this->isSuccess() ? $this->unwrap() : $default;
+    }
+
     public static function tryAll(array $args, callable ...$callbacks): Result {
         $errors = [];
         $results = [];

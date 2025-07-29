@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Envelope;
+use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Stamps\TimingStamp;
+use Cognesy\Pipeline\Tags\TimingTag;
 use Cognesy\Utils\Result\Result;
 
 describe('TimingMiddleware Unit Tests', function () {
@@ -18,10 +18,10 @@ describe('TimingMiddleware Unit Tests', function () {
             })
             ->process();
 
-        $envelope = $result->envelope();
-        $timing = $envelope->last(TimingStamp::class);
+        $computation = $result->computation();
+        $timing = $computation->last(TimingTag::class);
 
-        expect($timing)->toBeInstanceOf(TimingStamp::class);
+        expect($timing)->toBeInstanceOf(TimingTag::class);
         expect($timing->operationName)->toBe('test_operation');
         expect($timing->isSuccess())->toBeTrue();
         expect($timing->duration)->toBeGreaterThan(0.0009); // At least 0.9ms
@@ -41,14 +41,14 @@ describe('TimingMiddleware Unit Tests', function () {
 
         expect($result->success())->toBeFalse();
         
-        $envelope = $result->envelope();
-        $timings = $envelope->all(TimingStamp::class);
+        $computation = $result->computation();
+        $timings = $computation->all(TimingTag::class);
         
         // Debug: let's see what we have
         expect(count($timings))->toBeGreaterThan(0);
         
-        $timing = $envelope->last(TimingStamp::class);
-        expect($timing)->toBeInstanceOf(TimingStamp::class);
+        $timing = $computation->last(TimingTag::class);
+        expect($timing)->toBeInstanceOf(TimingTag::class);
         expect($timing->operationName)->toBe('failing_operation');
         
         // The timing should show this was a failure  
@@ -63,7 +63,7 @@ describe('TimingMiddleware Unit Tests', function () {
             ->through(fn($x) => $x * 2)
             ->process();
 
-        $timing = $result->envelope()->last(TimingStamp::class);
+        $timing = $result->computation()->last(TimingTag::class);
 
         expect($timing->operationName)->toBeNull();
         expect($timing->isSuccess())->toBeTrue();
@@ -79,7 +79,7 @@ describe('TimingMiddleware Unit Tests', function () {
             })
             ->process();
 
-        $timing = $result->envelope()->last(TimingStamp::class);
+        $timing = $result->computation()->last(TimingTag::class);
         
         // Duration should be rounded to 3 decimal places
         $durationStr = (string)$timing->duration;
@@ -87,7 +87,7 @@ describe('TimingMiddleware Unit Tests', function () {
         expect(strlen($decimalPart))->toBeLessThanOrEqual(3);
     });
 
-    it('accumulates multiple timing stamps', function () {
+    it('accumulates multiple timing tags', function () {
         $result = Pipeline::for(1)
             ->withMiddleware(TimingMiddleware::for('step1'))
             ->through(function($x) {
@@ -106,9 +106,9 @@ describe('TimingMiddleware Unit Tests', function () {
             })
             ->process();
 
-        $timings = $result->envelope()->all(TimingStamp::class);
+        $timings = $result->computation()->all(TimingTag::class);
         
-        // Each middleware creates timing stamps for each processor it wraps
+        // Each middleware creates timing tags for each processor it wraps
         expect(count($timings))->toBeGreaterThanOrEqual(3);
         
         // Find timings by operation name
@@ -126,30 +126,30 @@ describe('TimingMiddleware Unit Tests', function () {
         }
     });
 
-    it('works with envelope-aware processors', function () {
+    it('works with computation-aware processors', function () {
         $result = Pipeline::for('data')
-            ->withMiddleware(TimingMiddleware::for('envelope_processor'))
-            ->through(function(Envelope $env) {
-                $value = $env->result()->unwrap();
-                return $env->withResult(Result::success(strtoupper($value)));
+            ->withMiddleware(TimingMiddleware::for('computation_processor'))
+            ->through(function(Computation $computation) {
+                $value = $computation->result()->unwrap();
+                return $computation->withResult(Result::success(strtoupper($value)));
             })
             ->process();
 
-        $timing = $result->envelope()->last(TimingStamp::class);
+        $timing = $result->computation()->last(TimingTag::class);
         
-        expect($timing->operationName)->toBe('envelope_processor');
+        expect($timing->operationName)->toBe('computation_processor');
         expect($timing->isSuccess())->toBeTrue();
-        expect($result->payload())->toBe('DATA');
+        expect($result->value())->toBe('DATA');
     });
 });
 
-describe('TimingStamp Unit Tests', function () {
+describe('TimingTag Unit Tests', function () {
     beforeEach(function () {
         $this->startTime = 1700000000.123456;
         $this->endTime = 1700000000.125678;
         $this->duration = $this->endTime - $this->startTime;
         
-        $this->successStamp = new TimingStamp(
+        $this->successTag = new TimingTag(
             startTime: $this->startTime,
             endTime: $this->endTime,
             duration: $this->duration,
@@ -157,7 +157,7 @@ describe('TimingStamp Unit Tests', function () {
             success: true
         );
 
-        $this->failureStamp = new TimingStamp(
+        $this->failureTag = new TimingTag(
             startTime: $this->startTime,
             endTime: $this->endTime,
             duration: $this->duration,
@@ -168,26 +168,26 @@ describe('TimingStamp Unit Tests', function () {
     });
 
     it('calculates duration in different units', function () {
-        expect($this->successStamp->durationMs())->toBeCloseTo(2.222, 2);
-        expect($this->successStamp->durationMicros())->toBeCloseTo(2222, 0);
+        expect($this->successTag->durationMs())->toBeCloseTo(2.222, 2);
+        expect($this->successTag->durationMicros())->toBeCloseTo(2222, 0);
     });
 
     it('formats duration appropriately', function () {
         // Test microsecond formatting (< 1ms)
-        $microStamp = new TimingStamp(0, 0, 0.0005, 'micro_op'); // 0.5ms = 500μs
-        expect($microStamp->durationFormatted())->toBe('500μs');
+        $microTag = new TimingTag(0, 0, 0.0005, 'micro_op'); // 0.5ms = 500μs
+        expect($microTag->durationFormatted())->toBe('500μs');
 
         // Test millisecond formatting (< 1s)
-        expect($this->successStamp->durationFormatted())->toBe('2.22ms');
+        expect($this->successTag->durationFormatted())->toBe('2.22ms');
 
         // Test second formatting (>= 1s)
-        $longStamp = new TimingStamp(0, 0, 1.5, 'long_op');
-        expect($longStamp->durationFormatted())->toBe('1.500s');
+        $longTag = new TimingTag(0, 0, 1.5, 'long_op');
+        expect($longTag->durationFormatted())->toBe('1.500s');
     });
 
     it('creates DateTime objects correctly', function () {
-        $startDateTime = $this->successStamp->startDateTime();
-        $endDateTime = $this->successStamp->endDateTime();
+        $startDateTime = $this->successTag->startDateTime();
+        $endDateTime = $this->successTag->endDateTime();
 
         expect($startDateTime)->toBeInstanceOf(\DateTimeImmutable::class);
         expect($endDateTime)->toBeInstanceOf(\DateTimeImmutable::class);
@@ -197,27 +197,27 @@ describe('TimingStamp Unit Tests', function () {
     });
 
     it('provides success/failure status', function () {
-        expect($this->successStamp->isSuccess())->toBeTrue();
-        expect($this->successStamp->isFailure())->toBeFalse();
+        expect($this->successTag->isSuccess())->toBeTrue();
+        expect($this->successTag->isFailure())->toBeFalse();
 
-        expect($this->failureStamp->isSuccess())->toBeFalse();
-        expect($this->failureStamp->isFailure())->toBeTrue();
+        expect($this->failureTag->isSuccess())->toBeFalse();
+        expect($this->failureTag->isFailure())->toBeTrue();
     });
 
     it('generates summary strings', function () {
-        $successSummary = $this->successStamp->summary();
+        $successSummary = $this->successTag->summary();
         expect($successSummary)->toContain('test_op');
         expect($successSummary)->toContain('SUCCESS');
         expect($successSummary)->toContain('2.22ms');
 
-        $failureSummary = $this->failureStamp->summary();
+        $failureSummary = $this->failureTag->summary();
         expect($failureSummary)->toContain('failed_op');
         expect($failureSummary)->toContain('FAILED');
         expect($failureSummary)->toContain('Test error');
     });
 
     it('converts to array correctly', function () {
-        $array = $this->successStamp->toArray();
+        $array = $this->successTag->toArray();
 
         expect($array)->toHaveKey('operation_name');
         expect($array)->toHaveKey('start_time');
@@ -232,16 +232,16 @@ describe('TimingStamp Unit Tests', function () {
         expect($array['duration_ms'])->toBeCloseTo(2.222, 2);
     });
 
-    it('creates stamps with static factory methods', function () {
-        $successStamp = TimingStamp::success(1.0, 2.5, 'success_op');
-        expect($successStamp->operationName)->toBe('success_op');
-        expect($successStamp->isSuccess())->toBeTrue();
-        expect($successStamp->duration)->toBe(1.5);
+    it('creates tags with static factory methods', function () {
+        $successTag = TimingTag::success(1.0, 2.5, 'success_op');
+        expect($successTag->operationName)->toBe('success_op');
+        expect($successTag->isSuccess())->toBeTrue();
+        expect($successTag->duration)->toBe(1.5);
 
-        $failureStamp = TimingStamp::failure(1.0, 2.0, 'Error occurred', 'failure_op');
-        expect($failureStamp->operationName)->toBe('failure_op');
-        expect($failureStamp->isFailure())->toBeTrue();
-        expect($failureStamp->error)->toBe('Error occurred');
-        expect($failureStamp->duration)->toBe(1.0);
+        $failureTag = TimingTag::failure(1.0, 2.0, 'Error occurred', 'failure_op');
+        expect($failureTag->operationName)->toBe('failure_op');
+        expect($failureTag->isFailure())->toBeTrue();
+        expect($failureTag->error)->toBe('Error occurred');
+        expect($failureTag->duration)->toBe(1.0);
     });
 });

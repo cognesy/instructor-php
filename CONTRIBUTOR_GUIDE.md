@@ -7,9 +7,10 @@ Welcome to the Instructor PHP monorepo! This guide will help you understand how 
 This is a monorepo containing multiple independent packages under the `packages/` directory:
 
 - **Core packages**: `instructor`, `config`, `events`, `messages`, `utils`, `schema`, `templates`
-- **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`
-- **Development tools**: `evals`, `experimental`
+- **Extended functionality**: `addons`, `auxiliary`, `polyglot`, `setup`, `hub`, `tell`, `dynamic`
+- **Development tools**: `evals`, `experimental`, `doctor`
 - **HTTP client**: `http-client`
+- **Pipeline processing**: `pipeline`
 
 Each package is independently publishable to Packagist with its own `composer.json`, tests, and documentation.
 

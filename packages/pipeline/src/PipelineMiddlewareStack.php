@@ -7,7 +7,7 @@ namespace Cognesy\Pipeline;
  *
  * The middleware stack implements the classic middleware pattern where each
  * middleware can decide whether to continue processing and can modify the
- * envelope before and after the next middleware executes.
+ * computation before and after the next middleware executes.
  *
  * Example:
  * ```php
@@ -16,7 +16,7 @@ namespace Cognesy\Pipeline;
  * $stack->add(new MetricsMiddleware());
  * $stack->add(new TracingMiddleware());
  *
- * $result = $stack->process($envelope, $finalProcessor);
+ * $result = $stack->process($computation, $finalProcessor);
  * ```
  */
 class PipelineMiddlewareStack
@@ -59,15 +59,15 @@ class PipelineMiddlewareStack
     }
 
     /**
-     * Process envelope through all middleware, ending with final processor.
+     * Process computation through all middleware, ending with final processor.
      *
-     * @param Envelope $envelope Initial envelope
+     * @param Computation $computation Initial computation
      * @param callable $finalProcessor Final processor to execute after all middleware
-     * @return Envelope Processed envelope
+     * @return Computation Processed computation
      */
-    public function process(Envelope $envelope, callable $finalProcessor): Envelope {
+    public function process(Computation $computation, callable $finalProcessor): Computation {
         if (empty($this->middleware)) {
-            return $finalProcessor($envelope);
+            return $finalProcessor($computation);
         }
 
         // Build the middleware chain using array_reduce
@@ -75,12 +75,12 @@ class PipelineMiddlewareStack
         $stack = array_reduce(
             array_reverse($this->middleware),
             function (callable $next, PipelineMiddlewareInterface $middleware) {
-                return fn(Envelope $envelope) => $middleware->handle($envelope, $next);
+                return fn(Computation $computation) => $middleware->handle($computation, $next);
             },
             $finalProcessor,
         );
 
-        return $stack($envelope);
+        return $stack($computation);
     }
 
     /**

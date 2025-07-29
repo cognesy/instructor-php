@@ -22,7 +22,7 @@ class RetryExampleTest
         );
 
         $result = Pipeline::for('test-data')
-            ->withStamp($retryConfig)
+            ->withTag($retryConfig)
             ->withMiddleware($retryMiddleware)
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
@@ -39,13 +39,13 @@ class RetryExampleTest
         assert($result->success(), "Should succeed after retries");
         assert($attemptCount === 3, "Should make exactly 3 attempts");
         
-        $attempts = $result->envelope()->all(RetryAttemptStamp::class);
+        $attempts = $result->computation()->all(RetryAttemptTag::class);
         assert(count($attempts) === 3, "Should record 3 attempts");
         assert($attempts[0]->failed(), "First attempt should fail");
         assert($attempts[1]->failed(), "Second attempt should fail");
         assert($attempts[2]->succeeded(), "Third attempt should succeed");
         
-        echo "  ✅ Test passed: " . $result->payload() . "\n";
+        echo "  ✅ Test passed: " . $result->value() . "\n";
     }
 
     public static function testRetryExhaustion(): void
@@ -61,7 +61,7 @@ class RetryExampleTest
         );
 
         $result = Pipeline::for('failing-operation')
-            ->withStamp($retryConfig)
+            ->withTag($retryConfig)
             ->withMiddleware($retryMiddleware)
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
@@ -73,7 +73,7 @@ class RetryExampleTest
         assert(!$result->success(), "Should fail after all retries exhausted");
         assert($attemptCount === 3, "Should make exactly 3 attempts");
         
-        $attempts = $result->envelope()->all(RetryAttemptStamp::class);
+        $attempts = $result->computation()->all(RetryAttemptTag::class);
         assert(count($attempts) === 3, "Should record 3 attempts");
         
         foreach ($attempts as $i => $attempt) {
@@ -104,7 +104,7 @@ class RetryExampleTest
             $sessionStart = microtime(true);
             
             $result = Pipeline::for("test-$strategy")
-                ->withStamp($retryConfig)
+                ->withTag($retryConfig)
                 ->withMiddleware($retryMiddleware)
                 ->through(function($data) use (&$attemptTimes, $sessionStart) {
                     $attemptTimes[] = microtime(true) - $sessionStart;
@@ -147,9 +147,9 @@ class RetryExampleTest
         echo "  ✅ All retry strategies work correctly\n";
     }
 
-    public static function testStampTracking(): void
+    public static function testTagTracking(): void
     {
-        echo "\n🧪 TEST: Stamp Tracking Accuracy\n";
+        echo "\n🧪 TEST: Tag Tracking Accuracy\n";
         
         [$retryConfig, $retryMiddleware] = RetryMiddleware::withConfig(
             maxAttempts: 4,
@@ -159,13 +159,13 @@ class RetryExampleTest
 
         $sessionId = 'test-session-' . uniqid();
         
-        $result = Pipeline::for('stamp-test')
-            ->withStamp(
+        $result = Pipeline::for('tag-test')
+            ->withTag(
                 $retryConfig,
-                new RetrySessionStamp(
+                new RetrySessionTag(
                     sessionId: $sessionId,
                     startTime: new \DateTimeImmutable(),
-                    operation: 'stamp_tracking_test'
+                    operation: 'tag_tracking_test'
                 )
             )
             ->withMiddleware($retryMiddleware)
@@ -181,17 +181,17 @@ class RetryExampleTest
             })
             ->process();
 
-        $envelope = $result->envelope();
+        $computation = $result->computation();
         
-        // Verify session stamp
-        $session = $envelope->last(RetrySessionStamp::class);
-        assert($session !== null, "Should have session stamp");
+        // Verify session tag
+        $session = $computation->last(RetrySessionTag::class);
+        assert($session !== null, "Should have session tag");
         assert($session->sessionId === $sessionId, "Session ID should match");
-        assert($session->operation === 'stamp_tracking_test', "Operation should match");
+        assert($session->operation === 'tag_tracking_test', "Operation should match");
         
         // Verify retry attempts
-        $attempts = $envelope->all(RetryAttemptStamp::class);
-        assert(count($attempts) === 3, "Should have 3 attempt stamps");
+        $attempts = $computation->all(RetryAttemptTag::class);
+        assert(count($attempts) === 3, "Should have 3 attempt tags");
         
         // Check attempt sequence
         for ($i = 0; $i < count($attempts); $i++) {
@@ -209,7 +209,7 @@ class RetryExampleTest
             }
         }
         
-        echo "  ✅ All stamps tracked correctly\n";
+        echo "  ✅ All tags tracked correctly\n";
     }
 
     public static function testRetryableExceptions(): void
@@ -217,7 +217,7 @@ class RetryExampleTest
         echo "\n🧪 TEST: Retryable vs Non-Retryable Exceptions\n";
         
         // Test retryable exception
-        $retryConfig = new RetryConfigStamp(
+        $retryConfig = new RetryConfigTag(
             maxAttempts: 3,
             baseDelay: 0.01,
             retryableExceptions: [\RuntimeException::class]
@@ -226,7 +226,7 @@ class RetryExampleTest
         $attemptCount = 0;
         
         $result = Pipeline::for('retryable-test')
-            ->withStamp($retryConfig)
+            ->withTag($retryConfig)
             ->withMiddleware(new RetryMiddleware())
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
@@ -241,7 +241,7 @@ class RetryExampleTest
         $attemptCount = 0;
         
         $result2 = Pipeline::for('non-retryable-test')
-            ->withStamp($retryConfig)
+            ->withTag($retryConfig)
             ->withMiddleware(new RetryMiddleware())
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
@@ -264,7 +264,7 @@ class RetryExampleTest
             self::testRetryUntilSuccess();
             self::testRetryExhaustion();
             self::testRetryStrategies();
-            self::testStampTracking();
+            self::testTagTracking();
             self::testRetryableExceptions();
             
             echo "\n🎉 All tests passed!\n";

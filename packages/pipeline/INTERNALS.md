@@ -20,47 +20,47 @@ Key internal methods:
 - `suspendExecution()`: Wraps processors in closures for lazy evaluation
 - `executeProcessor()`: Determines whether to use middleware or direct execution
 - `executeProcessorDirect()`: Core processor execution with error handling
-- `isEnvelopeProcessor()`: Uses reflection to detect envelope-aware processors
+- `isComputationProcessor()`: Uses reflection to detect computation-aware processors
 - `applyProcessors()`: Iterates through processor chain, short-circuiting on failures
-- `createInitialEnvelope()`: Converts input values to Envelope instances
-- `shouldContinueProcessing()`: Consolidated flow control logic checking envelope state
-- `handleProcessorError()`: Consolidated error handling converting exceptions to failure envelopes
+- `createInitialComputation()`: Converts input values to Computation instances
+- `shouldContinueProcessing()`: Consolidated flow control logic checking computation state
+- `handleProcessorError()`: Consolidated error handling converting exceptions to failure computations
 
 The Pipeline implements both modern middleware patterns and legacy hook compatibility through middleware adapters.
 
-### 2. Envelope (The Message Container)
-**File**: `src/Envelope.php`
-**Responsibility**: Message wrapping, stamp management, immutability
+### 2. Computation (The Message Container)
+**File**: `src/Computation.php`
+**Responsibility**: Message wrapping, tag management, immutability
 
-The Envelope is an immutable container that wraps a Result with metadata (stamps). It provides separation between:
-- **Payload**: The actual computation result (success/failure)
-- **Stamps**: Metadata for cross-cutting concerns (timing, tracing, metrics)
+The Computation is an immutable container that wraps a Result with metadata (tags). It provides separation between:
+- **Value**: The actual computation result (success/failure)
+- **Tags**: Metadata for cross-cutting concerns (timing, tracing, metrics)
 
 Internal structure:
-- `Result $payload`: The wrapped computation result
-- `array $stamps`: Indexed by class name for efficient retrieval
+- `Result $result`: The wrapped computation result
+- `TagMap $tags`: Indexed by class name for efficient retrieval
 
 Key internal methods:
-- `indexStamps()`: Creates class-name indexed stamp arrays
 - Immutability enforced by `readonly` modifier and return-new-instance pattern
+- TagMap handles indexing and provides O(1) access to tags by type
 
-The stamp indexing system allows O(1) access to stamps by type while maintaining insertion order within each type.
+The tag indexing system allows O(1) access to tags by type while maintaining insertion order within each type.
 
-### 3. PendingPipelineExecution (The Lazy Evaluator)
-**File**: `src/PendingPipelineExecution.php`
+### 3. PendingComputation (The Lazy Evaluator)
+**File**: `src/PendingComputation.php`
 **Responsibility**: Lazy evaluation, result extraction, transformation chaining
 
 This class implements lazy evaluation with memoization. It wraps a computation closure and provides multiple result extraction methods:
 
 Internal state:
-- `callable $computation`: The wrapped computation
+- `Closure $deferred`: The wrapped computation
 - `bool $executed`: Execution flag for memoization
-- `mixed $cachedResult`: Cached result after first execution
+- `mixed $cachedOutput`: Cached result after first execution
 
 Key internal methods:
 - `executeOnce()`: Ensures computation runs exactly once, caches result
-- `getResultFromEnvelope()`: Extracts Result from various return types
-- Transformation methods create new PendingPipelineExecution instances
+- `getResultFromOutput()`: Extracts Result from various return types
+- Transformation methods create new PendingComputation instances
 
 The lazy evaluation ensures expensive computations only run when needed, while memoization prevents repeated execution.
 
@@ -91,27 +91,27 @@ Pipeline::for($value) →
 
 ### 2. Execution Flow
 ```
-process($value, $stamps) →
-  PendingPipelineExecution created with computation closure →
+process($value, $tags) →
+  PendingComputation created with computation closure →
   On first value() call: →
     getSourceValue() → 
-    createInitialEnvelope($value, $stamps) →
-    applyProcessors($envelope) →
+    createInitialComputation($value, $tags) →
+    applyProcessors($computation) →
       For each processor:
         executeProcessor() →
           If middleware exists: middleware.process() →
           executeProcessorDirect() →
-            Reflection check for envelope vs value processor →
+            Reflection check for computation vs value processor →
             Execute with error handling →
-            Convert result to envelope
+            Convert result to computation
         Short-circuit on failure
     applyFinalizer() →
-    Return final envelope
+    Return final computation
 ```
 
 ### 3. Middleware Chain Execution
 ```
-middleware.process(envelope, finalProcessor) →
+middleware.process(computation, finalProcessor) →
   array_reduce builds chain from reversed middleware array →
   Each middleware wraps next in closure →
   Execution flows: MW1 → MW2 → MW3 → finalProcessor → MW3 → MW2 → MW1
@@ -126,50 +126,50 @@ The error handling architecture follows the Result monad pattern with clear sepa
 **Pipeline Infrastructure Responsibilities:**
 - Catch processor exceptions in `executeProcessorDirect()`
 - Convert exceptions to `Result::failure($exception)`
-- Create `ErrorStamp` with exception details for middleware inspection
+- Create `ErrorTag` with exception details for middleware inspection
 - Ensure all outcomes are wrapped in Result instances (never throw to middleware)
 
 **Middleware Responsibilities:**
 - **Never catch processor exceptions** - they are handled by infrastructure
-- Inspect envelope state via `$envelope->getResult()->isFailure()`
-- Extract error details from `ErrorStamp` when needed: `$envelope->first(ErrorStamp::class)`
-- Focus on cross-cutting concerns (timing, logging, metrics) based on envelope inspection
+- Inspect computation state via `$computation->getResult()->isFailure()`
+- Extract error details from `ErrorTag` when needed: `$computation->first(ErrorTag::class)`
+- Focus on cross-cutting concerns (timing, logging, metrics) based on computation inspection
 
 ### Exception to Result Flow
 ```
 Processor throws Exception → 
   Pipeline catches in executeProcessorDirect() →
-  Creates Result::failure($exception) + ErrorStamp →
-  Returns failure envelope to middleware →
-  Middleware inspects envelope state (never sees raw exception)
+  Creates Result::failure($exception) + ErrorTag →
+  Returns failure computation to middleware →
+  Middleware inspects computation state (never sees raw exception)
 ```
 
 ### Key Architectural Principle
-**Middleware operates on Results, not exceptions.** The infrastructure ensures middleware always receives envelopes with Results, maintaining the monadic error handling pattern.
+**Middleware operates on Results, not exceptions.** The infrastructure ensures middleware always receives computations with Results, maintaining the monadic error handling pattern.
 
 ### Example: Correct Middleware Pattern
 ```php
-public function handle(Envelope $envelope, callable $next): Envelope {
-    $result = $next($envelope); // Never throws - returns envelope
+public function handle(Computation $computation, callable $next): Computation {
+    $result = $next($computation); // Never throws - returns computation
     
     // Inspect result state
     $success = $result->getResult()->isSuccess();
     
     // Extract error details if needed
     if (!$success) {
-        $errorStamp = $result->first(ErrorStamp::class);
-        $errorMessage = $errorStamp?->getMessage() ?? 'Unknown error';
+        $errorTag = $result->first(ErrorTag::class);
+        $errorMessage = $errorTag?->getMessage() ?? 'Unknown error';
     }
     
-    // Create appropriate stamps based on inspection
-    return $result->with(new MyStamp($success, $errorMessage));
+    // Create appropriate tags based on inspection
+    return $result->with(new MyTag($success, $errorMessage));
 }
 ```
 
 ### Failure Propagation
 - `shouldContinueProcessing()` checks `Result.isFailure()` before each processor
-- Failure envelopes passed through without processing
-- Stamps preserved through failure states
+- Failure computations passed through without processing
+- Tags preserved through failure states
 - Short-circuit behavior maintains performance
 
 ## Dual Error Tracking Architecture
@@ -185,12 +185,12 @@ $result->exception()           // Original exception for debugging
 $result->errorMessage()        // Human-readable error for users
 ```
 
-**2. ErrorStamp - The Metadata Layer**
+**2. ErrorTag - The Metadata Layer**
 ```php
-$envelope->first(ErrorStamp::class)  // Rich error context for middleware
-$errorStamp->getTimestamp()          // When did error occur?
-$errorStamp->getStackTrace()         // Debugging information
-$errorStamp->getContext()            // Additional error context
+$computation->first(ErrorTag::class)  // Rich error context for middleware
+$errorTag->timestamp               // When did error occur?
+$errorTag->metadata['trace']       // Debugging information
+$errorTag->context                 // Additional error context
 ```
 
 ### Independent Architectural Concerns
@@ -203,10 +203,10 @@ These mechanisms are **not redundant** - they address fundamentally different as
 - **Consumer API**: Simple success/failure check for pipeline users
 - **Type Safety**: Compiler/IDE can enforce error handling
 
-**ErrorStamp Addresses:**
+**ErrorTag Addresses:**
 - **Observability**: Rich context for logging, monitoring, debugging
 - **Middleware Coordination**: Cross-cutting concerns can inspect/react to errors
-- **Multi-Error Scenarios**: Multiple errors can occur, multiple stamps can exist
+- **Multi-Error Scenarios**: Multiple errors can occur, multiple tags can exist
 - **Structured Telemetry**: Serializable error metadata for external systems
 
 ### Usage Guidelines
@@ -223,22 +223,22 @@ if ($result->isFailure()) {
 $transformed = $result->map(fn($data) => transform($data));
 ```
 
-**Use ErrorStamp when:**
+**Use ErrorTag when:**
 ```php
 // Observability and middleware coordination
-$envelope = $result->envelope();
+$computation = $result->computation();
 
 // Rich error analysis for logging
-foreach ($envelope->all(ErrorStamp::class) as $error) {
+foreach ($computation->all(ErrorTag::class) as $error) {
     $logger->error('Pipeline error', [
-        'timestamp' => $error->getTimestamp(),
-        'processor' => $error->getProcessorName(),
-        'context' => $error->getContext(),
+        'timestamp' => $error->timestamp,
+        'category' => $error->category,
+        'context' => $error->context,
     ]);
 }
 
 // Middleware reactions
-if ($envelope->has(ErrorStamp::class)) {
+if ($computation->has(ErrorTag::class)) {
     $circuitBreaker->recordFailure();
     $metrics->incrementErrorCount();
 }
@@ -250,26 +250,26 @@ This dual approach follows established patterns:
 
 **HTTP Responses:**
 - Status Code (like Result): 200 OK, 404 Not Found, 500 Error
-- Response Body (like ErrorStamp): Detailed error context, debugging info
+- Response Body (like ErrorTag): Detailed error context, debugging info
 
 **Event Sourcing:**
 - Event Outcome (like Result): Success/Failure for business logic
-- Event Metadata (like ErrorStamp): Timestamps, correlation IDs, observability context
+- Event Metadata (like ErrorTag): Timestamps, correlation IDs, observability context
 
 ### Architectural Invariants
 
-**Key Principle**: Result focuses on "what happened" for business logic, ErrorStamp focuses on "how/why/when" for observability.
+**Key Principle**: Result focuses on "what happened" for business logic, ErrorTag focuses on "how/why/when" for observability.
 
-**Required Invariant**: If `Result::isFailure()` is true, an `ErrorStamp` must exist in the envelope.
+**Required Invariant**: If `Result::isFailure()` is true, an `ErrorTag` must exist in the computation.
 
-**Optional Pattern**: `ErrorStamp` can exist without `Result::failure()` for warnings, debug information, or non-fatal issues.
+**Optional Pattern**: `ErrorTag` can exist without `Result::failure()` for warnings, debug information, or non-fatal issues.
 
 ### Benefits of Dual Approach
 
-1. **Clean APIs**: Simple Result for business logic, rich ErrorStamp for observability
+1. **Clean APIs**: Simple Result for business logic, rich ErrorTag for observability
 2. **Middleware Power**: Cross-cutting concerns access rich error context without affecting business logic
 3. **Monadic Composition**: Result enables functional programming patterns
-4. **Structured Observability**: ErrorStamp provides serializable telemetry data
+4. **Structured Observability**: ErrorTag provides serializable telemetry data
 5. **Independent Evolution**: Each mechanism can be enhanced without affecting the other
 
 This design provides both the simplicity needed for business logic and the richness required for production observability systems.
@@ -278,14 +278,14 @@ This design provides both the simplicity needed for business logic and the richn
 
 The pipeline supports two processor types:
 1. **Value processors**: `fn($value) -> $result`
-2. **Envelope processors**: `fn(Envelope $env) -> Envelope`
+2. **Computation processors**: `fn(Computation $computation) -> Computation`
 
 Detection uses ReflectionFunction:
 ```php
-private function isEnvelopeProcessor(callable $processor): bool {
+private function isComputationProcessor(callable $processor): bool {
     $reflection = new ReflectionFunction($processor);
     $firstParam = $reflection->getParameters()[0] ?? null;
-    return $firstParam?->getType()?->getName() === Envelope::class;
+    return $firstParam?->getType()?->getName() === Computation::class;
 }
 ```
 
@@ -294,39 +294,39 @@ private function isEnvelopeProcessor(callable $processor): bool {
 NullStrategy enum controls null value behavior:
 - **Allow**: Wrap null in success Result
 - **Fail**: Convert null to failure Result  
-- **Skip**: Return envelope unchanged
+- **Skip**: Return computation unchanged
 
 Implemented in `asResult()` and `handleNullResult()` methods.
 
-## Stamp System Architecture
+## Tag System Architecture
 
 ### Indexing Strategy
-Stamps indexed by class name for O(1) access:
+Tags indexed by class name for O(1) access:
 ```php
 [
-    'TimestampStamp' => [TimestampStamp('start'), TimestampStamp('end')],
-    'MetricsStamp' => [MetricsStamp('cpu', 85.2)],
+    'TimestampTag' => [TimestampTag('start'), TimestampTag('end')],
+    'MetricsTag' => [MetricsTag('cpu', 85.2)],
 ]
 ```
 
 ### Query Methods
-- `all()`: Returns flat array of all stamps or filtered by class
-- `first()/last()`: Get first/last stamp of specific type
-- `has()`: Check existence of stamp type
-- `count()`: Count stamps (total or by type)
+- `all()`: Returns flat array of all tags or filtered by class
+- `first()/last()`: Get first/last tag of specific type
+- `has()`: Check existence of tag type
+- `count()`: Count tags (total or by type)
 
 ### Immutability Implementation
-All stamp operations return new Envelope instances:
-- `with()`: Adds stamps to copy
-- `without()`: Removes stamp types from copy
-- `withMessage()`: Changes Result but preserves stamps
+All tag operations return new Computation instances:
+- `with()`: Adds tags to copy
+- `without()`: Removes tag types from copy
+- `withResult()`: Changes Result but preserves tags
 
 ## Hook-to-Middleware Adaptation
 
 Legacy hook methods converted to middleware:
 - `beforeEach()` → `CallBeforeMiddleware`
 - `afterEach()` → `CallAfterMiddleware`  
-- `withStamp()` → `AddStampsMiddleware`
+- `withTag()` → `AddTagsMiddleware`
 - `finishWhen()` → `ConditionalMiddleware`
 - `onFailure()` → `CallOnFailureMiddleware`
 
@@ -340,9 +340,9 @@ This provides backward compatibility while enabling modern middleware patterns.
 - Multiple result extractions use cached values
 
 ### Immutability Costs
-- Each envelope operation creates new instance
-- Stamp arrays copied on modification
-- Memory usage scales with stamp count
+- Each computation operation creates new instance
+- Tag arrays copied on modification
+- Memory usage scales with tag count
 
 ### Middleware Chain Performance
 - Chain built once, reused for all processors
@@ -354,7 +354,7 @@ This provides backward compatibility while enabling modern middleware patterns.
 The pipeline is designed for single-threaded use but is stateless after construction:
 - All state changes create new instances (immutability)
 - No shared mutable state between pipeline instances
-- PendingPipelineExecution memoization is instance-local
+- PendingComputation memoization is instance-local
 
 ## Code Organization and Refactoring Insights
 
@@ -363,13 +363,13 @@ The pipeline is designed for single-threaded use but is stateless after construc
 The Pipeline architecture employs consolidated logic methods to maintain clean separation of concerns:
 
 **Flow Control Consolidation:**
-- `shouldContinueProcessing(Envelope $envelope): bool` - Single decision point for processor chain continuation
-- Replaces scattered `$envelope->getResult()->isFailure()` checks throughout the codebase
+- `shouldContinueProcessing(Computation $computation): bool` - Single decision point for processor chain continuation
+- Replaces scattered `$computation->getResult()->isFailure()` checks throughout the codebase
 - Enables easy modification of flow control logic in one location
 
 **Error Handling Consolidation:**  
-- `handleProcessorError(Envelope $envelope, mixed $error): Envelope` - Unified error processing
-- Consolidates exception-to-Result conversion, ErrorStamp creation, and envelope wrapping
+- `handleProcessorError(Computation $computation, mixed $error): Computation` - Unified error processing
+- Consolidates exception-to-Result conversion, ErrorTag creation, and computation wrapping
 - Eliminates code duplication across multiple error handling locations
 
 ### 80/20 Refactoring Principle
@@ -394,31 +394,31 @@ This design enables future enhancements (custom flow controllers, pluggable erro
 Implement `PipelineMiddlewareInterface`:
 ```php
 class CustomMiddleware implements PipelineMiddlewareInterface {
-    public function handle(Envelope $envelope, callable $next): Envelope {
+    public function handle(Computation $computation, callable $next): Computation {
         // Pre-processing
-        $result = $next($envelope);  
+        $result = $next($computation);  
         // Post-processing
         return $result;
     }
 }
 ```
 
-### Custom Stamps
-Implement `StampInterface` (marker interface):
+### Custom Tags
+Implement `TagInterface` (marker interface):
 ```php
-class CustomStamp implements StampInterface {
+class CustomTag implements TagInterface {
     public function __construct(public readonly mixed $data) {}
 }
 ```
 
 ### Processor Patterns
-Both value and envelope processors supported:
+Both value and computation processors supported:
 ```php
 // Value processor
 $pipeline->through(fn($x) => $x * 2);
 
-// Envelope processor  
-$pipeline->through(fn(Envelope $env) => $env->with(new Stamp()));
+// Computation processor  
+$pipeline->through(fn(Computation $computation) => $computation->with(new Tag()));
 ```
 
 This architecture provides a flexible, observable, and maintainable processing pipeline suitable for complex data transformation workflows.
