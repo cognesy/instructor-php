@@ -14,7 +14,8 @@ The Pipeline class serves as the main entry point and orchestrator. It maintains
 - **Source**: Callable or value that provides initial data
 - **Processors**: Array of transformation functions
 - **Finalizer**: Optional post-processing function  
-- **Middleware Stack**: PipelineMiddlewareStack instance for cross-cutting concerns
+- **Middleware Stack**: PipelineMiddlewareStack for pipeline-level cross-cutting concerns
+- **Hook Stack**: PipelineMiddlewareStack for per-processor step-level concerns
 
 Key internal methods:
 - `suspendExecution()`: Wraps processors in closures for lazy evaluation
@@ -26,7 +27,9 @@ Key internal methods:
 - `shouldContinueProcessing()`: Consolidated flow control logic checking computation state
 - `handleProcessorError()`: Consolidated error handling converting exceptions to failure computations
 
-The Pipeline implements both modern middleware patterns and legacy hook compatibility through middleware adapters.
+The Pipeline implements a dual middleware architecture:
+- **Pipeline middleware** (`withMiddleware()`) wraps the entire processor chain
+- **Per-processor hooks** (`beforeEach()`, `afterEach()`, etc.) wrap individual processors
 
 ### 2. Computation (The Message Container)
 **File**: `src/Computation.php`
@@ -96,25 +99,40 @@ process($value, $tags) →
   On first value() call: →
     getSourceValue() → 
     createInitialComputation($value, $tags) →
-    applyProcessors($computation) →
-      For each processor:
-        executeProcessor() →
-          If middleware exists: middleware.process() →
-          executeProcessorDirect() →
-            Reflection check for computation vs value processor →
-            Execute with error handling →
-            Convert result to computation
-        Short-circuit on failure
+    Pipeline middleware wraps entire chain:
+      middleware.process(computation, applyProcessors) →
+        applyProcessors($computation) →
+          For each processor:
+            executeProcessor() →
+              If per-processor hooks exist: hooks.process() →
+              executeProcessorDirect() →
+                Reflection check for computation vs value processor →
+                Execute with error handling →
+                Convert result to computation
+            Short-circuit on failure
+        Return processed computation
+      Return wrapped computation
     applyFinalizer() →
     Return final computation
 ```
 
 ### 3. Middleware Chain Execution
+
+**Pipeline Middleware (wraps entire chain):**
 ```
-middleware.process(computation, finalProcessor) →
+pipeline.middleware.process(computation, applyProcessors) →
   array_reduce builds chain from reversed middleware array →
   Each middleware wraps next in closure →
-  Execution flows: MW1 → MW2 → MW3 → finalProcessor → MW3 → MW2 → MW1
+  Execution flows: MW1 → MW2 → MW3 → [P1→P2→P3] → MW3 → MW2 → MW1
+```
+
+**Per-Processor Hooks (wraps individual processors):**
+```
+hooks.process(computation, processor) →
+  array_reduce builds chain from reversed hook array →
+  Each hook wraps next in closure →
+  Execution flows: H1 → H2 → H3 → processor → H3 → H2 → H1
+  Applied separately for each processor: [P1], [P2], [P3]
 ```
 
 ## Error Handling Strategy
@@ -179,8 +197,9 @@ The pipeline employs two complementary error tracking mechanisms that address di
 ### The Two Mechanisms
 
 **1. Result::failure($error) - The Monadic Layer**
+
 ```php
-$result->isFailure()           // Business logic: did computation succeed?
+$result->exception()           // Business logic: did computation succeed?
 $result->exception()           // Original exception for debugging  
 $result->errorMessage()        // Human-readable error for users
 ```

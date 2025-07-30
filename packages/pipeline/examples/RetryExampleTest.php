@@ -36,7 +36,7 @@ class RetryExampleTest
             })
             ->process();
 
-        assert($result->success(), "Should succeed after retries");
+        assert($result->isSuccess(), "Should succeed after retries");
         assert($attemptCount === 3, "Should make exactly 3 attempts");
         
         $attempts = $result->computation()->all(RetryAttemptTag::class);
@@ -70,7 +70,7 @@ class RetryExampleTest
             })
             ->process();
 
-        assert(!$result->success(), "Should fail after all retries exhausted");
+        assert(!$result->isSuccess(), "Should fail after all retries exhausted");
         assert($attemptCount === 3, "Should make exactly 3 attempts");
         
         $attempts = $result->computation()->all(RetryAttemptTag::class);
@@ -117,7 +117,7 @@ class RetryExampleTest
                 })
                 ->process();
 
-            assert($result->success(), "$strategy strategy should succeed");
+            assert($result->isSuccess(), "$strategy strategy should succeed");
             assert(count($attemptTimes) === 3, "Should make 3 attempts");
             
             // Verify timing intervals match strategy
@@ -234,7 +234,7 @@ class RetryExampleTest
             })
             ->process();
 
-        assert(!$result->success(), "Should fail after retries");
+        assert(!$result->isSuccess(), "Should fail after retries");
         assert($attemptCount === 3, "Should retry RuntimeException 3 times");
         
         // Test non-retryable exception
@@ -249,7 +249,7 @@ class RetryExampleTest
             })
             ->process();
 
-        assert(!$result2->success(), "Should fail immediately");
+        assert(!$result2->isSuccess(), "Should fail immediately");
         assert($attemptCount === 1, "Should NOT retry InvalidArgumentException");
         
         echo "  ✅ Exception filtering works correctly\n";

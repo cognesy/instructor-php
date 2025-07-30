@@ -13,47 +13,20 @@ use Cognesy\Pipeline\Tags\ErrorTag;
 use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Exception;
+use Generator;
 use ReflectionFunction;
 use Throwable;
 
 /**
- * Pipeline with middleware support.
- *
- * This version provides both the familiar hook-based API and the more powerful
- * middleware pattern for advanced use cases. Hooks are implemented as middleware
- * under the hood, providing a seamless upgrade path.
- *
- * Features:
- * - Middleware support for advanced cross-cutting concerns
- * - Automatic conversion of hooks to middleware
- * - Composable and reusable middleware components
- *
- * Example migration:
- * ```php
- * // Old hook style (still works)
- * $pipeline
- *     ->beforeEach(fn($computation) => $computation->with(new TimestampTag()))
- *     ->afterEach(fn($computation) => logger()->info($computation->result()->unwrap()));
- *
- * // New middleware style (more powerful)
- * $pipeline->withMiddleware(
- *     new TimestampMiddleware(),
- *     new LoggingMiddleware(logger())
- * );
- *
- * // Mixed approach (hooks + middleware)
- * $pipeline
- *     ->beforeEach(fn($comp) => $comp->with(new TimestampTag()))
- *     ->withMiddleware(new DistributedTracingMiddleware($tracer))
- *     ->afterEach(fn($comp) => logger()->info($comp->result()->unwrap()));
- * ```
+ * Pipeline with per-execution & per-step middleware support.
  */
 class Pipeline
 {
-    private mixed $source;
+    private Closure $source;
     private array $processors = [];
     private ?Closure $finalizer = null;
-    private PipelineMiddlewareStack $middleware;
+    private PipelineMiddlewareStack $middleware; // per-pipeline execution middleware stack
+    private PipelineMiddlewareStack $hooks; // per-processor execution hooks
 
     public function __construct(
         ?callable $source = null,
@@ -64,6 +37,7 @@ class Pipeline
         $this->processors = $processors;
         $this->finalizer = $finalizer;
         $this->middleware = new PipelineMiddlewareStack();
+        $this->hooks = new PipelineMiddlewareStack();
     }
 
     // STATIC FACTORY METHODS ////////////////////////////////////////////////////////////////
@@ -78,7 +52,7 @@ class Pipeline
 
     /**
      * Create a new MessageChain instance with an initial value.
-     * 
+     *
      * This is a convenience method that creates a source callable that returns the value.
      */
     public static function for(mixed $value): static {
@@ -113,8 +87,7 @@ class Pipeline
     /**
      * Add tags to be included in the computation during processing.
      */
-    public function withTag(TagInterface ...$tags): static
-    {
+    public function withTag(TagInterface ...$tags): static {
         $this->middleware->add(AddTagsMiddleware::with(...$tags));
         return $this;
     }
@@ -123,7 +96,7 @@ class Pipeline
      * Add a hook to execute before each processor.
      */
     public function beforeEach(callable $hook): static {
-        $this->middleware->add(CallBeforeMiddleware::call($hook));
+        $this->hooks->add(CallBeforeMiddleware::call($hook));
         return $this;
     }
 
@@ -131,7 +104,7 @@ class Pipeline
      * Add a hook to execute after each processor.
      */
     public function afterEach(callable $hook): static {
-        $this->middleware->add(CallAfterMiddleware::call($hook));
+        $this->hooks->add(CallAfterMiddleware::call($hook));
         return $this;
     }
 
@@ -141,7 +114,7 @@ class Pipeline
      * Implemented as ConditionalMiddleware with skipRemaining=true.
      */
     public function finishWhen(callable $condition): static {
-        $this->middleware->add(ConditionalMiddleware::finishWhen($condition));
+        $this->hooks->add(ConditionalMiddleware::finishWhen($condition));
         return $this;
     }
 
@@ -151,7 +124,7 @@ class Pipeline
      * Implemented as CallOnFailureMiddleware for consistency.
      */
     public function onFailure(callable $handler): static {
-        $this->middleware->add(CallOnFailureMiddleware::call($handler));
+        $this->hooks->add(CallOnFailureMiddleware::call($handler));
         return $this;
     }
 
@@ -179,7 +152,7 @@ class Pipeline
         return $this;
     }
 
-    public function then(?callable $callback = null): static {
+    public function finally(?callable $callback = null): static {
         $this->finalizer = $callback;
         return $this;
     }
@@ -190,12 +163,16 @@ class Pipeline
         return new PendingComputation(function () use ($value, $tags) {
             $initialValue = $value ?? $this->getSourceValue();
             $computation = $this->createInitialComputation($initialValue, $tags);
-            $processedComputation = $this->applyProcessors($computation);
+            // Apply middleware around entire processor chain
+            $processedComputation = $this->middleware->isEmpty()
+                ? $this->applyProcessors($computation)
+                : $this->middleware->process($computation, fn($comp) => $this->applyProcessors($comp));
+
             return $this->applyFinalizer($this->finalizer, $processedComputation);
         });
     }
 
-    public function stream(iterable $stream): \Generator {
+    public function stream(iterable $stream): Generator {
         foreach ($stream as $item) {
             yield $this->process($item);
         }
@@ -216,7 +193,7 @@ class Pipeline
         }
         return new Computation(
             $this->asResult($value),
-            TagMap::create($tags)
+            TagMap::create($tags),
         );
     }
 
@@ -235,20 +212,20 @@ class Pipeline
         };
     }
 
-    private function suspendSideEffectExecution(callable $processor, NullStrategy $Allow) : callable {
-        return function (Computation $computation) use ($processor) {
-            $this->executeProcessor($processor, $computation, NullStrategy::Allow);
+    private function suspendSideEffectExecution(callable $processor, NullStrategy $onNull) : callable {
+        return function (Computation $computation) use ($processor, $onNull) {
+            $this->executeProcessor($processor, $computation, $onNull);
             return $computation;
         };
     }
 
     private function executeProcessor(callable $processor, Computation $computation, NullStrategy $onNull): Computation {
-        // If no middleware, execute processor directly (backward compatibility)
-        if ($this->middleware->isEmpty()) {
+        // If no per processor hooks, execute processor directly (backward compatibility)
+        if ($this->hooks->isEmpty()) {
             return $this->executeProcessorDirect($processor, $computation, $onNull);
         }
-        // Execute processor through middleware stack
-        return $this->middleware->process($computation, function (Computation $computation) use ($processor, $onNull) {
+        // Execute per processor hooks
+        return $this->hooks->process($computation, function (Computation $computation) use ($processor, $onNull) {
             return $this->executeProcessorDirect($processor, $computation, $onNull);
         });
     }
@@ -287,18 +264,13 @@ class Pipeline
 
     private function applyProcessors(Computation $computation): Computation {
         $current = $computation;
-
         foreach ($this->processors as $processor) {
             $result = $processor($current);
-
-            // Check if processing should continue
             if (!$this->shouldContinueProcessing($result)) {
                 return $result;
             }
-
             $current = $result;
         }
-
         return $current;
     }
 
@@ -316,7 +288,6 @@ class Pipeline
         }
         return $this->asComputation($value, $computation, NullStrategy::Allow);
     }
-
 
     private function asResult(mixed $value, NullStrategy $onNull = NullStrategy::Allow): Result {
         return match (true) {
@@ -346,27 +317,25 @@ class Pipeline
 
     /**
      * Determines if pipeline processing should continue based on computation state.
-     * 
+     *
      * @param Computation $computation Current computation to check
      * @return bool True if processing should continue, false to short-circuit
      */
-    private function shouldContinueProcessing(Computation $computation): bool
-    {
+    private function shouldContinueProcessing(Computation $computation): bool {
         return $computation->result()->isSuccess();
     }
 
     /**
      * Handles processor errors by converting them to failure computations.
-     * 
-     * Consolidates error-to-Result conversion, ErrorTag creation, and 
+     *
+     * Consolidates error-to-Result conversion, ErrorTag creation, and
      * computation wrapping into a single, focused method.
-     * 
+     *
      * @param Computation $computation Current computation context
      * @param mixed $error Error to handle (Exception, string, or other)
      * @return Computation Failure computation with error Result and ErrorTag
      */
-    private function handleProcessorError(Computation $computation, mixed $error): Computation
-    {
+    private function handleProcessorError(Computation $computation, mixed $error): Computation {
         // Convert error to Result::failure
         $failure = match (true) {
             $error instanceof Result => $error,

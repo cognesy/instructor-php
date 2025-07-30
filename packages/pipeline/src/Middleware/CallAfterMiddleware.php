@@ -50,11 +50,9 @@ readonly class CallAfterMiddleware implements PipelineMiddlewareInterface
     public function handle(Computation $computation, callable $next): Computation {
         // Process through next middleware first
         $processedComputation = $next($computation);
-
         try {
             // Execute the after callback on the processed result
             $result = ($this->callback)($processedComputation);
-
             // If callback returns an computation, use it; otherwise use processed computation
             return $result instanceof Computation ? $result : $processedComputation;
         } catch (Exception $e) {

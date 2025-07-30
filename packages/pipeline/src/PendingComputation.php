@@ -5,16 +5,13 @@ namespace Cognesy\Pipeline;
 use Closure;
 use Cognesy\Utils\Result\Result;
 use Generator;
+use Throwable;
 
 /**
- * Extended PendingExecution that supports Computation-aware operations.
+ * PendingComputation supports Computation-aware operations.
  *
  * This class extends the lazy evaluation pattern to work with Computation objects,
  * providing multiple ways to extract results while preserving tags and metadata.
- *
- * Supports all original PendingExecution operations plus:
- * - computation() for full Computation with tags
- * - Computation-aware transformations
  */
 class PendingComputation
 {
@@ -28,13 +25,12 @@ class PendingComputation
 
     /**
      * Execute and return the raw, unwrapped value.
-     *
      * Extracts the value from Result and ignores all tags.
      */
     public function value(): mixed {
         $output = $this->executeOnce();
         return match(true) {
-            $output instanceof Computation => $output->result()->valueOr(null),
+            $output instanceof Computation => $output->valueOr(null),
             $output instanceof Result => $output->valueOr(null),
             default => $output,
         };
@@ -42,7 +38,6 @@ class PendingComputation
 
     /**
      * Execute and return the Result object.
-     *
      * Extracts the Result from Computation, ignoring tags.
      */
     public function result(): Result {
@@ -56,7 +51,6 @@ class PendingComputation
 
     /**
      * Execute and return the full Computation with tags.
-     *
      * This preserves all metadata and cross-cutting concerns.
      */
     public function computation(): Computation {
@@ -70,39 +64,30 @@ class PendingComputation
     /**
      * Execute and return boolean indicating success.
      */
-    public function success(): bool {
-        try {
-            $output = $this->executeOnce();
-            return match(true) {
-                $output instanceof Computation => $output->result()->isSuccess(),
-                $output instanceof Result => $output->isSuccess(),
-                default => $output !== null,
-            };
-        } catch (\Throwable) {
-            return false;
-        }
+    public function isSuccess(): bool {
+        $output = $this->executeOnce();
+        return match(true) {
+            $output instanceof Computation => $output->isSuccess(),
+            $output instanceof Result => $output->isSuccess(),
+            default => ($output !== null),
+        };
     }
 
     /**
      * Execute and return the failure reason if computation failed.
      */
-    public function failure(): mixed {
-        try {
-            $output = $this->executeOnce();
-            return match(true) {
-                $output instanceof Computation && $output->isFailure() => $output->result()->error(),
-                $output instanceof Result && $output->isFailure() => $output->error(),
-                default => null,
-            };
-        } catch (\Throwable $e) {
-            return $e;
-        }
+    public function exception(): ?Throwable {
+        $output = $this->executeOnce();
+        return match(true) {
+            $output instanceof Computation && $output->isFailure() => $output->result()->exception(),
+            $output instanceof Result && $output->isFailure() => $output->exception(),
+            default => null,
+        };
     }
 
     /**
      * Transform the pending execution with a callback that receives the Computation.
-     *
-     * Returns a new MessagePendingExecution that applies the transformation
+     * Returns a new PendingComputation that applies the transformation
      * when executed.
      */
     public function mapComputation(callable $transformer): self {
@@ -167,7 +152,11 @@ class PendingComputation
      */
     private function executeOnce(): mixed {
         if (!$this->executed) {
-            $this->cachedOutput = ($this->deferred)();
+            try {
+                $this->cachedOutput = ($this->deferred)();
+            } catch (Throwable $e) {
+                $this->cachedOutput = Result::failure($e);
+            }
             $this->executed = true;
         }
         return $this->cachedOutput;

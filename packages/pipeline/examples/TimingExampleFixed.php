@@ -150,9 +150,9 @@ $errorResult = Pipeline::for(10)
     })
     ->process();
 
-echo "Success: " . ($errorResult->success() ? 'Yes' : 'No') . "\n";
-if (!$errorResult->success()) {
-    echo "Error: " . $errorResult->failure()->getMessage() . "\n";
+echo "Success: " . ($errorResult->isSuccess() ? 'Yes' : 'No') . "\n";
+if (!$errorResult->isSuccess()) {
+    echo "Error: " . $errorResult->exception()->getMessage() . "\n";
 }
 
 $timings = $errorResult->computation()->all(TimingTag::class);

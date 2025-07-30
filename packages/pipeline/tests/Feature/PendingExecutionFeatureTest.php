@@ -12,7 +12,7 @@ class ExecutionTag implements TagInterface
     public function __construct(public readonly string $phase) {}
 }
 
-describe('PendingExecution Feature Tests', function () {
+describe('PendingComputation Feature Tests', function () {
     it('supports lazy evaluation with complex transformations', function () {
         $executionCount = 0;
         
@@ -78,9 +78,9 @@ describe('PendingExecution Feature Tests', function () {
             ->map(fn($x) => $x * 2) // Should not execute
             ->then(fn($x) => $x + 10); // Should not execute
 
-        expect($transformed->success())->toBeFalse();
-        expect($transformed->failure())->toBeInstanceOf(Exception::class);
-        expect($transformed->failure()->getMessage())->toBe('Initial failure');
+        expect($transformed->isSuccess())->toBeFalse();
+        expect($transformed->exception())->toBeInstanceOf(Exception::class);
+        expect($transformed->exception()->getMessage())->toBe('Initial failure');
         
         // Tags are preserved even in failure
         $computation = $transformed->computation();
@@ -178,7 +178,7 @@ describe('PendingExecution Feature Tests', function () {
         });
 
         // Check success without executing full computation
-        $isSuccessful = $pending->map(fn($x) => $x > 0)->success();
+        $isSuccessful = $pending->map(fn($x) => $x > 0)->isSuccess();
         expect($isSuccessful)->toBeTrue();
         expect($executionCount)->toBe(1);
 
@@ -209,10 +209,10 @@ describe('PendingExecution Feature Tests', function () {
         });
 
         // The error should be captured in the success/failure check
-        expect($errorResult->success())->toBeFalse();
+        expect($errorResult->isSuccess())->toBeFalse();
         
         // The failure should contain our exception
-        $failure = $errorResult->failure();
+        $failure = $errorResult->exception();
         expect($failure)->toBeInstanceOf(Exception::class);
         expect($failure->getMessage())->toBe('Value too small');
     });

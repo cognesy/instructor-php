@@ -91,7 +91,7 @@ describe('Pipeline Feature Tests', function () {
             ->computation();
 
         expect($computation->result()->unwrap())->toBe(22); // (1 + 10) * 2
-        expect($computation->count(TestTag::class))->toBe(4); // 2 tags per processor
+        expect($computation->count(TestTag::class))->toBe(2); // 2 tags per chain (chain-level middleware)
     });
 
     it('uses beforeEach and afterEach hooks', function () {
@@ -112,7 +112,7 @@ describe('Pipeline Feature Tests', function () {
             ->computation();
 
         expect($computation->result()->unwrap())->toBe(11); // (5 * 2) + 1
-        expect($values)->toBe(['before:5', 'after:10', 'before:10', 'after:11']);
+        expect($values)->toBe(['before:5', 'after:10', 'before:10', 'after:11']); // Per-processor: hooks run for each processor
     });
 
     it('handles early termination with finishWhen', function () {
@@ -146,9 +146,9 @@ describe('Pipeline Feature Tests', function () {
             })
             ->process();
 
-        expect($result->success())->toBeFalse();
+        expect($result->isSuccess())->toBeFalse();
         expect($failureHandled)->toBeTrue();
-        expect($result->failure())->toBeInstanceOf(Exception::class);
+        expect($result->exception())->toBeInstanceOf(Exception::class);
     });
 
     it('processes with tap for side effects', function () {
@@ -169,7 +169,7 @@ describe('Pipeline Feature Tests', function () {
     it('works with finalizer', function () {
         $result = Pipeline::for(10)
             ->through(fn($x) => $x * 2)
-            ->then(fn($result) => 'Final: ' . $result->unwrap())
+            ->finally(fn($result) => 'Final: ' . $result->unwrap())
             ->process()
             ->value();
 

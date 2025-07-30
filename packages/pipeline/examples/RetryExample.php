@@ -316,12 +316,12 @@ function demonstrateBasicRetry(): void
         })
         ->process();
 
-    if ($result->success()) {
+    if ($result->isSuccess()) {
         echo "✅ Operation succeeded!\n";
         echo "Result: " . json_encode($result->value()) . "\n";
     } else {
         echo "❌ Operation failed after all retries\n";
-        echo "Error: " . $result->failure()->getMessage() . "\n";
+        echo "Error: " . $result->exception()->getMessage() . "\n";
     }
 
     // Analyze retry attempts
@@ -391,12 +391,12 @@ function demonstrateRetryWithProcessing(): void
         })
         ->process();
 
-    if ($result->success()) {
+    if ($result->isSuccess()) {
         echo "✅ Data processing completed!\n";
         echo "Processed data: " . json_encode($result->value(), JSON_PRETTY_PRINT) . "\n";
     } else {
         echo "❌ Data processing failed\n";
-        echo "Error: " . $result->failure()->getMessage() . "\n";
+        echo "Error: " . $result->exception()->getMessage() . "\n";
     }
 
     // Show attempt history
@@ -452,7 +452,7 @@ function demonstrateRetryConfiguration(): void
         $attempts = $result->computation()->all(RetryAttemptTag::class);
         echo "  Total attempts: " . count($attempts) . "\n";
         echo "  Total time: " . number_format($totalTime * 1000, 2) . "ms\n";
-        echo "  Result: " . ($result->success() ? '✅ Success' : '❌ Failed') . "\n";
+        echo "  Result: " . ($result->isSuccess() ? '✅ Success' : '❌ Failed') . "\n";
     }
 }
 

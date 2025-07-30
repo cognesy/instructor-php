@@ -21,7 +21,7 @@ describe('Workflow Unit Tests', function () {
         $result = $workflow->process('hello');
         
         expect($result->value())->toBe('HELLO');
-        expect($result->success())->toBeTrue();
+        expect($result->isSuccess())->toBeTrue();
     });
 
     it('chains multiple pipelines in sequence', function () {
@@ -117,7 +117,7 @@ describe('Workflow Unit Tests', function () {
 
         $result = $workflow->process('test');
         
-        expect($result->success())->toBeFalse();
+        expect($result->isSuccess())->toBeFalse();
         expect($step2Executed)->toBeFalse(); // Step 2 never executed
         expect($step3Executed)->toBeFalse(); // Step 3 never executed
     });
@@ -199,19 +199,19 @@ describe('Workflow Unit Tests', function () {
 
         // Test premium processing
         $premiumResult = $workflow->process(['type' => 'premium', 'value' => 100]);
-        expect($premiumResult->success())->toBeTrue();
+        expect($premiumResult->isSuccess())->toBeTrue();
         expect($premiumResult->value()['premium_processed'] ?? false)->toBeTrue();
         expect($premiumResult->value()['standard_processed'] ?? false)->toBeFalse();
 
         // Test standard processing
         $standardResult = $workflow->process(['type' => 'standard', 'value' => 50]);
-        expect($standardResult->success())->toBeTrue();
+        expect($standardResult->isSuccess())->toBeTrue();
         expect($standardResult->value()['standard_processed'] ?? false)->toBeTrue();
         expect($standardResult->value()['premium_processed'] ?? false)->toBeFalse();
 
         // Test invalid data
         $invalidResult = $workflow->process('invalid');
-        expect($invalidResult->success())->toBeFalse();
+        expect($invalidResult->isSuccess())->toBeFalse();
     });
 
     it('processes with initial tags', function () {

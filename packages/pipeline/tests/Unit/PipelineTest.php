@@ -81,7 +81,7 @@ describe('Pipeline Unit Tests', function () {
         it('sets finalizer with then()', function () {
             $pipeline = Pipeline::for(10)
                 ->through(fn($x) => $x * 2)
-                ->then(fn($result) => 'Final: ' . $result->unwrap());
+                ->finally(fn($result) => 'Final: ' . $result->unwrap());
 
             $result = $pipeline->process()->value();
             expect($result)->toBe('Final: 20');
@@ -193,7 +193,7 @@ describe('Pipeline Unit Tests', function () {
 
             $result = $pipeline->process();
             
-            expect($result->success())->toBeFalse();
+            expect($result->isSuccess())->toBeFalse();
             expect($failureHandled)->toBeTrue();
         });
     });
@@ -247,8 +247,8 @@ describe('Pipeline Unit Tests', function () {
 
             $result = $pipeline->process();
             
-            expect($result->success())->toBeFalse();
-            expect($result->failure())->toBeInstanceOf(Exception::class);
+            expect($result->isSuccess())->toBeFalse();
+            expect($result->exception())->toBeInstanceOf(Exception::class);
         });
 
         it('handles null values based on NullStrategy', function () {
@@ -258,10 +258,10 @@ describe('Pipeline Unit Tests', function () {
             $pipelineFail = Pipeline::for('test')
                 ->through(fn($x) => null, NullStrategy::Fail);
 
-            expect($pipelineAllow->process()->success())->toBeTrue();
+            expect($pipelineAllow->process()->isSuccess())->toBeTrue();
             expect($pipelineAllow->process()->value())->toBeNull();
             
-            expect($pipelineFail->process()->success())->toBeFalse();
+            expect($pipelineFail->process()->isSuccess())->toBeFalse();
         });
 
         it('short-circuits on failures', function () {

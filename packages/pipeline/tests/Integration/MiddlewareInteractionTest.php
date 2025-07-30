@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\TagInterface;
-use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Tags\TimingTag;
 use Cognesy\Utils\Result\Result;
 
@@ -196,7 +196,7 @@ describe('Middleware Interaction Integration Tests', function () {
             $computation = $result->computation();
             
             // Should succeed after retries
-            expect($result->success())->toBeTrue();
+            expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe('DATA');
             expect($failCount)->toBe(3);
             
@@ -258,9 +258,9 @@ describe('Middleware Interaction Integration Tests', function () {
                 ->through(fn($x) => $x)
                 ->process();
             
-            expect($result->success())->toBeFalse();
-            expect($result->failure())->toBeInstanceOf(RuntimeException::class);
-            expect($result->failure()->getMessage())->toBe('Middleware failure');
+            expect($result->isSuccess())->toBeFalse();
+            expect($result->exception())->toBeInstanceOf(RuntimeException::class);
+            expect($result->exception()->getMessage())->toBe('Middleware failure');
         });
 
         it('allows middleware to transform failures', function () {
@@ -287,8 +287,8 @@ describe('Middleware Interaction Integration Tests', function () {
                 ->through(fn($x) => throw new RuntimeException('Original error'))
                 ->process();
             
-            expect($result->success())->toBeFalse();
-            expect($result->failure()->getMessage())->toBe('Transformed: Original error');
+            expect($result->isSuccess())->toBeFalse();
+            expect($result->exception()->getMessage())->toBe('Transformed: Original error');
         });
     });
 

@@ -52,7 +52,6 @@ readonly class CallOnFailureMiddleware implements PipelineMiddlewareInterface
     public function handle(Computation $computation, callable $next): Computation {
         // Process through next middleware
         $result = $next($computation);
-
         // If result is a failure, execute the callback
         if ($result->result()->isFailure()) {
             try {
@@ -62,7 +61,6 @@ readonly class CallOnFailureMiddleware implements PipelineMiddlewareInterface
                 // We don't want to mask the original failure
             }
         }
-
         // Always return the result unchanged - this is for side effects only
         return $result;
     }

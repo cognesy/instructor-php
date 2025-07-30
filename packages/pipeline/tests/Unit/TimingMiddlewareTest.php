@@ -39,7 +39,7 @@ describe('TimingMiddleware Unit Tests', function () {
             })
             ->process();
 
-        expect($result->success())->toBeFalse();
+        expect($result->isSuccess())->toBeFalse();
         
         $computation = $result->computation();
         $timings = $computation->all(TimingTag::class);

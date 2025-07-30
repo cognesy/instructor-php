@@ -105,7 +105,7 @@ $result = $orderWorkflow->process($orderData);
 
 echo "────────────────────────────────────────\n";
 
-if ($result->success()) {
+if ($result->isSuccess()) {
     echo "✅ Order processed successfully!\n\n";
     
     $finalOrder = $result->value();
@@ -118,7 +118,7 @@ if ($result->success()) {
     echo "  - Confirmation sent: " . ($finalOrder['confirmation_sent'] ? '✅' : '❌') . "\n";
 } else {
     echo "❌ Order processing failed!\n";
-    echo "Error: " . $result->failure()->getMessage() . "\n";
+    echo "Error: " . $result->exception()->getMessage() . "\n";
 }
 
 // Show timing information from all pipeline stages

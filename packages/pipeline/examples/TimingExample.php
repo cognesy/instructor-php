@@ -97,9 +97,9 @@ $result = Pipeline::for(10)
     })
     ->process();
 
-echo "Success: " . ($result->success() ? 'Yes' : 'No') . "\n";
-if (!$result->success()) {
-    echo "Error: " . $result->failure()->getMessage() . "\n";
+echo "Success: " . ($result->isSuccess() ? 'Yes' : 'No') . "\n";
+if (!$result->isSuccess()) {
+    echo "Error: " . $result->exception()->getMessage() . "\n";
 }
 
 $timings = $result->computation()->all(TimingTag::class);

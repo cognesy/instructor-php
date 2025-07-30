@@ -126,7 +126,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Computation::wrap('success');
             });
             
-            expect($pending->success())->toBeTrue();
+            expect($pending->isSuccess())->toBeTrue();
         });
 
         it('returns false for failed computation', function () {
@@ -134,7 +134,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Computation::wrap(Result::failure(new Exception('failed')));
             });
             
-            expect($pending->success())->toBeFalse();
+            expect($pending->isSuccess())->toBeFalse();
         });
 
         it('returns true for successful Result', function () {
@@ -142,7 +142,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Result::success('ok');
             });
             
-            expect($pending->success())->toBeTrue();
+            expect($pending->isSuccess())->toBeTrue();
         });
 
         it('returns false for failed Result', function () {
@@ -150,7 +150,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Result::failure(new Exception('error'));
             });
             
-            expect($pending->success())->toBeFalse();
+            expect($pending->isSuccess())->toBeFalse();
         });
 
         it('returns false when computation throws', function () {
@@ -158,7 +158,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 throw new Exception('computation error');
             });
             
-            expect($pending->success())->toBeFalse();
+            expect($pending->isSuccess())->toBeFalse();
         });
     });
 
@@ -168,7 +168,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Computation::wrap('success');
             });
             
-            expect($pending->failure())->toBeNull();
+            expect($pending->exception())->toBeNull();
         });
 
         it('returns error for failed computation', function () {
@@ -177,7 +177,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Computation::wrap(Result::failure($error));
             });
             
-            expect($pending->failure())->toBe($error);
+            expect($pending->exception())->toBe($error);
         });
 
         it('returns error for failed Result', function () {
@@ -186,7 +186,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 return Result::failure($error);
             });
             
-            expect($pending->failure())->toBe($error);
+            expect($pending->exception())->toBe($error);
         });
 
         it('returns exception when computation throws', function () {
@@ -194,7 +194,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 throw new Exception('thrown error');
             });
             
-            $failure = $pending->failure();
+            $failure = $pending->exception();
             expect($failure)->toBeInstanceOf(Exception::class);
             expect($failure->getMessage())->toBe('thrown error');
         });
@@ -262,8 +262,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 
                 $mapped = $pending->map(fn($x) => $x * 2); // Should not execute
                 
-                expect($mapped->success())->toBeFalse();
-                expect($mapped->failure()->getMessage())->toBe('error');
+                expect($mapped->isSuccess())->toBeFalse();
+                expect($mapped->exception()->getMessage())->toBe('error');
             });
 
             it('transforms direct Result', function () {
@@ -329,8 +329,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
                 
                 $chained = $pending->then(fn($x) => $x * 3); // Should not execute
                 
-                expect($chained->success())->toBeFalse();
-                expect($chained->failure()->getMessage())->toBe('failed');
+                expect($chained->isSuccess())->toBeFalse();
+                expect($chained->exception()->getMessage())->toBe('failed');
             });
         });
     });
@@ -348,7 +348,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             $pending->value();
             $pending->result();
             $pending->computation();
-            $pending->success();
+            $pending->isSuccess();
             
             expect($executionCount)->toBe(1);
         });

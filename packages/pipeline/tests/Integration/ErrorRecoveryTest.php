@@ -112,9 +112,9 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 })
                 ->process();
             
-            expect($result->success())->toBeFalse();
-            expect($result->failure())->toBeInstanceOf(InvalidArgumentException::class);
-            expect($result->failure()->getMessage())->toBe('Stage 1 failed: input');
+            expect($result->isSuccess())->toBeFalse();
+            expect($result->exception())->toBeInstanceOf(InvalidArgumentException::class);
+            expect($result->exception()->getMessage())->toBe('Stage 1 failed: input');
             
             $computation = $result->computation();
             expect($computation->has(ErrorContextTag::class))->toBeTrue();
@@ -163,7 +163,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 ->through(fn($x) => $x ?? 'fallback', NullStrategy::Allow)
                 ->process();
             
-            expect($result1->success())->toBeTrue();
+            expect($result1->isSuccess())->toBeTrue();
             expect($result1->value())->toBe('fallback');
             
             // Test NullStrategy::Fail
@@ -172,8 +172,8 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 ->through(fn($x) => "never-reached-$x")
                 ->process();
             
-            expect($result2->success())->toBeFalse();
-            expect($result2->failure()->getMessage())->toContain('null');
+            expect($result2->isSuccess())->toBeFalse();
+            expect($result2->exception()->getMessage())->toContain('null');
         });
 
         it('handles null in complex processing chains', function () {
@@ -183,7 +183,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 ->through(fn($x) => strtoupper($x))
                 ->process();
             
-            expect($result->success())->toBeTrue();
+            expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe('DEFAULT');
         });
     });
@@ -200,7 +200,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 })
                 ->process();
             
-            expect($result->success())->toBeTrue();
+            expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe('recovered-value');
             expect($attempts)->toBe(1);
             
@@ -216,20 +216,20 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
             
             // First failure
             $result1 = $pipeline->process();
-            expect($result1->success())->toBeFalse();
+            expect($result1->isSuccess())->toBeFalse();
             expect($result1->computation()->first(CircuitBreakerTag::class)->state)->toBe('closed');
             expect($result1->computation()->first(CircuitBreakerTag::class)->failureCount)->toBe(0);
             
             // Second failure - should open circuit after this failure
             $result2 = $pipeline->process();
-            expect($result2->success())->toBeFalse();
+            expect($result2->isSuccess())->toBeFalse();
             expect($result2->computation()->first(CircuitBreakerTag::class)->state)->toBe('closed');
             expect($result2->computation()->first(CircuitBreakerTag::class)->failureCount)->toBe(1);
             
             // Third attempt - circuit should now be open
             $result3 = $pipeline->process();
-            expect($result3->success())->toBeFalse();
-            expect($result3->failure()->getMessage())->toBe('Circuit breaker open');
+            expect($result3->isSuccess())->toBeFalse();
+            expect($result3->exception()->getMessage())->toBe('Circuit breaker open');
         });
     });
 
@@ -248,7 +248,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 })
                 ->process();
             
-            expect($result->success())->toBeTrue();
+            expect($result->isSuccess())->toBeTrue();
             expect(count($result->value()))->toBe(5);
             expect($result->value()[0])->toBe('ITEM');
         });
@@ -277,7 +277,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 ->through(fn($x) => $x)
                 ->process();
             
-            expect($result1->success())->toBeTrue();
+            expect($result1->isSuccess())->toBeTrue();
             
             // Slow operation - should timeout
             $result2 = Pipeline::for('slow')
@@ -288,8 +288,8 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 })
                 ->process();
             
-            expect($result2->success())->toBeFalse();
-            expect($result2->failure()->getMessage())->toBe('Operation timeout');
+            expect($result2->isSuccess())->toBeFalse();
+            expect($result2->exception()->getMessage())->toBe('Operation timeout');
         });
     });
 
@@ -347,15 +347,15 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
             $result = Pipeline::for('outer-data')
                 ->through(function($x) use ($innerPipeline) {
                     $innerResult = $innerPipeline->process();
-                    if (!$innerResult->success()) {
-                        throw new RuntimeException('Outer failure: ' . $innerResult->failure()->getMessage());
+                    if (!$innerResult->isSuccess()) {
+                        throw new RuntimeException('Outer failure: ' . $innerResult->exception()->getMessage());
                     }
                     return $innerResult->value();
                 })
                 ->process();
             
-            expect($result->success())->toBeFalse();
-            expect($result->failure()->getMessage())->toBe('Outer failure: Inner failure');
+            expect($result->isSuccess())->toBeFalse();
+            expect($result->exception()->getMessage())->toBe('Outer failure: Inner failure');
         });
 
         it('handles error recovery with partial success', function () {
@@ -379,7 +379,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 })
                 ->process();
             
-            expect($result->success())->toBeTrue();
+            expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(['GOOD1', 'GOOD2', 'GOOD3']);
             expect(count($errors))->toBe(2);
             expect($errors[0])->toBe('Cannot process: bad');
@@ -410,7 +410,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
                 ->through(fn($x) => strtoupper($x)) // Should not execute
                 ->process();
             
-            expect($result->success())->toBeFalse();
+            expect($result->isSuccess())->toBeFalse();
             
             $computation = $result->computation();
             $contexts = $computation->all(ErrorContextTag::class);

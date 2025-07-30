@@ -70,6 +70,10 @@ final readonly class Computation
         return $this->result->unwrap();
     }
 
+    public function valueOr(mixed $default): mixed {
+        return $this->result->valueOr($default);
+    }
+
     public function isSuccess(): bool {
         return $this->result->isSuccess();
     }

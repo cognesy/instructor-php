@@ -43,10 +43,8 @@ readonly class CallBeforeMiddleware implements PipelineMiddlewareInterface
         try {
             // Execute the before callback
             $result = ($this->callback)($computation);
-
             // If callback returns an computation, use it; otherwise use original
             $modifiedComputation = $result instanceof Computation ? $result : $computation;
-
             // Continue with next middleware
             return $next($modifiedComputation);
         } catch (Exception $e) {
