@@ -13,7 +13,7 @@ use Throwable;
  * This class extends the lazy evaluation pattern to work with Computation objects,
  * providing multiple ways to extract results while preserving tags and metadata.
  */
-class PendingComputation
+class PendingExecution
 {
     private Closure $deferred;
     private bool $executed = false;
@@ -57,7 +57,7 @@ class PendingComputation
         $output = $this->executeOnce();
         return match(true) {
             $output instanceof Computation => $output,
-            default => Computation::wrap($output),
+            default => Computation::for($output),
         };
     }
 
@@ -93,10 +93,7 @@ class PendingComputation
     public function mapComputation(callable $transformer): self {
         return new self(function () use ($transformer) {
             $output = $this->executeOnce();
-            return match(true) {
-                $output instanceof Computation => $transformer($output),
-                default => $transformer(Computation::wrap($output)),
-            };
+            return $this->applyFnTakingComputation($output, $transformer);
         });
     }
 
@@ -108,7 +105,7 @@ class PendingComputation
     public function map(callable $transformer): self {
         return new self(function () use ($transformer) {
             $output = $this->executeOnce();
-            return $this->applyToValue($output, $transformer);
+            return $this->applyFnTakingValue($output, $transformer);
         });
     }
 
@@ -118,10 +115,7 @@ class PendingComputation
      * The next computation receives the unwrapped value, preserving computation.
      */
     public function then(callable $next): self {
-        return new self(function () use ($next) {
-            $output = $this->executeOnce();
-            return $this->applyToValue($output, $next);
-        });
+        return $this->map($next);
     }
 
     /**
@@ -170,13 +164,20 @@ class PendingComputation
         };
     }
 
-    private function applyToValue(mixed $output, callable $mapper) {
+    private function applyFnTakingValue(mixed $output, callable $mapper) {
         return match(true) {
             $output instanceof Computation && $output->isFailure() => $output,
             $output instanceof Result && $output->isFailure() => $output,
             $output instanceof Computation => $output->withResult(Result::from($mapper($output->result()->unwrap()))),
             $output instanceof Result => Result::from($mapper($output->unwrap())),
             default => $mapper($output),
+        };
+    }
+
+    private function applyFnTakingComputation(mixed $output, callable $mapper): Computation {
+        return match(true) {
+            $output instanceof Computation => $mapper($output),
+            default => $mapper(Computation::for($output)),
         };
     }
 }

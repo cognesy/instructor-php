@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PendingComputation;
+use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\TagInterface;
 use Cognesy\Utils\Result\Result;
@@ -16,9 +16,9 @@ describe('PendingComputation Feature Tests', function () {
     it('supports lazy evaluation with complex transformations', function () {
         $executionCount = 0;
         
-        $pending = new PendingComputation(function() use (&$executionCount) {
+        $pending = new PendingExecution(function() use (&$executionCount) {
             $executionCount++;
-            $computation = Computation::wrap(['count' => 5], [new ExecutionTag('initial')]);
+            $computation = Computation::for(['count' => 5], [new ExecutionTag('initial')]);
             return $computation->withResult(Result::success(['count' => 10]));
         });
 
@@ -41,8 +41,8 @@ describe('PendingComputation Feature Tests', function () {
     });
 
     it('chains complex transformations with computation preservation', function () {
-        $pending = new PendingComputation(function() {
-            return Computation::wrap(100, [
+        $pending = new PendingExecution(function() {
+            return Computation::for(100, [
                 new ExecutionTag('start'),
                 new ExecutionTag('initialized')
             ]);
@@ -67,8 +67,8 @@ describe('PendingComputation Feature Tests', function () {
     });
 
     it('handles failure propagation through transformation chain', function () {
-        $pending = new PendingComputation(function() {
-            return Computation::wrap(
+        $pending = new PendingExecution(function() {
+            return Computation::for(
                 Result::failure(new Exception('Initial failure')),
                 [new ExecutionTag('failed')]
             );
@@ -88,8 +88,8 @@ describe('PendingComputation Feature Tests', function () {
     });
 
     it('processes streams with complex data', function () {
-        $pending = new PendingComputation(function() {
-            return Computation::wrap([
+        $pending = new PendingExecution(function() {
+            return Computation::for([
                 ['id' => 1, 'name' => 'Alice'],
                 ['id' => 2, 'name' => 'Bob'],
                 ['id' => 3, 'name' => 'Charlie']
@@ -139,8 +139,8 @@ describe('PendingComputation Feature Tests', function () {
     });
 
     it('handles complex computation transformations', function () {
-        $pending = new PendingComputation(function() {
-            return Computation::wrap('hello', [new ExecutionTag('created')]);
+        $pending = new PendingExecution(function() {
+            return Computation::for('hello', [new ExecutionTag('created')]);
         });
 
         $result = $pending
@@ -172,9 +172,9 @@ describe('PendingComputation Feature Tests', function () {
     it('supports conditional execution patterns', function () {
         $executionCount = 0;
         
-        $pending = new PendingComputation(function() use (&$executionCount) {
+        $pending = new PendingExecution(function() use (&$executionCount) {
             $executionCount++;
-            return Computation::wrap(42);
+            return Computation::for(42);
         });
 
         // Check success without executing full computation
@@ -196,8 +196,8 @@ describe('PendingComputation Feature Tests', function () {
     });
 
     it('handles error recovery in transformation chains', function () {
-        $pending = new PendingComputation(function() {
-            return Computation::wrap(10);
+        $pending = new PendingExecution(function() {
+            return Computation::for(10);
         });
 
         // Test that we can detect when computation will fail

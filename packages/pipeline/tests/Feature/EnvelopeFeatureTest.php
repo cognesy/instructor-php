@@ -28,7 +28,7 @@ class TraceTag implements TagInterface
 
 describe('Computation Feature Tests', function () {
     it('manages complex tag lifecycle', function () {
-        $computation = Computation::wrap('initial data', [
+        $computation = Computation::for('initial data', [
             new FeatureTestTag('created', time()),
             new TraceTag('trace-123')
         ]);
@@ -61,7 +61,7 @@ describe('Computation Feature Tests', function () {
     });
 
     it('handles tag filtering and removal', function () {
-        $computation = Computation::wrap('data', [
+        $computation = Computation::for('data', [
             new FeatureTestTag('temp1'),
             new MetricsTag('cpu', 85.5),
             new FeatureTestTag('temp2'),
@@ -83,7 +83,7 @@ describe('Computation Feature Tests', function () {
     });
 
     it('supports tag querying patterns', function () {
-        $computation = Computation::wrap('data')
+        $computation = Computation::for('data')
             ->with(new MetricsTag('latency', 150.0))
             ->with(new MetricsTag('throughput', 1000.0))
             ->with(new TraceTag('parent-trace'))
@@ -111,7 +111,7 @@ describe('Computation Feature Tests', function () {
     it('preserves tags through message transformations', function () {
         $originalData = ['user' => 'john', 'action' => 'login'];
         
-        $computation = Computation::wrap($originalData, [
+        $computation = Computation::for($originalData, [
             new TraceTag('req-123'),
             new FeatureTestTag('request', 'received')
         ]);
@@ -142,7 +142,7 @@ describe('Computation Feature Tests', function () {
     });
 
     it('handles computation chaining with tags', function () {
-        $computation = Computation::wrap('start');
+        $computation = Computation::for('start');
 
         // Simulate processing pipeline
         $steps = ['validate', 'transform', 'persist', 'notify'];
@@ -165,7 +165,7 @@ describe('Computation Feature Tests', function () {
     });
 
     it('supports tag aggregation patterns', function () {
-        $computation = Computation::wrap('data')
+        $computation = Computation::for('data')
             ->with(new MetricsTag('requests', 100))
             ->with(new MetricsTag('errors', 5))
             ->with(new MetricsTag('duration', 250.5))

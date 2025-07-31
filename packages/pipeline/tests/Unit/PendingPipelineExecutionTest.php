@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PendingComputation;
+use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\TagInterface;
 use Cognesy\Utils\Result\Result;
 
@@ -14,14 +14,14 @@ class PendingTestTag implements TagInterface
 describe('PendingPipelineExecution Unit Tests', function () {
     describe('Construction', function () {
         it('constructs with callable', function () {
-            $pending = new PendingComputation(fn() => 'test');
-            expect($pending)->toBeInstanceOf(PendingComputation::class);
+            $pending = new PendingExecution(fn() => 'test');
+            expect($pending)->toBeInstanceOf(PendingExecution::class);
         });
 
         it('does not execute computation on construction', function () {
             $executed = false;
             
-            new PendingComputation(function() use (&$executed) {
+            new PendingExecution(function() use (&$executed) {
                 $executed = true;
                 return 'test';
             });
@@ -32,15 +32,15 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Value Extraction', function () {
         it('extracts value from computation result', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap(42);
+            $pending = new PendingExecution(function() {
+                return Computation::for(42);
             });
             
             expect($pending->value())->toBe(42);
         });
 
         it('extracts value from direct Result', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 return Result::success('direct result');
             });
             
@@ -48,7 +48,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns raw value for non-computation/result', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 return ['raw' => 'data'];
             });
             
@@ -56,8 +56,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns null for failed computation', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap(Result::failure(new Exception('error')));
+            $pending = new PendingExecution(function() {
+                return Computation::for(Result::failure(new Exception('error')));
             });
             
             expect($pending->value())->toBeNull();
@@ -66,8 +66,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Result Extraction', function () {
         it('extracts Result from computation', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap('test data');
+            $pending = new PendingExecution(function() {
+                return Computation::for('test data');
             });
             
             $result = $pending->result();
@@ -78,7 +78,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         it('returns Result directly', function () {
             $originalResult = Result::success('direct');
-            $pending = new PendingComputation(function() use ($originalResult) {
+            $pending = new PendingExecution(function() use ($originalResult) {
                 return $originalResult;
             });
             
@@ -86,7 +86,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('wraps non-result values in success Result', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 return 'wrapped';
             });
             
@@ -98,9 +98,9 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Computation Extraction', function () {
         it('returns computation directly', function () {
-            $originalComputation = Computation::wrap('test', [new PendingTestTag('original')]);
+            $originalComputation = Computation::for('test', [new PendingTestTag('original')]);
             
-            $pending = new PendingComputation(function() use ($originalComputation) {
+            $pending = new PendingExecution(function() use ($originalComputation) {
                 return $originalComputation;
             });
             
@@ -110,7 +110,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('wraps non-computation results', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 return Result::success('to wrap');
             });
             
@@ -122,23 +122,23 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Success/Failure Checking', function () {
         it('returns true for successful computation', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap('success');
+            $pending = new PendingExecution(function() {
+                return Computation::for('success');
             });
             
             expect($pending->isSuccess())->toBeTrue();
         });
 
         it('returns false for failed computation', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap(Result::failure(new Exception('failed')));
+            $pending = new PendingExecution(function() {
+                return Computation::for(Result::failure(new Exception('failed')));
             });
             
             expect($pending->isSuccess())->toBeFalse();
         });
 
         it('returns true for successful Result', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 return Result::success('ok');
             });
             
@@ -146,7 +146,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns false for failed Result', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 return Result::failure(new Exception('error'));
             });
             
@@ -154,7 +154,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns false when computation throws', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 throw new Exception('computation error');
             });
             
@@ -164,8 +164,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Failure Extraction', function () {
         it('returns null for successful computation', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap('success');
+            $pending = new PendingExecution(function() {
+                return Computation::for('success');
             });
             
             expect($pending->exception())->toBeNull();
@@ -173,8 +173,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         it('returns error for failed computation', function () {
             $error = new Exception('computation error');
-            $pending = new PendingComputation(function() use ($error) {
-                return Computation::wrap(Result::failure($error));
+            $pending = new PendingExecution(function() use ($error) {
+                return Computation::for(Result::failure($error));
             });
             
             expect($pending->exception())->toBe($error);
@@ -182,7 +182,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         it('returns error for failed Result', function () {
             $error = new Exception('result error');
-            $pending = new PendingComputation(function() use ($error) {
+            $pending = new PendingExecution(function() use ($error) {
                 return Result::failure($error);
             });
             
@@ -190,7 +190,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns exception when computation throws', function () {
-            $pending = new PendingComputation(function() {
+            $pending = new PendingExecution(function() {
                 throw new Exception('thrown error');
             });
             
@@ -202,8 +202,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
     describe('Stream Processing', function () {
         it('streams iterable computation content', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap([1, 2, 3]);
+            $pending = new PendingExecution(function() {
+                return Computation::for([1, 2, 3]);
             });
             
             $items = [];
@@ -215,8 +215,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('streams single value as single item', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap('single');
+            $pending = new PendingExecution(function() {
+                return Computation::for('single');
             });
             
             $items = [];
@@ -228,8 +228,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
         });
 
         it('returns empty stream for failed result', function () {
-            $pending = new PendingComputation(function() {
-                return Computation::wrap(Result::failure(new Exception('error')));
+            $pending = new PendingExecution(function() {
+                return Computation::for(Result::failure(new Exception('error')));
             });
             
             $items = [];
@@ -244,8 +244,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
     describe('Transformations', function () {
         describe('map()', function () {
             it('transforms successful computation value', function () {
-                $pending = new PendingComputation(function() {
-                    return Computation::wrap(10, [new PendingTestTag('original')]);
+                $pending = new PendingExecution(function() {
+                    return Computation::for(10, [new PendingTestTag('original')]);
                 });
                 
                 $mapped = $pending->map(fn($x) => $x * 2);
@@ -256,8 +256,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
 
             it('preserves failure in computation', function () {
-                $pending = new PendingComputation(function() {
-                    return Computation::wrap(Result::failure(new Exception('error')));
+                $pending = new PendingExecution(function() {
+                    return Computation::for(Result::failure(new Exception('error')));
                 });
                 
                 $mapped = $pending->map(fn($x) => $x * 2); // Should not execute
@@ -267,7 +267,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
 
             it('transforms direct Result', function () {
-                $pending = new PendingComputation(function() {
+                $pending = new PendingExecution(function() {
                     return Result::success(5);
                 });
                 
@@ -279,8 +279,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         describe('mapComputation()', function () {
             it('transforms computation directly', function () {
-                $pending = new PendingComputation(function() {
-                    return Computation::wrap('test');
+                $pending = new PendingExecution(function() {
+                    return Computation::for('test');
                 });
                 
                 $mapped = $pending->mapComputation(function($computation) {
@@ -295,7 +295,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
 
             it('wraps non-computation results', function () {
-                $pending = new PendingComputation(function() {
+                $pending = new PendingExecution(function() {
                     return 'raw value';
                 });
                 
@@ -311,8 +311,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
 
         describe('then()', function () {
             it('chains computation with successful computation', function () {
-                $pending = new PendingComputation(function() {
-                    return Computation::wrap(5, [new PendingTestTag('chained')]);
+                $pending = new PendingExecution(function() {
+                    return Computation::for(5, [new PendingTestTag('chained')]);
                 });
                 
                 $chained = $pending->then(fn($x) => $x * 3);
@@ -323,8 +323,8 @@ describe('PendingPipelineExecution Unit Tests', function () {
             });
 
             it('short-circuits on failure', function () {
-                $pending = new PendingComputation(function() {
-                    return Computation::wrap(Result::failure(new Exception('failed')));
+                $pending = new PendingExecution(function() {
+                    return Computation::for(Result::failure(new Exception('failed')));
                 });
                 
                 $chained = $pending->then(fn($x) => $x * 3); // Should not execute
@@ -339,7 +339,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         it('executes computation only once', function () {
             $executionCount = 0;
             
-            $pending = new PendingComputation(function() use (&$executionCount) {
+            $pending = new PendingExecution(function() use (&$executionCount) {
                 $executionCount++;
                 return 'result';
             });
@@ -356,7 +356,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
         it('caches result across transformations', function () {
             $executionCount = 0;
             
-            $pending = new PendingComputation(function() use (&$executionCount) {
+            $pending = new PendingExecution(function() use (&$executionCount) {
                 $executionCount++;
                 return 10;
             });
@@ -374,7 +374,7 @@ describe('PendingPipelineExecution Unit Tests', function () {
             $baseExecutions = 0;
             $transformExecutions = 0;
             
-            $base = new PendingComputation(function() use (&$baseExecutions) {
+            $base = new PendingExecution(function() use (&$baseExecutions) {
                 $baseExecutions++;
                 return 5;
             });

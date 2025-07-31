@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Workflow;
 
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PendingComputation;
+use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\TagMap;
 use Cognesy\Utils\Result\Result;
@@ -77,8 +77,8 @@ class Workflow
      * Returns a PendingPipelineExecution that provides access to the final
      * result value, computation with all accumulated tags, and execution state.
      */
-    public function process(mixed $value = null, array $tags = []): PendingComputation {
-        return new PendingComputation(function () use ($value, $tags) {
+    public function process(mixed $value = null, array $tags = []): PendingExecution {
+        return new PendingExecution(function () use ($value, $tags) {
             $computation = $this->createInitialComputation($value, $tags);
             return $this->executeSteps($computation);
         });

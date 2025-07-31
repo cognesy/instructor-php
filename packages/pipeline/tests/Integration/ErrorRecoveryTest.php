@@ -317,7 +317,7 @@ describe('Error Recovery and Edge Cases Integration Tests', function () {
         });
 
         it('handles computation immutability under concurrent modifications', function () {
-            $baseComputation = Computation::wrap('base', [new ErrorContextTag('initial')]);
+            $baseComputation = Computation::for('base', [new ErrorContextTag('initial')]);
             
             // Simulate concurrent modifications
             $modified1 = $baseComputation->with(new ErrorContextTag('branch1'));

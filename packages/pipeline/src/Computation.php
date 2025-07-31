@@ -52,7 +52,7 @@ final readonly class Computation
      * If the value is already a Result, it's used directly.
      * Otherwise, it's wrapped in Result::success().
      */
-    public static function wrap(mixed $value, array $tags = []): self {
+    public static function for(mixed $value, array $tags = []): self {
         return new self(
             result: Result::from($value),
             tags: TagMap::create($tags)

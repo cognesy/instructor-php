@@ -2,7 +2,7 @@
 
 use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Enums\NullStrategy;
-use Cognesy\Pipeline\PendingComputation;
+use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\TagInterface;
@@ -203,7 +203,7 @@ describe('Pipeline Unit Tests', function () {
             $pipeline = Pipeline::for('test');
             $pending = $pipeline->process();
             
-            expect($pending)->toBeInstanceOf(PendingComputation::class);
+            expect($pending)->toBeInstanceOf(PendingExecution::class);
         });
 
         it('processes with initial value override', function () {

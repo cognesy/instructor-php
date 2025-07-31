@@ -22,7 +22,7 @@ use Throwable;
  */
 class Pipeline
 {
-    private Closure $source;
+    private ?Closure $source;
     private array $processors = [];
     private ?Closure $finalizer = null;
     private PipelineMiddlewareStack $middleware; // per-pipeline execution middleware stack
@@ -159,8 +159,8 @@ class Pipeline
 
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
-    public function process(mixed $value = null, array $tags = []): PendingComputation {
-        return new PendingComputation(function () use ($value, $tags) {
+    public function process(mixed $value = null, array $tags = []): PendingExecution {
+        return new PendingExecution(function () use ($value, $tags) {
             $initialValue = $value ?? $this->getSourceValue();
             $computation = $this->createInitialComputation($initialValue, $tags);
             // Apply middleware around entire processor chain

@@ -34,7 +34,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('wraps mixed values with wrap()', function () {
-            $computation = Computation::wrap('simple string');
+            $computation = Computation::for('simple string');
             
             expect($computation->result()->unwrap())->toBe('simple string');
             expect($computation->result()->isSuccess())->toBeTrue();
@@ -42,7 +42,7 @@ describe('Computation Unit Tests', function () {
 
         it('wraps Result values directly', function () {
             $result = Result::failure(new Exception('test error'));
-            $computation = Computation::wrap($result);
+            $computation = Computation::for($result);
             
             expect($computation->result())->toBe($result);
             expect($computation->result()->isFailure())->toBeTrue();
@@ -50,7 +50,7 @@ describe('Computation Unit Tests', function () {
 
         it('wraps with initial tags', function () {
             $tags = [new UnitTagA('initial'), new UnitTagB(42)];
-            $computation = Computation::wrap('data', $tags);
+            $computation = Computation::for('data', $tags);
             
             expect($computation->count())->toBe(2);
             expect($computation->has(UnitTagA::class))->toBeTrue();
@@ -70,7 +70,7 @@ describe('Computation Unit Tests', function () {
 
     describe('Tag Management', function () {
         it('adds tags with with()', function () {
-            $computation = Computation::wrap('data');
+            $computation = Computation::for('data');
             $tagA = new UnitTagA('test');
             $tagB = new UnitTagB(123);
             
@@ -85,7 +85,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('adds multiple tags of same type', function () {
-            $computation = Computation::wrap('data');
+            $computation = Computation::for('data');
             $tag1 = new UnitTagA('first');
             $tag2 = new UnitTagA('second');
             
@@ -97,7 +97,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('removes tags with without()', function () {
-            $computation = Computation::wrap('data', [
+            $computation = Computation::for('data', [
                 new UnitTagA('keep'),
                 new UnitTagB(123),
                 new UnitTagC(['remove' => 'me'])
@@ -112,7 +112,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('replaces message with withMessage()', function () {
-            $computation = Computation::wrap('original', [new UnitTagA('keep')]);
+            $computation = Computation::for('original', [new UnitTagA('keep')]);
             $newResult = Result::success('replaced');
             
             $newComputation = $computation->withResult($newResult);
@@ -125,7 +125,7 @@ describe('Computation Unit Tests', function () {
 
     describe('Tag Queries', function () {
         beforeEach(function () {
-            $this->computation = Computation::wrap('data', [
+            $this->computation = Computation::for('data', [
                 new UnitTagA('first'),
                 new UnitTagB(10),
                 new UnitTagA('second'),
@@ -187,7 +187,7 @@ describe('Computation Unit Tests', function () {
 
     describe('Immutability', function () {
         it('preserves original computation when adding tags', function () {
-            $original = Computation::wrap('data', [new UnitTagA('original')]);
+            $original = Computation::for('data', [new UnitTagA('original')]);
             $modified = $original->with(new UnitTagB(123));
             
             expect($original->count())->toBe(1);
@@ -198,7 +198,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('preserves original computation when removing tags', function () {
-            $original = Computation::wrap('data', [
+            $original = Computation::for('data', [
                 new UnitTagA('keep'),
                 new UnitTagB(123)
             ]);
@@ -212,7 +212,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('preserves original computation when replacing message', function () {
-            $original = Computation::wrap('original');
+            $original = Computation::for('original');
             $modified = $original->withResult(Result::success('modified'));
             
             expect($original->result()->unwrap())->toBe('original');
@@ -222,14 +222,14 @@ describe('Computation Unit Tests', function () {
 
     describe('Edge Cases', function () {
         it('handles empty tag arrays', function () {
-            $computation = Computation::wrap('data', []);
+            $computation = Computation::for('data', []);
             
             expect($computation->count())->toBe(0);
             expect($computation->has(UnitTagA::class))->toBeFalse();
         });
 
         it('handles null values in Result', function () {
-            $computation = Computation::wrap(null);
+            $computation = Computation::for(null);
             
             expect($computation->result()->unwrap())->toBeNull();
             expect($computation->result()->isSuccess())->toBeTrue();
@@ -238,7 +238,7 @@ describe('Computation Unit Tests', function () {
         it('handles failure Results', function () {
             $error = new Exception('test error');
             $result = Result::failure($error);
-            $computation = Computation::wrap($result, [new UnitTagA('error-context')]);
+            $computation = Computation::for($result, [new UnitTagA('error-context')]);
             
             expect($computation->result()->isFailure())->toBeTrue();
             expect($computation->result()->error())->toBe($error);
@@ -246,7 +246,7 @@ describe('Computation Unit Tests', function () {
         });
 
         it('preserves tags through failure transitions', function () {
-            $computation = Computation::wrap('success', [new UnitTagA('context')])
+            $computation = Computation::for('success', [new UnitTagA('context')])
                 ->withResult(Result::failure(new Exception('now failed')));
             
             expect($computation->result()->isFailure())->toBeTrue();
