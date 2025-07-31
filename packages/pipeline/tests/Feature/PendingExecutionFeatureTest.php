@@ -12,7 +12,7 @@ class ExecutionTag implements TagInterface
     public function __construct(public readonly string $phase) {}
 }
 
-describe('PendingComputation Feature Tests', function () {
+describe('PendingExecution Feature Tests', function () {
     it('supports lazy evaluation with complex transformations', function () {
         $executionCount = 0;
         

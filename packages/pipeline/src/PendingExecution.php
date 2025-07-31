@@ -8,7 +8,7 @@ use Generator;
 use Throwable;
 
 /**
- * PendingComputation supports Computation-aware operations.
+ * PendingExecution supports Computation-aware operations.
  *
  * This class extends the lazy evaluation pattern to work with Computation objects,
  * providing multiple ways to extract results while preserving tags and metadata.
@@ -87,7 +87,7 @@ class PendingExecution
 
     /**
      * Transform the pending execution with a callback that receives the Computation.
-     * Returns a new PendingComputation that applies the transformation
+     * Returns a new PendingExecution that applies the transformation
      * when executed.
      */
     public function mapComputation(callable $transformer): self {

@@ -49,8 +49,8 @@ Key internal methods:
 
 The tag indexing system allows O(1) access to tags by type while maintaining insertion order within each type.
 
-### 3. PendingComputation (The Lazy Evaluator)
-**File**: `src/PendingComputation.php`
+### 3. PendingExecution (The Lazy Evaluator)
+**File**: `src/PendingExecution.php`
 **Responsibility**: Lazy evaluation, result extraction, transformation chaining
 
 This class implements lazy evaluation with memoization. It wraps a computation closure and provides multiple result extraction methods:
@@ -63,7 +63,7 @@ Internal state:
 Key internal methods:
 - `executeOnce()`: Ensures computation runs exactly once, caches result
 - `getResultFromOutput()`: Extracts Result from various return types
-- Transformation methods create new PendingComputation instances
+- Transformation methods create new PendingExecution instances
 
 The lazy evaluation ensures expensive computations only run when needed, while memoization prevents repeated execution.
 
@@ -95,7 +95,7 @@ Pipeline::for($value) →
 ### 2. Execution Flow
 ```
 process($value, $tags) →
-  PendingComputation created with computation closure →
+  PendingExecution created with computation closure →
   On first value() call: →
     getSourceValue() → 
     createInitialComputation($value, $tags) →
@@ -373,7 +373,7 @@ This provides backward compatibility while enabling modern middleware patterns.
 The pipeline is designed for single-threaded use but is stateless after construction:
 - All state changes create new instances (immutability)
 - No shared mutable state between pipeline instances
-- PendingComputation memoization is instance-local
+- PendingExecution memoization is instance-local
 
 ## Code Organization and Refactoring Insights
 
