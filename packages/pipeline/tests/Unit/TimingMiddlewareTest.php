@@ -3,7 +3,7 @@
 use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Tags\TimingTag;
+use Cognesy\Pipeline\Tag\TimingTag;
 use Cognesy\Utils\Result\Result;
 
 describe('TimingMiddleware Unit Tests', function () {

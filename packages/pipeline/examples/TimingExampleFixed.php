@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Tags\TimingTag;
+use Cognesy\Pipeline\Tag\TimingTag;
 
 echo "🕒 Pipeline Timing Middleware Demo (Fixed)\n";
 echo "==========================================\n\n";
@@ -94,7 +94,7 @@ echo "3. Error Handling (Custom Middleware)\n";
 echo "------------------------------------\n";
 
 // Create a custom error-aware timing middleware
-class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\PipelineMiddlewareInterface
+class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface
 {
     public function handle(\Cognesy\Pipeline\Computation $computation, callable $next): \Cognesy\Pipeline\Computation
     {

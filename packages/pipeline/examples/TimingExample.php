@@ -4,7 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Tags\TimingTag;
+use Cognesy\Pipeline\Tag\TimingTag;
 
 /**
  * Example demonstrating the TimingMiddleware for measuring pipeline execution time.

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\TagInterface;
-use Cognesy\Pipeline\Tags\TimingTag;
+use Cognesy\Pipeline\Tag\TagInterface;
+use Cognesy\Pipeline\Tag\TimingTag;
 use Cognesy\Utils\Result\Result;
 
 // Test middleware implementations for integration testing

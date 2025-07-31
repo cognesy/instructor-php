@@ -3,8 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\TagInterface;
+use Cognesy\Pipeline\Tag\TagInterface;
 
 /**
  * Middleware that adds tags to the computation during processing.

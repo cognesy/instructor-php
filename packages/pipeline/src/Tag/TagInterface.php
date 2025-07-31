@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline;
+namespace Cognesy\Pipeline\Tag;
 
 /**
  * Represents a tag that can be attached to a Computation.

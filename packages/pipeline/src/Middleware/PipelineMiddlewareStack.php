@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline;
+namespace Cognesy\Pipeline\Middleware;
+
+use Cognesy\Pipeline\Computation;
 
 /**
  * Manages a stack of middleware for MessageChain processing.

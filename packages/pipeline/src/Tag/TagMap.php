@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline;
+namespace Cognesy\Pipeline\Tag;
 
 use Cognesy\Utils\Arrays;
 
@@ -40,7 +40,7 @@ use Cognesy\Utils\Arrays;
 final readonly class TagMap
 {
     /**
-     * @param array<class-string, array<TagInterface>> $tags Tags indexed by class name
+     * @param TagInterface $tags Tags indexed by class name
      */
     private function __construct(
         private array $tags = []
@@ -140,7 +140,7 @@ final readonly class TagMap
      * 
      * @template T of TagInterface
      * @param class-string<T> $tagClass Class of tag to retrieve
-     * @return T|null Most recent tag of specified type, or null
+     * @return TagInterface|null Most recent tag of specified type, or null
      */
     public function last(string $tagClass): ?TagInterface
     {
@@ -156,7 +156,7 @@ final readonly class TagMap
      * 
      * @template T of TagInterface
      * @param class-string<T> $tagClass Class of tag to retrieve
-     * @return T|null First tag of specified type, or null
+     * @return TagInterface|null First tag of specified type, or null
      */
     public function first(string $tagClass): ?TagInterface
     {
@@ -310,7 +310,7 @@ final readonly class TagMap
      * Returns the internal array structure with class names as keys
      * and arrays of tags as values.
      * 
-     * @return array<class-string, array<TagInterface>> Internal array structure
+     * @return TagInterface Internal array structure
      */
     public function toArray(): array
     {

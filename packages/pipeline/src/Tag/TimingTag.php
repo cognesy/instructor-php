@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tags;
-
-use Cognesy\Pipeline\TagInterface;
+namespace Cognesy\Pipeline\Tag;
 
 /**
  * Tag that records timing information for pipeline operations.

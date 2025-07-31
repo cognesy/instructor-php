@@ -5,7 +5,7 @@ namespace Cognesy\Pipeline\Workflow;
 use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\TagMap;
+use Cognesy\Pipeline\Tag\TagMap;
 use Cognesy\Utils\Result\Result;
 
 /**

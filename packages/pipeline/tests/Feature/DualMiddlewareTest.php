@@ -1,9 +1,9 @@
 <?php
 
-use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\TagInterface;
+use Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\Tag\TagInterface;
 
 // Test tags for validation
 class PipelineMiddlewareTag implements TagInterface {

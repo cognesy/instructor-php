@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\TagInterface;
+use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Utils\Result\Result;
 
 // Test tags for feature testing

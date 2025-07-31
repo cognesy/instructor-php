@@ -1,0 +1,24 @@
+{
+    "runner.bootstrap": "vendor/autoload.php",
+    "runner.path": "tests/Benchmarks",
+    "runner.iterations": [10],
+    "runner.revs": [1000],
+    "runner.warmup": [2],
+    "report.generators": {
+        "memory": {
+            "extends": "aggregate",
+            "cols": ["benchmark", "subject", "mem_peak", "mean"],
+            "title": "Memory Usage Analysis"
+        },
+        "memory_comparison": {
+            "extends": "table",
+            "cols": ["benchmark", "subject", "mem_peak", "mean"],
+            "title": "Memory Footprint Comparison"
+        },
+        "detailed": {
+            "extends": "aggregate",
+            "cols": ["benchmark", "subject", "set", "revs", "its", "mem_peak", "mean", "best", "worst", "rstdev"],
+            "title": "Detailed Performance & Memory Analysis"
+        }
+    }
+}

@@ -3,8 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\Tags\TimingTag;
+use Cognesy\Pipeline\Tag\TimingTag;
 
 /**
  * Middleware that measures execution time for pipeline processors.
@@ -52,7 +51,7 @@ readonly class TimingMiddleware implements PipelineMiddlewareInterface
         
         // Extract error details from ErrorTag if failure occurred
         if (!$success) {
-            $errorTag = $result->first(\Cognesy\Pipeline\Tags\ErrorTag::class);
+            $errorTag = $result->first(\Cognesy\Pipeline\Tag\ErrorTag::class);
             $error = $errorTag?->getMessage() ?? 'Unknown error';
         }
         

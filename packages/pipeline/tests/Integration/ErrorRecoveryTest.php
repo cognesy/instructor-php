@@ -2,10 +2,10 @@
 
 use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\Enums\NullStrategy;
+use Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\TagInterface;
-use Cognesy\Pipeline\Tags\ErrorTag;
+use Cognesy\Pipeline\Tag\ErrorTag;
+use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Utils\Result\Result;
 
 // Test tags for error scenario tracking

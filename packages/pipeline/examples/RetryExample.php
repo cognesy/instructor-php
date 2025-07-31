@@ -3,9 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
-use Cognesy\Pipeline\TagInterface;
+use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Utils\Result\Result;
 
 // ============================================================================

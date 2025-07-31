@@ -2,7 +2,7 @@
 
 use Cognesy\Pipeline\Middleware\TimingMiddleware;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Tags\TimingTag;
+use Cognesy\Pipeline\Tag\TimingTag;
 use Cognesy\Pipeline\Workflow\Workflow;
 
 describe('Workflow Unit Tests', function () {
@@ -221,7 +221,7 @@ describe('Workflow Unit Tests', function () {
         $workflow = Workflow::empty()
             ->through($pipeline);
 
-        $customTag = new class implements \Cognesy\Pipeline\TagInterface {
+        $customTag = new class implements \Cognesy\Pipeline\Tag\TagInterface {
             public function __construct(public readonly string $value = 'test') {}
         };
 

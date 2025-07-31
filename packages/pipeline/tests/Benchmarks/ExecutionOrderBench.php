@@ -69,7 +69,8 @@ class ExecutionOrderBench
             ->through(fn($words) => array_filter($words, fn($word) => strlen($word) >= 3))
             ->through(fn($words) => array_map('strtolower', $words))
             ->finally(fn($result) => implode(' ', $result->unwrap()))
-            ->process();
+            ->process()
+            ->value();
     }
 
     /**
@@ -89,7 +90,8 @@ class ExecutionOrderBench
             ->through(fn($words) => array_filter($words, fn($word) => strlen($word) >= 3))
             ->through(fn($words) => array_map('strtolower', $words))
             ->finally(fn($result) => implode(' ', $result->unwrap()))
-            ->process();
+            ->process()
+            ->value();
     }
 
     /**

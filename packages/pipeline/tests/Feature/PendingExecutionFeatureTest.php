@@ -3,7 +3,7 @@
 use Cognesy\Pipeline\Computation;
 use Cognesy\Pipeline\PendingExecution;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\TagInterface;
+use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Utils\Result\Result;
 
 // Test tags for pending execution testing

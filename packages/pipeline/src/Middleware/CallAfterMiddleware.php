@@ -4,7 +4,6 @@ namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
 use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PipelineMiddlewareInterface;
 use Exception;
 
 /**

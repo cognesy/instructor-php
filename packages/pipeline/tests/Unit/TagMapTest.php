@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\TagInterface;
-use Cognesy\Pipeline\TagMap;
+use Cognesy\Pipeline\Tag\TagInterface;
+use Cognesy\Pipeline\Tag\TagMap;
 
 // Test tag implementations for isolated testing
 class TestTagA implements TagInterface

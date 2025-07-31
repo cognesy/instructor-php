@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tags;
+namespace Cognesy\Pipeline\Tag;
 
-use Cognesy\Pipeline\TagInterface;
 use Throwable;
 
 /**

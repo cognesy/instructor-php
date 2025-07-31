@@ -41,3 +41,8 @@ Thumbs.db
 /tests/_output/
 /tests/_support/_generated/
 /coverage/
+
+# Other temporary files
+*.tmp
+/temp
+/tmp
