@@ -1,0 +1,35 @@
+{
+    "runner.bootstrap": "vendor/autoload.php",
+    "runner.path": "tests/Benchmarks",
+    "runner.iterations": [10],
+    "runner.revs": [1000],
+    "runner.warmup": [3],
+    "runner.time_unit": "microseconds",
+    "report.generators": {
+        "comprehensive": {
+            "generator": "table",
+            "title": "Comprehensive Pipeline Performance Analysis",
+            "cols": ["benchmark", "subject", "mem_peak", "time_avg", "time_min", "time_max", "rstdev"],
+            "sort": {
+                "time_avg": "asc"
+            }
+        },
+        "memory": {
+            "generator": "table",
+            "title": "Memory Overhead Analysis", 
+            "cols": ["subject", "mem_peak", "time_avg"],
+            "sort": {
+                "mem_peak": "asc"
+            }
+        },
+        "table": {
+            "generator": "table",
+            "cols": ["benchmark", "subject", "mem_peak", "time_avg"],
+            "sort": {
+                "time_avg": "asc"
+            }
+        }
+    },
+    "storage.driver": "xml",
+    "storage.xml_storage_path": ".phpbench/storage"
+}

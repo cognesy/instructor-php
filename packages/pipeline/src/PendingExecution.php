@@ -2,182 +2,111 @@
 
 namespace Cognesy\Pipeline;
 
-use Closure;
 use Cognesy\Utils\Result\Result;
 use Generator;
 use Throwable;
 
 /**
- * PendingExecution supports Computation-aware operations.
+ * PendingExecution supports ProcessingState-aware operations.
  *
- * This class extends the lazy evaluation pattern to work with Computation objects,
+ * This class extends the lazy evaluation pattern to work with ProcessingState objects,
  * providing multiple ways to extract results while preserving tags and metadata.
  */
 class PendingExecution
 {
-    private Closure $deferred;
-    private bool $executed = false;
-    private mixed $cachedOutput = null;
+    use Traits\HandlesOutput;
 
-    public function __construct(callable $deferred) {
-        $this->deferred = $deferred;
+    private ProcessingState $initialState;
+    private Pipeline $pipeline;
+
+    private ?ProcessingState $cachedOutput = null;
+
+    public function __construct(
+        ProcessingState $initialState,
+        Pipeline $pipeline,
+    ) {
+        $this->initialState = $initialState;
+        $this->pipeline = $pipeline;
+    }
+
+    public function for(mixed $value, array $tags = []): self {
+        $this->initialState = ProcessingState::with($value, $tags);
+        $this->cachedOutput = null; // Reset cached output
+        return $this;
     }
 
     /**
-     * Execute and return the raw, unwrapped value.
-     * Extracts the value from Result and ignores all tags.
+     * @return Generator<PendingExecution>
      */
-    public function value(): mixed {
-        $output = $this->executeOnce();
-        return match(true) {
-            $output instanceof Computation => $output->valueOr(null),
-            $output instanceof Result => $output->valueOr(null),
-            default => $output,
-        };
+    public function each(iterable $inputs, array $tags = []): Generator {
+        foreach ($inputs as $item) {
+            yield $this->for($item, $tags);
+        }
     }
 
-    /**
-     * Execute and return the Result object.
-     * Extracts the Result from Computation, ignoring tags.
-     */
+    public function execute(): ProcessingState {
+        return $this->executeOnce($this->initialState);
+    }
+
+    public function state(): ProcessingState {
+        return $this->execute();
+    }
+
     public function result(): Result {
-        $output = $this->executeOnce();
-        return match(true) {
-            $output instanceof Computation => $output->result(),
-            $output instanceof Result => $output,
-            default => Result::success($output),
-        };
+        return $this->execute()->result();
     }
 
-    /**
-     * Execute and return the full Computation with tags.
-     * This preserves all metadata and cross-cutting concerns.
-     */
-    public function computation(): Computation {
-        $output = $this->executeOnce();
-        return match(true) {
-            $output instanceof Computation => $output,
-            default => Computation::for($output),
-        };
+    public function value(): mixed {
+        return $this->execute()->value();
     }
 
-    /**
-     * Execute and return boolean indicating success.
-     */
-    public function isSuccess(): bool {
-        $output = $this->executeOnce();
-        return match(true) {
-            $output instanceof Computation => $output->isSuccess(),
-            $output instanceof Result => $output->isSuccess(),
-            default => ($output !== null),
-        };
+    public function valueOr(mixed $default): mixed {
+        return $this->execute()->valueOr($default);
     }
 
-    /**
-     * Execute and return the failure reason if computation failed.
-     */
-    public function exception(): ?Throwable {
-        $output = $this->executeOnce();
-        return match(true) {
-            $output instanceof Computation && $output->isFailure() => $output->result()->exception(),
-            $output instanceof Result && $output->isFailure() => $output->exception(),
-            default => null,
-        };
-    }
-
-    /**
-     * Transform the pending execution with a callback that receives the Computation.
-     * Returns a new PendingExecution that applies the transformation
-     * when executed.
-     */
-    public function mapComputation(callable $transformer): self {
-        return new self(function () use ($transformer) {
-            $output = $this->executeOnce();
-            return $this->applyFnTakingComputation($output, $transformer);
-        });
-    }
-
-    /**
-     * Transform the pending execution with a callback that receives the raw value.
-     *
-     * Preserves the computation structure and tags.
-     */
-    public function map(callable $transformer): self {
-        return new self(function () use ($transformer) {
-            $output = $this->executeOnce();
-            return $this->applyFnTakingValue($output, $transformer);
-        });
-    }
-
-    /**
-     * Chain another computation after this one.
-     *
-     * The next computation receives the unwrapped value, preserving computation.
-     */
-    public function then(callable $next): self {
-        return $this->map($next);
-    }
-
-    /**
-     * Execute and return as a stream/generator.
-     *
-     * Streams the unwrapped data, ignoring computation metadata.
-     */
     public function stream(): Generator {
-        $output = $this->executeOnce();
-        $result = $this->getResultFromOutput($output);
-        if ($result->isFailure()) {
+        $state = $this->execute();
+        if ($state->isFailure()) {
             return;
         }
-        $value = $result->unwrap();
-        if (is_iterable($value)) {
-            foreach ($value as $item) {
-                yield $item;
-            }
-        } else {
-            yield $value;
-        }
+        $value = $state->valueOr(null);
+        yield from match (true) {
+            is_iterable($value) => $value,
+            default => [$value],
+        };
+    }
+
+    public function isSuccess(): bool {
+        return $this->execute()->isSuccess();
+    }
+
+    public function isFailure(): bool {
+        return $this->execute()->isFailure();
+    }
+
+    public function exception(): ?Throwable {
+        return $this->execute()->exceptionOr(null);
     }
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    /**
-     * Execute the computation only once, caching the result.
-     */
-    private function executeOnce(): mixed {
-        if (!$this->executed) {
-            try {
-                $this->cachedOutput = ($this->deferred)();
-            } catch (Throwable $e) {
-                $this->cachedOutput = Result::failure($e);
-            }
-            $this->executed = true;
+    private function executeOnce(ProcessingState $state): ProcessingState {
+        if (is_null($this->cachedOutput)) {
+            $this->cachedOutput = $this->doExecute($this->pipeline, $state);
         }
         return $this->cachedOutput;
     }
 
-    private function getResultFromOutput(mixed $output): Result {
+    private function doExecute(Pipeline $pipeline, ProcessingState $state) : ProcessingState {
+        try {
+            $output = $pipeline->execute($state);
+        } catch (Throwable $e) {
+            $output = Result::failure($e);
+        }
         return match (true) {
-            $output instanceof Computation => $output->result(),
-            $output instanceof Result => $output,
-            default => Result::success($output),
-        };
-    }
-
-    private function applyFnTakingValue(mixed $output, callable $mapper) {
-        return match(true) {
-            $output instanceof Computation && $output->isFailure() => $output,
-            $output instanceof Result && $output->isFailure() => $output,
-            $output instanceof Computation => $output->withResult(Result::from($mapper($output->result()->unwrap()))),
-            $output instanceof Result => Result::from($mapper($output->unwrap())),
-            default => $mapper($output),
-        };
-    }
-
-    private function applyFnTakingComputation(mixed $output, callable $mapper): Computation {
-        return match(true) {
-            $output instanceof Computation => $mapper($output),
-            default => $mapper(Computation::for($output)),
+            $output instanceof ProcessingState => $output,
+            $output instanceof Result => $state->withResult($output),
+            default => $state->withResult(Result::success($output)),
         };
     }
 }

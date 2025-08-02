@@ -87,11 +87,11 @@ echo "Creating order processing workflow...\n\n";
 $orderWorkflow = Workflow::empty()
     ->through($validationPipeline)
     ->when(
-        fn($computation) => $computation->result()->isSuccess(),
+        fn($state) => $state->result()->isSuccess(),
         $inventoryPipeline
     )
     ->when(
-        fn($computation) => $computation->result()->isSuccess() && $computation->result()->unwrap()['total'] > 50,
+        fn($state) => $state->result()->isSuccess() && $state->result()->unwrap()['total'] > 50,
         $paymentPipeline  // Only process payment for orders > $50
     )
     ->through($fulfillmentPipeline)
@@ -108,7 +108,7 @@ echo "────────────────────────�
 if ($result->isSuccess()) {
     echo "✅ Order processed successfully!\n\n";
     
-    $finalOrder = $result->value();
+    $finalOrder = $result->valueOr();
     echo "Final order status:\n";
     echo "  - Validated: " . ($finalOrder['validated'] ? '✅' : '❌') . "\n";
     echo "  - Customer validated: " . ($finalOrder['customer_validated'] ? '✅' : '❌') . "\n";
@@ -124,7 +124,7 @@ if ($result->isSuccess()) {
 // Show timing information from all pipeline stages
 echo "\nTiming Information:\n";
 echo "─────────────────────\n";
-$timings = $result->computation()->all(TimingTag::class);
+$timings = $result->state()->allTags(TimingTag::class);
 $totalTime = 0;
 
 foreach ($timings as $timing) {

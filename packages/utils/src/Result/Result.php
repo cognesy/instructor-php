@@ -163,6 +163,10 @@ abstract class Result {
         return $this->isSuccess() ? $this->unwrap() : $default;
     }
 
+    public function exceptionOr(mixed $default): mixed {
+        return $this->isFailure() ? $this->exception() : $default;
+    }
+
     public static function tryAll(array $args, callable ...$callbacks): Result {
         $errors = [];
         $results = [];

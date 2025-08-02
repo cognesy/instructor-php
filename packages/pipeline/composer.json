@@ -42,16 +42,7 @@
     "tests": "@php vendor/bin/pest",
     "phpstan": "@php vendor/bin/phpstan -c phpstan.neon",
     "psalm": "@php vendor/bin/psalm",
-    "benchmark": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks --report=default",
-    "benchmark:aggregate": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks --report=aggregate",
-    "benchmark:pipeline": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks/PipelineBench.php --report=aggregate",
-    "benchmark:order": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks --group=order --report=aggregate",
-    "benchmark:store": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks --store",
-    "benchmark:compare": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks --compare=baseline",
-    "benchmark:debug": "@php vendor/bin/phpbench run tests/Benchmarks/PipelineBench.php --report=aggregate",
-    "benchmark:memory": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks/MemoryProfileBench.php --config=phpbench-memory.json --report=memory",
-    "benchmark:memory:detailed": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks/MemoryProfileBench.php --config=phpbench-memory.json --report=detailed",
-    "benchmark:memory:comparison": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks/MemoryProfileBench.php --config=phpbench-memory.json --report=memory_comparison"
+    "benchmark": "@php -d xdebug.mode=off -d opcache.enable_cli=1 vendor/bin/phpbench run tests/Benchmarks --report=aggregate"
   },
   "config": {
     "allow-plugins": {

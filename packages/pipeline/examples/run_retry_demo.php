@@ -4,7 +4,7 @@
  * Demo runner for Pipeline Retry Middleware
  * 
  * This script demonstrates a comprehensive retry system implementation
- * using Pipeline middleware and computation tags.
+ * using Pipeline middleware and state tags.
  */
 
 echo "🚀 Pipeline Retry System Demo\n";

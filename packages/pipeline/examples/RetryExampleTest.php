@@ -22,7 +22,7 @@ class RetryExampleTest
         );
 
         $result = Pipeline::for('test-data')
-            ->withTag($retryConfig)
+            ->withTags($retryConfig)
             ->withMiddleware($retryMiddleware)
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
@@ -34,18 +34,18 @@ class RetryExampleTest
                 
                 return "Success after $attemptCount attempts: $data";
             })
-            ->process();
+            ->create();
 
         assert($result->isSuccess(), "Should succeed after retries");
         assert($attemptCount === 3, "Should make exactly 3 attempts");
         
-        $attempts = $result->computation()->all(RetryAttemptTag::class);
+        $attempts = $result->state()->allTags(RetryAttemptTag::class);
         assert(count($attempts) === 3, "Should record 3 attempts");
         assert($attempts[0]->failed(), "First attempt should fail");
         assert($attempts[1]->failed(), "Second attempt should fail");
         assert($attempts[2]->succeeded(), "Third attempt should succeed");
         
-        echo "  ✅ Test passed: " . $result->value() . "\n";
+        echo "  ✅ Test passed: " . $result->valueOr() . "\n";
     }
 
     public static function testRetryExhaustion(): void
@@ -61,19 +61,19 @@ class RetryExampleTest
         );
 
         $result = Pipeline::for('failing-operation')
-            ->withTag($retryConfig)
+            ->withTags($retryConfig)
             ->withMiddleware($retryMiddleware)
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
                 echo "  Attempt #$attemptCount (will fail)\n";
                 throw new \RuntimeException("Always fails: $data");
             })
-            ->process();
+            ->create();
 
         assert(!$result->isSuccess(), "Should fail after all retries exhausted");
         assert($attemptCount === 3, "Should make exactly 3 attempts");
         
-        $attempts = $result->computation()->all(RetryAttemptTag::class);
+        $attempts = $result->state()->allTags(RetryAttemptTag::class);
         assert(count($attempts) === 3, "Should record 3 attempts");
         
         foreach ($attempts as $i => $attempt) {
@@ -104,7 +104,7 @@ class RetryExampleTest
             $sessionStart = microtime(true);
             
             $result = Pipeline::for("test-$strategy")
-                ->withTag($retryConfig)
+                ->withTags($retryConfig)
                 ->withMiddleware($retryMiddleware)
                 ->through(function($data) use (&$attemptTimes, $sessionStart) {
                     $attemptTimes[] = microtime(true) - $sessionStart;
@@ -115,7 +115,7 @@ class RetryExampleTest
                     
                     return "Success with {$data} strategy";
                 })
-                ->process();
+                ->create();
 
             assert($result->isSuccess(), "$strategy strategy should succeed");
             assert(count($attemptTimes) === 3, "Should make 3 attempts");
@@ -160,7 +160,7 @@ class RetryExampleTest
         $sessionId = 'test-session-' . uniqid();
         
         $result = Pipeline::for('tag-test')
-            ->withTag(
+            ->withTags(
                 $retryConfig,
                 new RetrySessionTag(
                     sessionId: $sessionId,
@@ -179,18 +179,18 @@ class RetryExampleTest
                 
                 return "Success on attempt $callCount";
             })
-            ->process();
+            ->create();
 
-        $computation = $result->computation();
+        $state = $result->state();
         
         // Verify session tag
-        $session = $computation->last(RetrySessionTag::class);
+        $session = $state->lastTag(RetrySessionTag::class);
         assert($session !== null, "Should have session tag");
         assert($session->sessionId === $sessionId, "Session ID should match");
         assert($session->operation === 'tag_tracking_test', "Operation should match");
         
         // Verify retry attempts
-        $attempts = $computation->all(RetryAttemptTag::class);
+        $attempts = $state->allTags(RetryAttemptTag::class);
         assert(count($attempts) === 3, "Should have 3 attempt tags");
         
         // Check attempt sequence
@@ -226,13 +226,13 @@ class RetryExampleTest
         $attemptCount = 0;
         
         $result = Pipeline::for('retryable-test')
-            ->withTag($retryConfig)
+            ->withTags($retryConfig)
             ->withMiddleware(new RetryMiddleware())
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
                 throw new \RuntimeException("This should be retried");
             })
-            ->process();
+            ->create();
 
         assert(!$result->isSuccess(), "Should fail after retries");
         assert($attemptCount === 3, "Should retry RuntimeException 3 times");
@@ -241,13 +241,13 @@ class RetryExampleTest
         $attemptCount = 0;
         
         $result2 = Pipeline::for('non-retryable-test')
-            ->withTag($retryConfig)
+            ->withTags($retryConfig)
             ->withMiddleware(new RetryMiddleware())
             ->through(function($data) use (&$attemptCount) {
                 $attemptCount++;
                 throw new \InvalidArgumentException("This should NOT be retried");
             })
-            ->process();
+            ->create();
 
         assert(!$result2->isSuccess(), "Should fail immediately");
         assert($attemptCount === 1, "Should NOT retry InvalidArgumentException");

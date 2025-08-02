@@ -11,8 +11,8 @@ namespace Cognesy\Pipeline\Tag;
  *
  * Example usage:
  * ```php
- * // Get timing information from computation
- * $timings = $computation->all(TimingTag::class);
+ * // Get timing information from state
+ * $timings = $state->all(TimingTag::class);
  *
  * foreach ($timings as $timing) {
  *     echo "{$timing->operationName}: {$timing->durationMs()}ms\n";

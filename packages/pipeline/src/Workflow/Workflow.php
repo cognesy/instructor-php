@@ -2,32 +2,29 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\PendingExecution;
-use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Tag\TagMap;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Pipeline\CanProcessState;
+use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Orchestrates the execution of multiple pipelines in sequence.
  *
  * A Workflow composes multiple Pipeline objects into a larger processing
- * flow, handling coordination, error propagation, and computation management
+ * flow, handling coordination, error propagation, and state management
  * between pipeline boundaries.
  *
  * Example:
  * ```php
  * $workflow = Workflow::empty()
  *     ->through($validationPipeline)
- *     ->when(fn($computation) => $computation->result()->isSuccess(), $processingPipeline)
+ *     ->when(fn($state) => $state->result()->isSuccess(), $processingPipeline)
  *     ->tap($loggingPipeline);
  *
  * $result = $workflow->process($data);
  * ```
  */
-class Workflow
+class Workflow implements CanProcessState
 {
-    /** @var WorkflowStepInterface[] */
+    /** @var CanProcessState[] */
     private array $steps = [];
     private function __construct() {}
 
@@ -39,24 +36,24 @@ class Workflow
     }
 
     /**
-     * Add a pipeline that processes the computation and returns its result.
+     * Add a pipeline that processes the state and returns its result.
      *
      * This is the main workflow operation - the pipeline processes the current
-     * computation state and its result becomes the new computation state.
+     * processing state and its result becomes the new processing state.
      */
-    public function through(Pipeline $pipeline): static {
-        $this->steps[] = new ThroughStep($pipeline);
+    public function through(CanProcessState $step): static {
+        $this->steps[] = new ThroughStep($step);
         return $this;
     }
 
     /**
-     * Conditionally execute a pipeline based on computation state.
+     * Conditionally execute a pipeline based on processing state.
      *
-     * The condition callable receives the current computation and should return
+     * The condition callable receives the current state and should return
      * true to execute the pipeline, false to skip it.
      */
-    public function when(callable $condition, Pipeline $pipeline): static {
-        $this->steps[] = new ConditionalStep($condition, $pipeline);
+    public function when(callable $condition, CanProcessState $step): static {
+        $this->steps[] = new ConditionalStep($condition, $step);
         return $this;
     }
 
@@ -64,10 +61,10 @@ class Workflow
      * Execute a pipeline for side effects without affecting the main flow.
      *
      * The tap pipeline executes but its result is ignored. The original
-     * computation continues unchanged. Useful for logging, metrics, etc.
+     * state continues unchanged. Useful for logging, metrics, etc.
      */
-    public function tap(Pipeline $pipeline): static {
-        $this->steps[] = new TapStep($pipeline);
+    public function tap(CanProcessState $step): static {
+        $this->steps[] = new TapStep($step);
         return $this;
     }
 
@@ -75,13 +72,10 @@ class Workflow
      * Process input data through all workflow steps.
      *
      * Returns a PendingPipelineExecution that provides access to the final
-     * result value, computation with all accumulated tags, and execution state.
+     * result value, state with all accumulated tags, and execution state.
      */
-    public function process(mixed $value = null, array $tags = []): PendingExecution {
-        return new PendingExecution(function () use ($value, $tags) {
-            $computation = $this->createInitialComputation($value, $tags);
-            return $this->executeSteps($computation);
-        });
+    public function execute(ProcessingState $state): ProcessingState {
+        return $this->executeSteps($state);
     }
 
     /**
@@ -90,8 +84,8 @@ class Workflow
      * Stops early if any step produces a failure result, following the
      * same short-circuit behavior as Pipeline processors.
      */
-    private function executeSteps(Computation $computation): Computation {
-        $current = $computation;
+    private function executeSteps(ProcessingState $state): ProcessingState {
+        $current = $state;
         foreach ($this->steps as $step) {
             // Short-circuit on failure (following Pipeline behavior)
             if ($current->result()->isFailure()) {
@@ -101,19 +95,4 @@ class Workflow
         }
         return $current;
     }
-
-    /**
-     * Create initial computation from input value and tags.
-     */
-    private function createInitialComputation(mixed $value, array $tags = []): Computation {
-        // Handle direct Computation input
-        if ($value instanceof Computation) {
-            return empty($tags) ? $value : $value->with(...$tags);
-        }
-
-        // Wrap value in Result and create computation
-        $result = $value instanceof Result ? $value : Result::success($value);
-        return new Computation($result, TagMap::create($tags));
-    }
-
 }

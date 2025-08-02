@@ -3,23 +3,23 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\ProcessingState;
 use Exception;
 
 /**
  * Middleware that executes a callback after processing completes.
  *
  * This provides a convenient way to add "after" hooks while using the
- * middleware pattern. The callback receives the processed computation and can:
+ * middleware pattern. The callback receives the processed state and can:
  * - Perform side effects (logging, metrics, cleanup, etc.)
- * - Return a modified computation
- * - Return null to leave computation unchanged
+ * - Return a modified state
+ * - Return null to leave state unchanged
  *
  * Example:
  * ```php
  * // Log results after processing
- * $middleware = new CallAfterMiddleware(function(Computation $computation) {
- *     $result = $computation->result();
+ * $middleware = new CallAfterMiddleware(function(ProcessingState $state) {
+ *     $result = $state->result();
  *     if ($result->isSuccess()) {
  *         echo "Success: " . $result->unwrap() . "\n";
  *     } else {
@@ -28,12 +28,12 @@ use Exception;
  * });
  *
  * // Modify result based on conditions
- * $middleware = new CallAfterMiddleware(function(Computation $computation) {
- *     $result = $computation->result();
+ * $middleware = new CallAfterMiddleware(function(ProcessingState $state) {
+ *     $result = $state->result();
  *     if ($result->isSuccess() && $result->unwrap() > 100) {
- *         return $computation->withMessage(Result::success($result->unwrap() / 2));
+ *         return $state->withMessage(Result::success($result->unwrap() / 2));
  *     }
- *     return $computation;
+ *     return $state;
  * });
  * ```
  */
@@ -46,18 +46,18 @@ readonly class CallAfterMiddleware implements PipelineMiddlewareInterface
     /**
      * Execute next middleware first, then run the callback on the result.
      */
-    public function handle(Computation $computation, callable $next): Computation {
+    public function handle(ProcessingState $state, callable $next): ProcessingState {
         // Process through next middleware first
-        $processedComputation = $next($computation);
+        $processedState = $next($state);
         try {
             // Execute the after callback on the processed result
-            $result = ($this->callback)($processedComputation);
-            // If callback returns an computation, use it; otherwise use processed computation
-            return $result instanceof Computation ? $result : $processedComputation;
+            $result = ($this->callback)($processedState);
+            // If callback returns an state, use it; otherwise use processed state
+            return $result instanceof ProcessingState ? $result : $processedState;
         } catch (Exception $e) {
-            // If callback fails, return the processed computation as-is
+            // If callback fails, return the processed state as-is
             // This prevents after hooks from breaking the main processing flow
-            return $processedComputation;
+            return $processedState;
         }
     }
 

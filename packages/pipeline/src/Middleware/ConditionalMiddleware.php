@@ -3,10 +3,10 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\ProcessingState;
 
 /**
- * Middleware that conditionally executes based on computation state.
+ * Middleware that conditionally executes based on processing state.
  *
  * This provides a way to add conditional logic to middleware execution,
  * similar to the finishWhen() hook functionality.
@@ -15,14 +15,14 @@ use Cognesy\Pipeline\Computation;
  * ```php
  * // Only log when value is above threshold
  * $middleware = new ConditionalMiddleware(
- *     condition: fn(Computation $computation) => $computation->result()->unwrap() > 100,
+ *     condition: fn(ProcessingState $state) => $state->result()->unwrap() > 100,
  *     middleware: new LoggingMiddleware()
  * );
  *
  * // Early termination - skip remaining middleware if condition met
  * $middleware = new ConditionalMiddleware(
- *     condition: fn(Computation $computation) => $computation->result()->unwrap() < 10,
- *     middleware: new CallBeforeMiddleware(fn($computation) => echo "Terminating early\n"),
+ *     condition: fn(ProcessingState $state) => $state->result()->unwrap() < 10,
+ *     middleware: new CallBeforeMiddleware(fn($state) => echo "Terminating early\n"),
  *     skipRemaining: true
  * );
  * ```
@@ -38,21 +38,21 @@ readonly class ConditionalMiddleware implements PipelineMiddlewareInterface
     /**
      * Execute middleware only if condition is met.
      */
-    public function handle(Computation $computation, callable $next): Computation {
-        $shouldExecute = ($this->condition)($computation);
+    public function handle(ProcessingState $state, callable $next): ProcessingState {
+        $shouldExecute = ($this->condition)($state);
 
         if (!$shouldExecute) {
             // Condition not met, skip to next middleware
-            return $next($computation);
+            return $next($state);
         }
 
         if ($this->skipRemaining) {
             // Execute our middleware but skip remaining stack
-            return $this->middleware->handle($computation, fn($computation) => $computation);
+            return $this->middleware->handle($state, fn($state) => $state);
         }
 
         // Execute our middleware then continue with stack
-        return $this->middleware->handle($computation, $next);
+        return $this->middleware->handle($state, $next);
     }
 
     /**
@@ -66,7 +66,7 @@ readonly class ConditionalMiddleware implements PipelineMiddlewareInterface
      * Factory for early termination scenarios.
      */
     public static function finishWhen(callable $condition, ?PipelineMiddlewareInterface $middleware = null): self {
-        $finalMiddleware = $middleware ?? new CallBeforeMiddleware(fn($computation) => $computation);
+        $finalMiddleware = $middleware ?? new CallBeforeMiddleware(fn($state) => $state);
         return new self($condition, $finalMiddleware, skipRemaining: true);
     }
 }

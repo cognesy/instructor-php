@@ -6,13 +6,75 @@
 **Purpose**: Entry point for structured output generation from LLM responses
 
 **Key Methods**:
+
+#### Request Building
 - `with(messages, responseModel, system?, prompt?, examples?, model?, maxRetries?, options?, toolName?, toolDescription?, retryPrompt?, mode?)` - Configure request parameters
-- `withRequest(StructuredOutputRequest)` - Use pre-built request object
-- `create()` - Returns `PendingStructuredOutput` instance
+- `withRequest(StructuredOutputRequest $request)` - Use pre-built request object
+- `withMessages(string|array|Message|Messages $messages)` - Set chat messages for the request
+- `withInput(mixed $input)` - Set input (converted to messages) for the request
+- `withResponseModel(string|array|object $responseModel)` - Set the response model (class, JSON schema, or object)
+- `withResponseJsonSchema(array|CanProvideJsonSchema $jsonSchema)` - Set the response model using a JSON schema
+- `withResponseClass(string $class)` - Set the response model using a class name
+- `withResponseObject(object $responseObject)` - Set the response model using an object instance
+- `withSystem(string $system)` - Set the system prompt
+- `withPrompt(string $prompt)` - Set an additional prompt
+- `withExamples(array $examples)` - Set example data for context
+- `withModel(string $model)` - Set the LLM model name
+- `withOptions(array $options)` - Set LLM-specific options
+- `withOption(string $key, mixed $value)` - Set an individual LLM option
+- `withStreaming(bool $stream = true)` - Enable or disable streaming responses
+- `withCachedContext(string|array $messages = '', string $system = '', string $prompt = '', array $examples = [])` - Use cached context for the request
+
+#### Configuration
+- `withMaxRetries(int $maxRetries)` - Set retry count for failed validations
+- `withOutputMode(OutputMode $outputMode)` - Set output mode (Tools, Json, JsonSchema, MdJson)
+- `withSchemaName(string $schemaName)` - Set schema name for documentation
+- `withToolName(string $toolName)` - Set tool name for Tools mode
+- `withToolDescription(string $toolDescription)` - Set tool description for Tools mode
+- `withRetryPrompt(string $retryPrompt)` - Set custom retry prompt for validation failures
+- `withConfig(StructuredOutputConfig $config)` - Use custom StructuredOutputConfig instance
+- `withConfigPreset(string $preset)` - Use predefined configuration preset
+- `withConfigProvider(CanProvideConfig $configProvider)` - Use custom configuration provider
+- `withObjectReferences(bool $useObjectReferences)` - Enable object reference handling
+- `withDefaultToStdClass(bool $defaultToStdClass = true)` - Default to stdClass for unknown types
+- `withDeserializationErrorPrompt(string $deserializationErrorPrompt)` - Set a custom deserialization error prompt
+- `withThrowOnTransformationFailure(bool $throwOnTransformationFailure = true)` - Configure throwing on transformation failures
+
+#### LLM Provider Configuration
+- `using(string $preset)` - Use LLM preset (e.g., 'openai', 'anthropic')
+- `withDsn(string $dsn)` - Set connection DSN for the LLM provider
+- `withLLMProvider(LLMProvider $llm)` - Set a custom LLM provider instance
+- `withLLMConfig(LLMConfig $config)` - Set LLM configuration object
+- `withLLMConfigOverrides(array $overrides)` - Override specific LLM configuration values
+- `withDriver(CanHandleInference $driver)` - Set a custom inference driver
+- `withHttpClient(HttpClient $httpClient)` - Set a custom HTTP client
+- `withHttpClientPreset(string $preset)` - Use HTTP client preset
+- `withDebugPreset(string $preset)` - Enable a debug preset for the LLM provider
+- `withClientInstance(string $driverName, object $clientInstance)` - Set a client instance for a specific driver
+
+#### Processing Pipeline Overrides
+- `withValidators(CanValidateObject|string ...$validators)` - Override response validators
+- `withTransformers(CanTransformData|string ...$transformers)` - Override response transformers
+- `withDeserializers(CanDeserializeClass|string ...$deserializers)` - Override response deserializers
+
+#### Execution & Result Retrieval
+- `create()` - Returns `PendingStructuredOutput` instance (prepares the request for execution)
 - `get()` - Execute and return parsed result
 - `response()` - Execute and return raw LLM response
-- `stream()` - Execute and return `StructuredOutputStream`
-- `getString()`, `getFloat()`, `getInt()`, `getBoolean()`, `getObject()`, `getArray()` - Type-specific result getters
+- `stream()` - Execute and return `StructuredOutputStream` for streaming responses
+- `getString()` - Get result as a string
+- `getFloat()` - Get result as a float
+- `getInt()` - Get result as an integer
+- `getBoolean()` - Get result as a boolean
+- `getObject()` - Get result as an object
+- `getArray()` - Get result as an array
+
+#### Event Handling
+- `withEventHandler(CanHandleEvents|EventDispatcherInterface $events)` - Set a custom event handler
+- `wiretap(?callable $listener)` - Register a callback listening to all events
+- `onEvent(string $class, ?callable $listener)` - Register a callback listening to a specific event type
+- `onPartialUpdate(callable $listener)` - Handle partial response updates during streaming
+- `onSequenceUpdate(callable $listener)` - Handle sequence item completion during streaming
 
 ### `PendingStructuredOutput` - Request execution handler
 **Purpose**: Handles request execution and response processing
@@ -135,7 +197,7 @@ $result = $structuredOutput
 $stream = $structuredOutput
     ->with(messages: "Generate list", responseModel: PersonList::class)
     ->stream();
-    
+
 foreach ($stream->partials() as $partial) {
     // Process partial updates
 }

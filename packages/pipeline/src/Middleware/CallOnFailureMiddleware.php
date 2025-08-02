@@ -3,14 +3,14 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\ProcessingState;
 use Exception;
 
 /**
  * Middleware that executes a callback when processing results in failure.
  *
  * This provides a convenient way to add "onFailure" hooks while using the
- * middleware pattern. The callback receives the failed computation and can
+ * middleware pattern. The callback receives the failed state and can
  * perform side effects like logging, alerting, or metrics collection.
  *
  * Note: This middleware does NOT modify the failure - it's purely for
@@ -19,20 +19,20 @@ use Exception;
  * Example:
  * ```php
  * // Log failures with context
- * $middleware = new CallOnFailureMiddleware(function(Computation $computation) {
- *     $error = $computation->result()->error();
- *     $trace = $computation->last(TraceTag::class);
+ * $middleware = new CallOnFailureMiddleware(function(ProcessingState $state) {
+ *     $error = $state->result()->error();
+ *     $trace = $state->last(TraceTag::class);
  *
  *     logger()->error('Processing failed', [
  *         'error' => $error,
  *         'trace_id' => $trace?->traceId,
- *         'value' => json_encode($computation->result()->unwrap())
+ *         'value' => json_encode($state->result()->unwrap())
  *     ]);
  * });
  *
  * // Send alerts on critical failures
- * $middleware = new CallOnFailureMiddleware(function(Computation $computation) {
- *     $error = $computation->result()->error();
+ * $middleware = new CallOnFailureMiddleware(function(ProcessingState $state) {
+ *     $error = $state->result()->error();
  *     if ($error instanceof CriticalException) {
  *         alerting()->sendAlert('Critical processing failure', $error);
  *     }
@@ -48,9 +48,9 @@ readonly class CallOnFailureMiddleware implements PipelineMiddlewareInterface
     /**
      * Process through next middleware and call callback if result is failure.
      */
-    public function handle(Computation $computation, callable $next): Computation {
+    public function handle(ProcessingState $state, callable $next): ProcessingState {
         // Process through next middleware
-        $result = $next($computation);
+        $result = $next($state);
         // If result is a failure, execute the callback
         if ($result->result()->isFailure()) {
             try {

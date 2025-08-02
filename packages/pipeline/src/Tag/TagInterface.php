@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Tag;
 
 /**
- * Represents a tag that can be attached to a Computation.
+ * Represents a tag that can be attached to a ProcessingState.
  * 
  * Tags are immutable metadata objects that provide cross-cutting concerns
  * like observability, retry logic, error handling, and tracing information.

@@ -1,6 +1,6 @@
 # Pipeline Retry Middleware Example
 
-This example demonstrates a comprehensive retry system implementation using Pipeline middleware and computation tags for tracking retry attempts.
+This example demonstrates a comprehensive retry system implementation using Pipeline middleware and state tags for tracking retry attempts.
 
 ## Features
 
@@ -88,7 +88,7 @@ if ($result->success()) {
     echo "Success: " . $result->value();
 } else {
     // Analyze retry attempts
-    $attempts = $result->computation()->all(RetryAttemptTag::class);
+    $attempts = $result->state()->all(RetryAttemptTag::class);
     echo "Failed after " . count($attempts) . " attempts";
 }
 ```
@@ -124,10 +124,11 @@ $result = Pipeline::for($request)
 ```
 
 ### Analyzing Retry History
+
 ```php
-$computation = $result->computation();
-$attempts = $computation->all(RetryAttemptTag::class);
-$session = $computation->last(RetrySessionTag::class);
+$state = $result->state();
+$attempts = $state->allTags(RetryAttemptTag::class);
+$session = $state->lastTag(RetrySessionTag::class);
 
 echo "Session: {$session->sessionId}\n";
 echo "Operation: {$session->operation}\n";
@@ -195,7 +196,7 @@ All strategies respect the `maxDelay` limit.
 2. **Flexible Configuration** - Multiple retry strategies and exception filtering
 3. **Observable** - Rich logging and tag-based introspection
 4. **Composable** - Works seamlessly with other Pipeline middleware
-5. **Immutable** - All state changes create new computation instances
+5. **Immutable** - All state changes create new state instances
 6. **Type Safe** - Full PHP 8.2 type declarations throughout
 
 ## Architecture Highlights

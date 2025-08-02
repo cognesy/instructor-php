@@ -225,7 +225,7 @@
 - [ ] **Premature Optimization**: Are optimizations driven by actual profiling?
 - [ ] **Memory Leaks**: Are large objects and arrays properly scoped?
 - [ ] **Inefficient Loops**: Are loops optimized for the expected data size?
-- [ ] **Unnecessary Computations**: Are expensive operations cached or avoided?
+- [ ] **Unnecessary ProcessingStates**: Are expensive operations cached or avoided?
 
 ## Final Considerations
 

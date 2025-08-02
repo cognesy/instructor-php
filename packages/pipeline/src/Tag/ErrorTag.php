@@ -2,6 +2,7 @@
 
 namespace Cognesy\Pipeline\Tag;
 
+use Cognesy\Utils\Result\Result;
 use Throwable;
 
 /**
@@ -51,6 +52,20 @@ readonly class ErrorTag implements TagInterface
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine(),
                 'trace' => $exception->getTraceAsString(),
+            ],
+        );
+    }
+
+    public static function fromResult(Result $result, ?string $context = null): self {
+        return new self(
+            error: $result->exception(),
+            context: $context,
+            category: 'result_error',
+            metadata: [
+                'message' => $result->exception()?->getMessage() ?? 'Unknown error',
+                'file' => $result->exception()?->getFile(),
+                'line' => $result->exception()?->getLine(),
+                'trace' => $result->exception()?->getTraceAsString(),
             ],
         );
     }

@@ -21,7 +21,7 @@ class RawHtml
     }
 
     public function asCleanHtml(): string {
-        return (new Pipeline())
+        return Pipeline::empty()
             ->throughAll([
                 $this->normalizeEncoding(...),
                 $this->cleanupWhitespace(...),
@@ -38,7 +38,10 @@ class RawHtml
 //                $this->normalizeUrls(...),
 //                //$this->linearizeContent,
 //                $this->extractMainContent(...),
-            ])->process($this->content)->value();
+            ])
+            ->create()
+            ->for($this->content)
+            ->valueOr();
     }
 
     public function asText(): string {

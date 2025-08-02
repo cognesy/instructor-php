@@ -2,14 +2,14 @@
 
 namespace Cognesy\Pipeline\Middleware;
 
-use Cognesy\Pipeline\Computation;
+use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Manages a stack of middleware for MessageChain processing.
  *
  * The middleware stack implements the classic middleware pattern where each
  * middleware can decide whether to continue processing and can modify the
- * computation before and after the next middleware executes.
+ * state before and after the next middleware executes.
  *
  * Example:
  * ```php
@@ -18,7 +18,7 @@ use Cognesy\Pipeline\Computation;
  * $stack->add(new MetricsMiddleware());
  * $stack->add(new TracingMiddleware());
  *
- * $result = $stack->process($computation, $finalProcessor);
+ * $result = $stack->process($state, $finalProcessor);
  * ```
  */
 class PipelineMiddlewareStack
@@ -32,7 +32,8 @@ class PipelineMiddlewareStack
      * Middleware is executed in the order it's added.
      */
     public function add(PipelineMiddlewareInterface ...$middleware): self {
-        $this->middleware = [...$this->middleware, ...$middleware];
+        array_push($this->middleware, ...$middleware);
+        //$this->middleware = [...$this->middleware, ...$middleware];
         return $this;
     }
 
@@ -42,7 +43,7 @@ class PipelineMiddlewareStack
      * This middleware will execute before any previously added middleware.
      */
     public function prepend(PipelineMiddlewareInterface ...$middleware): self {
-        $this->middleware = [...$middleware, ...$this->middleware];
+        array_unshift($this->middleware, ...$middleware);
         return $this;
     }
 
@@ -61,28 +62,24 @@ class PipelineMiddlewareStack
     }
 
     /**
-     * Process computation through all middleware, ending with final processor.
+     * Process state through all middleware, ending with final processor.
      *
-     * @param Computation $computation Initial computation
+     * @param ProcessingState $state Initial state
      * @param callable $finalProcessor Final processor to execute after all middleware
-     * @return Computation Processed computation
+     * @return ProcessingState Processed state
      */
-    public function process(Computation $computation, callable $finalProcessor): Computation {
+    public function process(ProcessingState $state, callable $finalProcessor): ProcessingState {
         if (empty($this->middleware)) {
-            return $finalProcessor($computation);
+            return $finalProcessor($state);
         }
-
-        // Build the middleware chain using array_reduce
-        // We reverse the middleware array so they execute in the correct order
         $stack = array_reduce(
             array_reverse($this->middleware),
             function (callable $next, PipelineMiddlewareInterface $middleware) {
-                return fn(Computation $computation) => $middleware->handle($computation, $next);
+                return fn(ProcessingState $state) => $middleware->handle($state, $next);
             },
             $finalProcessor,
         );
-
-        return $stack($computation);
+        return $stack($state);
     }
 
     /**

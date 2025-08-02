@@ -27,11 +27,11 @@ $result = Pipeline::for(100)
         usleep(5000); // Simulate 5ms work  
         return $x + 50;
     })
-    ->process();
+    ->create();
 
-echo "Result: " . $result->value() . "\n";
+echo "Result: " . $result->valueOr() . "\n";
 
-$timings = $result->computation()->all(TimingTag::class);
+$timings = $result->state()->allTags(TimingTag::class);
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";
 }
@@ -63,11 +63,11 @@ $result = Pipeline::for(['numbers' => [1, 2, 3, 4, 5]])
         usleep(1000); // Simulate formatting time
         return "Summary: {$result['count']} numbers, sum={$result['sum']}, avg={$result['average']}";
     })
-    ->process();
+    ->create();
 
-echo "Result: " . $result->value() . "\n\n";
+echo "Result: " . $result->valueOr() . "\n\n";
 
-$timings = $result->computation()->all(TimingTag::class);
+$timings = $result->state()->allTags(TimingTag::class);
 $totalTime = array_sum(array_map(fn($t) => $t->duration, $timings));
 
 echo "Detailed Timing Breakdown:\n";
@@ -95,14 +95,14 @@ $result = Pipeline::for(10)
         }
         return $x * 2;
     })
-    ->process();
+    ->create();
 
 echo "Success: " . ($result->isSuccess() ? 'Yes' : 'No') . "\n";
 if (!$result->isSuccess()) {
     echo "Error: " . $result->exception()->getMessage() . "\n";
 }
 
-$timings = $result->computation()->all(TimingTag::class);
+$timings = $result->state()->allTags(TimingTag::class);
 foreach ($timings as $timing) {
     echo "⏱️  " . $timing->summary() . "\n";
 }
@@ -126,9 +126,9 @@ function runPerformanceTest(string $name, callable $operation, int $iterations =
             }
             return $results;
         })
-        ->process();
+        ->create();
     
-    $timing = $results->computation()->last(TimingTag::class);
+    $timing = $results->state()->lastTag(TimingTag::class);
     $avgTime = ($timing->duration / $iterations) * 1_000_000; // microseconds per iteration
     
     echo "  Total: " . $timing->durationFormatted() . "\n";
@@ -165,10 +165,10 @@ $complexResult = Pipeline::for(range(1, 100))
             'min' => min($squares)
         ];
     })
-    ->process();
+    ->create();
 
-$computation = $complexResult->computation();
-$timings = $computation->all(TimingTag::class);
+$state = $complexResult->state();
+$timings = $state->allTags(TimingTag::class);
 
 echo "Pipeline Analysis:\n";
 echo "  Total operations: " . count($timings) . "\n";

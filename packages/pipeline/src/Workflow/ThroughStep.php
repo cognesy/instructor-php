@@ -2,22 +2,22 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\Computation;
-use Cognesy\Pipeline\Pipeline;
+use Cognesy\Pipeline\CanProcessState;
+use Cognesy\Pipeline\ProcessingState;
 
 /**
- * Executes a pipeline and returns its result computation.
+ * Executes a pipeline and returns its result state.
  *
  * This is the main workflow step that processes data through a pipeline
  * and preserves all tags and metadata from the execution.
  */
-readonly class ThroughStep implements WorkflowStepInterface
+readonly class ThroughStep implements CanProcessState
 {
     public function __construct(
-        private Pipeline $pipeline,
+        private CanProcessState $step,
     ) {}
 
-    public function execute(Computation $computation): Computation {
-        return $this->pipeline->process($computation)->computation();
+    public function execute(ProcessingState $state): ProcessingState {
+        return $this->step->execute($state);
     }
 }
