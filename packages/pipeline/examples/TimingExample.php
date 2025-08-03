@@ -2,12 +2,12 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Cognesy\Pipeline\Middleware\TimingMiddleware;
+use Cognesy\Pipeline\Middleware\Timing;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\Tag\TimingTag;
 
 /**
- * Example demonstrating the TimingMiddleware for measuring pipeline execution time.
+ * Example demonstrating the Timing for measuring pipeline execution time.
  */
 
 echo "🕒 Pipeline Timing Middleware Demo\n";
@@ -18,7 +18,7 @@ echo "1. Basic Operation Timing\n";
 echo "-------------------------\n";
 
 $result = Pipeline::for(100)
-    ->withMiddleware(TimingMiddleware::for('basic_math'))
+    ->withMiddleware(Timing::makeNamed('basic_math'))
     ->through(function($x) {
         usleep(10000); // Simulate 10ms work
         return $x * 2;
@@ -43,7 +43,7 @@ echo "2. Multiple Operation Timing\n";
 echo "----------------------------\n";
 
 $result = Pipeline::for(['numbers' => [1, 2, 3, 4, 5]])
-    ->withMiddleware(TimingMiddleware::for('data_validation'))
+    ->withMiddleware(Timing::makeNamed('data_validation'))
     ->through(function($data) {
         usleep(2000); // Simulate validation time
         if (!isset($data['numbers']) || !is_array($data['numbers'])) {
@@ -51,14 +51,14 @@ $result = Pipeline::for(['numbers' => [1, 2, 3, 4, 5]])
         }
         return $data;
     })
-    ->withMiddleware(TimingMiddleware::for('data_processing'))  
+    ->withMiddleware(Timing::makeNamed('data_processing'))
     ->through(function($data) {
         usleep(8000); // Simulate processing time
         $sum = array_sum($data['numbers']);
         $avg = $sum / count($data['numbers']);
         return ['sum' => $sum, 'average' => $avg, 'count' => count($data['numbers'])];
     })
-    ->withMiddleware(TimingMiddleware::for('result_formatting'))
+    ->withMiddleware(Timing::makeNamed('result_formatting'))
     ->through(function($result) {
         usleep(1000); // Simulate formatting time
         return "Summary: {$result['count']} numbers, sum={$result['sum']}, avg={$result['average']}";
@@ -87,7 +87,7 @@ echo "3. Error Handling with Timing\n";
 echo "-----------------------------\n";
 
 $result = Pipeline::for(10)
-    ->withMiddleware(TimingMiddleware::for('risky_operation'))
+    ->withMiddleware(Timing::makeNamed('risky_operation'))
     ->through(function($x) {
         usleep(3000); // Some work before failure
         if ($x < 50) {
@@ -118,7 +118,7 @@ function runPerformanceTest(string $name, callable $operation, int $iterations =
     echo "Testing: $name\n";
     
     $results = Pipeline::for($iterations)
-        ->withMiddleware(TimingMiddleware::for($name))
+        ->withMiddleware(Timing::makeNamed($name))
         ->through(function($count) use ($operation) {
             $results = [];
             for ($i = 0; $i < $count; $i++) {
@@ -145,17 +145,17 @@ echo "5. Timing Analysis\n";
 echo "------------------\n";
 
 $complexResult = Pipeline::for(range(1, 100))
-    ->withMiddleware(TimingMiddleware::for('input_processing'))
+    ->withMiddleware(Timing::makeNamed('input_processing'))
     ->through(function($numbers) {
         usleep(2000);
         return array_filter($numbers, fn($n) => $n % 2 === 0);
     })
-    ->withMiddleware(TimingMiddleware::for('computation'))
+    ->withMiddleware(Timing::makeNamed('computation'))
     ->through(function($evenNumbers) {
         usleep(5000);
         return array_map(fn($n) => $n ** 2, $evenNumbers);
     })
-    ->withMiddleware(TimingMiddleware::for('aggregation'))
+    ->withMiddleware(Timing::makeNamed('aggregation'))
     ->through(function($squares) {
         usleep(1000);
         return [

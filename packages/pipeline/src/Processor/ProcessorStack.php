@@ -2,28 +2,37 @@
 
 namespace Cognesy\Pipeline\Processor;
 
+use ArrayIterator;
+use Cognesy\Pipeline\Contracts\CanProcessState;
+use InvalidArgumentException;
+use Traversable;
+
 /**
  * Manages a stack of processors.
- *
- * Simple container for ProcessorInterface instances.
  */
 class ProcessorStack
 {
-    /** @var ProcessorInterface[] */
-    private array $processors = [];
+    /** @var CanProcessState[] */
+    private array $processors;
 
+    /**
+     * @param CanProcessState[] $processors
+     */
     public function __construct(array $processors = []) {
         $this->processors = $processors;
     }
 
-    public function add(ProcessorInterface $processor): void {
+    public function add(CanProcessState $processor): void {
         $this->processors[] = $processor;
     }
 
+    /**
+     * @param CanProcessState[] $processors
+     */
     public function addAll(array $processors): void {
         foreach ($processors as $processor) {
-            if (!$processor instanceof ProcessorInterface) {
-                throw new \InvalidArgumentException('All processors must implement ProcessorInterface');
+            if (!$processor instanceof CanProcessState) {
+                throw new InvalidArgumentException('All processors must implement CanProcessState');
             }
             $this->add($processor);
         }
@@ -37,19 +46,15 @@ class ProcessorStack
         return count($this->processors);
     }
 
-    /**
-     * Get all processors as array (for compatibility with existing code).
-     */
-    public function getProcessors(): array {
+    public function all(): array {
         return $this->processors;
     }
 
     /**
-     * Get all processors as an iterable.
-     * @return \Traversable<ProcessorInterface>
+     * @return Traversable<CanProcessState>
      */
-    public function getIterator(): \Traversable {
-        return new \ArrayIterator($this->processors);
+    public function getIterator(): Traversable {
+        return new ArrayIterator($this->processors);
     }
 
 }

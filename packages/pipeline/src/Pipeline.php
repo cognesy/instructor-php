@@ -2,11 +2,12 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Finalizer\CallableFinalizer;
 use Cognesy\Pipeline\Finalizer\FinalizerInterface;
 use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
-use Cognesy\Pipeline\Processor\ProcessorInterface;
 use Cognesy\Pipeline\Processor\ProcessorStack;
+use Cognesy\Pipeline\Tag\ErrorTag;
 use Exception;
 
 /**
@@ -14,7 +15,6 @@ use Exception;
  */
 class Pipeline implements CanProcessState
 {
-    use Traits\HandlesOutput;
 
     private ProcessorStack $processors;
     private FinalizerInterface $finalizer;
@@ -39,6 +39,9 @@ class Pipeline implements CanProcessState
         return new PipelineBuilder();
     }
 
+    /**
+     * @param callable():mixed $source
+     */
     public static function from(callable $source): PipelineBuilder {
         return new PipelineBuilder(source: $source);
     }
@@ -49,8 +52,8 @@ class Pipeline implements CanProcessState
 
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
-    public function execute(ProcessingState $state) : ProcessingState {
-        $processedState = match(true) {
+    public function process(ProcessingState $state): ProcessingState {
+        $processedState = match (true) {
             ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->applyOnlyProcessors($state),
             default => $this->applyProcessorsWithMiddleware($state),
         };
@@ -60,7 +63,7 @@ class Pipeline implements CanProcessState
     // INTERNAL IMPLEMENTATION ///////////////////////////////////////////////////////////////
 
     private function applyProcessorsWithMiddleware(ProcessingState $state): ProcessingState {
-        return match(true) {
+        return match (true) {
             $this->middleware->isEmpty() => $this->applyProcessors($state),
             default => $this->middleware->process($state, fn($comp) => $this->applyProcessors($comp))
         };
@@ -69,7 +72,7 @@ class Pipeline implements CanProcessState
     private function applyProcessors(ProcessingState $state): ProcessingState {
         $currentState = $state;
         foreach ($this->processors->getIterator() as $processor) {
-            $nextState = match(true) {
+            $nextState = match (true) {
                 $this->hooks->isEmpty() => $this->executeProcessor($processor, $currentState),
                 default => $this->executeProcessorWithHooks($processor, $currentState),
             };
@@ -93,28 +96,37 @@ class Pipeline implements CanProcessState
         return $currentState;
     }
 
-    private function executeProcessorWithHooks(ProcessorInterface $processor, ProcessingState $state): ProcessingState {
+    private function executeProcessorWithHooks(CanProcessState $processor, ProcessingState $state): ProcessingState {
         return $this->hooks->process($state, function (ProcessingState $state) use ($processor) {
-            return match(true) {
+            return match (true) {
                 !$this->shouldContinueProcessing($state) => $state,
                 default => $this->executeProcessor($processor, $state),
             };
         });
     }
 
-    private function executeProcessor(ProcessorInterface $processor, ProcessingState $state): ProcessingState {
+    private function executeProcessor(CanProcessState $processor, ProcessingState $state): ProcessingState {
         try {
             return $processor->process($state);
         } catch (Exception $e) {
-            return $this->createFailureState($state, $e);
+            // Create ErrorTag with processor context, preserve original exception
+            $errorTag = ErrorTag::fromException($e, 'processor_execution')
+                ->withMetadata([
+                    'processor_class' => $processor::class,
+                    'processor_type' => get_class($processor),
+                    'input_value' => $state->isSuccess() ? $state->value() : 'N/A (already failed)',
+                    'state_hash' => spl_object_hash($state),
+                ]);
+            
+            return StateFactory::fromException($e, $state)->withTags($errorTag);
         }
     }
 
     private function applyFinalizer(FinalizerInterface $finalizer, ProcessingState $state): ProcessingState {
         try {
-            return $this->asProcessingState($finalizer->finalize($state), $state);
+            return StateFactory::fromInput($finalizer->finalize($state), $state);
         } catch (Exception $e) {
-            return $this->createFailureState($state, $e);
+            return StateFactory::fromException($e, $state);
         }
     }
 

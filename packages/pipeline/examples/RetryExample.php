@@ -2,11 +2,10 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\TagInterface;
-use Cognesy\Utils\Result\Result;
 
 // ============================================================================
 // TAGS FOR RETRY TRACKING
@@ -166,7 +165,7 @@ class RetryMiddleware implements PipelineMiddlewareInterface
             }
 
             // No more retries, return failure state
-            return $stateWithAttempt->withResult(Result::failure($e));
+            return $stateWithAttempt->failWith($e);
         }
     }
 

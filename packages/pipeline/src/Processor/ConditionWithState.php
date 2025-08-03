@@ -1,31 +1,28 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Workflow;
+namespace Cognesy\Pipeline\Processor;
 
 use Closure;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
- * Conditionally executes a pipeline based on processing state.
- *
- * The condition receives the current state and determines whether
- * the associated pipeline should execute. If not, the state passes
- * through unchanged.
+ * Processor that conditionally executes another processor based on processing state.
  */
-readonly class ConditionalStep implements CanProcessState
+readonly class ConditionWithState implements CanProcessState
 {
     /**
      * @param Closure(ProcessingState):bool $condition
+     * @param CanProcessState $processor
      */
     public function __construct(
         private Closure $condition,
-        private CanProcessState $step,
+        private CanProcessState $processor,
     ) {}
 
     public function process(ProcessingState $state): ProcessingState {
         return match(true) {
-            ($this->condition)($state) => $this->step->process($state),
+            ($this->condition)($state) => $this->processor->process($state),
             default => $state,
         };
     }

@@ -2,34 +2,14 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Pipeline\Tag\TagMap;
 use Cognesy\Utils\Result\Result;
+use Throwable;
 
 /**
  * ProcessingState contains result with tags (metadata) for cross-cutting or meta concerns.
- *
- * The ProcessingState maintains separation of concerns:
- * - Result: Handles success/failure of the execution and type-safe value access
- * - ProcessingState: Manages metadata, observability, and cross-cutting concerns
- *
- * Key features:
- * - Immutable - every modification creates a new instance
- * - Tags survive success/failure transitions
- * - Type-safe tag retrieval
- * - Clean separation of data and metadata
- *
- * Example:
- * ```php
- * $state = new ProcessingState(Result::success($data), TagMap::create([
- *     new TraceTag('trace-123'),
- *     new TimestampTag(microtime(true))
- * ]));
- *
- * $newProcessingState = $state
- *     ->with(new MetricsTag($duration))
- *     ->without(TimestampTag::class);
- * ```
  */
 final readonly class ProcessingState
 {
@@ -47,7 +27,7 @@ final readonly class ProcessingState
     public static function empty(): self {
         return new self(
             result: Result::success(null),
-            tags: TagMap::empty()
+            tags: TagMap::empty(),
         );
     }
 
@@ -58,14 +38,7 @@ final readonly class ProcessingState
     public static function with(mixed $value, array $tags = []): self {
         return new self(
             result: Result::from($value),
-            tags: TagMap::create($tags)
-        );
-    }
-
-    public function combine(ProcessingState $other): self {
-        return new self(
-            result: $this->result,
-            tags: $this->tags->merge($other->tags)
+            tags: TagMap::create($tags),
         );
     }
 
@@ -77,30 +50,93 @@ final readonly class ProcessingState
         return new self($this->result, $this->tags->with(...$tags));
     }
 
+    public function failWith(Throwable $exception): self {
+        return new self(
+            result: Result::failure($exception),
+            tags: $this->tags->with(new ErrorTag(error: $exception, context: "Triggered by failWith() call")),
+        );
+    }
+
+    /**
+     * @param array<class-string> $tagClasses
+     */
     public function withoutTags(string ...$tagClasses): self {
         return new self($this->result, $this->tags->without(...$tagClasses));
     }
 
     /**
+     * Merges tags from another ProcessingState.
+     */
+    public function mergeTags(ProcessingState $other): self {
+        return new self(
+            result: $this->result,
+            tags: $this->tags->merge($other->tags),
+        );
+    }
+
+    /**
+     * Merges result and tags using a custom combinator function.
+     *
+     * @param callable(Result, Result): Result $resultCombinator Optional function to combine results
+     */
+    public function combine(ProcessingState $other, ?callable $resultCombinator = null): self {
+        $resultCombinator ??= fn($a, $b) => $b;
+        return new self(
+            result: $resultCombinator($this->result, $other->result),
+            tags: $this->tags->merge($other->tags),
+        );
+    }
+
+    /**
      * Get all tags, optionally filtered by class.
      *
-     * @param string|null $tagClass Optional class filter
+     * @param class-string|null $tagClass Optional class filter
      * @return TagInterface[]
      */
     public function allTags(?string $tagClass = null): array {
         return $this->tags->all($tagClass);
     }
 
+    /**
+     * @param class-string $tagClass
+     */
     public function lastTag(string $tagClass): ?TagInterface {
         return $this->tags->last($tagClass);
     }
 
+    /**
+     * @param class-string $tagClass
+     */
     public function firstTag(string $tagClass): ?TagInterface {
         return $this->tags->first($tagClass);
     }
 
+    /**
+     * @param class-string $tagClass
+     */
     public function hasTag(string $tagClass): bool {
         return $this->tags->has($tagClass);
+    }
+
+    public function hasAllOfTags(array $tags): bool {
+        foreach ($tags as $tag) {
+            if (!$this->tags->has($tag::class)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param array<TagInterface> $tags Array of tag class names to check
+     */
+    public function hasAnyOfTags(array $tags): bool {
+        foreach ($tags as $tag) {
+            if ($this->tags->has($tag::class)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function countTag(?string $tagClass = null): int {
@@ -139,5 +175,59 @@ final readonly class ProcessingState
 
     public function exceptionOr(mixed $default): mixed {
         return $this->result->exceptionOr($default);
+    }
+
+    /**
+     * Apply function to value if success, preserve tags
+     */
+    public function map(callable $fn): self {
+        if ($this->result->isFailure()) {
+            return $this;
+        }
+        
+        try {
+            $newValue = $fn($this->result->unwrap());
+            return new self(Result::from($newValue), $this->tags);
+        } catch (\Throwable $e) {
+            return new self(Result::failure($e), $this->tags);
+        }
+    }
+
+    /**
+     * Apply function that returns ProcessingState, merge tags
+     */
+    public function flatMap(callable $fn): self {
+        if ($this->result->isFailure()) {
+            return $this;
+        }
+
+        $newState = $fn($this->result->unwrap());
+        return new self(
+            $newState->result,
+            $this->tags->merge($newState->tags),
+        );
+    }
+
+    /**
+     * Apply function to value if success, returning Result
+     */
+    public function mapResult(callable $fn): self {
+        return new self(
+            $this->result->map($fn),
+            $this->tags,
+        );
+    }
+
+    /**
+     * Apply predicate, short-circuit on false
+     */
+    public function filter(callable $predicate, string $errorMessage = 'Filter failed'): self {
+        if ($this->result->isFailure()) {
+            return $this;
+        }
+
+        return $predicate($this->result->unwrap())
+            ? $this
+            : new self(Result::failure(new \RuntimeException($errorMessage)), $this->tags);
     }
 }

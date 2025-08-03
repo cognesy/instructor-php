@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\CanProcessState;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
@@ -18,8 +18,8 @@ readonly class TapStep implements CanProcessState
         private CanProcessState $step,
     ) {}
 
-    public function execute(ProcessingState $state): ProcessingState {
-        $value = $this->step->execute($state); // Force execution, ignore the result
+    public function process(ProcessingState $state): ProcessingState {
+        $value = $this->step->process($state); // Force execution, ignore the result
         return $state;
     }
 }

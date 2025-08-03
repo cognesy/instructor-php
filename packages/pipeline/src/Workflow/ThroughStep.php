@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Workflow;
 
-use Cognesy\Pipeline\CanProcessState;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
@@ -17,7 +17,7 @@ readonly class ThroughStep implements CanProcessState
         private CanProcessState $step,
     ) {}
 
-    public function execute(ProcessingState $state): ProcessingState {
-        return $this->step->execute($state);
+    public function process(ProcessingState $state): ProcessingState {
+        return $this->step->process($state);
     }
 }

@@ -17,11 +17,7 @@ use Cognesy\Utils\Result\Result;
 class CallableFinalizer implements FinalizerInterface
 {
     /**
-     * Creates a finalizer that wraps a callable function.
-     *
-     * This is useful for simple finalizers that just need to process the Result.
-     *
-     * @param Closure<Result, mixed> $finalizer Function that takes a Result and returns the final value.
+     * @param Closure(Result):mixed $finalizer Function that takes a Result and returns the final value.
      */
     public function __construct(
         private readonly Closure $finalizer,

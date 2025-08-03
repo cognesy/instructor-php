@@ -2,9 +2,10 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Cognesy\Pipeline\Middleware\TimingMiddleware;
+use Cognesy\Pipeline\Middleware\Timing;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\Tag\TimingTag;
+use Cognesy\Utils\Result\Result;
 
 echo "🕒 Pipeline Timing Middleware Demo (Fixed)\n";
 echo "==========================================\n\n";
@@ -14,7 +15,7 @@ echo "1. Timing Entire Pipeline\n";
 echo "-------------------------\n";
 
 $result = Pipeline::for(100)
-    ->withMiddleware(TimingMiddleware::for('complete_pipeline'))
+    ->withMiddleware(Timing::makeNamed('complete_pipeline'))
     ->through(function($x) {
         usleep(5000); // 5ms work
         return $x * 2;
@@ -42,7 +43,7 @@ $data = ['numbers' => [1, 2, 3, 4, 5]];
 
 // Process 1: Validation
 $validatedResult = Pipeline::for($data)
-    ->withMiddleware(TimingMiddleware::for('validation'))
+    ->withMiddleware(Timing::makeNamed('validation'))
     ->through(function($data) {
         usleep(2000); // Simulate validation
         if (!isset($data['numbers']) || !is_array($data['numbers'])) {
@@ -54,7 +55,7 @@ $validatedResult = Pipeline::for($data)
 
 // Process 2: Processing  
 $processedResult = Pipeline::for($validatedResult->valueOr())
-    ->withMiddleware(TimingMiddleware::for('processing'))
+    ->withMiddleware(Timing::makeNamed('processing'))
     ->through(function($data) {
         usleep(5000); // Simulate processing
         $sum = array_sum($data['numbers']);
@@ -65,7 +66,7 @@ $processedResult = Pipeline::for($validatedResult->valueOr())
 
 // Process 3: Formatting
 $finalResult = Pipeline::for($processedResult->valueOr())
-    ->withMiddleware(TimingMiddleware::for('formatting'))
+    ->withMiddleware(Timing::makeNamed('formatting'))
     ->through(function($result) {
         usleep(1000); // Simulate formatting
         return "Summary: {$result['count']} numbers, sum={$result['sum']}, avg={$result['average']}";
@@ -94,7 +95,7 @@ echo "3. Error Handling (Custom Middleware)\n";
 echo "------------------------------------\n";
 
 // Create a custom error-aware timing middleware
-class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\Middleware\PipelineMiddlewareInterface
+class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface
 {
     public function handle(\Cognesy\Pipeline\ProcessingState $state, callable $next): \Cognesy\Pipeline\ProcessingState
     {
@@ -134,7 +135,7 @@ class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\Middleware\Pipelin
             // Return failed state with timing
             return $state
                 ->withTags($timingTag)
-                ->withResult(\Cognesy\Utils\Result\Result::failure($e));
+                ->withResult(Result::failure($e));
         }
     }
 }
@@ -166,7 +167,7 @@ echo "4. Complex Pipeline with Single Timing\n";
 echo "--------------------------------------\n";
 
 $complexResult = Pipeline::for(range(1, 10))
-    ->withMiddleware(TimingMiddleware::for('complex_processing'))
+    ->withMiddleware(Timing::makeNamed('complex_processing'))
     ->through(function($numbers) {
         usleep(1000);
         return array_filter($numbers, fn($n) => $n % 2 === 0);

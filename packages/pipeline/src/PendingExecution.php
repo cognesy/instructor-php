@@ -14,7 +14,6 @@ use Throwable;
  */
 class PendingExecution
 {
-    use Traits\HandlesOutput;
 
     private ProcessingState $initialState;
     private Pipeline $pipeline;
@@ -36,6 +35,7 @@ class PendingExecution
     }
 
     /**
+     * @param iterable<mixed> $inputs
      * @return Generator<PendingExecution>
      */
     public function each(iterable $inputs, array $tags = []): Generator {
@@ -64,6 +64,9 @@ class PendingExecution
         return $this->execute()->valueOr($default);
     }
 
+    /**
+     * @return Generator<mixed>
+     */
     public function stream(): Generator {
         $state = $this->execute();
         if ($state->isFailure()) {
@@ -99,7 +102,7 @@ class PendingExecution
 
     private function doExecute(Pipeline $pipeline, ProcessingState $state) : ProcessingState {
         try {
-            $output = $pipeline->execute($state);
+            $output = $pipeline->process($state);
         } catch (Throwable $e) {
             $output = Result::failure($e);
         }

@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Cognesy\Pipeline\Middleware\TimingMiddleware;
+use Cognesy\Pipeline\Middleware\Timing;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\Tag\TimingTag;
 use Cognesy\Pipeline\Workflow\Workflow;
@@ -24,7 +24,7 @@ $orderData = [
 
 // Define pipeline components
 $validationPipeline = Pipeline::for($orderData)
-    ->withMiddleware(TimingMiddleware::for('validation'))
+    ->withMiddleware(Timing::makeNamed('validation'))
     ->through(function($order) {
         echo "  🔍 Validating order format...\n";
         if (!isset($order['id'], $order['customer_id'], $order['items'])) {
@@ -41,7 +41,7 @@ $validationPipeline = Pipeline::for($orderData)
     });
 
 $inventoryPipeline = Pipeline::for($orderData)
-    ->withMiddleware(TimingMiddleware::for('inventory'))
+    ->withMiddleware(Timing::makeNamed('inventory'))
     ->through(function($order) {
         echo "  📦 Checking inventory availability...\n";
         // Simulate inventory check
@@ -54,7 +54,7 @@ $inventoryPipeline = Pipeline::for($orderData)
     });
 
 $paymentPipeline = Pipeline::for($orderData)
-    ->withMiddleware(TimingMiddleware::for('payment'))
+    ->withMiddleware(Timing::makeNamed('payment'))
     ->through(function($order) {
         echo "  💳 Processing payment...\n";
         if ($order['total'] > 1000) {
@@ -64,7 +64,7 @@ $paymentPipeline = Pipeline::for($orderData)
     });
 
 $fulfillmentPipeline = Pipeline::for($orderData)
-    ->withMiddleware(TimingMiddleware::for('fulfillment'))
+    ->withMiddleware(Timing::makeNamed('fulfillment'))
     ->through(function($order) {
         echo "  📋 Creating order record...\n";
         return [...$order, 'order_created' => true];
