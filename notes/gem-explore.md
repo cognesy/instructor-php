@@ -42,7 +42,7 @@ You've made an excellent observation. The overlap between Processor and Middlewa
   1. Introduce `StageInterface` as the Core Building Block
 
 
-  We would replace PipelineMiddlewareInterface with a new StageInterface. All operations within a pipeline would implement this interface.
+  We would replace CanChainStateProcessing with a new StageInterface. All operations within a pipeline would implement this interface.
 
 
 

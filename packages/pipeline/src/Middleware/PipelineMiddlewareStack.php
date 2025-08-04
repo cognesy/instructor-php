@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Middleware;
 
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
@@ -14,15 +14,15 @@ use Cognesy\Pipeline\ProcessingState;
  */
 class PipelineMiddlewareStack
 {
-    /** @var PipelineMiddlewareInterface[] */
+    /** @var CanControlStateProcessing[] */
     private array $middleware = [];
 
-    public function add(PipelineMiddlewareInterface ...$middleware): self {
+    public function add(CanControlStateProcessing ...$middleware): self {
         array_push($this->middleware, ...$middleware);
         return $this;
     }
 
-    public function prepend(PipelineMiddlewareInterface ...$middleware): self {
+    public function prepend(CanControlStateProcessing ...$middleware): self {
         array_unshift($this->middleware, ...$middleware);
         return $this;
     }
@@ -56,7 +56,7 @@ class PipelineMiddlewareStack
         return $stack($state);
     }
 
-    public function with(PipelineMiddlewareInterface ...$middleware): self {
+    public function with(CanControlStateProcessing ...$middleware): self {
         $new = clone $this;
         $new->add(...$middleware);
         return $new;
@@ -68,7 +68,7 @@ class PipelineMiddlewareStack
     }
 
     /**
-     * @return PipelineMiddlewareInterface[]
+     * @return CanControlStateProcessing[]
      */
     public function all(): array {
         return $this->middleware;

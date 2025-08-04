@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\ProcessingState;
 use RuntimeException;
 
@@ -13,7 +13,7 @@ use RuntimeException;
  * This is useful for validation and early failure scenarios where
  * you want to stop processing based on the current state.
  */
-readonly class FailWhen implements PipelineMiddlewareInterface
+readonly class FailWhen implements CanControlStateProcessing
 {
     /**
      * @param Closure(ProcessingState):bool $condition
@@ -38,7 +38,6 @@ readonly class FailWhen implements PipelineMiddlewareInterface
     }
 
     private function makeFailure(ProcessingState $state): ProcessingState {
-        $e = new RuntimeException($this->message);
-        return $state->failWith($e);
+        return $state->failWith(new RuntimeException($this->message));
     }
 }

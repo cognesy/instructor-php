@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Middleware;
 
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\TimingTag;
@@ -19,7 +19,7 @@ use Cognesy\Pipeline\Tag\TimingTag;
  * Multiple timing tags can be accumulated to track timing across
  * different pipeline stages and processors.
  */
-readonly class Timing implements PipelineMiddlewareInterface
+readonly class Timing implements CanControlStateProcessing
 {
     public function __construct(
         private ?string $operationName = null,
@@ -47,18 +47,18 @@ readonly class Timing implements PipelineMiddlewareInterface
         $startTime = microtime(true);
 
         // Execute the next middleware/processor (never throws - returns state)
-        $result = $next($state);
+        $output = $next($state);
 
         $endTime = microtime(true);
         $duration = round($endTime - $startTime, $this->precision);
 
         // Inspect state state to determine success/failure
-        $success = $result->result()->isSuccess();
+        $success = $output->result()->isSuccess();
         $error = null;
 
         // Extract error details from ErrorTag if failure occurred
         if (!$success) {
-            $errorTag = $result->firstTag(ErrorTag::class);
+            $errorTag = $output->firstTag(ErrorTag::class);
             $error = $errorTag?->getMessage() ?? 'Unknown error';
         }
 
@@ -72,6 +72,6 @@ readonly class Timing implements PipelineMiddlewareInterface
             error: $error,
         );
 
-        return $result->withTags($timingTag);
+        return $output->withTags($timingTag);
     }
 }

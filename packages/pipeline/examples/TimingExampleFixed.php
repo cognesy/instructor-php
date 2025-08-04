@@ -95,7 +95,7 @@ echo "3. Error Handling (Custom Middleware)\n";
 echo "------------------------------------\n";
 
 // Create a custom error-aware timing middleware
-class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface
+class ErrorAwareTimingMiddleware implements \Cognesy\Pipeline\Contracts\CanControlStateProcessing
 {
     public function handle(\Cognesy\Pipeline\ProcessingState $state, callable $next): \Cognesy\Pipeline\ProcessingState
     {

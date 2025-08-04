@@ -3,26 +3,26 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Middleware that conditionally executes based on processing state.
  */
-readonly class ExecuteWhen implements PipelineMiddlewareInterface
+readonly class ExecuteWhen implements CanControlStateProcessing
 {
     /**
      * @param Closure(ProcessingState):bool $condition
      */
     public function __construct(
         private Closure $condition,
-        private PipelineMiddlewareInterface $middleware,
+        private CanControlStateProcessing $middleware,
     ) {}
 
     /**
      * @param callable(ProcessingState):bool $condition
      */
-    public static function when(callable $condition, PipelineMiddlewareInterface $middleware): self {
+    public static function when(callable $condition, CanControlStateProcessing $middleware): self {
         return new self($condition, $middleware);
     }
 

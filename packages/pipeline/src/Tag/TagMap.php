@@ -152,13 +152,13 @@ final readonly class TagMap
         return new self($newTags);
     }
 
-    public function merge(self $other): self {
-        $newTags = $this->tags;
-        foreach ($other->tags as $class => $tags) {
-            $newTags[$class] = $newTags[$class] ?? [];
-            $newTags[$class] = array_merge($newTags[$class], $tags);
+    public function merge(self $added): self {
+        $outputTags = $this->tags;
+        foreach ($added->tags as $class => $tags) {
+            $outputTags[$class] = $outputTags[$class] ?? [];
+            $outputTags[$class] = array_merge($outputTags[$class], $tags);
         }
-        return new self($newTags);
+        return new self($outputTags);
     }
 
     /**

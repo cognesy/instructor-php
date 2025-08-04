@@ -222,7 +222,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         it('works with middleware', function () {
             $middlewareExecuted = false;
             
-            $middleware = new class($middlewareExecuted) implements \Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface {
+            $middleware = new class($middlewareExecuted) implements \Cognesy\Pipeline\Contracts\CanControlStateProcessing {
                 public function __construct(private &$executed) {}
                 
                 public function handle(\Cognesy\Pipeline\ProcessingState $state, callable $next): \Cognesy\Pipeline\ProcessingState {

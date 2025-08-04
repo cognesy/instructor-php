@@ -3,8 +3,8 @@
 namespace Cognesy\Pipeline;
 
 use Closure;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Finalizer\CallableFinalizer;
 use Cognesy\Pipeline\Finalizer\FinalizerInterface;
@@ -14,14 +14,11 @@ use Cognesy\Pipeline\Middleware\CallOnFailure;
 use Cognesy\Pipeline\Middleware\FailWhen;
 use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
 use Cognesy\Pipeline\Middleware\SkipProcessing;
-use Cognesy\Pipeline\Processor\CallWithValue;
-use Cognesy\Pipeline\Processor\ConditionWithValue;
-use Cognesy\Pipeline\Processor\FailOnConditionWithState;
-use Cognesy\Pipeline\Processor\FailOnConditionWithValue;
-use Cognesy\Pipeline\Processor\FlatMap;
+use Cognesy\Pipeline\Processor\Call;
+use Cognesy\Pipeline\Processor\Condition;
+use Cognesy\Pipeline\Processor\Fail;
 use Cognesy\Pipeline\Processor\ProcessorStack;
-use Cognesy\Pipeline\Processor\TapWithState;
-use Cognesy\Pipeline\Processor\TapWithValue;
+use Cognesy\Pipeline\Processor\Tap;
 use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Utils\Result\Failure;
 use InvalidArgumentException;
@@ -78,7 +75,7 @@ class PipelineBuilder
      * Middleware executes around each processor, allowing for sophisticated
      * cross-cutting concerns like distributed tracing, circuit breakers, etc.
      */
-    public function withMiddleware(PipelineMiddlewareInterface ...$middleware): static {
+    public function withMiddleware(CanControlStateProcessing ...$middleware): static {
         $this->middleware->add(...$middleware);
         return $this;
     }
@@ -86,7 +83,7 @@ class PipelineBuilder
     /**
      * Add middleware at the beginning of the stack (executes first).
      */
-    public function prependMiddleware(PipelineMiddlewareInterface ...$middleware): static {
+    public function prependMiddleware(CanControlStateProcessing ...$middleware): static {
         $this->middleware->prepend(...$middleware);
         return $this;
     }
@@ -159,7 +156,7 @@ class PipelineBuilder
      * @param callable(mixed):mixed $processor
      */
     public function through(callable $processor, NullStrategy $onNull = NullStrategy::Fail): static {
-        $this->processors->add(CallWithValue::fromCallable($processor, $onNull));
+        $this->processors->add(Call::withValue($processor)->onNull($onNull));
         return $this;
     }
 
@@ -173,7 +170,7 @@ class PipelineBuilder
      * @param callable(mixed):mixed $callback
      */
     public function when(callable $condition, callable $callback): static {
-        $this->processors->add(new ConditionWithValue($condition, CallWithValue::fromCallable($callback)));
+        $this->processors->add(Condition::withValue($condition)->then(Call::withValue($callback)));
         return $this;
     }
 
@@ -181,7 +178,7 @@ class PipelineBuilder
      * @param callable(mixed):void $callback
      */
     public function tap(callable $callback): static {
-        $this->processors->add(TapWithValue::fromCallable($callback));
+        $this->processors->add(Tap::with(Call::withValue($callback)));
         return $this;
     }
 
@@ -189,7 +186,7 @@ class PipelineBuilder
      * @param callable(ProcessingState):void $callback
      */
     public function tapWithState(callable $callback): static {
-        $this->processors->add(TapWithState::fromCallable($callback));
+        $this->processors->add(Tap::with(Call::withState($callback)));
         return $this;
     }
 
@@ -205,16 +202,16 @@ class PipelineBuilder
      * @param callable(mixed):mixed $mapper
      */
     public function flatMap(callable $mapper): static {
-        $this->processors->add(new FlatMap($mapper));
+        $this->processors->add(Call::withValue($mapper));
         return $this;
     }
 
     public function filter(callable $condition, string $message = 'Value filter condition failed'): static {
-        return $this->throughProcessor(new FailOnConditionWithValue($condition, $message));
+        return $this->throughProcessor(Condition::withValue($condition)->negate()->then(Fail::with($message)));
     }
 
     public function filterWithState(callable $condition, string $message = 'State filter condition failed'): static {
-        return $this->throughProcessor(new FailOnConditionWithState($condition, $message));
+        return $this->throughProcessor(Condition::withState($condition)->negate()->then(Fail::with($message)));
     }
 
     /**

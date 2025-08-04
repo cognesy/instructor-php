@@ -3,10 +3,7 @@
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Processor\CallWithResult;
-use Cognesy\Pipeline\Processor\CallWithState;
-use Cognesy\Pipeline\Processor\CallWithValue;
-use Cognesy\Pipeline\StateFactory;
+use Cognesy\Pipeline\Processor\Call;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
 use Cognesy\Utils\Result\Result;
@@ -33,18 +30,18 @@ describe('Pipeline Edge Cases - Null Handling', function () {
     });
 
     test('null processor output with Fail strategy throws', function () {
-        $processor = CallWithValue::fromCallable(fn($x) => null, NullStrategy::Fail);
+        $processor = Call::withValue(fn($x) => null)->onNull(NullStrategy::Fail);
         
         $state = ProcessingState::with('input');
         $result = $processor->process($state);
         
         expect($result->isFailure())->toBeTrue();
         expect($result->exception())->toBeInstanceOf(RuntimeException::class);
-        expect($result->exception()->getMessage())->toContain('null');
+        expect(strtolower($result->exception()->getMessage()))->toContain('null');
     });
 
     test('null processor output with Skip strategy adds SkipProcessingTag', function () {
-        $processor = CallWithValue::fromCallable(fn($x) => null, NullStrategy::Skip);
+        $processor = Call::withValue(fn($x) => null)->onNull(NullStrategy::Skip);
         
         $state = ProcessingState::with('input');
         $result = $processor->process($state);
@@ -68,7 +65,7 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
     });
 
     test('exception preserves processor context information', function () {
-        $processor = CallWithValue::fromCallable(fn($x) => throw new RuntimeException('Test'));
+        $processor = Call::withValue(fn($x) => throw new RuntimeException('Test'));
         $state = ProcessingState::with('input');
         
         $result = $processor->process($state);
@@ -99,63 +96,12 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
     });
 });
 
-describe('Pipeline Edge Cases - StateFactory Integration', function () {
-    test('StateFactory executeWithValue handles complex input types', function () {
-        $callback = fn($x) => $x * 2;
-        
-        // Test with ProcessingState input
-        $state = ProcessingState::with(5);
-        $result = StateFactory::executeWithValue($callback, $state);
-        expect($result->value())->toBe(10);
-        
-        // Test with Result input
-        $resultInput = Result::success(3);
-        $result = StateFactory::executeWithValue($callback, $resultInput);
-        expect($result->value())->toBe(6);
-        
-        // Test with raw value
-        $result = StateFactory::executeWithValue($callback, 7);
-        expect($result->value())->toBe(14);
-    });
-
-    test('StateFactory executeWithResult preserves result context', function () {
-        $callback = fn(Result $r) => $r->isSuccess() ? $r->unwrap() * 2 : 'failed';
-        
-        $successResult = Result::success(5);
-        $result = StateFactory::executeWithResult($callback, $successResult);
-        expect($result->value())->toBe(10);
-        
-        $failureResult = Result::failure(new RuntimeException('test'));
-        $result = StateFactory::executeWithResult($callback, $failureResult);
-        expect($result->value())->toBe('failed');
-    });
-
-    test('StateFactory executeWithState preserves tags through exceptions', function () {
-        $callback = fn(ProcessingState $state) => throw new RuntimeException('Error in callback');
-        
-        $inputState = ProcessingState::with('test', [new SkipProcessingTag()]);
-        $result = StateFactory::executeWithState($callback, $inputState);
-        
-        expect($result->isFailure())->toBeTrue();
-        expect($result->hasTag(SkipProcessingTag::class))->toBeTrue();
-    });
-
-    test('StateFactory fromInput handles Throwable inputs', function () {
-        $exception = new RuntimeException('Test error');
-        $result = StateFactory::fromInput($exception);
-        
-        expect($result->isFailure())->toBeTrue();
-        expect($result->exception())->toBe($exception);
-        expect($result->hasTag(ErrorTag::class))->toBeTrue();
-    });
-});
-
 describe('Pipeline Edge Cases - Complex Type Conversions', function () {
     test('processor returning ProcessingState is preserved', function () {
         $customState = ProcessingState::with('custom', [new SkipProcessingTag()]);
         
         $pipeline = Pipeline::for('input')
-            ->throughProcessor(CallWithState::fromCallable(fn($state) => $customState))
+            ->throughProcessor(Call::withState(fn($state) => $customState))
             ->create();
         
         $result = $pipeline->state();
@@ -165,7 +111,7 @@ describe('Pipeline Edge Cases - Complex Type Conversions', function () {
 
     test('processor returning Result object is converted properly', function () {
         $pipeline = Pipeline::for('input')
-            ->throughProcessor(CallWithResult::fromCallable(fn($result) => Result::success('converted')))
+            ->throughProcessor(Call::withResult(fn($result) => Result::success('converted')))
             ->create();
         
         expect($pipeline->value())->toBe('converted');
@@ -240,11 +186,11 @@ describe('Pipeline Edge Cases - State Combination and Tags', function () {
         $initialTags = [new SkipProcessingTag()];
         
         $pipeline = Pipeline::empty()
-            ->throughProcessor(CallWithState::fromCallable(function($state) {
+            ->throughProcessor(Call::withState(function($state) {
                 // Use StateProcessor to preserve tags while transforming value
                 return $state->withResult(Result::success($state->value() * 2));
             }))
-            ->throughProcessor(CallWithState::fromCallable(function($state) {
+            ->throughProcessor(Call::withState(function($state) {
                 // Another StateProcessor to add 10 while preserving tags
                 return $state->withResult(Result::success($state->value() + 10));
             }))
@@ -363,7 +309,7 @@ describe('Pipeline Edge Cases - Result and State Interaction', function () {
         $failedResult = Result::failure(new RuntimeException('Initial failure'));
         
         $pipeline = Pipeline::for($failedResult)
-            ->throughProcessor(CallWithResult::fromCallable(function($result) {
+            ->throughProcessor(Call::withResult(function($result) {
                 if ($result->isFailure()) {
                     return 'handled_failure';
                 }
@@ -378,7 +324,7 @@ describe('Pipeline Edge Cases - Result and State Interaction', function () {
         $successState = ProcessingState::with('success');
         $failureState = ProcessingState::with(Result::failure(new RuntimeException('test')));
         
-        $processor = CallWithState::fromCallable(fn($state) => $state->withResult(
+        $processor = Call::withState(fn($state) => $state->withResult(
             $state->result()->isSuccess() 
                 ? Result::success($state->value() . '_processed') 
                 : $state->result()

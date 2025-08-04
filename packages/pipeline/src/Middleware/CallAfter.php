@@ -3,15 +3,15 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\StateFactory;
+use Cognesy\Pipeline\Processor\Call;
 
 /**
  * Middleware that executes a callback after processing completes.
  */
-readonly class CallAfter implements PipelineMiddlewareInterface
+readonly class CallAfter implements CanControlStateProcessing
 {
     /**
      * @param Closure(ProcessingState):mixed $callback
@@ -33,6 +33,6 @@ readonly class CallAfter implements PipelineMiddlewareInterface
      */
     public function handle(ProcessingState $state, callable $next): ProcessingState {
         $nextState = $next($state);
-        return StateFactory::executeWithState($this->callback, $nextState, $this->onNull);
+        return Call::withState($this->callback)->onNull($this->onNull)->process($nextState);
     }
 }

@@ -7,7 +7,7 @@ use Cognesy\Pipeline\Finalizer\CallableFinalizer;
 use Cognesy\Pipeline\Finalizer\FinalizerInterface;
 use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
 use Cognesy\Pipeline\Processor\ProcessorStack;
-use Cognesy\Pipeline\Tag\ErrorTag;
+use Cognesy\Utils\Result\Result;
 use Exception;
 
 /**
@@ -109,24 +109,16 @@ class Pipeline implements CanProcessState
         try {
             return $processor->process($state);
         } catch (Exception $e) {
-            // Create ErrorTag with processor context, preserve original exception
-            $errorTag = ErrorTag::fromException($e, 'processor_execution')
-                ->withMetadata([
-                    'processor_class' => $processor::class,
-                    'processor_type' => get_class($processor),
-                    'input_value' => $state->isSuccess() ? $state->value() : 'N/A (already failed)',
-                    'state_hash' => spl_object_hash($state),
-                ]);
-            
-            return StateFactory::fromException($e, $state)->withTags($errorTag);
+            return $state->failWith($e);
         }
     }
 
     private function applyFinalizer(FinalizerInterface $finalizer, ProcessingState $state): ProcessingState {
         try {
-            return StateFactory::fromInput($finalizer->finalize($state), $state);
+            $result = $finalizer->finalize($state);
+            return $state->withResult(Result::from($result));
         } catch (Exception $e) {
-            return StateFactory::fromException($e, $state);
+            return $state->failWith($e);
         }
     }
 

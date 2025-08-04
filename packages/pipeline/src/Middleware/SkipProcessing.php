@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
@@ -12,7 +12,7 @@ use Cognesy\Pipeline\ProcessingState;
  * This middleware allows you to skip further processing in the pipeline
  * if a certain condition is met, returning the current state without modification.
  */
-readonly class SkipProcessing implements PipelineMiddlewareInterface {
+readonly class SkipProcessing implements CanControlStateProcessing {
     /**
      * @param Closure(ProcessingState):bool $condition
      */

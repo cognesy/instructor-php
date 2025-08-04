@@ -6,9 +6,9 @@ use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
- * Process the state without modification.
+ * Do nothing, just pass the state through.
  */
-readonly class PassThrough implements CanProcessState {
+readonly class NoOp implements CanProcessState {
     public function process(ProcessingState $state): ProcessingState {
         return $state;
     }

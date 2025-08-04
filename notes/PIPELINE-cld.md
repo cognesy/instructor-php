@@ -25,7 +25,7 @@ interface CanProcessState {
 
 **3. Middleware Layer**
 ```php
-interface PipelineMiddlewareInterface {
+interface CanChainStateProcessing {
     public function handle(ProcessingState $state, callable $next): ProcessingState;
 }
 ```

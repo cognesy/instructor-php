@@ -2,4 +2,8 @@
 
 namespace Cognesy\Pipeline\Tag;
 
-class SkipProcessingTag implements TagInterface {}
+readonly class SkipProcessingTag implements TagInterface {
+    public function __construct(
+        public string $reason = 'No reason provided',
+    ) {}
+}

@@ -4,6 +4,7 @@ namespace Cognesy\Pipeline;
 
 use Cognesy\Utils\Result\Result;
 use Generator;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -57,7 +58,13 @@ class PendingExecution
     }
 
     public function value(): mixed {
-        return $this->execute()->value();
+        $state = $this->execute();
+        return match(true) {
+            $state->isFailure() => throw new RuntimeException(
+                'Cannot extract value from a failed state: ' . $state->result()->errorMessage()
+            ),
+            default => $state->result()->unwrap(),
+        };
     }
 
     public function valueOr(mixed $default): mixed {
@@ -106,10 +113,11 @@ class PendingExecution
         } catch (Throwable $e) {
             $output = Result::failure($e);
         }
-        return match (true) {
+        $output = match (true) {
             $output instanceof ProcessingState => $output,
             $output instanceof Result => $state->withResult($output),
             default => $state->withResult(Result::success($output)),
         };
+        return $output;
     }
 }

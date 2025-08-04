@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Middleware;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 
@@ -17,7 +17,7 @@ use Cognesy\Pipeline\Tag\ErrorTag;
  * Note: This middleware does NOT modify the failure - it's purely for
  * side effects. The failure continues to propagate normally.
  */
-readonly class CallOnFailure implements PipelineMiddlewareInterface
+readonly class CallOnFailure implements CanControlStateProcessing
 {
     /**
      * @param Closure(ProcessingState):void $callback

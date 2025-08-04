@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Cognesy\Pipeline\Contracts\PipelineMiddlewareInterface;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\TagInterface;
@@ -92,7 +92,7 @@ class RetrySessionTag implements TagInterface
 /**
  * Middleware that implements retry logic with attempt tracking
  */
-class RetryMiddleware implements PipelineMiddlewareInterface
+class RetryMiddleware implements CanControlStateProcessing
 {
     public function handle(ProcessingState $state, callable $next): ProcessingState
     {
@@ -191,7 +191,7 @@ class RetryMiddleware implements PipelineMiddlewareInterface
 /**
  * Middleware to log retry attempts and outcomes
  */
-class RetryLoggingMiddleware implements PipelineMiddlewareInterface
+class RetryLoggingMiddleware implements CanControlStateProcessing
 {
     public function __construct(private ?\Psr\Log\LoggerInterface $logger = null)
     {

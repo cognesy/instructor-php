@@ -53,7 +53,7 @@ final readonly class ProcessingState
     public function failWith(Throwable $exception): self {
         return new self(
             result: Result::failure($exception),
-            tags: $this->tags->with(new ErrorTag(error: $exception, context: "Triggered by failWith() call")),
+            tags: $this->tags->with(new ErrorTag(error: $exception)),
         );
     }
 
@@ -64,13 +64,17 @@ final readonly class ProcessingState
         return new self($this->result, $this->tags->without(...$tagClasses));
     }
 
-    /**
-     * Merges tags from another ProcessingState.
-     */
-    public function mergeTags(ProcessingState $other): self {
+    public function mergeFrom(ProcessingState $source): self {
         return new self(
             result: $this->result,
-            tags: $this->tags->merge($other->tags),
+            tags: $this->tags->merge($source->tags),
+        );
+    }
+
+    public function mergeInto(ProcessingState $target): self {
+        return new self(
+            result: $this->result,
+            tags: $target->tags->merge($this->tags),
         );
     }
 

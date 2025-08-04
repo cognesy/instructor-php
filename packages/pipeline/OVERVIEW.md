@@ -80,12 +80,12 @@ $pipeline->through(fn(ProcessingState $state) =>
 ### 4. Middleware - Cross-Cutting Concerns
 
 **Directory**: `src/Middleware/`
-**Interface**: `PipelineMiddlewareInterface`
+**Interface**: `CanChainStateProcessing`
 
 Middleware provides a composable way to add cross-cutting concerns like logging, metrics, tracing, and validation.
 
 ```php
-class LoggingMiddleware implements PipelineMiddlewareInterface 
+class LoggingMiddleware implements CanChainStateProcessing 
 {
     public function handle(ProcessingState $state, callable $next): ProcessingState 
     {
