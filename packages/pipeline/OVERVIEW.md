@@ -51,7 +51,9 @@ $pipeline = Pipeline::for($data)
     ->through(fn($x) => $x + 10)    // Another processor
     ->withMiddleware(new TimingMiddleware());
 
-$result = $pipeline->value();       // Execute and get result
+$result = $pipeline
+    ->create()       // Create pending pipeline execution
+    ->value();       // Execute and get result
 ```
 
 **Essential Value**: Provides predictable, observable execution with automatic error handling, short-circuiting on failures, and performance optimization.
@@ -80,12 +82,12 @@ $pipeline->through(fn(ProcessingState $state) =>
 ### 4. Middleware - Cross-Cutting Concerns
 
 **Directory**: `src/Middleware/`
-**Interface**: `CanChainStateProcessing`
+**Interface**: `CanControlStateProcessing`
 
 Middleware provides a composable way to add cross-cutting concerns like logging, metrics, tracing, and validation.
 
 ```php
-class LoggingMiddleware implements CanChainStateProcessing 
+class LoggingMiddleware implements CanControlStateProcessing 
 {
     public function handle(ProcessingState $state, callable $next): ProcessingState 
     {

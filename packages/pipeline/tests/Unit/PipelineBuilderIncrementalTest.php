@@ -2,9 +2,9 @@
 
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\PipelineBuilder;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\TagInterface;
 
 class BuilderTestTag implements TagInterface {
     public function __construct(public readonly string $name) {}

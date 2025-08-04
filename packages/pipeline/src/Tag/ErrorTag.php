@@ -2,6 +2,7 @@
 
 namespace Cognesy\Pipeline\Tag;
 
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 

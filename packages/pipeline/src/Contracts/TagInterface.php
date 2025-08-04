@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Tag;
+namespace Cognesy\Pipeline\Contracts;
 
 /**
  * Represents a tag that can be attached to a ProcessingState.

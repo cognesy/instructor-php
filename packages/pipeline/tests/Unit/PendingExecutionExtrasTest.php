@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\PendingExecution;
-use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\TagInterface;
 
 class ExecutionTag implements TagInterface {
     public function __construct(public readonly string $step) {}

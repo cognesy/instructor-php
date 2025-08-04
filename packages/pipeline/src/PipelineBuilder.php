@@ -6,6 +6,7 @@ use Closure;
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
 use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Finalizer\Finalize;
 use Cognesy\Pipeline\Middleware\CallAfter;
@@ -19,7 +20,6 @@ use Cognesy\Pipeline\Processor\ConditionalCall;
 use Cognesy\Pipeline\Processor\Fail;
 use Cognesy\Pipeline\Processor\ProcessorStack;
 use Cognesy\Pipeline\Processor\Tap;
-use Cognesy\Pipeline\Tag\TagInterface;
 use InvalidArgumentException;
 
 class PipelineBuilder

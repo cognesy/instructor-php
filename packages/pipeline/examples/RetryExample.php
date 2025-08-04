@@ -3,9 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\TagInterface;
 
 // ============================================================================
 // TAGS FOR RETRY TRACKING

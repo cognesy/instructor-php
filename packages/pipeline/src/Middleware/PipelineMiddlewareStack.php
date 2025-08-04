@@ -12,7 +12,7 @@ use Cognesy\Pipeline\ProcessingState;
  * middleware can decide whether to continue processing and can modify the
  * state before and after the next middleware executes.
  */
-class PipelineMiddlewareStack
+final class PipelineMiddlewareStack
 {
     /** @var CanControlStateProcessing[] */
     private array $middleware = [];

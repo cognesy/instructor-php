@@ -2,8 +2,8 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Pipeline\Tag\TagInterface;
 use Cognesy\Pipeline\Tag\TagMap;
 use Cognesy\Utils\Result\Result;
 use Throwable;

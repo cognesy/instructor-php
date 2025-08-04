@@ -2,6 +2,8 @@
 
 namespace Cognesy\Pipeline\Tag;
 
+use Cognesy\Pipeline\Contracts\TagInterface;
+
 /**
  * Tag that records timing information for pipeline operations.
  *
