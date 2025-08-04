@@ -9,7 +9,7 @@ use Cognesy\Utils\Result\Result;
 use RuntimeException;
 use Throwable;
 
-class Fail implements CanProcessState {
+readonly class Fail implements CanProcessState {
     private function __construct(
         private Throwable $e,
     ) {}

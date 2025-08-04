@@ -2,9 +2,13 @@
 
 namespace Cognesy\Pipeline\Middleware;
 
-use Closure;
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\Processor\Call;
+use Cognesy\Pipeline\Processor\ConditionalCall;
+use Cognesy\Pipeline\Tag\ErrorTag;
+use RuntimeException;
 
 /**
  * Middleware that skips processing based on a condition.
@@ -13,24 +17,24 @@ use Cognesy\Pipeline\ProcessingState;
  * if a certain condition is met, returning the current state without modification.
  */
 readonly class SkipProcessing implements CanControlStateProcessing {
-    /**
-     * @param Closure(ProcessingState):bool $condition
-     */
-    public function __construct(
-        private Closure $condition,
+    private function __construct(
+        private CanProcessState $conditionChecker,
     ) {}
 
     /**
      * @param callable(ProcessingState):bool $condition
      */
-    public static function with(callable $condition): self {
-        return new self($condition);
+    public static function when(callable $condition): self {
+        return new self(ConditionalCall::withState($condition)->then(Call::withNoArgs(fn() => true)));
     }
 
     public function handle(ProcessingState $state, callable $next): ProcessingState {
-        $shouldSkip = ($this->condition)($state);
+        $tempState = $this->conditionChecker->process($state);
         return match(true) {
-            $shouldSkip => $state,
+            $tempState->isFailure() => $tempState
+                ->mergeInto($state)
+                ->withTags(new ErrorTag(new RuntimeException('Failure while evaluating skip condition'))),
+            $tempState->value() => $state,
             default => $next($state),
         };
     }

@@ -1,6 +1,6 @@
 # Dual Error Tracking Architecture
 
-The Pipeline package employs a sophisticated dual error tracking system that separates business logic concerns from observability requirements. This document explains the model and architectural decisions.
+The Pipeline package employs a dual error tracking system that separates business logic concerns from observability requirements. This document explains the model and architectural decisions.
 
 ## The Two Mechanisms
 

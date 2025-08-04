@@ -2,10 +2,12 @@
 
 namespace Cognesy\Pipeline\Middleware;
 
-use Closure;
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\Processor\Call;
 use Cognesy\Pipeline\Tag\ErrorTag;
+use Throwable;
 
 /**
  * Middleware that executes a callback when processing results in failure.
@@ -19,18 +21,15 @@ use Cognesy\Pipeline\Tag\ErrorTag;
  */
 readonly class CallOnFailure implements CanControlStateProcessing
 {
-    /**
-     * @param Closure(ProcessingState):void $callback
-     */
     public function __construct(
-        private Closure $callback,
+        private CanProcessState $processor,
     ) {}
 
     /**
      * @param callable(ProcessingState):void $callback
      */
     public static function with(callable $callback): self {
-        return new self($callback);
+        return new self(Call::withState($callback));
     }
 
     /**
@@ -41,21 +40,11 @@ readonly class CallOnFailure implements CanControlStateProcessing
         if (!$newState->isFailure()) {
             return $newState;
         }
-
-        $tags = $newState->allTags();
         try {
-            ($this->callback)($newState);
-        } catch (\Throwable $e) {
-            $tags[] = new ErrorTag(
-                error: $e,
-                context: 'Error while executing CallOnFailure callback',
-                category: 'error',
-                timestamp: microtime(true),
-                metadata: [
-                    'root_cause' => $newState->exception(),
-                ]
-            );
+            $this->processor->process($newState);
+        } catch (Throwable $e) {
+            $newState = $newState->withTags(new ErrorTag($e));
         }
-        return $newState->withTags($tags);
+        return $newState;
     }
 }

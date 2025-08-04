@@ -4,10 +4,10 @@ namespace Cognesy\Pipeline;
 
 use Closure;
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
-use Cognesy\Pipeline\Finalizer\CallableFinalizer;
-use Cognesy\Pipeline\Finalizer\FinalizerInterface;
+use Cognesy\Pipeline\Finalizer\Finalize;
 use Cognesy\Pipeline\Middleware\CallAfter;
 use Cognesy\Pipeline\Middleware\CallBefore;
 use Cognesy\Pipeline\Middleware\CallOnFailure;
@@ -15,12 +15,11 @@ use Cognesy\Pipeline\Middleware\FailWhen;
 use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
 use Cognesy\Pipeline\Middleware\SkipProcessing;
 use Cognesy\Pipeline\Processor\Call;
-use Cognesy\Pipeline\Processor\Condition;
+use Cognesy\Pipeline\Processor\ConditionalCall;
 use Cognesy\Pipeline\Processor\Fail;
 use Cognesy\Pipeline\Processor\ProcessorStack;
 use Cognesy\Pipeline\Processor\Tap;
 use Cognesy\Pipeline\Tag\TagInterface;
-use Cognesy\Utils\Result\Failure;
 use InvalidArgumentException;
 
 class PipelineBuilder
@@ -30,7 +29,7 @@ class PipelineBuilder
     /** @var array<TagInterface> */
     private array $tags;
     private ProcessorStack $processors;
-    private FinalizerInterface $finalizer;
+    private CanFinalizeProcessing $finalizer;
     private PipelineMiddlewareStack $middleware; // per-pipeline execution middleware stack
     private PipelineMiddlewareStack $hooks; // per-processor execution hooks
 
@@ -44,7 +43,7 @@ class PipelineBuilder
         $this->source = $source ?? fn() => null;
         $this->tags = $tags ?? [];
         $this->processors = new ProcessorStack();
-        $this->finalizer = new CallableFinalizer(fn($data) => $data);
+        $this->finalizer = Finalize::passThrough();
         $this->middleware = new PipelineMiddlewareStack();
         $this->hooks = new PipelineMiddlewareStack();
     }
@@ -116,14 +115,14 @@ class PipelineBuilder
      * @param callable(ProcessingState):bool $condition
      */
     public function finishWhen(callable $condition): static {
-        $this->hooks->add(SkipProcessing::with($condition));
+        $this->hooks->add(SkipProcessing::when($condition));
         return $this;
     }
 
     /**
      * Add a failure handler executed when any step fails.
      *
-     * @param callable(Failure):void $handler
+     * @param callable(ProcessingState):void $handler
      */
     public function onFailure(callable $handler): static {
         $this->hooks->add(CallOnFailure::with($handler));
@@ -170,7 +169,7 @@ class PipelineBuilder
      * @param callable(mixed):mixed $callback
      */
     public function when(callable $condition, callable $callback): static {
-        $this->processors->add(Condition::withValue($condition)->then(Call::withValue($callback)));
+        $this->processors->add(ConditionalCall::withValue($condition)->then(Call::withValue($callback)));
         return $this;
     }
 
@@ -207,21 +206,21 @@ class PipelineBuilder
     }
 
     public function filter(callable $condition, string $message = 'Value filter condition failed'): static {
-        return $this->throughProcessor(Condition::withValue($condition)->negate()->then(Fail::with($message)));
+        return $this->throughProcessor(ConditionalCall::withValue($condition)->negate()->then(Fail::with($message)));
     }
 
     public function filterWithState(callable $condition, string $message = 'State filter condition failed'): static {
-        return $this->throughProcessor(Condition::withState($condition)->negate()->then(Fail::with($message)));
+        return $this->throughProcessor(ConditionalCall::withState($condition)->negate()->then(Fail::with($message)));
     }
 
     /**
-     * @param FinalizerInterface|callable(ProcessingState):mixed $finalizer
+     * @param CanFinalizeProcessing|callable(ProcessingState):mixed $finalizer
      */
-    public function finally(callable|FinalizerInterface $finalizer): static {
+    public function finally(callable|CanFinalizeProcessing $finalizer): static {
         $this->finalizer = match (true) {
-            $finalizer instanceof FinalizerInterface => $finalizer,
-            is_callable($finalizer) => new CallableFinalizer($finalizer),
-            default => throw new InvalidArgumentException('Finalizer must be callable or implement FinalizerInterface'),
+            $finalizer instanceof CanFinalizeProcessing => $finalizer,
+            is_callable($finalizer) => Finalize::withState($finalizer),
+            default => throw new InvalidArgumentException('Finalizer must be callable or implement CanFinalizeProcessing'),
         };
         return $this;
     }

@@ -5,7 +5,7 @@ namespace Cognesy\Pipeline\Processor;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
-readonly class Condition implements CanProcessState {
+readonly class ConditionalCall implements CanProcessState {
     private function __construct(
         private CanProcessState $conditionChecker,
         private CanProcessState $processor,

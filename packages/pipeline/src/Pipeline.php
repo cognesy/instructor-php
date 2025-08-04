@@ -2,9 +2,9 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
 use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Finalizer\CallableFinalizer;
-use Cognesy\Pipeline\Finalizer\FinalizerInterface;
+use Cognesy\Pipeline\Finalizer\Finalize;
 use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
 use Cognesy\Pipeline\Processor\ProcessorStack;
 use Cognesy\Utils\Result\Result;
@@ -17,18 +17,18 @@ class Pipeline implements CanProcessState
 {
 
     private ProcessorStack $processors;
-    private FinalizerInterface $finalizer;
+    private CanFinalizeProcessing $finalizer;
     private PipelineMiddlewareStack $middleware; // per-pipeline execution middleware stack
     private PipelineMiddlewareStack $hooks; // per-processor execution hooks
 
     public function __construct(
         ?ProcessorStack $processors = null,
-        ?FinalizerInterface $finalizer = null,
+        ?CanFinalizeProcessing $finalizer = null,
         ?PipelineMiddlewareStack $middleware = null,
         ?PipelineMiddlewareStack $hooks = null,
     ) {
         $this->processors = $processors ?? new ProcessorStack();
-        $this->finalizer = $finalizer ?? new CallableFinalizer(fn($data) => $data);
+        $this->finalizer = $finalizer ?? Finalize::passThrough();
         $this->middleware = $middleware ?? new PipelineMiddlewareStack();
         $this->hooks = $hooks ?? new PipelineMiddlewareStack();
     }
@@ -113,7 +113,7 @@ class Pipeline implements CanProcessState
         }
     }
 
-    private function applyFinalizer(FinalizerInterface $finalizer, ProcessingState $state): ProcessingState {
+    private function applyFinalizer(CanFinalizeProcessing $finalizer, ProcessingState $state): ProcessingState {
         try {
             $result = $finalizer->finalize($state);
             return $state->withResult(Result::from($result));

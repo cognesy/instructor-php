@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Finalizer;
+namespace Cognesy\Pipeline\Contracts;
 
 use Cognesy\Pipeline\ProcessingState;
 
@@ -11,13 +11,6 @@ use Cognesy\Pipeline\ProcessingState;
  * - Processors: Transform ProcessingState → ProcessingState (pipeline steps)
  * - Finalizers: Extract final value from ProcessingState → mixed (pipeline output)
  */
-interface FinalizerInterface
-{
-    /**
-     * Extract a final value from the state.
-     *
-     * @param ProcessingState $state The state to finalize
-     * @return mixed The final extracted value
-     */
+interface CanFinalizeProcessing {
     public function finalize(ProcessingState $state): mixed;
 }

@@ -92,7 +92,7 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
         
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception())->toBeInstanceOf(RuntimeException::class);
-        expect($pipeline->exception()->getMessage())->toBe('Finalizer error');
+        expect($pipeline->exception()->getMessage())->toBe('Finalization failed: Finalizer error');
     });
 });
 
