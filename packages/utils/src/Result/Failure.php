@@ -10,7 +10,7 @@ use Throwable;
  * @template E
  * @extends Result<mixed, E>
  */
-class Failure extends Result {
+final class Failure extends Result {
     /**
      * @var E
      */

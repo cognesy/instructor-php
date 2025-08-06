@@ -2,6 +2,7 @@
 
 namespace Cognesy\Pipeline;
 
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Utils\Result\Result;
 use Generator;
 use RuntimeException;
@@ -15,15 +16,14 @@ use Throwable;
  */
 class PendingExecution
 {
-
     private ProcessingState $initialState;
-    private Pipeline $pipeline;
+    private CanProcessState $pipeline;
 
     private ?ProcessingState $cachedOutput = null;
 
     public function __construct(
         ProcessingState $initialState,
-        Pipeline $pipeline,
+        CanProcessState $pipeline,
     ) {
         $this->initialState = $initialState;
         $this->pipeline = $pipeline;
@@ -107,7 +107,7 @@ class PendingExecution
         return $this->cachedOutput;
     }
 
-    private function doExecute(Pipeline $pipeline, ProcessingState $state) : ProcessingState {
+    private function doExecute(CanProcessState $pipeline, ProcessingState $state) : ProcessingState {
         try {
             $output = $pipeline->process($state);
         } catch (Throwable $e) {

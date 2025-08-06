@@ -15,7 +15,6 @@ use Exception;
  */
 class Pipeline implements CanProcessState
 {
-
     private ProcessorStack $processors;
     private CanFinalizeProcessing $finalizer;
     private PipelineMiddlewareStack $middleware; // per-pipeline execution middleware stack
@@ -62,6 +61,18 @@ class Pipeline implements CanProcessState
 
     // INTERNAL IMPLEMENTATION ///////////////////////////////////////////////////////////////
 
+    private function applyOnlyProcessors(ProcessingState $state): ProcessingState {
+        $currentState = $state;
+        foreach ($this->processors->getIterator() as $processor) {
+            $nextState = $this->executeProcessor($processor, $currentState);
+            if (!$this->shouldContinueProcessing($nextState)) {
+                return $nextState;
+            }
+            $currentState = $nextState;
+        }
+        return $currentState;
+    }
+
     private function applyProcessorsWithMiddleware(ProcessingState $state): ProcessingState {
         return match (true) {
             $this->middleware->isEmpty() => $this->applyProcessors($state),
@@ -76,18 +87,6 @@ class Pipeline implements CanProcessState
                 $this->hooks->isEmpty() => $this->executeProcessor($processor, $currentState),
                 default => $this->executeProcessorWithHooks($processor, $currentState),
             };
-            if (!$this->shouldContinueProcessing($nextState)) {
-                return $nextState;
-            }
-            $currentState = $nextState;
-        }
-        return $currentState;
-    }
-
-    private function applyOnlyProcessors(ProcessingState $state): ProcessingState {
-        $currentState = $state;
-        foreach ($this->processors->getIterator() as $processor) {
-            $nextState = $this->executeProcessor($processor, $currentState);
             if (!$this->shouldContinueProcessing($nextState)) {
                 return $nextState;
             }

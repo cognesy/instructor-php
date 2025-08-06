@@ -15,6 +15,8 @@ use Cognesy\Pipeline\ProcessingState;
  * - Decide whether to continue to next middleware
  * - Inspect/modify the result after processing
  * - Handle errors and failures
+ *
+ * ATTENTION: Components implementing this interface should be stateless.
  */
 interface CanControlStateProcessing
 {

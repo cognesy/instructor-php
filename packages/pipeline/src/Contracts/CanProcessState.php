@@ -9,6 +9,8 @@ interface CanProcessState
     /**
      * Process the state and return the result.
      *
+     * ATTENTION: Components implementing this interface should be stateless.
+     *
      * @param ProcessingState $state The state to process
      * @return ProcessingState The processed state
      */

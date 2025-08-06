@@ -6,7 +6,7 @@ namespace Cognesy\Utils\Result;
  * @template T
  * @extends Result<T, mixed>
  */
-class Success extends Result {
+final class Success extends Result {
     /**
      * @var T
      */

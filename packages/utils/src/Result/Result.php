@@ -202,16 +202,3 @@ abstract class Result {
         };
     }
 }
-
-//                if ($this->isSuccess()) {
-//                    try {
-//                        $result = $f($this->unwrap());
-//                        return match(true) {
-//                            $result instanceof Result => $result,
-//                            default => self::success($result),
-//                        };
-//                    } catch (Exception $e) {
-//                        return self::failure($e);
-//                    }
-//                 }
-//                 return $this;

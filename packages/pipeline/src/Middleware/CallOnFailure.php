@@ -40,6 +40,7 @@ readonly class CallOnFailure implements CanControlStateProcessing
         if (!$newState->isFailure()) {
             return $newState;
         }
+
         try {
             $this->processor->process($newState);
         } catch (Throwable $e) {

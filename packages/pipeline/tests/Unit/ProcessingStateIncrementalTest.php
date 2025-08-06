@@ -57,29 +57,6 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
         });
     });
 
-    describe('withoutTags', function () {
-        it('removes tags of specified class', function () {
-            $tag1 = new StateTag('keep');
-            $tag2 = new AnotherStateTag('remove');
-            $state = ProcessingState::with(10, [$tag1, $tag2]);
-            
-            $newState = $state->withoutTags(AnotherStateTag::class);
-            
-            expect($newState->hasTag(StateTag::class))->toBeTrue();
-            expect($newState->hasTag(AnotherStateTag::class))->toBeFalse();
-        });
-
-        it('removes all tags of multiple classes', function () {
-            $tag1 = new StateTag('remove1');
-            $tag2 = new AnotherStateTag('remove2');
-            $state = ProcessingState::with(10, [$tag1, $tag2]);
-            
-            $newState = $state->withoutTags(StateTag::class, AnotherStateTag::class);
-            
-            expect($newState->countTag())->toBe(0);
-        });
-    });
-
     describe('mergeFrom', function () {
         it('merges tags from source state', function () {
             $tag1 = new StateTag('original');

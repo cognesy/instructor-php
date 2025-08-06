@@ -11,7 +11,5 @@ namespace Cognesy\Pipeline\Contracts;
  * Each tag implementation should be immutable and contain only
  * data relevant to its specific concern.
  */
-interface TagInterface
-{
-    // Marker interface - tags are identified by their type
-}
+interface TagInterface {}
+// Marker interface - tags are identified by their type

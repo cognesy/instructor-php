@@ -7,6 +7,8 @@
  * using Pipeline middleware and state tags.
  */
 
+use examples\RetryExampleTest;
+
 echo "🚀 Pipeline Retry System Demo\n";
 echo "=============================\n";
 

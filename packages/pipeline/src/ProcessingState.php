@@ -3,8 +3,12 @@
 namespace Cognesy\Pipeline;
 
 use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Pipeline\Contracts\TagMapInterface;
+use Cognesy\Pipeline\Query\ResultQuery;
+use Cognesy\Pipeline\Query\TagQuery;
+use Cognesy\Pipeline\Query\TransformQuery;
 use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Pipeline\Tag\TagMap;
+use Cognesy\Pipeline\Tag\TagMapFactory;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
@@ -14,20 +18,20 @@ use Throwable;
 final readonly class ProcessingState
 {
     private Result $result;
-    private TagMap $tags;
+    private TagMapInterface $tags;
 
     public function __construct(
         Result $result,
-        ?TagMap $tags = null,
+        TagMapInterface $tags,
     ) {
         $this->result = $result;
-        $this->tags = $tags ?? TagMap::empty();
+        $this->tags = $tags;
     }
 
     public static function empty(): self {
         return new self(
             result: Result::success(null),
-            tags: TagMap::empty(),
+            tags: TagMapFactory::empty(),
         );
     }
 
@@ -38,7 +42,7 @@ final readonly class ProcessingState
     public static function with(mixed $value, array $tags = []): self {
         return new self(
             result: Result::from($value),
-            tags: TagMap::create($tags),
+            tags: TagMapFactory::create($tags),
         );
     }
 
@@ -61,7 +65,10 @@ final readonly class ProcessingState
      * @param array<class-string> $tagClasses
      */
     public function withoutTags(string ...$tagClasses): self {
-        return new self($this->result, $this->tags->without(...$tagClasses));
+        return new self(
+            $this->result,
+            TagMapFactory::create($this->tags->query()->without(...$tagClasses)->all())
+        );
     }
 
     public function mergeFrom(ProcessingState $source): self {
@@ -98,21 +105,41 @@ final readonly class ProcessingState
      * @return TagInterface[]
      */
     public function allTags(?string $tagClass = null): array {
-        return $this->tags->all($tagClass);
+        return $this->tags->query()->only($tagClass)->all();
+    }
+
+    public function result(): Result {
+        return $this->result;
+    }
+
+    public function getTagMap(): TagMapInterface {
+        return $this->tags;
+    }
+
+    public function resultQuery(): ResultQuery {
+        return new ResultQuery($this->result());
+    }
+
+    public function tags(): TagQuery {
+        return $this->getTagMap()->query();
+    }
+
+    public function transform(): TransformQuery {
+        return new TransformQuery($this);
     }
 
     /**
      * @param class-string $tagClass
      */
     public function lastTag(string $tagClass): ?TagInterface {
-        return $this->tags->last($tagClass);
+        return $this->tags->query()->ofType($tagClass)->last();
     }
 
     /**
      * @param class-string $tagClass
      */
     public function firstTag(string $tagClass): ?TagInterface {
-        return $this->tags->first($tagClass);
+        return $this->tags->query()->first($tagClass);
     }
 
     /**
@@ -144,11 +171,9 @@ final readonly class ProcessingState
     }
 
     public function countTag(?string $tagClass = null): int {
-        return $this->tags->count($tagClass);
-    }
-
-    public function result(): Result {
-        return $this->result;
+        return $tagClass === null 
+            ? $this->tags->query()->count()
+            : $this->tags->query()->ofType($tagClass)->count();
     }
 
     public function value(): mixed {

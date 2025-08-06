@@ -101,7 +101,7 @@ $state = $state->withTags(new ErrorTag($warning, ['severity' => 'warning']));
 class ProcessingState {
     public function __construct(
         private mixed $value,           // Type safety lost
-        private TagMap $tags            // Performance cost for every check
+        private TagMapInterface $tags            // Performance cost for every check
     ) {}
     
     public function isSuccess(): bool {
@@ -127,7 +127,7 @@ class ProcessingState {
 class ProcessingState {
     public function __construct(
         private Result $result,         // Type-safe, O(1) operations
-        private TagMap $tags           // Rich metadata when needed
+        private TagMapInterface $tags           // Rich metadata when needed
     ) {}
     
     public function isSuccess(): bool {
