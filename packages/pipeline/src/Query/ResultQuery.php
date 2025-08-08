@@ -3,7 +3,6 @@
 namespace Cognesy\Pipeline\Query;
 
 use Cognesy\Utils\Result\Result;
-use Throwable;
 
 /**
  * Fluent query interface for Result operations.
@@ -14,6 +13,8 @@ final class ResultQuery
         private readonly Result $result
     ) {}
 
+    // TERMINAL OPERATIONS
+
     public function value(): mixed {
         return $this->result->unwrap();
     }
@@ -22,29 +23,7 @@ final class ResultQuery
         return $this->result;
     }
 
-    public function valueOr(mixed $default): mixed {
-        return $this->result->isSuccess() ? $this->result->unwrap() : $default;
-    }
-
-    public function isSuccess(): bool {
-        return $this->result->isSuccess();
-    }
-
-    public function isFailure(): bool {
-        return $this->result->isFailure();
-    }
-
-    public function errorMessage(): string {
-        return $this->result->errorMessage();
-    }
-
-    public function exception(): ?Throwable {
-        return $this->result->exception();
-    }
-
-    public function exceptionOr(?Throwable $default): ?Throwable {
-        return $this->result->exception() ?? $default;
-    }
+    // FLUENT OPERATIONS
 
     public function ifSuccess(callable $callback): self {
         if ($this->result->isSuccess()) {
@@ -58,47 +37,5 @@ final class ResultQuery
             $callback($this->result->errorMessage(), $this->result->exception());
         }
         return $this;
-    }
-
-    public function isType(string $type): bool {
-        return $this->result->isSuccess() && gettype($this->result->unwrap()) === $type;
-    }
-
-    public function isInstanceOf(string $class): bool {
-        return $this->result->isSuccess() && $this->result->unwrap() instanceof $class;
-    }
-
-    public function matches(callable $predicate): bool {
-        return $this->result->isSuccess() && $predicate($this->result->unwrap());
-    }
-
-    /**
-     * Apply function to value if success, preserve tags
-     */
-    public function map(callable $fn): Result {
-        if ($this->result->isFailure()) {
-            return $this->result;
-        }
-        try {
-            $newOutput = $fn($this->result);
-            return Result::from($newOutput);
-        } catch (Throwable $e) {
-            return Result::failure($e);
-        }
-    }
-
-    /**
-     * Apply function to value if success, preserve tags
-     */
-    public function mapValue(callable $fn): Result {
-        if ($this->result->isFailure()) {
-            return $this->result;
-        }
-        try {
-            $newOutput = $fn($this->result->unwrap());
-            return Result::from($newOutput);
-        } catch (Throwable $e) {
-            return Result::failure($e);
-        }
     }
 }

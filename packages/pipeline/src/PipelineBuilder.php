@@ -196,15 +196,6 @@ class PipelineBuilder
         return $this->through($fn);
     }
 
-    /**
-     * Add flattening processor
-     * @param callable(mixed):mixed $mapper
-     */
-    public function flatMap(callable $mapper): static {
-        $this->processors->add(Call::withValue($mapper));
-        return $this;
-    }
-
     public function filter(callable $condition, string $message = 'Value filter condition failed'): static {
         return $this->throughProcessor(ConditionalCall::withValue($condition)->negate()->then(Fail::with($message)));
     }

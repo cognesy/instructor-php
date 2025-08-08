@@ -6,52 +6,15 @@ use Cognesy\Utils\Exceptions\CompositeException;
 use Exception;
 use Throwable;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//    /**
-//     * Tries to perform an operation that can either succeed with an integer result
-//     * or fail with an error message.
-//     *
-//     * @return Result<int, string> Result object encapsulating either a success value or an error.
-//     */
-//    function performOperation(): Result {
-//        // Some operation...
-//        if ($success) {
-//            return Result::success(42); // Success with an integer value
-//        } else {
-//            return Result::failure("An error occurred"); // Failure with a string error message
-//        }
-//    }
-//
-//    $result = performOperation();
-//
-//    // Execute if operation succeeded, if not - continue with the error
-//    $result = $result->then(function (int $value): string {
-//        return "Transformed value: " . ($value * 2);
-//    });
-//
-//    if ($result->isSuccess()) {
-//        // IDE should suggest `unwrap` method and understand its return type is `int`
-//        $value = $result->unwrap();
-//        echo "Operation succeeded with result: $value";
-//    } elseif ($result->isFailure()) {
-//        // IDE should suggest `error` method and understand its return type is `string`
-//        $error = $result->error();
-//        echo "Operation failed with error: $error";
-//    }
-//
-//    // Transforming the result if operation succeeded
-//    $transformedResult = $result->try(function (int $value): string {
-//        return "Transformed value: " . ($value * 2);
-//    });
-//
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
+ * A Result class that encapsulates a value or an error.
+ *
  * @template T The type of the value in case of success.
  * @template E The type of the error in case of failure.
  */
-abstract class Result {
+abstract readonly class Result {
+    // CONSTRUCTORS
+
     public static function from(mixed $value) : Result {
         return match(true) {
             $value instanceof Result => $value,
@@ -68,8 +31,35 @@ abstract class Result {
         return new Failure($error);
     }
 
+    // ACCESSORS
+
     abstract public function isSuccess(): bool;
     abstract public function isFailure(): bool;
+
+    public function isSuccessAndNull(): bool {
+        return $this->isSuccess()
+            && ($this->unwrap() === null);
+    }
+
+    public function isSuccessAndTrue() : bool {
+        return $this->isSuccess()
+            && ($this->unwrap() === true);
+    }
+
+    public function isSuccessAndFalse() : bool {
+        return $this->isSuccess()
+            && ($this->unwrap() === false);
+    }
+
+    public function valueOr(mixed $default): mixed {
+        return $this->isSuccess() ? $this->unwrap() : $default;
+    }
+
+    public function exceptionOr(mixed $default): mixed {
+        return $this->isFailure() ? $this->exception() : $default;
+    }
+
+    // TRANSFORMATIONS
 
     /**
      * @template S
@@ -77,7 +67,7 @@ abstract class Result {
      * @return Result<S, E> A new Result instance with the function applied, or the original failure
      */
     public function then(callable $f): Result {
-        return $this->flatMap(function($value) use ($f) {
+        return $this->map(function($value) use ($f) {
             $result = $f($value);
             return $result instanceof Result ? $result : self::success($result);
         });
@@ -91,23 +81,12 @@ abstract class Result {
     public function map(callable $f): Result {
         if ($this->isSuccess()) {
             try {
-                return self::success($f($this->unwrap()));
-            } catch (Exception $e) {
-                return self::failure($e);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * @template S
-     * @param callable(T):Result<S, E> $f Function to apply to the value in case of success
-     * @return Result<S, E> A new Result instance with the function applied, or the original failure
-     */
-    public function flatMap(callable $f): Result {
-        if ($this->isSuccess()) {
-            try {
-                return $f($this->unwrap());
+                $output = $f($this->unwrap());
+                return match (true) {
+                    $output instanceof Result => $output,
+                    is_null($output) => self::success(null),
+                    default => self::success($output),
+                };
             } catch (Exception $e) {
                 return self::failure($e);
             }
@@ -144,29 +123,6 @@ abstract class Result {
         }
     }
 
-    public function isSuccessAndNull(): bool {
-        return $this->isSuccess()
-            && ($this->unwrap() === null);
-    }
-
-    public function isSuccessAndTrue() : bool {
-        return $this->isSuccess()
-            && ($this->unwrap() === true);
-    }
-
-    public function isSuccessAndFalse() : bool {
-        return $this->isSuccess()
-            && ($this->unwrap() === false);
-    }
-
-    public function valueOr(mixed $default): mixed {
-        return $this->isSuccess() ? $this->unwrap() : $default;
-    }
-
-    public function exceptionOr(mixed $default): mixed {
-        return $this->isFailure() ? $this->exception() : $default;
-    }
-
     public static function tryAll(array $args, callable ...$callbacks): Result {
         $errors = [];
         $results = [];
@@ -200,5 +156,31 @@ abstract class Result {
             !empty($errors) => Result::failure(new CompositeException($errors)),
             default => Result::success(false),
         };
+    }
+
+    public function isType(string $type): bool {
+        return $this->isSuccess() && gettype($this->unwrap()) === $type;
+    }
+
+    public function isInstanceOf(string $class): bool {
+        return $this->isSuccess() && $this->unwrap() instanceof $class;
+    }
+
+    public function matches(callable $predicate): bool {
+        return $this->isSuccess() && $predicate($this->unwrap());
+    }
+
+    public function ifSuccess(callable $callback): self {
+        if ($this->isSuccess()) {
+            $callback($this->unwrap());
+        }
+        return $this;
+    }
+
+    public function ifFailure(callable $callback): self {
+        if ($this->isFailure()) {
+            $callback($this->exception());
+        }
+        return $this;
     }
 }

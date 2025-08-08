@@ -4,8 +4,9 @@ namespace Cognesy\Pipeline\Tag\Internal;
 
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Query\TagQuery;
 use Cognesy\Pipeline\Tag\TagMapFactory;
+use Cognesy\Pipeline\Tag\TagQuery;
+use Cognesy\Pipeline\Tag\TagTransform;
 use Cognesy\Utils\Arrays;
 
 /**
@@ -82,7 +83,7 @@ final readonly class SimpleTagMap implements TagMapInterface
     }
 
     /**
-     * @return array<TagInterface>
+     * @return TagInterface[]
      */
     public function getAllInOrder(): array {
         return Arrays::flatten($this->tags);
@@ -107,23 +108,18 @@ final readonly class SimpleTagMap implements TagMapInterface
         return empty($tags) ? null : end($tags);
     }
 
-    /**
-     * @param class-string $tagClass Class of the tags to transform
-     * @param callable(TagInterface):TagInterface $callback Function to apply to each tag
-     */
-    public function map(string $tagClass, callable $callback): self {
-        if (!isset($this->tags[$tagClass])) {
-            return $this;
+    public function merge(TagMapInterface $other): TagMapInterface {
+        $outputTags = $this->tags;
+        foreach ($other->tags as $class => $tags) {
+            $outputTags[$class] = $outputTags[$class] ?? [];
+            $outputTags[$class] = array_merge($outputTags[$class], $tags);
         }
-
-        $newTags = $this->tags;
-        $newTags[$tagClass] = array_map($callback, $this->tags[$tagClass]);
-        return new self($newTags);
+        return new self($outputTags);
     }
 
-    public function merge(self $added): self {
-        $outputTags = $this->tags;
-        foreach ($added->tags as $class => $tags) {
+    public function mergeInto(TagMapInterface $target): TagMapInterface {
+        $outputTags = $target->tags;
+        foreach ($this->tags as $class => $tags) {
             $outputTags[$class] = $outputTags[$class] ?? [];
             $outputTags[$class] = array_merge($outputTags[$class], $tags);
         }
@@ -136,6 +132,10 @@ final readonly class SimpleTagMap implements TagMapInterface
 
     public function query(): TagQuery {
         return new TagQuery($this);
+    }
+
+    public function transform(): TagTransform {
+        return new TagTransform($this);
     }
 
     public function with(TagInterface ...$tags): self {

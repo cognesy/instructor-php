@@ -4,7 +4,8 @@ namespace Cognesy\Pipeline\Tag\Internal;
 
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Query\TagQuery;
+use Cognesy\Pipeline\Tag\TagQuery;
+use Cognesy\Pipeline\Tag\TagTransform;
 
 /**
  * Minimal tag map implementation with sequential IDs and efficient storage.
@@ -30,7 +31,7 @@ final class IndexedTagMap implements TagMapInterface
     // CONSTRUCTORS
 
     /**
-     * @param array<TagInterface> $tags
+     * @param TagInterface[] $tags
      */
     public static function create(array $tags): self {
         return self::empty()->with(...$tags);
@@ -47,7 +48,7 @@ final class IndexedTagMap implements TagMapInterface
     }
 
     /**
-     * @return array<TagInterface>
+     * @return TagInterface[]
      */
     public function getAllInOrder(): array {
         return array_map(
@@ -69,11 +70,24 @@ final class IndexedTagMap implements TagMapInterface
         return empty($this->insertionOrder);
     }
 
-    public function merge(TagMapInterface $added): self {
-        if ($added->isEmpty()) {
+    public function merge(TagMapInterface $other): TagMapInterface {
+        if ($other->isEmpty()) {
             return $this;
         }
-        return $this->with(...$added->getAllInOrder());
+        if ($this->isEmpty()) {
+            return $other;
+        }
+        return $this->with(...$other->getAllInOrder());
+    }
+
+    public function mergeInto(TagMapInterface $target): TagMapInterface {
+        if ($this->isEmpty()) {
+            return $target;
+        }
+        if ($target->isEmpty()) {
+            return $this;
+        }
+        return $target->with(...$this->getAllInOrder());
     }
 
     public function newInstance(array $tags): TagMapInterface {
@@ -82,6 +96,10 @@ final class IndexedTagMap implements TagMapInterface
 
     public function query(): TagQuery {
         return new TagQuery($this);
+    }
+
+    public function transform(): TagTransform {
+        return new TagTransform($this);
     }
 
     public function with(TagInterface ...$tags): self {

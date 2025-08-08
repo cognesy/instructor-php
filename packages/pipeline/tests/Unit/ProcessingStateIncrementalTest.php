@@ -64,7 +64,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             $originalState = ProcessingState::with(10, [$tag1]);
             $sourceState = ProcessingState::with(20, [$tag2]);
             
-            $merged = $originalState->transform()->mergeFrom($sourceState);
+            $merged = $originalState->mergeFrom($sourceState);
             
             expect($merged->value())->toBe(10); // Keeps original result
             expect($merged->hasTag(StateTag::class))->toBeTrue();
@@ -79,43 +79,11 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             $sourceState = ProcessingState::with(10, [$tag1]);
             $targetState = ProcessingState::with(20, [$tag2]);
             
-            $merged = $sourceState->transform()->mergeInto($targetState);
+            $merged = $sourceState->mergeInto($targetState);
             
             expect($merged->value())->toBe(10); // Keeps source result
             expect($merged->hasTag(StateTag::class))->toBeTrue();
             expect($merged->hasTag(AnotherStateTag::class))->toBeTrue();
-        });
-    });
-
-    describe('combine', function () {
-        it('combines states with default result combinator', function () {
-            $state1 = ProcessingState::with(10);
-            $state2 = ProcessingState::with(20);
-            
-            $combined = $state1->transform()->combine($state2);
-            
-            expect($combined->value())->toBe(20); // Second result wins by default
-        });
-
-        it('combines states with custom result combinator', function () {
-            $state1 = ProcessingState::with(10);
-            $state2 = ProcessingState::with(20);
-            
-            $combined = $state1->transform()->combine($state2, fn($a, $b) => Result::success($a->unwrap() + $b->unwrap()));
-            
-            expect($combined->value())->toBe(30);
-        });
-
-        it('combines tags from both states', function () {
-            $tag1 = new StateTag('first');
-            $tag2 = new AnotherStateTag('second');
-            $state1 = ProcessingState::with(10, [$tag1]);
-            $state2 = ProcessingState::with(20, [$tag2]);
-            
-            $combined = $state1->transform()->combine($state2);
-            
-            expect($combined->hasTag(StateTag::class))->toBeTrue();
-            expect($combined->hasTag(AnotherStateTag::class))->toBeTrue();
         });
     });
 
@@ -168,7 +136,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
                 $tag3 = new AnotherStateTag('different');
                 $state = ProcessingState::with(10, [$tag1, $tag2, $tag3]);
                 
-                $result = $state->tags()->hasAll([$tag1, $tag2]);
+                $result = $state->tags()->hasAll($tag1, $tag2);
                 
                 expect($result)->toBeTrue();
             });
@@ -180,7 +148,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
                 
                 // This should return false because AnotherStateTag class is not present
                 $missingTag = new AnotherStateTag('missing');
-                $result = $state->tags()->hasAll([$tag1, $missingTag]);
+                $result = $state->tags()->hasAll($tag1, $missingTag);
                 
                 expect($result)->toBeFalse();
             });
@@ -194,7 +162,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
                 $state = ProcessingState::with(10, [$tag1, $tag2, $tag3]);
                 
                 $missingTag = new StateTag('missing');
-                $result = $state->tags()->hasAny([$missingTag, $tag1]);
+                $result = $state->tags()->hasAny($missingTag, $tag1);
                 
                 expect($result)->toBeTrue();
             });
@@ -208,7 +176,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
                 $missingTag1 = new AnotherStateTag('missing1');
                 $missingTag2 = new AnotherStateTag('missing2');
                 // Create a completely different tag class for this test
-                $result = $state->tags()->hasAny([$missingTag1, $missingTag2]);
+                $result = $state->tags()->hasAny($missingTag1, $missingTag2);
                 
                 expect($result)->toBeFalse();
             });
@@ -241,7 +209,7 @@ describe('ProcessingState Incremental Tests - Missing Coverage', function () {
             it('returns the Result object', function () {
                 $state = ProcessingState::with(42);
                 
-                $result = $state->getResult();
+                $result = $state->result();
                 
                 expect($result)->toBeInstanceOf(Result::class);
                 expect($result->unwrap())->toBe(42);

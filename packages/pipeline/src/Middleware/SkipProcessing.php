@@ -32,7 +32,6 @@ readonly class SkipProcessing implements CanControlStateProcessing {
         $tempState = $this->conditionChecker->process($state);
         return match(true) {
             $tempState->isFailure() => $tempState
-                ->transform()
                 ->mergeInto($state)
                 ->withTags(new ErrorTag(new RuntimeException('Failure while evaluating skip condition'))),
             $tempState->value() => $state,

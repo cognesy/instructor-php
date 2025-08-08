@@ -53,10 +53,8 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $result = $pending->state()
-                ->transform()
                 ->map(fn($x) => $x + 5)
-                ->filter(fn($x) => $x > 15)
-                ->get();
+                ->failWhen(fn($x) => $x > 15);
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(25);
@@ -70,9 +68,7 @@ describe('PendingExecution Enhanced Operations', function () {
             
             $state = $pending->state();
             $result = $state
-                ->transform()
                 ->map(fn($x) => $x + 5)
-                ->get()
                 ->withTags(new ExecutionTag('monadic'));
             
             $tags = $result->allTags(ExecutionTag::class);
@@ -100,10 +96,8 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $result = $pending->state()
-                ->transform()
                 ->map(fn($x) => $x + 5)
-                ->filter(fn($x) => $x > 100, 'Value too small') // Will fail
-                ->get();
+                ->failWhen(fn($x) => $x > 100, 'Value too small'); // Will fail
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('Value too small');
@@ -116,9 +110,8 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $state = $pending->state()
-                ->transform()
                 ->map(fn($array) => array_map(fn($x) => $x * 2, $array))
-                ->get();
+                ;
             
             $stream = $pending->for($state->value())->stream();
             $results = iterator_to_array($stream);
@@ -131,10 +124,8 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $state = $pending->state()
-                ->transform()
-                ->filter(fn($array) => count($array) > 5) // Will fail
-                ->get();
-            
+                ->failWhen(fn($array) => count($array) > 5); // Will fail
+
             $stream = $pending->for($state->valueOr([]))->stream();
             $results = iterator_to_array($stream);
             
@@ -149,9 +140,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $finalValue = $pending->state()
-                ->transform()
                 ->map(fn($x) => $x + 5)
-                ->get()
                 ->value();
             
             expect($finalValue)->toBe(25);
@@ -163,9 +152,7 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $finalValue = $pending->state()
-                ->transform()
-                ->filter(fn($x) => $x > 100)
-                ->get()
+                ->failWhen(fn($x) => $x > 100)
                 ->valueOr(42);
             
             expect($finalValue)->toBe(42);
@@ -177,9 +164,8 @@ describe('PendingExecution Enhanced Operations', function () {
                 ->create();
             
             $result = $pending->state()
-                ->transform()
                 ->map(fn($x) => $x + 5)
-                ->getResult();
+                ->result();
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->unwrap())->toBe(25);
@@ -196,9 +182,7 @@ describe('PendingExecution Enhanced Operations', function () {
             $results = [];
             foreach ([1, 2, 3] as $input) {
                 $result = $pipeline->for($input)->state()
-                    ->transform()
                     ->map(fn($x) => $x * 10)
-                    ->get()
                     ->value();
                 $results[] = $result;
             }
@@ -214,9 +198,8 @@ describe('PendingExecution Enhanced Operations', function () {
             $results = [];
             foreach ([-1, 2, -3, 4] as $input) {
                 $state = $pipeline->for($input)->state()
-                    ->transform()
                     ->map(fn($x) => $x + 10)
-                    ->get();
+                    ;
 
                     
                 $results[] = $state->isSuccess() ? $state->value() : 'error';
@@ -246,10 +229,10 @@ describe('PendingExecution Enhanced Operations', function () {
             expect($pipelineExecuted)->toBeTrue();
             
             // Now apply monadic operations (these are immediate on ProcessingState)
-            $chained = $state->transform()->map(function($x) use (&$monadicExecuted) {
+            $chained = $state->map(function($x) use (&$monadicExecuted) {
                 $monadicExecuted = true;
                 return $x + 5;
-            })->get();
+            });
             
             expect($monadicExecuted)->toBeTrue(); // ProcessingState operations are immediate
             expect($chained->value())->toBe(25);

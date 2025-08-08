@@ -122,6 +122,6 @@ class Pipeline implements CanProcessState
     }
 
     private function shouldContinueProcessing(ProcessingState $state): bool {
-        return $state->getResult()->isSuccess();
+        return $state->result()->isSuccess();
     }
 }

@@ -223,7 +223,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
             it('adds processor that implements CanProcessState', function () {
                 $processor = new class implements \Cognesy\Pipeline\Contracts\CanProcessState {
                     public function process(ProcessingState $state): ProcessingState {
-                        return $state->transform()->map(fn($x) => $x . '_processed')->get();
+                        return $state->map(fn($x) => $x . '_processed');
                     }
                 };
                 

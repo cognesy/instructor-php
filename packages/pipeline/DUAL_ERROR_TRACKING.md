@@ -10,7 +10,7 @@ The Pipeline package employs a dual error tracking system that separates busines
 $result->isSuccess()           // Business logic: did computation succeed?
 $result->exception()           // Original exception for debugging  
 $result->errorMessage()        // Human-readable error for users
-$result->transform()->map(fn($x) => $x * 2) // Functional composition
+$result->map(fn($x) => $x * 2) // Functional composition
 ```
 
 ### ErrorTag - The Metadata Layer
@@ -25,13 +25,13 @@ $errorTag->context                 // Additional error context
 
 These mechanisms address **fundamentally different concerns**:
 
-| Aspect | Result::failure() | ErrorTag |
-|--------|------------------|----------|
-| **Purpose** | Business logic flow control | Observability & metadata |
-| **Performance** | O(1) success checks | O(n) tag lookups |
+| Aspect | Result::failure()                        | ErrorTag |
+|--------|------------------------------------------|----------|
+| **Purpose** | Business logic flow control              | Observability & metadata |
+| **Performance** | O(1) success checks                      | O(n) tag lookups |
 | **Type Safety** | `Result<T>` with compile-time guarantees | `mixed` metadata |
-| **Composition** | Monadic operations (`map`, `flatMap`) | Tag-based querying |
-| **Consumer** | Application business logic | Middleware & monitoring |
+| **Composition** | Mapping operations                       | Tag-based querying |
+| **Consumer** | Application business logic               | Middleware & monitoring |
 
 ## Why Dual Tracking is Necessary
 
@@ -160,7 +160,7 @@ if ($result->isFailure()) {
 // Functional composition
 $transformed = $result
     ->map(fn($data) => $this->transform($data))
-    ->flatMap(fn($data) => $this->validate($data));
+    ->map(fn($data) => $this->validate($data));
 ```
 
 ### Use ErrorTag for:

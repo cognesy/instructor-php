@@ -6,11 +6,11 @@ namespace Cognesy\Utils\Result;
  * @template T
  * @extends Result<T, mixed>
  */
-final class Success extends Result {
+final readonly class Success extends Result {
     /**
      * @var T
      */
-    private $value;
+    private mixed $value;
 
     /**
      * @param T $value The success value

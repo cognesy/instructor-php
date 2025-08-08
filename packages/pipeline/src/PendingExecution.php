@@ -54,16 +54,16 @@ class PendingExecution
     }
 
     public function result(): Result {
-        return $this->execute()->getResult();
+        return $this->execute()->result();
     }
 
     public function value(): mixed {
         $state = $this->execute();
         return match(true) {
             $state->isFailure() => throw new RuntimeException(
-                'Cannot extract value from a failed state: ' . $state->getResult()->errorMessage()
+                'Cannot extract value from a failed state: ' . $state->result()->errorMessage()
             ),
-            default => $state->getResult()->unwrap(),
+            default => $state->result()->unwrap(),
         };
     }
 

@@ -4,11 +4,9 @@ namespace Cognesy\Pipeline;
 
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Contracts\TagMapInterface;
-use Cognesy\Pipeline\Query\ResultQuery;
-use Cognesy\Pipeline\Query\TagQuery;
-use Cognesy\Pipeline\Query\TransformQuery;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\TagMapFactory;
+use Cognesy\Pipeline\Tag\TagQuery;
 use Cognesy\Utils\Result\Result;
 use RuntimeException;
 use Throwable;
@@ -25,7 +23,7 @@ final readonly class ProcessingState
     private Result $result;
     private TagMapInterface $tags;
 
-    public function __construct(
+    private function __construct(
         Result $result,
         TagMapInterface $tags,
     ) {
@@ -62,9 +60,7 @@ final readonly class ProcessingState
     }
 
     public function failWith(string|Throwable $cause): self {
-        $message = $cause instanceof Throwable
-            ? $cause->getMessage()
-            : $cause;
+        $message = $cause instanceof Throwable ? $cause->getMessage() : $cause;
         $exception = match (true) {
             is_string($cause) => new RuntimeException($cause),
             $cause instanceof Throwable => $cause,
@@ -74,31 +70,10 @@ final readonly class ProcessingState
             ->withTags(new ErrorTag(error: $message));
     }
 
-    // ACCESSORS
+    // ACCESSORS - RESULT
 
-    /**
-     * Get all tags, optionally filtered by class.
-     *
-     * @param class-string|null $tagClass Optional class filter
-     * @return TagInterface[]
-     */
-    public function allTags(?string $tagClass = null): array {
-        return $this->tags->query()->only($tagClass)->all();
-    }
-
-    public function getResult(): Result {
+    public function result(): Result {
         return $this->result;
-    }
-
-    public function getTagMap(): TagMapInterface {
-        return $this->tags;
-    }
-
-    /**
-     * @param class-string $tagClass
-     */
-    public function hasTag(string $tagClass): bool {
-        return $this->tags->has($tagClass);
     }
 
     public function value(): mixed {
@@ -131,17 +106,151 @@ final readonly class ProcessingState
         return $this->result->exceptionOr($default);
     }
 
+    // TRANSFORMATIONS
+
+    public function map(callable $fn): ProcessingState {
+        if ($this->isFailure()) {
+            return $this;
+        }
+        return $this->mapAnyInput(fn() => $this->result->unwrap(), $fn);
+    }
+
+    public function mapResult(callable $fn): ProcessingState {
+        return $this->mapAnyInput(fn() => $this->result, $fn);
+    }
+
+    public function mapState(callable $fn): ProcessingState {
+        return $this->mapAnyInput(fn() => $this, $fn);
+    }
+
+    // ACCESSORS - TAGS
+
+    public function tagMap(): TagMapInterface {
+        return $this->tags;
+    }
+
+    /**
+     * Get all tags, optionally filtered by class.
+     *
+     * @param class-string|null $tagClass Optional class filter
+     * @return TagInterface[]
+     */
+    public function allTags(?string $tagClass = null): array {
+        return $this->tags->query()->only($tagClass)->all();
+    }
+
+    /**
+     * @param class-string $tagClass
+     */
+    public function hasTag(string $tagClass): bool {
+        return $this->tags->has($tagClass);
+    }
+
     // QUERY AND TRANSFORMATION APIs
 
-    public function result(): ResultQuery {
-        return new ResultQuery($this->result);
-    }
-
     public function tags(): TagQuery {
-        return $this->getTagMap()->query();
+        return $this->tagMap()->query();
     }
 
-    public function transform(): TransformQuery {
-        return new TransformQuery($this);
+    // ERROR HANDLING
+
+    public function recover(mixed $defaultValue): self {
+        return match(true) {
+            $this->isFailure() => $this->withResult(Result::success($defaultValue)),
+            default => $this,
+        };
+    }
+
+    /** @param callable(ProcessingState):ProcessingState $recovery */
+    public function recoverWith(callable $recovery): self {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        try {
+            $recoveredValue = $recovery($this);
+        } catch (Throwable $e) {
+            return $this; // Keep original failure
+        }
+        return $this->withResult(Result::success($recoveredValue));
+    }
+
+    // TAG TRANSFORMATIONS
+
+    public function addTagsIf(bool $condition, TagInterface ...$tags): self {
+        return $condition ? $this->withTags(...$tags) : $this;
+    }
+
+    public function addTagsIfSuccess(TagInterface ...$tags): self {
+        return $this->addTagsIf($this->result()->isSuccess(), ...$tags);
+    }
+
+    public function addTagsIfFailure(TagInterface ...$tags): self {
+        return $this->addTagsIf($this->result()->isFailure(), ...$tags);
+    }
+
+    public function mergeFrom(ProcessingState $source): self {
+        return new self($this->result, $this->tagMap()->merge($source->tagMap()));
+    }
+
+    public function mergeInto(ProcessingState $target): self {
+        return new self($this->result, $target->tagMap()->merge($this->tagMap()));
+    }
+
+    /**
+     * Combines this state with another state, merging tags and optionally combining results.
+     *
+     * @param ProcessingState $other The other state to combine with
+     * @param callable(Result, Result): Result|null $resultCombinator Optional function to combine results
+     * @return self New ProcessingState with combined result and merged tags
+     */
+    public function combine(ProcessingState $other, ?callable $resultCombinator = null): self {
+        $resultCombinator ??= fn($a, $b) => $b; // Default: use second result
+        return new self(
+            result: $resultCombinator($this->result, $other->result()),
+            tags: $this->tagMap()->merge($other->tagMap()),
+        );
+    }
+
+    // CONDITIONAL OPERATIONS
+
+    /** @param callable(mixed):bool $conditionFn */
+    public function failWhen(callable $conditionFn, string $errorMessage = 'Failure condition met'): self {
+        if ($this->isFailure()) {
+            return $this;
+        }
+        return $conditionFn($this->value()) ? $this : $this->failWith($errorMessage);
+    }
+
+    /**
+     * @param callable(mixed):bool $stateConditionFn
+     * @param callable(ProcessingState):ProcessingState $stateTransformationFn
+     */
+    public function when(callable $stateConditionFn, callable $stateTransformationFn): self {
+        if ($this->isFailure()) {
+            return $this;
+        }
+        return $stateConditionFn($this->value()) ? $stateTransformationFn($this) : $this;
+    }
+
+    /**
+     * @param callable(ProcessingState):bool $stateConditionFn
+     * @param callable(ProcessingState):ProcessingState $stateTransformationFn
+     */
+    public function whenState(callable $stateConditionFn, callable $stateTransformationFn): self {
+        return $stateConditionFn($this) ? $stateTransformationFn($this) : $this;
+    }
+
+    // PRIVATE
+
+    private function mapAnyInput(callable $inputFn, callable $fn): ProcessingState {
+        try {
+            $output = $fn($inputFn());
+            return match(true) {
+                $output instanceof ProcessingState => $output->mergeInto($this),
+                default => $this->withResult(Result::from($output)),
+            };
+        } catch (Throwable $e) {
+            return $this->failWith($e);
+        }
     }
 }
