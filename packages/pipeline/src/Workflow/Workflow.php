@@ -47,7 +47,7 @@ class Workflow implements CanProcessState
     private function executeSteps(ProcessingState $state): ProcessingState {
         $current = $state;
         foreach ($this->steps as $step) {
-            if ($current->result()->isFailure()) {
+            if ($current->getResult()->isFailure()) {
                 return $current;
             }
             $current = $step->process($current);

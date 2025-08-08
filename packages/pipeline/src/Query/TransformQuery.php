@@ -4,7 +4,6 @@ namespace Cognesy\Pipeline\Query;
 
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Utils\Result\Result;
 use Throwable;
 
@@ -13,71 +12,117 @@ use Throwable;
  */
 final class TransformQuery
 {
-    public function __construct(private readonly ProcessingState $state) {}
+    public function __construct(
+        private readonly ProcessingState $state
+    ) {}
+
+    // TERMINAL OPERATIONS
+
+    public function get(): ProcessingState {
+        return $this->state;
+    }
+
+    public function getResult(): Result {
+        return $this->state->getResult();
+    }
+
+    // TRANSFORMATIONS
 
     /**
-     * Transform value if successful, otherwise return unchanged.
+     * @param callable(mixed):mixed $mapper
      */
-    public function mapValue(callable $transformer): ProcessingState {
-        if ($this->state->result()->isFailure()) {
-            return $this->state;
+    public function map(callable $mapper): self {
+        if ($this->state->isFailure()) {
+            return $this;
         }
         try {
-            $newValue = $transformer($this->state->result()->unwrap());
-            return $this->state->withResult(Result::success($newValue));
+            $output = $mapper($this->state->value());
         } catch (Throwable $e) {
-            return $this->state->withResult(Result::failure($e->getMessage()));
+            return new self($this->state->failWith($e));
         }
+        return new self($this->state->withResult(Result::success($output)));
+    }
+
+    /**
+     * Apply function that returns ProcessingState, merge tags
+     */
+    public function flatMap(callable $fn): self {
+        if ($this->state->isFailure()) {
+            return $this;
+        }
+        $output = $fn($this->state->value());
+        return new self(match(true) {
+            $output instanceof ProcessingState => $output->transform()->mergeInto($this->state),
+            default => $this->state->withResult(Result::from($output)),
+        });
+    }
+
+    /**
+     * Apply function that returns ProcessingState, merge tags
+     */
+    public function flatMapResult(callable $fn): self {
+        if ($this->state->isFailure()) {
+            return $this;
+        }
+        $output = $fn($this->state->result());
+        return new self(match(true) {
+            $output instanceof ProcessingState => $output->transform()->mergeInto($this->state),
+            default => $this->state->withResult(Result::from($output)),
+        });
     }
 
     /**
      * Transform entire state if successful.
      */
-    public function flatMap(callable $transformer): ProcessingState {
-        if ($this->state->result()->isFailure()) {
-            return $this->state;
+    public function flatMapState(callable $transformer): self {
+        if ($this->state->isFailure()) {
+            return $this;
         }
         try {
-            $result = $transformer($this->state);
-            return $result instanceof ProcessingState
-                ? $result
-                : $this->state->withResult(Result::from($result));
+            $output = $transformer($this->state);
         } catch (Throwable $e) {
-            return $this->state->withResult(Result::failure($e->getMessage()));
+            return new self($this->state->failWith($e));
         }
+        return new self(match(true) {
+            $output instanceof ProcessingState => $output->transform()->mergeInto($this->state),
+            default => $this->state->withResult(Result::from($output)),
+        });
+    }
+
+    /**
+     * Merges result and tags using a custom combinator function.
+     *
+     * @param callable(Result, Result): Result $resultCombinator Optional function to combine results
+     */
+    public function combine(ProcessingState $other, ?callable $resultCombinator = null): ProcessingState {
+        $resultCombinator ??= fn($a, $b) => $b;
+        return new ProcessingState(
+            result: $resultCombinator($this->state->getResult(), $other->getResult()),
+            tags: $this->state->getTagMap()->merge($other->getTagMap()),
+        );
     }
 
     // ERROR HANDLING
 
-    public function failWith(string|Throwable $error): ProcessingState {
-        $errorMessage = $error instanceof Throwable ? $error->getMessage() : $error;
-        $newResult = Result::failure($errorMessage);
-        if ($error instanceof Throwable) {
-            return $this->state
-                ->withResult($newResult)
-                ->withTags(new ErrorTag($error));
-        }
-        return $this->state->withResult($newResult);
+    public function recover(mixed $defaultValue): self {
+        return new self(match(true) {
+            $this->state->getResult()->isFailure() => $this->state->withResult(Result::success($defaultValue)),
+            default => $this->state,
+        });
     }
 
-    public function recover(mixed $defaultValue): ProcessingState {
-        return $this->state->result()->isFailure()
-            ? $this->state->withResult(Result::success($defaultValue))
-            : $this->state;
-    }
-
-    public function recoverWith(callable $recovery): ProcessingState {
-        if ($this->state->result()->isSuccess()) {
-            return $this->state;
+    public function recoverWith(callable $recovery): self {
+        if ($this->state->getResult()->isSuccess()) {
+            return new self($this->state);
         }
         try {
             $recoveredValue = $recovery(
-                $this->state->result()->errorMessage(),
-                $this->state->result()->exception()
+                $this->state->getResult()->errorMessage(),
+                $this->state->getResult()->exception()
             );
-            return $this->state->withResult(Result::success($recoveredValue));
+            return new self($this->state->withResult(Result::success($recoveredValue)));
         } catch (Throwable $e) {
-            return $this->state; // Keep original failure
+            return new self($this->state); // Keep original failure
         }
     }
 
@@ -88,11 +133,25 @@ final class TransformQuery
     }
 
     public function addTagsIfSuccess(TagInterface ...$tags): ProcessingState {
-        return $this->addTagsIf($this->state->result()->isSuccess(), ...$tags);
+        return $this->addTagsIf($this->state->getResult()->isSuccess(), ...$tags);
     }
 
     public function addTagsIfFailure(TagInterface ...$tags): ProcessingState {
-        return $this->addTagsIf($this->state->result()->isFailure(), ...$tags);
+        return $this->addTagsIf($this->state->getResult()->isFailure(), ...$tags);
+    }
+
+    public function mergeFrom(ProcessingState $source): ProcessingState {
+        return new ProcessingState(
+            result: $this->state->getResult(),
+            tags: $this->state->getTagMap()->merge($source->getTagMap()),
+        );
+    }
+
+    public function mergeInto(ProcessingState $target): ProcessingState {
+        return new ProcessingState(
+            result: $this->state->getResult(),
+            tags: $target->getTagMap()->merge($this->state->getTagMap()),
+        );
     }
 
     public function mapTags(string $tagClass, callable $transformer): ProcessingState {
@@ -105,9 +164,19 @@ final class TransformQuery
                 $transformedTags[] = $tag;
             }
         }
-        return $this->state
-            ->withResult($this->state->result())
-            ->withTags(...$transformedTags);
+        return $this->state->withTags(...$transformedTags);
+    }
+
+    /**
+     * Apply predicate, short-circuit on false
+     */
+    public function filter(callable $predicate, string $errorMessage = 'Filter failed'): self {
+        if ($this->state->getResult()->isFailure()) {
+            return $this;
+        }
+        return $predicate($this->state->value())
+            ? $this
+            : new self($this->state->failWith($errorMessage));
     }
 
     // CONDITIONAL OPERATIONS
@@ -117,8 +186,11 @@ final class TransformQuery
     }
 
     public function whenValue(callable $predicate, callable $transformation): ProcessingState {
-        $shouldTransform = $this->state->result()->isSuccess()
-            && $predicate($this->state->result()->unwrap());
-        return $shouldTransform ? $transformation($this->state) : $this->state;
+        return ($this->state->isSuccess() && $predicate($this->state->value()))
+            ? $transformation($this->state)
+            : $this->state;
     }
+
+    // TERMINAL OPERATIONS
+
 }

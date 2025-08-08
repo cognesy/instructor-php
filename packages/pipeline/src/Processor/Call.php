@@ -59,7 +59,7 @@ readonly class Call implements CanProcessState {
      */
     public static function withResult(callable $callable) : self {
         return new self(function (ProcessingState $state) use ($callable) {
-            return $callable($state->result());
+            return $callable($state->getResult());
         }, NullStrategy::Allow);
     }
 
@@ -100,6 +100,7 @@ readonly class Call implements CanProcessState {
 
         return match(true) {
             $outputState instanceof ProcessingState => $outputState
+                ->transform()
                 ->mergeInto($state),
             $outputState instanceof Failure => $state
                 ->withResult($outputState)

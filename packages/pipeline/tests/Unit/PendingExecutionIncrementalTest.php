@@ -122,7 +122,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
             
             expect($state->value())->toBe('updated');
             expect($state->hasTag(ExecutionTestTag::class))->toBeTrue();
-            expect($state->firstTag(ExecutionTestTag::class)->operation)->toBe('updated');
+            expect($state->tags()->only(ExecutionTestTag::class)->first()->operation)->toBe('updated');
         });
 
         it('resets cached output when for is called', function () {

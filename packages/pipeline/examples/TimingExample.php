@@ -128,7 +128,7 @@ function runPerformanceTest(string $name, callable $operation, int $iterations =
         })
         ->create();
     
-    $timing = $results->state()->lastTag(TimingTag::class);
+    $timing = $results->state()->tags()->only(TimingTag::class)->last();
     $avgTime = ($timing->duration / $iterations) * 1_000_000; // microseconds per iteration
     
     echo "  Total: " . $timing->durationFormatted() . "\n";

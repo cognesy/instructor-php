@@ -5,11 +5,12 @@ The Pipeline package employs a dual error tracking system that separates busines
 ## The Two Mechanisms
 
 ### Result::failure() - The Monadic Layer
+
 ```php
 $result->isSuccess()           // Business logic: did computation succeed?
 $result->exception()           // Original exception for debugging  
 $result->errorMessage()        // Human-readable error for users
-$result->map(fn($x) => $x * 2) // Functional composition
+$result->transform()->map(fn($x) => $x * 2) // Functional composition
 ```
 
 ### ErrorTag - The Metadata Layer

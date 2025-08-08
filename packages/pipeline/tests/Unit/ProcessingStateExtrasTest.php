@@ -13,7 +13,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('map()', function () {
         it('applies function to successful value', function () {
             $state = ProcessingState::with(10);
-            $result = $state->map(fn($x) => $x * 2);
+            $result = $state->transform()->map(fn($x) => $x * 2)->get();
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(20);
@@ -22,9 +22,9 @@ describe('ProcessingState Monadic Operations', function () {
         it('preserves tags during transformation', function () {
             $tag = new TestTag('test');
             $state = ProcessingState::with(10, [$tag]);
-            $result = $state->map(fn($x) => $x * 2);
+            $result = $state->transform()->map(fn($x) => $x * 2)->get();
             
-            expect($result->firstTag(TestTag::class))->toBe($tag);
+            expect($result->tags()->only(TestTag::class)->first())->toBe($tag);
             expect($result->value())->toBe(20);
         });
 
@@ -32,10 +32,12 @@ describe('ProcessingState Monadic Operations', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
             $executed = false;
             
-            $result = $state->map(function($x) use (&$executed) {
-                $executed = true;
-                return $x * 2;
-            });
+            $result = $state->transform()
+                ->map(function($x) use (&$executed) {
+                    $executed = true;
+                    return $x * 2;
+                })
+                ->get();
             
             expect($executed)->toBeFalse();
             expect($result->isFailure())->toBeTrue();
@@ -43,7 +45,7 @@ describe('ProcessingState Monadic Operations', function () {
 
         it('handles transformation exceptions', function () {
             $state = ProcessingState::with(10);
-            $result = $state->map(fn($x) => throw new \RuntimeException('Transform failed'));
+            $result = $state->transform()->map(fn($x) => throw new \RuntimeException('Transform failed'))->get();
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null))->toBeInstanceOf(\RuntimeException::class);
@@ -53,7 +55,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('flatMap()', function () {
         it('applies function returning ProcessingState', function () {
             $state = ProcessingState::with(10);
-            $result = $state->flatMap(fn($x) => ProcessingState::with($x * 2));
+            $result = $state->transform()->flatMap(fn($x) => ProcessingState::with($x * 2))->get();
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(20);
@@ -64,7 +66,7 @@ describe('ProcessingState Monadic Operations', function () {
             $tag2 = new TestTag('new');
             
             $state = ProcessingState::with(10, [$tag1]);
-            $result = $state->flatMap(fn($x) => ProcessingState::with($x * 2, [$tag2]));
+            $result = $state->transform()->flatMap(fn($x) => ProcessingState::with($x * 2, [$tag2]))->get();
             
             $tags = $result->allTags(TestTag::class);
             expect($tags)->toHaveCount(2);
@@ -76,20 +78,20 @@ describe('ProcessingState Monadic Operations', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
             $executed = false;
             
-            $result = $state->flatMap(function($x) use (&$executed) {
+            $output = $state->transform()->flatMap(function($x) use (&$executed) {
                 $executed = true;
                 return ProcessingState::with($x * 2);
-            });
+            })->get();
             
             expect($executed)->toBeFalse();
-            expect($result->isFailure())->toBeTrue();
+            expect($output->isFailure())->toBeTrue();
         });
 
         it('propagates failure from flatMapped function', function () {
             $state = ProcessingState::with(10);
-            $result = $state->flatMap(fn($x) => 
+            $result = $state->transform()->flatMap(fn($x) =>
                 ProcessingState::with(null)->withResult(Result::failure(new \Exception('FlatMap failed')))
-            );
+            )->get();
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('FlatMap failed');
@@ -99,7 +101,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('mapResult()', function () {
         it('applies function to Result directly', function () {
             $state = ProcessingState::with(10);
-            $result = $state->mapResult(fn($x) => $x * 2);
+            $result = $state->transform()->map(fn($x) => $x * 2)->get();
             
             expect($result->value())->toBe(20);
         });
@@ -107,14 +109,14 @@ describe('ProcessingState Monadic Operations', function () {
         it('preserves tags when mapping Result', function () {
             $tag = new TestTag('test');
             $state = ProcessingState::with(10, [$tag]);
-            $result = $state->mapResult(fn($x) => $x * 2);
+            $result = $state->transform()->map(fn($x) => $x * 2)->get();
             
-            expect($result->firstTag(TestTag::class))->toBe($tag);
+            expect($result->tags()->only(TestTag::class)->first())->toBe($tag);
         });
 
         it('handles Result mapping of failures', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
-            $result = $state->mapResult(fn($x) => $x * 2);
+            $result = $state->transform()->map(fn($x) => $x * 2)->get();
             
             expect($result->isFailure())->toBeTrue();
         });
@@ -123,7 +125,7 @@ describe('ProcessingState Monadic Operations', function () {
     describe('filter()', function () {
         it('passes when predicate returns true', function () {
             $state = ProcessingState::with(10);
-            $result = $state->filter(fn($x) => $x > 5);
+            $result = $state->transform()->filter(fn($x) => $x > 5)->get();
             
             expect($result->isSuccess())->toBeTrue();
             expect($result->value())->toBe(10);
@@ -131,7 +133,7 @@ describe('ProcessingState Monadic Operations', function () {
 
         it('fails when predicate returns false', function () {
             $state = ProcessingState::with(10);
-            $result = $state->filter(fn($x) => $x > 15);
+            $result = $state->transform()->filter(fn($x) => $x > 15)->get();
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('Filter failed');
@@ -139,7 +141,7 @@ describe('ProcessingState Monadic Operations', function () {
 
         it('uses custom error message', function () {
             $state = ProcessingState::with(10);
-            $result = $state->filter(fn($x) => $x > 15, 'Value too small');
+            $result = $state->transform()->filter(fn($x) => $x > 15, 'Value too small')->get();
             
             expect($result->isFailure())->toBeTrue();
             expect($result->exceptionOr(null)->getMessage())->toBe('Value too small');
@@ -149,10 +151,10 @@ describe('ProcessingState Monadic Operations', function () {
             $state = ProcessingState::with(null)->withResult(Result::failure(new \Exception('Failed')));
             $executed = false;
             
-            $result = $state->filter(function($x) use (&$executed) {
+            $result = $state->transform()->filter(function($x) use (&$executed) {
                 $executed = true;
                 return true;
-            });
+            })->get();
             
             expect($executed)->toBeFalse();
             expect($result->isFailure())->toBeTrue();
@@ -161,18 +163,20 @@ describe('ProcessingState Monadic Operations', function () {
         it('preserves tags', function () {
             $tag = new TestTag('test');
             $state = ProcessingState::with(10, [$tag]);
-            $result = $state->filter(fn($x) => $x > 5);
+            $result = $state->transform()->filter(fn($x) => $x > 5)->get();
             
-            expect($result->firstTag(TestTag::class))->toBe($tag);
+            expect($result->tags()->only(TestTag::class)->first())->toBe($tag);
         });
     });
 
     describe('monadic composition', function () {
         it('chains multiple operations', function () {
             $state = ProcessingState::with(10)
+                ->transform()
                 ->map(fn($x) => $x * 2)           // 20
                 ->filter(fn($x) => $x > 15)       // passes
-                ->map(fn($x) => $x + 5);          // 25
+                ->map(fn($x) => $x + 5)           // 25
+                ->get();
             
             expect($state->isSuccess())->toBeTrue();
             expect($state->value())->toBe(25);
@@ -182,12 +186,14 @@ describe('ProcessingState Monadic Operations', function () {
             $executed = false;
             
             $state = ProcessingState::with(10)
+                ->transform()
                 ->map(fn($x) => $x * 2)           // 20
                 ->filter(fn($x) => $x > 25)       // fails
                 ->map(function($x) use (&$executed) { // should not execute
                     $executed = true;
                     return $x + 5;
-                });
+                })
+                ->get();
             
             expect($executed)->toBeFalse();
             expect($state->isFailure())->toBeTrue();
@@ -198,8 +204,10 @@ describe('ProcessingState Monadic Operations', function () {
             $tag2 = new TestTag('middle');
             
             $state = ProcessingState::with(10, [$tag1])
+                ->transform()
                 ->map(fn($x) => $x * 2)
-                ->flatMap(fn($x) => ProcessingState::with($x + 5, [$tag2]));
+                ->flatMap(fn($x) => ProcessingState::with($x + 5, [$tag2]))
+                ->get();
             
             $tags = $state->allTags(TestTag::class);
             expect($tags)->toHaveCount(2);

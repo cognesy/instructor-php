@@ -10,7 +10,9 @@ use Throwable;
  */
 final class ResultQuery
 {
-    public function __construct(private readonly Result $result) {}
+    public function __construct(
+        private readonly Result $result
+    ) {}
 
     public function value(): mixed {
         return $this->result->unwrap();
@@ -68,5 +70,35 @@ final class ResultQuery
 
     public function matches(callable $predicate): bool {
         return $this->result->isSuccess() && $predicate($this->result->unwrap());
+    }
+
+    /**
+     * Apply function to value if success, preserve tags
+     */
+    public function map(callable $fn): Result {
+        if ($this->result->isFailure()) {
+            return $this->result;
+        }
+        try {
+            $newOutput = $fn($this->result);
+            return Result::from($newOutput);
+        } catch (Throwable $e) {
+            return Result::failure($e);
+        }
+    }
+
+    /**
+     * Apply function to value if success, preserve tags
+     */
+    public function mapValue(callable $fn): Result {
+        if ($this->result->isFailure()) {
+            return $this->result;
+        }
+        try {
+            $newOutput = $fn($this->result->unwrap());
+            return Result::from($newOutput);
+        } catch (Throwable $e) {
+            return Result::failure($e);
+        }
     }
 }

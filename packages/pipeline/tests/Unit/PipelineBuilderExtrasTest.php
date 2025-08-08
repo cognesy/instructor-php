@@ -63,7 +63,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->state();
             
             expect($result->value())->toBe(20);
-            expect($result->firstTag(BuilderTag::class)->operation)->toBe('flatmapped');
+            expect($result->tags()->only(BuilderTag::class)->first()->operation)->toBe('flatmapped');
         });
 
         it('chains with other operations', function () {
@@ -134,7 +134,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 ->create()
                 ->state();
             
-            expect($result->firstTag(BuilderTag::class)->operation)->toBe('filtered');
+            expect($result->tags()->only(BuilderTag::class)->first()->operation)->toBe('filtered');
         });
     });
 

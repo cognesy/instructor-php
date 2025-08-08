@@ -10,10 +10,15 @@ use Cognesy\Pipeline\Query\TransformQuery;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\TagMapFactory;
 use Cognesy\Utils\Result\Result;
+use RuntimeException;
 use Throwable;
 
 /**
- * ProcessingState contains result with tags (metadata) for cross-cutting or meta concerns.
+ * ProcessingState is an immutable object containing current processing state.
+ *
+ * It consists of:
+ *  - output - value (payload) wrapped in Result for uniform handling of Success and Failure states
+ *  - tags - metadata objects for cross-cutting concerns
  */
 final readonly class ProcessingState
 {
@@ -27,6 +32,8 @@ final readonly class ProcessingState
         $this->result = $result;
         $this->tags = $tags;
     }
+
+    // CONSTRUCTORS
 
     public static function empty(): self {
         return new self(
@@ -54,49 +61,20 @@ final readonly class ProcessingState
         return new self($this->result, $this->tags->with(...$tags));
     }
 
-    public function failWith(Throwable $exception): self {
-        return new self(
-            result: Result::failure($exception),
-            tags: $this->tags->with(new ErrorTag(error: $exception)),
-        );
+    public function failWith(string|Throwable $cause): self {
+        $message = $cause instanceof Throwable
+            ? $cause->getMessage()
+            : $cause;
+        $exception = match (true) {
+            is_string($cause) => new RuntimeException($cause),
+            $cause instanceof Throwable => $cause,
+        };
+        return $this
+            ->withResult(Result::failure($exception))
+            ->withTags(new ErrorTag(error: $message));
     }
 
-    /**
-     * @param array<class-string> $tagClasses
-     */
-    public function withoutTags(string ...$tagClasses): self {
-        return new self(
-            $this->result,
-            TagMapFactory::create($this->tags->query()->without(...$tagClasses)->all())
-        );
-    }
-
-    public function mergeFrom(ProcessingState $source): self {
-        return new self(
-            result: $this->result,
-            tags: $this->tags->merge($source->tags),
-        );
-    }
-
-    public function mergeInto(ProcessingState $target): self {
-        return new self(
-            result: $this->result,
-            tags: $target->tags->merge($this->tags),
-        );
-    }
-
-    /**
-     * Merges result and tags using a custom combinator function.
-     *
-     * @param callable(Result, Result): Result $resultCombinator Optional function to combine results
-     */
-    public function combine(ProcessingState $other, ?callable $resultCombinator = null): self {
-        $resultCombinator ??= fn($a, $b) => $b;
-        return new self(
-            result: $resultCombinator($this->result, $other->result),
-            tags: $this->tags->merge($other->tags),
-        );
-    }
+    // ACCESSORS
 
     /**
      * Get all tags, optionally filtered by class.
@@ -108,7 +86,7 @@ final readonly class ProcessingState
         return $this->tags->query()->only($tagClass)->all();
     }
 
-    public function result(): Result {
+    public function getResult(): Result {
         return $this->result;
     }
 
@@ -116,64 +94,11 @@ final readonly class ProcessingState
         return $this->tags;
     }
 
-    public function resultQuery(): ResultQuery {
-        return new ResultQuery($this->result());
-    }
-
-    public function tags(): TagQuery {
-        return $this->getTagMap()->query();
-    }
-
-    public function transform(): TransformQuery {
-        return new TransformQuery($this);
-    }
-
-    /**
-     * @param class-string $tagClass
-     */
-    public function lastTag(string $tagClass): ?TagInterface {
-        return $this->tags->query()->ofType($tagClass)->last();
-    }
-
-    /**
-     * @param class-string $tagClass
-     */
-    public function firstTag(string $tagClass): ?TagInterface {
-        return $this->tags->query()->first($tagClass);
-    }
-
     /**
      * @param class-string $tagClass
      */
     public function hasTag(string $tagClass): bool {
         return $this->tags->has($tagClass);
-    }
-
-    public function hasAllOfTags(array $tags): bool {
-        foreach ($tags as $tag) {
-            if (!$this->tags->has($tag::class)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @param array<TagInterface> $tags Array of tag class names to check
-     */
-    public function hasAnyOfTags(array $tags): bool {
-        foreach ($tags as $tag) {
-            if ($this->tags->has($tag::class)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function countTag(?string $tagClass = null): int {
-        return $tagClass === null 
-            ? $this->tags->query()->count()
-            : $this->tags->query()->ofType($tagClass)->count();
     }
 
     public function value(): mixed {
@@ -206,57 +131,17 @@ final readonly class ProcessingState
         return $this->result->exceptionOr($default);
     }
 
-    /**
-     * Apply function to value if success, preserve tags
-     */
-    public function map(callable $fn): self {
-        if ($this->result->isFailure()) {
-            return $this;
-        }
-        
-        try {
-            $newValue = $fn($this->result->unwrap());
-            return new self(Result::from($newValue), $this->tags);
-        } catch (\Throwable $e) {
-            return new self(Result::failure($e), $this->tags);
-        }
+    // QUERY AND TRANSFORMATION APIs
+
+    public function result(): ResultQuery {
+        return new ResultQuery($this->result);
     }
 
-    /**
-     * Apply function that returns ProcessingState, merge tags
-     */
-    public function flatMap(callable $fn): self {
-        if ($this->result->isFailure()) {
-            return $this;
-        }
-
-        $newState = $fn($this->result->unwrap());
-        return new self(
-            $newState->result,
-            $this->tags->merge($newState->tags),
-        );
+    public function tags(): TagQuery {
+        return $this->getTagMap()->query();
     }
 
-    /**
-     * Apply function to value if success, returning Result
-     */
-    public function mapResult(callable $fn): self {
-        return new self(
-            $this->result->map($fn),
-            $this->tags,
-        );
-    }
-
-    /**
-     * Apply predicate, short-circuit on false
-     */
-    public function filter(callable $predicate, string $errorMessage = 'Filter failed'): self {
-        if ($this->result->isFailure()) {
-            return $this;
-        }
-
-        return $predicate($this->result->unwrap())
-            ? $this
-            : new self(Result::failure(new \RuntimeException($errorMessage)), $this->tags);
+    public function transform(): TransformQuery {
+        return new TransformQuery($this);
     }
 }

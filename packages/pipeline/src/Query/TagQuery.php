@@ -131,6 +131,30 @@ final class TagQuery
         return !empty(array_filter($this->tags, fn(TagInterface $tag): bool => $tag instanceof $tagClass));
     }
 
+    /**
+     * @param array<TagInterface> $tags Array of tags to check
+     */
+    public function hasAll(array $array) : bool {
+        foreach ($array as $tag) {
+            if (!$this->has($tag::class)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param array<TagInterface> $tags Array of tags to check
+     */
+    public function hasAny(array $array): bool {
+        foreach ($array as $tag) {
+            if ($this->has($tag::class)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function last(): ?TagInterface {
         return empty($this->tags) ? null : end($this->tags);
     }

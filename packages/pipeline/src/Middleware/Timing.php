@@ -53,12 +53,12 @@ readonly class Timing implements CanControlStateProcessing
         $duration = round($endTime - $startTime, $this->precision);
 
         // Inspect state state to determine success/failure
-        $success = $output->result()->isSuccess();
+        $success = $output->getResult()->isSuccess();
         $error = null;
 
         // Extract error details from ErrorTag if failure occurred
         if (!$success) {
-            $errorTag = $output->firstTag(ErrorTag::class);
+            $errorTag = $output->tags()->only(ErrorTag::class)->first();
             $error = $errorTag?->getMessage() ?? 'Unknown error';
         }
 
