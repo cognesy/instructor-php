@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Cognesy\Instructor\Core;
 
 use Cognesy\Instructor\Contracts\CanGenerateResponse;
@@ -9,9 +10,9 @@ use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
+use Cognesy\Pipeline\Legacy\Chain\ResultChain;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
-use Cognesy\Utils\Chain\ResultChain;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;

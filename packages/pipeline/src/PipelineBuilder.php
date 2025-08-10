@@ -9,16 +9,16 @@ use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Finalizer\Finalize;
+use Cognesy\Pipeline\Internal\PipelineMiddlewareStack;
+use Cognesy\Pipeline\Internal\ProcessorStack;
 use Cognesy\Pipeline\Middleware\CallAfter;
 use Cognesy\Pipeline\Middleware\CallBefore;
 use Cognesy\Pipeline\Middleware\CallOnFailure;
 use Cognesy\Pipeline\Middleware\FailWhen;
-use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
 use Cognesy\Pipeline\Middleware\SkipProcessing;
 use Cognesy\Pipeline\Processor\Call;
 use Cognesy\Pipeline\Processor\ConditionalCall;
 use Cognesy\Pipeline\Processor\Fail;
-use Cognesy\Pipeline\Processor\ProcessorStack;
 use Cognesy\Pipeline\Processor\Tap;
 use InvalidArgumentException;
 
@@ -110,6 +110,21 @@ class PipelineBuilder
     }
 
     /**
+     * Add a hook that wraps around each processor execution.
+     * 
+     * The hook will be applied to ALL processors in the pipeline, creating
+     * one tag/measurement per processor. Useful for timing, memory tracking,
+     * and other measurements that need to capture data before and after
+     * each individual processor execution.
+     *
+     * @param CanControlStateProcessing $hook
+     */
+    public function aroundEach(CanControlStateProcessing $hook): static {
+        $this->hooks->add($hook);
+        return $this;
+    }
+
+    /**
      * Add a condition to check if processing should finish early.
      *
      * @param callable(ProcessingState):bool $condition
@@ -177,7 +192,7 @@ class PipelineBuilder
      * @param callable(mixed):void $callback
      */
     public function tap(callable $callback): static {
-        $this->processors->add(Tap::with(Call::withValue($callback)));
+        $this->processors->add(Tap::withValue($callback));
         return $this;
     }
 
@@ -185,7 +200,7 @@ class PipelineBuilder
      * @param callable(ProcessingState):void $callback
      */
     public function tapWithState(callable $callback): static {
-        $this->processors->add(Tap::with(Call::withState($callback)));
+        $this->processors->add(Tap::withState($callback));
         return $this;
     }
 

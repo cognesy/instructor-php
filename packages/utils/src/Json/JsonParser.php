@@ -106,9 +106,10 @@ class JsonParser
      *
      * Returns an associative array on success, or null if all strategies fail.
      */
-    private function tryParse(string $maybeJson): ?array {
+    private function tryParse(string $maybeJson): mixed {
         $parsers = [
             fn($json) => json_decode($json, true, 512, JSON_THROW_ON_ERROR),
+            //fn($json) => ResilientJson::parse($json),
             fn($json) => (new ResilientJsonParser($json))->parse(),
             fn($json) => (new PartialJsonParser)->parse($json),
         ];
@@ -121,6 +122,9 @@ class JsonParser
             }
             // If parse result is false, null, or empty string, skip
             if ($data === null || $data === false || $data === '') {
+                continue;
+            }
+            if (!is_array($data) && !is_object($data)) {
                 continue;
             }
             return $data;
@@ -159,7 +163,7 @@ class JsonParser
             $codeBlock = substr(
                 $text,
                 $startFence + strlen($fenceTag),
-                $closeFence - ($startFence + strlen($fenceTag))
+                $closeFence - ($startFence + strlen($fenceTag)),
             );
 
             // Now find the first '{' and last '}' within this code block
@@ -286,7 +290,7 @@ class JsonParser
                 $currentCandidate .= $char;
             }
 
-            // If bracketCount just went back to 0, we’ve closed a JSON-like block
+            // If bracketCount just went back to 0, we've closed a JSON-like block
             if ($bracketCount === 0 && $currentCandidate !== '') {
                 $currentCandidate .= $char; // include the closing '}'
                 $candidates[] = $currentCandidate;

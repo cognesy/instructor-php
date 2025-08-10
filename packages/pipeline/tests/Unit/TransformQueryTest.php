@@ -178,8 +178,8 @@ describe('TransformQuery', function () {
             $tag = new TransformTestTag('conditional');
             $state = ProcessingState::with(42);
             
-            $withTag = $state->addTagsIf(true, $tag);
-            $withoutTag = $state->addTagsIf(false, $tag);
+            $withTag = $state->addTagsIf(fn() => true, $tag);
+            $withoutTag = $state->addTagsIf(fn() => false, $tag);
             
             expect($withTag->allTags(TransformTestTag::class))->toHaveCount(1);
             expect($withoutTag->allTags(TransformTestTag::class))->toHaveCount(0);

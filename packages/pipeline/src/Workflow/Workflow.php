@@ -4,6 +4,8 @@ namespace Cognesy\Pipeline\Workflow;
 
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
+use Cognesy\Pipeline\Processor\ConditionalCall;
+use Cognesy\Pipeline\Processor\Tap;
 
 /**
  * Orchestrates the execution of multiple pipelines in sequence.
@@ -23,7 +25,7 @@ class Workflow implements CanProcessState
     }
 
     public function through(CanProcessState $step): static {
-        $this->steps[] = new ThroughStep($step);
+        $this->steps[] = $step;
         return $this;
     }
 
@@ -31,12 +33,12 @@ class Workflow implements CanProcessState
      * @param callable(ProcessingState):bool $condition
      */
     public function when(callable $condition, CanProcessState $step): static {
-        $this->steps[] = new ConditionalStep($condition, $step);
+        $this->steps[] = ConditionalCall::withState($condition)->then($step);
         return $this;
     }
 
     public function tap(CanProcessState $step): static {
-        $this->steps[] = new TapStep($step);
+        $this->steps[] = Tap::with($step);
         return $this;
     }
 

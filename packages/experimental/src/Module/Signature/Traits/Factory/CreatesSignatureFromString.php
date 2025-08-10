@@ -3,7 +3,7 @@ namespace Cognesy\Experimental\Module\Signature\Traits\Factory;
 
 use Cognesy\Dynamic\StructureFactory;
 use Cognesy\Experimental\Module\Signature\Signature;
-use Cognesy\Utils\Chain\RawChain;
+use Cognesy\Pipeline\Legacy\Chain\RawChain;
 use InvalidArgumentException;
 
 trait CreatesSignatureFromString

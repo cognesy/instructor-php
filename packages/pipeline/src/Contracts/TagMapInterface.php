@@ -3,7 +3,6 @@
 namespace Cognesy\Pipeline\Contracts;
 
 use Cognesy\Pipeline\Tag\TagQuery;
-use Cognesy\Pipeline\Tag\TagTransform;
 
 /**
  * Universal interface for tag storage implementations.
@@ -28,5 +27,4 @@ interface TagMapInterface
     public function with(TagInterface ...$tags): self;
 
     public function query(): TagQuery;
-    public function transform(): TagTransform;
 }

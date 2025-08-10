@@ -29,7 +29,7 @@ ProcessingState is the fundamental data structure that flows through the entire 
 
 ```php
 // Creating processing state
-$state = ProcessingState::with($data, [new TimingTag('start')]);
+$state = ProcessingState::with($data, [$customTag]);
 
 // Accessing data
 $value = $state->value();           // Extract the wrapped value
@@ -49,7 +49,7 @@ The Pipeline orchestrates sequential processor execution with comprehensive midd
 $pipeline = Pipeline::for($data)
     ->through(fn($x) => $x * 2)     // Value processor
     ->through(fn($x) => $x + 10)    // Another processor
-    ->withMiddleware(new TimingMiddleware());
+    ->withMiddleware(Timing::capture('operation'));
 
 $result = $pipeline
     ->create()       // Create pending pipeline execution
@@ -104,7 +104,7 @@ class LoggingMiddleware implements CanControlStateProcessing
 ### 5. Tags - Metadata System
 
 **Directory**: `src/Tag/`
-**Core**: `TagMap` class
+**Core**: `TagMapInterface` and `TagMapFactory`
 
 Tags provide a type-safe, indexed metadata system for observability and middleware coordination.
 
@@ -192,6 +192,70 @@ $logger->error('Pipeline failed', [
 
 **Key Principle**: Middleware operates on Results, never raw exceptions. The infrastructure ensures exceptions are always converted to Results before reaching middleware.
 
+## Timing and Memory Tracking
+
+The pipeline package provides clean, atomic components for performance monitoring through dedicated middleware and hooks.
+
+### Pipeline-Level Monitoring (Middleware)
+
+Middleware wraps the entire pipeline execution:
+
+```php
+$result = Pipeline::for($data)
+    ->withMiddleware(Timing::capture('llm-processing'))  // Pipeline timing
+    ->withMiddleware(Memory::capture('llm-processing'))  // Pipeline memory
+    ->through(fn($x) => $x * 2)
+    ->through(fn($x) => $x + 10)
+    ->create()
+    ->execute();
+
+// Extract timing data
+$timings = $result->allTags(TimingTag::class);
+$memory = $result->allTags(MemoryTag::class);
+```
+
+### Step-Level Monitoring (Hooks)
+
+Hooks wrap individual processor execution:
+
+```php
+$result = Pipeline::for($data)
+    ->aroundEach(StepTiming::capture('processing'))    // Applies to all processors
+    ->aroundEach(StepMemory::capture('processing'))    // Applies to all processors
+    ->through(fn($x) => $this->validate($x))
+    ->through(fn($x) => $this->heavyProcess($x))
+    ->create()
+    ->execute();
+
+// Extract step-level data - one entry per processor
+$stepTimings = $result->allTags(StepTimingTag::class);  // 2 entries
+$stepMemory = $result->allTags(StepMemoryTag::class);   // 2 entries
+```
+
+### Monitoring Data Usage
+
+The captured data is consumed by dedicated components:
+
+```php
+// SLA monitoring
+$slaMonitor = new SLAMonitor(['processing' => 2.0]);
+$violations = $slaMonitor->checkViolations($result);
+
+// Circuit breaker control  
+$circuitBreaker = new CircuitBreaker();
+$shouldOpen = $circuitBreaker->shouldOpen($result);
+
+// Metrics export
+$metricsCollector = new MetricsCollector();
+$metricsCollector->export($result);
+```
+
+**Key Benefits:**
+- **Atomic Concerns**: Timing and memory tracking are separate
+- **Performance**: Timing is fast, memory tracking optional  
+- **Flexible**: Use pipeline-level, step-level, or both
+- **Clean Data**: Pure capture, dedicated consumer components
+
 ## Typical Use Cases
 
 ### 1. Data Processing Pipelines
@@ -203,7 +267,7 @@ $pipeline = Pipeline::for($rawData)
     ->through(fn($data) => $this->validate($data))
     ->through(fn($data) => $this->normalize($data))
     ->through(fn($data) => $this->enrich($data))
-    ->withMiddleware(new TimingMiddleware())
+    ->withMiddleware(Timing::capture('data-processing'))
     ->withMiddleware(new LoggingMiddleware());
 ```
 
@@ -218,7 +282,7 @@ $pipeline = Pipeline::for($request)
     ->through(fn($req) => $this->processBusinessLogic($req))
     ->through(fn($req) => $this->formatResponse($req))
     ->withMiddleware(new RateLimitMiddleware())
-    ->withMiddleware(new MetricsMiddleware());
+    ->withMiddleware(Timing::capture('api-request'));
 ```
 
 ### 3. Workflow Orchestration

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Finalizer\Finalize;
-use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
+use Cognesy\Pipeline\Internal\PipelineMiddlewareStack;
+use Cognesy\Pipeline\Internal\ProcessorStack;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Processor\ProcessorStack;
 
 describe('Pipeline Incremental Tests - Missing Coverage', function () {
 

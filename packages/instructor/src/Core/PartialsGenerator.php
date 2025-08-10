@@ -22,7 +22,7 @@ use Cognesy\Polyglot\Inference\Data\PartialInferenceResponse;
 use Cognesy\Polyglot\Inference\Data\ToolCall;
 use Cognesy\Polyglot\Inference\Data\ToolCalls;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Chain\ResultChain;
+use Cognesy\Pipeline\Legacy\Chain\ResultChain;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Result\Result;
 use Exception;

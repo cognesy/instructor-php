@@ -52,6 +52,7 @@
     "cognesy/instructor-config": "^1.2",
     "cognesy/instructor-events": "^1.2",
     "cognesy/instructor-messages": "^1.2",
+    "cognesy/instructor-pipeline": "^1.2",
     "cognesy/instructor-polyglot": "^1.2",
     "cognesy/instructor-setup": "^1.2",
     "cognesy/instructor-templates": "^1.2",

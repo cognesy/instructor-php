@@ -27,6 +27,7 @@
   "require": {
     "php": "^8.2",
     "cognesy/instructor-utils": "^1.2",
+    "cognesy/instructor-pipeline": "^1.2",
     "symfony/property-info": "^6.4|^7.3"
   },
   "require-dev": {

@@ -4,8 +4,8 @@ namespace Cognesy\Pipeline;
 
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Contracts\TagMapInterface;
+use Cognesy\Pipeline\Internal\IndexedTagMap;
 use Cognesy\Pipeline\Tag\ErrorTag;
-use Cognesy\Pipeline\Tag\TagMapFactory;
 use Cognesy\Pipeline\Tag\TagQuery;
 use Cognesy\Utils\Result\Result;
 use RuntimeException;
@@ -23,7 +23,7 @@ final readonly class ProcessingState
     private Result $result;
     private TagMapInterface $tags;
 
-    private function __construct(
+    public function __construct(
         Result $result,
         TagMapInterface $tags,
     ) {
@@ -36,7 +36,7 @@ final readonly class ProcessingState
     public static function empty(): self {
         return new self(
             result: Result::success(null),
-            tags: TagMapFactory::empty(),
+            tags: self::defaultTagMap(),
         );
     }
 
@@ -47,7 +47,7 @@ final readonly class ProcessingState
     public static function with(mixed $value, array $tags = []): self {
         return new self(
             result: Result::from($value),
-            tags: TagMapFactory::create($tags),
+            tags: self::defaultTagMap($tags),
         );
     }
 
@@ -176,16 +176,19 @@ final readonly class ProcessingState
 
     // TAG TRANSFORMATIONS
 
-    public function addTagsIf(bool $condition, TagInterface ...$tags): self {
-        return $condition ? $this->withTags(...$tags) : $this;
+    /**
+     * @param callable(ProcessingState):bool $condition Condition to check before adding tags
+     */
+    public function addTagsIf(callable $condition, TagInterface ...$tags): self {
+        return $condition($this) ? $this->withTags(...$tags) : $this;
     }
 
     public function addTagsIfSuccess(TagInterface ...$tags): self {
-        return $this->addTagsIf($this->result()->isSuccess(), ...$tags);
+        return $this->addTagsIf(fn($state) => $state->result()->isSuccess(), ...$tags);
     }
 
     public function addTagsIfFailure(TagInterface ...$tags): self {
-        return $this->addTagsIf($this->result()->isFailure(), ...$tags);
+        return $this->addTagsIf(fn($state) => $state->result()->isFailure(), ...$tags);
     }
 
     public function mergeFrom(ProcessingState $source): self {
@@ -241,6 +244,13 @@ final readonly class ProcessingState
     }
 
     // PRIVATE
+
+    private static function defaultTagMap(?array $tags = []): TagMapInterface {
+        return match(true) {
+            $tags === null => IndexedTagMap::empty(),
+            default => IndexedTagMap::create($tags),
+        };
+    }
 
     private function mapAnyInput(callable $inputFn, callable $fn): ProcessingState {
         try {

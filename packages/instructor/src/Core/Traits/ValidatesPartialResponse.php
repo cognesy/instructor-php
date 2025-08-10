@@ -4,7 +4,7 @@ namespace Cognesy\Instructor\Core\Traits;
 
 use Cognesy\Instructor\Data\ResponseModel;
 use Cognesy\Utils\Arrays;
-use Cognesy\Utils\Chain\ResultChain;
+use Cognesy\Pipeline\Legacy\Chain\ResultChain;
 use Cognesy\Utils\Json\Json;
 use Cognesy\Utils\Json\JsonParsingException;
 use Cognesy\Utils\Result\Result;

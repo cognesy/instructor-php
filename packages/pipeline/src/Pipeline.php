@@ -5,8 +5,8 @@ namespace Cognesy\Pipeline;
 use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Finalizer\Finalize;
-use Cognesy\Pipeline\Middleware\PipelineMiddlewareStack;
-use Cognesy\Pipeline\Processor\ProcessorStack;
+use Cognesy\Pipeline\Internal\PipelineMiddlewareStack;
+use Cognesy\Pipeline\Internal\ProcessorStack;
 use Cognesy\Utils\Result\Result;
 use Exception;
 

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Schema\Utils;
 
-use Cognesy\Utils\Chain\RawChain;
+use Cognesy\Pipeline\Legacy\Chain\RawChain;
 
 class DocstringUtils
 {

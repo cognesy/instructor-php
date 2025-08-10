@@ -25,12 +25,13 @@
   },
   "require": {
     "php": "^8.2",
-    "cognesy/instructor-dynamic": "^1.0",
-    "cognesy/instructor-messages": "^1.0",
-    "cognesy/instructor-polyglot": "^1.0",
-    "cognesy/instructor-schema": "^1.0",
-    "cognesy/instructor-struct": "^1.0",
-    "cognesy/instructor-utils": "^1.0"
+    "cognesy/instructor-dynamic": "^1.2",
+    "cognesy/instructor-messages": "^1.2",
+    "cognesy/instructor-pipeline": "^1.2",
+    "cognesy/instructor-polyglot": "^1.2",
+    "cognesy/instructor-schema": "^1.2",
+    "cognesy/instructor-struct": "^1.2",
+    "cognesy/instructor-utils": "^1.2"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
