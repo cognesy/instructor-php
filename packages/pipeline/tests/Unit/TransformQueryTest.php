@@ -100,14 +100,6 @@ describe('TransformQuery', function () {
             expect($result->isFailure())->toBeTrue();
         });
 
-        it('handles map exceptions', function () {
-            $state = ProcessingState::with(10);
-            $result = $state->map(fn($x) => throw new RuntimeException('Map failed'));
-            
-            expect($result->isFailure())->toBeTrue();
-            expect($result->exceptionOr(null))->toBeInstanceOf(RuntimeException::class);
-        });
-
         it('applies map with ProcessingState return', function () {
             $state = ProcessingState::with(10);
             $result = $state->map(fn($x) => ProcessingState::with($x * 3));

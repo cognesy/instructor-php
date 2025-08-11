@@ -43,13 +43,6 @@ describe('ProcessingState Monadic Operations', function () {
             expect($result->isFailure())->toBeTrue();
         });
 
-        it('handles transformation exceptions', function () {
-            $state = ProcessingState::with(10);
-            $result = $state->map(fn($x) => throw new \RuntimeException('Transform failed'));
-            
-            expect($result->isFailure())->toBeTrue();
-            expect($result->exceptionOr(null))->toBeInstanceOf(\RuntimeException::class);
-        });
     });
 
     describe('map()', function () {

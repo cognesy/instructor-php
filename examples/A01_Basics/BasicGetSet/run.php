@@ -73,7 +73,7 @@ $text = <<<TEXT
 
 
 $user = (new StructuredOutput)
-    ->using('anthropic')
+    ->using('openai')
     //->withDebugPreset('on')
     ->withMessages($text)
     ->withResponseClass(UserWithSetter::class)
@@ -81,9 +81,7 @@ $user = (new StructuredOutput)
     //->withModel('claude-3-7-sonnet-20250219')
     ->get();
 
-dd($user);
-
-//dump((new SchemaFactory)->schema(UserWithSetter::class));
+dump($user);
 
 assert($user->getName() === "Jason"); // called - but set to default value as LLM inferred empty name
 assert($user->getAge() === 0); // not called - property value not inferred by LLM

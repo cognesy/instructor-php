@@ -67,15 +67,6 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
         expect($exception->getMessage())->toContain('Original error');
     });
 
-    test('exception preserves processor context information', function () {
-        $processor = Call::withValue(fn($x) => throw new RuntimeException('Test'));
-        $state = ProcessingState::with('input');
-        
-        $result = $processor->process($state);
-        
-        expect($result->isFailure())->toBeTrue();
-        expect($result->hasTag(ErrorTag::class))->toBeTrue();
-    });
 
     test('multiple exceptions in sequence', function () {
         $pipeline = Pipeline::builder()

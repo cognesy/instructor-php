@@ -10,7 +10,7 @@ use Cognesy\Instructor\Events\Response\ResponseGenerationFailed;
 use Cognesy\Instructor\Transformation\ResponseTransformer;
 use Cognesy\Instructor\Validation\ResponseValidator;
 use Cognesy\Instructor\Validation\ValidationResult;
-use Cognesy\Pipeline\Legacy\Chain\ResultChain;
+use Cognesy\Pipeline\Pipeline;
 use Cognesy\Polyglot\Inference\Data\InferenceResponse;
 use Cognesy\Polyglot\Inference\Enums\OutputMode;
 use Cognesy\Utils\Json\Json;
@@ -29,7 +29,22 @@ class ResponseGenerator implements CanGenerateResponse
     ) {}
 
     public function makeResponse(InferenceResponse $response, ResponseModel $responseModel, OutputMode $mode) : Result {
-        $result = ResultChain::from(fn() => $response->findJsonData($mode)->toString())
+//        return ResultChain::from(fn() => $response->findJsonData($mode)->toString())
+//            ->through(fn($responseJson) => match(true) {
+//                ($responseJson === '') => Result::failure('No JSON found in the response'),
+//                default => Result::success($responseJson)
+//            })
+//            ->through(fn($responseJson) => $this->responseDeserializer->deserialize($responseJson, $responseModel))
+//            ->through(fn($object) => $this->responseValidator->validate($object))
+//            ->through(fn($object) => $this->responseTransformer->transform($object))
+//            ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
+//            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
+//            ->then(fn($result) => match(true) {
+//                $result->isSuccess() => $result,
+//                default => Result::failure($this->extractErrors($result))
+//            })
+//            ->result();
+        $pipeline = Pipeline::builder()
             ->through(fn($responseJson) => match(true) {
                 ($responseJson === '') => Result::failure('No JSON found in the response'),
                 default => Result::success($responseJson)
@@ -38,31 +53,40 @@ class ResponseGenerator implements CanGenerateResponse
             ->through(fn($object) => $this->responseValidator->validate($object))
             ->through(fn($object) => $this->responseTransformer->transform($object))
             ->tap(fn($object) => $this->events->dispatch(new ResponseConvertedToObject(['object' => json_encode($object)])))
-            ->onFailure(fn($result) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $result->error()])))
-            ->then(fn($result) => match(true) {
-                $result->isSuccess() => $result,
-                default => Result::failure($this->extractErrors($result))
+            ->onFailure(fn($state) => $this->events->dispatch(new ResponseGenerationFailed(['error' => $state->exception()])))
+            ->finally(fn($state) => match(true) {
+                $state->isSuccess() => $state->result(),
+                default => Result::failure(implode('; ', $this->extractErrors($state)))
             })
-            ->result();
-        return $result;
+            ->create();
+
+        return $pipeline->executeWith($response->findJsonData($mode)->toString())->result();
     }
 
     // INTERNAL ////////////////////////////////////////////////////////
 
-    protected function extractErrors(Result|Exception $result) : array {
+    protected function extractErrors(\Cognesy\Pipeline\ProcessingState|Result|Exception $result) : array {
         if ($result instanceof Exception) {
             return [$result->getMessage()];
         }
-        if ($result->isSuccess()) {
-            return [];
+        if ($result instanceof \Cognesy\Pipeline\ProcessingState) {
+            if ($result->isSuccess()) {
+                return [];
+            }
+            $errorValue = $result->exception();
+        } else {
+            if ($result->isSuccess()) {
+                return [];
+            }
+            $errorValue = $result->error();
         }
-        $errorValue = $result->error();
-        return match($errorValue) {
+        return match(true) {
             is_array($errorValue) => $errorValue,
             is_string($errorValue) => [$errorValue],
             $errorValue instanceof ValidationResult => [$errorValue->getErrorMessage()],
             $errorValue instanceof JsonParsingException => [$errorValue->message],
             $errorValue instanceof Exception => [$errorValue->getMessage()],
+            $errorValue instanceof \Throwable => [$errorValue->getMessage()],
             default => [Json::encode($errorValue)]
         };
     }

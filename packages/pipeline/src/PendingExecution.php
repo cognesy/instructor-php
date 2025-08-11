@@ -46,7 +46,7 @@ class PendingExecution
     }
 
     public function execute(): ProcessingState {
-        return $this->executeOnce($this->initialState);
+        return $this->executeOnce($this->initialState, $this->pipeline);
     }
 
     public function state(): ProcessingState {
@@ -100,24 +100,10 @@ class PendingExecution
 
     // INTERNAL ////////////////////////////////////////////////////
 
-    private function executeOnce(ProcessingState $state): ProcessingState {
+    private function executeOnce(ProcessingState $state, CanProcessState $pipeline): ProcessingState {
         if (is_null($this->cachedOutput)) {
-            $this->cachedOutput = $this->doExecute($this->pipeline, $state);
+            $this->cachedOutput = $pipeline->process($state);
         }
         return $this->cachedOutput;
-    }
-
-    private function doExecute(CanProcessState $pipeline, ProcessingState $state) : ProcessingState {
-        try {
-            $output = $pipeline->process($state);
-        } catch (Throwable $e) {
-            $output = Result::failure($e);
-        }
-        $output = match (true) {
-            $output instanceof ProcessingState => $output,
-            $output instanceof Result => $state->withResult($output),
-            default => $state->withResult(Result::success($output)),
-        };
-        return $output;
     }
 }

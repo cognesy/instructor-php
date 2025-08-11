@@ -67,7 +67,9 @@ class Message {
      * @return bool
      */
     public static function isMessage(array $message): bool {
-        return isset($message['role'], $message['content']);
+        return isset($message['role']) && (
+            isset($message['content']) || isset($message['_metadata'])
+        );
     }
 
     /**

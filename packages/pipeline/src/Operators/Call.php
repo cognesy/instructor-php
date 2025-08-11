@@ -12,7 +12,6 @@ use Cognesy\Utils\Result\Failure;
 use Cognesy\Utils\Result\Result;
 use Cognesy\Utils\Result\Success;
 use RuntimeException;
-use Throwable;
 
 readonly final class Call implements CanProcessState {
     private Closure $normalizedCall;
@@ -80,14 +79,7 @@ readonly final class Call implements CanProcessState {
      * @param callable(ProcessingState):ProcessingState $next
      */
     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-        try {
-            $outputState = ($this->normalizedCall)($state);
-        } catch (Throwable $e) {
-            $failureState = $state
-                ->withResult(Result::failure($e))
-                ->withTags(ErrorTag::fromException($e));
-            return $next ? $next($failureState) : $failureState;
-        }
+        $outputState = ($this->normalizedCall)($state);
 
         if (is_null($outputState)) {
             $nullState = match($this->onNull) {

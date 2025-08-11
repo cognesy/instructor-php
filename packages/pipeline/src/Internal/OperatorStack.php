@@ -16,60 +16,37 @@ use IteratorAggregate;
  * middleware can decide whether to continue processing and can modify the
  * state before and after the next middleware executes.
  */
-final class OperatorStack implements CanProcessState, Countable, IteratorAggregate
+final class OperatorStack implements Countable, IteratorAggregate
 {
     /** @var CanProcessState[] */
-    private array $middleware = [];
+    private array $operators = [];
 
-    public function add(CanProcessState ...$middleware): self {
-        array_push($this->middleware, ...$middleware);
+    public function add(CanProcessState ...$operators): self {
+        array_push($this->operators, ...$operators);
         return $this;
     }
 
-    public function prepend(CanProcessState ...$middleware): self {
-        array_unshift($this->middleware, ...$middleware);
+    public function prepend(CanProcessState ...$operators): self {
+        array_unshift($this->operators, ...$operators);
         return $this;
     }
 
     public function isEmpty(): bool {
-        return empty($this->middleware);
+        return empty($this->operators);
     }
 
     public function count(): int {
-        return count($this->middleware);
+        return count($this->operators);
     }
 
-    /**
-     * @param ?callable(ProcessingState):ProcessingState $next Final processor to execute after all middleware
-     */
-    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
-        if (empty($this->middleware)) {
-            return match(true) {
-                ($next === null) => $state,
-                default => $next($state),
-            };
-        }
-        
-        $stack = $next ?? fn(ProcessingState $s) => $s;
-        // Build stack from last to first middleware
-        for ($i = count($this->middleware) - 1; $i >= 0; $i--) {
-            $middleware = $this->middleware[$i];
-            $stack = function(ProcessingState $s) use ($middleware, $stack) {
-                return $middleware->process($s, $stack);
-            };
-        }
-        
-        return $stack($state);
-    }
-
-    public function with(CanProcessState ...$middleware): self {
+    public function with(CanProcessState ...$operators): self {
         $new = clone $this;
-        $new->add(...$middleware);
+        $new->add(...$operators);
         return $new;
     }
 
     public function clear(): self {
-        $this->middleware = [];
+        $this->operators = [];
         return $this;
     }
 
@@ -77,13 +54,45 @@ final class OperatorStack implements CanProcessState, Countable, IteratorAggrega
      * @return CanProcessState[]
      */
     public function all(): array {
-        return $this->middleware;
+        return $this->operators;
     }
 
     /**
      * @return Iterator<CanProcessState>
      */
     public function getIterator(): Iterator {
-        return new ArrayIterator($this->middleware);
+        return new ArrayIterator($this->operators);
+    }
+
+    /**
+     * @param ?callable(ProcessingState):ProcessingState $next Final processor to execute after all middleware
+     */
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+        if (empty($this->operators)) {
+            return match(true) {
+                ($next === null) => $state,
+                default => $next($state),
+            };
+        }
+        $stack = $this->stack($next);
+        return $stack($state);
+    }
+
+    /**
+     * Builds the middleware stack by wrapping each operator in a closure that
+     * calls the next operator in the stack.
+     *
+     * @param ?callable(ProcessingState):ProcessingState $next Final processor to execute after all middleware
+     */
+    public function stack(callable $next): callable {
+        $stack = $next ?? fn(ProcessingState $s) => $s;
+        // Build stack from last to first middleware
+        for ($i = count($this->operators) - 1; $i >= 0; $i--) {
+            $operator = $this->operators[$i];
+            $stack = function(ProcessingState $s) use ($operator, $stack) {
+                return $operator->process($s, $stack);
+            };
+        }
+        return $stack;
     }
 }

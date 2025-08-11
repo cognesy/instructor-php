@@ -136,7 +136,7 @@ class Image implements CanProvideMessages
 
     public function toContentPart() : ContentPart {
         return new ContentPart('image_url', [
-            'url' => $this->toImageUrl(),
+            'image_url' => ['url' => $this->url ?: $this->base64bytes]
         ]);
     }
 

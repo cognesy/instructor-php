@@ -38,7 +38,7 @@ print("INPUT:\n$text\n\n");
 print("RESULTS:\n");
 $user = (new StructuredOutput)
     ->onEvent(HttpRequestSent::class, fn($event) => print("[ ] Requesting LLM response...\n"))
-    ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".json_encode($event->response)."\n"))
+    ->onEvent(ResponseValidationAttempt::class, fn($event) => print("[?] Validating:\n    ".$event."\n"))
     ->onEvent(ResponseValidationFailed::class, fn($event) => print("[!] Validation failed:\n    $event\n"))
     ->onEvent(ResponseValidated::class, fn($event) => print("[ ] Validation succeeded.\n"))
     ->with(

@@ -4,8 +4,6 @@ namespace Cognesy\Pipeline\Operators;
 
 use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Tag\ErrorTag;
-use Throwable;
 
 /**
  * Middleware that executes a callback when processing results in failure.
@@ -39,11 +37,7 @@ readonly final class TapOnFailure implements CanProcessState
             return $newState;
         }
 
-        try {
-            $this->operator->process($newState, fn($s) => $s);
-        } catch (Throwable $e) {
-            $newState = $newState->withTags(new ErrorTag($e));
-        }
+        $this->operator->process($newState);
         return $newState;
     }
 }

@@ -169,7 +169,7 @@ final readonly class ProcessingState
         try {
             $recoveredValue = $recovery($this);
         } catch (Throwable $e) {
-            return $this; // Keep original failure
+            return $this->withTags(new ErrorTag(error: $e->getMessage()));
         }
         return $this->withResult(Result::success($recoveredValue));
     }
@@ -255,14 +255,10 @@ final readonly class ProcessingState
     }
 
     private function mapAnyInput(callable $inputFn, callable $fn): mixed {
-        try {
-            $output = $fn($inputFn());
-            return match(true) {
-                $output instanceof ProcessingState => $output->mergeInto($this),
-                default => $this->withResult(Result::from($output)),
-            };
-        } catch (Throwable $e) {
-            return $this->failWith($e);
-        }
+        $output = $fn($inputFn());
+        return match(true) {
+            $output instanceof ProcessingState => $output->mergeInto($this),
+            default => $this->withResult(Result::from($output)),
+        };
     }
 }

@@ -130,6 +130,7 @@ class ToolCallingDriver implements CanUseTools
     protected function makeToolInvocationMessage(ToolCall $toolCall) : Message {
         return new Message(
             role: 'assistant',
+            content: '',
             metadata: [
                 'tool_calls' => [$toolCall->toToolCallArray()]
             ]
