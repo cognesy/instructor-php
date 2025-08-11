@@ -13,16 +13,16 @@ class Pipeline implements CanControlStateProcessing
 {
     private OperatorStack $steps;
     private OperatorStack $middleware; // per-pipeline execution middleware stack
-    private OperatorStack $hooks; // per-processor execution hooks
+    private OperatorStack $hooks; // per-step execution hooks
     private OperatorStack $finalizers; // per-pipeline execution finalizers, regardless of success or failure
 
     public function __construct(
-        ?OperatorStack $processors = null,
+        ?OperatorStack $steps = null,
         ?OperatorStack $finalizers = null,
         ?OperatorStack $middleware = null,
         ?OperatorStack $hooks = null,
     ) {
-        $this->steps = $processors ?? new OperatorStack();
+        $this->steps = $steps ?? new OperatorStack();
         $this->finalizers = $finalizers ?? new OperatorStack();
         $this->middleware = $middleware ?? new OperatorStack();
         $this->hooks = $hooks ?? new OperatorStack();
@@ -49,7 +49,7 @@ class Pipeline implements CanControlStateProcessing
 
     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
         $processedState = match (true) {
-            ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->applyOnlyProcessors($state, $this->steps),
+            ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->applyOnlySteps($state, $this->steps),
             default => $this->applyStepsWithMiddleware($state, $this->middleware, $this->steps, $this->hooks),
         };
         $output = $this->applyFinalizers($this->finalizers, $processedState);
@@ -58,7 +58,7 @@ class Pipeline implements CanControlStateProcessing
 
     // INTERNAL IMPLEMENTATION ///////////////////////////////////////////////////////////////
 
-    private function applyOnlyProcessors(
+    private function applyOnlySteps(
         ProcessingState $state,
         OperatorStack $steps,
     ): ProcessingState {

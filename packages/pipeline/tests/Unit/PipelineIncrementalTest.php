@@ -15,7 +15,7 @@ describe('Pipeline Incremental Tests - Missing Coverage', function () {
             $hooks = new OperatorStack();
             
             $pipeline = new Pipeline(
-                processors: $processors,
+                steps: $processors,
                 finalizers: $finalizers,
                 middleware: $middleware,
                 hooks: $hooks,

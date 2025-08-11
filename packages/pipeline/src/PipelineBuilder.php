@@ -241,7 +241,7 @@ class PipelineBuilder
 
     public function create(): PendingExecution {
         $pipeline = new Pipeline(
-            processors: $this->operators,
+            steps: $this->operators,
             finalizers: $this->finalizers,
             middleware: $this->middleware,
             hooks: $this->hooks,
