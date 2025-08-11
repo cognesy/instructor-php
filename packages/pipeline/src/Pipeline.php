@@ -2,34 +2,30 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
-use Cognesy\Pipeline\Contracts\CanProcessState;
-use Cognesy\Pipeline\Finalizer\Finalize;
-use Cognesy\Pipeline\Internal\PipelineMiddlewareStack;
-use Cognesy\Pipeline\Internal\ProcessorStack;
-use Cognesy\Utils\Result\Result;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Internal\OperatorStack;
 use Exception;
 
 /**
  * Pipeline with per-execution & per-step middleware support.
  */
-class Pipeline implements CanProcessState
+class Pipeline implements CanControlStateProcessing
 {
-    private ProcessorStack $processors;
-    private CanFinalizeProcessing $finalizer;
-    private PipelineMiddlewareStack $middleware; // per-pipeline execution middleware stack
-    private PipelineMiddlewareStack $hooks; // per-processor execution hooks
+    private OperatorStack $steps;
+    private OperatorStack $middleware; // per-pipeline execution middleware stack
+    private OperatorStack $hooks; // per-processor execution hooks
+    private OperatorStack $finalizers; // per-pipeline execution finalizers, regardless of success or failure
 
     public function __construct(
-        ?ProcessorStack $processors = null,
-        ?CanFinalizeProcessing $finalizer = null,
-        ?PipelineMiddlewareStack $middleware = null,
-        ?PipelineMiddlewareStack $hooks = null,
+        ?OperatorStack $processors = null,
+        ?OperatorStack $finalizers = null,
+        ?OperatorStack $middleware = null,
+        ?OperatorStack $hooks = null,
     ) {
-        $this->processors = $processors ?? new ProcessorStack();
-        $this->finalizer = $finalizer ?? Finalize::passThrough();
-        $this->middleware = $middleware ?? new PipelineMiddlewareStack();
-        $this->hooks = $hooks ?? new PipelineMiddlewareStack();
+        $this->steps = $processors ?? new OperatorStack();
+        $this->finalizers = $finalizers ?? new OperatorStack();
+        $this->middleware = $middleware ?? new OperatorStack();
+        $this->hooks = $hooks ?? new OperatorStack();
     }
 
     // STATIC FACTORY METHODS ////////////////////////////////////////////////////////////////
@@ -51,20 +47,24 @@ class Pipeline implements CanProcessState
 
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
-    public function process(ProcessingState $state): ProcessingState {
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
         $processedState = match (true) {
-            ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->applyOnlyProcessors($state),
-            default => $this->applyProcessorsWithMiddleware($state),
+            ($this->middleware->isEmpty() && $this->hooks->isEmpty()) => $this->applyOnlyProcessors($state, $this->steps),
+            default => $this->applyStepsWithMiddleware($state, $this->middleware, $this->steps, $this->hooks),
         };
-        return $this->applyFinalizer($this->finalizer, $processedState);
+        $output = $this->applyFinalizers($this->finalizers, $processedState);
+        return $next ? $next($output) : $output;
     }
 
     // INTERNAL IMPLEMENTATION ///////////////////////////////////////////////////////////////
 
-    private function applyOnlyProcessors(ProcessingState $state): ProcessingState {
+    private function applyOnlyProcessors(
+        ProcessingState $state,
+        OperatorStack $steps,
+    ): ProcessingState {
         $currentState = $state;
-        foreach ($this->processors->getIterator() as $processor) {
-            $nextState = $this->executeProcessor($processor, $currentState);
+        foreach ($steps->getIterator() as $step) {
+            $nextState = $this->executeStep($step, $currentState);
             if (!$this->shouldContinueProcessing($nextState)) {
                 return $nextState;
             }
@@ -73,19 +73,28 @@ class Pipeline implements CanProcessState
         return $currentState;
     }
 
-    private function applyProcessorsWithMiddleware(ProcessingState $state): ProcessingState {
+    private function applyStepsWithMiddleware(
+        ProcessingState $state,
+        OperatorStack $middleware,
+        OperatorStack $steps,
+        OperatorStack $hooks,
+    ): ProcessingState {
         return match (true) {
-            $this->middleware->isEmpty() => $this->applyProcessors($state),
-            default => $this->middleware->process($state, fn($comp) => $this->applyProcessors($comp))
+            $middleware->isEmpty() => $this->applySteps($state, $steps, $hooks),
+            default => $middleware->process($state, fn($comp) => $this->applySteps($comp, $steps, $hooks)),
         };
     }
 
-    private function applyProcessors(ProcessingState $state): ProcessingState {
+    private function applySteps(
+        ProcessingState $state,
+        OperatorStack $steps,
+        OperatorStack $hooks,
+    ): ProcessingState {
         $currentState = $state;
-        foreach ($this->processors->getIterator() as $processor) {
+        foreach ($steps->getIterator() as $step) {
             $nextState = match (true) {
-                $this->hooks->isEmpty() => $this->executeProcessor($processor, $currentState),
-                default => $this->executeProcessorWithHooks($processor, $currentState),
+                $hooks->isEmpty() => $this->executeStep($step, $currentState),
+                default => $this->executeStepWithHooks($step, $currentState, $hooks),
             };
             if (!$this->shouldContinueProcessing($nextState)) {
                 return $nextState;
@@ -95,27 +104,30 @@ class Pipeline implements CanProcessState
         return $currentState;
     }
 
-    private function executeProcessorWithHooks(CanProcessState $processor, ProcessingState $state): ProcessingState {
-        return $this->hooks->process($state, function (ProcessingState $state) use ($processor) {
+    private function executeStepWithHooks(
+        CanControlStateProcessing $step,
+        ProcessingState $state,
+        OperatorStack $hooks,
+    ): ProcessingState {
+        return $hooks->process($state, function (ProcessingState $state) use ($step) {
             return match (true) {
                 !$this->shouldContinueProcessing($state) => $state,
-                default => $this->executeProcessor($processor, $state),
+                default => $this->executeStep($step, $state),
             };
         });
     }
 
-    private function executeProcessor(CanProcessState $processor, ProcessingState $state): ProcessingState {
+    private function executeStep(CanControlStateProcessing $step, ProcessingState $state): ProcessingState {
         try {
-            return $processor->process($state);
+            return $step->process($state);
         } catch (Exception $e) {
             return $state->failWith($e);
         }
     }
 
-    private function applyFinalizer(CanFinalizeProcessing $finalizer, ProcessingState $state): ProcessingState {
+    private function applyFinalizers(OperatorStack $finalizers, ProcessingState $state): ProcessingState {
         try {
-            $result = $finalizer->finalize($state);
-            return $state->withResult(Result::from($result));
+            return $finalizers->process($state);
         } catch (Exception $e) {
             return $state->failWith($e);
         }

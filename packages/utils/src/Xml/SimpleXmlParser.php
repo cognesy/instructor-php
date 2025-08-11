@@ -108,7 +108,17 @@ class SimpleXmlParser
         if ($this->xmlString === '') {
             return [];
         }
+        
+        libxml_use_internal_errors(true);
         $xmlElement = new SimpleXMLElement($this->xmlString, LIBXML_NOCDATA);
+        
+        if ($xmlElement === false) {
+            $errors = libxml_get_errors();
+            $errorMessages = array_map(fn($error) => trim($error->message), $errors);
+            libxml_clear_errors();
+            throw new \InvalidArgumentException('Invalid XML: ' . implode(', ', $errorMessages));
+        }
+        
         $array = $this->xmlToArray($xmlElement);
         if ($this->includeRoot) {
             return [$xmlElement->getName() => $array];

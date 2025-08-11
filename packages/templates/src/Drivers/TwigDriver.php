@@ -28,7 +28,13 @@ class TwigDriver implements CanHandleTemplate
     public function __construct(
         private TemplateEngineConfig $config,
     ) {
-        $paths = [BasePath::get($this->config->resourcePath)];
+        $resourcePath = $this->config->resourcePath ?: '.';
+        try {
+            $paths = [BasePath::get($resourcePath)];
+        } catch (\Exception $e) {
+            // Fallback to current directory if BasePath fails
+            $paths = [getcwd() ?: '.'];
+        }
         $extension = $this->config->extension;
 
         $loader = new class(
@@ -49,6 +55,14 @@ class TwigDriver implements CanHandleTemplate
                 ?string $rootPath = null,
                 string $fileExtension = '',
             ) {
+                // Ensure paths is always an array and filter out empty values
+                $paths = array_filter((array) $paths, function($path) {
+                    return !empty($path) && is_string($path);
+                });
+                
+                // Ensure rootPath is never null to avoid realpath() deprecation warning
+                $rootPath = $rootPath ?? (getcwd() ?: '.');
+                
                 parent::__construct($paths, $rootPath);
                 $this->fileExtension = $fileExtension;
             }

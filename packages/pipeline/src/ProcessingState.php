@@ -108,18 +108,18 @@ final readonly class ProcessingState
 
     // TRANSFORMATIONS
 
-    public function map(callable $fn): ProcessingState {
+    public function map(callable $fn): mixed {
         if ($this->isFailure()) {
             return $this;
         }
         return $this->mapAnyInput(fn() => $this->result->unwrap(), $fn);
     }
 
-    public function mapResult(callable $fn): ProcessingState {
+    public function mapResult(callable $fn): mixed {
         return $this->mapAnyInput(fn() => $this->result, $fn);
     }
 
-    public function mapState(callable $fn): ProcessingState {
+    public function mapState(callable $fn): mixed {
         return $this->mapAnyInput(fn() => $this, $fn);
     }
 
@@ -161,7 +161,7 @@ final readonly class ProcessingState
         };
     }
 
-    /** @param callable(ProcessingState):ProcessingState $recovery */
+    /** @param callable(mixed):mixed $recovery */
     public function recoverWith(callable $recovery): self {
         if ($this->isSuccess()) {
             return $this;
@@ -177,7 +177,7 @@ final readonly class ProcessingState
     // TAG TRANSFORMATIONS
 
     /**
-     * @param callable(ProcessingState):bool $condition Condition to check before adding tags
+     * @param callable(mixed):bool $condition Condition to check before adding tags
      */
     public function addTagsIf(callable $condition, TagInterface ...$tags): self {
         return $condition($this) ? $this->withTags(...$tags) : $this;
@@ -191,22 +191,22 @@ final readonly class ProcessingState
         return $this->addTagsIf(fn($state) => $state->result()->isFailure(), ...$tags);
     }
 
-    public function mergeFrom(ProcessingState $source): self {
+    public function mergeFrom(mixed $source): self {
         return new self($this->result, $this->tagMap()->merge($source->tagMap()));
     }
 
-    public function mergeInto(ProcessingState $target): self {
+    public function mergeInto(mixed $target): self {
         return new self($this->result, $target->tagMap()->merge($this->tagMap()));
     }
 
     /**
      * Combines this state with another state, merging tags and optionally combining results.
      *
-     * @param ProcessingState $other The other state to combine with
+     * @param mixed $other The other state to combine with
      * @param callable(Result, Result): Result|null $resultCombinator Optional function to combine results
      * @return self New ProcessingState with combined result and merged tags
      */
-    public function combine(ProcessingState $other, ?callable $resultCombinator = null): self {
+    public function combine(mixed $other, ?callable $resultCombinator = null): self {
         $resultCombinator ??= fn($a, $b) => $b; // Default: use second result
         return new self(
             result: $resultCombinator($this->result, $other->result()),
@@ -225,14 +225,16 @@ final readonly class ProcessingState
     }
 
     /**
-     * @param callable(mixed):bool $stateConditionFn
-     * @param callable(ProcessingState):ProcessingState $stateTransformationFn
+     * @param callable(mixed):bool $conditionFn
+     * @param callable(mixed):mixed $transformationFn
      */
-    public function when(callable $stateConditionFn, callable $stateTransformationFn): self {
+    public function when(callable $conditionFn, callable $transformationFn): self {
         if ($this->isFailure()) {
             return $this;
         }
-        return $stateConditionFn($this->value()) ? $stateTransformationFn($this) : $this;
+        return $conditionFn($this->value())
+            ? $this->withResult(Result::from($transformationFn($this->value())))
+            : $this->withResult(Result::from($this->value()));
     }
 
     /**
@@ -252,7 +254,7 @@ final readonly class ProcessingState
         };
     }
 
-    private function mapAnyInput(callable $inputFn, callable $fn): ProcessingState {
+    private function mapAnyInput(callable $inputFn, callable $fn): mixed {
         try {
             $output = $fn($inputFn());
             return match(true) {

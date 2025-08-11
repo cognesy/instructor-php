@@ -182,7 +182,7 @@ class ResponseModelFactory
     private function schemaName(string|array|object $requestedSchema) : string {
         $name = match(true) {
             is_string($requestedSchema) => $requestedSchema,
-            is_array($requestedSchema) => $requestedSchema['name'],
+            is_array($requestedSchema) => $requestedSchema['name'] ?? null,
             is_object($requestedSchema) && method_exists($requestedSchema, 'name') => $requestedSchema->name(),
             is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->typeDetails->name,
             is_object($requestedSchema) => get_class($requestedSchema),
@@ -199,7 +199,7 @@ class ResponseModelFactory
     private function schemaDescription(string|array|object $requestedSchema) : string {
         $resolved = match(true) {
             is_string($requestedSchema) => '',
-            is_array($requestedSchema) => $requestedSchema['description'],
+            is_array($requestedSchema) => $requestedSchema['description'] ?? '',
             is_object($requestedSchema) && ($requestedSchema instanceof Schema) => $requestedSchema->description(),
             //is_object($requestedSchema) && method_exists($requestedSchema, 'toSchema') => $requestedSchema->toSchema()->description(),
             default => '',

@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Middleware;
+namespace Cognesy\Pipeline\Operators;
 
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
-use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Processor\Call;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Throwable;
 
@@ -19,10 +17,10 @@ use Throwable;
  * Note: This middleware does NOT modify the failure - it's purely for
  * side effects. The failure continues to propagate normally.
  */
-readonly class CallOnFailure implements CanControlStateProcessing
+readonly final class TapOnFailure implements CanControlStateProcessing
 {
     public function __construct(
-        private CanProcessState $processor,
+        private CanControlStateProcessing $operator,
     ) {}
 
     /**
@@ -35,14 +33,14 @@ readonly class CallOnFailure implements CanControlStateProcessing
     /**
      * @param callable(ProcessingState):ProcessingState $next
      */
-    public function handle(ProcessingState $state, callable $next): ProcessingState {
-        $newState = $next($state);
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+        $newState = $next ? $next($state) : $state;
         if (!$newState->isFailure()) {
             return $newState;
         }
 
         try {
-            $this->processor->process($newState);
+            $this->operator->process($newState, fn($s) => $s);
         } catch (Throwable $e) {
             $newState = $newState->withTags(new ErrorTag($e));
         }

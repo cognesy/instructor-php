@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Processor;
+namespace Cognesy\Pipeline\Operators;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
@@ -14,7 +14,7 @@ use Cognesy\Utils\Result\Success;
 use RuntimeException;
 use Throwable;
 
-readonly class Call implements CanProcessState {
+readonly final class Call implements CanControlStateProcessing {
     private Closure $normalizedCall;
     private NullStrategy $onNull;
 
@@ -26,7 +26,7 @@ readonly class Call implements CanProcessState {
         $this->normalizedCall = $callable(...);
     }
 
-    public static function pass() : CanProcessState {
+    public static function pass() : CanControlStateProcessing {
         return new NoOp();
     }
 
@@ -76,17 +76,21 @@ readonly class Call implements CanProcessState {
         return new self($this->normalizedCall, $strategy);
     }
 
-    public function process(ProcessingState $state): ProcessingState {
+    /**
+     * @param callable(ProcessingState):ProcessingState $next
+     */
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
         try {
             $outputState = ($this->normalizedCall)($state);
         } catch (Throwable $e) {
-            return $state
+            $failureState = $state
                 ->withResult(Result::failure($e))
                 ->withTags(ErrorTag::fromException($e));
+            return $next ? $next($failureState) : $failureState;
         }
 
         if (is_null($outputState)) {
-            return match($this->onNull) {
+            $nullState = match($this->onNull) {
                 NullStrategy::Allow => $state
                     ->withResult(Result::from(null)),
                 NullStrategy::Fail => $state
@@ -96,9 +100,10 @@ readonly class Call implements CanProcessState {
                     ->withResult(Result::from(null))
                     ->withTags(new SkipProcessingTag('Null value encountered')),
             };
+            return $next ? $next($nullState) : $nullState;
         }
 
-        return match(true) {
+        $modifiedState = match(true) {
             $outputState instanceof ProcessingState => $outputState
                 ->mergeInto($state),
             $outputState instanceof Failure => $state
@@ -109,5 +114,7 @@ readonly class Call implements CanProcessState {
             default => $state
                 ->withResult(Result::from($outputState)),
         };
+
+        return $next ? $next($modifiedState) : $modifiedState;
     }
 }

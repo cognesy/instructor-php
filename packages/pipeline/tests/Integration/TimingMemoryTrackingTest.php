@@ -1,11 +1,11 @@
 <?php
 
-use Cognesy\Pipeline\Middleware\Observation\StepMemory;
-use Cognesy\Pipeline\Middleware\Observation\StepTiming;
-use Cognesy\Pipeline\Middleware\Observation\TrackMemory;
-use Cognesy\Pipeline\Middleware\Observation\TrackTime;
+use Cognesy\Pipeline\Operators\Call;
+use Cognesy\Pipeline\Operators\Observation\StepMemory;
+use Cognesy\Pipeline\Operators\Observation\StepTiming;
+use Cognesy\Pipeline\Operators\Observation\TrackMemory;
+use Cognesy\Pipeline\Operators\Observation\TrackTime;
 use Cognesy\Pipeline\Pipeline;
-use Cognesy\Pipeline\Processor\Call;
 use Cognesy\Pipeline\Tag\Observation\MemoryTag;
 use Cognesy\Pipeline\Tag\Observation\StepMemoryTag;
 use Cognesy\Pipeline\Tag\Observation\StepTimingTag;
@@ -16,7 +16,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
     it('captures pipeline-level timing data', function () {
         $result = Pipeline::empty()
             ->withMiddleware(TrackTime::capture('test-operation'))
-            ->throughProcessor(Call::withValue(fn($x) => $x * 2))
+            ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
             ->for(5)
             ->execute();
@@ -37,7 +37,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
     it('captures pipeline-level memory data', function () {
         $result = Pipeline::empty()
             ->withMiddleware(TrackMemory::capture('memory-test'))
-            ->throughProcessor(Call::withValue(function($x) {
+            ->throughOperator(Call::withValue(function($x) {
                 // Allocate some memory to see usage
                 $data = array_fill(0, 1000, 'test');
                 return $x + count($data);
@@ -60,8 +60,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
     it('captures step-level timing data', function () {
         $result = Pipeline::empty()
             ->aroundEach(StepTiming::capture('all-steps'))  // Single hook for all processors
-            ->throughProcessor(Call::withValue(fn($x) => $x + 1))
-            ->throughProcessor(Call::withValue(fn($x) => $x * 3))
+            ->throughOperator(Call::withValue(fn($x) => $x + 1))
+            ->throughOperator(Call::withValue(fn($x) => $x * 3))
             ->create()
             ->for(2)
             ->execute();
@@ -83,7 +83,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
     it('captures step-level memory data', function () {
         $result = Pipeline::empty()
             ->aroundEach(StepMemory::capture('memory-step'))
-            ->throughProcessor(Call::withValue(function($x) {
+            ->throughOperator(Call::withValue(function($x) {
                 $data = str_repeat('x', 1000);
                 return $x . $data;
             }))
@@ -108,7 +108,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->withMiddleware(TrackMemory::capture('full-pipeline'))
             ->aroundEach(StepTiming::capture('multiply-step'))
             ->aroundEach(StepMemory::capture('multiply-step'))
-            ->throughProcessor(Call::withValue(fn($x) => $x * 2))
+            ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
             ->for(10)
             ->execute();
@@ -128,7 +128,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
         $result = Pipeline::empty()
             ->withMiddleware(TrackTime::capture('failing-op'))
             ->aroundEach(StepTiming::capture('failing-step'))
-            ->throughProcessor(Call::withValue(function($x) {
+            ->throughOperator(Call::withValue(function($x) {
                 throw new Exception('Test failure');
             }))
             ->create()
@@ -147,7 +147,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
     it('formats durations correctly', function () {
         $result = Pipeline::empty()
             ->withMiddleware(TrackTime::capture('format-test'))
-            ->throughProcessor(Call::withValue(function($x) {
+            ->throughOperator(Call::withValue(function($x) {
                 // Small delay to get measurable timing
                 usleep(1000); // 1ms
                 return $x;

@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
-use Cognesy\Pipeline\Contracts\CanFinalizeProcessing;
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\PipelineBuilder;
 use Cognesy\Pipeline\ProcessingState;
@@ -13,14 +12,17 @@ class BuilderTestTag implements TagInterface {
 class TestMiddleware implements CanControlStateProcessing {
     public function __construct(private string $name) {}
     
-    public function handle(ProcessingState $state, callable $next): ProcessingState {
-        return $next($state->withTags(new BuilderTestTag($this->name)));
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+        $output = $state->withTags(new BuilderTestTag($this->name));
+        return $next ? $next($output) : $output;
     }
 }
 
-class TestFinalizer implements CanFinalizeProcessing {
-    public function finalize(ProcessingState $state): mixed {
-        return $state->value() . '_finalized';
+class TestFinalizer implements CanControlStateProcessing {
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+        $output = $state->value() . '_finalized';
+        $newState = ProcessingState::with($output);
+        return $next ? $next($newState) : $newState;
     }
 }
 
@@ -221,15 +223,16 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
 
         describe('throughProcessor', function () {
             it('adds processor that implements CanProcessState', function () {
-                $processor = new class implements \Cognesy\Pipeline\Contracts\CanProcessState {
-                    public function process(ProcessingState $state): ProcessingState {
-                        return $state->map(fn($x) => $x . '_processed');
+                $processor = new class implements CanControlStateProcessing {
+                    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+                        $output = $state->map(fn($x) => $x . '_processed');
+                        return $next ? $next($output) : $output;
                     }
                 };
                 
                 $result = (new PipelineBuilder())
                     ->withInitialValue('test')
-                    ->throughProcessor($processor)
+                    ->throughOperator($processor)
                     ->create()
                     ->value();
                 

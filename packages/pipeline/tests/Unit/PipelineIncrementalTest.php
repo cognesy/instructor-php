@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Finalizer\Finalize;
-use Cognesy\Pipeline\Internal\PipelineMiddlewareStack;
-use Cognesy\Pipeline\Internal\ProcessorStack;
+use Cognesy\Pipeline\Internal\OperatorStack;
+use Cognesy\Pipeline\Operators\Finalize;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
 
@@ -10,12 +9,17 @@ describe('Pipeline Incremental Tests - Missing Coverage', function () {
 
     describe('constructor', function () {
         it('creates pipeline with all parameters', function () {
-            $processors = new ProcessorStack();
-            $finalizer = Finalize::withValue(fn($data) => $data);
-            $middleware = new PipelineMiddlewareStack();
-            $hooks = new PipelineMiddlewareStack();
+            $processors = new OperatorStack();
+            $finalizers = (new OperatorStack())->add(Finalize::with(fn($state) => $state->value()));
+            $middleware = new OperatorStack();
+            $hooks = new OperatorStack();
             
-            $pipeline = new Pipeline($processors, $finalizer, $middleware, $hooks);
+            $pipeline = new Pipeline(
+                processors: $processors,
+                finalizers: $finalizers,
+                middleware: $middleware,
+                hooks: $hooks,
+            );
             
             expect($pipeline)->toBeInstanceOf(Pipeline::class);
         });
@@ -60,8 +64,8 @@ describe('Pipeline Incremental Tests - Missing Coverage', function () {
         });
 
         it('applies finalizer on successful state', function () {
-            $finalizer = Finalize::withValue(fn($value) => $value * 2);
-            $pipeline = new Pipeline(finalizer: $finalizer);
+            $finalizers = (new OperatorStack())->add(Finalize::with(fn($state) => $state->value() * 2));
+            $pipeline = new Pipeline(finalizers: $finalizers);
             $state = ProcessingState::with(10);
             
             $result = $pipeline->process($state);
@@ -70,14 +74,14 @@ describe('Pipeline Incremental Tests - Missing Coverage', function () {
         });
 
         it('handles finalizer exception', function () {
-            $finalizer = Finalize::withValue(fn($value) => throw new RuntimeException('Finalizer error'));
-            $pipeline = new Pipeline(finalizer: $finalizer);
+            $finalizers = (new OperatorStack())->add(Finalize::with(fn($state) => throw new RuntimeException('Finalizer error')));
+            $pipeline = new Pipeline(finalizers: $finalizers);
             $state = ProcessingState::with(10);
             
             $result = $pipeline->process($state);
             
             expect($result->isFailure())->toBeTrue();
-            expect($result->exception()->getMessage())->toBe('Finalization failed: Finalizer error');
+            expect($result->exception()->getMessage())->toBe('Finalizer error');
         });
     });
 });

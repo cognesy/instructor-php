@@ -1,9 +1,9 @@
 <?php
 
 use Cognesy\Pipeline\Enums\NullStrategy;
+use Cognesy\Pipeline\Operators\Call;
 use Cognesy\Pipeline\Pipeline;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Processor\Call;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Pipeline\Tag\SkipProcessingTag;
 use Cognesy\Utils\Result\Result;
@@ -92,7 +92,7 @@ describe('Pipeline Edge Cases - Exception Handling', function () {
         
         expect($pipeline->isFailure())->toBeTrue();
         expect($pipeline->exception())->toBeInstanceOf(RuntimeException::class);
-        expect($pipeline->exception()->getMessage())->toBe('Finalization failed: Finalizer error');
+        expect($pipeline->exception()->getMessage())->toBe('Finalizer error');
     });
 });
 
@@ -101,7 +101,7 @@ describe('Pipeline Edge Cases - Complex Type Conversions', function () {
         $customState = ProcessingState::with('custom', [new SkipProcessingTag()]);
         
         $pipeline = Pipeline::for('input')
-            ->throughProcessor(Call::withState(fn($state) => $customState))
+            ->throughOperator(Call::withState(fn($state) => $customState))
             ->create();
         
         $result = $pipeline->state();
@@ -111,7 +111,7 @@ describe('Pipeline Edge Cases - Complex Type Conversions', function () {
 
     test('processor returning Result object is converted properly', function () {
         $pipeline = Pipeline::for('input')
-            ->throughProcessor(Call::withResult(fn($result) => Result::success('converted')))
+            ->throughOperator(Call::withResult(fn($result) => Result::success('converted')))
             ->create();
         
         expect($pipeline->value())->toBe('converted');
@@ -186,11 +186,11 @@ describe('Pipeline Edge Cases - State Combination and Tags', function () {
         $initialTags = [new SkipProcessingTag()];
         
         $pipeline = Pipeline::empty()
-            ->throughProcessor(Call::withState(function($state) {
+            ->throughOperator(Call::withState(function($state) {
                 // Use StateProcessor to preserve tags while transforming value
                 return $state->withResult(Result::success($state->value() * 2));
             }))
-            ->throughProcessor(Call::withState(function($state) {
+            ->throughOperator(Call::withState(function($state) {
                 // Another StateProcessor to add 10 while preserving tags
                 return $state->withResult(Result::success($state->value() + 10));
             }))
@@ -309,7 +309,7 @@ describe('Pipeline Edge Cases - Result and State Interaction', function () {
         $failedResult = Result::failure(new RuntimeException('Initial failure'));
         
         $pipeline = Pipeline::for($failedResult)
-            ->throughProcessor(Call::withResult(function($result) {
+            ->throughOperator(Call::withResult(function($result) {
                 if ($result->isFailure()) {
                     return 'handled_failure';
                 }

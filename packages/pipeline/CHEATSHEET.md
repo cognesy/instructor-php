@@ -28,7 +28,7 @@ $builder->withTags(...$tags);
 // Add processors
 $builder->through($callable);
 $builder->throughAll(...$callables);
-$builder->throughProcessor($processor);
+$builder->throughOperator($processor);
 
 // Conditional processing
 $builder->when($condition, $callback);

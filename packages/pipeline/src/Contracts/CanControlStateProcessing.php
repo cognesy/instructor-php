@@ -23,5 +23,5 @@ interface CanControlStateProcessing
     /**
      * @param callable(ProcessingState):ProcessingState $next Callback to invoke next component
      */
-    public function handle(ProcessingState $state, callable $next): ProcessingState;
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState;
 }

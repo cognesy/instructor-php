@@ -226,7 +226,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $middleware = new class($middlewareExecuted) implements CanControlStateProcessing {
                 public function __construct(private bool &$executed) {}
                 
-                public function handle(ProcessingState $state, callable $next): ProcessingState {
+                public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
                     $this->executed = true;
                     return $next($state);
                 }

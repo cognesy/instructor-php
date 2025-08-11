@@ -1,19 +1,19 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Processor;
+namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
 
-readonly class Tap implements CanProcessState {
+readonly final class Tap implements CanControlStateProcessing {
     private function __construct(
-        private CanProcessState $processor,
+        private CanControlStateProcessing $operator,
     ) {}
 
-    public static function with(CanProcessState $processor): self {
-        return new self($processor);
+    public static function with(CanControlStateProcessing $operator): self {
+        return new self($operator);
     }
 
     /**
@@ -46,14 +46,14 @@ readonly class Tap implements CanProcessState {
 
     public function onNull(NullStrategy $strategy): self {
         return new self(
-            $this->processor instanceof Call 
-                ? $this->processor->onNull($strategy)
-                : $this->processor
+            $this->operator instanceof Call
+                ? $this->operator->onNull($strategy)
+                : $this->operator
         );
     }
 
-    public function process(ProcessingState $state): ProcessingState {
-        $this->processor->process($state);
-        return $state;
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+        $this->operator->process($state, fn($s) => $s);
+        return $next ? $next($state) : $state;
     }
 }

@@ -1,19 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Cognesy\Pipeline\Middleware;
+namespace Cognesy\Pipeline\Operators;
 
 use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
-use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
-use Cognesy\Pipeline\Processor\Call;
 
 /**
  * Middleware that executes a callback before processing continues.
  */
-readonly class CallBefore implements CanControlStateProcessing
+readonly final class CallBefore implements CanControlStateProcessing
 {
     public function __construct(
-        private CanProcessState $processor,
+        private CanControlStateProcessing $operator,
     ) {}
 
     /**
@@ -28,8 +26,8 @@ readonly class CallBefore implements CanControlStateProcessing
      *
      * @param callable(ProcessingState):ProcessingState $next
      */
-    public function handle(ProcessingState $state, callable $next): ProcessingState {
-        $modifiedState = $this->processor->process($state);
-        return $next($modifiedState);
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
+        $modifiedState = $this->operator->process($state);
+        return $next ? $next($modifiedState) : $modifiedState;
     }
 }

@@ -65,6 +65,9 @@ composer phpstan
 - `composer tell` - Run Tell CLI
 - `composer setup` - Run setup wizard
 
+Run tests from the monorepo root to check if they work with the latest changes to the code.
+
+
 #### Package-level commands:
 Each package supports:
 - `composer test` or `composer tests` - Run package tests
@@ -73,22 +76,17 @@ Each package supports:
 
 ### Testing
 
+#### Test All Packages
+```bash
+composer test
+```
+
 #### Test Individual Package
 ```bash
 cd packages/instructor
 composer test
 ```
-
-#### Test All Packages
-```bash
-./scripts/run-all-tests.sh
-```
-
-This script:
-- Clears composer cache for each package
-- Dumps autoload files
-- Installs dependencies
-- Runs tests for each package
+ATTENTION: Tests executed this way rely on Packagist dependencies, so they may miss the latest changes made to this monorepo packages unless they have been published already.
 
 ### Code Quality
 

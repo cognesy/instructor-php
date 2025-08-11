@@ -228,8 +228,8 @@ describe('TransformQuery', function () {
         it('applies transformation conditionally with when()', function () {
             $state = ProcessingState::with(10);
             
-            $applied = $state->when(fn() => true, fn($s) => $s->withResult(Result::success(20)));
-            $notApplied = $state->when(fn() => false, fn($s) => $s->withResult(Result::success(20)));
+            $applied = $state->when(fn() => true, fn($s) => 20);
+            $notApplied = $state->when(fn() => false, fn($s) => 20);
             
             expect($applied->value())->toBe(20);
             expect($notApplied->value())->toBe(10);
@@ -238,12 +238,12 @@ describe('TransformQuery', function () {
         it('applies transformation based on value with whenValue()', function () {
             $state = ProcessingState::with(15);
             
-            $applied = $state->when(
-                fn($v) => $v > 10,
+            $applied = $state->whenState(
+                fn(ProcessingState $s) => $s->value() > 10,
                 fn(ProcessingState $s) => $s->withResult(Result::success('large'))
             );
             $notApplied = $state->whenState(
-                fn($v) => $v > 20,
+                fn(ProcessingState $s) => $s->value() > 20,
                 fn(ProcessingState $s) => $s->withResult(Result::success('large'))
             );
             
