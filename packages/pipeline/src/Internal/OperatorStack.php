@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Internal;
 
 use ArrayIterator;
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Countable;
 use Iterator;
@@ -16,17 +16,17 @@ use IteratorAggregate;
  * middleware can decide whether to continue processing and can modify the
  * state before and after the next middleware executes.
  */
-final class OperatorStack implements CanControlStateProcessing, Countable, IteratorAggregate
+final class OperatorStack implements CanProcessState, Countable, IteratorAggregate
 {
-    /** @var CanControlStateProcessing[] */
+    /** @var CanProcessState[] */
     private array $middleware = [];
 
-    public function add(CanControlStateProcessing ...$middleware): self {
+    public function add(CanProcessState ...$middleware): self {
         array_push($this->middleware, ...$middleware);
         return $this;
     }
 
-    public function prepend(CanControlStateProcessing ...$middleware): self {
+    public function prepend(CanProcessState ...$middleware): self {
         array_unshift($this->middleware, ...$middleware);
         return $this;
     }
@@ -62,7 +62,7 @@ final class OperatorStack implements CanControlStateProcessing, Countable, Itera
         return $stack($state);
     }
 
-    public function with(CanControlStateProcessing ...$middleware): self {
+    public function with(CanProcessState ...$middleware): self {
         $new = clone $this;
         $new->add(...$middleware);
         return $new;
@@ -74,14 +74,14 @@ final class OperatorStack implements CanControlStateProcessing, Countable, Itera
     }
 
     /**
-     * @return CanControlStateProcessing[]
+     * @return CanProcessState[]
      */
     public function all(): array {
         return $this->middleware;
     }
 
     /**
-     * @return Iterator<CanControlStateProcessing>
+     * @return Iterator<CanProcessState>
      */
     public function getIterator(): Iterator {
         return new ArrayIterator($this->middleware);

@@ -13,12 +13,13 @@ describe('PendingExecution Enhanced Operations', function () {
         it('defers execution until value is requested', function () {
             $executed = false;
             
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(function($x) use (&$executed) {
                     $executed = true;
                     return $x * 2;
                 })
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             expect($executed)->toBeFalse();
             
@@ -30,12 +31,13 @@ describe('PendingExecution Enhanced Operations', function () {
         it('caches results after first execution', function () {
             $executeCount = 0;
             
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(function($x) use (&$executeCount) {
                     $executeCount++;
                     return $x * 2;
                 })
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $value1 = $pending->value();
             $value2 = $pending->value();
@@ -48,9 +50,10 @@ describe('PendingExecution Enhanced Operations', function () {
 
     describe('monadic composition integration', function () {
         it('composes with ProcessingState monadic operations', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $result = $pending->state()
                 ->map(fn($x) => $x + 5)
@@ -61,10 +64,10 @@ describe('PendingExecution Enhanced Operations', function () {
         });
 
         it('preserves pipeline execution state in monadic operations', function () {
-            $pending = Pipeline::for(10)
-                ->withTags(new ExecutionTag('pipeline'))
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10, new ExecutionTag('pipeline'));
             
             $state = $pending->state();
             $result = $state
@@ -80,9 +83,10 @@ describe('PendingExecution Enhanced Operations', function () {
 
     describe('error handling in lazy context', function () {
         it('handles pipeline errors lazily', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => throw new \RuntimeException('Pipeline error'))
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             // Error not thrown until execution
             $result = $pending->state();
@@ -91,9 +95,10 @@ describe('PendingExecution Enhanced Operations', function () {
         });
 
         it('combines pipeline and monadic errors correctly', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $result = $pending->state()
                 ->map(fn($x) => $x + 5)
@@ -106,8 +111,9 @@ describe('PendingExecution Enhanced Operations', function () {
 
     describe('stream operations', function () {
         it('works with monadic transformations', function () {
-            $pending = Pipeline::for([1, 2, 3])
-                ->create();
+            $pending = Pipeline::empty()
+                ->create()
+                ->executeWith([1, 2, 3]);
             
             $state = $pending->state()
                 ->map(fn($array) => array_map(fn($x) => $x * 2, $array))
@@ -120,8 +126,9 @@ describe('PendingExecution Enhanced Operations', function () {
         });
 
         it('handles empty results gracefully', function () {
-            $pending = Pipeline::for([1, 2, 3])
-                ->create();
+            $pending = Pipeline::empty()
+                ->create()
+                ->executeWith([1, 2, 3]);
             
             $state = $pending->state()
                 ->failWhen(fn($array) => count($array) > 5); // Will fail
@@ -135,9 +142,10 @@ describe('PendingExecution Enhanced Operations', function () {
 
     describe('value extraction patterns', function () {
         it('extracts value after monadic operations', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $finalValue = $pending->state()
                 ->map(fn($x) => $x + 5)
@@ -147,9 +155,10 @@ describe('PendingExecution Enhanced Operations', function () {
         });
 
         it('extracts valueOr with default after failure', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $finalValue = $pending->state()
                 ->failWhen(fn($x) => $x > 100)
@@ -159,9 +168,10 @@ describe('PendingExecution Enhanced Operations', function () {
         });
 
         it('extracts result for full monadic control', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $result = $pending->state()
                 ->map(fn($x) => $x + 5)
@@ -174,10 +184,11 @@ describe('PendingExecution Enhanced Operations', function () {
 
     describe('batch processing patterns', function () {
         it('processes multiple values with same pipeline', function () {
-            $pipeline = Pipeline::for(0)
+            $pipeline = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
                 ->through(fn($x) => $x + 1)
-                ->create();
+                ->create()
+                ->executeWith(0);
             
             $results = [];
             foreach ([1, 2, 3] as $input) {
@@ -191,9 +202,10 @@ describe('PendingExecution Enhanced Operations', function () {
         });
 
         it('handles mixed success/failure in batch', function () {
-            $pipeline = Pipeline::for(0)
+            $pipeline = Pipeline::empty()
                 ->through(fn($x) => $x > 0 ? $x * 2 : throw new \Exception('Negative'))
-                ->create();
+                ->create()
+                ->executeWith(0);
             
             $results = [];
             foreach ([-1, 2, -3, 4] as $input) {
@@ -214,12 +226,13 @@ describe('PendingExecution Enhanced Operations', function () {
             $pipelineExecuted = false;
             $monadicExecuted = false;
             
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(function($x) use (&$pipelineExecuted) {
                     $pipelineExecuted = true;
                     return $x * 2;
                 })
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             // Pipeline hasn't executed yet
             expect($pipelineExecuted)->toBeFalse();

@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Operators\Observation;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\Observation\TimingTag;
 
@@ -12,7 +12,7 @@ use Cognesy\Pipeline\Tag\Observation\TimingTag;
  * Fast, lightweight, no memory tracking, no complex logic.
  * Dedicated consumer components handle SLA monitoring, timeouts, etc.
  */
-readonly class TrackTime implements CanControlStateProcessing
+readonly class TrackTime implements CanProcessState
 {
     public function __construct(
         private ?string $operationName = null,

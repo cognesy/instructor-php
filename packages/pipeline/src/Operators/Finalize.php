@@ -2,17 +2,17 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
-class Finalize implements CanControlStateProcessing {
+class Finalize implements CanProcessState {
     public function __construct(
-        private CanControlStateProcessing $finalizer,
+        private CanProcessState $finalizer,
     ) {}
 
-    public static function with(callable|CanControlStateProcessing $finalizer): self {
+    public static function with(callable|CanProcessState $finalizer): self {
         return new self(match(true) {
-            $finalizer instanceof CanControlStateProcessing => $finalizer,
+            $finalizer instanceof CanProcessState => $finalizer,
             default => Call::withState($finalizer),
         });
     }

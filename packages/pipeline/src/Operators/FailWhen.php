@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Operators;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
@@ -12,7 +12,7 @@ use Cognesy\Pipeline\ProcessingState;
  * This is useful for validation and early failure scenarios where
  * you want to stop processing based on the current state.
  */
-readonly final class FailWhen implements CanControlStateProcessing
+readonly final class FailWhen implements CanProcessState
 {
     public function __construct(
         private Closure $condition,

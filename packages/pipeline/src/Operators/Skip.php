@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use RuntimeException;
@@ -13,9 +13,9 @@ use RuntimeException;
  * This middleware allows you to skip further processing in the pipeline
  * if a certain condition is met, returning the current state without modification.
  */
-readonly final class Skip implements CanControlStateProcessing {
+readonly final class Skip implements CanProcessState {
     private function __construct(
-        private CanControlStateProcessing $conditionChecker,
+        private CanProcessState $conditionChecker,
     ) {}
 
     /**

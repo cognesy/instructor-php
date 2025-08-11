@@ -15,7 +15,7 @@ class PipelineException extends Exception
         int $code = 0,
         ?Throwable $previous = null,
         private readonly mixed $context = null,
-        private readonly string $processorName = '',
+        private readonly string $operatorName = '',
     ) {
         parent::__construct($message, $code, $previous);
     }
@@ -30,8 +30,8 @@ class PipelineException extends Exception
     /**
      * Get the name of the processor that caused the error.
      */
-    public function getProcessorName(): string {
-        return $this->processorName;
+    public function getOperatorName(): string {
+        return $this->operatorName;
     }
 
     /**
@@ -47,7 +47,7 @@ class PipelineException extends Exception
             message: $message,
             previous: $previous,
             context: $context,
-            processorName: $processorName,
+            operatorName: $processorName,
         );
     }
 

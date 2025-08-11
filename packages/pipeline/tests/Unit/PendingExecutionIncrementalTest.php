@@ -13,31 +13,21 @@ class ExecutionTestTag implements TagInterface {
 describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
     describe('constructor', function () {
-        it('creates PendingExecution with initial state and pipeline', function () {
-            $state = ProcessingState::with('test');
-            $pipeline = new Pipeline();
-            
-            $execution = new PendingExecution($state, $pipeline);
-            
-            expect($execution)->toBeInstanceOf(PendingExecution::class);
-        });
-
         it('can execute pipeline after construction', function () {
             $state = ProcessingState::with(42);
             $pipeline = new Pipeline();
             $execution = new PendingExecution($state, $pipeline);
-            
             $result = $execution->execute();
-            
             expect($result->value())->toBe(42);
         });
     });
 
     describe('result method', function () {
         it('returns Result object from execution', function () {
-            $pending = Pipeline::for(42)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(42);
             
             $result = $pending->result();
             
@@ -47,9 +37,10 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         });
 
         it('returns failed Result on pipeline error', function () {
-            $pending = Pipeline::for(42)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => throw new RuntimeException('Pipeline error'))
-                ->create();
+                ->create()
+                ->executeWith(42);
             
             $result = $pending->result();
             
@@ -60,12 +51,13 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
         it('caches result after first call', function () {
             $executionCount = 0;
-            $pending = Pipeline::for(42)
+            $pending = Pipeline::empty()
                 ->through(function($x) use (&$executionCount) {
                     $executionCount++;
                     return $x * 2;
                 })
-                ->create();
+                ->create()
+                ->executeWith(42);
             
             $result1 = $pending->result();
             $result2 = $pending->result();
@@ -77,10 +69,11 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
     describe('mixed execution methods', function () {
         it('maintains consistency across different access methods', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 3)
                 ->through(fn($x) => $x + 5)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $value = $pending->value();
             $state = $pending->state();
@@ -94,10 +87,11 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         });
 
         it('handles failure consistently across methods', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
                 ->through(fn($x) => throw new RuntimeException('Test error'))
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $isFailure = $pending->isFailure();
             $exception = $pending->exception();
@@ -115,7 +109,7 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
     describe('for method with tags', function () {
         it('updates initial state with tags', function () {
             $tag = new ExecutionTestTag('updated');
-            $pending = Pipeline::for('original')->create();
+            $pending = Pipeline::empty()->create()->executeWith('original');
             
             $newExecution = $pending->for('updated', [$tag]);
             $state = $newExecution->state();
@@ -127,12 +121,13 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
         it('resets cached output when for is called', function () {
             $executionCount = 0;
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(function($x) use (&$executionCount) {
                     $executionCount++;
                     return $x * 2;
                 })
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             // First execution
             $value1 = $pending->value();
@@ -148,16 +143,17 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
     describe('integration with complex pipelines', function () {
         it('works with pipelines containing middleware', function () {
-            $middleware = new class implements \Cognesy\Pipeline\Contracts\CanControlStateProcessing {
+            $middleware = new class implements \Cognesy\Pipeline\Contracts\CanProcessState {
                 public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
                     return $next ? $next($state->withTags(new ExecutionTestTag('middleware'))) : $state;
                 }
             };
             
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->withMiddleware($middleware)
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $state = $pending->state();
             
@@ -168,13 +164,14 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         it('works with pipelines containing hooks', function () {
             $hookExecuted = false;
             
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->beforeEach(function($state) use (&$hookExecuted) {
                     $hookExecuted = true;
                     return $state;
                 })
                 ->through(fn($x) => $x * 2)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $value = $pending->value();
             
@@ -183,10 +180,11 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         });
 
         it('works with pipelines containing finalizers', function () {
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x * 2)
                 ->finally(fn($state) => $state->value() . '_finalized')
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $value = $pending->value();
             
@@ -196,9 +194,10 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
 
     describe('edge cases', function () {
         it('handles null values correctly', function () {
-            $pending = Pipeline::for(null)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => $x ?? 'was_null')
-                ->create();
+                ->create()
+                ->executeWith(null);
             
             $value = $pending->value();
             
@@ -206,8 +205,9 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         });
 
         it('handles empty arrays in stream', function () {
-            $pending = Pipeline::for([])
-                ->create();
+            $pending = Pipeline::empty()
+                ->create()
+                ->executeWith([]);
             
             $stream = $pending->stream();
             $results = iterator_to_array($stream);
@@ -218,9 +218,10 @@ describe('PendingExecution Incremental Tests - Missing Coverage', function () {
         it('preserves exception details through execution', function () {
             $originalException = new RuntimeException('Original error', 123);
             
-            $pending = Pipeline::for(10)
+            $pending = Pipeline::empty()
                 ->through(fn($x) => throw $originalException)
-                ->create();
+                ->create()
+                ->executeWith(10);
             
             $exception = $pending->exception();
             

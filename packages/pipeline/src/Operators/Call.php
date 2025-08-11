@@ -3,7 +3,7 @@
 namespace Cognesy\Pipeline\Operators;
 
 use Closure;
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
@@ -14,7 +14,7 @@ use Cognesy\Utils\Result\Success;
 use RuntimeException;
 use Throwable;
 
-readonly final class Call implements CanControlStateProcessing {
+readonly final class Call implements CanProcessState {
     private Closure $normalizedCall;
     private NullStrategy $onNull;
 
@@ -26,7 +26,7 @@ readonly final class Call implements CanControlStateProcessing {
         $this->normalizedCall = $callable(...);
     }
 
-    public static function pass() : CanControlStateProcessing {
+    public static function pass() : CanProcessState {
         return new NoOp();
     }
 

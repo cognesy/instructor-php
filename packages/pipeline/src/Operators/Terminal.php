@@ -2,10 +2,10 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
-readonly final class Terminal implements CanControlStateProcessing
+readonly final class Terminal implements CanProcessState
 {
     public static function make(): self {
         return new self();

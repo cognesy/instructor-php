@@ -2,14 +2,14 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Cognesy\Utils\Result\Result;
 use RuntimeException;
 use Throwable;
 
-readonly final class Fail implements CanControlStateProcessing {
+readonly final class Fail implements CanProcessState {
     private function __construct(
         private Throwable $e,
     ) {}

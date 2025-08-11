@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Operators\Observation;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\Observation\StepTimingTag;
 
@@ -12,7 +12,7 @@ use Cognesy\Pipeline\Tag\Observation\StepTimingTag;
  * Fast, lightweight, no logic - just data collection.
  * Consumer components handle step SLA monitoring, performance analysis, etc.
  */
-readonly class StepTiming implements CanControlStateProcessing
+readonly class StepTiming implements CanProcessState
 {
     public function __construct(
         private string $stepName,

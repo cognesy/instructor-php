@@ -2,14 +2,15 @@
 
 namespace Cognesy\Pipeline;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
+use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\Internal\OperatorStack;
 use Exception;
 
 /**
  * Pipeline with per-execution & per-step middleware support.
  */
-class Pipeline implements CanControlStateProcessing
+class Pipeline implements CanProcessState
 {
     private OperatorStack $steps;
     private OperatorStack $middleware; // per-pipeline execution middleware stack
@@ -34,18 +35,12 @@ class Pipeline implements CanControlStateProcessing
         return new PipelineBuilder();
     }
 
-    /**
-     * @param callable():mixed $source
-     */
-    public static function from(callable $source): PipelineBuilder {
-        return new PipelineBuilder(source: $source);
-    }
-
-    public static function for(mixed $value): PipelineBuilder {
-        return new PipelineBuilder(source: fn() => $value);
-    }
-
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
+
+    public function executeWith(mixed $initialValue = null, TagInterface ...$tags): PendingExecution {
+        $initialState = ProcessingState::with($initialValue, $tags);
+        return new PendingExecution($initialState, $this);
+    }
 
     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
         $processedState = match (true) {
@@ -105,7 +100,7 @@ class Pipeline implements CanControlStateProcessing
     }
 
     private function executeStepWithHooks(
-        CanControlStateProcessing $step,
+        CanProcessState $step,
         ProcessingState $state,
         OperatorStack $hooks,
     ): ProcessingState {
@@ -117,7 +112,7 @@ class Pipeline implements CanControlStateProcessing
         });
     }
 
-    private function executeStep(CanControlStateProcessing $step, ProcessingState $state): ProcessingState {
+    private function executeStep(CanProcessState $step, ProcessingState $state): ProcessingState {
         try {
             return $step->process($state);
         } catch (Exception $e) {

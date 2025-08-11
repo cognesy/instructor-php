@@ -26,7 +26,7 @@ class TimeoutException extends PipelineException
                 'timeout_seconds' => $timeoutSeconds,
                 'elapsed_seconds' => $elapsedSeconds,
             ],
-            processorName: $processorName,
+            operatorName: $processorName,
         );
     }
 

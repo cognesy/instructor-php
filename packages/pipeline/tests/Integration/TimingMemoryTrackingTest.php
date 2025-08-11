@@ -18,8 +18,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->withMiddleware(TrackTime::capture('test-operation'))
             ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
-            ->for(5)
-            ->execute();
+            ->executeWith(5)
+            ->state();
 
         $timings = $result->allTags(TimingTag::class);
         
@@ -43,8 +43,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 return $x + count($data);
             }))
             ->create()
-            ->for(10)
-            ->execute();
+            ->executeWith(10)
+            ->state();
 
         $memoryTags = $result->allTags(MemoryTag::class);
         
@@ -63,8 +63,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->throughOperator(Call::withValue(fn($x) => $x + 1))
             ->throughOperator(Call::withValue(fn($x) => $x * 3))
             ->create()
-            ->for(2)
-            ->execute();
+            ->executeWith(2)
+            ->state();
 
         $stepTimings = $result->allTags(StepTimingTag::class);
         
@@ -88,8 +88,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 return $x . $data;
             }))
             ->create()
-            ->for('test')
-            ->execute();
+            ->executeWith('test')
+            ->state();
 
         $stepMemory = $result->allTags(StepMemoryTag::class);
         
@@ -110,8 +110,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
             ->aroundEach(StepMemory::capture('multiply-step'))
             ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
-            ->for(10)
-            ->execute();
+            ->executeWith(10)
+            ->state();
 
         // Check we have all expected tags
         expect($result->allTags(TimingTag::class))->toHaveCount(1);
@@ -132,8 +132,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 throw new Exception('Test failure');
             }))
             ->create()
-            ->for(5)
-            ->execute();
+            ->executeWith(5)
+            ->state();
 
         $timing = $result->allTags(TimingTag::class)[0];
         $stepTiming = $result->allTags(StepTimingTag::class)[0];
@@ -153,8 +153,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
                 return $x;
             }))
             ->create()
-            ->for(1)
-            ->execute();
+            ->executeWith(1)
+            ->state();
 
         $timing = $result->allTags(TimingTag::class)[0];
         

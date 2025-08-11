@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Operators\Observation;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\Observation\MemoryTag;
 
@@ -12,7 +12,7 @@ use Cognesy\Pipeline\Tag\Observation\MemoryTag;
  * Separate from timing for clean concerns and optional use.
  * Consumer components handle leak detection, capacity planning, etc.
  */
-readonly class TrackMemory implements CanControlStateProcessing
+readonly class TrackMemory implements CanProcessState
 {
     public function __construct(
         private ?string $operationName = null,

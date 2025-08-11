@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Contracts\TagInterface;
 use Cognesy\Pipeline\PipelineBuilder;
 use Cognesy\Pipeline\ProcessingState;
@@ -9,7 +9,7 @@ class BuilderTestTag implements TagInterface {
     public function __construct(public readonly string $name) {}
 }
 
-class TestMiddleware implements CanControlStateProcessing {
+class TestMiddleware implements CanProcessState {
     public function __construct(private string $name) {}
     
     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
@@ -18,7 +18,7 @@ class TestMiddleware implements CanControlStateProcessing {
     }
 }
 
-class TestFinalizer implements CanControlStateProcessing {
+class TestFinalizer implements CanProcessState {
     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
         $output = $state->value() . '_finalized';
         $newState = ProcessingState::with($output);
@@ -28,51 +28,6 @@ class TestFinalizer implements CanControlStateProcessing {
 
 describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
 
-    describe('source configuration', function () {
-        describe('withSource', function () {
-            it('sets custom source callable', function () {
-                $source = fn() => 'custom_source';
-                $builder = new PipelineBuilder();
-                
-                $result = $builder->withSource($source)->create()->value();
-                
-                expect($result)->toBe('custom_source');
-            });
-
-            it('returns same builder instance', function () {
-                $builder = new PipelineBuilder();
-                $source = fn() => 'test';
-                
-                $returned = $builder->withSource($source);
-                
-                expect($returned)->toBe($builder);
-            });
-        });
-
-        describe('withInitialValue', function () {
-            it('sets static initial value', function () {
-                $builder = new PipelineBuilder();
-                
-                $result = $builder->withInitialValue('static_value')->create()->value();
-                
-                expect($result)->toBe('static_value');
-            });
-
-            it('overwrites previous source', function () {
-                $builder = new PipelineBuilder();
-                $source = fn() => 'from_source';
-                
-                $result = $builder
-                    ->withSource($source)
-                    ->withInitialValue('static_override')
-                    ->create()
-                    ->value();
-                
-                expect($result)->toBe('static_override');
-            });
-        });
-    });
-
     describe('middleware configuration', function () {
         describe('prependMiddleware', function () {
             it('adds middleware at beginning of stack', function () {
@@ -80,10 +35,10 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $middleware2 = new TestMiddleware('second');
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
                     ->withMiddleware($middleware1)
                     ->prependMiddleware($middleware2)
                     ->create()
+                    ->executeWith('test')
                     ->state();
                 
                 $tags = $result->allTags(BuilderTestTag::class);
@@ -99,7 +54,6 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $executions = [];
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(1)
                     ->beforeEach(function($state) use (&$executions) {
                         $executions[] = 'before_' . $state->value();
                         return $state;
@@ -107,6 +61,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                     ->through(fn($x) => $x * 2)
                     ->through(fn($x) => $x + 1)
                     ->create()
+                    ->executeWith(1)
                     ->value();
                 
                 expect($result)->toBe(3); // (1 * 2) + 1
@@ -119,7 +74,6 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $executions = [];
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(1)
                     ->afterEach(function($state) use (&$executions) {
                         $executions[] = 'after_' . $state->value();
                         return $state;
@@ -127,6 +81,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                     ->through(fn($x) => $x * 2)
                     ->through(fn($x) => $x + 1)
                     ->create()
+                    ->executeWith(1)
                     ->value();
                 
                 expect($result)->toBe(3); // (1 * 2) + 1
@@ -139,7 +94,6 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $processedSteps = [];
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(1)
                     ->finishWhen(fn($state) => $state->value() >= 3)
                     ->through(function($x) use (&$processedSteps) {
                         $processedSteps[] = 'step1';
@@ -150,6 +104,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                         return $x + 10;
                     })
                     ->create()
+                    ->executeWith(1)
                     ->value();
                 
                 expect($result)->toBe(3); // Stops before second step
@@ -163,13 +118,13 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $failureMessage = '';
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(1)
                     ->onFailure(function(ProcessingState $state) use (&$failureHandled, &$failureMessage) {
                         $failureHandled = true;
                         $failureMessage = $state->exception()->getMessage();
                     })
                     ->through(fn($x) => throw new RuntimeException('Test error'))
-                    ->create();
+                    ->create()
+                    ->executeWith(1);
                 
                 expect($result->isFailure())->toBeTrue();
                 expect($failureHandled)->toBeTrue();
@@ -180,10 +135,10 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
         describe('failWhen', function () {
             it('fails pipeline when condition is met', function () {
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(10)
                     ->failWhen(fn($state) => $state->value() > 5, 'Value too large')
                     ->through(fn($x) => $x * 2)
-                    ->create();
+                    ->create()
+                    ->executeWith(10);
                 
                 expect($result->isFailure())->toBeTrue();
                 expect($result->exception()->getMessage())->toBe('Value too large');
@@ -191,10 +146,10 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
 
             it('continues when condition is not met', function () {
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(2)
                     ->failWhen(fn($state) => $state->value() > 5, 'Value too large')
                     ->through(fn($x) => $x * 2)
                     ->create()
+                    ->executeWith(2)
                     ->value();
                 
                 expect($result)->toBe(4);
@@ -212,9 +167,9 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 ];
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue(10)
                     ->throughAll(...$callables)
                     ->create()
+                    ->executeWith(10)
                     ->value();
                 
                 expect($result)->toBe(12.5); // ((10 * 2) + 5) / 2
@@ -223,7 +178,7 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
 
         describe('throughProcessor', function () {
             it('adds processor that implements CanProcessState', function () {
-                $processor = new class implements CanControlStateProcessing {
+                $processor = new class implements CanProcessState {
                     public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
                         $output = $state->map(fn($x) => $x . '_processed');
                         return $next ? $next($output) : $output;
@@ -231,9 +186,9 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 };
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
                     ->throughOperator($processor)
                     ->create()
+                    ->executeWith('test')
                     ->value();
                 
                 expect($result)->toBe('test_processed');
@@ -245,12 +200,11 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $capturedState = null;
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
-                    ->withTags(new BuilderTestTag('tap_test'))
                     ->tapWithState(function($state) use (&$capturedState) {
                         $capturedState = $state;
                     })
                     ->create()
+                    ->executeWith('test', new BuilderTestTag('tap_test'))
                     ->value();
                 
                 expect($result)->toBe('test');
@@ -262,11 +216,10 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
         describe('filterWithState', function () {
             it('filters based on ProcessingState condition', function () {
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
-                    ->withTags(new BuilderTestTag('filter_test'))
                     ->filterWithState(fn($state) => $state->hasTag(BuilderTestTag::class))
                     ->through(fn($x) => $x . '_passed')
                     ->create()
+                    ->executeWith('test', new BuilderTestTag('filter_test'))
                     ->value();
                 
                 expect($result)->toBe('test_passed');
@@ -274,9 +227,9 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
 
             it('fails when state condition is not met', function () {
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
                     ->filterWithState(fn($state) => $state->hasTag('NonExistentTag'), 'State condition failed')
-                    ->create();
+                    ->create()
+                    ->executeWith('test');
                 
                 expect($result->isFailure())->toBeTrue();
                 expect($result->exception()->getMessage())->toBe('State condition failed');
@@ -290,9 +243,9 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $finalizer = new TestFinalizer();
                 
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
                     ->finally($finalizer)
                     ->create()
+                    ->executeWith('test')
                     ->value();
                 
                 expect($result)->toBe('test_finalized');
@@ -302,9 +255,9 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
         describe('finally with callable', function () {
             it('applies callable finalizer', function () {
                 $result = (new PipelineBuilder())
-                    ->withInitialValue('test')
                     ->finally(fn($state) => $state->value() . '_final')
                     ->create()
+                    ->executeWith('test')
                     ->value();
                 
                 expect($result)->toBe('test_final');

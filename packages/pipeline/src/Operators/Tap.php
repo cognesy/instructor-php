@@ -2,17 +2,17 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
 
-readonly final class Tap implements CanControlStateProcessing {
+readonly final class Tap implements CanProcessState {
     private function __construct(
-        private CanControlStateProcessing $operator,
+        private CanProcessState $operator,
     ) {}
 
-    public static function with(CanControlStateProcessing $operator): self {
+    public static function with(CanProcessState $operator): self {
         return new self($operator);
     }
 

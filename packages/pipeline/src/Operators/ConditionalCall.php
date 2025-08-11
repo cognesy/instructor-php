@@ -2,16 +2,16 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Utils\Result\Result;
 
-readonly final class ConditionalCall implements CanControlStateProcessing {
+readonly final class ConditionalCall implements CanProcessState {
     private function __construct(
-        private CanControlStateProcessing $conditionChecker,
-        private CanControlStateProcessing $operator,
+        private CanProcessState $conditionChecker,
+        private CanProcessState $operator,
         private bool $isNegated = false,
-        private ?CanControlStateProcessing $elseOperator = null,
+        private ?CanProcessState $elseOperator = null,
     ) {}
 
     /** @param callable():ProcessingState $callable */
@@ -43,7 +43,7 @@ readonly final class ConditionalCall implements CanControlStateProcessing {
         );
     }
 
-    public function then(CanControlStateProcessing $operator): self {
+    public function then(CanProcessState $operator): self {
         return new self(
             $this->conditionChecker,
             $operator,
@@ -52,7 +52,7 @@ readonly final class ConditionalCall implements CanControlStateProcessing {
         );
     }
 
-    public function otherwise(CanControlStateProcessing $else): self {
+    public function otherwise(CanProcessState $else): self {
         return new self(
             $this->conditionChecker,
             $this->operator,

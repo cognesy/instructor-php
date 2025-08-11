@@ -2,9 +2,7 @@
 
 namespace Cognesy\Pipeline;
 
-use Closure;
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
-use Cognesy\Pipeline\Contracts\TagInterface;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\Enums\NullStrategy;
 use Cognesy\Pipeline\Internal\OperatorStack;
 use Cognesy\Pipeline\Operators\Call;
@@ -20,10 +18,6 @@ use InvalidArgumentException;
 
 class PipelineBuilder
 {
-    /** @var Closure():mixed $source */
-    private Closure $source;
-    /** @var array<TagInterface> */
-    private array $tags;
     private OperatorStack $operators;
     private OperatorStack $finalizers;
     private OperatorStack $middleware; // per-pipeline execution middleware stack
@@ -32,35 +26,14 @@ class PipelineBuilder
     /**
      * @param ?callable():mixed $source
      */
-    public function __construct(
-        ?callable $source = null,
-        ?array $tags = null,
-    ) {
-        $this->source = $source ?? fn() => null;
-        $this->tags = $tags ?? [];
+    public function __construct() {
         $this->operators = new OperatorStack();
         $this->finalizers = new OperatorStack();
         $this->middleware = new OperatorStack();
         $this->hooks = new OperatorStack();
     }
 
-    /**
-     * @param callable():mixed $source
-     */
-    public function withSource(callable $source): static {
-        $this->source = $source;
-        return $this;
-    }
 
-    public function withInitialValue(mixed $value): static {
-        $this->source = fn() => $value;
-        return $this;
-    }
-
-    public function withTags(TagInterface ...$tags): static {
-        $this->tags = array_merge($this->tags, $tags);
-        return $this;
-    }
 
     // MIDDLEWARE SUPPORT /////////////////////////////////////////////////////////////////////
 
@@ -70,7 +43,7 @@ class PipelineBuilder
      * Middleware executes around each processor, allowing for sophisticated
      * cross-cutting concerns like distributed tracing, circuit breakers, etc.
      */
-    public function withMiddleware(CanControlStateProcessing ...$middleware): static {
+    public function withMiddleware(CanProcessState ...$middleware): static {
         $this->middleware->add(...$middleware);
         return $this;
     }
@@ -78,7 +51,7 @@ class PipelineBuilder
     /**
      * Add middleware at the beginning of the stack (executes first).
      */
-    public function prependMiddleware(CanControlStateProcessing ...$middleware): static {
+    public function prependMiddleware(CanProcessState ...$middleware): static {
         $this->middleware->prepend(...$middleware);
         return $this;
     }
@@ -113,9 +86,9 @@ class PipelineBuilder
      * and other measurements that need to capture data before and after
      * each individual processor execution.
      *
-     * @param CanControlStateProcessing $hook
+     * @param CanProcessState $hook
      */
-    public function aroundEach(CanControlStateProcessing $hook): static {
+    public function aroundEach(CanProcessState $hook): static {
         $this->hooks->add($hook);
         return $this;
     }
@@ -170,7 +143,7 @@ class PipelineBuilder
         return $this;
     }
 
-    public function throughOperator(CanControlStateProcessing $operator): static {
+    public function throughOperator(CanProcessState $operator): static {
         $this->operators->add($operator);
         return $this;
     }
@@ -227,11 +200,11 @@ class PipelineBuilder
     // EXECUTION //////////////////////////////////////////////////////////////////////////////
 
     /**
-     * @param callable|CanControlStateProcessing(ProcessingState):mixed $finalizer
+     * @param callable|CanProcessState(ProcessingState):mixed $finalizer
      */
-    public function finally(callable|CanControlStateProcessing $finalizer): static {
+    public function finally(callable|CanProcessState $finalizer): static {
         $finalizer = match (true) {
-            $finalizer instanceof CanControlStateProcessing => $finalizer,
+            $finalizer instanceof CanProcessState => $finalizer,
             is_callable($finalizer) => Call::withState($finalizer),
             default => throw new InvalidArgumentException('Finalizer must be callable or implement CanFinalizeProcessing'),
         };
@@ -239,16 +212,12 @@ class PipelineBuilder
         return $this;
     }
 
-    public function create(): PendingExecution {
-        $pipeline = new Pipeline(
+    public function create(): Pipeline {
+        return new Pipeline(
             steps: $this->operators,
             finalizers: $this->finalizers,
             middleware: $this->middleware,
             hooks: $this->hooks,
-        );
-        return new PendingExecution(
-            ProcessingState::with(($this->source)(), $this->tags),
-            $pipeline,
         );
     }
 }

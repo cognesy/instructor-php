@@ -2,7 +2,7 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 use Cognesy\Pipeline\Tag\ErrorTag;
 use Throwable;
@@ -17,10 +17,10 @@ use Throwable;
  * Note: This middleware does NOT modify the failure - it's purely for
  * side effects. The failure continues to propagate normally.
  */
-readonly final class TapOnFailure implements CanControlStateProcessing
+readonly final class TapOnFailure implements CanProcessState
 {
     public function __construct(
-        private CanControlStateProcessing $operator,
+        private CanProcessState $operator,
     ) {}
 
     /**

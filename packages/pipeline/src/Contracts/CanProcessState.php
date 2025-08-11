@@ -18,7 +18,7 @@ use Cognesy\Pipeline\ProcessingState;
  *
  * ATTENTION: Components implementing this interface should be stateless.
  */
-interface CanControlStateProcessing
+interface CanProcessState
 {
     /**
      * @param callable(ProcessingState):ProcessingState $next Callback to invoke next component

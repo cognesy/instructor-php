@@ -2,15 +2,15 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
-readonly final class Processor implements CanControlStateProcessing {
+readonly final class Processor implements CanProcessState {
     public function __construct(
-        private CanControlStateProcessing $processor,
+        private CanProcessState $processor,
     ) {}
 
-    public static function with(CanControlStateProcessing $processor): self {
+    public static function with(CanProcessState $processor): self {
         return new self($processor);
     }
 

@@ -2,16 +2,16 @@
 
 namespace Cognesy\Pipeline\Operators;
 
-use Cognesy\Pipeline\Contracts\CanControlStateProcessing;
+use Cognesy\Pipeline\Contracts\CanProcessState;
 use Cognesy\Pipeline\ProcessingState;
 
 /**
  * Middleware that executes a callback after processing completes.
  */
-readonly final class CallAfter implements CanControlStateProcessing
+readonly final class CallAfter implements CanProcessState
 {
     public function __construct(
-        private CanControlStateProcessing $operator,
+        private CanProcessState $operator,
     ) {}
 
     /**
