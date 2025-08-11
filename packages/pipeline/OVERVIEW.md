@@ -46,17 +46,47 @@ $isSuccess = $state->isSuccess();   // Check processing status
 The Pipeline orchestrates sequential processor execution with comprehensive middleware support and error handling.
 
 ```php
-$pipeline = Pipeline::for($data)
+$pipeline = Pipeline::builder()
     ->through(fn($x) => $x * 2)     // Value processor
     ->through(fn($x) => $x + 10)    // Another processor
-    ->withMiddleware(Timing::capture('operation'));
+    ->withMiddleware(Timing::capture('operation'))
+    ->create();      // Create pipeline instance
 
 $result = $pipeline
-    ->create()       // Create pending pipeline execution
-    ->value();       // Execute and get result
+    ->executeWith($data)  // Execute with data and get result
+    ->value();            // Extract value
 ```
 
 **Essential Value**: Provides predictable, observable execution with automatic error handling, short-circuiting on failures, and performance optimization.
+
+#### Clean Pipeline API
+
+The pipeline follows a clean, stateless design where:
+
+- **PipelineBuilder**: Constructs pipelines without injecting values or tags
+- **Pipeline**: Executes with provided data and optional tags
+- **Tags at Execution**: Applied during `executeWith()`, not during construction
+
+```php
+// ✅ Clean API - tags applied at execution time
+$pipeline = Pipeline::builder()
+    ->through(fn($x) => $x * 2)
+    ->create();
+
+$result = $pipeline->executeWith($data, new CustomTag('execution'));
+
+// ✅ Multiple tags supported
+$result = $pipeline->executeWith($data, 
+    new TimingTag('start', microtime(true)),
+    new CustomTag('execution-context')
+);
+```
+
+This design ensures:
+- **Stateless pipelines**: No hidden state injection
+- **Clear separation**: Construction vs execution
+- **Debuggable**: No surprise initial values
+- **Reusable**: Same pipeline, different data/tags
 
 ### 3. Processors - Data Transformers
 
@@ -82,17 +112,17 @@ $pipeline->through(fn(ProcessingState $state) =>
 ### 4. Middleware - Cross-Cutting Concerns
 
 **Directory**: `src/Middleware/`
-**Interface**: `CanControlStateProcessing`
+**Interface**: `CanProcessState`
 
 Middleware provides a composable way to add cross-cutting concerns like logging, metrics, tracing, and validation.
 
 ```php
-class LoggingMiddleware implements CanControlStateProcessing 
+class LoggingMiddleware implements CanProcessState 
 {
-    public function handle(ProcessingState $state, callable $next): ProcessingState 
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState 
     {
         $this->logger->info('Processing started');
-        $result = $next($state);
+        $result = $next ? $next($state) : $state;
         $this->logger->info('Processing completed', ['success' => $result->isSuccess()]);
         return $result;
     }
@@ -132,11 +162,11 @@ $firstError = $state->firstTag(ErrorTag::class);
 PendingExecution implements lazy evaluation with memoization, ensuring expensive computations only run when needed.
 
 ```php
-$pending = $pipeline->process($data);  // No execution yet
+$pending = $pipeline->executeWith($data);  // No execution yet (lazy)
 
-$value = $pending->value();           // Executes and caches
-$state = $pending->state();           // Uses cached result
-$stream = $pending->stream();         // Transform to generator
+$value = $pending->value();                 // Executes and caches
+$state = $pending->state();                 // Uses cached result
+$stream = $pending->stream();               // Transform to generator
 ```
 
 **Essential Value**: Optimizes performance by deferring execution and caching results, enabling efficient pipeline composition.
@@ -201,17 +231,18 @@ The pipeline package provides clean, atomic components for performance monitorin
 Middleware wraps the entire pipeline execution:
 
 ```php
-$result = Pipeline::for($data)
+$result = Pipeline::builder()
     ->withMiddleware(Timing::capture('llm-processing'))  // Pipeline timing
     ->withMiddleware(Memory::capture('llm-processing'))  // Pipeline memory
     ->through(fn($x) => $x * 2)
     ->through(fn($x) => $x + 10)
     ->create()
-    ->execute();
+    ->executeWith($data);
 
-// Extract timing data
-$timings = $result->allTags(TimingTag::class);
-$memory = $result->allTags(MemoryTag::class);
+// Extract timing data from the execution state
+$state = $result->state();
+$timings = $state->allTags(TimingTag::class);
+$memory = $state->allTags(MemoryTag::class);
 ```
 
 ### Step-Level Monitoring (Hooks)
@@ -219,17 +250,18 @@ $memory = $result->allTags(MemoryTag::class);
 Hooks wrap individual processor execution:
 
 ```php
-$result = Pipeline::for($data)
+$result = Pipeline::builder()
     ->aroundEach(StepTiming::capture('processing'))    // Applies to all processors
     ->aroundEach(StepMemory::capture('processing'))    // Applies to all processors
     ->through(fn($x) => $this->validate($x))
     ->through(fn($x) => $this->heavyProcess($x))
     ->create()
-    ->execute();
+    ->executeWith($data);
 
 // Extract step-level data - one entry per processor
-$stepTimings = $result->allTags(StepTimingTag::class);  // 2 entries
-$stepMemory = $result->allTags(StepMemoryTag::class);   // 2 entries
+$state = $result->state();
+$stepTimings = $state->allTags(StepTimingTag::class);  // 2 entries
+$stepMemory = $state->allTags(StepMemoryTag::class);   // 2 entries
 ```
 
 ### Monitoring Data Usage
@@ -263,12 +295,15 @@ $metricsCollector->export($result);
 Transform and validate data through multiple stages:
 
 ```php
-$pipeline = Pipeline::for($rawData)
+$pipeline = Pipeline::builder()
     ->through(fn($data) => $this->validate($data))
     ->through(fn($data) => $this->normalize($data))
     ->through(fn($data) => $this->enrich($data))
     ->withMiddleware(Timing::capture('data-processing'))
-    ->withMiddleware(new LoggingMiddleware());
+    ->withMiddleware(new LoggingMiddleware())
+    ->create();
+
+$result = $pipeline->executeWith($rawData);
 ```
 
 ### 2. API Request Processing
@@ -276,13 +311,16 @@ $pipeline = Pipeline::for($rawData)
 Handle HTTP requests with validation, authentication, and response formatting:
 
 ```php
-$pipeline = Pipeline::for($request)
+$pipeline = Pipeline::builder()
     ->through(fn($req) => $this->authenticate($req))
     ->through(fn($req) => $this->validateInput($req))
     ->through(fn($req) => $this->processBusinessLogic($req))
     ->through(fn($req) => $this->formatResponse($req))
     ->withMiddleware(new RateLimitMiddleware())
-    ->withMiddleware(Timing::capture('api-request'));
+    ->withMiddleware(Timing::capture('api-request'))
+    ->create();
+
+$result = $pipeline->executeWith($request);
 ```
 
 ### 3. Workflow Orchestration
@@ -304,12 +342,15 @@ $workflow = Workflow::empty()
 Process large datasets with observability:
 
 ```php
-$etlPipeline = Pipeline::for($sourceData)
+$etlPipeline = Pipeline::builder()
     ->through(fn($data) => $this->extract($data))
     ->through(fn($data) => $this->transform($data))
     ->through(fn($data) => $this->load($data))
     ->withMiddleware(new MemoryMonitorMiddleware())
-    ->withMiddleware(new ProgressTrackingMiddleware());
+    ->withMiddleware(new ProgressTrackingMiddleware())
+    ->create();
+
+$result = $etlPipeline->executeWith($sourceData);
 ```
 
 ## Component Necessity & Value
@@ -370,9 +411,9 @@ $pipeline
 ### 4. Handle Errors via Result Pattern
 ```php
 // ✅ Check result status
-$result = $pipeline->process($data);
+$result = $pipeline->executeWith($data);
 if ($result->isFailure()) {
-    $this->handleError($result->errorMessage());
+    $this->handleError($result->exception()->getMessage());
 }
 
 // ✅ Access rich error context via tags
@@ -382,7 +423,7 @@ $errorTag = $result->state()->firstTag(ErrorTag::class);
 ### 5. Optimize Performance with Lazy Evaluation
 ```php
 // ✅ Defer execution until needed
-$pending = $pipeline->process($data);  // Fast - no execution
+$pending = $pipeline->executeWith($data);  // Fast - no execution
 
 // Execute only when result is needed
 if ($condition) {
@@ -410,12 +451,13 @@ $pipeline
 
 ## Essential Patterns
 
-1. **Builder Pattern**: Use `Pipeline::for()` and `PipelineBuilder` for fluent construction
+1. **Builder Pattern**: Use `Pipeline::builder()` and `PipelineBuilder` for fluent construction
 2. **Chain of Responsibility**: Middleware and processors form execution chains
 3. **Result Monad**: All operations return Results for predictable error handling
 4. **Lazy Evaluation**: Computations deferred until results needed
 5. **Immutable State**: All state changes create new instances
 6. **Tag-Based Metadata**: Type-safe, indexed metadata system
+7. **Clean API**: Stateless pipelines with execution-time data/tag injection
 
 The Pipeline package transforms complex data processing workflows into composable, observable, and maintainable code while providing production-ready error handling and performance optimization.
 
@@ -564,7 +606,7 @@ $orderWorkflow = Workflow::empty()
     // Always audit, regardless of outcome
     ->tap($auditPipeline);
 
-$result = $orderWorkflow->process($orderData);
+$result = $orderWorkflow->executeWith($orderData);
 ```
 
 #### 2. Content Processing Pipeline
@@ -639,11 +681,14 @@ $apiWorkflow = Workflow::empty()
 
 ```php
 // ✅ Perfect for Pipeline
-$dataTransformation = Pipeline::for($rawData)
+$dataTransformation = Pipeline::builder()
     ->through($normalize)
     ->through($validate)
     ->through($transform)
-    ->through($serialize);
+    ->through($serialize)
+    ->create();
+
+$result = $dataTransformation->executeWith($rawData);
 ```
 
 #### Use Workflow When:
@@ -659,7 +704,10 @@ $businessProcess = Workflow::empty()
     ->when($needsApproval, $approvalProcess)
     ->when($isHighValue, $specialHandling)
     ->tap($auditLogging)
-    ->through($finalProcessing);
+    ->through($finalProcessing)
+    ->create();
+
+$result = $businessProcess->executeWith($businessData);
 ```
 
 ### Error Handling in Workflows
@@ -706,10 +754,10 @@ class OrderWorkflowTest extends TestCase
 {
     public function testValidationStep() {
         $validationPipeline = $this->createValidationPipeline();
-        $result = $validationPipeline->process($invalidOrder);
+        $result = $validationPipeline->executeWith($invalidOrder);
         
         $this->assertTrue($result->isFailure());
-        $this->assertStringContains('validation', $result->errorMessage());
+        $this->assertStringContains('validation', $result->exception()->getMessage());
     }
     
     public function testConditionalExecution() {
@@ -717,7 +765,7 @@ class OrderWorkflowTest extends TestCase
             ->when(fn($state) => $state->value()['total'] > 100, $expensivePipeline);
             
         $cheapOrder = ProcessingState::with(['total' => 50]);
-        $result = $workflow->process($cheapOrder);
+        $result = $workflow->executeWith($cheapOrder);
         
         // Expensive pipeline should not have executed
         $this->assertFalse($result->hasTag(ExpensiveProcessingTag::class));
@@ -730,12 +778,12 @@ class OrderWorkflowTest extends TestCase
 ```php
 public function testCompleteOrderWorkflow() {
     $order = $this->createValidOrder();
-    $result = $this->orderWorkflow->process($order);
+    $result = $this->orderWorkflow->executeWith($order);
     
     $this->assertTrue($result->isSuccess());
     $this->assertTrue($result->value()['validated']);
     $this->assertTrue($result->value()['payment_processed']);
-    $this->assertNotEmpty($result->allTags(TimingTag::class));
+    $this->assertNotEmpty($result->state()->allTags(TimingTag::class));
 }
 ```
 

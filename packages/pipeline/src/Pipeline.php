@@ -19,9 +19,9 @@ class Pipeline implements CanProcessState
 
     public function __construct(
         ?OperatorStack $steps = null,
-        ?OperatorStack $finalizers = null,
         ?OperatorStack $middleware = null,
         ?OperatorStack $hooks = null,
+        ?OperatorStack $finalizers = null,
     ) {
         $this->steps = $steps ?? new OperatorStack();
         $this->finalizers = $finalizers ?? new OperatorStack();
@@ -31,7 +31,7 @@ class Pipeline implements CanProcessState
 
     // STATIC FACTORY METHODS ////////////////////////////////////////////////////////////////
 
-    public static function empty(): PipelineBuilder {
+    public static function builder(): PipelineBuilder {
         return new PipelineBuilder();
     }
 

@@ -16,9 +16,9 @@ describe('Pipeline Incremental Tests - Missing Coverage', function () {
             
             $pipeline = new Pipeline(
                 steps: $processors,
-                finalizers: $finalizers,
                 middleware: $middleware,
                 hooks: $hooks,
+                finalizers: $finalizers,
             );
             
             expect($pipeline)->toBeInstanceOf(Pipeline::class);

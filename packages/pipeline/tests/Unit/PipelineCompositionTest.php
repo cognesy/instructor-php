@@ -4,19 +4,19 @@ use Cognesy\Pipeline\Pipeline;
 
 test('nested pipelines - pipeline containing other pipelines as steps', function () {
     // Create first sub-pipeline using builder API: multiply by 2, then add 10
-    $pipeline1 = Pipeline::empty()
+    $pipeline1 = Pipeline::builder()
         ->through(fn($x) => $x * 2)
         ->through(fn($x) => $x + 10)
         ->create();
 
     // Create second sub-pipeline using builder API: divide by 3, then subtract 5
-    $pipeline2 = Pipeline::empty()
+    $pipeline2 = Pipeline::builder()
         ->through(fn($x) => $x / 3)
         ->through(fn($x) => $x - 5)
         ->create();
 
     // Create main pipeline that uses the two sub-pipelines as processing steps
-    $mainPipeline = Pipeline::empty()
+    $mainPipeline = Pipeline::builder()
         ->through(fn($x) => $x + 1)          // Start: x + 1
         ->throughOperator($pipeline1)        // Step 1: (x + 1) * 2 + 10
         ->through(fn($x) => $x * 3)          // Middle: result * 3

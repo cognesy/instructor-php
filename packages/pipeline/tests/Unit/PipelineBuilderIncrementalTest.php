@@ -35,8 +35,8 @@ describe('PipelineBuilder Incremental Tests - Missing Coverage', function () {
                 $middleware2 = new TestMiddleware('second');
                 
                 $result = (new PipelineBuilder())
-                    ->withMiddleware($middleware1)
-                    ->prependMiddleware($middleware2)
+                    ->withOperator($middleware1)
+                    ->prependOperator($middleware2)
                     ->create()
                     ->executeWith('test')
                     ->state();

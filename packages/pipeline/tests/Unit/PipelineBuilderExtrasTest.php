@@ -13,7 +13,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
 
     describe('map() method', function () {
         it('adds transformation processor', function () {
-            $result = Pipeline::empty()
+            $result = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->create()
                 ->executeWith(10)
@@ -23,7 +23,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('chains multiple map operations', function () {
-            $result = Pipeline::empty()
+            $result = Pipeline::builder()
                 ->map(fn($x) => $x * 2)    // 20
                 ->map(fn($x) => $x + 5)    // 25
                 ->map(fn($x) => $x / 5)    // 5
@@ -35,13 +35,13 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('is equivalent to through() method', function () {
-            $mapResult = Pipeline::empty()
+            $mapResult = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->create()
                 ->executeWith(10)
                 ->value();
             
-            $throughResult = Pipeline::empty()
+            $throughResult = Pipeline::builder()
                 ->through(fn($x) => $x * 2)
                 ->create()
                 ->executeWith(10)
@@ -53,7 +53,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
 
     describe('map() method', function () {
         it('flattens nested results', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->create()
                 ->executeWith(10)
@@ -63,7 +63,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('handles ProcessingState returns', function () {
-            $state = Pipeline::empty()
+            $state = Pipeline::builder()
                 ->map(fn($x) => ProcessingState::with($x * 2, [new BuilderTag('mapped')]))
                 ->create()
                 ->executeWith(10)
@@ -74,7 +74,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('chains with other operations', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)        // 10
                 ->map(fn($x) => $x + 5)        // 15
                 ->map(fn($x) => $x * 2)        // 30
@@ -86,7 +86,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('merges tags from mapped ProcessingState', function () {
-            $state = Pipeline::empty()
+            $state = Pipeline::builder()
                 ->map(fn($x) => ProcessingState::with($x * 2, [new BuilderTag('mapped')]))
                 ->create()
                 ->executeWith(10, new BuilderTag('initial'))
@@ -101,7 +101,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
 
     describe('filter() method', function () {
         it('passes values that match predicate', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->filter(fn($x) => $x > 5)
                 ->create()
                 ->executeWith(10)
@@ -113,7 +113,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         it('stops pipeline when predicate fails', function () {
             $executed = false;
             
-            $pending = Pipeline::empty()
+            $pending = Pipeline::builder()
                 ->filter(fn($x) => $x > 15)  // Will fail
                 ->map(function($x) use (&$executed) {
                     $executed = true;
@@ -127,7 +127,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('chains with other operations', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)      // 20
                 ->filter(fn($x) => $x > 15)  // passes
                 ->map(fn($x) => $x + 5)      // 25
@@ -139,7 +139,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('preserves tags when filter passes', function () {
-            $state = Pipeline::empty()
+            $state = Pipeline::builder()
                 ->filter(fn($x) => $x > 5)
                 ->create()
                 ->executeWith(10, new BuilderTag('filtered'))
@@ -151,7 +151,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
 
     describe('monadic composition in builder', function () {
         it('combines map, filter, and map', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)                    // 10
                 ->filter(fn($x) => $x > 5)                 // passes
                 ->map(fn($x) => $x + 5)                // 15
@@ -168,7 +168,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
             $step2Executed = false;
             $step3Executed = false;
             
-            $pending = Pipeline::empty()
+            $pending = Pipeline::builder()
                 ->map(function($x) use (&$step1Executed) {
                     $step1Executed = true;
                     return $x * 2;  // 10
@@ -192,7 +192,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('maintains type safety through chain', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($s) => strtoupper($s))           // 'HELLO'
                 ->filter(fn($s) => strlen($s) > 3)        // passes
                 ->map(fn($s) => $s . ' WORLD')        // 'HELLO WORLD'
@@ -207,7 +207,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
 
     describe('integration with existing builder methods', function () {
         it('works with when() conditional', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)                           // 20
                 ->when(fn($x) => $x > 15, fn($x) => $x + 10)      // 30
                 ->filter(fn($x) => $x > 25)                       // passes
@@ -221,7 +221,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         it('works with tap() side effects', function () {
             $sideEffect = null;
             
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
                 ->tap(function($value) use (&$sideEffect) {
                     $sideEffect = $value;
@@ -247,9 +247,9 @@ describe('PipelineBuilder Enhanced Methods', function () {
                 }
             };
             
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)
-                ->withMiddleware($middleware)
+                ->withOperator($middleware)
                 ->filter(fn($x) => $x > 5)
                 ->create()
                 ->executeWith(10)
@@ -262,7 +262,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
 
     describe('error handling in builder chain', function () {
         it('handles exceptions in map', function () {
-            $pending = Pipeline::empty()
+            $pending = Pipeline::builder()
                 ->map(fn($x) => throw new \RuntimeException('Map error'))
                 ->filter(fn($x) => $x > 5)
                 ->create()
@@ -273,7 +273,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('continues processing after successful filter', function () {
-            $value = Pipeline::empty()
+            $value = Pipeline::builder()
                 ->map(fn($x) => $x * 2)      // 20
                 ->filter(fn($x) => $x > 5)   // passes
                 ->map(fn($x) => $x + 5)      // 25
@@ -286,7 +286,7 @@ describe('PipelineBuilder Enhanced Methods', function () {
         });
 
         it('stops processing after unsuccessful filter', function () {
-            $result = Pipeline::empty()
+            $result = Pipeline::builder()
                 ->map(fn($x) => $x * 2)      // 20
                 ->filter(fn($x) => $x > 5)   // passes
                 ->map(fn($x) => $x + 5)      // 25

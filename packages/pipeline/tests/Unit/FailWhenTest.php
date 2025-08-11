@@ -4,7 +4,7 @@ use Cognesy\Pipeline\Pipeline;
 
 describe('FailWhen functionality', function () {
     test('fails pipeline when condition is met', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->failWhen(fn($state) => $state->value() > 5, 'Value too large')
             ->through(fn($x) => $x * 2)
             ->create()
@@ -15,7 +15,7 @@ describe('FailWhen functionality', function () {
     });
 
     test('continues processing when condition is not met', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->failWhen(fn($state) => $state->value() > 5, 'Value too large')
             ->through(fn($x) => $x * 2)
             ->create()
@@ -26,7 +26,7 @@ describe('FailWhen functionality', function () {
     });
 
     test('fails with default message when no message provided', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->failWhen(fn($state) => $state->value() > 5)
             ->through(fn($x) => $x * 2)
             ->create()
@@ -37,7 +37,7 @@ describe('FailWhen functionality', function () {
     });
 
     test('can chain multiple failWhen conditions', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->failWhen(fn($state) => $state->value() < 0, 'Value too small')
             ->failWhen(fn($state) => $state->value() > 20, 'Value too large')
             ->through(fn($x) => $x * 2)
@@ -51,7 +51,7 @@ describe('FailWhen functionality', function () {
     test('first failing condition stops pipeline', function () {
         $executed = false;
         
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->failWhen(fn($state) => $state->value() > 5, 'First failure')
             ->failWhen(fn($state) => $state->value() > 15, 'Second failure')
             ->through(function($x) use (&$executed) {

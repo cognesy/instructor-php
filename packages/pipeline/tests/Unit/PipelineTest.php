@@ -6,7 +6,7 @@ use Cognesy\Pipeline\PipelineBuilder;
 
 describe('Pipeline static factory methods', function () {
     test('empty returns PipelineBuilder', function () {
-        $builder = Pipeline::empty();
+        $builder = Pipeline::builder();
         
         expect($builder)->toBeInstanceOf(PipelineBuilder::class);
     });
@@ -14,7 +14,7 @@ describe('Pipeline static factory methods', function () {
 
 describe('Pipeline main usage patterns', function () {
     test('create and keep pipeline for reuse', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 10)
             ->create()
@@ -24,7 +24,7 @@ describe('Pipeline main usage patterns', function () {
     });
 
     test('execute pipeline for single input using for()->value()', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 10)
             ->create()
@@ -36,7 +36,7 @@ describe('Pipeline main usage patterns', function () {
     });
 
     test('execute pipeline for different inputs', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->through(fn($x) => $x + 1)
             ->create()
@@ -48,7 +48,7 @@ describe('Pipeline main usage patterns', function () {
     });
 
     test('execute pipeline for multiple inputs using each()', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->create()
             ->executeWith();
@@ -64,7 +64,7 @@ describe('Pipeline main usage patterns', function () {
     });
 
     test('string processing pipeline', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($text) => trim($text))
             ->through(fn($text) => strtoupper($text))
             ->through(fn($text) => str_replace(' ', '_', $text))
@@ -77,7 +77,7 @@ describe('Pipeline main usage patterns', function () {
     });
 
     test('data transformation pipeline', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($data) => array_filter($data, fn($x) => $x > 0))
             ->through(fn($data) => array_map(fn($x) => $x * 2, $data))
             ->through(fn($data) => array_sum($data))
@@ -93,7 +93,7 @@ describe('Pipeline main usage patterns', function () {
 
 describe('Pipeline error handling', function () {
     test('handles processor exception', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($value) => throw new RuntimeException('Test error'))
             ->create()
             ->executeWith('test');
@@ -104,7 +104,7 @@ describe('Pipeline error handling', function () {
     });
 
     test('pipeline continues working after error in one execution', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(function($x) {
                 if ($x === 2) {
                     throw new RuntimeException('Error on 2');
@@ -120,7 +120,7 @@ describe('Pipeline error handling', function () {
     });
 
     test('valueOr returns default on failure', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($value) => throw new RuntimeException('Test error'))
             ->create()
             ->executeWith('test');
@@ -133,7 +133,7 @@ describe('Pipeline with conditional and tap operations', function () {
     test('tap does not affect pipeline output', function () {
         $sideEffect = [];
         
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->tap(function($x) use (&$sideEffect) {
                 $sideEffect[] = $x;
@@ -149,7 +149,7 @@ describe('Pipeline with conditional and tap operations', function () {
     });
 
     test('when executes conditionally', function () {
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->when(fn($x) => $x > 10, fn($x) => $x * 2)
             ->through(fn($x) => $x + 1)
             ->create()
@@ -162,7 +162,7 @@ describe('Pipeline with conditional and tap operations', function () {
     test('complex pipeline with multiple operations', function () {
         $log = [];
         
-        $pipeline = Pipeline::empty()
+        $pipeline = Pipeline::builder()
             ->through(fn($x) => $x * 2)
             ->tap(function($x) use (&$log) { $log[] = "doubled: $x"; })
             ->when(fn($x) => $x > 10, fn($x) => $x + 100)

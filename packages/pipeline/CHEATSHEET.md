@@ -1,26 +1,38 @@
 # Pipeline Package API Cheatsheet
 
+## Quick Start - Clean API Pattern
+
+```php
+// 1. Build pipeline (stateless)
+$pipeline = Pipeline::builder()
+    ->through(fn($x) => $x * 2)
+    ->withMiddleware($middleware)
+    ->create();
+
+// 2. Execute with data and optional tags
+$result = $pipeline->executeWith($data, $tag1, $tag2);
+
+// 3. Access results
+$value = $result->value();                 // Extract value
+$state = $result->state();                 // Get processing state
+$tags = $state->allTags(CustomTag::class); // Query tags
+```
+
+
 ## Pipeline Factory Methods
 
 ```php
-// Create empty pipeline
-Pipeline::empty()
-
-// Pipeline from callable source
-Pipeline::from(fn() => getData())
-
-// Pipeline with initial value
-Pipeline::for($data)
+// Create empty pipeline builder (only available method)
+Pipeline::builder()  // Returns PipelineBuilder
 ```
 
 ## PipelineBuilder API
 
 ### Construction
 ```php
-$builder = new PipelineBuilder($source, $tags);
-$builder->withSource(fn() => $data);
-$builder->withInitialValue($data);
-$builder->withTags(...$tags);
+$builder = new PipelineBuilder();  // Clean constructor - no parameters
+// Note: withSource(), withInitialValue(), withTags() methods removed
+// Values and tags are provided at execution time via executeWith()
 ```
 
 ### Processing Chain
@@ -49,14 +61,14 @@ $builder->finally($finalizer);
 ### Middleware & Hooks
 ```php
 // Pipeline-level middleware
-$builder->withMiddleware(...$middleware);
-$builder->prependMiddleware(...$middleware);
+$builder->withOperator(...$operator);
+$builder->prependOperator(...$operator);
 
 // Per-processor hooks
-$builder->beforeEach($hook);         // Execute before each processor
-$builder->afterEach($hook);          // Execute after each processor  
-$builder->aroundEach($middleware);   // Wrap around each processor
-$builder->onFailure($handler);
+$builder->beforeEach($operator);         // Execute before each processor
+$builder->afterEach($operator);          // Execute after each processor  
+$builder->aroundEach($operator);   // Wrap around each processor
+$builder->onFailure($operator);
 
 // Control flow
 $builder->finishWhen($condition);
@@ -65,7 +77,19 @@ $builder->failWhen($condition, $message);
 
 ### Execution
 ```php
-$pending = $builder->create();
+$pipeline = $builder->create();  // Returns Pipeline instance
+```
+
+## Pipeline Execution API
+
+```php
+// Execute with data and optional tags
+$pending = $pipeline->executeWith($data);                    // PendingExecution
+$pending = $pipeline->executeWith($data, $tag1, $tag2);      // With tags
+$pending = $pipeline->executeWith($data, ...$tagArray);      // With tag array
+
+// Process state directly (middleware interface)
+$state = $pipeline->process($processingState, $nextCallable);  // ProcessingState
 ```
 
 ## PendingExecution API
@@ -178,7 +202,7 @@ $workflow->tap($pipeline);
 
 ### Execution
 ```php
-$workflow->process($state);  // ProcessingState
+$workflow->executeWith($data);  // PendingExecution
 ```
 
 ## Tag System
@@ -214,9 +238,7 @@ $tagMap->with(...$tags);
 ## Contracts & Interfaces
 
 ### Core Interfaces
-- `CanProcessState` - Process ProcessingState objects
-- `CanControlStateProcessing` - Middleware interface
-- `CanFinalizeProcessing` - Finalizer interface
+- `CanProcessState` - Process ProcessingState objects (unified interface)
 - `TagInterface` - Tag implementation interface
 - `TagMapInterface` - Tag storage interface
 
@@ -228,11 +250,11 @@ fn($value) => $transformedValue
 // State processor (full control)
 fn(ProcessingState $state) => ProcessingState
 
-// Middleware
-class MyMiddleware implements CanControlStateProcessing {
-    public function handle(ProcessingState $state, callable $next): ProcessingState {
+// Middleware (unified interface)
+class MyMiddleware implements CanProcessState {
+    public function process(ProcessingState $state, ?callable $next = null): ProcessingState {
         // Pre-processing
-        $result = $next($state);
+        $result = $next ? $next($state) : $state;
         // Post-processing
         return $result;
     }
@@ -244,32 +266,36 @@ class MyMiddleware implements CanControlStateProcessing {
 ### Pipeline-Level Monitoring
 ```php
 // Capture entire pipeline timing
-Pipeline::for($data)
+$pipeline = Pipeline::builder()
     ->withMiddleware(Timing::capture('operation'))
     ->withMiddleware(Memory::capture('operation'))
     ->through($processor)
-    ->create()
-    ->execute();
+    ->create();
 
-// Extract data
-$timings = $result->allTags(TimingTag::class);
-$memory = $result->allTags(MemoryTag::class);
+$result = $pipeline->executeWith($data);
+
+// Extract data from execution state
+$state = $result->state();
+$timings = $state->allTags(TimingTag::class);
+$memory = $state->allTags(MemoryTag::class);
 ```
 
 ### Step-Level Monitoring  
 ```php
 // Capture timing/memory for each processor
-Pipeline::for($data)
+$pipeline = Pipeline::builder()
     ->aroundEach(StepTiming::capture('processing'))    // Applied to ALL processors
     ->aroundEach(StepMemory::capture('processing'))    // Applied to ALL processors  
     ->through($validateProcessor)
     ->through($heavyProcessor)
-    ->create()
-    ->execute();
+    ->create();
+
+$result = $pipeline->executeWith($data);
 
 // Extract step data - one entry per processor
-$stepTimings = $result->allTags(StepTimingTag::class);  // 2 entries
-$stepMemory = $result->allTags(StepMemoryTag::class);   // 2 entries
+$state = $result->state();
+$stepTimings = $state->allTags(StepTimingTag::class);  // 2 entries
+$stepMemory = $state->allTags(StepMemoryTag::class);   // 2 entries
 ```
 
 ### Monitoring Data Access
@@ -291,7 +317,7 @@ $memory->isMemoryFreed();            // true if negative delta
 ### Result Pattern
 ```php
 if ($result->isFailure()) {
-    $error = $result->errorMessage();
+    $error = $result->exception()->getMessage();
 }
 ```
 
@@ -312,8 +338,8 @@ $state->recoverWith(fn($failedState) => $recoveryLogic);
 
 ### Lazy Evaluation
 ```php
-$pending = $pipeline->create();  // No execution
-$value = $pending->value();      // Execute when needed
+$pending = $pipeline->executeWith($data);  // No execution yet (lazy)
+$value = $pending->value();                 // Execute when needed
 ```
 
 ### Middleware Placement

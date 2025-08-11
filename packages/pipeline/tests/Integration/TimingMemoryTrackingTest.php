@@ -14,8 +14,8 @@ use Cognesy\Pipeline\Tag\Observation\TimingTag;
 describe('TrackTime and Memory Tracking Integration', function () {
     
     it('captures pipeline-level timing data', function () {
-        $result = Pipeline::empty()
-            ->withMiddleware(TrackTime::capture('test-operation'))
+        $result = Pipeline::builder()
+            ->withOperator(TrackTime::capture('test-operation'))
             ->throughOperator(Call::withValue(fn($x) => $x * 2))
             ->create()
             ->executeWith(5)
@@ -35,8 +35,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
     });
 
     it('captures pipeline-level memory data', function () {
-        $result = Pipeline::empty()
-            ->withMiddleware(TrackMemory::capture('memory-test'))
+        $result = Pipeline::builder()
+            ->withOperator(TrackMemory::capture('memory-test'))
             ->throughOperator(Call::withValue(function($x) {
                 // Allocate some memory to see usage
                 $data = array_fill(0, 1000, 'test');
@@ -58,7 +58,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
     });
 
     it('captures step-level timing data', function () {
-        $result = Pipeline::empty()
+        $result = Pipeline::builder()
             ->aroundEach(StepTiming::capture('all-steps'))  // Single hook for all processors
             ->throughOperator(Call::withValue(fn($x) => $x + 1))
             ->throughOperator(Call::withValue(fn($x) => $x * 3))
@@ -81,7 +81,7 @@ describe('TrackTime and Memory Tracking Integration', function () {
     });
 
     it('captures step-level memory data', function () {
-        $result = Pipeline::empty()
+        $result = Pipeline::builder()
             ->aroundEach(StepMemory::capture('memory-step'))
             ->throughOperator(Call::withValue(function($x) {
                 $data = str_repeat('x', 1000);
@@ -103,9 +103,9 @@ describe('TrackTime and Memory Tracking Integration', function () {
     });
 
     it('combines timing and memory tracking', function () {
-        $result = Pipeline::empty()
-            ->withMiddleware(TrackTime::capture('full-pipeline'))
-            ->withMiddleware(TrackMemory::capture('full-pipeline'))
+        $result = Pipeline::builder()
+            ->withOperator(TrackTime::capture('full-pipeline'))
+            ->withOperator(TrackMemory::capture('full-pipeline'))
             ->aroundEach(StepTiming::capture('multiply-step'))
             ->aroundEach(StepMemory::capture('multiply-step'))
             ->throughOperator(Call::withValue(fn($x) => $x * 2))
@@ -125,8 +125,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
     });
 
     it('tracks timing for failed operations', function () {
-        $result = Pipeline::empty()
-            ->withMiddleware(TrackTime::capture('failing-op'))
+        $result = Pipeline::builder()
+            ->withOperator(TrackTime::capture('failing-op'))
             ->aroundEach(StepTiming::capture('failing-step'))
             ->throughOperator(Call::withValue(function($x) {
                 throw new Exception('Test failure');
@@ -145,8 +145,8 @@ describe('TrackTime and Memory Tracking Integration', function () {
     });
 
     it('formats durations correctly', function () {
-        $result = Pipeline::empty()
-            ->withMiddleware(TrackTime::capture('format-test'))
+        $result = Pipeline::builder()
+            ->withOperator(TrackTime::capture('format-test'))
             ->throughOperator(Call::withValue(function($x) {
                 // Small delay to get measurable timing
                 usleep(1000); // 1ms
